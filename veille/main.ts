@@ -39,15 +39,17 @@ async function fetchFeed(fetchImpl: FetchLike): Promise<string> {
 }
 
 /**
- * Une passe complète : récupérer, parser, écrire.
- * Le parse précède les écritures : une source illisible n'écrit aucun fichier.
+ * Une passe complète : récupérer, écrire la preuve, parser, écrire les entrées.
+ * Le snapshot brut précède le parse : un flux illisible laisse la trace de ce
+ * qui a été reçu, et aucune entrée partielle.
  */
 export async function run({ fetchImpl, rootDir }: RunOptions): Promise<RunResult> {
   const xml = await fetchFeed(fetchImpl);
+  const rawPath = writeRaw(rootDir, xml);
   const entries = parseFeed(xml);
 
   return {
-    rawPath: writeRaw(rootDir, xml),
+    rawPath,
     entryPaths: writeEntries(rootDir, entries),
   };
 }

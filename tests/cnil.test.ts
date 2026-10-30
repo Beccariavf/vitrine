@@ -98,6 +98,10 @@ describe("dates", () => {
     assert.equal(toIsoUtc("Thu, 29 Oct 2026 13:00:00 +0100"), "2026-10-29T12:00:00.000Z");
   });
 
+  it("accepte une année sur deux chiffres", () => {
+    assert.equal(toIsoUtc("Thu, 29 Oct 26 13:00:00 +0100"), "2026-10-29T12:00:00.000Z");
+  });
+
   it("refuse une date sans offset explicite", () => {
     assert.equal(toIsoUtc("Thu, 29 Oct 2026 13:00:00"), null);
   });

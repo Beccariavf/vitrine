@@ -227,11 +227,14 @@ describe("une passe qui échoue", () => {
     assert.deepEqual(listFiles(root), []);
   });
 
-  it("lève une erreur et n'écrit aucun fichier quand le flux est illisible", async () => {
+  it("conserve le snapshot brut et n'écrit aucune entrée quand le flux est illisible", async () => {
     await assert.rejects(
       run({ fetchImpl: fetchReturning("<rss><channel><item></rss>"), rootDir: root }),
       /not valid XML/,
     );
-    assert.deepEqual(listFiles(root), []);
+
+    const files = listFiles(root);
+    assert.equal(files.filter((file) => file.startsWith(join("data", "raw"))).length, 1);
+    assert.equal(files.filter((file) => file.includes("entries")).length, 0);
   });
 });
