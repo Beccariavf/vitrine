@@ -21,9 +21,15 @@ describe("le nettoyage d'une description", () => {
     assert.equal(toSummary("1 &lt; 2 &gt; 0"), "1 < 2 > 0");
   });
 
+  it("retire aussi une balise hors liste blanche", () => {
+    assert.equal(toSummary("<script>alert(1)</script>"), "alert(1)");
+    assert.equal(toSummary("<custom-tag>ok</custom-tag>"), "ok");
+  });
+
   it("décode les entités nommées connues", () => {
     assert.equal(toSummary("a &amp;amp; b"), "a & b");
     assert.equal(toSummary("&quot;guillemets&quot; et &apos;apostrophes&apos;"), "\"guillemets\" et 'apostrophes'");
+    assert.equal(toSummary("l&rsquo;avocat &laquo; cite &raquo;"), "l’avocat « cite »");
   });
 
   it("décode les entités numériques décimales et hexadécimales", () => {
@@ -67,6 +73,15 @@ describe("la troncature", () => {
 
     assert.equal(summary, `${"a".repeat(SUMMARY_MAX_LENGTH - 1)}…`);
     assert.equal(summary?.length, SUMMARY_MAX_LENGTH);
+  });
+
+  it("ne tranche pas un emoji en deux", () => {
+    const text = `${"a".repeat(198)}😀${"z".repeat(30)}`;
+    const summary = toSummary(text);
+
+    assert.ok(summary !== null);
+    assert.equal(Array.from(summary).length, SUMMARY_MAX_LENGTH);
+    assert.ok(summary.endsWith("😀…"));
   });
 
   it("n'ajoute aucune ellipse à un texte de 200 caractères ou moins", () => {

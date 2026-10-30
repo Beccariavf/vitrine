@@ -13,8 +13,7 @@ const NON_BREAKING_SPACE = /\u00a0/g;
  * Balise HTML connue : on ne retire pas n'importe quel `<...>`, sinon une comparaison
  * comme `1 < 2 > 0` serait prise pour une balise et perdrait son texte.
  */
-const TAG =
-  /<\/?(?:p|br|a|strong|em|b|i|u|s|ul|ol|li|span|div|img|figure|figcaption|blockquote|h[1-6]|table|thead|tbody|tr|th|td|code|pre|sup|sub|hr)\b[^>]*>/gi;
+const TAG = /<\/?[a-zA-Z][a-zA-Z0-9-]*\b[^>]*>/g;
 
 /** Entités nommées reconnues sans dépendance ; le reste du HTML n'est pas nécessaire ici. */
 const NAMED_ENTITIES: Record<string, string> = {
@@ -24,6 +23,41 @@ const NAMED_ENTITIES: Record<string, string> = {
   quot: '"',
   apos: "'",
   nbsp: "\u00a0",
+  rsquo: "\u2019",
+  lsquo: "\u2018",
+  ldquo: "\u201c",
+  rdquo: "\u201d",
+  laquo: "\u00ab",
+  raquo: "\u00bb",
+  mdash: "\u2014",
+  ndash: "\u2013",
+  hellip: "\u2026",
+  middot: "\u00b7",
+  bull: "\u2022",
+  deg: "\u00b0",
+  euro: "\u20ac",
+  times: "\u00d7",
+  copy: "\u00a9",
+  reg: "\u00ae",
+  trade: "\u2122",
+  eacute: "\u00e9",
+  egrave: "\u00e8",
+  agrave: "\u00e0",
+  ccedil: "\u00e7",
+  ugrave: "\u00f9",
+  ecirc: "\u00ea",
+  acirc: "\u00e2",
+  icirc: "\u00ee",
+  ocirc: "\u00f4",
+  ucirc: "\u00fb",
+  euml: "\u00eb",
+  iuml: "\u00ef",
+  uuml: "\u00fc",
+  oelig: "\u0153",
+  aelig: "\u00e6",
+  Eacute: "\u00c9",
+  Agrave: "\u00c0",
+  Ccedil: "\u00c7",
 };
 
 /** Une entité HTML : nommée, décimale (`&#123;`) ou hexadécimale (`&#x1F;`). */
@@ -53,9 +87,13 @@ function clean(text: string): string {
     .trim();
 }
 
-/** Coupe à la dernière frontière de mot des 199 premiers caractères, sinon à 199. */
+/**
+ * Coupe à la dernière frontière de mot des 199 premiers points de code, sinon à 199.
+ * Compter des points de code évite de trancher un emoji en deux.
+ */
 function truncate(text: string): string {
-  const head = text.slice(0, SUMMARY_MAX_LENGTH - 1);
+  const chars = Array.from(text);
+  const head = chars.slice(0, SUMMARY_MAX_LENGTH - 1).join("");
   const lastSpace = head.lastIndexOf(" ");
   const cut = lastSpace > 0 ? head.slice(0, lastSpace) : head;
   return `${cut}…`;
@@ -69,5 +107,5 @@ export function toSummary(text: string | null): string | null {
   if (text === null) return null;
   const cleaned = clean(text);
   if (cleaned === "") return null;
-  return cleaned.length > SUMMARY_MAX_LENGTH ? truncate(cleaned) : cleaned;
+  return Array.from(cleaned).length > SUMMARY_MAX_LENGTH ? truncate(cleaned) : cleaned;
 }
