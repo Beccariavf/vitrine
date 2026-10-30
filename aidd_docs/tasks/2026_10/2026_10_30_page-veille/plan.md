@@ -1,6 +1,6 @@
 ---
 objective: "Une page statique liste les actualités CNIL de data/, triées de la plus récente à la plus ancienne, avec un lien officiel par entrée."
-status: done
+status: implemented
 ---
 
 # Plan: Page de veille statique
@@ -47,3 +47,4 @@ Source: `aidd_docs/tasks/2026_10/2026_10_30_page-veille/spec.md`
 | Le lecteur lit `data/entries/**/*.json` au build, avec `process.cwd()` | Un seul chemin, stable, indépendant de l'emplacement du fichier compilé. |
 | Tri sur la chaîne ISO UTC, dates nulles en dernier | Une chaîne ISO 8601 UTC se trie lexicographiquement sans conversion. |
 | Aucune page de détail : le titre pointe vers la CNIL | Évite de dupliquer le contenu officiel et de créer une page par article. |
+| Télémétrie Astro désactivée dans le script de build | La contrainte « aucune requête réseau au build » doit tenir sur toute machine, pas seulement en local. |

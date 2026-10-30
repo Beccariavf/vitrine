@@ -6,13 +6,13 @@ Les vérifications qui doivent passer pour qu'un code compte comme terminé. Min
 
 | Order | Command | Checks |
 | ----- | ------- | ------ |
-| 1 | `npm run typecheck` | Typage strict de `veille/` et `tests/`, sans émission |
+| 1 | `npm run typecheck` | Typage strict de `veille/`, `src/lib/` et `tests/`, sans émission |
 
 ## Before push
 
 | Order | Command | Checks |
 | ----- | ------- | ------ |
-| 1 | `npm test` | Suite hors ligne : normalisation, dates, idempotence, échecs |
+| 1 | `npm test` | Suite hors ligne : normalisation, dates, idempotence, échecs, lecteur du site |
 
 ## Rules
 

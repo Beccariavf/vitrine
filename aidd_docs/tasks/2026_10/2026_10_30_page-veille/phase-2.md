@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 ---
 
 # Instruction: Publier la page

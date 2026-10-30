@@ -1,5 +1,5 @@
 ---
-status: done
+status: completed
 ---
 
 # Instruction: Lire les entrées de data/
