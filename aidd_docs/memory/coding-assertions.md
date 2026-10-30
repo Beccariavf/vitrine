@@ -6,13 +6,13 @@ Les vérifications qui doivent passer pour qu'un code compte comme terminé. Min
 
 | Order | Command | Checks |
 | ----- | ------- | ------ |
-| 1 | — | aucune commande câblée à ce jour : pas encore de manifeste |
+| 1 | `npm run typecheck` | Typage strict de `veille/` et `tests/`, sans émission |
 
 ## Before push
 
 | Order | Command | Checks |
 | ----- | ------- | ------ |
-| 1 | — | aucune commande câblée à ce jour |
+| 1 | `npm test` | Suite hors ligne : normalisation, dates, idempotence, échecs |
 
 ## Rules
 
