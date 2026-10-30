@@ -6,7 +6,7 @@ La forme technique macro : la stack, comment les pièces s'articulent, et les d�
 
 - TypeScript sur Node 24, exécuté par type stripping natif : aucun build step pour le pipeline.
 - Astro en rendu statique, Tailwind pour le style. Aucune intégration de framework front ; la recherche viendra plus tard.
-- Aucune base de données, aucun serveur permanent : un cron produit des fichiers, le site les rend.
+- Aucune base de données, aucun serveur permanent : un cron produira des fichiers, le site les rend.
 
 ## How it fits together
 
