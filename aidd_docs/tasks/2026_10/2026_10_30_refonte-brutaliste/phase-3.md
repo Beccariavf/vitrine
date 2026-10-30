@@ -1,5 +1,5 @@
 ---
-status: pending
+status: in-progress
 ---
 
 # Instruction: Application et veille
@@ -39,23 +39,27 @@ status: pending
 │ (1) VITRINE_ · DROIT DU NUMÉRIQUE                 VEILLE     │
 ├──────────────────────────────────────────────────────────────┤
 │ (2) VEILLE_ · 10 ACTUALITÉS · DERNIÈRE PUBLICATION           │
+├──────────────────────────────────────────────────────────────┤
+│ (3) VUE / CORPUS — 10 CELLULES CLIQUABLES, 5 × 2             │
+│     [13][14][15][16][16][16][19][20][22][29]                 │
 ├──────┬───────────────────────────────────────────────────────┤
-│ (3)  │ (4) TITRE DE L'ACTUALITÉ                              │
-│ 22   │ RÉSUMÉ SUR DEUX LIGNES                                │
+│ (4)  │ (5) TITRE DE L'ACTUALITÉ                              │
+│ 29   │ RÉSUMÉ SUR DEUX LIGNES                                │
 │ OCT. │ CNIL                                                  │
 ├──────┼───────────────────────────────────────────────────────┤
-│ (5)  │ ...                                                   │
+│ (6)  │ ...                                                   │
 ├──────┴───────────────────────────────────────────────────────┤
-│ (6) PIED                                                     │
+│ (7) PIED                                                     │
 └──────────────────────────────────────────────────────────────┘
 ```
 
 1. En-tête commun, navigation rappelant la section courante.
 2. Bandeau de tête : compte réel, dernière publication.
-3. Colonne date en mono, deux lignes maximum.
-4. Titre cliquable, résumé non redondant, source.
-5. Rangées suivantes, séparées par un filet.
-6. Pied commun.
+3. Grille du corpus : une cellule par entrée, dans l'ordre chronologique, couleur de façade, chaque cellule renvoie à sa ligne.
+4. Colonne date en mono, deux lignes maximum.
+5. Titre cliquable, résumé non redondant, source.
+6. Rangées suivantes, séparées par un filet.
+7. Pied commun.
 
 ## Tasks to do
 
@@ -72,10 +76,11 @@ status: pending
 > Un registre lisible, pas un tableau administratif.
 
 1. Porter l'en-tête en `VEILLE_`, avec le compte réel et la dernière publication.
-2. Numéroter les rangées et garder la date en colonne, en mono.
-3. Garder le titre cliquable, le résumé sur deux lignes et le label de source.
-4. Conserver `isRedundantSummary` : l'entrée FNAC perd son résumé, pas sa place.
-5. Survol de rangée discret, sans changer la couleur du texte.
+2. Ajouter la grille `VUE / CORPUS` : une cellule par entrée, ordre chronologique, couleurs alternées, lien vers la ligne et `aria-label`.
+3. Numéroter les rangées antéchronologiques et garder la date en colonne, en mono.
+4. Garder le titre cliquable, le résumé sur deux lignes et le label de source.
+5. Conserver `isRedundantSummary` : l'entrée FNAC perd son résumé, pas sa place.
+6. Survol de rangée discret, sans changer la couleur du texte.
 
 ### `3)` Vérifier le responsive et le focus
 

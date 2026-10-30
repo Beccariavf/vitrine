@@ -3,18 +3,30 @@ import Base from "../../layouts/Base.astro";
 import { getEntries, isRedundantSummary } from "../../lib/entries.ts";
 
 const entries = getEntries();
+const sources = new Set(entries.map((entry) => entry.source)).size;
 
 /** Libellé lisible d'une source ; l'identifiant reste dans les données. */
 const SOURCE_LABELS: Record<string, string> = { cnil: "CNIL" };
 const sourceLabel = (source: string) => SOURCE_LABELS[source] ?? source;
 
-/** Date longue en français, à l'heure UTC : la même partout, au build comme en test. */
+/** Dates en français, à l'heure UTC : les mêmes au build comme en test. */
 const dateFormat = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeZone: "UTC" });
 const dayFormat = new Intl.DateTimeFormat("fr-FR", { day: "2-digit", timeZone: "UTC" });
+const shortMonth = new Intl.DateTimeFormat("fr-FR", { month: "short", timeZone: "UTC" });
 const monthFormat = new Intl.DateTimeFormat("fr-FR", { month: "short", year: "numeric", timeZone: "UTC" });
 
 const latest = entries.find((entry) => entry.publishedAt !== null)?.publishedAt ?? null;
 const count = `${entries.length} ${entries.length > 1 ? "actualités" : "actualité"}`;
+
+/** Le corpus se lit du plus ancien au plus récent ; la liste reste antéchronologique. */
+const corpus = [...entries].reverse();
+
+/** Trois couleurs de la façade, sans signification de données : un index visuel. */
+const CELL_COLORS = [
+  { bg: "bg-red", text: "text-paper" },
+  { bg: "bg-blue", text: "text-paper" },
+  { bg: "bg-yellow", text: "text-ink" },
+];
 ---
 
 <Base
@@ -23,60 +35,114 @@ const count = `${entries.length} ${entries.length > 1 ? "actualités" : "actuali
   containerClass="max-w-[56rem]"
 >
   <header class="max-w-2xl">
-    <p class="font-mono text-[0.65rem] uppercase tracking-[0.12em] text-muted">Corpus public</p>
-    <h1 class="mt-4 text-4xl sm:text-5xl">Veille</h1>
+    <p class="font-mono text-[0.65rem] uppercase tracking-[0.14em] text-muted">Corpus public · CNIL</p>
+    <h1 class="mt-3 text-5xl sm:text-6xl">Veille_</h1>
     <p class="mt-5 text-muted">
       {count} collectées, chacune depuis sa source officielle, de la plus récente à la plus
       ancienne. Chaque titre renvoie à la publication officielle.
     </p>
     {
       latest !== null && (
-        <p class="mt-2 font-mono text-[0.65rem] uppercase tracking-[0.12em] text-muted">
+        <p class="mt-3 font-mono text-[0.65rem] uppercase tracking-[0.12em] text-muted">
           Dernière publication : <time datetime={latest}>{dateFormat.format(new Date(latest))}</time>
         </p>
       )
     }
   </header>
 
-  <ul class="mt-10 border-t border-ink/15">
+  <section class="mt-10 border-2 border-ink bg-paper shadow-hard">
+    <div
+      class="flex items-center justify-between gap-3 border-b-2 border-ink px-3 py-2 font-mono text-[0.6rem] uppercase tracking-[0.14em] sm:px-4"
+    >
+      <h2 class="font-mono text-[0.6rem] font-normal uppercase tracking-[0.14em]">vue / corpus</h2>
+      <span class="text-muted">
+        CNIL · {latest !== null ? monthFormat.format(new Date(latest)) : "sans date"}
+      </span>
+    </div>
+
+    <div class="grid grid-cols-5 gap-2 border-b-2 border-ink bg-concrete p-3 sm:p-4">
+      {
+        corpus.map((entry, index) => {
+          const date = entry.publishedAt !== null ? new Date(entry.publishedAt) : null;
+          const color = CELL_COLORS[index % CELL_COLORS.length];
+          const label = date !== null ? dateFormat.format(date) : "sans date";
+          return (
+            <a
+              href={`#${entry.id}`}
+              aria-label={`${entry.title} — ${label}`}
+              title={entry.title}
+              class:list={[
+                "flex aspect-[4/5] items-end border-2 border-ink p-1.5 no-underline hover:-translate-x-0.5 hover:-translate-y-0.5 hover:no-underline hover:shadow-hard sm:p-2",
+                color.bg,
+                color.text,
+              ]}
+            >
+              <span class="font-mono text-base font-bold leading-none sm:text-3xl">
+                {date !== null ? dayFormat.format(date) : "—"}
+              </span>
+            </a>
+          );
+        })
+      }
+    </div>
+
+    <div class="flex flex-wrap items-end justify-between gap-2 px-3 py-3 sm:px-4">
+      <p class="font-mono text-[0.6rem] uppercase tracking-[0.12em]">{count}</p>
+      <p class="font-mono text-[0.6rem] uppercase tracking-[0.12em] text-muted">
+        {sources} source{sources > 1 ? "s" : ""} · 0 ko
+      </p>
+    </div>
+  </section>
+
+  <ol class="mt-12 border-t-2 border-ink">
     {
-      entries.map((entry) => {
+      entries.map((entry, index) => {
         const summary =
           entry.summary !== null && !isRedundantSummary(entry.title, entry.summary)
             ? entry.summary
             : null;
+        const date = entry.publishedAt !== null ? new Date(entry.publishedAt) : null;
         return (
-        <li class="grid grid-cols-[4rem_1fr] gap-4 border-b border-ink/15 py-5 sm:grid-cols-[5rem_1fr] sm:gap-8">
-          <div class="font-mono text-[0.65rem] uppercase tracking-[0.12em] text-muted">
-            {entry.publishedAt !== null ? (
-              <>
-                <span class="block font-mono text-2xl font-bold leading-none tracking-normal text-ink">
-                  {dayFormat.format(new Date(entry.publishedAt))}
-                </span>
-                <span>{monthFormat.format(new Date(entry.publishedAt))}</span>
-              </>
-            ) : (
-              <span>Sans date</span>
-            )}
-          </div>
-          <div>
-            <h2 class="text-lg leading-snug">
-              <a href={entry.url} class="text-ink no-underline hover:underline">
-                {entry.title}
-              </a>
-            </h2>
-            {
-              summary !== null && (
-                <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-muted">{summary}</p>
-              )
-            }
-            <p class="mt-2 font-mono text-[0.65rem] uppercase tracking-[0.12em] text-muted">
-              {sourceLabel(entry.source)}
-            </p>
-          </div>
-        </li>
+          <li
+            id={entry.id}
+            class="scroll-mt-8 border-b-2 border-ink hover:bg-paper target:bg-paper"
+          >
+            <div class="grid grid-cols-[4.5rem_1fr] gap-4 py-5 sm:grid-cols-[3rem_6rem_1fr] sm:gap-6">
+              <span class="hidden pt-1 font-mono text-xs text-muted sm:block">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <div class="pt-1 font-mono">
+                {date !== null ? (
+                  <time datetime={entry.publishedAt ?? undefined}>
+                    <span class="block text-2xl font-bold leading-none">{dayFormat.format(date)}</span>
+                    <span class="mt-1 block text-[0.55rem] uppercase tracking-[0.12em] text-muted">
+                      {shortMonth.format(date)}
+                    </span>
+                  </time>
+                ) : (
+                  <span class="text-xs text-muted">Sans date</span>
+                )}
+              </div>
+              <div>
+                <h2 class="text-lg leading-snug sm:text-xl">
+                  <a
+                    href={entry.url}
+                    class="text-ink underline decoration-red decoration-2 underline-offset-4 hover:decoration-4"
+                  >
+                    {entry.title}
+                  </a>
+                </h2>
+                {summary !== null && (
+                  <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-muted">{summary}</p>
+                )}
+                <p class="mt-3 inline-block border border-ink px-1.5 py-0.5 font-mono text-[0.55rem] uppercase tracking-[0.12em]">
+                  {sourceLabel(entry.source)}
+                </p>
+              </div>
+            </div>
+          </li>
         );
       })
     }
-  </ul>
+  </ol>
 </Base>
