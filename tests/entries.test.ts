@@ -129,6 +129,11 @@ describe("un résumé redondant", () => {
   it("laisse passer une courte expression commune", () => {
     assert.equal(isRedundantSummary("Ordre du jour de la séance", "Ordre du jour : adoption du procès-verbal."), false);
   });
+
+  it("ne voit aucune redondance dans un texte vide ou de ponctuation", () => {
+    assert.equal(isRedundantSummary("", ""), false);
+    assert.equal(isRedundantSummary("!!!", "???"), false);
+  });
 });
 
 describe("un data/entries vide", () => {
