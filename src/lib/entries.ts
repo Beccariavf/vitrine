@@ -2,9 +2,11 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import type { Entry } from "../../veille/types.ts";
 
-/** Les cinq champs du contrat `veille/types.ts`. */
-const FIELDS = ["id", "title", "url", "publishedAt", "source"] as const;
-const STRING_FIELDS = FIELDS.filter((field) => field !== "publishedAt");
+/** Les six champs du contrat `veille/types.ts`. */
+const FIELDS = ["id", "title", "url", "publishedAt", "summary", "source"] as const;
+
+/** Champs qui doivent porter une chaîne non vide ; `publishedAt` et `summary` acceptent `null`. */
+const STRING_FIELDS = ["id", "title", "url", "source"] as const;
 
 /** Liste récursivement les fichiers `.json` sous `dir`, triés pour être déterministes. */
 function listJsonFiles(dir: string): string[] {
@@ -18,7 +20,7 @@ function listJsonFiles(dir: string): string[] {
 }
 
 /**
- * Valide la forme d'une entrée et rend une copie typée : seuls les cinq champs
+ * Valide la forme d'une entrée et rend une copie typée : seuls les six champs
  * du contrat sont retenus. Une entrée qui dévie est une erreur de pipeline, pas
  * une entrée à afficher partiellement.
  */
@@ -49,12 +51,16 @@ function parseEntry(text: string, file: string): Entry {
   if (record.publishedAt !== null && typeof record.publishedAt !== "string") {
     throw new Error(`Invalid entry ${file}: field "publishedAt" must be an ISO 8601 string or null`);
   }
+  if (record.summary !== null && (typeof record.summary !== "string" || record.summary.length === 0)) {
+    throw new Error(`Invalid entry ${file}: field "summary" must be a non-empty string or null`);
+  }
 
   return {
     id: record.id as string,
     title: record.title as string,
     url: record.url as string,
     publishedAt: record.publishedAt as string | null,
+    summary: record.summary as string | null,
     source: record.source as string,
   };
 }
@@ -83,6 +89,44 @@ function compareEntries(a: Entry, b: Entry): number {
     return a.publishedAt < b.publishedAt ? 1 : -1;
   }
   return a.title.localeCompare(b.title, "fr");
+}
+
+/** Mots normalisés : casse, accents et ponctuation retirés. */
+function words(text: string): string[] {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+}
+
+/** Longueur, en caractères, de la plus longue suite de mots contiguë commune. */
+function longestSharedWords(title: string, summary: string): number {
+  const a = words(title);
+  const b = words(summary);
+  let longest = 0;
+  for (let i = 0; i < a.length; i += 1) {
+    for (let j = 0; j < b.length; j += 1) {
+      let k = 0;
+      while (a[i + k] !== undefined && a[i + k] === b[j + k]) k += 1;
+      if (k === 0) continue;
+      const length = a.slice(i, i + k).join(" ").length;
+      if (length > longest) longest = length;
+      if (longest >= 40) return longest;
+    }
+  }
+  return longest;
+}
+
+/**
+ * Un résumé qui répète une longue expression du titre n'apporte rien : on le
+ * masque plutôt que de le réécrire, ce que le contrat interdit.
+ */
+export function isRedundantSummary(title: string, summary: string): boolean {
+  return longestSharedWords(title, summary) >= 40;
 }
 
 /**

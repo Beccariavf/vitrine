@@ -17,6 +17,8 @@ Les vérifications qui doivent passer pour qu'un code compte comme terminé. Min
 
 ## Rules
 
+- La CI (`.github/workflows/ci.yml`) rejoue `npm run typecheck`, `npm test` et `npm run build` à chaque push et pull request : ce qui passe ici doit passer là-bas.
+
 - Un commit = une préoccupation ; message conventionnel à l'impératif.
 - Chaque source a sa fixture et son test ; un adaptateur sans test n'est pas terminé.
 - `data/` n'est jamais édité à la main.
