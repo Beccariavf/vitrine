@@ -2,7 +2,7 @@
 
 ## Target
 
-Chaque actualité de la page de veille affiche un résumé court et lisible, extrait de sa source officielle.
+Chaque actualité de la page de veille affiche un résumé court, lisible et non redondant avec son titre, extrait de sa source officielle.
 
 ## Hard constraints
 
@@ -12,6 +12,7 @@ Chaque actualité de la page de veille affiche un résumé court et lisible, ext
 - Une description absente ou vide donne `summary: null` et n'affiche aucun bloc vide.
 - Aucune requête réseau supplémentaire : le résumé vient du flux déjà lu.
 - Le contrat `Entry` expose `summary: string | null`.
+- Un résumé qui répète une expression d'au moins 40 caractères déjà présente dans le titre n'est pas affiché ; il n'est jamais réécrit.
 
 ## Non-goals
 
@@ -22,7 +23,8 @@ Chaque actualité de la page de veille affiche un résumé court et lisible, ext
 
 ## Done-when
 
-- Toute entrée dont la description est non vide affiche un résumé sur la page de veille.
+- Toute entrée dont la description est non vide et non redondante affiche un résumé sur la page de veille.
+- Une entrée dont le résumé répète une longue expression du titre reste affichée, sans résumé.
 - Aucun résumé ne contient `<`, `>`, `&nbsp;` ni double espace.
 - Un texte de plus de 200 caractères est coupé sur un mot ; un texte plus court n'a pas d'ellipse.
 - Une description vide laisse l'entrée affichée, sans résumé.

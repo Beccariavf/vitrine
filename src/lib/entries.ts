@@ -91,6 +91,44 @@ function compareEntries(a: Entry, b: Entry): number {
   return a.title.localeCompare(b.title, "fr");
 }
 
+/** Mots normalisés : casse, accents et ponctuation retirés. */
+function words(text: string): string[] {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+}
+
+/** Longueur, en caractères, de la plus longue suite de mots contiguë commune. */
+function longestSharedWords(title: string, summary: string): number {
+  const a = words(title);
+  const b = words(summary);
+  let longest = 0;
+  for (let i = 0; i < a.length; i += 1) {
+    for (let j = 0; j < b.length; j += 1) {
+      let k = 0;
+      while (a[i + k] !== undefined && a[i + k] === b[j + k]) k += 1;
+      if (k === 0) continue;
+      const length = a.slice(i, i + k).join(" ").length;
+      if (length > longest) longest = length;
+      if (longest >= 40) return longest;
+    }
+  }
+  return longest;
+}
+
+/**
+ * Un résumé qui répète une longue expression du titre n'apporte rien : on le
+ * masque plutôt que de le réécrire, ce que le contrat interdit.
+ */
+export function isRedundantSummary(title: string, summary: string): boolean {
+  return longestSharedWords(title, summary) >= 40;
+}
+
 /**
  * Rend toutes les entrées de `data/entries/`, triées de la plus récente à la
  * plus ancienne. Le site lit la sortie du pipeline, jamais une API : une

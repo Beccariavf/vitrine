@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { after, before, describe, it } from "node:test";
-import { getEntries } from "../src/lib/entries.ts";
+import { getEntries, isRedundantSummary } from "../src/lib/entries.ts";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 
@@ -103,6 +103,31 @@ describe("le tri du lecteur", () => {
       getEntries(root).map((item) => item.title),
       ["Castor", "Bison", "Zèbre", "Abeille"],
     );
+  });
+});
+
+describe("un résumé redondant", () => {
+  it("masque un résumé qui répète une longue expression du titre", () => {
+    const title =
+      "Cookies et application mobile : sanctions de 7 millions d’euros à l’encontre des sociétés FNAC DARTY PARTICIPATIONS ET SERVICES et FNAC DIRECT";
+    const summary =
+      "Le 22 octobre 2026, la CNIL a sanctionné les sociétés FNAC DARTY PARTICIPATIONS ET SERVICES et FNAC DIRECT d’une amende de 7 millions d’euros pour non-respect des règles applicables en matière de traceurs (cookies).";
+
+    assert.equal(isRedundantSummary(title, summary), true);
+  });
+
+  it("laisse passer un résumé qui apporte une information nouvelle", () => {
+    assert.equal(
+      isRedundantSummary(
+        "Journée RGPD à Poitiers : cybersécurité, IA et conformité",
+        "La CNIL organise une nouvelle Journée RGPD à Poitiers le 1er décembre 2026.",
+      ),
+      false,
+    );
+  });
+
+  it("laisse passer une courte expression commune", () => {
+    assert.equal(isRedundantSummary("Ordre du jour de la séance", "Ordre du jour : adoption du procès-verbal."), false);
   });
 });
 

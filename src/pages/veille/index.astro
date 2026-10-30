@@ -1,6 +1,6 @@
 ---
 import Base from "../../layouts/Base.astro";
-import { getEntries } from "../../lib/entries.ts";
+import { getEntries, isRedundantSummary } from "../../lib/entries.ts";
 
 const entries = getEntries();
 
@@ -39,7 +39,12 @@ const count = `${entries.length} ${entries.length > 1 ? "actualités" : "actuali
 
   <ul class="mt-10 border-t border-ink/10">
     {
-      entries.map((entry) => (
+      entries.map((entry) => {
+        const summary =
+          entry.summary !== null && !isRedundantSummary(entry.title, entry.summary)
+            ? entry.summary
+            : null;
+        return (
         <li class="grid grid-cols-[4rem_1fr] gap-4 border-b border-ink/10 py-5 sm:grid-cols-[5rem_1fr] sm:gap-8">
           <div class="text-[0.65rem] uppercase tracking-[0.12em] text-muted">
             {entry.publishedAt !== null ? (
@@ -60,8 +65,8 @@ const count = `${entries.length} ${entries.length > 1 ? "actualités" : "actuali
               </a>
             </h2>
             {
-              entry.summary !== null && (
-                <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-muted">{entry.summary}</p>
+              summary !== null && (
+                <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-muted">{summary}</p>
               )
             }
             <p class="mt-2 text-[0.65rem] uppercase tracking-[0.12em] text-muted">
@@ -69,7 +74,8 @@ const count = `${entries.length} ${entries.length > 1 ? "actualités" : "actuali
             </p>
           </div>
         </li>
-      ))
+        );
+      })
     }
   </ul>
 </Base>

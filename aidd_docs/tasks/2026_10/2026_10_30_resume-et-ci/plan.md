@@ -13,6 +13,7 @@ Source: `aidd_docs/tasks/2026_10/2026_10_30_resume-et-ci/spec.md`
 | --- | ---------------------- | ---------------------------- | ---------- |
 | 1   | resume-dans-le-contrat | [`phase-1.md`](./phase-1.md) | none       |
 | 2   | verification-continue  | [`phase-2.md`](./phase-2.md) | 1          |
+| 3   | filtrer-la-redondance  | [`phase-3.md`](./phase-3.md) | 1          |
 
 ## External sources
 
@@ -53,3 +54,4 @@ Source: `aidd_docs/tasks/2026_10/2026_10_30_resume-et-ci/spec.md`
 | Le changement de contrat est un seul commit atomique | Un `Entry` qui exige `summary` casse le lecteur et les données tant que les trois ne bougent pas ensemble. |
 | `data/` régénéré après le changement de contrat | Les dix entrées existantes n'ont pas de résumé ; le pipeline est la seule source de vérité. |
 | CI sur `push` et `pull_request`, Node 24, `npm ci`, permissions en lecture | Même porte que la locale, sans droit d'écriture, et prépare le futur cron. |
+| Un résumé qui partage une séquence contiguë de 40 caractères ou plus avec le titre est masqué | La répétition des longues dénominations nuit à la lecture ; masquer vaut mieux que réécrire, que le contrat interdit. |
