@@ -62,7 +62,7 @@ const steps = [
     <div class="mt-8 flex flex-wrap items-center gap-5">
       <a
         href="/veille"
-        class="inline-flex items-center gap-2 bg-accent px-5 py-3 text-sm font-medium text-paper no-underline hover:bg-ink hover:no-underline"
+        class="inline-flex items-center gap-2 rounded-md bg-accent px-5 py-3 text-sm font-medium text-paper no-underline hover:bg-ink hover:no-underline"
       >
         Consulter la veille <span aria-hidden="true">→</span>
       </a>
@@ -72,7 +72,7 @@ const steps = [
     </div>
   </section>
 
-  <dl class="mt-12 grid grid-cols-2 gap-px border border-ink/10 bg-ink/10 sm:grid-cols-4">
+  <dl class="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-md border border-ink/10 bg-ink/10 sm:grid-cols-4">
     <div class="bg-paper px-4 py-4">
       <dt class="text-[0.65rem] uppercase tracking-[0.15em] text-muted">Actualités</dt>
       <dd class="mt-1 font-serif text-2xl">{entries.length}</dd>
@@ -111,7 +111,7 @@ const steps = [
     <ul class="mt-8 grid gap-4 sm:grid-cols-3">
       {
         products.map((product) => (
-          <li class="flex flex-col border border-ink/10 bg-surface p-5">
+          <li class="flex flex-col rounded-md border border-ink/10 bg-surface p-5">
             <span
               class:list={[
                 "inline-flex items-center gap-1.5 text-[0.6rem] uppercase tracking-[0.12em]",
