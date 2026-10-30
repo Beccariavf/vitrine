@@ -2,8 +2,9 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import type { Entry } from "../../veille/types.ts";
 
-/** Les cinq champs du contrat `veille/types.ts`, dans l'ordre du fichier. */
+/** Les cinq champs du contrat `veille/types.ts`. */
 const FIELDS = ["id", "title", "url", "publishedAt", "source"] as const;
+const STRING_FIELDS = FIELDS.filter((field) => field !== "publishedAt");
 
 /** Liste récursivement les fichiers `.json` sous `dir`, triés pour être déterministes. */
 function listJsonFiles(dir: string): string[] {
@@ -39,7 +40,7 @@ function parseEntry(text: string, file: string): Entry {
     if (!(field in record)) throw new Error(`Invalid entry ${file}: missing field "${field}"`);
   }
 
-  for (const field of ["id", "title", "url", "source"] as const) {
+  for (const field of STRING_FIELDS) {
     const candidate = record[field];
     if (typeof candidate !== "string" || candidate.length === 0) {
       throw new Error(`Invalid entry ${file}: field "${field}" must be a non-empty string`);
@@ -96,5 +97,11 @@ export function getEntries(rootDir: string = process.cwd()): Entry[] {
       `Missing ${relative(rootDir, entriesDir)} in ${rootDir}: run npm run veille to fetch the entries first`,
     );
   }
-  return listJsonFiles(entriesDir).map(readEntry).sort(compareEntries);
+  const files = listJsonFiles(entriesDir);
+  if (files.length === 0) {
+    throw new Error(
+      `No entry in ${relative(rootDir, entriesDir)} in ${rootDir}: run npm run veille to fetch the entries first`,
+    );
+  }
+  return files.map(readEntry).sort(compareEntries);
 }

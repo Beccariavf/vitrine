@@ -4,20 +4,35 @@ import { getEntries } from "../../lib/entries.ts";
 
 const entries = getEntries();
 
+/** Libellé lisible d'une source ; l'identifiant reste dans les données. */
+const SOURCE_LABELS: Record<string, string> = { cnil: "CNIL" };
+const sourceLabel = (source: string) => SOURCE_LABELS[source] ?? source;
+
 /** Date longue en français, à l'heure UTC : la même partout, au build comme en test. */
 const dateFormat = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeZone: "UTC" });
+
+const latest = entries.find((entry) => entry.publishedAt !== null)?.publishedAt ?? null;
+const count = `${entries.length} ${entries.length > 1 ? "actualités" : "actualité"}`;
 ---
 
 <Base
   title="Veille — Vitrine"
-  description="Les actualités de la CNIL, de la plus récente à la plus ancienne, chacune liée à sa source officielle."
+  description="Les actualités collectées, de la plus récente à la plus ancienne, chacune liée à sa source officielle."
 >
   <h1 class="text-3xl sm:text-4xl">Veille</h1>
 
   <p class="mt-4 max-w-2xl text-muted">
-    {entries.length} actualités CNIL, de la plus récente à la plus ancienne. Chaque titre renvoie à
-    la publication officielle.
+    {count} collectées depuis les sources officielles, de la plus récente à la plus ancienne. Chaque
+    titre renvoie à la publication officielle.
   </p>
+
+  {
+    latest !== null && (
+      <p class="mt-2 text-sm text-muted">
+        Dernière publication : <time datetime={latest}>{dateFormat.format(new Date(latest))}</time>
+      </p>
+    )
+  }
 
   <ul class="mt-10 divide-y divide-ink/10 border-t border-ink/10">
     {
@@ -33,7 +48,7 @@ const dateFormat = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeZon
                 <span aria-hidden="true"> · </span>
               </>
             )}
-            <span>{entry.source}</span>
+            <span>{sourceLabel(entry.source)}</span>
           </p>
         </li>
       ))

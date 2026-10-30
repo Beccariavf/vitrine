@@ -95,6 +95,18 @@ describe("le tri du lecteur", () => {
   });
 });
 
+describe("un data/entries vide", () => {
+  it("lève une erreur explicite au lieu de rendre une page vide", () => {
+    const root = tempRoot();
+    try {
+      mkdirSync(join(root, "data", "entries"), { recursive: true });
+      assert.throws(() => getEntries(root), /No entry in data\/entries/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
 describe("une entrée illisible", () => {
   it("lève une erreur qui nomme le fichier quand le JSON est corrompu", () => {
     const root = tempRoot();

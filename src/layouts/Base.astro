@@ -9,6 +9,7 @@ type Props = {
 };
 
 const { title, description } = Astro.props;
+const path = Astro.url.pathname;
 ---
 
 <!doctype html>
@@ -24,7 +25,13 @@ const { title, description } = Astro.props;
       <header class="flex flex-wrap items-baseline justify-between gap-3 border-b border-ink/10 py-6">
         <a href="/" class="font-serif text-xl tracking-tight text-ink no-underline">Vitrine</a>
         <nav aria-label="Navigation principale">
-          <a href="/veille" class="text-sm text-muted no-underline hover:text-accent">Veille</a>
+          <a
+            href="/veille"
+            aria-current={path.startsWith("/veille") ? "page" : undefined}
+            class="text-sm text-muted no-underline hover:text-accent"
+          >
+            Veille
+          </a>
         </nav>
       </header>
 
