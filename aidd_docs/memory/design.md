@@ -12,7 +12,7 @@ La langue visuelle : jetons, typographie, modules et conventions. Ce que ça res
 
 - Couleurs : béton `#E7E2D7`, papier `#F4F0E8`, encre `#121212`, rouge `#C62828`, bleu `#1E4E79`, jaune `#E0A82E`, gris `#57534E`.
 - Typographie : display Helvetica Neue puis sans système, graisse 700, interlettrage serré ; corps en sans système ; labels, dates et chiffres en mono.
-- Formes : rayon 0 partout, bordures 2 px en encre, ombres dures `4px 4px 0` et `6px 6px 0`, aucun dégradé, aucun flou.
+- Formes : rayon 0 partout, bordures de blocs 2 px en encre, filets 1 px, ombres dures `4px 4px 0` et `6px 6px 0`, aucun dégradé, aucun flou.
 - Règle 80/20 : béton et encre dominent ; la couleur reste un accent, sauf les en-têtes de la grille de veille.
 
 ## Modules

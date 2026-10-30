@@ -54,7 +54,7 @@ const CARD_COLORS = [
     <div class="inline-flex border-2 border-ink">
       <label
         for="vue-grille"
-        class="grid h-10 w-10 cursor-pointer place-items-center bg-paper text-ink hover:bg-concrete"
+        class="grid h-11 w-11 cursor-pointer place-items-center bg-paper text-ink hover:bg-concrete"
       >
         <svg
           viewBox="0 0 16 16"
@@ -73,7 +73,7 @@ const CARD_COLORS = [
       </label>
       <label
         for="vue-liste"
-        class="grid h-10 w-10 cursor-pointer place-items-center border-l-2 border-ink bg-paper text-ink hover:bg-concrete"
+        class="grid h-11 w-11 cursor-pointer place-items-center border-l-2 border-ink bg-paper text-ink hover:bg-concrete"
       >
         <svg
           viewBox="0 0 16 16"
@@ -107,6 +107,7 @@ const CARD_COLORS = [
             <li>
               <a
                 href={entry.url}
+                aria-label={`${entry.title} — ${sourceLabel(entry.source)}`}
                 class="flex h-full flex-col border-2 border-ink bg-paper no-underline hover:-translate-x-0.5 hover:-translate-y-0.5 hover:no-underline hover:shadow-hard"
               >
                 <div
@@ -183,7 +184,7 @@ const CARD_COLORS = [
                   {summary !== null && (
                     <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-muted">{summary}</p>
                   )}
-                  <p class="mt-3 inline-block border border-ink px-1.5 py-0.5 font-mono text-[0.7rem] uppercase tracking-[0.12em]">
+                  <p class="mt-3 inline-block border-2 border-ink px-1.5 py-0.5 font-mono text-[0.7rem] uppercase tracking-[0.12em]">
                     {sourceLabel(entry.source)}
                   </p>
                 </div>
