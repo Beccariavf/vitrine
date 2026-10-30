@@ -15,7 +15,7 @@ See [`aidd_docs/INSTALL.md`](aidd_docs/INSTALL.md) for the stack, the decisions 
 
 - Commits: conventional commits (`<type>(<scope>): description`).
 - One concern per commit. The body says why, not what.
-- The CI runs the test suite and the watch pipeline on every push; keep it green.
+- The CI runs the typecheck, the test suite and the build on every push and pull request; keep it green. It never fetches the watch sources.
 - `data/` is written by the pipeline only. Never edit it by hand: a manual change breaks the audit trail.
 - Never commit credentials. PISTE and Judilibre keys live in GitHub Actions secrets.
 - Pin dependency versions exactly; upgrades are deliberate, one branch at a time.
