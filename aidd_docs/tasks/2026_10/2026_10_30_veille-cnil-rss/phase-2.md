@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 ---
 
 # Instruction: Écrire et prouver une passe
@@ -28,7 +28,9 @@ status: pending
 | Setup | Fetch simulé sur la fixture, répertoire temporaire vide | Source et sortie prêtes | cli |
 | Happy path | Exécuter une passe | Un snapshot brut et 10 fichiers d'entrée écrits | cli |
 | Edge case | Exécuter une seconde passe sur le même flux | Fichiers identiques, aucun doublon | cli |
-| Edge case | Rejouer une passe sur un flux réduit après la passe complète | Les entrées du run précédent restent sur disque | cli |
+| Edge case | Rejouer une passe sur un flux réduit après la passe complète | Les entrées des autres actualités restent sur disque | cli |
+| Edge case | Rejouer une passe avec une date de publication corrigée | Une seule copie de l'entrée, à son nouveau chemin | cli |
+| Edge case | Parser un flux illisible | Le snapshot brut est conservé, aucune entrée écrite | cli |
 | Edge case | Fetch en échec | Code de sortie non nul, aucun fichier écrit | cli |
 | Teardown | Supprimer le répertoire temporaire | État initial restauré | cli |
 
@@ -46,7 +48,7 @@ status: pending
 > Une commande fait tout, et échoue proprement.
 
 1. Créer `veille/main.ts` : fetch, parse, write ; `fetch` injectable pour les tests.
-2. Sortir avec un code non nul si le fetch ou le parse échoue, avant toute écriture.
+2. Sortir avec un code non nul si le fetch ou le parse échoue : le snapshot brut précède le parse, aucune entrée n'est écrite après un parse en échec.
 
 ### `3)` Tests de persistance
 
@@ -66,6 +68,6 @@ status: pending
 | Task | Acceptance criteria |
 | --- | --- |
 | 1 | Un contenu de flux donné produit toujours le même chemin de snapshot |
-| 2 | Une source indisponible produit un code non nul et aucun fichier |
-| 3 | Deux passes identiques produisent les mêmes fichiers ; une passe sur un flux réduit ne supprime aucune entrée antérieure |
+| 2 | Une source indisponible ne produit aucun fichier ; un flux illisible conserve le snapshot brut et aucune entrée |
+| 3 | Deux passes identiques produisent les mêmes fichiers ; une passe sur un flux réduit ne supprime aucune autre entrée |
 | 4 | `Before commit` porte `npm run typecheck` et `Before push` porte `npm test` |

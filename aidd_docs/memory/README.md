@@ -18,9 +18,12 @@ Rafraîchi automatiquement par le hook mémoire. Ne pas éditer à la main.
 
 <!-- files:start -->
 - [architecture.md](architecture.md)
+- [codebase-map.md](codebase-map.md)
 - [coding-assertions.md](coding-assertions.md)
+- [data.md](data.md)
 - [ecosystem.md](ecosystem.md)
 - [project-brief.md](project-brief.md)
+- [testing.md](testing.md)
 - [vcs.md](vcs.md)
 <!-- files:end -->
 

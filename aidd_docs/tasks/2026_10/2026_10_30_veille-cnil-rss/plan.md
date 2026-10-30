@@ -1,6 +1,6 @@
 ---
 objective: "Un flux CNIL est transformé en entrées normalisées, idempotentes, avec snapshot brut et tests hors ligne."
-status: pending
+status: implemented
 ---
 
 # Plan: Premier maillon de la veille CNIL
@@ -49,3 +49,6 @@ Source: `aidd_docs/tasks/2026_10/2026_10_30_veille-cnil-rss/spec.md`
 | Identifiant = `sha256` de l'URL canonique, tronqué à 16 hex | Portable entre sources, contrairement au `guid` propre à chaque flux. |
 | Dossier d'entrée = date de publication UTC, `unknown/` si absente | Chemin stable entre exécutions, même quand la date manque. |
 | `fast-xml-parser` épinglé, `package-lock.json` commité | Gère CDATA et entités ; ses dépendances transitives sont verrouillées, pas subies. |
+| Une copie périmée du même id est supprimée ; une entrée absente du flux est conservée. | Une date corrigée déplace le fichier ; deux copies du même article seraient un doublon à l'écran. |
+| Le snapshot brut est écrit avant le parse. | Un flux illisible laisse une preuve de ce qui a été reçu, jamais une entrée partielle. |
+| Un item invalide fait échouer la passe entière. | Fail-closed : jamais d'actualité sautée en silence. |

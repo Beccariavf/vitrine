@@ -28,7 +28,7 @@ flowchart LR
 - Static-first : le cron GitHub Actions exécute une passe par jour ; rien ne tourne en continu.
 - Git est la base : snapshots bruts + hash + JSON commités ; l'index se reconstruit au build.
 - `src/` est jetable : les données survivent à un changement de générateur.
-- Un adaptateur par source, derrière une interface commune.
+- Un adaptateur par source, isolé dans `veille/sources/`.
 - Le site ne lit aucune API au runtime : il lit `data/`.
 
 ## Gotchas

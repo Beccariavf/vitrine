@@ -1,0 +1,22 @@
+{
+  "name": "vitrine",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Veille juridique française publiée en statique",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "veille": "node veille/main.ts"
+  },
+  "dependencies": {
+    "fast-xml-parser": "5.11.2"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "typescript": "7.0.2"
+  }
+}
