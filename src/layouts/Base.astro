@@ -32,7 +32,7 @@ const path = Astro.url.pathname;
       >
         <a href="/" class="flex items-baseline gap-3 text-ink no-underline hover:no-underline">
           <span class="font-mono text-lg font-bold tracking-[0.08em]">VITRINE_</span>
-          <span class="hidden font-mono text-[0.6rem] uppercase tracking-[0.12em] text-muted sm:inline">
+          <span class="hidden font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted sm:inline">
             Droit du numérique
           </span>
         </a>
@@ -41,7 +41,7 @@ const path = Astro.url.pathname;
             href="/veille"
             aria-current={path.startsWith("/veille") ? "page" : undefined}
             class:list={[
-              "border-2 border-ink px-3 py-1 font-mono text-[0.65rem] uppercase tracking-[0.12em] no-underline hover:no-underline",
+              "border-2 border-ink px-3 py-1 font-mono text-[0.7rem] uppercase tracking-[0.12em] no-underline hover:no-underline",
               path.startsWith("/veille")
                 ? "bg-ink text-paper"
                 : "bg-paper text-ink hover:bg-ink hover:text-paper",
@@ -62,7 +62,7 @@ const path = Astro.url.pathname;
     <footer class="border-t-2 border-ink bg-paper">
       <div
         class:list={[
-          "mx-auto flex w-full flex-col gap-2 px-5 py-6 font-mono text-[0.65rem] uppercase tracking-[0.12em] text-muted sm:flex-row sm:items-center sm:justify-between sm:px-8",
+          "mx-auto flex w-full flex-col gap-2 px-5 py-6 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted sm:flex-row sm:items-center sm:justify-between sm:px-8",
           containerClass,
         ]}
       >

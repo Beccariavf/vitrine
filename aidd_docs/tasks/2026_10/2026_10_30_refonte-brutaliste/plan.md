@@ -1,6 +1,6 @@
 ---
 objective: "Les deux pages publiques portent l'identité brutaliste Cité Radieuse, une variante d'accueil est retenue et la CI reste verte."
-status: in-progress
+status: completed
 ---
 
 # Plan: Refonte visuelle brutaliste
@@ -46,3 +46,4 @@ Source: aidd_docs/tasks/2026_10/2026_10_30_refonte-brutaliste/spec.md
 | Deux variantes sur deux routes temporaires, la perdante supprimée avant la PR | Permet un choix visuel réel sans laisser de page morte. |
 | Arrêt de choix après la phase 2 : Val retient A ou B, la phase 3 applique ce choix | Le goût ne se délègue pas à l'exécutant ; aucune phase 3 ne démarre sans cette décision. |
 | Aucune bibliothèque de composants ; markup local aux deux pages | Deux pages ne justifient pas une abstraction prématurée. |
+| La grille du corpus est un index multicolore, pas un aplat de section | Chaque cellule est une entrée cliquable ; l'exception à la règle 80/20 est locale et documentée dans `design.md`. |

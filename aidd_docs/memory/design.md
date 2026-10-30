@@ -21,7 +21,7 @@ La langue visuelle : jetons, typographie, modules et conventions. Ce que ça res
 - Accueil « Registre » : grand titre, bloc rouge de dernière publication, bandeau de chiffres, bloc `pipeline.log` en encre, méthode numérotée, produits en cartes avec filet rouge, bleu ou jaune.
 - Veille : grille `VUE / CORPUS` puis liste numérotée antéchronologique.
 - La grille du corpus est le seul module multicolore : une cellule par entrée, dans l'ordre chronologique, chaque cellule renvoie à sa ligne. La couleur est un rythme de façade, pas une catégorie de données.
-- Survol : translation de 2 px et ombre dure qui grandit ; ligne de veille sur papier ; jamais de changement de couleur du texte.
+- Survol : translation de 2 px et ombre dure qui grandit ; ligne de veille sur papier ; le texte courant ne change jamais de couleur, seuls les contrôles de navigation inversent encre et papier.
 - Aucun arrondi, aucune animation hors survol.
 
 ## Accessibility

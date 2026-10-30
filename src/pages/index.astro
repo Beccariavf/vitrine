@@ -58,7 +58,7 @@ const steps = [
 >
   <section class="grid gap-8 lg:grid-cols-12 lg:gap-10">
     <div class="lg:col-span-8">
-      <p class="font-mono text-[0.65rem] uppercase tracking-[0.14em] text-muted">
+      <p class="font-mono text-[0.7rem] uppercase tracking-[0.14em] text-muted">
         Droit du numérique · Automatisation
       </p>
       <h1 class="mt-6 text-5xl sm:text-6xl lg:text-7xl">
@@ -84,7 +84,7 @@ const steps = [
 
     <aside class="lg:col-span-4">
       <div class="border-2 border-ink bg-red p-6 text-paper shadow-hard">
-        <p class="font-mono text-[0.6rem] uppercase tracking-[0.14em]">Dernière publication</p>
+        <p class="font-mono text-[0.7rem] uppercase tracking-[0.14em]">Dernière publication</p>
         {latest !== null ? (
           <p class="mt-4">
             <span class="block font-mono text-7xl font-bold leading-none">
@@ -97,7 +97,7 @@ const steps = [
         ) : (
           <p class="mt-4 font-mono text-2xl">Sans date</p>
         )}
-        <p class="mt-6 border-t border-paper/30 pt-3 font-mono text-[0.65rem] uppercase tracking-[0.12em]">
+        <p class="mt-6 border-t border-paper/30 pt-3 font-mono text-[0.7rem] uppercase tracking-[0.12em]">
           CNIL · {entries.length} actualités
         </p>
       </div>
@@ -106,26 +106,26 @@ const steps = [
 
   <dl class="mt-10 grid grid-cols-2 gap-0.5 border-2 border-ink bg-ink shadow-hard sm:grid-cols-4">
     <div class="bg-paper p-4">
-      <dt class="font-mono text-[0.6rem] uppercase tracking-[0.12em] text-muted">Actualités</dt>
+      <dt class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">Actualités</dt>
       <dd class="mt-1 font-mono text-3xl font-bold">{entries.length}</dd>
     </div>
     <div class="bg-paper p-4">
-      <dt class="font-mono text-[0.6rem] uppercase tracking-[0.12em] text-muted">Sources</dt>
+      <dt class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">Sources</dt>
       <dd class="mt-1 font-mono text-3xl font-bold">{sources}</dd>
     </div>
     <div class="bg-paper p-4">
-      <dt class="font-mono text-[0.6rem] uppercase tracking-[0.12em] text-muted">JavaScript</dt>
+      <dt class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">JavaScript</dt>
       <dd class="mt-1 font-mono text-3xl font-bold">0 ko</dd>
     </div>
     <div class="bg-paper p-4">
-      <dt class="font-mono text-[0.6rem] uppercase tracking-[0.12em] text-muted">Coût</dt>
+      <dt class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">Coût</dt>
       <dd class="mt-1 font-mono text-3xl font-bold">0 €</dd>
     </div>
   </dl>
 
   <section class="mt-14 border-2 border-ink bg-ink text-paper shadow-hard">
     <div
-      class="flex items-center justify-between border-b-2 border-paper/20 px-4 py-2 font-mono text-[0.6rem] uppercase tracking-[0.14em]"
+      class="flex items-center justify-between border-b-2 border-paper/20 px-4 py-2 font-mono text-[0.7rem] uppercase tracking-[0.14em]"
     >
       <span>pipeline.log</span>
       <span class="text-paper/60">lecture seule</span>
@@ -141,7 +141,7 @@ const steps = [
   <section id="methode" class="mt-20 scroll-mt-8">
     <div class="flex items-end justify-between gap-4 border-b-2 border-ink pb-3">
       <h2 class="text-3xl sm:text-4xl">Comment ça marche</h2>
-      <span class="font-mono text-[0.65rem] uppercase tracking-[0.12em] text-muted">01—03</span>
+      <span class="hidden font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted sm:block">01—03</span>
     </div>
     <ol class="mt-8 grid gap-8 sm:grid-cols-3">
       {
@@ -159,7 +159,7 @@ const steps = [
   <section class="mt-20">
     <div class="flex items-end justify-between gap-4 border-b-2 border-ink pb-3">
       <h2 class="text-3xl sm:text-4xl">Trois produits</h2>
-      <span class="font-mono text-[0.65rem] uppercase tracking-[0.12em] text-muted">01—03</span>
+      <span class="hidden font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted sm:block">01—03</span>
     </div>
     <ul class="mt-8 grid gap-5 sm:grid-cols-3">
       {
@@ -174,7 +174,7 @@ const steps = [
               <span class="font-mono text-xs text-muted">{String(index + 1).padStart(2, "0")}</span>
               <span
                 class:list={[
-                  "font-mono text-[0.6rem] uppercase tracking-[0.12em]",
+                  "font-mono text-[0.7rem] uppercase tracking-[0.12em]",
                   product.link ? "text-red" : "text-muted",
                 ]}
               >
@@ -186,7 +186,7 @@ const steps = [
             {product.link && (
               <a
                 href={product.link}
-                class="mt-5 inline-flex items-center gap-2 font-mono text-[0.65rem] uppercase tracking-[0.12em] text-ink no-underline hover:no-underline"
+                class="mt-5 inline-flex items-center gap-2 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-ink no-underline hover:no-underline"
               >
                 Découvrir <span aria-hidden="true">→</span>
               </a>

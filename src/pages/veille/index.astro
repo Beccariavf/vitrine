@@ -35,7 +35,7 @@ const CELL_COLORS = [
   containerClass="max-w-[56rem]"
 >
   <header class="max-w-2xl">
-    <p class="font-mono text-[0.65rem] uppercase tracking-[0.14em] text-muted">Corpus public · CNIL</p>
+    <p class="font-mono text-[0.7rem] uppercase tracking-[0.14em] text-muted">Corpus public · CNIL</p>
     <h1 class="mt-3 text-5xl sm:text-6xl">Veille_</h1>
     <p class="mt-5 text-muted">
       {count} collectées, chacune depuis sa source officielle, de la plus récente à la plus
@@ -43,7 +43,7 @@ const CELL_COLORS = [
     </p>
     {
       latest !== null && (
-        <p class="mt-3 font-mono text-[0.65rem] uppercase tracking-[0.12em] text-muted">
+        <p class="mt-3 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">
           Dernière publication : <time datetime={latest}>{dateFormat.format(new Date(latest))}</time>
         </p>
       )
@@ -52,9 +52,9 @@ const CELL_COLORS = [
 
   <section class="mt-10 border-2 border-ink bg-paper shadow-hard">
     <div
-      class="flex items-center justify-between gap-3 border-b-2 border-ink px-3 py-2 font-mono text-[0.6rem] uppercase tracking-[0.14em] sm:px-4"
+      class="flex items-center justify-between gap-3 border-b-2 border-ink px-3 py-2 font-mono text-[0.7rem] uppercase tracking-[0.14em] sm:px-4"
     >
-      <h2 class="font-mono text-[0.6rem] font-normal uppercase tracking-[0.14em]">vue / corpus</h2>
+      <h2 class="font-mono text-[0.7rem] font-normal uppercase tracking-[0.14em]">vue / corpus</h2>
       <span class="text-muted">
         CNIL · {latest !== null ? monthFormat.format(new Date(latest)) : "sans date"}
       </span>
@@ -72,7 +72,7 @@ const CELL_COLORS = [
               aria-label={`${entry.title} — ${label}`}
               title={entry.title}
               class:list={[
-                "flex aspect-[4/5] items-end border-2 border-ink p-1.5 no-underline hover:-translate-x-0.5 hover:-translate-y-0.5 hover:no-underline hover:shadow-hard sm:p-2",
+                "flex aspect-[4/5] sm:aspect-[4/3] items-end border-2 border-ink p-1.5 no-underline hover:-translate-x-0.5 hover:-translate-y-0.5 hover:no-underline hover:shadow-hard sm:p-2",
                 color.bg,
                 color.text,
               ]}
@@ -87,8 +87,8 @@ const CELL_COLORS = [
     </div>
 
     <div class="flex flex-wrap items-end justify-between gap-2 px-3 py-3 sm:px-4">
-      <p class="font-mono text-[0.6rem] uppercase tracking-[0.12em]">{count}</p>
-      <p class="font-mono text-[0.6rem] uppercase tracking-[0.12em] text-muted">
+      <p class="font-mono text-[0.7rem] uppercase tracking-[0.12em]">{count}</p>
+      <p class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">
         {sources} source{sources > 1 ? "s" : ""} · 0 ko
       </p>
     </div>
@@ -115,7 +115,7 @@ const CELL_COLORS = [
                 {date !== null ? (
                   <time datetime={entry.publishedAt ?? undefined}>
                     <span class="block text-2xl font-bold leading-none">{dayFormat.format(date)}</span>
-                    <span class="mt-1 block text-[0.55rem] uppercase tracking-[0.12em] text-muted">
+                    <span class="mt-1 block text-[0.7rem] uppercase tracking-[0.12em] text-muted">
                       {shortMonth.format(date)}
                     </span>
                   </time>
@@ -135,7 +135,7 @@ const CELL_COLORS = [
                 {summary !== null && (
                   <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-muted">{summary}</p>
                 )}
-                <p class="mt-3 inline-block border border-ink px-1.5 py-0.5 font-mono text-[0.55rem] uppercase tracking-[0.12em]">
+                <p class="mt-3 inline-block border border-ink px-1.5 py-0.5 font-mono text-[0.7rem] uppercase tracking-[0.12em]">
                   {sourceLabel(entry.source)}
                 </p>
               </div>
