@@ -21,6 +21,8 @@ Rafraîchi automatiquement par le hook mémoire. Ne pas éditer à la main.
 - [codebase-map.md](codebase-map.md)
 - [coding-assertions.md](coding-assertions.md)
 - [data.md](data.md)
+- [deployment.md](deployment.md)
+- [design.md](design.md)
 - [ecosystem.md](ecosystem.md)
 - [project-brief.md](project-brief.md)
 - [testing.md](testing.md)

@@ -5,7 +5,7 @@ Les conventions de versionnage du projet : branches, commits et plateforme.
 ## Setup
 
 - Main branch: `main`
-- Platform: `github` (`Beccariavf/vitrine`, dépôt privé, remote SSH)
+- Platform: `github` (`Beccariavf/vitrine`, dépôt public, remote SSH)
 - Tickets: aucun tracker pour l'instant
 - Hooks: aucun hook local ; la CI (`.github/workflows/ci.yml`) exécute typecheck, tests et build à chaque `push` et `pull_request`
 

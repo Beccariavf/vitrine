@@ -46,6 +46,8 @@ Read only task-relevant context and linked memory files; complete required reads
 [aidd_docs/memory/codebase-map.md](aidd_docs/memory/codebase-map.md)
 [aidd_docs/memory/coding-assertions.md](aidd_docs/memory/coding-assertions.md)
 [aidd_docs/memory/data.md](aidd_docs/memory/data.md)
+[aidd_docs/memory/deployment.md](aidd_docs/memory/deployment.md)
+[aidd_docs/memory/design.md](aidd_docs/memory/design.md)
 [aidd_docs/memory/ecosystem.md](aidd_docs/memory/ecosystem.md)
 [aidd_docs/memory/project-brief.md](aidd_docs/memory/project-brief.md)
 [aidd_docs/memory/testing.md](aidd_docs/memory/testing.md)
