@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import type { Entry } from "./types.ts";
 
@@ -11,7 +11,13 @@ function writeIfChanged(path: string, content: string): string {
     // Absent : on l'écrit plus bas.
   }
   mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, content, "utf8");
+  const tmp = `${path}.tmp`;
+  try {
+    writeFileSync(tmp, content, "utf8");
+    renameSync(tmp, path);
+  } finally {
+    if (existsSync(tmp)) rmSync(tmp, { force: true });
+  }
   return path;
 }
 

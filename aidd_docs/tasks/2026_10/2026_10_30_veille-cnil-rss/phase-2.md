@@ -69,5 +69,5 @@ status: completed
 | --- | --- |
 | 1 | Un contenu de flux donné produit toujours le même chemin de snapshot |
 | 2 | Une source indisponible ne produit aucun fichier ; un flux illisible conserve le snapshot brut et aucune entrée |
-| 3 | Deux passes identiques produisent les mêmes fichiers ; une passe sur un flux réduit ne supprime aucune entrée antérieure |
+| 3 | Deux passes identiques produisent les mêmes fichiers ; une passe sur un flux réduit ne supprime aucune autre entrée |
 | 4 | `Before commit` porte `npm run typecheck` et `Before push` porte `npm test` |

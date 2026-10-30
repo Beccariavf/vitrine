@@ -131,6 +131,10 @@ describe("dates", () => {
     assert.equal(toIsoUtc(""), null);
     assert.equal(toIsoUtc(null), null);
   });
+
+  it("refuse une année qui n'a ni deux ni quatre chiffres", () => {
+    assert.equal(toIsoUtc("Thu, 29 Oct 123 13:00:00 +0100"), null);
+  });
 });
 describe("flux dégénérés", () => {
   it("accepte un canal sans item", () => {

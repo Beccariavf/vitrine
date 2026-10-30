@@ -34,7 +34,7 @@ function textOf(value: unknown): string | null {
  * serait interprétée dans le fuseau de la machine, donc instable.
  */
 const RFC_822_WITH_OFFSET =
-  /^(?:[A-Z][a-z]{2},\s*)?\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{2,4}\s+\d{2}:\d{2}(?::\d{2})?\s+(?:GMT|UT|[+-]\d{4})$/;
+  /^(?:[A-Z][a-z]{2},\s*)?\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(?:\d{4}|\d{2})\s+\d{2}:\d{2}(?::\d{2})?\s+(?:GMT|UT|[+-]\d{4})$/;
 
 /** Convertit un `pubDate` RFC 822 en ISO 8601 UTC ; `null` si absent ou illisible. */
 export function toIsoUtc(test: string | null): string | null {

@@ -78,6 +78,7 @@ describe("une passe complète", () => {
     const entryFiles = files.filter((file) => file.includes("entries"));
     assert.equal(entryFiles.length, 10);
     assert.equal(files.length, 11);
+    assert.ok(!files.some((file) => file.endsWith(".tmp")), "aucun fichier temporaire ne doit rester");
   });
 
   it("adresse le snapshot par son contenu", async () => {
