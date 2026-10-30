@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { basename, dirname, join } from "node:path";
 import type { Entry } from "./types.ts";
 
 /** Écrit un fichier UTF-8 s'il n'a pas déjà exactement ce contenu. */
@@ -13,6 +13,29 @@ function writeIfChanged(path: string, content: string): string {
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, content, "utf8");
   return path;
+}
+
+/** Liste récursivement les fichiers sous `dir`. */
+function listFiles(dir: string): string[] {
+  const files: string[] = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) files.push(...listFiles(path));
+    else files.push(path);
+  }
+  return files;
+}
+
+/**
+ * Supprime les copies périmées de la même entrée : une date corrigée déplace
+ * le fichier, et deux copies du même `id` seraient un doublon.
+ */
+function removeStaleCopies(rootDir: string, id: string, targetPath: string): void {
+  const entriesDir = join(rootDir, "data", "entries");
+  if (!existsSync(entriesDir)) return;
+  for (const path of listFiles(entriesDir)) {
+    if (basename(path) === `${id}.json` && path !== targetPath) rmSync(path, { force: true });
+  }
 }
 
 /**
@@ -35,11 +58,15 @@ function entryRelativePath(entry: Entry): string {
 }
 
 /**
- * Écrit une entrée par actualité sous `data/entries/`. Rien n'est supprimé :
- * une actualité disparue du flux reste sur disque.
+ * Écrit une entrée par actualité sous `data/entries/`. Une copie périmée de la
+ * même entrée (date corrigée) est supprimée ; aucune autre entrée n'est jamais
+ * supprimée, même quand elle disparaît du flux.
  */
 export function writeEntries(rootDir: string, entries: Entry[]): string[] {
-  return entries.map((entry) =>
-    writeIfChanged(join(rootDir, entryRelativePath(entry)), `${JSON.stringify(entry, null, 2)}\n`),
-  );
+  return entries.map((entry) => {
+    const path = join(rootDir, entryRelativePath(entry));
+    writeIfChanged(path, `${JSON.stringify(entry, null, 2)}\n`);
+    removeStaleCopies(rootDir, entry.id, path);
+    return path;
+  });
 }

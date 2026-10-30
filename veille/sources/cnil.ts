@@ -22,22 +22,46 @@ function isObject(value: unknown): value is Unknown {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-/** Extrait le texte d'un nœud, qu'il soit simple, typé ou porteur d'attributs. */
+/** Extrait le texte d'un nœud, qu'il soit simple ou porteur d'attributs. */
 function textOf(value: unknown): string | null {
   if (typeof value === "string") return value.trim();
-  if (typeof value === "number" || typeof value === "boolean") return String(value);
   if (isObject(value) && typeof value["#text"] === "string") return value["#text"].trim();
   return null;
 }
+
+/**
+ * RFC 822 avec offset explicite (`+0100`, `GMT`, `UT`) : sans fuseau, une date
+ * serait interprétée dans le fuseau de la machine, donc instable.
+ */
+const RFC_822_WITH_OFFSET =
+  /^(?:[A-Z][a-z]{2},\s*)?\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{4}\s+\d{2}:\d{2}(?::\d{2})?\s+(?:GMT|UT|[+-]\d{4})$/;
 
 /** Convertit un `pubDate` RFC 822 en ISO 8601 UTC ; `null` si absent ou illisible. */
 export function toIsoUtc(test: string | null): string | null {
   if (test === null) return null;
   const trimmed = test.trim();
-  if (trimmed === "") return null;
+  if (!RFC_822_WITH_OFFSET.test(trimmed)) return null;
   const ms = Date.parse(trimmed);
   if (Number.isNaN(ms)) return null;
   return new Date(ms).toISOString();
+}
+
+const TRUSTED_HOSTS = new Set(["www.cnil.fr", "cnil.fr"]);
+
+/** Un lien qui sort du domaine officiel n'est pas une actualité CNIL. */
+function assertTrustedLink(link: string, index: number): void {
+  let parsed: URL;
+  try {
+    parsed = new URL(link);
+  } catch {
+    throw new Error(`CNIL feed item #${index} has an unparsable link: ${link}`);
+  }
+  if (parsed.protocol !== "https:") {
+    throw new Error(`CNIL feed item #${index} link is not https: ${link}`);
+  }
+  if (!TRUSTED_HOSTS.has(parsed.hostname)) {
+    throw new Error(`CNIL feed item #${index} link leaves cnil.fr: ${link}`);
+  }
 }
 
 /**
@@ -77,6 +101,7 @@ export function parseFeed(xml: string): Entry[] {
     if (link === null || link === "") {
       throw new Error(`CNIL feed item #${index} has no link`);
     }
+    assertTrustedLink(link, index);
 
     // Deux items de même URL canonique désignent la même actualité : le premier gagne.
     const url = canonicalUrl(link);

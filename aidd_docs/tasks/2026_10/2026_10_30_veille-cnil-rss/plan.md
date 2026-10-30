@@ -1,6 +1,6 @@
 ---
 objective: "Un flux CNIL est transformé en entrées normalisées, idempotentes, avec snapshot brut et tests hors ligne."
-status: in-progress
+status: implemented
 ---
 
 # Plan: Premier maillon de la veille CNIL

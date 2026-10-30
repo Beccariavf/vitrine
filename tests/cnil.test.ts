@@ -7,6 +7,23 @@ import { parseFeed, toIsoUtc } from "../veille/sources/cnil.ts";
 const FIXTURE = new URL("./fixtures/cnil/feed.xml", import.meta.url);
 const xml = readFileSync(FIXTURE, "utf8");
 
+/**
+ * Identifiants attendus du flux figé, calculés une fois hors du test et figés
+ * ici : une dérive de la normalisation les casse, au lieu de se comparer à elle-même.
+ */
+const EXPECTED_IDS = [
+  "1fb831fb8c3243d4",
+  "4b3a739cc4e144e1",
+  "6b483b1190c73ddb",
+  "8da07efb6db3ce65",
+  "aaebf12b008c7872",
+  "c8f46e5ff1ac1686",
+  "c95fe100c8350d72",
+  "d7fec0bf7c00fb0d",
+  "dbedb621bf9e3232",
+  "fc7865bf7518a1d6",
+];
+
 /** Construit un petit flux RSS valide autour des items fournis. */
 function feedOf(items: string, extra = ""): string {
   return `<?xml version="1.0" encoding="utf-8"?>
@@ -33,8 +50,11 @@ describe("flux CNIL figé", () => {
     }
   });
 
-  it("donne les mêmes entrées à chaque exécution", () => {
-    assert.deepEqual(parseFeed(xml), parseFeed(xml));
+  it("produit les identifiants attendus du flux figé", () => {
+    const ids = parseFeed(xml)
+      .map((entry) => entry.id)
+      .sort();
+    assert.deepEqual(ids, EXPECTED_IDS);
   });
 
   it("dérive l'identifiant de l'URL canonique", () => {
@@ -54,6 +74,10 @@ describe("flux CNIL figé", () => {
 });
 
 describe("URL canonique et identifiant", () => {
+  it("calcule l'identifiant attendu pour une URL connue", () => {
+    assert.equal(hashId("https://www.cnil.fr/fr/sanction-cookies-app-fnac"), "1fb831fb8c3243d4");
+  });
+
   it("donne le même identifiant à deux écritures de la même page", () => {
     const plain = "https://www.cnil.fr/fr/sanction-cookies-app-fnac";
     const noisy = "https://WWW.CNIL.FR/fr/sanction-cookies-app-fnac/?utm_source=rss#haut";
@@ -74,6 +98,18 @@ describe("dates", () => {
     assert.equal(toIsoUtc("Thu, 29 Oct 2026 13:00:00 +0100"), "2026-10-29T12:00:00.000Z");
   });
 
+  it("refuse une date sans offset explicite", () => {
+    assert.equal(toIsoUtc("Thu, 29 Oct 2026 13:00:00"), null);
+  });
+
+  it("refuse une valeur qui n'est pas une date RFC 822", () => {
+    assert.equal(toIsoUtc("2026"), null);
+    assert.equal(toIsoUtc("2026-10-29"), null);
+    assert.equal(toIsoUtc("pas une date"), null);
+    assert.equal(toIsoUtc(""), null);
+    assert.equal(toIsoUtc(null), null);
+  });
+
   it("conserve une actualité sans date avec une date nulle", () => {
     const [entry] = parseFeed(
       feedOf(`
@@ -92,9 +128,8 @@ describe("dates", () => {
     assert.equal(toIsoUtc(null), null);
   });
 });
-
 describe("flux dégénérés", () => {
-  it("accepte un flux vide sans erreur", () => {
+  it("accepte un canal sans item", () => {
     assert.deepEqual(parseFeed(feedOf("")), []);
   });
 
@@ -117,6 +152,31 @@ describe("flux dégénérés", () => {
 
   it("lève une exception explicite sur un XML sans channel", () => {
     assert.throws(() => parseFeed("<autre></autre>"), /no <rss><channel> root/);
+  });
+
+  it("refuse un lien qui n'est pas une URL https de la CNIL", () => {
+    assert.throws(
+      () =>
+        parseFeed(
+          feedOf(`
+    <item>
+      <title>Lien piégé</title>
+      <link>javascript:alert(1)</link>
+    </item>`),
+        ),
+      /item #0 link is not https/,
+    );
+    assert.throws(
+      () =>
+        parseFeed(
+          feedOf(`
+    <item>
+      <title>Lien externe</title>
+      <link>https://example.com/fr/actualite</link>
+    </item>`),
+        ),
+      /item #0 link leaves cnil\.fr/,
+    );
   });
 
   it("ne garde qu'une entrée quand deux items partagent la même URL", () => {

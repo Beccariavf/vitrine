@@ -1,7 +1,8 @@
 import { strict as assert } from "node:assert";
-import { mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { after, before, describe, it } from "node:test";
 import { run } from "../veille/main.ts";
 import type { FetchLike } from "../veille/main.ts";
@@ -9,6 +10,16 @@ import { writeEntries } from "../veille/write.ts";
 
 const FULL = readFileSync(new URL("./fixtures/cnil/feed.xml", import.meta.url), "utf8");
 const REDUCED = readFileSync(new URL("./fixtures/cnil/feed-reduced.xml", import.meta.url), "utf8");
+
+/** Identifiant de l'actualité FNAC, calculé hors test à partir de `feed.xml`. */
+const FNAC_ID = "1fb831fb8c3243d4";
+const FNAC_PUB_DATE = "Thu, 29 Oct 2026 13:00:00 +0100";
+
+/** Le même flux, avec la date de l'actualité FNAC décalée d'un mois. */
+const SHIFTED = FULL.replace(FNAC_PUB_DATE, "Sun, 29 Nov 2026 13:00:00 +0100");
+
+/** Le même flux, avec l'actualité FNAC privée de sa date. */
+const UNDATED = FULL.replace(`<pubDate>${FNAC_PUB_DATE}</pubDate>`, "");
 
 /** Un `fetch` simulé : aucune requête réseau n'est émise par la suite. */
 function fetchReturning(body: string): FetchLike {
@@ -70,15 +81,12 @@ describe("une passe complète", () => {
   });
 
   it("adresse le snapshot par son contenu", async () => {
-    const first = await run({ fetchImpl: fetchReturning(FULL), rootDir: root });
+    const result = await run({ fetchImpl: fetchReturning(FULL), rootDir: root });
 
-    const other = tempRoot();
-    try {
-      const second = await run({ fetchImpl: fetchReturning(FULL), rootDir: other });
-      assert.equal(second.rawPath.replace(other, ""), first.rawPath.replace(root, ""));
-    } finally {
-      rmSync(other, { recursive: true, force: true });
-    }
+    const bytes = readFileSync(result.rawPath);
+    const hash = createHash("sha256").update(bytes).digest("hex");
+    assert.equal(basename(result.rawPath), `${hash}.xml`);
+    assert.equal(basename(dirname(result.rawPath)), hash.slice(0, 2));
   });
 
   it("range chaque entrée à la date UTC de publication", async () => {
@@ -118,6 +126,50 @@ describe("une passe complète", () => {
       assert.equal(after[file], content);
     }
     assert.equal(listFiles(root).filter((file) => file.includes("entries")).length, 10);
+  });
+});
+
+describe("une date corrigée", () => {
+  it("remplace l'entrée au lieu d'en laisser une copie", async () => {
+    const root = tempRoot();
+    try {
+      await run({ fetchImpl: fetchReturning(FULL), rootDir: root });
+      const stalePath = join(root, "data", "entries", "2026", "10", `${FNAC_ID}.json`);
+      assert.ok(existsSync(stalePath));
+
+      const result = await run({ fetchImpl: fetchReturning(SHIFTED), rootDir: root });
+
+      const movedPath = join(root, "data", "entries", "2026", "11", `${FNAC_ID}.json`);
+      const copies = listFiles(root).filter((file) => basename(file) === `${FNAC_ID}.json`);
+      assert.deepEqual(copies, [join("data", "entries", "2026", "11", `${FNAC_ID}.json`)]);
+      assert.equal(existsSync(stalePath), false);
+      assert.ok(result.entryPaths.includes(movedPath));
+      assert.equal(listFiles(root).filter((file) => file.includes("entries")).length, 10);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("une actualité sans date dans le flux", () => {
+  it("finit sous unknown/ et n'a qu'un seul fichier", async () => {
+    const root = tempRoot();
+    try {
+      await run({ fetchImpl: fetchReturning(FULL), rootDir: root });
+
+      const result = await run({ fetchImpl: fetchReturning(UNDATED), rootDir: root });
+
+      const unknownPath = join(root, "data", "entries", "unknown", `${FNAC_ID}.json`);
+      assert.ok(result.entryPaths.includes(unknownPath));
+      assert.equal(JSON.parse(readFileSync(unknownPath, "utf8")).publishedAt, null);
+      assert.deepEqual(
+        listFiles(root).filter((file) => basename(file) === `${FNAC_ID}.json`),
+        [join("data", "entries", "unknown", `${FNAC_ID}.json`)],
+      );
+      assert.equal(listFiles(root).filter((file) => file.includes("entries")).length, 10);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 });
 
