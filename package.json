@@ -9,6 +9,8 @@
   },
   "scripts": {
     "test": "node --test tests/*.test.ts",
+    "build": "ASTRO_TELEMETRY_DISABLED=1 astro build",
+    "preview": "astro preview",
     "typecheck": "tsc --noEmit",
     "veille": "node veille/main.ts"
   },
@@ -16,7 +18,10 @@
     "fast-xml-parser": "5.11.2"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "4.3.3",
     "@types/node": "24.19.2",
+    "astro": "7.4.4",
+    "tailwindcss": "4.3.3",
     "typescript": "7.0.2"
   }
 }

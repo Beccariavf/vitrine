@@ -5,8 +5,8 @@ La forme technique macro : la stack, comment les pièces s'articulent, et les d�
 ## Stack
 
 - TypeScript sur Node 24, exécuté par type stripping natif : aucun build step pour le pipeline.
-- Astro en rendu statique, Tailwind pour le style, Pagefind pour la recherche. Aucune intégration de framework front.
-- Aucune base de données, aucun serveur permanent : un cron produit des fichiers, le site les rend.
+- Astro en rendu statique, Tailwind pour le style. Aucune intégration de framework front ; la recherche viendra plus tard.
+- Aucune base de données, aucun serveur permanent : un cron produira des fichiers, le site les rend.
 
 ## How it fits together
 
@@ -25,7 +25,7 @@ flowchart LR
 
 ## Key decisions
 
-- Static-first : le cron GitHub Actions exécute une passe par jour ; rien ne tourne en continu.
+- Static-first : un cron GitHub Actions exécutera une passe par jour (workflow encore à créer) ; rien ne tourne en continu.
 - Git est la base : snapshots bruts + hash + JSON commités ; l'index se reconstruit au build.
 - `src/` est jetable : les données survivent à un changement de générateur.
 - Un adaptateur par source, isolé dans `veille/sources/`.

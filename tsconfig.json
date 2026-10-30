@@ -14,5 +14,5 @@
     "exactOptionalPropertyTypes": true,
     "verbatimModuleSyntax": true
   },
-  "include": ["veille/**/*.ts", "tests/**/*.ts"]
+  "include": ["veille/**/*.ts", "src/lib/**/*.ts", "tests/**/*.ts"]
 }
