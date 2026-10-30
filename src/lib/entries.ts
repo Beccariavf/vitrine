@@ -79,7 +79,7 @@ function compareEntries(a: Entry, b: Entry): number {
   if (a.publishedAt !== b.publishedAt) {
     if (a.publishedAt === null) return 1;
     if (b.publishedAt === null) return -1;
-    if (a.publishedAt !== b.publishedAt) return a.publishedAt < b.publishedAt ? 1 : -1;
+    return a.publishedAt < b.publishedAt ? 1 : -1;
   }
   return a.title.localeCompare(b.title, "fr");
 }
