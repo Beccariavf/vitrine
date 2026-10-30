@@ -1,5 +1,5 @@
 ---
-status: done
+status: completed
 ---
 
 # Instruction: Le résumé dans le contrat
