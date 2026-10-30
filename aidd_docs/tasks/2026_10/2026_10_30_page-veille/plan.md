@@ -1,6 +1,6 @@
 ---
 objective: "Une page statique liste les actualités CNIL de data/, triées de la plus récente à la plus ancienne, avec un lien officiel par entrée."
-status: in-progress
+status: done
 ---
 
 # Plan: Page de veille statique
