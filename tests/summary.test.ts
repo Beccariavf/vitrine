@@ -17,6 +17,10 @@ describe("le nettoyage d'une description", () => {
     );
   });
 
+  it("préserve une comparaison qui ressemble à une balise", () => {
+    assert.equal(toSummary("1 &lt; 2 &gt; 0"), "1 < 2 > 0");
+  });
+
   it("décode les entités nommées connues", () => {
     assert.equal(toSummary("a &amp;amp; b"), "a & b");
     assert.equal(toSummary("&quot;guillemets&quot; et &apos;apostrophes&apos;"), "\"guillemets\" et 'apostrophes'");

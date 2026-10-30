@@ -9,8 +9,12 @@ export const SUMMARY_MAX_LENGTH = 200;
 /** Espace insécable : rendu comme un espace ordinaire avant la normalisation. */
 const NON_BREAKING_SPACE = /\u00a0/g;
 
-/** Balise HTML, même incomplète : ce qui reste après décodage ne doit pas s'afficher. */
-const TAG = /<[^>]*>/g;
+/**
+ * Balise HTML connue : on ne retire pas n'importe quel `<...>`, sinon une comparaison
+ * comme `1 < 2 > 0` serait prise pour une balise et perdrait son texte.
+ */
+const TAG =
+  /<\/?(?:p|br|a|strong|em|b|i|u|s|ul|ol|li|span|div|img|figure|figcaption|blockquote|h[1-6]|table|thead|tbody|tr|th|td|code|pre|sup|sub|hr)\b[^>]*>/gi;
 
 /** Entités nommées reconnues sans dépendance ; le reste du HTML n'est pas nécessaire ici. */
 const NAMED_ENTITIES: Record<string, string> = {
