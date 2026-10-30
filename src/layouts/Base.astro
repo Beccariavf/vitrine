@@ -6,9 +6,11 @@ type Props = {
   title: string;
   /** Résumé pour les moteurs et les aperçus de lien. */
   description: string;
+  /** Largeur de lecture, choisie par la page. */
+  containerClass?: string;
 };
 
-const { title, description } = Astro.props;
+const { title, description, containerClass = "max-w-5xl" } = Astro.props;
 const path = Astro.url.pathname;
 ---
 
@@ -20,12 +22,17 @@ const path = Astro.url.pathname;
     <title>{title}</title>
     <meta name="description" content={description} />
   </head>
-  <body class="min-h-screen bg-paper text-ink antialiased">
-    <div class="mx-auto flex min-h-screen w-full max-w-3xl flex-col px-5 sm:px-8">
-      <header class="flex flex-wrap items-baseline justify-between gap-3 border-b border-ink/10 py-5">
+  <body class="min-h-screen bg-concrete text-ink antialiased">
+    <header class="border-b-2 border-ink bg-paper">
+      <div
+        class:list={[
+          "mx-auto flex w-full flex-wrap items-center justify-between gap-4 px-5 py-4 sm:px-8",
+          containerClass,
+        ]}
+      >
         <a href="/" class="flex items-baseline gap-3 text-ink no-underline hover:no-underline">
-          <span class="font-serif text-xl tracking-tight">Vitrine</span>
-          <span class="hidden text-[0.65rem] uppercase tracking-[0.18em] text-muted sm:inline">
+          <span class="font-mono text-lg font-bold tracking-[0.08em]">VITRINE_</span>
+          <span class="hidden font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted sm:inline">
             Droit du numérique
           </span>
         </a>
@@ -34,23 +41,37 @@ const path = Astro.url.pathname;
             href="/veille"
             aria-current={path.startsWith("/veille") ? "page" : undefined}
             class:list={[
-              "text-sm no-underline hover:underline",
-              path.startsWith("/veille") ? "text-ink" : "text-muted",
+              "border-2 border-ink px-3 py-1 font-mono text-[0.7rem] uppercase tracking-[0.12em] no-underline hover:no-underline",
+              path.startsWith("/veille")
+                ? "bg-ink text-paper"
+                : "bg-paper text-ink hover:bg-ink hover:text-paper",
             ]}
           >
             Veille
           </a>
         </nav>
-      </header>
+      </div>
+    </header>
 
-      <main class="flex-1 py-12 sm:py-16">
+    <main class="flex-1 py-12 sm:py-16">
+      <div class:list={["mx-auto w-full px-5 sm:px-8", containerClass]}>
         <slot />
-      </main>
+      </div>
+    </main>
 
-      <footer class="border-t border-ink/10 py-8 text-sm text-muted">
-        <p>Vitrine — veille juridique française, publiée en statique.</p>
-        <p class="mt-1">Chaque lien renvoie à sa source officielle.</p>
-      </footer>
-    </div>
+    <footer class="border-t-2 border-ink bg-paper">
+      <div
+        class:list={[
+          "mx-auto flex w-full flex-col gap-2 px-5 py-6 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted sm:flex-row sm:items-center sm:justify-between sm:px-8",
+          containerClass,
+        ]}
+      >
+        <p>Vitrine — veille juridique française, statique.</p>
+        <p class="flex flex-wrap gap-x-5 gap-y-2">
+          <a href="https://www.cnil.fr">Source : CNIL</a>
+          <a href="https://github.com/Beccariavf/vitrine">Dépôt</a>
+        </p>
+      </div>
+    </footer>
   </body>
 </html>

@@ -1,21 +1,39 @@
 @import "tailwindcss";
 
-/* Jetons du thème : papier, surface, encre, gris de retrait, bordeaux d'accent. */
+/*
+ * Jetons du thème « Cité Radieuse » : béton, papier, encre, rouge, bleu, jaune.
+ * Une seule source de vérité pour la palette, les formes et les polices.
+ */
 @theme {
-  --color-paper: #f7f5f0;
-  --color-surface: #fffdf9;
-  --color-ink: #1a1a1a;
-  --color-muted: #6b6b6b;
-  --color-accent: #8a1c1c;
-  --color-accent-soft: #f2e7e4;
+  --color-concrete: #e7e2d7;
+  --color-paper: #f4f0e8;
+  --color-ink: #121212;
+  --color-red: #c62828;
+  --color-blue: #1e4e79;
+  --color-yellow: #e0a82e;
+  --color-muted: #57534e;
 
-  --font-serif: Georgia, "Times New Roman", serif;
+  --font-display: "Helvetica Neue", Helvetica, Arial, sans-serif;
   --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --shadow-hard: 4px 4px 0 var(--color-ink);
+  --shadow-hard-lg: 6px 6px 0 var(--color-ink);
+
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
+  --radius-full: 0px;
 }
 
 @layer base {
   html {
-    background-color: var(--color-paper);
+    background-color: var(--color-concrete);
     color: var(--color-ink);
     -webkit-text-size-adjust: 100%;
   }
@@ -28,30 +46,34 @@
 
   h1,
   h2,
-  h3 {
-    font-family: var(--font-serif);
-    font-weight: 400;
-    line-height: 1.15;
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.08;
     text-wrap: balance;
   }
 
   a {
-    color: var(--color-accent);
-    text-decoration: none;
-  }
-
-  a:hover {
+    color: inherit;
     text-decoration-line: underline;
+    text-decoration-color: var(--color-red);
+    text-decoration-thickness: 1.5px;
     text-underline-offset: 0.2em;
   }
 
+  a:hover {
+    text-decoration-thickness: 3px;
+  }
+
   ::selection {
-    background-color: var(--color-accent);
+    background-color: var(--color-ink);
     color: var(--color-paper);
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-accent);
+    outline: 2px solid var(--color-ink);
     outline-offset: 3px;
   }
 }

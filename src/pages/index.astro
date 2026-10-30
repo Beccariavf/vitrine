@@ -5,24 +5,31 @@ import { getEntries } from "../lib/entries.ts";
 const entries = getEntries();
 const sources = new Set(entries.map((entry) => entry.source)).size;
 
+const latest = entries.find((entry) => entry.publishedAt !== null)?.publishedAt ?? null;
+const dayFormat = new Intl.DateTimeFormat("fr-FR", { day: "2-digit", timeZone: "UTC" });
+const monthFormat = new Intl.DateTimeFormat("fr-FR", { month: "short", year: "numeric", timeZone: "UTC" });
+
 const products = [
   {
     title: "Veille active",
     body: "Les actualités de la CNIL, collectées depuis le flux officiel et publiées en statique, de la plus récente à la plus ancienne.",
     link: "/veille",
     status: "Disponible",
+    accent: "border-l-4 border-l-red",
   },
   {
     title: "MCP",
     body: "Un serveur MCP pour interroger le même corpus depuis un assistant, sans quitter la conversation.",
     link: null,
     status: "À venir",
+    accent: "border-l-4 border-l-blue",
   },
   {
     title: "Plugin",
     body: "Un plugin pour consulter la veille et préparer une note sans quitter l'outil de travail.",
     link: null,
     status: "À venir",
+    accent: "border-l-4 border-l-yellow",
   },
 ];
 
@@ -49,57 +56,100 @@ const steps = [
   title="Vitrine — veille juridique française"
   description="Veille juridique française publiée en statique : actualités CNIL, de la plus récente à la plus ancienne."
 >
-  <section>
-    <p class="text-[0.65rem] uppercase tracking-[0.2em] text-muted">Droit du numérique · Automatisation</p>
-    <h1 class="mt-6 max-w-2xl text-4xl sm:text-5xl">
-      La veille juridique, <span class="text-accent">publiée en statique</span>.
-    </h1>
-    <p class="mt-6 max-w-2xl text-lg text-muted">
-      Un pipeline qui lit les sources officielles, normalise, versionne dans git et publie. Aucune
-      API au chargement, aucun traceur : la page est écrite au moment de la publication.
-    </p>
+  <section class="grid gap-8 lg:grid-cols-12 lg:gap-10">
+    <div class="lg:col-span-8">
+      <p class="font-mono text-[0.7rem] uppercase tracking-[0.14em] text-muted">
+        Droit du numérique · Automatisation
+      </p>
+      <h1 class="mt-6 text-5xl sm:text-6xl lg:text-7xl">
+        La veille juridique, publiée en statique.
+      </h1>
+      <p class="mt-6 max-w-xl text-lg leading-relaxed text-muted">
+        Un pipeline qui lit les sources officielles, normalise, versionne dans git et publie. Aucune
+        API au chargement, aucun traceur : la page est écrite au moment de la publication.
+      </p>
 
-    <div class="mt-8 flex flex-wrap items-center gap-5">
-      <a
-        href="/veille"
-        class="inline-flex items-center gap-2 rounded-md bg-accent px-5 py-3 text-sm font-medium text-paper no-underline hover:bg-ink hover:no-underline"
-      >
-        Consulter la veille <span aria-hidden="true">→</span>
-      </a>
-      <a href="#comment" class="text-sm text-muted no-underline hover:text-ink hover:underline">
-        Comment ça marche
-      </a>
+      <div class="mt-8 flex flex-wrap items-center gap-5">
+        <a
+          href="/veille"
+          class="inline-flex items-center gap-2 border-2 border-ink bg-ink px-5 py-3 font-mono text-[0.7rem] font-bold uppercase tracking-[0.12em] text-paper no-underline shadow-hard hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-red hover:no-underline hover:shadow-hard-lg"
+        >
+          Consulter la veille <span aria-hidden="true">→</span>
+        </a>
+        <a href="#methode" class="text-sm text-ink underline decoration-red decoration-2 underline-offset-4">
+          Comment ça marche
+        </a>
+      </div>
     </div>
+
+    <aside class="lg:col-span-4">
+      <div class="border-2 border-ink bg-red p-6 text-paper shadow-hard">
+        <p class="font-mono text-[0.7rem] uppercase tracking-[0.14em]">Dernière publication</p>
+        {latest !== null ? (
+          <p class="mt-4">
+            <span class="block font-mono text-7xl font-bold leading-none">
+              {dayFormat.format(new Date(latest))}
+            </span>
+            <span class="mt-2 block font-mono text-sm uppercase tracking-[0.12em]">
+              {monthFormat.format(new Date(latest))}
+            </span>
+          </p>
+        ) : (
+          <p class="mt-4 font-mono text-2xl">Sans date</p>
+        )}
+        <p class="mt-6 border-t border-paper/30 pt-3 font-mono text-[0.7rem] uppercase tracking-[0.12em]">
+          CNIL · {entries.length} actualités
+        </p>
+      </div>
+    </aside>
   </section>
 
-  <dl class="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-md border border-ink/10 bg-ink/10 sm:grid-cols-4">
-    <div class="bg-paper px-4 py-4">
-      <dt class="text-[0.65rem] uppercase tracking-[0.15em] text-muted">Actualités</dt>
-      <dd class="mt-1 font-serif text-2xl">{entries.length}</dd>
+  <dl class="mt-10 grid grid-cols-2 gap-0.5 border-2 border-ink bg-ink shadow-hard sm:grid-cols-4">
+    <div class="bg-paper p-4">
+      <dt class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">Actualités</dt>
+      <dd class="mt-1 font-mono text-3xl font-bold">{entries.length}</dd>
     </div>
-    <div class="bg-paper px-4 py-4">
-      <dt class="text-[0.65rem] uppercase tracking-[0.15em] text-muted">Sources</dt>
-      <dd class="mt-1 font-serif text-2xl">{sources}</dd>
+    <div class="bg-paper p-4">
+      <dt class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">Sources</dt>
+      <dd class="mt-1 font-mono text-3xl font-bold">{sources}</dd>
     </div>
-    <div class="bg-paper px-4 py-4">
-      <dt class="text-[0.65rem] uppercase tracking-[0.15em] text-muted">JavaScript</dt>
-      <dd class="mt-1 font-serif text-2xl">0 ko</dd>
+    <div class="bg-paper p-4">
+      <dt class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">JavaScript</dt>
+      <dd class="mt-1 font-mono text-3xl font-bold">0 ko</dd>
     </div>
-    <div class="bg-paper px-4 py-4">
-      <dt class="text-[0.65rem] uppercase tracking-[0.15em] text-muted">Coût</dt>
-      <dd class="mt-1 font-serif text-2xl">0 €</dd>
+    <div class="bg-paper p-4">
+      <dt class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">Coût</dt>
+      <dd class="mt-1 font-mono text-3xl font-bold">0 €</dd>
     </div>
   </dl>
 
-  <section id="comment" class="mt-20 scroll-mt-8">
-    <h2 class="text-2xl">Comment ça marche</h2>
+  <section class="mt-14 border-2 border-ink bg-ink text-paper shadow-hard">
+    <div
+      class="flex items-center justify-between border-b-2 border-paper/20 px-4 py-2 font-mono text-[0.7rem] uppercase tracking-[0.14em]"
+    >
+      <span>pipeline.log</span>
+      <span class="text-paper/60">lecture seule</span>
+    </div>
+    <div class="overflow-x-auto p-4 font-mono text-xs leading-relaxed sm:p-6 sm:text-sm">
+      <p><span class="text-yellow">$</span> npm run veille</p>
+      <p class="text-paper/70">→ {entries.length} entrées · {sources} source{sources > 1 ? "s" : ""}</p>
+      <p class="mt-3"><span class="text-yellow">$</span> npm run build</p>
+      <p class="text-paper/70">→ 0 ko de JavaScript</p>
+    </div>
+  </section>
+
+  <section id="methode" class="mt-20 scroll-mt-8">
+    <div class="flex items-end justify-between gap-4 border-b-2 border-ink pb-3">
+      <h2 class="text-3xl sm:text-4xl">Comment ça marche</h2>
+      <span class="hidden font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted sm:block">01—03</span>
+    </div>
     <ol class="mt-8 grid gap-8 sm:grid-cols-3">
       {
         steps.map((step) => (
-          <li class="border-t border-ink/15 pt-4">
-            <span class="font-mono text-xs text-accent">{step.number}</span>
-            <h3 class="mt-2 text-lg">{step.title}</h3>
-            <p class="mt-2 text-sm text-muted">{step.body}</p>
+          <li class="border-t-2 border-ink pt-4">
+            <span class="font-mono text-xs tracking-[0.12em]">{step.number}</span>
+            <h3 class="mt-2 text-xl">{step.title}</h3>
+            <p class="mt-2 text-sm leading-relaxed text-muted">{step.body}</p>
           </li>
         ))
       }
@@ -107,29 +157,37 @@ const steps = [
   </section>
 
   <section class="mt-20">
-    <h2 class="text-2xl">Trois produits</h2>
-    <ul class="mt-8 grid gap-4 sm:grid-cols-3">
+    <div class="flex items-end justify-between gap-4 border-b-2 border-ink pb-3">
+      <h2 class="text-3xl sm:text-4xl">Trois produits</h2>
+      <span class="hidden font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted sm:block">01—03</span>
+    </div>
+    <ul class="mt-8 grid gap-5 sm:grid-cols-3">
       {
-        products.map((product) => (
-          <li class="flex flex-col rounded-md border border-ink/10 bg-surface p-5">
-            <span
-              class:list={[
-                "inline-flex items-center gap-1.5 text-[0.6rem] uppercase tracking-[0.12em]",
-                product.link ? "text-accent" : "text-muted",
-              ]}
-            >
+        products.map((product, index) => (
+          <li
+            class:list={[
+              "flex flex-col border-2 border-ink bg-paper p-5 shadow-hard",
+              product.accent,
+            ]}
+          >
+            <div class="flex items-center justify-between gap-3">
+              <span class="font-mono text-xs text-muted">{String(index + 1).padStart(2, "0")}</span>
               <span
                 class:list={[
-                  "h-1.5 w-1.5 rounded-full",
-                  product.link ? "bg-accent" : "bg-muted/40",
+                  "font-mono text-[0.7rem] uppercase tracking-[0.12em]",
+                  product.link ? "text-red" : "text-muted",
                 ]}
-              />
-              {product.status}
-            </span>
-            <h3 class="mt-3 text-lg">{product.title}</h3>
-            <p class="mt-3 flex-1 text-sm text-muted">{product.body}</p>
+              >
+                {product.status}
+              </span>
+            </div>
+            <h3 class="mt-6 text-xl">{product.title}</h3>
+            <p class="mt-3 flex-1 text-sm leading-relaxed text-muted">{product.body}</p>
             {product.link && (
-              <a href={product.link} class="mt-4 text-sm no-underline hover:underline">
+              <a
+                href={product.link}
+                class="mt-5 inline-flex items-center gap-2 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-ink no-underline hover:no-underline"
+              >
                 Découvrir <span aria-hidden="true">→</span>
               </a>
             )}

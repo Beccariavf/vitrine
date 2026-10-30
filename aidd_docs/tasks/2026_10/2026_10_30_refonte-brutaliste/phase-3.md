@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 ---
 
 # Instruction: Application et veille
@@ -35,27 +35,45 @@ status: pending
 ## Wireframe
 
 ```txt
+Vue grille (par défaut)
 ┌──────────────────────────────────────────────────────────────┐
 │ (1) VITRINE_ · DROIT DU NUMÉRIQUE                 VEILLE     │
 ├──────────────────────────────────────────────────────────────┤
 │ (2) VEILLE_ · 10 ACTUALITÉS · DERNIÈRE PUBLICATION           │
-├──────┬───────────────────────────────────────────────────────┤
-│ (3)  │ (4) TITRE DE L'ACTUALITÉ                              │
-│ 22   │ RÉSUMÉ SUR DEUX LIGNES                                │
-│ OCT. │ CNIL                                                  │
-├──────┼───────────────────────────────────────────────────────┤
-│ (5)  │ ...                                                   │
-├──────┴───────────────────────────────────────────────────────┤
-│ (6) PIED                                                     │
+├──────────────────────────────────────────────────────────────┤
+│ (3) AFFICHAGE                               [GRILLE] [LISTE] │
+├──────────────────┬──────────────────┬────────────────────────┤
+│ (4) 29 OCT.      │ (5) 22 OCT.      │ (6) 20 OCT.            │
+│ TITRE            │ TITRE            │ TITRE                  │
+│ RÉSUMÉ           │ RÉSUMÉ           │ RÉSUMÉ                 │
+│ LIRE             │ LIRE             │ LIRE                   │
+├──────────────────┴──────────────────┴────────────────────────┤
+│ (7) rangées suivantes, en-têtes rouge/bleu/jaune/béton        │
+├──────────────────────────────────────────────────────────────┤
+│ (8) PIED                                                     │
 └──────────────────────────────────────────────────────────────┘
+
+Vue liste
+┌──────────────────────────────────────────────────────────────┐
+│ (3) AFFICHAGE                               [GRILLE] [LISTE] │
+├──────┬───────────────────────────────────────────────────────┤
+│ (9)  │ (10) TITRE · RÉSUMÉ · SOURCE                          │
+├──────┼───────────────────────────────────────────────────────┤
+│ (11) │ ...                                                   │
+└──────┴───────────────────────────────────────────────────────┘
 ```
 
 1. En-tête commun, navigation rappelant la section courante.
 2. Bandeau de tête : compte réel, dernière publication.
-3. Colonne date en mono, deux lignes maximum.
-4. Titre cliquable, résumé non redondant, source.
-5. Rangées suivantes, séparées par un filet.
-6. Pied commun.
+3. Bascule grille / liste en CSS pur, grille par défaut.
+4. Carte : en-tête coloré avec le jour, le mois et la source ; corps papier avec titre, résumé et « Lire ».
+5. Carte suivante, teinte différente.
+6. Carte suivante, teinte différente.
+7. Rangées suivantes, cycle rouge / bleu / jaune / béton.
+8. Pied commun.
+9. Colonne date en mono, deux lignes maximum.
+10. Titre cliquable, résumé non redondant, source.
+11. Rangées suivantes ; la liste reste centrée à 56rem.
 
 ## Tasks to do
 
@@ -72,10 +90,11 @@ status: pending
 > Un registre lisible, pas un tableau administratif.
 
 1. Porter l'en-tête en `VEILLE_`, avec le compte réel et la dernière publication.
-2. Numéroter les rangées et garder la date en colonne, en mono.
-3. Garder le titre cliquable, le résumé sur deux lignes et le label de source.
-4. Conserver `isRedundantSummary` : l'entrée FNAC perd son résumé, pas sa place.
-5. Survol de rangée discret, sans changer la couleur du texte.
+2. Ajouter la bascule grille / liste sans JavaScript (radios et CSS), grille par défaut.
+3. Dessiner la grille : trois colonnes, une carte par entrée, en-tête coloré sur un cycle rouge / bleu / jaune / béton, corps papier avec titre, résumé et lien.
+4. Centrer la liste à 56rem, numérotée antéchronologique, avec date en colonne, titre, résumé et source.
+5. Conserver `isRedundantSummary` : l'entrée FNAC perd son résumé, pas sa place.
+6. Survol de carte et de rangée discret, sans changer la couleur du texte courant.
 
 ### `3)` Vérifier le responsive et le focus
 
@@ -84,7 +103,7 @@ status: pending
 1. Contrôler l'accueil et la veille à 375, 768 et 1280 px.
 2. Supprimer tout débordement horizontal.
 3. Vérifier le focus clavier sur la navigation, le CTA et chaque titre.
-4. Vérifier les contrastes des aplats rouge, bleu et jaune.
+4. Vérifier les contrastes des en-têtes rouge, bleu, jaune et béton, et du corps papier.
 
 ### `4)` Mettre la mémoire à jour
 
@@ -107,7 +126,7 @@ status: pending
 | Task | Acceptance criteria |
 | ---- | ------------------- |
 | 1 | Une seule page d'accueil est servie ; `/variante-b` renvoie 404. |
-| 2 | La veille affiche les dix entrées avec leur lien source ; le résumé FNAC reste masqué. |
+| 2 | La bascule grille / liste fonctionne sans JavaScript ; la grille affiche dix cartes et la liste centrée les dix entrées ; le résumé FNAC reste masqué. |
 | 3 | Aucun débordement à 375 px et le focus reste visible sur chaque élément interactif. |
 | 4 | `design.md` nomme la palette, les polices, les formes, la règle 80/20 et les contrastes recalculés. |
 | 5 | Typecheck, tests et build passent ; aucune balise `<script>` dans le HTML livré. |
