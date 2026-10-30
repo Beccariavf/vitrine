@@ -17,7 +17,7 @@ Le différenciateur est double : **la preuve** (un pipeline de veille qui tourne
 | Back-end | Scripts TypeScript sur Node 24 LTS, lancés par cron GitHub Actions | Un seul langage pour tout le projet (objectif d'apprentissage), type stripping natif donc aucun build step. Aucune API HTTP à exposer. |
 | Database | Aucune : snapshots bruts + hash + JSON commités | À ce volume, une base est du sur-engineering. Git fournit l'historique, le diff et la piste d'audit ; l'index est reconstruit au build. |
 | Auth | Aucune | Site public en lecture seule, aucun compte utilisateur, aucune donnée personnelle. |
-| Hosting | Cloudflare Workers (static assets) + GitHub Actions | 0 € strict : requêtes statiques gratuites, Actions gratuites en dépôt public. Workers remplace Pages (gelé) et évite le piège du déploiement non déclenché. |
+| Hosting | Cloudflare Workers (static assets) + GitHub Actions | 0 € strict : requêtes statiques gratuites ; en dépôt privé, GitHub Free inclut 12 $/mois de compute Actions (~2 000 min Linux), très au-delà d'une passe/jour. Workers remplace Pages (gelé) et évite le piège du déploiement non déclenché. |
 
 ## Stack summary
 
@@ -28,7 +28,7 @@ Le différenciateur est double : **la preuve** (un pipeline de veille qui tourne
 - **Base de données :** aucune. `data/index.json` porte l'état et les hashes ; `data/raw/` et `data/entries/` sont la vérité versionnée.
 - **Auth :** aucune.
 - **Hébergement :** Cloudflare Workers static assets (`*.workers.dev`), déploiement par `wrangler` dans le même job que le cron.
-- **CI :** GitHub Actions, cron à `:17` (les crons GitHub sont retardés au début de chaque heure), dépôt public, secrets `PISTE_CLIENT_ID` / `PISTE_CLIENT_SECRET`.
+- **CI :** GitHub Actions, cron à `:17` (les crons GitHub sont retardés au début de chaque heure), dépôt **privé** (visibilité modifiable), secrets `PISTE_CLIENT_ID` / `PISTE_CLIENT_SECRET`.
 - **Intégrations :** Légifrance (API PISTE, OAuth2 `client_credentials`, tokens 3 600 s), Judilibre, EUR-Lex, CNIL (RSS/HTML), data.gouv.
 
 ### Mitigations retenues après audit
@@ -153,7 +153,7 @@ vitrine/
 
 ## Install steps
 
-- [ ] **1. Initialiser le dépôt** : `git init`, branche par défaut `main`, dépôt **public** sur GitHub, `CONTRIBUTING.md` (via `@00-repo-init`).
+- [ ] **1. Initialiser le dépôt** : `git init`, branche par défaut `main`, dépôt **privé** sur GitHub (passage en public possible plus tard), `CONTRIBUTING.md` (via `@00-repo-init`).
 - [ ] **2. Installer Node 24 LTS** et figer la version dans `.nvmrc` ; activer `engines` dans `package.json`.
 - [ ] **3. Créer le site Astro** en TypeScript strict, puis installer Tailwind 4 via `@tailwindcss/vite` et **épingler les versions exactes** (pas de `^`).
 - [ ] **4. Créer le compte Cloudflare**, activer Workers static assets, installer `wrangler` et vérifier un premier déploiement manuel de `dist/`.
