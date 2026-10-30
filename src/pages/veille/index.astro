@@ -1,0 +1,42 @@
+---
+import Base from "../../layouts/Base.astro";
+import { getEntries } from "../../lib/entries.ts";
+
+const entries = getEntries();
+
+/** Date longue en français, à l'heure UTC : la même partout, au build comme en test. */
+const dateFormat = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeZone: "UTC" });
+---
+
+<Base
+  title="Veille — Vitrine"
+  description="Les actualités de la CNIL, de la plus récente à la plus ancienne, chacune liée à sa source officielle."
+>
+  <h1 class="text-3xl sm:text-4xl">Veille</h1>
+
+  <p class="mt-4 max-w-2xl text-muted">
+    {entries.length} actualités CNIL, de la plus récente à la plus ancienne. Chaque titre renvoie à
+    la publication officielle.
+  </p>
+
+  <ul class="mt-10 divide-y divide-ink/10 border-t border-ink/10">
+    {
+      entries.map((entry) => (
+        <li class="py-5">
+          <h2 class="text-lg">
+            <a href={entry.url}>{entry.title}</a>
+          </h2>
+          <p class="mt-2 text-sm text-muted">
+            {entry.publishedAt !== null && (
+              <>
+                <time datetime={entry.publishedAt}>{dateFormat.format(new Date(entry.publishedAt))}</time>
+                <span aria-hidden="true"> · </span>
+              </>
+            )}
+            <span>{entry.source}</span>
+          </p>
+        </li>
+      ))
+    }
+  </ul>
+</Base>
