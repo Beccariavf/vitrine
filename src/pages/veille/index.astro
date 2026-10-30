@@ -10,6 +10,8 @@ const sourceLabel = (source: string) => SOURCE_LABELS[source] ?? source;
 
 /** Date longue en français, à l'heure UTC : la même partout, au build comme en test. */
 const dateFormat = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeZone: "UTC" });
+const dayFormat = new Intl.DateTimeFormat("fr-FR", { day: "2-digit", timeZone: "UTC" });
+const monthFormat = new Intl.DateTimeFormat("fr-FR", { month: "short", year: "numeric", timeZone: "UTC" });
 
 const latest = entries.find((entry) => entry.publishedAt !== null)?.publishedAt ?? null;
 const count = `${entries.length} ${entries.length > 1 ? "actualités" : "actualité"}`;
@@ -19,37 +21,48 @@ const count = `${entries.length} ${entries.length > 1 ? "actualités" : "actuali
   title="Veille — Vitrine"
   description="Les actualités collectées, de la plus récente à la plus ancienne, chacune liée à sa source officielle."
 >
-  <h1 class="text-3xl sm:text-4xl">Veille</h1>
+  <header class="max-w-2xl">
+    <p class="text-[0.65rem] uppercase tracking-[0.2em] text-muted">Corpus public</p>
+    <h1 class="mt-4 text-4xl sm:text-5xl">Veille</h1>
+    <p class="mt-5 text-muted">
+      {count} collectées, chacune depuis sa source officielle, de la plus récente à la plus
+      ancienne. Chaque titre renvoie à la publication officielle.
+    </p>
+    {
+      latest !== null && (
+        <p class="mt-2 text-sm text-muted">
+          Dernière publication : <time datetime={latest}>{dateFormat.format(new Date(latest))}</time>
+        </p>
+      )
+    }
+  </header>
 
-  <p class="mt-4 max-w-2xl text-muted">
-    {count} collectées, chacune depuis sa source officielle, de la plus récente à la plus ancienne.
-    Chaque titre renvoie à la publication officielle.
-  </p>
-
-  {
-    latest !== null && (
-      <p class="mt-2 text-sm text-muted">
-        Dernière publication : <time datetime={latest}>{dateFormat.format(new Date(latest))}</time>
-      </p>
-    )
-  }
-
-  <ul class="mt-10 divide-y divide-ink/10 border-t border-ink/10">
+  <ul class="mt-10 border-t border-ink/10">
     {
       entries.map((entry) => (
-        <li class="py-5">
-          <h2 class="text-lg">
-            <a href={entry.url}>{entry.title}</a>
-          </h2>
-          <p class="mt-2 text-sm text-muted">
-            {entry.publishedAt !== null && (
+        <li class="grid grid-cols-[4rem_1fr] gap-4 border-b border-ink/10 py-5 sm:grid-cols-[5rem_1fr] sm:gap-8">
+          <div class="text-[0.65rem] uppercase tracking-[0.12em] text-muted">
+            {entry.publishedAt !== null ? (
               <>
-                <time datetime={entry.publishedAt}>{dateFormat.format(new Date(entry.publishedAt))}</time>
-                <span aria-hidden="true"> · </span>
+                <span class="block font-serif text-2xl normal-case tracking-normal text-ink">
+                  {dayFormat.format(new Date(entry.publishedAt))}
+                </span>
+                <span>{monthFormat.format(new Date(entry.publishedAt))}</span>
               </>
+            ) : (
+              <span>Sans date</span>
             )}
-            <span>{sourceLabel(entry.source)}</span>
-          </p>
+          </div>
+          <div>
+            <h2 class="text-lg leading-snug">
+              <a href={entry.url} class="text-ink hover:text-accent">
+                {entry.title}
+              </a>
+            </h2>
+            <p class="mt-2 text-[0.65rem] uppercase tracking-[0.12em] text-muted">
+              {sourceLabel(entry.source)}
+            </p>
+          </div>
         </li>
       ))
     }
