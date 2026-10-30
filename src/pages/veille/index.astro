@@ -59,6 +59,11 @@ const count = `${entries.length} ${entries.length > 1 ? "actualités" : "actuali
                 {entry.title}
               </a>
             </h2>
+            {
+              entry.summary !== null && (
+                <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-muted">{entry.summary}</p>
+              )
+            }
             <p class="mt-2 text-[0.65rem] uppercase tracking-[0.12em] text-muted">
               {sourceLabel(entry.source)}
             </p>

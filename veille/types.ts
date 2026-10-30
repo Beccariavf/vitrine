@@ -11,6 +11,8 @@ export type Entry = {
   url: string;
   /** Publication en ISO 8601 UTC, ou `null` si la source n'en donne pas d'exploitable. */
   publishedAt: string | null;
+  /** Début de la description de la source, nettoyé et tronqué à 200 caractères ; `null` si vide. */
+  summary: string | null;
   /** Identifiant de la source, ici `cnil`. */
   source: string;
 };

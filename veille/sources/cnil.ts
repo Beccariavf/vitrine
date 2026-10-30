@@ -1,6 +1,7 @@
 import { XMLParser, XMLValidator } from "fast-xml-parser";
 import type { Entry } from "../types.ts";
 import { canonicalUrl, hashId } from "../normalize.ts";
+import { toSummary } from "../summary.ts";
 
 /** Identifiant stable de la source, écrit dans chaque entrée. */
 export const SOURCE_ID = "cnil";
@@ -113,6 +114,7 @@ export function parseFeed(xml: string): Entry[] {
       title,
       url,
       publishedAt: toIsoUtc(textOf(item["pubDate"])),
+      summary: toSummary(textOf(item["description"])),
       source: SOURCE_ID,
     });
   });

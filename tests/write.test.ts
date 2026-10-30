@@ -183,6 +183,7 @@ describe("une entrée sans date", () => {
         title: "Sans date",
         url: "https://www.cnil.fr/fr/sans-date",
         publishedAt: null,
+        summary: "Une actualité sans date.",
         source: "cnil",
       };
       const [path] = writeEntries(root, [entry]);

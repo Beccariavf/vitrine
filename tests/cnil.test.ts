@@ -46,6 +46,7 @@ describe("flux CNIL figé", () => {
       assert.ok(entry.title.length > 0);
       assert.match(entry.url, /^https:\/\/www\.cnil\.fr\//);
       assert.match(entry.publishedAt ?? "", /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+      assert.ok(entry.summary === null || entry.summary.length > 0);
       assert.equal(entry.source, "cnil");
     }
   });
@@ -70,6 +71,65 @@ describe("flux CNIL figé", () => {
       assert.ok(!entry.url.includes("?"));
       assert.ok(!entry.url.includes("#"));
     }
+  });
+});
+
+describe("le résumé tiré de la description", () => {
+  it("nettoie la description du flux figé : ni balise, ni entité, ni double espace", () => {
+    const [fnac] = parseFeed(xml);
+
+    assert.ok(fnac?.summary);
+    assert.ok(fnac.summary.startsWith("Le 22 octobre 2026, la CNIL a sanctionné les sociétés FNAC"));
+    assert.ok(fnac.summary.includes("7 millions d’euros"), "l'espace insécable doublement encodé est normalisé");
+    assert.ok(!/[<>&]/.test(fnac.summary));
+    assert.ok(!/\s{2}/.test(fnac.summary));
+    assert.ok(fnac.summary.length <= 200);
+    assert.ok(fnac.summary.endsWith("…"), "une description de plus de 200 caractères est tronquée");
+  });
+
+  it("garde les espaces insécables simples d'une description courte", () => {
+    const entries = parseFeed(
+      feedOf(`
+    <item>
+      <title>Séance plénière</title>
+      <link>https://www.cnil.fr/fr/seance</link>
+      <description>La CNIL s’est réunie à 9&amp;nbsp;h&amp;nbsp;30.</description>
+    </item>`),
+    );
+
+    assert.equal(entries[0]?.summary, "La CNIL s’est réunie à 9 h 30.");
+  });
+
+  it("retire les balises d'une description HTML", () => {
+    const entries = parseFeed(
+      feedOf(`
+    <item>
+      <title>Balises</title>
+      <link>https://www.cnil.fr/fr/balises</link>
+      <description>&lt;p&gt;Un &lt;strong&gt;texte&lt;/strong&gt; utile.&lt;/p&gt;</description>
+    </item>`),
+    );
+
+    assert.equal(entries[0]?.summary, "Un texte utile.");
+  });
+
+  it("met à null une description absente ou vide", () => {
+    const entries = parseFeed(
+      feedOf(`
+    <item>
+      <title>Sans description</title>
+      <link>https://www.cnil.fr/fr/sans-description</link>
+    </item>
+    <item>
+      <title>Description vide</title>
+      <link>https://www.cnil.fr/fr/description-vide</link>
+      <description>   </description>
+    </item>`),
+    );
+
+    assert.equal(entries.length, 2);
+    assert.equal(entries[0]?.summary, null);
+    assert.equal(entries[1]?.summary, null);
   });
 });
 

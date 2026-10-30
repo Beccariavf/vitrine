@@ -36,6 +36,7 @@ function entry(overrides: Record<string, unknown> = {}): Record<string, unknown>
     title: "Titre",
     url: "https://www.cnil.fr/fr/titre",
     publishedAt: "2026-10-01T12:00:00.000Z",
+    summary: "Un résumé.",
     source: "cnil",
     ...overrides,
   };
@@ -49,13 +50,23 @@ describe("les entrées committées", () => {
     assert.equal(entries.length, countEntryFiles(join(ROOT, "data", "entries")));
   });
 
-  it("respecte les cinq champs du contrat", () => {
+  it("respecte les six champs du contrat", () => {
     for (const item of entries) {
       assert.equal(typeof item.id, "string");
       assert.equal(typeof item.title, "string");
       assert.ok(item.url.startsWith("https://www.cnil.fr/"));
       assert.equal(typeof item.source, "string");
       assert.ok(item.publishedAt === null || typeof item.publishedAt === "string");
+      assert.ok(item.summary === null || (typeof item.summary === "string" && item.summary.length > 0));
+    }
+  });
+
+  it("ne laisse dans le résumé ni balise, ni entité, ni double espace", () => {
+    for (const item of entries) {
+      if (item.summary === null) continue;
+      assert.ok(!/[<>&]/.test(item.summary), `résumé à nettoyer : ${item.summary}`);
+      assert.ok(!/\s{2}/.test(item.summary), `espaces à normaliser : ${item.summary}`);
+      assert.ok(item.summary.length <= 200);
     }
   });
 
@@ -141,6 +152,49 @@ describe("une entrée illisible", () => {
           return true;
         },
       );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("lève une erreur quand le résumé manque", () => {
+    const root = tempRoot();
+    try {
+      const path = writeEntry(root, "sans-resume", entry({ summary: undefined }));
+
+      assert.throws(
+        () => getEntries(root),
+        (error: unknown) => {
+          assert.ok(error instanceof Error);
+          assert.ok(error.message.includes(path));
+          assert.match(error.message, /summary/);
+          return true;
+        },
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("lève une erreur quand le résumé est vide ou d'un autre type", () => {
+    const root = tempRoot();
+    try {
+      writeEntry(root, "resume-vide", entry({ summary: "" }));
+      assert.throws(() => getEntries(root), /"summary" must be a non-empty string or null/);
+
+      writeEntry(root, "resume-nombre", entry({ summary: 42 }));
+      assert.throws(() => getEntries(root), /"summary" must be a non-empty string or null/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("accepte un résumé nul et le rend tel quel", () => {
+    const root = tempRoot();
+    try {
+      writeEntry(root, "resume-nul", entry({ summary: null }));
+
+      assert.equal(getEntries(root)[0]?.summary, null);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

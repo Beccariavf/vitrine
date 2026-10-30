@@ -1,6 +1,6 @@
 ---
 objective: "Chaque actualité de la page de veille affiche un résumé nettoyé et tronqué, et chaque push passe typecheck, tests et build en CI."
-status: pending
+status: in-progress
 ---
 
 # Plan: Résumé des actualités et vérification continue
