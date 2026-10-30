@@ -20,9 +20,10 @@ const count = `${entries.length} ${entries.length > 1 ? "actualités" : "actuali
 <Base
   title="Veille — Vitrine"
   description="Les actualités collectées, de la plus récente à la plus ancienne, chacune liée à sa source officielle."
+  containerClass="max-w-[56rem]"
 >
   <header class="max-w-2xl">
-    <p class="text-[0.65rem] uppercase tracking-[0.2em] text-muted">Corpus public</p>
+    <p class="font-mono text-[0.65rem] uppercase tracking-[0.12em] text-muted">Corpus public</p>
     <h1 class="mt-4 text-4xl sm:text-5xl">Veille</h1>
     <p class="mt-5 text-muted">
       {count} collectées, chacune depuis sa source officielle, de la plus récente à la plus
@@ -30,14 +31,14 @@ const count = `${entries.length} ${entries.length > 1 ? "actualités" : "actuali
     </p>
     {
       latest !== null && (
-        <p class="mt-2 text-sm text-muted">
+        <p class="mt-2 font-mono text-[0.65rem] uppercase tracking-[0.12em] text-muted">
           Dernière publication : <time datetime={latest}>{dateFormat.format(new Date(latest))}</time>
         </p>
       )
     }
   </header>
 
-  <ul class="mt-10 border-t border-ink/10">
+  <ul class="mt-10 border-t border-ink/15">
     {
       entries.map((entry) => {
         const summary =
@@ -45,11 +46,11 @@ const count = `${entries.length} ${entries.length > 1 ? "actualités" : "actuali
             ? entry.summary
             : null;
         return (
-        <li class="grid grid-cols-[4rem_1fr] gap-4 border-b border-ink/10 py-5 sm:grid-cols-[5rem_1fr] sm:gap-8">
-          <div class="text-[0.65rem] uppercase tracking-[0.12em] text-muted">
+        <li class="grid grid-cols-[4rem_1fr] gap-4 border-b border-ink/15 py-5 sm:grid-cols-[5rem_1fr] sm:gap-8">
+          <div class="font-mono text-[0.65rem] uppercase tracking-[0.12em] text-muted">
             {entry.publishedAt !== null ? (
               <>
-                <span class="block font-serif text-2xl normal-case tracking-normal text-ink">
+                <span class="block font-mono text-2xl font-bold leading-none tracking-normal text-ink">
                   {dayFormat.format(new Date(entry.publishedAt))}
                 </span>
                 <span>{monthFormat.format(new Date(entry.publishedAt))}</span>
@@ -60,7 +61,7 @@ const count = `${entries.length} ${entries.length > 1 ? "actualités" : "actuali
           </div>
           <div>
             <h2 class="text-lg leading-snug">
-              <a href={entry.url} class="text-ink hover:text-accent">
+              <a href={entry.url} class="text-ink no-underline hover:underline">
                 {entry.title}
               </a>
             </h2>
@@ -69,7 +70,7 @@ const count = `${entries.length} ${entries.length > 1 ? "actualités" : "actuali
                 <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-muted">{summary}</p>
               )
             }
-            <p class="mt-2 text-[0.65rem] uppercase tracking-[0.12em] text-muted">
+            <p class="mt-2 font-mono text-[0.65rem] uppercase tracking-[0.12em] text-muted">
               {sourceLabel(entry.source)}
             </p>
           </div>

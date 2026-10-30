@@ -1,6 +1,6 @@
 ---
 objective: "Les deux pages publiques portent l'identité brutaliste Cité Radieuse, une variante d'accueil est retenue et la CI reste verte."
-status: pending
+status: in-progress
 ---
 
 # Plan: Refonte visuelle brutaliste
