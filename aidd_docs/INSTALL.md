@@ -23,9 +23,9 @@ Le différenciateur est double : **la preuve** (un pipeline de veille qui tourne
 
 - **Runtime / langage :** Node 24 LTS, TypeScript exécuté par type stripping natif (pas de `tsx`, pas de bundler pour les scripts).
 - **Front-end :** Astro 7 (version exacte épinglée à l'initialisation), Tailwind CSS 4 via `@tailwindcss/vite` (l'intégration `@astrojs/tailwind` est dépréciée), composants `.astro` et JS vanilla uniquement.
-- **Recherche :** Pagefind, généré après le build (aucun service de recherche à héberger).
+- **Recherche :** aucune pour l'instant ; Pagefind est prévu quand le corpus le justifiera.
 - **Back-end :** scripts TypeScript dans `veille/`, un adaptateur par source, aucune dépendance de framework HTTP.
-- **Base de données :** aucune. `data/index.json` porte l'état et les hashes ; `data/raw/` et `data/entries/` sont la vérité versionnée.
+- **Base de données :** aucune. `data/raw/` (snapshots adressés par contenu) et `data/entries/` (une entrée par `id`) sont la vérité versionnée ; aucun index séparé.
 - **Auth :** aucune.
 - **Hébergement :** Cloudflare Workers static assets (`*.workers.dev`), déploiement par `wrangler` dans le même job que le cron.
 - **CI :** GitHub Actions, cron à `:17` (les crons GitHub sont retardés au début de chaque heure), dépôt **privé** (visibilité modifiable), secrets `PISTE_CLIENT_ID` / `PISTE_CLIENT_SECRET`.
@@ -62,13 +62,11 @@ flowchart LR
 
   subgraph DATA["data - git"]
     R["Snapshots bruts"]
-    I["index.json<br/>hash + état"]
     EN["entries/*.json"]
   end
 
   subgraph SITE["src - Astro SSG"]
     P["Pages statiques"]
-    Q["Pagefind"]
   end
 
   GH["GitHub Actions<br/>cron"] --> PIPE
@@ -76,80 +74,70 @@ flowchart LR
   A --> N
   N --> R
   N --> U
-  U --> I
   U --> F
   F --> PUB
   PUB --> EN
   EN --> P
-  P --> Q
   P --> W["Cloudflare Workers<br/>static assets"]
 ```
 
-Trois frontières structurent le projet. `veille/sources/` est la seule zone fragile : chaque source est un adaptateur isolé derrière une interface commune, donc une API qui casse se répare dans un seul fichier. `data/` est la vérité : le site ne lit jamais une API, il lit des fichiers commités, ce qui rend le site et le MCP reconstructibles indépendamment. `src/` est jetable par conception : si Astro devient pénible, les données survivent et le site se régénère autrement.
+Trois frontières structurent le projet. `veille/sources/` est la seule zone fragile : chaque source est un adaptateur isolé dans son fichier, donc une API qui casse se répare à un seul endroit. `data/` est la vérité : le site ne lit jamais une API, il lit des fichiers commités, ce qui rend le site et le MCP reconstructibles indépendamment. `src/` est jetable par conception : si Astro devient pénible, les données survivent et le site se régénère autrement.
 
 ## Folder structure
 
 ```text
 vitrine/
-├── .github/
-│   └── workflows/
-│       └── veille.yml              # cron :17 → node veille/main.ts → commit → deploy
 ├── .nvmrc                          # 24
 ├── package.json
+├── package-lock.json
 ├── tsconfig.json
-├── astro.config.mjs
-├── wrangler.toml                   # Workers static assets → dist/
+├── astro.config.mjs                # Astro statique + Tailwind
 ├── .gitignore
-├── README.md
+├── AGENTS.md
+├── CONTRIBUTING.md
 ├── GUIDE-AIDD.md
 │
 ├── src/                            # FRONT — Astro (SSG)
 │   ├── pages/
-│   │   ├── index.astro
-│   │   ├── veille/
-│   │   │   ├── index.astro         # liste des entrées
-│   │   │   └── [slug].astro        # une entrée = une page
-│   │   └── demos/                  # MCP, plugin (plus tard)
+│   │   ├── index.astro             # la vitrine
+│   │   └── veille/
+│   │       └── index.astro         # liste des entrées
 │   ├── layouts/
-│   ├── components/
-│   │   └── ui/                     # design system (boutons, cartes, tags)
+│   │   └── Base.astro
 │   ├── styles/
-│   │   ├── tokens.css              # couleurs, typo, espacements
-│   │   └── global.css
-│   ├── content/                    # pages éditoriales en Markdown
-│   └── lib/                        # lecture de data/ au build
+│   │   └── global.css              # Tailwind + jetons de thème
+│   └── lib/
+│       └── entries.ts              # lecture de data/ au build
 │
 ├── veille/                         # BACK — pipeline (Node 24, TS natif, sans build)
 │   ├── main.ts                     # une passe complète
 │   ├── sources/
-│   │   ├── source.ts               # interface commune aux adaptateurs
-│   │   ├── legifrance.ts
-│   │   ├── judilibre.ts
-│   │   ├── eurlex.ts
-│   │   ├── cnil-rss.ts
-│   │   └── data-gouv.ts
+│   │   └── cnil.ts                 # adaptateur CNIL
 │   ├── normalize.ts
-│   ├── dedupe.ts
-│   ├── diff.ts
-│   ├── publish.ts
+│   ├── write.ts                    # snapshots + entrées, écriture atomique
 │   └── types.ts
 │
 ├── data/                           # "BASE" — git = historique
-│   ├── raw/<yyyy>/<mm>/            # snapshots bruts + hash
-│   ├── entries/<yyyy>/<mm>/        # JSON normalisés, 1 fichier par entrée
-│   └── index.json                  # état + hashes
+│   ├── raw/<2 hex>/<sha256>.xml    # snapshots bruts adressés par contenu
+│   └── entries/
+│       ├── <yyyy>/<mm>/            # JSON normalisés, 1 fichier par entrée
+│       └── unknown/                # entrées sans date
 │
 ├── tests/
-│   ├── fixtures/<source>/          # réponses API figées
-│   └── <source>.test.ts
-│
-├── public/
+│   ├── fixtures/cnil/              # flux réel figé + flux réduit
+│   ├── cnil.test.ts
+│   ├── write.test.ts
+│   └── entries.test.ts
 │
 └── aidd_docs/
     ├── INSTALL.md                  # ce document
-    ├── memory/                     # mémoire projet
-    └── tasks/                      # plans et phases
+    ├── README.md
+    ├── GUIDELINES.md
+    ├── memory/
+    └── tasks/
 ```
+
+À venir, hors de la tranche actuelle : `.github/workflows/veille.yml` (cron), `wrangler.toml` (Cloudflare), les autres sources, la recherche.
 
 ## Install steps
 
