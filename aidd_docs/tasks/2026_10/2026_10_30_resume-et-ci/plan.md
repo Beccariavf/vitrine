@@ -49,7 +49,7 @@ Source: `aidd_docs/tasks/2026_10/2026_10_30_resume-et-ci/spec.md`
 | `summary` dérivé du champ de description de la source, 200 caractères max | Assez pour comprendre l'actualité, assez court pour deux lignes stables. |
 | Coupure sur une frontière de mot, ellipse seulement si tronqué | Évite les mots coupés et les ellipses mensongères sur un texte déjà complet. |
 | Nettoyage sans dépendance : entités décodées deux fois, puis balises retirées, puis espaces normalisés | Décoder avant de retirer les balises est le seul ordre qui neutralise aussi les balises doublement encodées. |
-| Budget de 200 caractères **ellipse incluse** : 197 de texte + `…` | Une ellipse ajoutée après coup dépasserait la limite annoncée. |
+| Budget de 200 caractères **ellipse incluse** : 199 de texte + `…` | Une ellipse ajoutée après coup dépasserait la limite annoncée. |
 | Le changement de contrat est un seul commit atomique | Un `Entry` qui exige `summary` casse le lecteur et les données tant que les trois ne bougent pas ensemble. |
 | `data/` régénéré après le changement de contrat | Les dix entrées existantes n'ont pas de résumé ; le pipeline est la seule source de vérité. |
 | CI sur `push` et `pull_request`, Node 24, `npm ci`, permissions en lecture | Même porte que la locale, sans droit d'écriture, et prépare le futur cron. |
