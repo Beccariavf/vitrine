@@ -32,7 +32,8 @@ flowchart LR
 - Le site ne lit aucune API au runtime : il lit `data/`.
 - Une panne de source n'emporte pas les autres : les écritures réussies restent, la passe échoue avec un message nommant la source.
 - Le catalogue `veille/tags.json` est la seule configuration de filtrage ; la passe publie les tags actifs et retire les arrêts CJUE devenus inactifs. Le snapshot brut reste la preuve.
-- `Entry.references` porte les instruments et articles du titre officiel, extraits sans modèle.
+- `Entry.references` porte les instruments et articles cités : titre officiel pour les arrêts CJUE, section « Textes de référence » de la page liée pour les actualités CNIL, extraits sans modèle.
+- Une page CNIL en échec laisse l'entrée publiée avec `references: []` et un avertissement ; les pages dont les références sont retenues sont conservées en snapshot HTML.
 
 ## Gotchas
 

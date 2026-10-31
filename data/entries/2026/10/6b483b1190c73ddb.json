@@ -5,6 +5,9 @@
   "url": "https://www.cnil.fr/fr/webinaire-demarchage-telephonique",
   "publishedAt": "2026-10-19T12:00:00.000Z",
   "summary": "La CNIL vous propose de décrypter un sujet ou une actualité en lien avec la protection des données à travers une série de webinaires. Retrouvez ce nouvel épisode consacré à la prospection…",
-  "references": [],
+  "references": [
+    "Code de la consommation · art. L. 223-1",
+    "Règlement (UE) 2016/679 · art. 6, 7, 21, 4.11"
+  ],
   "source": "cnil"
 }

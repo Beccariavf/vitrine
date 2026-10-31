@@ -15,7 +15,7 @@ export type Entry = {
   publishedAt: string | null;
   /** Début de la description de la source, nettoyé et tronqué à 200 caractères ; `null` si vide. */
   summary: string | null;
-  /** Références juridiques principales citées par le titre officiel ; tableau vide si aucune. */
+  /** Références principales citées par le titre officiel (CJUE) ou la page liée (CNIL) ; tableau vide si aucune. */
   references: string[];
   /** Identifiant de la source : `cnil` ou `cjeu`. */
   source: string;

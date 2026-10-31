@@ -12,9 +12,9 @@ Le versant données : sources, pipeline et modèles.
 
 ```mermaid
 flowchart LR
-    C["Flux CNIL"] --> P["Adaptateurs + normalisation"]
+    C["Flux CNIL + pages liées"] --> P["Adaptateurs + normalisation"]
     J["Flux CJUE · EUR-Lex"] --> P
-    P --> RAW["data/raw — un snapshot par flux"]
+    P --> RAW["data/raw — flux et pages CNIL référencées"]
     P --> E["data/entries — une entrée par actualité ou arrêt"]
 ```
 
@@ -26,9 +26,10 @@ flowchart LR
 
 ## References
 
-- Chaque entrée porte `officialTitle`, le titre officiel complet, source du filtre et des références ; le `title` est le titre d'affichage.
-- Chaque entrée porte `references: string[]`, les instruments et articles principaux cités par le titre officiel ; les entrées CNIL portent `[]`.
-- L'extraction est déterministe (`veille/references.ts`) ; elle ne réécrit pas la source.
+- Chaque entrée porte `officialTitle`, le titre officiel complet, source du filtre et des références CJUE ; le `title` est le titre d'affichage.
+- Chaque entrée porte `references: string[]`, les instruments et articles cités : titre officiel pour les arrêts CJUE, section « Textes de référence » de la page liée pour les actualités CNIL.
+- L'extraction est déterministe (`veille/references.ts`) ; elle ne réécrit pas la source. Un instrument sans article est ignoré, comme pour la CJUE.
+- Une page CNIL inaccessible laisse l'entrée publiée avec `references: []` et un avertissement ; la passe ne bloque pas.
 - Le catalogue de tags (`veille/tags.json`) filtre les arrêts CJUE ; les tags actifs décident de la publication, pas de la donnée brute.
 
 ## Models
@@ -38,7 +39,8 @@ flowchart LR
 ## Reproducibility
 
 - Git : chaque snapshot brut est adressé par son `sha256`, chaque entrée par un `id` stable.
-- Les entrées ne changent pas quand le contenu est inchangé.
+- Les entrées ne changent pas quand le contenu est inchangé ; une page CNIL modifiée peut changer `references`.
+- Les pages CNIL dont les références sont retenues sont conservées en `.html` adressé par son `sha256` ; les autres pages ne sont pas archivées.
 - Le snapshot brut CJUE peut varier avec l'horodatage et l'ordre des items du flux : chaque passe ajoute alors un fichier `data/raw/` (~96 Ko), sans changer `data/entries/`.
 - Aucune donnée personnelle : uniquement des textes publics.
-- Un flux CJUE en panne laisse les entrées CNIL en place ; la passe signale la source.
+- Un flux CJUE en panne laisse les entrées CNIL en place ; une page CNIL en panne laisse l'entrée avec `references: []` et un avertissement.

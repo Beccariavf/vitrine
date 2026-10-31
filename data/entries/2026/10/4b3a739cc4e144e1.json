@@ -5,6 +5,8 @@
   "url": "https://www.cnil.fr/fr/cloture-injonction-google",
   "publishedAt": "2026-10-14T12:00:00.000Z",
   "summary": "Par décision du 23 septembre 2026, la formation restreinte de la CNIL a clos l’injonction prononcée le 1er septembre 2025 à l’encontre des sociétés GOOGLE LLC et GOOGLE IRELAND LIMITED.",
-  "references": [],
+  "references": [
+    "Loi Informatique et Libertés · art. 82"
+  ],
   "source": "cnil"
 }
