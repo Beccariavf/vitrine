@@ -10,6 +10,7 @@ import { FEED_URL as ANSSI_FEED_URL, parseFeed as parseAnssiFeed } from "./sourc
 import { FEED_URL as CEPD_FEED_URL, parseFeed as parseCepdFeed } from "./sources/cepd.ts";
 import { FEED_URL as ARCEP_FEED_URL, parseFeed as parseArcepFeed } from "./sources/arcep.ts";
 import { FEED_URL as COMMISSION_FEED_URL, parseFeed as parseCommissionFeed } from "./sources/commission.ts";
+import { FEED_URL as COMMISSION_DMA_FEED_URL, parseFeed as parseCommissionDmaFeed } from "./sources/commission-dma.ts";
 import { fetchEntries as fetchCetatEntries } from "./sources/cetat.ts";
 import { fetchEntries as fetchJudilibreEntries } from "./sources/judilibre.ts";
 import { flushUsage } from "./piste.ts";
@@ -96,6 +97,12 @@ export const SOURCES: AnySource[] = [
     id: "commission",
     feedUrl: COMMISSION_FEED_URL,
     parse: (xml) => parseCommissionFeed(xml),
+  },
+  {
+    kind: "rss",
+    id: "commission-dma",
+    feedUrl: COMMISSION_DMA_FEED_URL,
+    parse: (xml) => parseCommissionDmaFeed(xml),
   },
   {
     kind: "api",

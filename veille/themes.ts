@@ -171,6 +171,7 @@ const SOURCE_DEFAULT_THEMES: Record<string, string[]> = {
   cnil: ["donnees-personnelles"],
   cepd: ["donnees-personnelles"],
   anssi: ["cybersecurite"],
+  "commission-dma": ["plateformes"],
 };
 
 /**

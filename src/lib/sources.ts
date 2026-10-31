@@ -6,6 +6,7 @@ const SOURCE_LABELS: Record<string, string> = {
   cepd: "CEPD",
   arcep: "ARCEP",
   commission: "Commission européenne",
+  "commission-dma": "Commission européenne — DMA",
   cetat: "Conseil d'État",
   judilibre: "Cour de cassation",
 };

@@ -61,6 +61,7 @@ describe("les entrées committées", () => {
       cepd: "www.edpb.europa.eu",
       arcep: "www.arcep.fr",
       commission: "digital-strategy.ec.europa.eu",
+      "commission-dma": "digital-markets-act.ec.europa.eu",
       cetat: "www.legifrance.gouv.fr",
       judilibre: "www.courdecassation.fr",
     };
