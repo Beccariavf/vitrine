@@ -42,26 +42,27 @@ const JAUTIVA = entry({
 });
 
 describe("le catalogue des matières", () => {
-  it("contient quatre matières, toutes actives", () => {
-    assert.equal(themes.length, 4);
+  it("contient cinq matières, toutes actives", () => {
+    assert.equal(themes.length, 5);
     assert.deepEqual(activeThemes(themes).map((theme) => theme.id), [
       "donnees-personnelles",
       "ia",
       "cybersecurite",
       "donnees-non-personnelles",
+      "plateformes",
     ]);
   });
 
-  it("refuse un catalogue de trois matières", () => {
+  it("refuse un catalogue de quatre matières", () => {
     const root = mkdtempSync(join(tmpdir(), "vitrine-themes-"));
     try {
       mkdirSync(join(root, "veille"), { recursive: true });
       writeFileSync(
         join(root, "veille", "themes.json"),
-        JSON.stringify({ themes: themes.slice(0, 3) }),
+        JSON.stringify({ themes: themes.slice(0, 4) }),
         "utf8",
       );
-      assert.throws(() => readThemes(root), /exactly four themes/);
+      assert.throws(() => readThemes(root), /exactly five themes/);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
@@ -156,5 +157,64 @@ describe("le rattachement", () => {
     const dp = themes.find((theme) => theme.id === "donnees-personnelles");
     assert.ok(dp);
     assert.equal(matchesTheme(JAUTIVA, dp), true);
+  });
+
+  it("rattache le DSA et le DMA à plateformes", () => {
+    const dsa = entry({
+      source: "cjeu",
+      title: "Arrêt — Règlement sur les services numériques — Modération des contenus",
+    });
+    assert.deepEqual(themesForEntry(dsa, themes), ["plateformes"]);
+
+    const dma = entry({
+      source: "cjeu",
+      title: "Arrêt — Digital Markets Act — Contrôleur d'accès",
+    });
+    assert.deepEqual(themesForEntry(dma, themes), ["plateformes"]);
+  });
+
+  it("ne rattache pas une simple plateforme", () => {
+    const generic = entry({ source: "cjeu", title: "Arrêt — Une plateforme de services" });
+    assert.deepEqual(themesForEntry(generic, themes), []);
+  });
+
+  it("rattache une entrée RGPD et DSA aux deux matières", () => {
+    const both = entry({
+      source: "cjeu",
+      title: "Arrêt — RGPD et règlement sur les services numériques",
+    });
+    assert.deepEqual(themesForEntry(both, themes).sort(), ["donnees-personnelles", "plateformes"]);
+  });
+
+  it("rattache plateformes par l'instrument cité", () => {
+    const dsa = entry({
+      source: "cjeu",
+      title: "Arrêt",
+      references: ["Règlement (UE) 2022/2065 · art. 24"],
+    });
+    assert.deepEqual(themesForEntry(dsa, themes), ["plateformes"]);
+  });
+
+  it("conserve les requêtes PISTE de la matière", () => {
+    const plateformes = themes.find((theme) => theme.id === "plateformes");
+    assert.deepEqual(plateformes?.queries, ["2022/2065", "2022/1925"]);
+  });
+
+  it("refuse des requêtes vides", () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-themes-"));
+    try {
+      mkdirSync(join(root, "veille"), { recursive: true });
+      const invalid = themes.map((theme) =>
+        theme.id === "plateformes" ? { ...theme, queries: [] } : theme,
+      );
+      writeFileSync(
+        join(root, "veille", "themes.json"),
+        JSON.stringify({ themes: invalid }),
+        "utf8",
+      );
+      assert.throws(() => readThemes(root), /"queries" must be a non-empty array/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 });

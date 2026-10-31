@@ -13,6 +13,8 @@ export type Theme = {
   terms: string[];
   /** Libellés affichés des sources qui alimentent la matière. */
   sources: string[];
+  /** Requêtes de jurisprudence propres à la matière ; à défaut, son premier terme. */
+  queries?: string[];
   active: boolean;
 };
 
@@ -37,7 +39,7 @@ function nonEmptyStrings(value: unknown, field: string, index: number): string[]
 function validateTheme(value: unknown, index: number): Theme {
   if (!isObject(value)) throw new Error(`Invalid theme #${index}: expected an object`);
 
-  const { id, label, description, instruments, terms, sources, active } = value;
+  const { id, label, description, instruments, terms, sources, queries, active } = value;
   if (typeof id !== "string" || !/^[a-z0-9-]+$/.test(id)) {
     throw new Error(`Invalid theme #${index}: "id" must be lowercase letters, digits or dashes`);
   }
@@ -51,6 +53,8 @@ function validateTheme(value: unknown, index: number): Theme {
     throw new Error(`Invalid theme #${index}: "active" must be a boolean`);
   }
 
+  const parsedQueries = queries === undefined ? undefined : nonEmptyStrings(queries, "queries", index);
+
   return {
     id,
     label: label.trim(),
@@ -58,6 +62,7 @@ function validateTheme(value: unknown, index: number): Theme {
     instruments: nonEmptyStrings(instruments, "instruments", index),
     terms: nonEmptyStrings(terms, "terms", index),
     sources: nonEmptyStrings(sources, "sources", index),
+    ...(parsedQueries === undefined ? {} : { queries: parsedQueries }),
     active,
   };
 }
@@ -94,8 +99,8 @@ export function readThemes(rootDir: string = process.cwd()): Theme[] {
     if (ids.has(theme.id)) throw new Error(`Invalid themes config ${path}: duplicate id "${theme.id}"`);
     ids.add(theme.id);
   }
-  if (themes.length !== 4) {
-    throw new Error(`Invalid themes config ${path}: expected exactly four themes`);
+  if (themes.length !== 5) {
+    throw new Error(`Invalid themes config ${path}: expected exactly five themes`);
   }
 
   return themes;

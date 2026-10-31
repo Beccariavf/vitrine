@@ -142,6 +142,49 @@
         "Cour de cassation"
       ],
       "active": true
+    },
+    {
+      "id": "plateformes",
+      "label": "Plateformes",
+      "description": "DSA et DMA : plateformes en ligne, contrôleurs d'accès et marchés numériques.",
+      "instruments": [
+        "Règlement (UE) 2022/2065",
+        "Règlement (UE) 2022/1925"
+      ],
+      "terms": [
+        "règlement sur les services numériques",
+        "Digital Services Act",
+        "DSA",
+        "RSN",
+        "2022/2065",
+        "très grande plateforme",
+        "VLOP",
+        "modération des contenus",
+        "contenus illicites",
+        "signaleur de confiance",
+        "coordinateur pour les services numériques",
+        "comité européen pour les services numériques",
+        "règlement sur les marchés numériques",
+        "Digital Markets Act",
+        "DMA",
+        "2022/1925",
+        "contrôleur d'accès",
+        "gatekeeper",
+        "services de plateforme essentiels",
+        "autopréférence"
+      ],
+      "sources": [
+        "Commission européenne",
+        "ARCOM",
+        "CJUE",
+        "Conseil d'État",
+        "Cour de cassation"
+      ],
+      "active": true,
+      "queries": [
+        "2022/2065",
+        "2022/1925"
+      ]
     }
   ]
 }
