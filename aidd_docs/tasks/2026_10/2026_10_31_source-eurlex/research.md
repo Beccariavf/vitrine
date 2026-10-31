@@ -19,7 +19,7 @@ Le cas Jautiva est un arrêt RGPD (publicité des données personnelles des acti
 
 ## Ce que contient le flux
 
-100 items, sans `pubDate` par item. La date est dans le titre. Deux formats principaux :
+100 items. La date de décision est dans le titre ; un `pubDate` de publication existe pour une partie des items (72/100 au 31/10/2026), mais il ne donne pas la date de décision : Jautiva porte `pubDate` 26/10 pour une décision du 03/09. La date de décision reste la source. Les titres contiennent des espaces insécables (`3 septembre 2026`, `Article 5`) : normaliser `\u00a0` et `\s` avant toute regex. Deux formats principaux :
 
 ```text
 Arrêt de la Cour (première chambre) du 12 mars 2026.#Minister for Justice contre I.T.#Renvoi préjudiciel – Citoyenneté...#Affaire C-477/24.
@@ -68,7 +68,7 @@ Test sur les 100 items du flux 163 : **1 seul cas retenu**, Jautiva. C'est le bo
 
 | Champ | Règle |
 | --- | --- |
-| `id` | `sha256` de l'URL FR canonique, 16 hex |
+| `id` | `sha256` de l'URL FR complète, CELEX en query, 16 hex ; ne pas passer par `canonicalUrl`, qui supprime la query et donnerait le même id à tous les arrêts |
 | `title` | Nom de l'affaire + numéro + type/date : « Jautiva (C-798/24) — Arrêt de la Cour du 3 septembre 2026 » |
 | `url` | `https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:62024CA0798` |
 | `publishedAt` | Date de la décision, à **12:00 UTC** (pas de date de publication dans le flux) |
@@ -104,7 +104,9 @@ Sur 100 items de jurisprudence, **1 cas RGPD**. Le flux couvre plusieurs semaine
 
 - **Volume faible** : 1 cas RGPD par centaine d'items ; c'est la réalité du flux CJUE, pas un bug.
 - **Formats de titres** : `#`, crochets, « Affaire C-... » ; le parseur doit être testé sur les deux fixtures.
-- **Pas de date de publication** : la date de décision est la seule ; la veille se lit en date de décision.
+- **Date de décision dans le titre, `pubDate` partiel** : le `pubDate` est une date de publication, pas la date de l'arrêt ; il sert seulement de secours.
+- **Espaces insécables** : les titres réels en contiennent ; une regex à espace ordinaire échoue.
+- **Identifiant** : l'URL EUR-Lex porte le CELEX en query ; `canonicalUrl` la réduirait à `/legal-content/FR/TXT`, donc un id identique pour tous.
 - **Doublons `_SUM`/`_RES`** : dédupliquer sur la base CELEX.
 - **Langue** : le flux est en français ; vérifier les rares items non traduits.
 - **Attribution** : CC BY 4.0 ; mention dans le pied de page ou une page « Sources et licences ».
@@ -114,13 +116,16 @@ Sur 100 items de jurisprudence, **1 cas RGPD**. Le flux couvre plusieurs semaine
 Construire l'adaptateur **jurisprudence CJUE via EUR-Lex (rssId=163)** comme deuxième source :
 
 1. snapshot brut du flux ;
-2. filtre RGPD à deux niveaux ;
+2. filtre RGPD à deux niveaux, appliqué au **titre officiel** (le titre d'affichage ne garde pas le sujet) ;
 3. titre = affaire + numéro + type/date ;
 4. résumé = sujet officiel, tronqué à 200 ;
-5. date de décision à midi UTC ;
-6. `source: "cjeu"` ;
-7. déduplication `_SUM`/`_RES` ;
-8. mise à jour des libellés CNIL et de l'attribution.
+5. références extraites du sujet officiel, avec normalisation des espaces insécables ;
+6. date de décision extraite du titre, à midi UTC ; `pubDate` en secours ;
+7. identifiant sur l'URL complète ou le CELEX, jamais sur `canonicalUrl` ;
+8. `source: "cjeu"` ;
+9. déduplication `_SUM`/`_RES` ;
+10. mise à jour des libellés CNIL et de l'attribution ;
+11. la passe applique les tags actifs et retire de `data/entries` les arrêts CJUE devenus inactifs ; le snapshot brut reste la preuve.
 
 Le réglage du filtre (IA, données ouvertes, cybersécurité) viendra après la première passe, avec les cas réels sous les yeux.
 
