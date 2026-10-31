@@ -111,6 +111,12 @@ export function activeThemes(themes: Theme[]): Theme[] {
   return themes.filter((theme) => theme.active);
 }
 
+/** Requêtes de jurisprudence d'une matière : les siennes, sinon son premier terme. */
+export function themeQueries(theme: Theme): string[] {
+  if (theme.queries !== undefined && theme.queries.length > 0) return theme.queries;
+  return [theme.terms[0] ?? theme.instruments[0] ?? theme.label];
+}
+
 /** Mots normalisés : casse, accents et ponctuation retirés. */
 function words(text: string): string[] {
   return text

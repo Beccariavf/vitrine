@@ -1,8 +1,9 @@
 import { strict as assert } from "node:assert";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { after, before, describe, it } from "node:test";
+import { after, before, beforeEach, describe, it } from "node:test";
 import type { FetchLike } from "../veille/fetch.ts";
+import { resetUsage } from "../veille/piste.ts";
 import { fetchEntries, WINDOW_DAYS } from "../veille/sources/judilibre.ts";
 import { assignThemes, readThemes } from "../veille/themes.ts";
 import type { Theme } from "../veille/themes.ts";
@@ -31,6 +32,10 @@ function restoreEnv(source: NodeJS.ProcessEnv): void {
 
 after(() => {
   restoreEnv(saved);
+});
+
+beforeEach(() => {
+  resetUsage();
 });
 
 function only(id: string): Theme[] {
@@ -87,6 +92,29 @@ describe("la source Judilibre", () => {
 
     assert.equal(result.entries.length, 1);
     assert.deepEqual(assignThemes(result.entries, THEMES)[0]?.themes, ["donnees-personnelles"]);
+  });
+
+  it("interroge les deux requêtes de plateformes et déduplique", async () => {
+    const calls: string[] = [];
+    const result = await fetchEntries({
+      fetchImpl: fakeFetch(calls),
+      themes: only("plateformes"),
+      now: NOW,
+    });
+
+    assert.equal(calls.length, 2);
+    const queries = calls.map((url) => new URL(url).searchParams.get("query"));
+    assert.deepEqual(queries.sort(), ['"2022/1925"', '"2022/2065"']);
+    assert.equal(result.entries.length, 1);
+    assert.equal(result.raw.length, 2);
+  });
+
+  it("reste sous le plafond avec cinq matières", async () => {
+    const calls: string[] = [];
+    const result = await fetchEntries({ fetchImpl: fakeFetch(calls), themes: THEMES, now: NOW });
+
+    assert.equal(calls.length, 6);
+    assert.equal(result.entries.length, 1);
   });
 
   it("avertit et n'appelle rien sans secrets", async () => {

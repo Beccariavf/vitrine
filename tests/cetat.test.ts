@@ -1,8 +1,9 @@
 import { strict as assert } from "node:assert";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { after, before, describe, it } from "node:test";
+import { after, before, beforeEach, describe, it } from "node:test";
 import type { FetchLike } from "../veille/fetch.ts";
+import { resetUsage } from "../veille/piste.ts";
 import { fetchEntries, parseCetatDate } from "../veille/sources/cetat.ts";
 import { assignThemes, readThemes } from "../veille/themes.ts";
 import type { Theme } from "../veille/themes.ts";
@@ -31,6 +32,10 @@ function restoreEnv(source: NodeJS.ProcessEnv): void {
 
 after(() => {
   restoreEnv(saved);
+});
+
+beforeEach(() => {
+  resetUsage();
 });
 
 function only(id: string): Theme[] {
@@ -84,6 +89,46 @@ describe("la source CETAT", () => {
     assert.equal(calls.filter((url) => url.includes("oauth")).length, 1);
     assert.equal(result.entries.length, 1);
     assert.deepEqual(assignThemes(result.entries, THEMES)[0]?.themes, ["donnees-personnelles"]);
+  });
+
+  it("interroge les deux requêtes de plateformes et déduplique", async () => {
+    const bodies: string[] = [];
+    let oauth = 0;
+    const fetchImpl: FetchLike = async (url, init) => {
+      if (url.includes("oauth")) {
+        oauth += 1;
+        return {
+          ok: true,
+          status: 200,
+          text: async () => JSON.stringify({ access_token: "token", expires_in: 3600 }),
+        };
+      }
+      bodies.push(String(init?.body ?? ""));
+      return { ok: true, status: 200, text: async () => SEARCH };
+    };
+
+    const result = await fetchEntries({
+      fetchImpl,
+      themes: only("plateformes"),
+      now: NOW,
+    });
+
+    assert.equal(bodies.length, 2);
+    assert.ok(bodies.some((body) => body.includes("2022/2065")));
+    assert.ok(bodies.some((body) => body.includes("2022/1925")));
+    assert.equal(oauth, 1);
+    assert.equal(result.entries.length, 1);
+    assert.equal(result.raw.length, 2);
+  });
+
+  it("reste sous le plafond avec cinq matières", async () => {
+    const calls: string[] = [];
+    const result = await fetchEntries({ fetchImpl: fakeFetch(calls), themes: THEMES, now: NOW });
+
+    assert.equal(calls.filter((url) => url.includes("search")).length, 6);
+    assert.equal(calls.filter((url) => url.includes("oauth")).length, 1);
+    assert.equal(calls.length, 7);
+    assert.equal(result.entries.length, 1);
   });
 
   it("avertit et n'appelle rien sans secrets", async () => {

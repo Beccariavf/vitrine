@@ -2,7 +2,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { FetchLike } from "./fetch.ts";
 
-/** Source des appels PISTE : un jeton, quatre recherches Légifrance, quatre recherches Judilibre. */
+/** Source des appels PISTE : un jeton, une recherche par requête de matière et par source. */
 export const MAX_CALLS_PER_RUN = 16;
 
 const OAUTH_URL = "https://oauth.piste.gouv.fr/api/oauth/token";

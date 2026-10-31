@@ -3,7 +3,7 @@ import type { FetchLike } from "../fetch.ts";
 import { extractCnilReferences } from "../references.ts";
 import { toSummary } from "../summary.ts";
 import type { Theme } from "../themes.ts";
-import { activeThemes } from "../themes.ts";
+import { activeThemes, themeQueries } from "../themes.ts";
 import { PisteSession, readPisteConfig } from "../piste.ts";
 
 /** Identifiant stable de la source, écrit dans chaque entrée. */
@@ -99,37 +99,38 @@ export async function fetchEntries({
   const cutoff = now.getTime() - WINDOW_DAYS * 24 * 60 * 60 * 1000;
 
   for (const theme of activeThemes(themes)) {
-    const query = theme.terms[0] ?? theme.instruments[0] ?? theme.label;
-    const body = {
-      recherche: {
-        champs: [
-          {
-            typeChamp: "ALL",
-            criteres: [{ typeRecherche: "EXACTE", valeur: query, operateur: "ET" }],
-            operateur: "ET",
-          },
-        ],
-        filtres: [],
-        pageNumber: 1,
-        pageSize: 20,
-        sort: "DATE_DESC",
-        typePagination: "DEFAUT",
-      },
-      fond: "CETAT",
-    };
+    for (const query of themeQueries(theme)) {
+      const body = {
+        recherche: {
+          champs: [
+            {
+              typeChamp: "ALL",
+              criteres: [{ typeRecherche: "EXACTE", valeur: query, operateur: "ET" }],
+              operateur: "ET",
+            },
+          ],
+          filtres: [],
+          pageNumber: 1,
+          pageSize: 20,
+          sort: "DATE_DESC",
+          typePagination: "DEFAUT",
+        },
+        fond: "CETAT",
+      };
 
-    const response = await session.legifrance(fetchImpl, body);
-    raw.push(JSON.stringify(response, null, 2));
+      const response = await session.legifrance(fetchImpl, body);
+      raw.push(JSON.stringify(response, null, 2));
 
-    const results = typeof response === "object" && response !== null && Array.isArray((response as { results?: unknown }).results)
-      ? ((response as { results: unknown[] }).results as CetatResult[])
-      : [];
+      const results = typeof response === "object" && response !== null && Array.isArray((response as { results?: unknown }).results)
+        ? ((response as { results: unknown[] }).results as CetatResult[])
+        : [];
 
-    for (const result of results) {
-      const entry = toEntry(result);
-      if (entry === null) continue;
-      if (entry.publishedAt !== null && Date.parse(entry.publishedAt) < cutoff) continue;
-      if (!byId.has(entry.id)) byId.set(entry.id, entry);
+      for (const result of results) {
+        const entry = toEntry(result);
+        if (entry === null) continue;
+        if (entry.publishedAt !== null && Date.parse(entry.publishedAt) < cutoff) continue;
+        if (!byId.has(entry.id)) byId.set(entry.id, entry);
+      }
     }
   }
 
