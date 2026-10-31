@@ -39,6 +39,13 @@ describe("les références juridiques", () => {
     );
   });
 
+  it("rattache un article placé avant le premier instrument", () => {
+    assert.deepEqual(
+      extractReferences("Manquement d'État – Protection des données – Article 5 – Règlement (UE) 2016/679"),
+      ["Règlement (UE) 2016/679 · art. 5"],
+    );
+  });
+
   it("gère une directive sans institution entre parenthèses", () => {
     assert.deepEqual(
       extractReferences("Directive 95/46/CE – Article 7 – Consentement"),

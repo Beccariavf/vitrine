@@ -154,6 +154,9 @@ export function parseFeed(xml: string, tags: Tag[]): Entry[] {
 
   const rawItems = channel["item"];
   const items = rawItems === undefined ? [] : Array.isArray(rawItems) ? rawItems : [rawItems];
+  if (items.length === 0) {
+    throw new Error("CJUE feed has no item");
+  }
 
   const byCelex = new Map<string, { entry: Entry; rank: number }>();
 
@@ -187,6 +190,7 @@ export function parseFeed(xml: string, tags: Tag[]): Entry[] {
     const entry: Entry = {
       id: hashFullUrl(url),
       title,
+      officialTitle: official,
       url,
       publishedAt,
       summary: toSummary(summary),

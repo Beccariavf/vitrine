@@ -26,7 +26,7 @@ flowchart TD
 ## Entry points
 
 - `veille/main.ts` : une passe complète sur les deux sources, lancée par `npm run veille`.
-- `veille/tags.json` : le catalogue des tags actifs, écrit plus tard par l’outil local.
+- `veille/tags.json` : le catalogue des tags actifs, écrit par l’outil local.
 - `src/pages/index.astro` et `src/pages/veille/index.astro` : les deux pages, générées par `npm run build`.
 - `tools/parametres.html` : l'outil local de sélection des tags.
 - `npm test` : la suite de tests ; `npm run typecheck` vérifie les types.

@@ -50,6 +50,7 @@ describe("le flux CJUE figé", () => {
       "Règlement (UE) 2016/679 · art. 5, 6",
       "Directive (UE) 2017/1132 · art. 14",
     ]);
+    assert.ok(jautiva.officialTitle.startsWith("Affaire C-798/24, Jautiva"));
     assert.ok(jautiva.summary?.startsWith("Renvoi préjudiciel – Protection des personnes physiques"));
     assert.ok(!(jautiva.summary ?? "").includes("\u00a0"));
     assert.ok(!jautiva.title.includes("\u00a0"));
@@ -68,8 +69,12 @@ describe("le flux CJUE figé", () => {
     assert.ok(withIaEntries.some((entry) => entry.title.includes("Commission européenne contre IA")));
   });
 
-  it("refuse un XML invalide", () => {
+  it("refuse un XML invalide ou un flux vide", () => {
     assert.throws(() => parseFeed("<rss><channel><item></rss>", tags), /not valid XML/);
+    assert.throws(
+      () => parseFeed('<?xml version="1.0"?><rss version="2.0"><channel><title>x</title></channel></rss>', tags),
+      /CJUE feed has no item/,
+    );
   });
 });
 

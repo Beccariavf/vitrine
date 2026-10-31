@@ -20,12 +20,12 @@ flowchart LR
   F --> P["Publication"]
   P --> E["data/entries"]
   E --> S["Site Astro"]
-  S --> W["Cloudflare Workers"]
+  S --> W["Cloudflare Workers (cible, non configurée)"]
 ```
 
 ## Key decisions
 
-- Static-first : un cron GitHub Actions exécutera une passe par jour (workflow encore à créer) ; rien ne tourne en continu.
+- Static-first : un cron GitHub Actions exécutera une passe par jour (workflow encore à créer) ; le site n'est pas déployé, voir `deployment.md`.
 - Git est la base : snapshots bruts + hash + JSON commités ; l'index se reconstruit au build.
 - `src/` est jetable : les données survivent à un changement de générateur.
 - Un adaptateur par source, isolé dans `veille/sources/` : CNIL et CJUE.

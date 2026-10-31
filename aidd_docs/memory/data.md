@@ -26,6 +26,7 @@ flowchart LR
 
 ## References
 
+- Chaque entrée porte `officialTitle`, le titre officiel complet, source du filtre et des références ; le `title` est le titre d'affichage.
 - Chaque entrée porte `references: string[]`, les instruments et articles principaux cités par le titre officiel ; les entrées CNIL portent `[]`.
 - L'extraction est déterministe (`veille/references.ts`) ; elle ne réécrit pas la source.
 - Le catalogue de tags (`veille/tags.json`) filtre les arrêts CJUE ; les tags actifs décident de la publication, pas de la donnée brute.
@@ -38,6 +39,6 @@ flowchart LR
 
 - Git : chaque snapshot brut est adressé par son `sha256`, chaque entrée par un `id` stable.
 - Les entrées ne changent pas quand le contenu est inchangé.
-- Le snapshot brut CJUE peut varier avec l'horodatage du flux : chaque passe ajoute alors un fichier `data/raw/`, sans changer `data/entries/`.
+- Le snapshot brut CJUE peut varier avec l'horodatage et l'ordre des items du flux : chaque passe ajoute alors un fichier `data/raw/` (~96 Ko), sans changer `data/entries/`.
 - Aucune donnée personnelle : uniquement des textes publics.
 - Un flux CJUE en panne laisse les entrées CNIL en place ; la passe signale la source.

@@ -112,6 +112,7 @@ export function parseFeed(xml: string): Entry[] {
     entries.push({
       id: hashId(url),
       title,
+      officialTitle: title,
       url,
       publishedAt: toIsoUtc(textOf(item["pubDate"])),
       summary: toSummary(textOf(item["description"])),

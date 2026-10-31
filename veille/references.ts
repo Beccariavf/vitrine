@@ -51,6 +51,14 @@ export function extractReferences(title: string): string[] {
     const segment = text.slice(start, end);
 
     const articles: string[] = [];
+    const beforeSegment = index === 0 ? text.slice(0, match.index ?? 0) : "";
+    for (const article of beforeSegment.matchAll(ARTICLE)) {
+      const startIndex = article.index ?? 0;
+      const before = beforeSegment.slice(Math.max(0, startIndex - 40), startIndex);
+      if (OTHER_INSTRUMENT.test(before)) continue;
+      articles.push(...articleNumbers(article[1] ?? ""));
+    }
+
     for (const article of segment.matchAll(ARTICLE)) {
       const index = article.index ?? 0;
       const before = segment.slice(Math.max(0, index - 40), index);

@@ -238,7 +238,7 @@
               const writable = await handle.createWritable();
               await writable.write(text);
               await writable.close();
-              setStatus("Enregistré. Lance npm run veille puis npm run build.");
+              setStatus("Enregistré. Vérifie que le fichier est veille/tags.json, puis lance npm run veille et npm run build.");
               return;
             }
 
@@ -248,7 +248,7 @@
             link.href = url;
             link.download = "tags.json";
             link.click();
-            URL.revokeObjectURL(url);
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
             setStatus("Téléchargé. Place le fichier dans veille/tags.json.");
           } catch (error) {
             if (error && error.name === "AbortError") return;

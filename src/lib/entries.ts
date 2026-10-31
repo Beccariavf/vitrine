@@ -2,11 +2,11 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import type { Entry } from "../../veille/types.ts";
 
-/** Les sept champs du contrat `veille/types.ts`. */
-const FIELDS = ["id", "title", "url", "publishedAt", "summary", "references", "source"] as const;
+/** Les huit champs du contrat `veille/types.ts`. */
+const FIELDS = ["id", "title", "officialTitle", "url", "publishedAt", "summary", "references", "source"] as const;
 
 /** Champs qui doivent porter une chaîne non vide ; `publishedAt` et `summary` acceptent `null`. */
-const STRING_FIELDS = ["id", "title", "url", "source"] as const;
+const STRING_FIELDS = ["id", "title", "officialTitle", "url", "source"] as const;
 
 /** Liste récursivement les fichiers `.json` sous `dir`, triés pour être déterministes. */
 function listJsonFiles(dir: string): string[] {
@@ -20,7 +20,7 @@ function listJsonFiles(dir: string): string[] {
 }
 
 /**
- * Valide la forme d'une entrée et rend une copie typée : seuls les sept champs
+ * Valide la forme d'une entrée et rend une copie typée : seuls les huit champs
  * du contrat sont retenus. Une entrée qui dévie est une erreur de pipeline, pas
  * une entrée à afficher partiellement.
  */
@@ -62,6 +62,7 @@ function parseEntry(text: string, file: string): Entry {
   return {
     id: record.id as string,
     title: record.title as string,
+    officialTitle: record.officialTitle as string,
     url: record.url as string,
     publishedAt: record.publishedAt as string | null,
     summary: record.summary as string | null,

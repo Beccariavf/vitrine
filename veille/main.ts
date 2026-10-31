@@ -2,7 +2,7 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { FEED_URL as CNIL_FEED_URL, parseFeed as parseCnilFeed } from "./sources/cnil.ts";
 import { FEED_URL as CJEU_FEED_URL, parseFeed as parseCjeuFeed } from "./sources/cjeu.ts";
-import { readTags } from "./tags.ts";
+import { matchesActiveTags, readTags } from "./tags.ts";
 import type { Tag } from "./tags.ts";
 import type { Entry } from "./types.ts";
 import { pruneSourceEntries, writeEntries, writeRaw } from "./write.ts";
@@ -97,7 +97,9 @@ export async function run({
       const entryPaths = writeEntries(rootDir, entries);
 
       if (source.id === "cjeu") {
-        pruneSourceEntries(rootDir, source.id, new Set(entries.map((entry) => entry.id)));
+        pruneSourceEntries(rootDir, source.id, (entry) =>
+          matchesActiveTags(entry.officialTitle, topicTags),
+        );
       }
 
       results.push({ source: source.id, rawPath, entryPaths });

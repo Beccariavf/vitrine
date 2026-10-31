@@ -34,6 +34,7 @@ function entry(overrides: Record<string, unknown> = {}): Record<string, unknown>
   return {
     id: "0123456789abcdef",
     title: "Titre",
+    officialTitle: "Titre",
     url: "https://www.cnil.fr/fr/titre",
     publishedAt: "2026-10-01T12:00:00.000Z",
     summary: "Un résumé.",
@@ -51,10 +52,11 @@ describe("les entrées committées", () => {
     assert.equal(entries.length, countEntryFiles(join(ROOT, "data", "entries")));
   });
 
-  it("respecte les sept champs du contrat", () => {
+  it("respecte les huit champs du contrat", () => {
     for (const item of entries) {
       assert.equal(typeof item.id, "string");
       assert.equal(typeof item.title, "string");
+      assert.equal(typeof item.officialTitle, "string");
       if (item.source === "cnil") assert.ok(item.url.startsWith("https://www.cnil.fr/"));
       else if (item.source === "cjeu") assert.ok(item.url.startsWith("https://eur-lex.europa.eu/"));
       else assert.fail(`source inconnue : ${item.source}`);

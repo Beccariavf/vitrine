@@ -13,6 +13,9 @@ import { writeEntries } from "../veille/write.ts";
 const FULL = readFileSync(new URL("./fixtures/cnil/feed.xml", import.meta.url), "utf8");
 const REDUCED = readFileSync(new URL("./fixtures/cnil/feed-reduced.xml", import.meta.url), "utf8");
 const CJUE_FEED = readFileSync(new URL("./fixtures/cjeu/feed.xml", import.meta.url), "utf8");
+const CJUE_REDUCED = CJUE_FEED.replace(/<item>\s*<title>CELEX:62024CA0798[\s\S]*?<\/item>/, "");
+const CJUE_EMPTY =
+  '<?xml version="1.0"?><rss version="2.0"><channel><title>x</title></channel></rss>';
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const TOPIC_TAGS = readTags(ROOT);
 
@@ -193,6 +196,7 @@ describe("une entrée sans date", () => {
       const entry = {
         id: "0123456789abcdef",
         title: "Sans date",
+        officialTitle: "Sans date",
         url: "https://www.cnil.fr/fr/sans-date",
         publishedAt: null,
         summary: "Une actualité sans date.",
@@ -303,6 +307,25 @@ describe("deux sources", () => {
     assert.equal(new Set(entries.map((entry) => entry.id)).size, entries.length);
   });
 
+  it("conserve un arrêt sorti du flux tant que son tag est actif", async () => {
+    const reduced = new Map([
+      [CNIL.feedUrl, FULL],
+      [CJEU.feedUrl, CJUE_REDUCED],
+    ]);
+
+    const result = await run({
+      fetchImpl: fetchByUrl(reduced),
+      rootDir: root,
+      sources: SOURCES,
+      tags: TOPIC_TAGS,
+    });
+
+    assert.equal(result.entryPaths.length, 12);
+    const entries = entrySources(root);
+    assert.ok(entries.some((entry) => entry.source === "cjeu" && entry.title.startsWith("Jautiva")));
+    assert.equal(entries.filter((entry) => entry.source === "cjeu").length, 3);
+  });
+
   it("retire les arrêts CJUE quand le tag RGPD est désactivé", async () => {
     const withoutRgpd = TOPIC_TAGS.map((tag) => (tag.id === "rgpd" ? { ...tag, active: false } : tag));
 
@@ -317,6 +340,26 @@ describe("deux sources", () => {
     const entries = entrySources(root);
     assert.equal(entries.filter((entry) => entry.source === "cjeu").length, 0);
     assert.equal(entries.filter((entry) => entry.source === "cnil").length, 10);
+  });
+
+  it("traite un flux CJUE vide comme une panne", async () => {
+    const fresh = tempRoot();
+    try {
+      const empty = new Map([
+        [CNIL.feedUrl, FULL],
+        [CJEU.feedUrl, CJUE_EMPTY],
+      ]);
+
+      await assert.rejects(
+        run({ fetchImpl: fetchByUrl(empty), rootDir: fresh, sources: SOURCES, tags: TOPIC_TAGS }),
+        /CJUE feed has no item/,
+      );
+      const entries = entrySources(fresh);
+      assert.equal(entries.filter((entry) => entry.source === "cnil").length, 10);
+      assert.equal(entries.filter((entry) => entry.source === "cjeu").length, 0);
+    } finally {
+      rmSync(fresh, { recursive: true, force: true });
+    }
   });
 
   it("conserve les entrées CNIL quand le flux CJUE échoue", async () => {

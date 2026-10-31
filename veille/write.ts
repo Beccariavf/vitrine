@@ -85,7 +85,7 @@ export function writeEntries(rootDir: string, entries: Entry[]): string[] {
 export function pruneSourceEntries(
   rootDir: string,
   source: string,
-  keepIds: Set<string>,
+  keep: (entry: Entry) => boolean,
 ): string[] {
   const entriesDir = join(rootDir, "data", "entries");
   if (!existsSync(entriesDir)) return [];
@@ -101,7 +101,7 @@ export function pruneSourceEntries(
       continue;
     }
 
-    if (entry.source === source && !keepIds.has(entry.id)) {
+    if (entry.source === source && !keep(entry)) {
       rmSync(path, { force: true });
       removed.push(path);
     }
