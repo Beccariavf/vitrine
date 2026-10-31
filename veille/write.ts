@@ -76,3 +76,35 @@ export function writeEntries(rootDir: string, entries: Entry[]): string[] {
     return path;
   });
 }
+
+/**
+ * Retire les entrées d'une source qui ne font plus partie de la sélection
+ * publiée. Les autres sources ne sont jamais touchées ; le snapshot brut
+ * conserve la preuve de ce qui a été lu.
+ */
+export function pruneSourceEntries(
+  rootDir: string,
+  source: string,
+  keepIds: Set<string>,
+): string[] {
+  const entriesDir = join(rootDir, "data", "entries");
+  if (!existsSync(entriesDir)) return [];
+
+  const removed: string[] = [];
+  for (const path of listFiles(entriesDir)) {
+    if (!path.endsWith(".json")) continue;
+
+    let entry: Entry;
+    try {
+      entry = JSON.parse(readFileSync(path, "utf8")) as Entry;
+    } catch {
+      continue;
+    }
+
+    if (entry.source === source && !keepIds.has(entry.id)) {
+      rmSync(path, { force: true });
+      removed.push(path);
+    }
+  }
+  return removed;
+}

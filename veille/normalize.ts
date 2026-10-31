@@ -15,3 +15,11 @@ export function canonicalUrl(url: string): string {
 export function hashId(url: string): string {
   return createHash("sha256").update(canonicalUrl(url), "utf8").digest("hex").slice(0, 16);
 }
+
+/**
+ * Identifiant d'une URL dont la query porte l'identité (CELEX EUR-Lex) :
+ * `canonicalUrl` supprimerait la query et donnerait le même id à tous les arrêts.
+ */
+export function hashFullUrl(url: string): string {
+  return createHash("sha256").update(url, "utf8").digest("hex").slice(0, 16);
+}

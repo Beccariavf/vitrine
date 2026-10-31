@@ -1,0 +1,100 @@
+import { strict as assert } from "node:assert";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { describe, it } from "node:test";
+import { readTags } from "../veille/tags.ts";
+import {
+  parseCaseTitle,
+  parseDecisionDate,
+  parseFeed,
+  parsePublicationDate,
+} from "../veille/sources/cjeu.ts";
+
+const ROOT = fileURLToPath(new URL("..", import.meta.url));
+const FEED = readFileSync(new URL("./fixtures/cjeu/feed.xml", import.meta.url), "utf8");
+const tags = readTags(ROOT);
+
+describe("le flux CJUE figé", () => {
+  const entries = parseFeed(FEED, tags);
+
+  it("retient les arrêts des tags actifs, sans les autres", () => {
+    assert.equal(entries.length, 3);
+    const titles = entries.map((entry) => entry.title);
+    assert.ok(titles.some((title) => title.startsWith("Jautiva (C-798/24)")));
+    assert.ok(titles.some((title) => title.startsWith("Commission européenne contre Hongrie. (C-681/24)")));
+    assert.ok(titles.some((title) => title.startsWith("Test contre Autorité. (C-999/25)")));
+    assert.ok(!titles.some((title) => title.includes("Minister for Justice")));
+    assert.ok(!titles.some((title) => title.includes("IA")));
+  });
+
+  it("dédoublonne _SUM/_RES et ignore _INF", () => {
+    const hungary = entries.filter((entry) => entry.title.includes("Hongrie"));
+    assert.equal(hungary.length, 1);
+    assert.ok(!entries.some((entry) => entry.url.includes("62026CO0111")));
+  });
+
+  it("donne à chaque arrêt une URL et un identifiant distincts", () => {
+    for (const entry of entries) {
+      assert.match(entry.url, /^https:\/\/eur-lex\.europa\.eu\/legal-content\/FR\/TXT\/\?uri=CELEX:\d/);
+      assert.match(entry.id, /^[0-9a-f]{16}$/);
+      assert.equal(entry.source, "cjeu");
+    }
+    assert.equal(new Set(entries.map((entry) => entry.id)).size, entries.length);
+  });
+
+  it("parse Jautiva avec ses références et sa date de décision", () => {
+    const jautiva = entries.find((entry) => entry.title.startsWith("Jautiva"));
+    assert.ok(jautiva);
+    assert.equal(jautiva.publishedAt, "2026-09-03T12:00:00.000Z");
+    assert.deepEqual(jautiva.references, [
+      "Règlement (UE) 2016/679 · art. 5, 6",
+      "Directive (UE) 2017/1132 · art. 14",
+    ]);
+    assert.ok(jautiva.summary?.startsWith("Renvoi préjudiciel – Protection des personnes physiques"));
+    assert.ok(!(jautiva.summary ?? "").includes("\u00a0"));
+    assert.ok(!jautiva.title.includes("\u00a0"));
+  });
+
+  it("utilise le pubDate en secours quand le titre ne porte pas de date", () => {
+    const fallback = entries.find((entry) => entry.title.startsWith("Test contre Autorité"));
+    assert.ok(fallback);
+    assert.equal(fallback.publishedAt, "2026-10-30T12:00:00.000Z");
+  });
+
+  it("inclut les arrêts IA quand le tag est actif", () => {
+    const withIa = tags.map((tag) => (tag.id === "ia" ? { ...tag, active: true } : tag));
+    const withIaEntries = parseFeed(FEED, withIa);
+    assert.equal(withIaEntries.length, 4);
+    assert.ok(withIaEntries.some((entry) => entry.title.includes("Commission européenne contre IA")));
+  });
+
+  it("refuse un XML invalide", () => {
+    assert.throws(() => parseFeed("<rss><channel><item></rss>", tags), /not valid XML/);
+  });
+});
+
+describe("le titre et la date", () => {
+  it("sépare le titre et le résumé des deux formats", () => {
+    const jautiva = parseCaseTitle(
+      "Affaire C-798/24, Jautiva: Arrêt de la Cour du 3 septembre 2026 – A e. a. [Protection des données – Article 5]",
+    );
+    assert.equal(jautiva.title, "Jautiva (C-798/24) — Arrêt de la Cour du 3 septembre 2026");
+    assert.equal(jautiva.summary, "Protection des données – Article 5");
+
+    const hash = parseCaseTitle(
+      "Arrêt de la Cour du 12 mars 2026.#Minister for Justice contre I.T.#Citoyenneté.#Affaire C-477/24.",
+    );
+    assert.equal(hash.title, "Minister for Justice contre I.T. (C-477/24) — Arrêt de la Cour du 12 mars 2026.");
+    assert.equal(hash.summary, "Citoyenneté.");
+  });
+
+  it("normalise les espaces insécables avant la date", () => {
+    assert.equal(parseDecisionDate("du 3\u00a0septembre 2026"), "2026-09-03T12:00:00.000Z");
+    assert.equal(parseDecisionDate("sans date"), null);
+  });
+
+  it("lit le pubDate au jour calendaire, à midi UTC", () => {
+    assert.equal(parsePublicationDate("Mon, 26 Oct 2026 00:00:00 +0100"), "2026-10-26T12:00:00.000Z");
+    assert.equal(parsePublicationDate(null), null);
+  });
+});

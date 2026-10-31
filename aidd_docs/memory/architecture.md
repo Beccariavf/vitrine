@@ -28,8 +28,11 @@ flowchart LR
 - Static-first : un cron GitHub Actions exécutera une passe par jour (workflow encore à créer) ; rien ne tourne en continu.
 - Git est la base : snapshots bruts + hash + JSON commités ; l'index se reconstruit au build.
 - `src/` est jetable : les données survivent à un changement de générateur.
-- Un adaptateur par source, isolé dans `veille/sources/`.
+- Un adaptateur par source, isolé dans `veille/sources/` : CNIL et CJUE.
 - Le site ne lit aucune API au runtime : il lit `data/`.
+- Une panne de source n'emporte pas les autres : les écritures réussies restent, la passe échoue avec un message nommant la source.
+- Le catalogue `veille/tags.json` est la seule configuration de filtrage ; la passe publie les tags actifs et retire les arrêts CJUE devenus inactifs. Le snapshot brut reste la preuve.
+- `Entry.references` porte les instruments et articles du titre officiel, extraits sans modèle.
 
 ## Gotchas
 

@@ -55,7 +55,9 @@ describe("les entrées committées", () => {
     for (const item of entries) {
       assert.equal(typeof item.id, "string");
       assert.equal(typeof item.title, "string");
-      assert.ok(item.url.startsWith("https://www.cnil.fr/"));
+      if (item.source === "cnil") assert.ok(item.url.startsWith("https://www.cnil.fr/"));
+      else if (item.source === "cjeu") assert.ok(item.url.startsWith("https://eur-lex.europa.eu/"));
+      else assert.fail(`source inconnue : ${item.source}`);
       assert.equal(typeof item.source, "string");
       assert.ok(Array.isArray(item.references));
       for (const reference of item.references) assert.equal(typeof reference, "string");
