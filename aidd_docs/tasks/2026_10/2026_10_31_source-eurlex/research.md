@@ -1,116 +1,131 @@
-# Recherche — EUR-Lex comme deuxième source
+# Recherche — EUR-Lex, jurisprudence CJUE
 
-Date : 31 octobre 2026. Objet : vérifier si EUR-Lex peut alimenter la veille sans compte PISTE, avant de rédiger le contrat.
+Date : 31 octobre 2026. Objet : vérifier si la jurisprudence de la CJUE peut alimenter la veille sans PISTE, et identifier les filtres RGPD / droits des données.
 
 ## Verdict court
 
-**Oui, via le flux RSS des actes du Journal officiel L.** C'est public, gratuit, en français, daté par acte, et cela couvre les actes numériques européens. Pas besoin de PISTE, de SPARQL ni de scraping du site.
+**Oui, via le flux RSS de la jurisprudence CJUE.** C'est public, gratuit, en français, sans PISTE. En revanche, le flux est **large** : la jurisprudence RGPD y est rare. Le filtre doit être précis, et la veille restera sélective.
 
-Le flux à retenir : `https://eur-lex.europa.eu/FR/display-feed.rss?rssId=165` — « 7 - Actes du Journal officiel L ».
+Flux retenu : `https://eur-lex.europa.eu/FR/display-feed.rss?rssId=163` — « 2 - Toute la jurisprudence de la Cour de justice de l'Union européenne ».
 
-## Ce qui a été testé
+## Pourquoi 163 et pas 164
 
-| Piste | Résultat | Verdict |
+| Flux | Contenu | Cas RGPD trouvé |
 | --- | --- | --- |
-| Flux RSS `rssId=165` | 200, 100 actes, 18 actes le 30 octobre, dates du 22 au 30 octobre | **Retenu** |
-| Flux RSS `rssId=162` | « Toute la législation du Parlement et du Conseil », 6 actes le 30 octobre | Sous-ensemble, moins complet |
-| Flux RSS `rssId=163/164` | Jurisprudence CJUE, 100 items, pas de `pubDate` par acte | Alternative, plus tard |
-| Flux RSS `rssId=166` | Actes du JO C, 100 items, dates par acte | Notices, pas la priorité |
-| Flux RSS `rssId=168/169` | Éditions complètes du JO, 100 éditions, pas d'acte | Inadapté |
-| Site JO L quotidien | 202 vide pour un client HTTP (challenge) | Inadapté au pipeline |
-| Cellar / SPARQL | Métadonnées dans des graphes nommés ; RDF GDPR = 62 Mo | Trop lourd |
-| Cellar REST par CELEX | RDF énorme ; HTML/PDF refusés sur l'URI de travail | Inadapté |
-| Licence | Contenu EUR-Lex réutilisable sous CC BY 4.0 avec attribution | Compatible |
+| **163** | Toute la jurisprudence CJUE (Cour, Tribunal, ordonnances, conclusions) | **Jautiva, C-798/24** |
+| 164 | Jurisprudence de la Cour de justice | 0 sur les 100 derniers items |
 
-Le flux accepte l'agent du projet (`vitrine-veille/0.1 (+https://github.com/Beccariavf/vitrine)`), pas seulement un navigateur.
+Le cas Jautiva est un arrêt RGPD (publicité des données personnelles des actionnaires, règlement 2016/679). Il n'apparaît que dans le flux 163. Le flux 163 est donc le bon point d'entrée.
 
-## Ce que contient le flux 165
+## Ce que contient le flux
 
-Exemple d'item :
+100 items, sans `pubDate` par item. La date est dans le titre. Deux formats principaux :
 
 ```text
-<title>CELEX:32026R2408: Règlement délégué (UE) 2026/2408 de la Commission du 20 juillet 2026 modifiant le règlement délégué (UE) 2019/20...</title>
-<pubDate>Fri, 30 Oct 2026 00:00:00 +0100</pubDate>
-<link>https://eur-lex.europa.eu/./legal-content/AUTO/?uri=CELEX:32026R2408</link>
+Arrêt de la Cour (première chambre) du 12 mars 2026.#Minister for Justice contre I.T.#Renvoi préjudiciel – Citoyenneté...#Affaire C-477/24.
 ```
 
-- `pubDate` est la date de publication au JO, pas la date de l'acte. Les 18 actes du 30 octobre partagent cette date.
-- Le titre officiel est long ; le préfixe `CELEX:...:` est technique.
-- Aucune description : le flux ne fournit pas de résumé.
-- Certains items ne sont pas en français. Exemple : `CELEX:32022R2065R(11)`, corrigendum allemand du DSA, avec `description` = « Le rectificatif ne concerne pas la version française. » À ignorer.
-- Le flux couvre environ 7 jours de publication (100 actes). Une passe quotidienne suffit ; une panne de plus d'une semaine peut perdre des actes.
+```text
+Affaire C-798/24, Jautiva: Arrêt de la Cour (première chambre) du 3 septembre 2026 (...) – A e. a. [Renvoi préjudiciel – Protection des personnes physiques à l'égard du traitement des données à caractère personnel – Règlement (UE) 2016/679 – ...]
+```
+
+Le second format contient le sujet entre crochets : c'est un **résumé prêt à l'emploi**. Le premier contient le sujet après le deuxième `#`.
+
+## Filtres RGPD / droits des données
+
+Règle à deux niveaux pour éviter les faux positifs :
+
+1. Une **expression forte** sur les données, ou
+2. le mot **« données »** accompagné d'une action ou d'une notion des données.
+
+Expressions fortes de départ :
+
+- protection des données, données à caractère personnel, données personnelles
+- règlement (UE) 2016/679, RGPD, directive 95/46/CE
+- vie privée, ePrivacy, communications électroniques
+- CNIL, comité européen de la protection des données, contrôleur européen de la protection des données, autorité de protection des données
+- cookies, traceurs, consentement
+- transfert de données, décision d'adéquation, clauses contractuelles types, Privacy Shield, Safe Harbor
+- droits : accès, effacement, oubli, portabilité
+- données de santé, données biométriques, reconnaissance faciale, vidéosurveillance, géolocalisation
+- profilage, décision automatisée, violation de données, analyse d'impact
+- personne concernée, responsable du traitement, sous-traitant
+- conservation des données, secret des communications, métadonnées
+- dossiers passagers, PNR
+- espace européen des données, gouvernance des données, libre circulation des données, données ouvertes, réutilisation des données
+
+À exclure seuls, car trop larges :
+
+- « droit d'accès » : faux positif sur l'accès à un avocat ou à un dossier social ;
+- « protection » : faux positif sur la protection juridictionnelle ;
+- « traitement » : faux positif sur le traitement procédural ;
+- « personnel » : faux positif sur le personnel ;
+- « informatique » : faux positif sur les prestataires IT.
+
+Test sur les 100 items du flux 163 : **1 seul cas retenu**, Jautiva. C'est le bon résultat pour un filtre RGPD strict. Le réglage ultérieur pourra ajouter l'IA, la gouvernance des données, la cybersécurité et les données ouvertes pour élargir.
 
 ## Mapping vers le contrat `Entry`
 
 | Champ | Règle |
 | --- | --- |
-| `id` | `sha256` de l'URL FR canonique, 16 hex, comme aujourd'hui |
-| `title` | Titre de l'item, préfixe `CELEX:...:` retiré, entités décodées, espaces normalisés ; texte officiel conservé |
-| `url` | `https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:<celex>` |
-| `publishedAt` | Date du `pubDate`, ramenée à **12:00 UTC** pour éviter le décalage de fuseau |
-| `summary` | `null` : le flux n'en fournit pas ; le texte officiel reste accessible par le lien |
-| `source` | `eurlex` |
+| `id` | `sha256` de l'URL FR canonique, 16 hex |
+| `title` | Nom de l'affaire + numéro + type/date : « Jautiva (C-798/24) — Arrêt de la Cour du 3 septembre 2026 » |
+| `url` | `https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:62024CA0798` |
+| `publishedAt` | Date de la décision, à **12:00 UTC** (pas de date de publication dans le flux) |
+| `summary` | Sujet officiel : partie après le dernier `#` ou contenu entre `[...]`, nettoyé et tronqué à 200 caractères |
+| `source` | `cjeu` |
 
-Le titre reste long. La grille devra **clamper le titre à 3 lignes** ; la vue liste garde le titre complet. Le corps de carte sans résumé est déjà géré (cas FNAC).
+Le `title` et le `summary` proviennent tous deux du titre officiel : rien n'est inventé. Le résumé est le vrai sujet juridique de l'arrêt, pas une reformulation.
 
-## Filtre « droit du numérique »
+## Parsing à prévoir
 
-Le flux contient toute la législation. Un filtre par mots-clés sur le titre est nécessaire. Les termes trop larges produisent des faux positifs : « données » seul, « produits » seul, « plateformes » seul.
+- Retirer le préfixe `CELEX:...:`.
+- Format `#` : `part0` type/court/date, `part1` parties, `part2` sujet, `part3` numéro d'affaire.
+- Format `Affaire C-...: ... [sujet]` : nom, numéro, type/date, parties, sujet entre crochets.
+- Date : `(\d{1,2}) (janvier|…|décembre) (\d{4})`, après « du » ou « présentées le ».
+- Doublons : le même arrêt peut apparaître en `_SUM` et `_RES` ; dédupliquer sur la base du CELEX, préférer le texte intégral, ignorer `_INF` (information procédurale).
+- Fallback : titre complet, résumé `null`, jamais d'échec silencieux.
 
-Liste de départ, à valider :
+## Volume réel
 
-- protection des données, données à caractère personnel, vie privée
-- intelligence artificielle, IA (mot entier)
-- cybersécurité, cyberrésilience
-- services numériques, marchés numériques, plateformes en ligne, contenus illicites
-- identité numérique, espace européen des données, communications électroniques
-- crypto-actifs, MiCA, ePrivacy
-- RGPD, DSA, DMA, NIS2, DORA, CRA, AI Act, Data Act
-- droit d'auteur, société de l'information
-- données des dossiers passagers (PNR)
-
-Règles :
-
-- ignorer un item dont la `description` indique qu'il ne concerne pas la version française ;
-- ignorer un titre manifestement non francophone ;
-- garder le snapshot brut complet, même si le filtre ne retient que quelques actes.
+Sur 100 items de jurisprudence, **1 cas RGPD**. Le flux couvre plusieurs semaines. La veille CJUE sera donc **rare**, mais très pertinente. Le réglage ultérieur (IA, données ouvertes, cybersécurité) élargira le spectre. Pour une veille RGPD quotidienne, le flux CNIL reste la source principale ; la CJUE apporte la jurisprudence.
 
 ## Impacts UI et licences
 
-- `SOURCE_LABELS` : ajouter `eurlex: "EUR-Lex"`.
-- Accueil : « CNIL · 10 actualités » devient dynamique (`2 sources` ou `CNIL + EUR-Lex`) ; la carte produit et la description ne doivent plus dire « CNIL » seul.
-- Veille : « Corpus public · CNIL » devient « Corpus public · 2 sources ».
-- Pied de page : « Sources : CNIL, EUR-Lex » et mention **CC BY 4.0** avec lien vers l'avis juridique EUR-Lex.
-- Statistiques : « Sources » passe à 2 ; le bloc `pipeline.log` aussi.
-- Les cartes EUR-Lex n'auront pas de résumé ; la liste est la vue de lecture complète.
+- `SOURCE_LABELS` : ajouter `cjeu: "CJUE"`.
+- Accueil : « CNIL · 10 actualités » devient dynamique ; la carte produit et la description mentionnent la CJUE.
+- Veille : « Corpus public · CNIL » devient « Corpus public · CNIL + CJUE ».
+- Pied de page : « Sources : CNIL, CJUE » et mention **EUR-Lex / CC BY 4.0**.
+- Statistiques : « Sources » passe à 2.
+- Les cartes CJUE auront un vrai résumé (le sujet), donc pas de carte vide.
+- Le titre CJUE est plus court que les titres de législation : pas besoin de clamper agressivement.
 
 ## Risques
 
-- **Identifiant de flux** : `rssId=165` peut changer ; vérifier le titre du canal et échouer clairement.
-- **Fenêtre de 100 actes** : environ 7 jours ; le cron quotidien devra être fiable, ou la passe devra signaler un trou.
-- **Filtre** : faux négatifs possibles ; commencer conservateur, revoir la première passe avec un avocat.
-- **Titres longs** : lisibilité de la grille ; clamper, garder la liste complète.
-- **Langue** : quelques items non francophones ; les ignorer.
-- **Attribution** : CC BY 4.0 ; le lien source par entrée ne suffit pas à lui seul, ajouter la mention dans le pied de page ou une page « Sources et licences ».
+- **Volume faible** : 1 cas RGPD par centaine d'items ; c'est la réalité du flux CJUE, pas un bug.
+- **Formats de titres** : `#`, crochets, « Affaire C-... » ; le parseur doit être testé sur les deux fixtures.
+- **Pas de date de publication** : la date de décision est la seule ; la veille se lit en date de décision.
+- **Doublons `_SUM`/`_RES`** : dédupliquer sur la base CELEX.
+- **Langue** : le flux est en français ; vérifier les rares items non traduits.
+- **Attribution** : CC BY 4.0 ; mention dans le pied de page ou une page « Sources et licences ».
 
 ## Recommandation
 
-Construire l'adaptateur **EUR-Lex JO L (rssId=165)** comme deuxième source, avec :
+Construire l'adaptateur **jurisprudence CJUE via EUR-Lex (rssId=163)** comme deuxième source :
 
 1. snapshot brut du flux ;
-2. filtre mots-clés conservateur ;
-3. titres officiels, sans réécriture ;
-4. `summary: null` ;
-5. date JO à midi UTC ;
-6. `source: "eurlex"` ;
-7. mise à jour des libellés CNIL et de l'attribution.
+2. filtre RGPD à deux niveaux ;
+3. titre = affaire + numéro + type/date ;
+4. résumé = sujet officiel, tronqué à 200 ;
+5. date de décision à midi UTC ;
+6. `source: "cjeu"` ;
+7. déduplication `_SUM`/`_RES` ;
+8. mise à jour des libellés CNIL et de l'attribution.
 
-La jurisprudence CJUE (`rssId=163/164`) est une piste pour une troisième source : elle est plus riche juridiquement, mais sans date par item et avec des titres à découper sur `#`.
+Le réglage du filtre (IA, données ouvertes, cybersécurité) viendra après la première passe, avec les cas réels sous les yeux.
 
 ## Sources
 
-- Flux : `https://eur-lex.europa.eu/FR/display-feed.rss?rssId=165`
+- Flux jurisprudence : `https://eur-lex.europa.eu/FR/display-feed.rss?rssId=163`
 - Avis juridique : `https://eur-lex.europa.eu/content/legal-notice/legal-notice.html`
 - Réutilisation : `https://eur-lex.europa.eu/content/help/data-reuse/reuse-contents-eurlex-details.html`
-- JO L quotidien : `https://eur-lex.europa.eu/oj/daily-view/L-series/default.html`
-- Cellar : `https://op.europa.eu/en/web/cellar`
