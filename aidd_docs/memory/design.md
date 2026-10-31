@@ -20,7 +20,9 @@ La langue visuelle : jetons, typographie, modules et conventions. Ce que ça res
 - En-tête : wordmark `VITRINE_` en mono, navigation encadrée, page courante en aplat encre.
 - Accueil « Registre » : grand titre, bloc rouge de dernière publication, bandeau de chiffres, bloc `pipeline.log` en encre, méthode numérotée, produits en cartes avec filet rouge, bleu ou jaune.
 - Veille : bascule grille / liste sans JavaScript, grille par défaut. Grille de cartes sur 3 colonnes ; liste de lecture centrée à 56rem.
-- Chaque carte porte un en-tête coloré avec le grand jour et la source, puis un corps papier avec titre, résumé et « Lire ». Le cycle rouge → bleu → jaune → béton casse les colonnes uniformes ; le béton joue la fenêtre neutre.
+- Chaque carte porte un en-tête coloré avec le grand jour et la source, puis un corps papier avec titre, résumé, références et « Lire ». Le cycle rouge → bleu → jaune → béton casse les colonnes uniformes ; le béton joue la fenêtre neutre.
+- Les références juridiques sont des petits tags mono à filet 1 px sous le résumé : instrument + articles, jamais un texte long sur la couleur.
+- La tête de veille affiche les sources réelles (`CNIL + CJUE`) et les tags actifs en lecture seule ; le pied de page crédite EUR-Lex (CC BY 4.0).
 - Le texte long n'est jamais posé sur un aplat coloré : les en-têtes colorés ne portent que le jour et la source.
 - Survol : translation de 2 px et ombre dure qui grandit ; ligne de veille sur papier ; le texte courant ne change jamais de couleur, seuls les contrôles de navigation inversent encre et papier.
 - Aucun arrondi, aucune animation hors survol.

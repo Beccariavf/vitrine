@@ -1,12 +1,12 @@
 ---
 import Base from "../../layouts/Base.astro";
 import { getEntries, isRedundantSummary } from "../../lib/entries.ts";
+import { sourceLabel } from "../../lib/sources.ts";
+import { activeTags, readTags } from "../../../veille/tags.ts";
 
 const entries = getEntries();
-
-/** Libellé lisible d'une source ; l'identifiant reste dans les données. */
-const SOURCE_LABELS: Record<string, string> = { cnil: "CNIL" };
-const sourceLabel = (source: string) => SOURCE_LABELS[source] ?? source;
+const filters = activeTags(readTags());
+const sourceLabels = [...new Set(entries.map((entry) => sourceLabel(entry.source)))];
 
 /** Dates en français, à l'heure UTC : les mêmes au build comme en test. */
 const dateFormat = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeZone: "UTC" });
@@ -14,7 +14,7 @@ const dayFormat = new Intl.DateTimeFormat("fr-FR", { day: "2-digit", timeZone: "
 const shortMonth = new Intl.DateTimeFormat("fr-FR", { month: "short", timeZone: "UTC" });
 
 const latest = entries.find((entry) => entry.publishedAt !== null)?.publishedAt ?? null;
-const count = `${entries.length} ${entries.length > 1 ? "actualités" : "actualité"}`;
+const count = `${entries.length} ${entries.length > 1 ? "publications" : "publication"}`;
 
 /** Quatre teintes de façade, dont le béton : la quatrième casse l'alignement des colonnes. */
 const CARD_COLORS = [
@@ -27,11 +27,11 @@ const CARD_COLORS = [
 
 <Base
   title="Veille — Vitrine"
-  description="Les actualités collectées, de la plus récente à la plus ancienne, chacune liée à sa source officielle."
+  description="Les publications collectées, de la plus récente à la plus ancienne, chacune liée à sa source officielle."
   containerClass="max-w-[76rem]"
 >
   <header class="max-w-2xl">
-    <p class="font-mono text-[0.7rem] uppercase tracking-[0.14em] text-muted">Corpus public · CNIL</p>
+    <p class="font-mono text-[0.7rem] uppercase tracking-[0.14em] text-muted">Corpus public · {sourceLabels.join(" + ")}</p>
     <h1 class="mt-3 text-5xl sm:text-6xl">Veille_</h1>
     <p class="mt-5 text-muted">
       {count} collectées, chacune depuis sa source officielle, de la plus récente à la plus
@@ -44,6 +44,9 @@ const CARD_COLORS = [
         </p>
       )
     }
+    <p class="mt-2 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">
+      Filtres : {filters.length > 0 ? filters.map((tag) => tag.label).join(" · ") : "aucun"}
+    </p>
   </header>
 
   <input id="vue-grille" type="radio" name="vue" class="sr-only" checked />
@@ -133,6 +136,15 @@ const CARD_COLORS = [
                   {summary !== null && (
                     <p class="mt-2 line-clamp-3 text-sm leading-relaxed text-muted">{summary}</p>
                   )}
+                  {entry.references.length > 0 && (
+                    <ul class="mt-3 flex flex-wrap gap-1.5">
+                      {entry.references.map((reference) => (
+                        <li class="border border-ink px-1.5 py-0.5 font-mono text-[0.7rem] leading-snug break-words">
+                          {reference}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                   <span class="mt-auto pt-4 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-ink">
                     Lire ↗
                   </span>
@@ -183,6 +195,15 @@ const CARD_COLORS = [
                   </h2>
                   {summary !== null && (
                     <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-muted">{summary}</p>
+                  )}
+                  {entry.references.length > 0 && (
+                    <ul class="mt-2 flex flex-wrap gap-1.5">
+                      {entry.references.map((reference) => (
+                        <li class="border border-ink px-1.5 py-0.5 font-mono text-[0.7rem] leading-snug break-words">
+                          {reference}
+                        </li>
+                      ))}
+                    </ul>
                   )}
                   <p class="mt-3 inline-block border-2 border-ink px-1.5 py-0.5 font-mono text-[0.7rem] uppercase tracking-[0.12em]">
                     {sourceLabel(entry.source)}
