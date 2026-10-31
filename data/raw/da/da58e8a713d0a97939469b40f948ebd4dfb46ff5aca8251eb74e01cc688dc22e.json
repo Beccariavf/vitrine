@@ -1,0 +1,101 @@
+{
+  "page": 0,
+  "page_size": 50,
+  "query": {
+    "query": "intelligence artificielle",
+    "operator": "or",
+    "date_start": "2026-10-01",
+    "date_end": "2026-10-31",
+    "sort": "date",
+    "order": "desc",
+    "page_size": 50,
+    "field": [],
+    "type": [],
+    "theme": [],
+    "chamber": [],
+    "formation": [],
+    "jurisdiction": [],
+    "location": [],
+    "publication": [],
+    "solution": []
+  },
+  "total": 2,
+  "previous_page": null,
+  "next_page": null,
+  "took": 10,
+  "max_score": 116.31017,
+  "results": [
+    {
+      "score": 1,
+      "highlights": {
+        "text": [
+          "<em>artificielle</em>, société par actions simplifiée, dont le siège est [Adresse 1], a formé le pourvoi n° T",
+          "<em>artificielle</em>, de la SARL …, avocat de la société Time for the",
+          "PAR CES MOTIFS, la Cour\nREJETTE le pourvoi\nCondamne la société Conception avec <em>intelligence</em>",
+          "<em>artificielle</em> aux dépens\nEn application de l'article 700 du code de procédure civile, rejette la",
+          "demande formée par la société Conception avec <em>intelligence</em> <em>artificielle</em> et la condamne à payer à la"
+        ]
+      },
+      "id": "6ad9d7517a10202137352428",
+      "jurisdiction": "cc",
+      "chamber": "civ2",
+      "number": "25-18.861",
+      "numbers": [
+        "25-18.861",
+        "25-18.861"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C210951",
+      "formation": "frr",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "rejet",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.2782428484112782,
+      "highlights": {
+        "text": [
+          "ce en conséquence de la définition, par le plan élaboré, de catégories professionnelles comprenant <em>artificiellement</em>",
+          "l'objet d'un licenciement, ce en conséquence de la définition de catégories professionnelles comprenant <em>artificiellement</em>"
+        ]
+      },
+      "id": "6ac606c5c27382d099f57623",
+      "jurisdiction": "cc",
+      "chamber": "soc",
+      "number": "25-11.353",
+      "numbers": [
+        "25-11.353",
+        "25-11.355",
+        "25-11.357",
+        "25-11.358",
+        "25-11.359",
+        "25-11.360",
+        "25-11.353",
+        "25-11.355",
+        "25-11.357",
+        "25-11.358",
+        "25-11.359",
+        "25-11.360",
+        "25-11.353",
+        "25-11.355",
+        "25-11.357",
+        "25-11.360"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:SO00798",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-07",
+      "solution": "cassation",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    }
+  ],
+  "relaxed": false,
+  "searchQuery": "{\"index\":\"judilibre_0\",\"preference\":\"preventbouncingresults\",\"explain\":false,\"from\":0,\"size\":50,\"_source\":true,\"body\":{\"track_scores\":true,\"query\":{\"function_score\":{\"query\":{\"bool\":{\"filter\":[{\"terms\":{\"jurisdiction\":[\"cc\"]}},{\"range\":{\"decision_date\":{\"gte\":\"2026-10-01\",\"lte\":\"2026-10-31\"}}}],\"must\":{\"simple_query_string\":{\"query\":\"intelligence artificielle\",\"fields\":[\"text\"],\"default_operator\":\"OR\",\"auto_generate_synonyms_phrase_query\":true,\"fuzzy_max_expansions\":50,\"fuzzy_transpositions\":true}}}},\"boost\":5,\"score_mode\":\"max\",\"boost_mode\":\"multiply\"}},\"sort\":[{\"decision_date\":\"desc\"}],\"highlight\":{\"fields\":{\"text\":{}}}}}",
+  "date": "2026-10-31T15:25:16.301Z"
+}

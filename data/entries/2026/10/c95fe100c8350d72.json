@@ -6,5 +6,8 @@
   "publishedAt": "2026-10-16T12:00:00.000Z",
   "summary": "Lorsque vos données personnelles sont accessibles sur Internet, elles peuvent être récupérées par des organismes pour reconstituer votre adresse électronique professionnelle, notamment pour faire de…",
   "references": [],
+  "themes": [
+    "donnees-personnelles"
+  ],
   "source": "cnil"
 }

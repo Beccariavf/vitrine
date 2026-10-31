@@ -1,0 +1,31 @@
+{
+  "page": 0,
+  "page_size": 50,
+  "query": {
+    "query": "cybersécurité",
+    "operator": "or",
+    "date_start": "2026-10-01",
+    "date_end": "2026-10-31",
+    "sort": "date",
+    "order": "desc",
+    "page_size": 50,
+    "field": [],
+    "type": [],
+    "theme": [],
+    "chamber": [],
+    "formation": [],
+    "jurisdiction": [],
+    "location": [],
+    "publication": [],
+    "solution": []
+  },
+  "total": 0,
+  "previous_page": null,
+  "next_page": null,
+  "took": 3,
+  "max_score": 0,
+  "results": [],
+  "relaxed": true,
+  "searchQuery": "{\"index\":\"judilibre_0\",\"preference\":\"preventbouncingresults\",\"explain\":false,\"from\":0,\"size\":50,\"_source\":true,\"body\":{\"track_scores\":true,\"query\":{\"function_score\":{\"query\":{\"bool\":{\"filter\":[{\"terms\":{\"jurisdiction\":[\"cc\"]}},{\"range\":{\"decision_date\":{\"gte\":\"2026-10-01\",\"lte\":\"2026-10-31\"}}}],\"must\":{\"simple_query_string\":{\"query\":\"cybersécurité\",\"fields\":[\"text\"],\"default_operator\":\"OR\",\"auto_generate_synonyms_phrase_query\":true,\"fuzzy_max_expansions\":50,\"fuzzy_transpositions\":true}}}},\"boost\":5,\"score_mode\":\"max\",\"boost_mode\":\"multiply\"}},\"sort\":[{\"decision_date\":\"desc\"}],\"highlight\":{\"fields\":{\"text\":{}}}}}",
+  "date": "2026-10-31T15:20:08.916Z"
+}

@@ -9,5 +9,8 @@
     "Code de la consommation · art. L. 223-1",
     "Règlement (UE) 2016/679 · art. 6, 7, 21, 4.11"
   ],
+  "themes": [
+    "donnees-personnelles"
+  ],
   "source": "cnil"
 }

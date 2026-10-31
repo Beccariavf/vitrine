@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>CERT-FR</title>
+    <link>https://www.cert.ssi.gouv.fr/</link>
+    <description>Bulletins d'actualité du CERT-FR</description>
+    <item>
+      <title>Bulletin d'actualité CERTFR-2014-ACT-004 (24 janvier 2014)</title>
+      <link>https://www.cert.cyber.gouv.fr/actualite/CERTFR-2014-ACT-004/</link>
+      <description>1 - Création du CERT-FR. Le CERTA a changé de nom pour devenir le CERT-FR.</description>
+      <pubDate>Fri, 24 Jan 2014 00:00:00 +0000</pubDate>
+      <guid>https://www.cert.cyber.gouv.fr/actualite/CERTFR-2014-ACT-004/</guid>
+    </item>
+    <item>
+      <title>Bulletin d'actualité CERTFR-2026-ACT-045 (26 octobre 2026)</title>
+      <link>https://www.cert.cyber.gouv.fr/actualite/CERTFR-2026-ACT-045/</link>
+      <description>Vulnérabilités affectant des produits largement déployés. Mise à jour et mesures de contournement.</description>
+      <pubDate>Mon, 26 Oct 2026 00:00:00 +0000</pubDate>
+      <guid>https://www.cert.cyber.gouv.fr/actualite/CERTFR-2026-ACT-045/</guid>
+    </item>
+  </channel>
+</rss>

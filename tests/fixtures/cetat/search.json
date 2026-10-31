@@ -1,0 +1,27 @@
+{
+  "executionTime": 12,
+  "totalResultNumber": 1,
+  "results": [
+    {
+      "titles": [
+        {
+          "id": "CETATEXT000047525048",
+          "cid": "CETATEXT000047525048",
+          "title": "Conseil d'État, 10ème - 9ème chambres réunies, 04/05/2023, 464445",
+          "nature": null
+        }
+      ],
+      "text": "[...] du règlement (UE) n° 2016/679 du 27 avril 2016 (RGPD) et de ses articles 51, 55 et 56 [...]",
+      "type": "data_juri",
+      "nature": "texte",
+      "origin": "CETAT",
+      "date": null,
+      "sections": [],
+      "resumePrincipal": [
+        "Contrôle du respect des exigences du RGPD en cas de traitement transfrontalier de données personnelles au sein de l'UE. Autorité de contrôle compétente. Article 56 du RGPD."
+      ],
+      "autreResume": [],
+      "themes": []
+    }
+  ]
+}

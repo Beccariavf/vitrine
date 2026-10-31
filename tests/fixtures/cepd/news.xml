@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+  <channel>
+    <title>EDPB News</title>
+    <link>https://www.edpb.europa.eu/news/news_fr</link>
+    <description>News from the European Data Protection Board</description>
+    <item>
+      <title>Norwegian DPA fines Xandr EUR 8 600 000 for unlawful processing of personal data</title>
+      <link>https://www.edpb.europa.eu/news/norwegian-dpa-fines-xandr-eur-8-600-000-for-unlawful-processing-of-personal-data_en</link>
+      <description><![CDATA[<div class="heading-wrapper"><h2>Background information</h2><ul><li>Date of final decision: 2 October 2026</li></ul>]]></description>
+      <pubDate>Fri, 16 Oct 2026 12:00:00 +0000</pubDate>
+      <guid>20ee39af-d156-42c4-ae46-86fa47638a1f</guid>
+      <category>Fines</category>
+    </item>
+  </channel>
+</rss>

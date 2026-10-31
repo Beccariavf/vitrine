@@ -1,9 +1,9 @@
 ---
 import Base from "../layouts/Base.astro";
-import { getEntries } from "../lib/entries.ts";
+import { getVisibleEntries } from "../lib/entries.ts";
 import { sourceLabel } from "../lib/sources.ts";
 
-const entries = getEntries();
+const entries = getVisibleEntries();
 const sourceLabels = [...new Set(entries.map((entry) => sourceLabel(entry.source)))];
 const sources = sourceLabels.length;
 const sourceList = sourceLabels.join(" + ");
@@ -15,7 +15,7 @@ const monthFormat = new Intl.DateTimeFormat("fr-FR", { month: "short", year: "nu
 const products = [
   {
     title: "Veille active",
-    body: "Les actualités de la CNIL et la jurisprudence de la CJUE, collectées depuis leurs flux officiels et publiées en statique, de la plus récente à la plus ancienne.",
+    body: "Les publications des autorités, de la CJUE et des juridictions françaises, collectées depuis leurs sources officielles et publiées en statique, de la plus récente à la plus ancienne.",
     link: "/veille",
     status: "Disponible",
     accent: "border-l-4 border-l-red",
@@ -40,7 +40,7 @@ const steps = [
   {
     number: "01",
     title: "Collecte",
-    body: "Les flux officiels de la CNIL et de la CJUE sont lus une fois par passe. Chaque réponse brute est conservée telle quelle.",
+    body: "Les sources officielles des autorités et de la jurisprudence sont lues une fois par passe. Chaque réponse brute est conservée telle quelle.",
   },
   {
     number: "02",
@@ -57,7 +57,7 @@ const steps = [
 
 <Base
   title="Vitrine — veille juridique française"
-  description="Veille juridique française publiée en statique : actualités CNIL et jurisprudence CJUE, de la plus récente à la plus ancienne."
+  description="Veille juridique française publiée en statique : publications des autorités, de la CJUE et des juridictions françaises, de la plus récente à la plus ancienne."
 >
   <section class="grid gap-8 lg:grid-cols-12 lg:gap-10">
     <div class="lg:col-span-8">

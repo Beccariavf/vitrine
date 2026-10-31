@@ -1,0 +1,42 @@
+{
+  "page": 0,
+  "page_size": 50,
+  "query": {
+    "query": "protection des données",
+    "field": [],
+    "type": [],
+    "theme": [],
+    "chamber": [],
+    "formation": [],
+    "jurisdiction": [],
+    "publication": [],
+    "solution": []
+  },
+  "total": 1,
+  "previous_page": null,
+  "next_page": null,
+  "took": 9,
+  "max_score": 3618.1274,
+  "results": [
+    {
+      "score": 1,
+      "id": "6ac6079ec27382d099f5a06e",
+      "jurisdiction": "cc",
+      "chamber": "soc",
+      "number": "25-10.664",
+      "numbers": ["25-10.664"],
+      "ecli": "ECLI:FR:CCASS:2026:SO00813",
+      "formation": "fs",
+      "publication": ["b"],
+      "decision_date": "2026-10-07",
+      "solution": "rejet",
+      "type": "other",
+      "summary": "En application des articles L. 2315-34 et D. 2315-27 du code du travail, l'enregistrement des séances du comité social et économique a pour seule finalité la rédaction du procès-verbal. L'employeur a recueilli des données personnelles au sens de l'article 4, § 1, du règlement (UE) n° 2016/679 (RGPD) sans intérêt légitime au sens de l'article 6, § 1.",
+      "themes": [
+        "représentation des salariés",
+        "comité social et économique",
+        "protection des données"
+      ]
+    }
+  ]
+}
