@@ -1,6 +1,6 @@
 ---
 objective: "La veille publie la jurisprudence CJUE filtrée par tags, avec ses références juridiques, et le propriétaire règle les tags depuis un espace local."
-status: pending
+status: in-progress
 ---
 
 # Plan: Jurisprudence CJUE via EUR-Lex

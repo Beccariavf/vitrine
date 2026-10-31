@@ -115,6 +115,7 @@ export function parseFeed(xml: string): Entry[] {
       url,
       publishedAt: toIsoUtc(textOf(item["pubDate"])),
       summary: toSummary(textOf(item["description"])),
+      references: [],
       source: SOURCE_ID,
     });
   });

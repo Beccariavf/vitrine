@@ -3,16 +3,18 @@
  * La forme est volontairement plate : un fichier JSON, aucun couplage au flux source.
  */
 export type Entry = {
-  /** `sha256` de l'URL canonique, tronqué à 16 hex. Stable d'une exécution à l'autre. */
+  /** `sha256` de l'identité canonique de l'URL, tronqué à 16 hex. Stable d'une exécution à l'autre. */
   id: string;
   /** Titre de l'actualité, tel que publié par la source. */
   title: string;
-  /** URL canonique : pas de query, pas de fragment, pas de slash final. */
+  /** URL canonique ; selon la source, l'identité peut être portée par la query (CELEX). */
   url: string;
   /** Publication en ISO 8601 UTC, ou `null` si la source n'en donne pas d'exploitable. */
   publishedAt: string | null;
   /** Début de la description de la source, nettoyé et tronqué à 200 caractères ; `null` si vide. */
   summary: string | null;
+  /** Références juridiques principales citées par le titre officiel ; tableau vide si aucune. */
+  references: string[];
   /** Identifiant de la source, ici `cnil`. */
   source: string;
 };
