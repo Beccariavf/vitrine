@@ -1,6 +1,6 @@
 ---
 objective: "La veille couvre une cinquième matière, Plateformes, alimentée par le DSA, le DMA et l'ARCOM, sans JavaScript public ni coût variable."
-status: in-progress
+status: implemented
 ---
 
 # Plan: Matière Plateformes
