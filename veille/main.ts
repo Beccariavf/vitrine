@@ -1,6 +1,10 @@
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { FEED_URL as CNIL_FEED_URL, parseFeed as parseCnilFeed } from "./sources/cnil.ts";
+import {
+  FEED_URL as CNIL_FEED_URL,
+  parseCnilPageReferences,
+  parseFeed as parseCnilFeed,
+} from "./sources/cnil.ts";
 import { FEED_URL as CJEU_FEED_URL, parseFeed as parseCjeuFeed } from "./sources/cjeu.ts";
 import { matchesActiveTags, readTags } from "./tags.ts";
 import type { Tag } from "./tags.ts";
@@ -19,6 +23,11 @@ export type Source = {
   id: string;
   feedUrl: string;
   parse(xml: string, tags: Tag[]): Entry[];
+  /** Enrichissement optionnel depuis la page officielle de chaque entrée. */
+  references?: {
+    pageUrl(entry: Entry): string;
+    parsePage(html: string): string[];
+  };
 };
 
 export const SOURCES: Source[] = [
@@ -26,6 +35,10 @@ export const SOURCES: Source[] = [
     id: "cnil",
     feedUrl: CNIL_FEED_URL,
     parse: (xml) => parseCnilFeed(xml),
+    references: {
+      pageUrl: (entry) => entry.url,
+      parsePage: parseCnilPageReferences,
+    },
   },
   {
     id: "cjeu",
@@ -47,29 +60,43 @@ export type RunOptions = {
 export type SourceRun = {
   source: string;
   rawPath: string;
+  pagePaths: string[];
   entryPaths: string[];
 };
 
 export type RunResult = {
   sources: SourceRun[];
   entryPaths: string[];
+  warnings: string[];
 };
 
-/** Récupère un flux ; une panne réseau est reformulée avec la source et l'URL. */
-async function fetchFeed(fetchImpl: FetchLike, url: string, source: string): Promise<string> {
+/** Récupère un texte ; une panne réseau est reformulée avec le libellé et l'URL. */
+async function fetchText(
+  fetchImpl: FetchLike,
+  url: string,
+  label: string,
+): Promise<string> {
   let response: Awaited<ReturnType<FetchLike>>;
   try {
     response = await fetchImpl(url);
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
-    throw new Error(`${source} feed fetch failed for ${url}: ${reason}`, { cause: error });
+    throw new Error(`${label} fetch failed for ${url}: ${reason}`, { cause: error });
   }
 
   if (!response.ok) {
-    throw new Error(`${source} feed unavailable: HTTP ${response.status} for ${url}`);
+    throw new Error(`${label} unavailable: HTTP ${response.status} for ${url}`);
   }
 
   return response.text();
+}
+
+function fetchFeed(fetchImpl: FetchLike, url: string, source: string): Promise<string> {
+  return fetchText(fetchImpl, url, `${source} feed`);
+}
+
+function fetchPage(fetchImpl: FetchLike, url: string, source: string): Promise<string> {
+  return fetchText(fetchImpl, url, `${source} page`);
 }
 
 /**
@@ -88,12 +115,42 @@ export async function run({
 
   const results: SourceRun[] = [];
   const errors: string[] = [];
+  const warnings: string[] = [];
 
   for (const source of sources) {
     try {
       const xml = await fetchFeed(fetchImpl, source.feedUrl, source.id);
       const rawPath = writeRaw(rootDir, xml);
-      const entries = source.parse(xml, topicTags);
+      let entries = source.parse(xml, topicTags);
+      const pagePaths: string[] = [];
+
+      if (source.references) {
+        const enriched: Entry[] = [];
+
+        for (const entry of entries) {
+          const url = source.references.pageUrl(entry);
+          let references: string[] = [];
+          let html: string | null = null;
+
+          try {
+            html = await fetchPage(fetchImpl, url, source.id);
+            references = source.references.parsePage(html);
+          } catch (error) {
+            const reason = error instanceof Error ? error.message : String(error);
+            warnings.push(`${source.id} page ${url}: ${reason}`);
+            html = null;
+          }
+
+          if (html !== null && references.length > 0) {
+            pagePaths.push(writeRaw(rootDir, html, "html"));
+          }
+
+          enriched.push({ ...entry, references });
+        }
+
+        entries = enriched;
+      }
+
       const entryPaths = writeEntries(rootDir, entries);
 
       if (source.id === "cjeu") {
@@ -102,7 +159,7 @@ export async function run({
         );
       }
 
-      results.push({ source: source.id, rawPath, entryPaths });
+      results.push({ source: source.id, rawPath, pagePaths, entryPaths });
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
       errors.push(`${source.id}: ${reason}`);
@@ -116,6 +173,7 @@ export async function run({
   return {
     sources: results,
     entryPaths: results.flatMap((result) => result.entryPaths),
+    warnings,
   };
 }
 
@@ -134,9 +192,14 @@ const calledDirectly =
 
 if (calledDirectly) {
   run({ fetchImpl: cliFetch, rootDir: process.cwd() })
-    .then(({ sources, entryPaths }) => {
+    .then(({ sources, entryPaths, warnings }) => {
+      for (const warning of warnings) console.warn(`warning: ${warning}`);
+
       for (const source of sources) {
         console.log(`${source.source} snapshot: ${source.rawPath}`);
+        if (source.pagePaths.length > 0) {
+          console.log(`${source.source} pages: ${source.pagePaths.length}`);
+        }
         console.log(`${source.source} entries: ${source.entryPaths.length}`);
       }
       console.log(`entries: ${entryPaths.length}`);

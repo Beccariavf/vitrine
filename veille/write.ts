@@ -45,13 +45,13 @@ function removeStaleCopies(rootDir: string, id: string, targetPath: string): voi
 }
 
 /**
- * Conserve la réponse brute, adressée par son contenu :
- * `data/raw/<2 hex>/<sha256>.xml`. Un flux inchangé réécrit le même chemin.
+ * Conserve une réponse brute, adressée par son contenu :
+ * `data/raw/<2 hex>/<sha256>.<extension>`. Un contenu inchangé réécrit le même chemin.
  */
-export function writeRaw(rootDir: string, xml: string): string {
-  const content = xml.endsWith("\n") ? xml : `${xml}\n`;
-  const hash = createHash("sha256").update(content, "utf8").digest("hex");
-  return writeIfChanged(join(rootDir, "data", "raw", hash.slice(0, 2), `${hash}.xml`), content);
+export function writeRaw(rootDir: string, content: string, extension = "xml"): string {
+  const body = content.endsWith("\n") ? content : `${content}\n`;
+  const hash = createHash("sha256").update(body, "utf8").digest("hex");
+  return writeIfChanged(join(rootDir, "data", "raw", hash.slice(0, 2), `${hash}.${extension}`), body);
 }
 
 /** Chemin relatif d'une entrée : année/mois UTC de publication, `unknown/` sinon. */
