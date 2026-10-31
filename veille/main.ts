@@ -11,6 +11,7 @@ import { FEED_URL as CEPD_FEED_URL, parseFeed as parseCepdFeed } from "./sources
 import { FEED_URL as ARCEP_FEED_URL, parseFeed as parseArcepFeed } from "./sources/arcep.ts";
 import { FEED_URL as COMMISSION_FEED_URL, parseFeed as parseCommissionFeed } from "./sources/commission.ts";
 import { FEED_URL as COMMISSION_DMA_FEED_URL, parseFeed as parseCommissionDmaFeed } from "./sources/commission-dma.ts";
+import { FEED_URL as ARCOM_FEED_URL, PAGE as ARCOM_PAGE, parseFeed as parseArcomFeed } from "./sources/arcom.ts";
 import { fetchEntries as fetchCetatEntries } from "./sources/cetat.ts";
 import { fetchEntries as fetchJudilibreEntries } from "./sources/judilibre.ts";
 import { flushUsage } from "./piste.ts";
@@ -28,6 +29,11 @@ export type Source = {
   id: string;
   feedUrl: string;
   parse(xml: string): Entry[];
+  /** Enrichissement optionnel : lit la page officielle pour le résumé et le filtre. */
+  page?: {
+    url(entry: Entry): string;
+    parse(html: string): { summary: string | null; keep: boolean };
+  };
   /** Enrichissement optionnel depuis la page officielle de chaque entrée. */
   references?: {
     pageUrl(entry: Entry): string;
@@ -103,6 +109,13 @@ export const SOURCES: AnySource[] = [
     id: "commission-dma",
     feedUrl: COMMISSION_DMA_FEED_URL,
     parse: (xml) => parseCommissionDmaFeed(xml),
+  },
+  {
+    kind: "rss",
+    id: "arcom",
+    feedUrl: ARCOM_FEED_URL,
+    parse: (xml) => parseArcomFeed(xml),
+    page: ARCOM_PAGE,
   },
   {
     kind: "api",
@@ -220,6 +233,26 @@ export async function run({
       const rawPath = writeRaw(rootDir, xml);
       let entries = source.parse(xml);
       const pagePaths: string[] = [];
+
+      if (source.page) {
+        const page = source.page;
+        const kept: Entry[] = [];
+
+        for (const entry of entries) {
+          const url = page.url(entry);
+          try {
+            const html = await fetchPage(fetchImpl, url);
+            const enriched = page.parse(html);
+            if (!enriched.keep) continue;
+            kept.push({ ...entry, summary: enriched.summary ?? entry.summary });
+          } catch (error) {
+            const reason = error instanceof Error ? error.message : String(error);
+            warnings.push(`${source.id} page ${url}: ${reason}`);
+          }
+        }
+
+        entries = kept;
+      }
 
       if (source.references) {
         const enriched: Entry[] = [];

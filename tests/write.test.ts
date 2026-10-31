@@ -45,6 +45,20 @@ const EMPTY_PAGE = readFileSync(
   "utf8",
 );
 const CNIL_PAGES = CNIL.parse(FULL).map((entry) => [entry.url, EMPTY_PAGE] as const);
+const ARCOM = SOURCES.find((source) => source.id === "arcom") as Source;
+const ARCOM_FEED = readFileSync(new URL("./fixtures/arcom/press.xml", import.meta.url), "utf8");
+const ARCOM_MYM_PAGE = readFileSync(
+  new URL("./fixtures/arcom/page-mym.html", import.meta.url),
+  "utf8",
+);
+const ARCOM_FM_PAGE = readFileSync(
+  new URL("./fixtures/arcom/page-frequences.html", import.meta.url),
+  "utf8",
+);
+const ARCOM_MYM_URL =
+  "https://www.arcom.fr/presse/larcom-ouvre-une-enquete-sur-la-plateforme-francaise-mym";
+const ARCOM_FM_URL =
+  "https://www.arcom.fr/presse/appel-aux-candidatures-pour-lattribution-de-frequences-pour-la-diffusion-de-chaines-nationales-de-la-tnt";
 
 /** Le même flux, avec la date de l'actualité FNAC décalée d'un mois. */
 const SHIFTED = FULL.replace(FNAC_PUB_DATE, "Sun, 29 Nov 2026 13:00:00 +0100");
@@ -541,6 +555,58 @@ describe("les pages CNIL dans la passe", () => {
       const hash = createHash("sha256").update(readFileSync(path)).digest("hex");
       assert.equal(basename(path), `${hash}.html`);
       assert.equal(basename(dirname(path)), hash.slice(0, 2));
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("la source ARCOM dans la passe", () => {
+  it("n'écrit que la publication dont la page relève du DSA", async () => {
+    const root = tempRoot();
+    try {
+      const bodies = new Map<string, string>([
+        [ARCOM.feedUrl, ARCOM_FEED],
+        [ARCOM_MYM_URL, ARCOM_MYM_PAGE],
+        [ARCOM_FM_URL, ARCOM_FM_PAGE],
+      ]);
+
+      const result = await runTest({
+        fetchImpl: fetchByUrl(bodies),
+        rootDir: root,
+        sources: [ARCOM],
+      });
+      const entries = entrySources(root);
+
+      assert.equal(entries.length, 1);
+      assert.equal(result.entryPaths.length, 1);
+      assert.equal(entries[0]?.source, "arcom");
+      assert.equal(entries[0]?.url, ARCOM_MYM_URL);
+      assert.match(entries[0]?.summary ?? "", /règlement sur les services numériques/i);
+      assert.deepEqual(entries[0]?.themes, ["plateformes"]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("écarte l'entrée quand sa page échoue", async () => {
+    const root = tempRoot();
+    try {
+      const fetchPagesFailing: FetchLike = async (url) => {
+        if (url === ARCOM.feedUrl) {
+          return { ok: true, status: 200, text: async () => ARCOM_FEED };
+        }
+        throw new Error("page down");
+      };
+
+      const result = await runTest({
+        fetchImpl: fetchPagesFailing,
+        rootDir: root,
+        sources: [ARCOM],
+      });
+
+      assert.equal(entrySources(root).length, 0);
+      assert.ok(result.warnings.some((warning) => warning.includes("page down")));
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
