@@ -9,8 +9,8 @@ Le versant données : sources, pipeline et modèles.
 - ANSSI / CERT-FR, flux « actualité » uniquement ; les alertes et avis techniques sont exclus.
 - CEPD, flux d'actualités.
 - ARCEP, flux « avis et décisions » ; identité portée par la query.
-- Commission européenne, flux numérique francophone ; événements et consultations exclus.
-- Commission européenne, flux DMA dédié ; toutes les publications sont retenues, tables rondes et fiches comprises.
+- Commission européenne, flux numérique francophone ; événements et consultations exclus. La page `/fr/` officielle fournit le titre, le résumé et le lien français.
+- Commission européenne, flux DMA dédié ; toutes les publications sont retenues, tables rondes et fiches comprises. Le flux n'a pas de version française : les titres restent dans leur langue d'origine.
 - ARCOM, flux presse ; les doublons anglais sont écartés et la page article décide du DSA, car le flux n'a pas de description.
 - Conseil d'État via l'API Légifrance (fonds CETAT), fenêtre de 90 jours.
 - Cour de cassation via Judilibre, fenêtre de 30 jours.

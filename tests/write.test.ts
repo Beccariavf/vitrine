@@ -45,6 +45,17 @@ const EMPTY_PAGE = readFileSync(
   "utf8",
 );
 const CNIL_PAGES = CNIL.parse(FULL).map((entry) => [entry.url, EMPTY_PAGE] as const);
+const COMMISSION = SOURCES.find((source) => source.id === "commission") as Source;
+const COMMISSION_FEED = readFileSync(
+  new URL("./fixtures/commission/rss.xml", import.meta.url),
+  "utf8",
+);
+const COMMISSION_FR_PAGE = readFileSync(
+  new URL("./fixtures/commission/page-fr.html", import.meta.url),
+  "utf8",
+);
+const COMMISSION_FR_URL =
+  "https://digital-strategy.ec.europa.eu/fr/news/commission-launches-ai-act-support-platform";
 const ARCOM = SOURCES.find((source) => source.id === "arcom") as Source;
 const ARCOM_FEED = readFileSync(new URL("./fixtures/arcom/press.xml", import.meta.url), "utf8");
 const ARCOM_MYM_PAGE = readFileSync(
@@ -555,6 +566,72 @@ describe("les pages CNIL dans la passe", () => {
       const hash = createHash("sha256").update(readFileSync(path)).digest("hex");
       assert.equal(basename(path), `${hash}.html`);
       assert.equal(basename(dirname(path)), hash.slice(0, 2));
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("la page française Commission dans la passe", () => {
+  it("affiche le titre, le résumé et l'URL français", async () => {
+    const root = tempRoot();
+    try {
+      const bodies = new Map<string, string>([
+        [COMMISSION.feedUrl, COMMISSION_FEED],
+        [COMMISSION_FR_URL, COMMISSION_FR_PAGE],
+      ]);
+
+      const result = await runTest({
+        fetchImpl: fetchByUrl(bodies),
+        rootDir: root,
+        sources: [COMMISSION],
+      });
+      const entries = entrySources(root);
+
+      assert.equal(entries.length, 1);
+      assert.equal(result.entryPaths.length, 1);
+      assert.equal(
+        entries[0]?.title,
+        "La Commission lance une plateforme d’appui à l’application du règlement sur l’IA",
+      );
+      assert.equal(entries[0]?.url, COMMISSION_FR_URL);
+      assert.match(entries[0]?.summary ?? "", /règlement sur l’IA/);
+      assert.equal(
+        entries[0]?.officialTitle,
+        "Commission launches the AI Act application support platform",
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("garde l'entrée anglaise quand la page française échoue", async () => {
+    const root = tempRoot();
+    try {
+      const fetchPageFails: FetchLike = async (url) => {
+        if (url === COMMISSION.feedUrl) {
+          return { ok: true, status: 200, text: async () => COMMISSION_FEED };
+        }
+        throw new Error("page down");
+      };
+
+      const result = await runTest({
+        fetchImpl: fetchPageFails,
+        rootDir: root,
+        sources: [COMMISSION],
+      });
+      const entries = entrySources(root);
+
+      assert.equal(entries.length, 1);
+      assert.equal(
+        entries[0]?.title,
+        "Commission launches the AI Act application support platform",
+      );
+      assert.equal(
+        entries[0]?.url,
+        "https://digital-strategy.ec.europa.eu/en/news/commission-launches-ai-act-support-platform",
+      );
+      assert.ok(result.warnings.some((warning) => warning.includes("page down")));
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

@@ -9,7 +9,7 @@ import { FEED_URL as CJEU_FEED_URL, parseFeed as parseCjeuFeed } from "./sources
 import { FEED_URL as ANSSI_FEED_URL, parseFeed as parseAnssiFeed } from "./sources/anssi.ts";
 import { FEED_URL as CEPD_FEED_URL, parseFeed as parseCepdFeed } from "./sources/cepd.ts";
 import { FEED_URL as ARCEP_FEED_URL, parseFeed as parseArcepFeed } from "./sources/arcep.ts";
-import { FEED_URL as COMMISSION_FEED_URL, parseFeed as parseCommissionFeed } from "./sources/commission.ts";
+import { FEED_URL as COMMISSION_FEED_URL, PAGE as COMMISSION_PAGE, parseFeed as parseCommissionFeed } from "./sources/commission.ts";
 import { FEED_URL as COMMISSION_DMA_FEED_URL, parseFeed as parseCommissionDmaFeed } from "./sources/commission-dma.ts";
 import { FEED_URL as ARCOM_FEED_URL, PAGE as ARCOM_PAGE, parseFeed as parseArcomFeed } from "./sources/arcom.ts";
 import { fetchEntries as fetchCetatEntries } from "./sources/cetat.ts";
@@ -29,10 +29,17 @@ export type Source = {
   id: string;
   feedUrl: string;
   parse(xml: string): Entry[];
-  /** Enrichissement optionnel : lit la page officielle pour le résumé et le filtre. */
+  /** Enrichissement optionnel : lit la page officielle pour le titre, le résumé et le filtre. */
   page?: {
     url(entry: Entry): string;
-    parse(html: string): { summary: string | null; keep: boolean };
+    parse(html: string): {
+      summary: string | null;
+      keep: boolean;
+      title?: string;
+      localized?: boolean;
+    };
+    /** Une page en panne écarte l'entrée par défaut ; `false` garde l'entrée d'origine. */
+    required?: boolean;
   };
   /** Enrichissement optionnel depuis la page officielle de chaque entrée. */
   references?: {
@@ -103,6 +110,7 @@ export const SOURCES: AnySource[] = [
     id: "commission",
     feedUrl: COMMISSION_FEED_URL,
     parse: (xml) => parseCommissionFeed(xml),
+    page: COMMISSION_PAGE,
   },
   {
     kind: "rss",
@@ -244,10 +252,16 @@ export async function run({
             const html = await fetchPage(fetchImpl, url);
             const enriched = page.parse(html);
             if (!enriched.keep) continue;
-            kept.push({ ...entry, summary: enriched.summary ?? entry.summary });
+            kept.push({
+              ...entry,
+              title: enriched.title ?? entry.title,
+              url: enriched.localized === true ? url : entry.url,
+              summary: enriched.summary ?? entry.summary,
+            });
           } catch (error) {
             const reason = error instanceof Error ? error.message : String(error);
             warnings.push(`${source.id} page ${url}: ${reason}`);
+            if (page.required === false) kept.push(entry);
           }
         }
 

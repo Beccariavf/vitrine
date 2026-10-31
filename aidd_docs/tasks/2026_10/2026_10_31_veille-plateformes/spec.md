@@ -17,7 +17,7 @@ La veille propose une cinquième matière, Plateformes, qui rassemble les public
 - Les termes restent spécifiques : « plateforme » seul, « marché numérique » seul et « accès » seul ne rattachent pas une publication à Plateformes.
 - Une publication peut appartenir à plusieurs matières : une publication DSA qui cite le RGPD relève de Plateformes et de Données personnelles.
 - La CJUE, le Conseil d'État et la Cour de cassation sont transverses : une décision citant le DSA ou le DMA apparaît sous Plateformes avec son lien officiel.
-- Les titres officiels sont conservés dans leur langue d'origine ; aucune traduction n'est produite.
+- Les titres officiels sont conservés dans leur langue d'origine ; lorsqu'une version française officielle existe, le titre, le résumé et le lien affichés viennent de cette version. Aucune traduction n'est produite.
 - Une matière vide ne casse pas la page : le sélecteur et la page publique restent lisibles quand Plateformes n'a aucune publication.
 - Le propriétaire peut activer ou désactiver Plateformes ; après régénération, une matière inactive disparaît de la page publique. Les pages publiques restent en lecture seule.
 - Les contraintes du contrat « Veille par matière » restent en vigueur : aucune veille législative française, aucun modèle génératif, aucun compte visiteur, aucun serveur, aucune base de données, aucun JavaScript public, aucune requête réseau au chargement, collecte hebdomadaire incrémentale, identifiants stables, aucun doublon, panne d'une source isolée, réponses brutes conservées, quotas respectés, aucun secret versionné, coût d'exploitation 0 €.
@@ -66,4 +66,5 @@ None.
 - Volume observé : DSA environ 2 publications par mois à la Commission, DMA environ 1,7 par mois, ARCOM environ 1 par mois. Jurisprudence : aucune décision DSA ou DMA dans les fenêtres récentes — Conseil d'État, 6 décisions citant 2022/2065 dont aucune sur 90 jours ; Cour de cassation, 0 sur 3 mois ; CJUE, 0 sur les 100 dernières entrées.
 - L'ARCOM est coordinateur des services numériques pour le DSA ; le DMA est appliqué par la Commission seule.
 - « Données non personnelles » reste sans source dédiée et peut rester vide.
+- Les actualités de la Commission numérique sont lues dans leur page `/fr/` officielle ; le flux DMA reste en anglais, faute de version française.
 - Le sélecteur reste compact : cinq libellés, sans bloc d'instruments ni de sources, conformément à la décision de la spec « Veille par matière ».

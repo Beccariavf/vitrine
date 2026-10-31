@@ -1,6 +1,6 @@
 # Review: Matière Plateformes
 
-- Rounds: 1
+- Rounds: 2
 - Started: 2026-11-01
 
 ## Round 1 · r-9b3e
@@ -49,3 +49,12 @@
 - `veille/sources/arcom.ts:49` : la liste `DSA_MARKERS` du filtre de page duplique les termes de `veille/themes.json` ; une évolution de la matière peut laisser le filtre en arrière → dériver les marqueurs d'une constante partagée — 🟢 minor, rot
 - `veille/sources/arcom.ts:122` : sans `<main>`, le parseur retombe sur tout le HTML ; un lien « DSA » de la navigation pourrait retenir un communiqué hors sujet → refuser ou restreindre au conteneur d'article — 🟢 minor, error-handling
 - `src/pages/veille/index.astro:330` : à 640 px et moins, les pastilles passent à `0.62rem` (environ 9,9 px), sous l'échelle `0.7rem` du reste des labels → garder `0.7rem` et réduire le padding, quitte à accepter trois lignes — 🟢 minor, frontend
+
+## Round 2 · r-5c2a
+
+- Date: 2026-11-01
+- By: Beccariavf
+- Diff: `veille/matieres-piste...HEAD`
+- Axes: code, relevancy
+- Verdict: approve
+- Score: not scored
