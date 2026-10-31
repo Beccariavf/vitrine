@@ -131,4 +131,4 @@ status: completed
 | 1 | `Entry` porte `themes` ; le catalogue contient quatre matières ; une actualité CNIL sur l'IA relève des deux matières ; un arrêt hors matière et le faux positif avocat sont rejetés ; un catalogue invalide lève. |
 | 2 | Une entrée sans matière n'est pas écrite ; Jautiva est écrit avec données personnelles ; une matière désactivée ne supprime aucun fichier ; une panne d'une source laisse les autres écritures. |
 | 3 | Les onze entrées portent au moins une matière ; le backfill est idempotent ; le lecteur refuse une entrée sans `themes` ; les matières inactives sont masquées. |
-| 4 | Le bloc matières affiche textes et sources ; chaque publication affiche ses matières et sa source ; l'outil local ne change que les cases ; les pages restent sans JavaScript. |
+| 4 | Le sélecteur de matières masque les publications décochées ; la phrase explique le geste ; chaque publication affiche ses matières et sa source ; l'outil local ne change que les cases ; les pages restent sans JavaScript. |

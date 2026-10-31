@@ -49,7 +49,7 @@ status: completed
 > Le recruteur doit voir la sélection, les sources et les publications sans explanation.
 
 1. Lancer `npm run veille` avec les secrets locaux et vérifier les snapshots des huit sources.
-2. Lancer `npm run build` et ouvrir `/veille` : bloc matières, badges, sources, liens officiels.
+2. Lancer `npm run build` et ouvrir `/veille` : sélecteur de matières, badges, sources, liens officiels.
 3. Désactiver une matière dans l'outil local, relancer le build, vérifier qu'elle disparaît sans suppression de données.
 4. Réactiver, relancer, vérifier qu'elle revient sans nouvelle collecte.
 5. Vérifier 375 px, l'absence de `<script>` et l'absence de débordement.
@@ -68,5 +68,5 @@ status: completed
 | Task | Acceptance criteria |
 | ---- | ------------------- |
 | 1 | Les mémoires décrivent les quatre matières, les huit sources, le contrat `themes`, le filtrage au build et les fenêtres PISTE ; aucun secret n'est versionné. |
-| 2 | `/veille` montre les matières, leurs textes et sources, et les publications avec badges ; une matière désactivée disparaît puis revient sans collecte. |
+| 2 | `/veille` montre le sélecteur de matières et les publications avec badges ; une matière décochée disparaît puis revient sans collecte. |
 | 3 | Typecheck, tests, build et CI passent ; le build ne modifie pas `data/` ; aucune page publique ne charge de JavaScript. |
