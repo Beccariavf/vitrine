@@ -1,12 +1,33 @@
 ---
 import Base from "../../layouts/Base.astro";
-import { getEntries, isRedundantSummary } from "../../lib/entries.ts";
+import { getVisibleEntries, isRedundantSummary } from "../../lib/entries.ts";
 import { sourceLabel } from "../../lib/sources.ts";
-import { activeTags, readTags } from "../../../veille/tags.ts";
+import { activeThemes, readThemes } from "../../../veille/themes.ts";
 
-const entries = getEntries();
-const filters = activeTags(readTags());
-const sourceLabels = [...new Set(entries.map((entry) => sourceLabel(entry.source)))];
+const allThemes = readThemes();
+const themes = activeThemes(allThemes);
+const themeLabel = new Map(allThemes.map((theme) => [theme.id, theme.label]));
+const entries = getVisibleEntries(process.cwd(), allThemes);
+
+/** Sous-ensembles non vides des matières : chaque combinaison masque les entrées qui n'ont aucune matière cochée. */
+function subsets(ids: string[]): string[][] {
+  return ids.reduce<string[][]>(
+    (all, id) => [...all, ...all.map((subset) => [...subset, id])],
+    [[]],
+  ).filter((subset) => subset.length > 0);
+}
+
+const filterCss = subsets(themes.map((theme) => theme.id))
+  .map((unchecked) => {
+    const conditions = unchecked.map((id) => `:has(#f-${id}:not(:checked))`).join("");
+    const exclusions = themes
+      .map((theme) => theme.id)
+      .filter((id) => !unchecked.includes(id))
+      .map((id) => `:not(.theme-${id})`)
+      .join("");
+    return `body${conditions} .entry${exclusions} { display: none; }`;
+  })
+  .join("\n");
 
 /** Dates en français, à l'heure UTC : les mêmes au build comme en test. */
 const dateFormat = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeZone: "UTC" });
@@ -31,7 +52,6 @@ const CARD_COLORS = [
   containerClass="max-w-[76rem]"
 >
   <header class="max-w-2xl">
-    <p class="font-mono text-[0.7rem] uppercase tracking-[0.14em] text-muted">Corpus public · {sourceLabels.join(" + ")}</p>
     <h1 class="mt-3 text-5xl sm:text-6xl">Veille_</h1>
     <p class="mt-5 text-muted">
       {count} collectées, chacune depuis sa source officielle, de la plus récente à la plus
@@ -44,10 +64,36 @@ const CARD_COLORS = [
         </p>
       )
     }
-    <p class="mt-2 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">
-      Filtres : {filters.length > 0 ? filters.map((tag) => tag.label).join(" · ") : "aucun"}
-    </p>
   </header>
+
+  <section class="mt-10" aria-labelledby="matieres">
+    <div class="flex items-end justify-between gap-4 border-b-2 border-ink pb-3">
+      <h2 id="matieres" class="text-2xl sm:text-3xl">Matières</h2>
+      <span class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">
+        Filtrer · {themes.length} active{themes.length > 1 ? "s" : ""}
+      </span>
+    </div>
+    {
+      themes.length === 0 ? (
+        <p class="mt-6 text-muted">Aucune matière active. Activez-en une dans les paramètres locaux.</p>
+      ) : (
+        <>
+          <div class="mt-4 flex flex-wrap gap-2" role="group" aria-label="Filtrer par matière">
+            {themes.map((theme) => (
+              <label class="theme-toggle">
+                <input type="checkbox" id={`f-${theme.id}`} checked class="sr-only" />
+                <span>{theme.label}</span>
+              </label>
+            ))}
+          </div>
+          <p class="mt-2 flex items-start gap-2 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">
+            <span aria-hidden="true" class="inline-grid h-4 w-4 shrink-0 place-items-center border border-ink text-[0.6rem] leading-none">i</span>
+            <span>Cochez une matière pour afficher ses publications ; décochez-la pour les masquer.</span>
+          </p>
+        </>
+      )
+    }
+  </section>
 
   <input id="vue-grille" type="radio" name="vue" class="sr-only" checked />
   <input id="vue-liste" type="radio" name="vue" class="sr-only" />
@@ -107,7 +153,7 @@ const CARD_COLORS = [
           const color = CARD_COLORS[index % CARD_COLORS.length];
           const date = entry.publishedAt !== null ? new Date(entry.publishedAt) : null;
           return (
-            <li>
+            <li class:list={["entry", ...entry.themes.map((theme) => `theme-${theme}`)]}>
               <a
                 href={entry.url}
                 aria-label={`${entry.title} — ${sourceLabel(entry.source)}`}
@@ -145,6 +191,13 @@ const CARD_COLORS = [
                       ))}
                     </ul>
                   )}
+                  <ul class="mt-2 flex flex-wrap gap-1.5" aria-label="Matières">
+                    {entry.themes.map((theme) => (
+                      <li class="border-2 border-red px-1.5 py-0.5 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-red">
+                        {themeLabel.get(theme) ?? theme}
+                      </li>
+                    ))}
+                  </ul>
                   <span class="mt-auto pt-4 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-ink">
                     Lire ↗
                   </span>
@@ -167,7 +220,7 @@ const CARD_COLORS = [
               : null;
           const date = entry.publishedAt !== null ? new Date(entry.publishedAt) : null;
           return (
-            <li class="border-b-2 border-ink hover:bg-paper">
+            <li class:list={["entry", "border-b-2", "border-ink", "hover:bg-paper", ...entry.themes.map((theme) => `theme-${theme}`)]}>
               <div class="grid grid-cols-[4.5rem_1fr] gap-4 py-5 sm:grid-cols-[3rem_6rem_1fr] sm:gap-6">
                 <span class="hidden pt-1 font-mono text-xs text-muted sm:block">
                   {String(index + 1).padStart(2, "0")}
@@ -205,9 +258,16 @@ const CARD_COLORS = [
                       ))}
                     </ul>
                   )}
-                  <p class="mt-3 inline-block border-2 border-ink px-1.5 py-0.5 font-mono text-[0.7rem] uppercase tracking-[0.12em]">
-                    {sourceLabel(entry.source)}
-                  </p>
+                  <div class="mt-3 flex flex-wrap gap-1.5">
+                    <p class="inline-block border-2 border-ink px-1.5 py-0.5 font-mono text-[0.7rem] uppercase tracking-[0.12em]">
+                      {sourceLabel(entry.source)}
+                    </p>
+                    {entry.themes.map((theme) => (
+                      <p class="inline-block border-2 border-red px-1.5 py-0.5 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-red">
+                        {themeLabel.get(theme) ?? theme}
+                      </p>
+                    ))}
+                  </div>
                 </div>
               </div>
             </li>
@@ -240,4 +300,28 @@ const CARD_COLORS = [
     outline: 2px solid var(--color-ink);
     outline-offset: 2px;
   }
+
+  .theme-toggle span {
+    display: inline-block;
+    border: 2px solid var(--color-ink);
+    background-color: var(--color-paper);
+    padding: 0.55rem 0.75rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.7rem;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+  }
+
+  .theme-toggle input:checked + span {
+    background-color: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  .theme-toggle input:focus-visible + span {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+  }
 </style>
+<style is:global set:html={filterCss}></style>

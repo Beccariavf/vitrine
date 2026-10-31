@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Bâtir l’avenir numérique de l’Europe</title>
+    <link>https://digital-strategy.ec.europa.eu/fr</link>
+    <description>Actualités de la stratégie numérique</description>
+    <item>
+      <title>Commission launches the AI Act application support platform</title>
+      <link>https://digital-strategy.ec.europa.eu/en/news/commission-launches-ai-act-support-platform</link>
+      <description><![CDATA[<p>The Commission presents new tools to support the application of the AI Act and the Data Act.</p>]]></description>
+      <pubDate>Mon, 26 Oct 2026 09:28:00 +0000</pubDate>
+      <guid>17650 at https://digital-strategy.ec.europa.eu</guid>
+    </item>
+    <item>
+      <title>Local Digital Twins CiTiVERSE EDIC joins Smart City Expo World Congress 2026</title>
+      <link>https://digital-strategy.ec.europa.eu/en/events/local-digital-twins-citiverse-edic-joins-smart-city-expo-world-congress-2026</link>
+      <description><![CDATA[<p>An event.</p>]]></description>
+      <pubDate>Thu, 29 Oct 2026 08:12:20 +0000</pubDate>
+      <guid>17649 at https://digital-strategy.ec.europa.eu</guid>
+    </item>
+    <item>
+      <title>Targeted consultation on the Data Act</title>
+      <link>https://digital-strategy.ec.europa.eu/en/consultations/targeted-consultation-data-act</link>
+      <description><![CDATA[<p>A consultation.</p>]]></description>
+      <pubDate>Tue, 29 Sep 2026 08:15:00 +0000</pubDate>
+      <guid>17648 at https://digital-strategy.ec.europa.eu</guid>
+    </item>
+  </channel>
+</rss>

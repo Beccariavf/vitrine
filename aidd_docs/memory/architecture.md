@@ -6,7 +6,7 @@ La forme technique macro : la stack, comment les pièces s'articulent, et les d�
 
 - TypeScript sur Node 24, exécuté par type stripping natif : aucun build step pour le pipeline.
 - Astro en rendu statique, Tailwind pour le style. Aucune intégration de framework front ; la recherche viendra plus tard.
-- Aucune base de données, aucun serveur permanent : un cron produira des fichiers, le site les rend.
+- Aucune base de données, aucun serveur permanent : une passe hebdomadaire manuelle produit des fichiers, le site les rend.
 
 ## How it fits together
 
@@ -25,19 +25,19 @@ flowchart LR
 
 ## Key decisions
 
-- Static-first : un cron GitHub Actions exécutera une passe par jour (workflow encore à créer) ; le site n'est pas déployé, voir `deployment.md`.
+- Static-first : la passe est manuelle et hebdomadaire ; aucun cron n'est configuré ; le site n'est pas déployé, voir `deployment.md`.
 - Git est la base : snapshots bruts + hash + JSON commités ; l'index se reconstruit au build.
 - `src/` est jetable : les données survivent à un changement de générateur.
-- Un adaptateur par source, isolé dans `veille/sources/` : CNIL et CJUE.
+- Un adaptateur par source, isolé dans `veille/sources/` : CNIL, CJUE, ANSSI, CEPD, ARCEP, Commission, Conseil d'État (CETAT) et Cour de cassation (Judilibre).
 - Le site ne lit aucune API au runtime : il lit `data/`.
 - Une panne de source n'emporte pas les autres : les écritures réussies restent, la passe échoue avec un message nommant la source.
-- Le catalogue `veille/tags.json` est la seule configuration de filtrage ; la passe publie les tags actifs et retire les arrêts CJUE devenus inactifs. Le snapshot brut reste la preuve.
-- `Entry.references` porte les instruments et articles cités : titre officiel pour les arrêts CJUE, section « Textes de référence » de la page liée pour les actualités CNIL, extraits sans modèle.
+- Le catalogue `veille/themes.json` est la seule configuration de sélection ; quatre matières actives, lues par le pipeline et le site. Le rattachement est stocké sur chaque entrée ; le site filtre au build, aucune purge.
+- `Entry.references` porte les instruments et articles cités : titre officiel pour les arrêts CJUE, section « Textes de référence » de la page liée pour les actualités CNIL, résumé officiel pour le Conseil d'État et la Cour de cassation.
+- `Entry.themes` porte les matières calculées à l'ingestion : instruments cités d'abord, termes de repli ensuite, défauts de source pour CNIL, CEPD et ANSSI ; les sources API ne pré-remplissent pas la matière.
+- Les sources PISTE (Conseil d'État, Cour de cassation) utilisent un jeton OAuth ou un `KeyId`, un plafond de 16 appels par passe et un journal dans `data/usage/`.
 - Une page CNIL en échec laisse l'entrée publiée avec `references: []` et un avertissement ; les pages dont les références sont retenues sont conservées en snapshot HTML.
 
 ## Gotchas
 
-- Un push fait avec `GITHUB_TOKEN` ne déclenche aucun autre workflow : déployer dans le même job.
-- Les crons GitHub sont retardés au début de chaque heure : planifier à `:17`.
-- Les workflows planifiés se désactivent après 60 jours sans activité du dépôt.
 - Les quotas PISTE ne sont pas publics et l'API n'offre qu'une cible de disponibilité de 95 %/jour.
+- Aucun workflow planifié n'existe : une passe oubliée laisse les données en l'état.

@@ -1,0 +1,13 @@
+{
+  "id": "6844a2876f7e3b9e",
+  "title": "Bulletin d'actualité CERTFR-2026-ACT-042 (05 octobre 2026)",
+  "officialTitle": "Bulletin d'actualité CERTFR-2026-ACT-042 (05 octobre 2026)",
+  "url": "https://www.cert.cyber.gouv.fr/actualite/CERTFR-2026-ACT-042",
+  "publishedAt": "2026-10-05T00:00:00.000Z",
+  "summary": "Ce bulletin d'actualité du CERT-FR revient sur les vulnérabilités significatives de la semaine passée pour souligner leurs criticités. Il ne remplace pas l'analyse de l'ensemble des avis et alertes…",
+  "references": [],
+  "themes": [
+    "cybersecurite"
+  ],
+  "source": "anssi"
+}

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+  <channel>
+    <title>ARCEP - Avis et décisions</title>
+    <link>https://www.arcep.fr/la-regulation/avis-et-decisions-de-larcep.html</link>
+    <description>Avis et décisions de l'Arcep</description>
+    <item>
+      <title>Décision n° 2026-1976 de la présidente de l’Arcep en date du 20 octobre 2026 portant délégation de signature</title>
+      <link>https://www.arcep.fr/la-regulation/avis-et-decisions-de-larcep.html?tx_arcepavis_results%5Baction%5D=show&amp;tx_arcepavis_results%5Bcontroller%5D=Avis&amp;tx_arcepavis_results%5Bavis%5D=48753</link>
+      <description>Décision n° 2026-1976 de la présidente de l’Arcep en date du 20 octobre 2026 portant délégation de signature pour les actes se rapportant au fonctionnement de l'Autorité.</description>
+      <pubDate>Fri, 23 Oct 2026 15:34:21 +0200</pubDate>
+      <guid>avis-48753</guid>
+    </item>
+    <item>
+      <title>Décision n° 2026-1848 de l’Arcep en date du 15 octobre 2026 fixant les conditions du partage de données</title>
+      <link>https://www.arcep.fr/la-regulation/avis-et-decisions-de-larcep.html?tx_arcepavis_results%5Baction%5D=show&amp;tx_arcepavis_results%5Bcontroller%5D=Avis&amp;tx_arcepavis_results%5Bavis%5D=48754</link>
+      <description>Décision relative au partage de données et au changement de fournisseur de services de cloud.</description>
+      <pubDate>Wed, 15 Oct 2026 10:00:00 +0200</pubDate>
+      <guid>avis-48754</guid>
+    </item>
+  </channel>
+</rss>

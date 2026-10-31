@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { after, before, describe, it } from "node:test";
-import { getEntries, isRedundantSummary } from "../src/lib/entries.ts";
+import { getEntries, getVisibleEntries, isRedundantSummary } from "../src/lib/entries.ts";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 
@@ -39,6 +39,7 @@ function entry(overrides: Record<string, unknown> = {}): Record<string, unknown>
     publishedAt: "2026-10-01T12:00:00.000Z",
     summary: "Un résumé.",
     references: [],
+    themes: ["donnees-personnelles"],
     source: "cnil",
     ...overrides,
   };
@@ -52,17 +53,29 @@ describe("les entrées committées", () => {
     assert.equal(entries.length, countEntryFiles(join(ROOT, "data", "entries")));
   });
 
-  it("respecte les huit champs du contrat", () => {
+  it("respecte les neuf champs du contrat", () => {
+    const hosts: Record<string, string> = {
+      cnil: "www.cnil.fr",
+      cjeu: "eur-lex.europa.eu",
+      anssi: "www.cert.cyber.gouv.fr",
+      cepd: "www.edpb.europa.eu",
+      arcep: "www.arcep.fr",
+      commission: "digital-strategy.ec.europa.eu",
+      cetat: "www.legifrance.gouv.fr",
+      judilibre: "www.courdecassation.fr",
+    };
     for (const item of entries) {
       assert.equal(typeof item.id, "string");
       assert.equal(typeof item.title, "string");
       assert.equal(typeof item.officialTitle, "string");
-      if (item.source === "cnil") assert.ok(item.url.startsWith("https://www.cnil.fr/"));
-      else if (item.source === "cjeu") assert.ok(item.url.startsWith("https://eur-lex.europa.eu/"));
-      else assert.fail(`source inconnue : ${item.source}`);
+      const host = hosts[item.source];
+      assert.ok(host, `source inconnue : ${item.source}`);
+      assert.ok(item.url.startsWith(`https://${host}/`), `${item.source} doit pointer vers ${host}`);
       assert.equal(typeof item.source, "string");
       assert.ok(Array.isArray(item.references));
       for (const reference of item.references) assert.equal(typeof reference, "string");
+      assert.ok(Array.isArray(item.themes) && item.themes.length > 0);
+      for (const theme of item.themes) assert.equal(typeof theme, "string");
       assert.ok(item.publishedAt === null || typeof item.publishedAt === "string");
       assert.ok(item.summary === null || (typeof item.summary === "string" && item.summary.length > 0));
     }
@@ -245,6 +258,45 @@ describe("une entrée illisible", () => {
 
       writeEntry(root, "references-texte", entry({ references: "RGPD" }));
       assert.throws(() => getEntries(root), /"references" must be an array of non-empty strings/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("lève une erreur quand les matières manquent ou sont vides", () => {
+    const root = tempRoot();
+    try {
+      const missing = writeEntry(root, "sans-matieres", entry({ themes: undefined }));
+      assert.throws(
+        () => getEntries(root),
+        (error: unknown) => {
+          assert.ok(error instanceof Error);
+          assert.ok(error.message.includes(missing));
+          assert.match(error.message, /themes/);
+          return true;
+        },
+      );
+
+      writeEntry(root, "matieres-vides", entry({ themes: [] }));
+      assert.throws(() => getEntries(root), /"themes" must be a non-empty array/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("ne rend que les entrées des matières actives", () => {
+    const root = tempRoot();
+    try {
+      writeEntry(root, "rgpd", entry({ themes: ["donnees-personnelles"] }));
+      writeEntry(root, "ia", entry({ themes: ["ia"], title: "IA" }));
+
+      const themes = [
+        { id: "donnees-personnelles", label: "DP", description: "", instruments: ["x"], terms: ["x"], sources: ["x"], active: true },
+        { id: "ia", label: "IA", description: "", instruments: ["y"], terms: ["y"], sources: ["y"], active: false },
+        { id: "cybersecurite", label: "Cyber", description: "", instruments: ["z"], terms: ["z"], sources: ["z"], active: false },
+        { id: "donnees-non-personnelles", label: "DNP", description: "", instruments: ["w"], terms: ["w"], sources: ["w"], active: false },
+      ];
+      assert.deepEqual(getVisibleEntries(root, themes).map((item) => item.title), ["Titre"]);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

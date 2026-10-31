@@ -6,5 +6,8 @@
   "publishedAt": "2026-10-15T12:00:00.000Z",
   "summary": "La Commission nationale de l'informatique et des libertés s’est réunie le jeudi 15 octobre 2026 à 9 h 30 avec l’ordre du jour suivant :",
   "references": [],
+  "themes": [
+    "donnees-personnelles"
+  ],
   "source": "cnil"
 }

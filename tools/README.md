@@ -1,6 +1,6 @@
 # Paramètres de la veille
 
-Outil local pour choisir les tags publiés. Il n'est pas déployé et le site public ne charge
+Outil local pour choisir les matières publiées. Il n'est pas déployé et le site public ne charge
 aucun script.
 
 ## Utilisation
@@ -11,29 +11,27 @@ aucun script.
    open tools/parametres.html
    ```
 
-2. Cliquer sur **Charger tags.json** et choisir `veille/tags.json`.
-3. Cocher ou décocher les tags.
-4. Cliquer sur **Enregistrer tags.json** et enregistrer sur `veille/tags.json`.
-5. Relancer la collecte et le site :
+2. Cliquer sur **Charger themes.json** et choisir `veille/themes.json`.
+3. Cocher ou décocher les matières.
+4. Cliquer sur **Enregistrer themes.json** et enregistrer sur `veille/themes.json`.
+5. Reconstruire le site :
 
    ```bash
-   npm run veille
    npm run build
    ```
 
+La collecte n'est pas nécessaire pour changer la sélection : le site filtre au build. Relancer
+`npm run veille` seulement pour récupérer de nouvelles publications.
+
 ## Ce que fait l'outil
 
-- Il lit et écrit le même fichier que le pipeline, `veille/tags.json`.
-- Il valide la forme : quatre tags, identifiants uniques, libellés et motifs non vides,
-  booléen `active`.
-- Il conserve les motifs et les libellés ; il ne change que les cases.
-- Il utilise l'API File System Access de Chrome. Si elle n'est pas disponible, l'outil
-  télécharge `tags.json` ; il faut alors le placer dans `veille/`.
+- Il lit et écrit le même fichier que le pipeline et le site, `veille/themes.json`.
+- Il valide la forme : quatre matières, identifiants uniques, libellé, description, textes,
+  termes, sources et booléen `active`.
+- Il conserve tout le contenu ; il ne change que les cases.
 
 ## Effet sur la publication
 
-Les tags actifs décident de ce que la passe écrit dans `data/entries/`. Désactiver RGPD
-retire les arrêts RGPD à la passe suivante ; réactiver le tag les fait revenir. Le snapshot
-brut du flux reste dans `data/raw/`, même quand un arrêt n'est plus publié.
-
-Le site affiche les tags actifs en lecture seule ; il ne filtre pas une deuxième fois.
+Les matières actives décident de ce que le site rend. Désactiver une matière la masque au
+prochain build ; les entrées et le snapshot brut restent dans le dépôt. Réactiver la matière la
+fait revenir sans nouvelle collecte.
