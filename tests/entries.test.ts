@@ -34,9 +34,11 @@ function entry(overrides: Record<string, unknown> = {}): Record<string, unknown>
   return {
     id: "0123456789abcdef",
     title: "Titre",
+    officialTitle: "Titre",
     url: "https://www.cnil.fr/fr/titre",
     publishedAt: "2026-10-01T12:00:00.000Z",
     summary: "Un résumé.",
+    references: [],
     source: "cnil",
     ...overrides,
   };
@@ -50,12 +52,17 @@ describe("les entrées committées", () => {
     assert.equal(entries.length, countEntryFiles(join(ROOT, "data", "entries")));
   });
 
-  it("respecte les six champs du contrat", () => {
+  it("respecte les huit champs du contrat", () => {
     for (const item of entries) {
       assert.equal(typeof item.id, "string");
       assert.equal(typeof item.title, "string");
-      assert.ok(item.url.startsWith("https://www.cnil.fr/"));
+      assert.equal(typeof item.officialTitle, "string");
+      if (item.source === "cnil") assert.ok(item.url.startsWith("https://www.cnil.fr/"));
+      else if (item.source === "cjeu") assert.ok(item.url.startsWith("https://eur-lex.europa.eu/"));
+      else assert.fail(`source inconnue : ${item.source}`);
       assert.equal(typeof item.source, "string");
+      assert.ok(Array.isArray(item.references));
+      for (const reference of item.references) assert.equal(typeof reference, "string");
       assert.ok(item.publishedAt === null || typeof item.publishedAt === "string");
       assert.ok(item.summary === null || (typeof item.summary === "string" && item.summary.length > 0));
     }
@@ -201,6 +208,27 @@ describe("une entrée illisible", () => {
           return true;
         },
       );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("lève une erreur quand les références manquent ou ne sont pas un tableau", () => {
+    const root = tempRoot();
+    try {
+      const missing = writeEntry(root, "sans-references", entry({ references: undefined }));
+      assert.throws(
+        () => getEntries(root),
+        (error: unknown) => {
+          assert.ok(error instanceof Error);
+          assert.ok(error.message.includes(missing));
+          assert.match(error.message, /references/);
+          return true;
+        },
+      );
+
+      writeEntry(root, "references-texte", entry({ references: "RGPD" }));
+      assert.throws(() => getEntries(root), /"references" must be an array of non-empty strings/);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

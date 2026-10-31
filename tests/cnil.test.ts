@@ -44,9 +44,11 @@ describe("flux CNIL figé", () => {
     for (const entry of parseFeed(xml)) {
       assert.match(entry.id, /^[0-9a-f]{16}$/);
       assert.ok(entry.title.length > 0);
+      assert.equal(entry.officialTitle, entry.title);
       assert.match(entry.url, /^https:\/\/www\.cnil\.fr\//);
       assert.match(entry.publishedAt ?? "", /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
       assert.ok(entry.summary === null || entry.summary.length > 0);
+      assert.deepEqual(entry.references, []);
       assert.equal(entry.source, "cnil");
     }
   });

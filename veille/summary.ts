@@ -64,7 +64,7 @@ const NAMED_ENTITIES: Record<string, string> = {
 const ENTITY = /&(?:#(\d+)|#x([0-9a-fA-F]+)|([a-zA-Z][a-zA-Z0-9]*));/g;
 
 /** Décode les entités connues ; une entité inconnue ou hors Unicode reste telle quelle. */
-function decodeHtmlEntities(text: string): string {
+export function decodeHtmlEntities(text: string): string {
   return text.replace(ENTITY, (match, decimal: string | undefined, hex: string | undefined, named: string | undefined) => {
     if (named !== undefined) return NAMED_ENTITIES[named] ?? match;
 

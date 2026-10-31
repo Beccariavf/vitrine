@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vitrine — paramètres de la veille</title>
+    <style>
+      :root {
+        --concrete: #e7e2d7;
+        --paper: #f4f0e8;
+        --ink: #121212;
+        --red: #c62828;
+        --muted: #57534e;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        padding: 2rem 1.25rem 4rem;
+        background: var(--concrete);
+        color: var(--ink);
+        font-family: system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+      }
+      .shell { max-width: 900px; margin: 0 auto; }
+      .eyebrow {
+        margin: 0;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.7rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      h1 { margin: 0.4rem 0 0.75rem; font-size: 2rem; letter-spacing: -0.02em; line-height: 1.1; }
+      .lead { max-width: 60ch; margin: 0; color: var(--muted); }
+      .toolbar { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 1.5rem 0 1rem; }
+      button {
+        border: 2px solid var(--ink);
+        background: var(--ink);
+        color: var(--paper);
+        padding: 0.75rem 1rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        cursor: pointer;
+        box-shadow: 4px 4px 0 var(--ink);
+      }
+      button:hover:not(:disabled) {
+        background: var(--red);
+        transform: translate(-1px, -1px);
+        box-shadow: 6px 6px 0 var(--ink);
+      }
+      button:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
+      #status {
+        border: 2px solid var(--ink);
+        background: var(--paper);
+        padding: 0.75rem 1rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.75rem;
+      }
+      #status.error { border-color: var(--red); color: var(--red); }
+      #tags { list-style: none; padding: 0; margin: 1.25rem 0 0; display: grid; gap: 0.75rem; }
+      #tags li { border: 2px solid var(--ink); background: var(--paper); padding: 1rem 1rem 0.85rem; }
+      #tags li:has(input:checked) { border-left: 8px solid var(--red); }
+      .tag { display: flex; align-items: baseline; gap: 0.75rem; cursor: pointer; }
+      .tag input { width: 1.1rem; height: 1.1rem; accent-color: var(--red); }
+      .tag-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.75rem; }
+      .tag-name { font-weight: 700; font-size: 1.05rem; }
+      .tag-id { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.7rem; color: var(--muted); }
+      .terms {
+        margin: 0.5rem 0 0 1.85rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.7rem;
+        line-height: 1.7;
+        color: var(--muted);
+        overflow-wrap: anywhere;
+      }
+      .note {
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 2px solid var(--ink);
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.7rem;
+        line-height: 1.8;
+        color: var(--muted);
+      }
+      code { font-family: inherit; }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <p class="eyebrow">Vitrine · outil local</p>
+      <h1>Paramètres de la veille</h1>
+      <p class="lead">
+        Choisis les tags publiés. L'outil écrit <code>veille/tags.json</code> ; le site reste
+        statique et ne charge aucun script.
+      </p>
+
+      <div class="toolbar">
+        <button id="load" type="button">Charger tags.json</button>
+        <button id="save" type="button" disabled>Enregistrer tags.json</button>
+      </div>
+      <p id="status" role="status">Aucun fichier chargé. Clique sur « Charger tags.json ».</p>
+
+      <ul id="tags" aria-label="Tags de veille"></ul>
+
+      <p class="note">
+        Outil local, non déployé. Après enregistrement : <code>npm run veille</code> puis
+        <code>npm run build</code>. Le snapshot brut reste dans <code>data/raw/</code> ; les
+        arrêts CJUE des tags inactifs sont retirés de <code>data/entries/</code>.
+      </p>
+    </div>
+
+    <script>
+      (() => {
+        const $ = (id) => document.getElementById(id);
+        const tagList = $("tags");
+        const status = $("status");
+        const saveButton = $("save");
+        const PICKER_TYPES = [{ description: "Configuration", accept: { "application/json": [".json"] } }];
+        let tags = null;
+
+        function setStatus(message, isError = false) {
+          status.textContent = message;
+          status.classList.toggle("error", isError);
+        }
+
+        function validate(value) {
+          if (!value || !Array.isArray(value.tags) || value.tags.length !== 4) {
+            throw new Error("Le fichier doit contenir exactement quatre tags.");
+          }
+
+          const ids = new Set();
+          return value.tags.map((tag, index) => {
+            if (!tag || typeof tag !== "object") throw new Error(`Tag #${index} : objet attendu.`);
+            if (typeof tag.id !== "string" || !/^[a-z0-9-]+$/.test(tag.id)) {
+              throw new Error(`Tag #${index} : identifiant invalide.`);
+            }
+            if (ids.has(tag.id)) throw new Error(`Tag #${index} : identifiant dupliqué.`);
+            ids.add(tag.id);
+            if (typeof tag.label !== "string" || tag.label.trim() === "") {
+              throw new Error(`Tag #${index} : libellé manquant.`);
+            }
+            if (typeof tag.active !== "boolean") {
+              throw new Error(`Tag #${index} : « active » doit être un booléen.`);
+            }
+            if (!Array.isArray(tag.terms) || tag.terms.length === 0 || !tag.terms.every((term) => typeof term === "string" && term.trim() !== "")) {
+              throw new Error(`Tag #${index} : motifs manquants.`);
+            }
+            return { id: tag.id, label: tag.label.trim(), active: tag.active, terms: tag.terms.map((term) => term.trim()) };
+          });
+        }
+
+        function render(next) {
+          tags = next;
+          tagList.replaceChildren(
+            ...next.map((tag, index) => {
+              const item = document.createElement("li");
+
+              const label = document.createElement("label");
+              label.className = "tag";
+
+              const input = document.createElement("input");
+              input.type = "checkbox";
+              input.checked = tag.active;
+              input.dataset.index = String(index);
+              input.id = `tag-${tag.id}`;
+
+              const head = document.createElement("span");
+              head.className = "tag-head";
+              const name = document.createElement("span");
+              name.className = "tag-name";
+              name.textContent = tag.label;
+              const id = document.createElement("span");
+              id.className = "tag-id";
+              id.textContent = tag.id;
+              head.append(name, id);
+
+              label.append(input, head);
+
+              const terms = document.createElement("p");
+              terms.className = "terms";
+              terms.textContent = tag.terms.join(" · ");
+
+              item.append(label, terms);
+              return item;
+            }),
+          );
+          saveButton.disabled = false;
+          const active = next.filter((tag) => tag.active).length;
+          setStatus(`Chargé : ${next.length} tags, ${active} actifs.`);
+        }
+
+        async function readFile(file) {
+          const parsed = JSON.parse(await file.text());
+          render(validate(parsed));
+        }
+
+        async function load() {
+          try {
+            if (typeof window.showOpenFilePicker === "function") {
+              const [handle] = await window.showOpenFilePicker({ types: PICKER_TYPES, multiple: false });
+              await readFile(await handle.getFile());
+              return;
+            }
+
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = ".json,application/json";
+            input.addEventListener("change", async () => {
+              const file = input.files && input.files[0];
+              if (file) {
+                try {
+                  await readFile(file);
+                } catch (error) {
+                  setStatus(`Erreur : ${error.message}`, true);
+                }
+              }
+            });
+            input.click();
+          } catch (error) {
+            if (error && error.name === "AbortError") return;
+            setStatus(`Erreur : ${error.message}`, true);
+          }
+        }
+
+        async function save() {
+          if (!tags) return;
+          try {
+            const next = tags.map((tag, index) => {
+              const input = tagList.querySelector(`input[data-index="${index}"]`);
+              return { ...tag, active: input instanceof HTMLInputElement ? input.checked : tag.active };
+            });
+            const text = `${JSON.stringify({ tags: next }, null, 2)}\n`;
+
+            if (typeof window.showSaveFilePicker === "function") {
+              const handle = await window.showSaveFilePicker({ suggestedName: "tags.json", types: PICKER_TYPES });
+              const writable = await handle.createWritable();
+              await writable.write(text);
+              await writable.close();
+              setStatus("Enregistré. Vérifie que le fichier est veille/tags.json, puis lance npm run veille et npm run build.");
+              return;
+            }
+
+            const blob = new Blob([text], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "tags.json";
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            setStatus("Téléchargé. Place le fichier dans veille/tags.json.");
+          } catch (error) {
+            if (error && error.name === "AbortError") return;
+            setStatus(`Erreur : ${error.message}`, true);
+          }
+        }
+
+        $("load").addEventListener("click", load);
+        saveButton.addEventListener("click", save);
+      })();
+    </script>
+  </body>
+</html>

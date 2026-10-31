@@ -4,16 +4,18 @@ Le versant données : sources, pipeline et modèles.
 
 ## Sources
 
-- CNIL, flux RSS officiel, seule source branchée.
-- Prévues, non branchées : Légifrance (PISTE), Judilibre, EUR-Lex, data.gouv.
+- CNIL, flux RSS officiel.
+- CJUE, jurisprudence via le flux public EUR-Lex `rssId=163` ; pas de compte ni de PISTE.
+- Prévues, non branchées : Légifrance (PISTE), Judilibre, data.gouv.
 
 ## Pipeline
 
 ```mermaid
 flowchart LR
-    RSS["Flux CNIL"] --> P["Parse + normalisation"]
-    P --> RAW["data/raw — snapshot brut"]
-    P --> E["data/entries — une entrée par actualité"]
+    C["Flux CNIL"] --> P["Adaptateurs + normalisation"]
+    J["Flux CJUE · EUR-Lex"] --> P
+    P --> RAW["data/raw — un snapshot par flux"]
+    P --> E["data/entries — une entrée par actualité ou arrêt"]
 ```
 
 ## Summaries
@@ -22,6 +24,13 @@ flowchart LR
 - Nettoyage : entités décodées deux fois, balises retirées, espaces normalisés. La source n'est jamais réécrite.
 - À l'affichage, un résumé qui répète une suite de 40 caractères ou plus du titre est masqué (`isRedundantSummary`) ; l'entrée reste affichée.
 
+## References
+
+- Chaque entrée porte `officialTitle`, le titre officiel complet, source du filtre et des références ; le `title` est le titre d'affichage.
+- Chaque entrée porte `references: string[]`, les instruments et articles principaux cités par le titre officiel ; les entrées CNIL portent `[]`.
+- L'extraction est déterministe (`veille/references.ts`) ; elle ne réécrit pas la source.
+- Le catalogue de tags (`veille/tags.json`) filtre les arrêts CJUE ; les tags actifs décident de la publication, pas de la donnée brute.
+
 ## Models
 
 - Aucun modèle, aucune inférence : le pipeline est déterministe.
@@ -29,5 +38,7 @@ flowchart LR
 ## Reproducibility
 
 - Git : chaque snapshot brut est adressé par son `sha256`, chaque entrée par un `id` stable.
-- Une passe sur un flux inchangé ne produit aucun diff.
+- Les entrées ne changent pas quand le contenu est inchangé.
+- Le snapshot brut CJUE peut varier avec l'horodatage et l'ordre des items du flux : chaque passe ajoute alors un fichier `data/raw/` (~96 Ko), sans changer `data/entries/`.
 - Aucune donnée personnelle : uniquement des textes publics.
+- Un flux CJUE en panne laisse les entrées CNIL en place ; la passe signale la source.

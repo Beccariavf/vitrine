@@ -1,9 +1,12 @@
 ---
 import Base from "../layouts/Base.astro";
 import { getEntries } from "../lib/entries.ts";
+import { sourceLabel } from "../lib/sources.ts";
 
 const entries = getEntries();
-const sources = new Set(entries.map((entry) => entry.source)).size;
+const sourceLabels = [...new Set(entries.map((entry) => sourceLabel(entry.source)))];
+const sources = sourceLabels.length;
+const sourceList = sourceLabels.join(" + ");
 
 const latest = entries.find((entry) => entry.publishedAt !== null)?.publishedAt ?? null;
 const dayFormat = new Intl.DateTimeFormat("fr-FR", { day: "2-digit", timeZone: "UTC" });
@@ -12,7 +15,7 @@ const monthFormat = new Intl.DateTimeFormat("fr-FR", { month: "short", year: "nu
 const products = [
   {
     title: "Veille active",
-    body: "Les actualités de la CNIL, collectées depuis le flux officiel et publiées en statique, de la plus récente à la plus ancienne.",
+    body: "Les actualités de la CNIL et la jurisprudence de la CJUE, collectées depuis leurs flux officiels et publiées en statique, de la plus récente à la plus ancienne.",
     link: "/veille",
     status: "Disponible",
     accent: "border-l-4 border-l-red",
@@ -37,12 +40,12 @@ const steps = [
   {
     number: "01",
     title: "Collecte",
-    body: "Le flux officiel de la CNIL est lu une fois par passe. La réponse brute est conservée telle quelle.",
+    body: "Les flux officiels de la CNIL et de la CJUE sont lus une fois par passe. Chaque réponse brute est conservée telle quelle.",
   },
   {
     number: "02",
     title: "Normalisation",
-    body: "Chaque actualité reçoit un identifiant stable, une URL canonique et une date en UTC.",
+    body: "Chaque actualité ou arrêt reçoit un identifiant stable, une URL canonique et une date en UTC.",
   },
   {
     number: "03",
@@ -54,7 +57,7 @@ const steps = [
 
 <Base
   title="Vitrine — veille juridique française"
-  description="Veille juridique française publiée en statique : actualités CNIL, de la plus récente à la plus ancienne."
+  description="Veille juridique française publiée en statique : actualités CNIL et jurisprudence CJUE, de la plus récente à la plus ancienne."
 >
   <section class="grid gap-8 lg:grid-cols-12 lg:gap-10">
     <div class="lg:col-span-8">
@@ -98,7 +101,7 @@ const steps = [
           <p class="mt-4 font-mono text-2xl">Sans date</p>
         )}
         <p class="mt-6 border-t border-paper/30 pt-3 font-mono text-[0.7rem] uppercase tracking-[0.12em]">
-          CNIL · {entries.length} actualités
+          {sourceList} · {entries.length} publications
         </p>
       </div>
     </aside>
@@ -106,7 +109,7 @@ const steps = [
 
   <dl class="mt-10 grid grid-cols-2 gap-0.5 border-2 border-ink bg-ink shadow-hard sm:grid-cols-4">
     <div class="bg-paper p-4">
-      <dt class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">Actualités</dt>
+      <dt class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">Publications</dt>
       <dd class="mt-1 font-mono text-3xl font-bold">{entries.length}</dd>
     </div>
     <div class="bg-paper p-4">

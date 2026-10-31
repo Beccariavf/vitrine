@@ -11,6 +11,7 @@ Où le projet tourne et comment il est livré.
 
 - Aucun environnement public : le site n'est pas déployé.
 - `dist/` est un artefact local, régénéré par `npm run build` ; la preview Astro sert au contrôle visuel.
+- L'outil de paramètres `tools/parametres.html` est local et non déployé : il écrit `veille/tags.json` via l'API File System Access de Chrome. Aucun serveur, aucun script sur les pages publiques.
 
 ## Release
 
