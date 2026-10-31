@@ -77,6 +77,22 @@ export function writeEntries(rootDir: string, entries: Entry[]): string[] {
   });
 }
 
+/** Lit l'entrée déjà écrite pour un `id`, ou `null` si elle manque ou est illisible. */
+export function readEntryById(rootDir: string, id: string): Entry | null {
+  const entriesDir = join(rootDir, "data", "entries");
+  if (!existsSync(entriesDir)) return null;
+
+  for (const path of listFiles(entriesDir)) {
+    if (basename(path) !== `${id}.json`) continue;
+    try {
+      return JSON.parse(readFileSync(path, "utf8")) as Entry;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
 /**
  * Retire les entrées d'une source qui ne font plus partie de la sélection
  * publiée. Les autres sources ne sont jamais touchées ; le snapshot brut

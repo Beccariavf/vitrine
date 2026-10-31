@@ -9,7 +9,7 @@ import { FEED_URL as CJEU_FEED_URL, parseFeed as parseCjeuFeed } from "./sources
 import { matchesActiveTags, readTags } from "./tags.ts";
 import type { Tag } from "./tags.ts";
 import type { Entry } from "./types.ts";
-import { pruneSourceEntries, writeEntries, writeRaw } from "./write.ts";
+import { pruneSourceEntries, readEntryById, writeEntries, writeRaw } from "./write.ts";
 
 /** Ce que `run` attend d'un `fetch` : le minimum, injectable en test. */
 export type FetchLike = (url: string) => Promise<{
@@ -95,8 +95,20 @@ function fetchFeed(fetchImpl: FetchLike, url: string, source: string): Promise<s
   return fetchText(fetchImpl, url, `${source} feed`);
 }
 
-function fetchPage(fetchImpl: FetchLike, url: string, source: string): Promise<string> {
-  return fetchText(fetchImpl, url, `${source} page`);
+/** Lit une page ; le message reste la raison seule, l'appelant ajoute la source et l'URL. */
+async function fetchPage(fetchImpl: FetchLike, url: string): Promise<string> {
+  let response: Awaited<ReturnType<FetchLike>>;
+  try {
+    response = await fetchImpl(url);
+  } catch (error) {
+    throw new Error(error instanceof Error ? error.message : String(error), { cause: error });
+  }
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+
+  return response.text();
 }
 
 /**
@@ -129,11 +141,12 @@ export async function run({
 
         for (const entry of entries) {
           const url = source.references.pageUrl(entry);
+          const previous = readEntryById(rootDir, entry.id);
           let references: string[] = [];
           let html: string | null = null;
 
           try {
-            html = await fetchPage(fetchImpl, url, source.id);
+            html = await fetchPage(fetchImpl, url);
             references = source.references.parsePage(html);
           } catch (error) {
             const reason = error instanceof Error ? error.message : String(error);
@@ -141,7 +154,11 @@ export async function run({
             html = null;
           }
 
-          if (html !== null && references.length > 0) {
+          const unchanged =
+            previous !== null &&
+            JSON.stringify(previous.references) === JSON.stringify(references);
+
+          if (html !== null && references.length > 0 && !unchanged) {
             pagePaths.push(writeRaw(rootDir, html, "html"));
           }
 

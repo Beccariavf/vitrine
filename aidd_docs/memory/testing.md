@@ -11,7 +11,8 @@ Comment le projet est testé : les couches, les outils et les conventions. Où v
 - Unitaire : extraction des références CJUE (`veille/references.ts`) : instruments, articles, listes, plages, espaces insécables, absence de référence.
 - Unitaire : extraction CNIL (`extractCnilReferences`) : article avant instrument, alias RGPD/LIL/CPCE/ePrivacy/95-46/Code de la consommation, `L. 223-1`, `4.11`, `1er`, `et suivants`, plages, décrets ignorés, dédoublonnage.
 - Unitaire : section CNIL (`parseCnilPageReferences`) sur des captures HTML réelles : FNAC, webinaire, titre singulier, page sans section, guillemets doubles, blocs « Pour approfondir » ignorés.
-- Intégration : une passe avec pages simulées : la FNAC reçoit ses références et son snapshot HTML ; une page en panne réseau ou HTTP 500 laisse l'entrée avec `[]` et un avertissement sans rejeter la passe ; une page sans référence n'écrit pas de snapshot.
+- Intégration : une passe avec pages simulées : la FNAC reçoit ses références et son snapshot HTML ; une page en panne réseau ou HTTP 500 laisse l'entrée avec `[]` et un avertissement sans rejeter la passe ; une page sans référence n'écrit pas de snapshot ; une page dont seules les parties volatiles changent n'ajoute pas de snapshot.
+- Intégration : données committées (`tests/entries.test.ts`) : la FNAC porte `Loi Informatique et Libertés · art. 82`, une entrée sans section reste `[]`.
 - Unitaire : catalogue et filtre (`veille/tags.ts`) : quatre tags, tags actifs/inactifs, faux positifs « droit d'accès à un avocat » et « relative », configuration invalide.
 - Unitaire : parseur CJUE (`veille/sources/cjeu.ts`) : deux formats de titre, date de décision, `pubDate` en secours, `_SUM`/`_RES`, `_INF`, XML invalide.
 - Intégration : `run` avec un `fetch` injecté, sur une racine temporaire, une ou deux sources ; une panne ou un flux CJUE vide laisse CNIL ; un tag désactivé retire les arrêts CJUE ; un arrêt sorti du flux reste tant que son tag est actif.

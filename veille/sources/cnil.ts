@@ -2,7 +2,7 @@ import { XMLParser, XMLValidator } from "fast-xml-parser";
 import type { Entry } from "../types.ts";
 import { canonicalUrl, hashId } from "../normalize.ts";
 import { extractCnilReferences } from "../references.ts";
-import { decodeHtmlEntities, toSummary } from "../summary.ts";
+import { toPlainText, toSummary } from "../summary.ts";
 
 /** Identifiant stable de la source, écrit dans chaque entrée. */
 export const SOURCE_ID = "cnil";
@@ -66,15 +66,6 @@ function assertTrustedLink(link: string, index: number): void {
   }
 }
 
-/** Texte visible d'un fragment HTML : entités décodées, balises retirées. */
-function htmlText(html: string): string {
-  return decodeHtmlEntities(decodeHtmlEntities(html))
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\u00a0/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
 /**
  * Bloc CNIL : la classe extérieure exacte, son contenu et la paire `</div></div>`
  * qui ferme le wrapper puis le bloc. Un simple préfixe matcherait `-contenu` et
@@ -92,11 +83,11 @@ export function parseCnilPageReferences(html: string): string[] {
 
   for (const block of html.matchAll(SECTION_BLOCK)) {
     const body = block[1] ?? "";
-    const heading = htmlText(body.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i)?.[1] ?? "");
+    const heading = toPlainText(body.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i)?.[1] ?? "");
     if (!/^Textes?\s+de\s+références?$/i.test(heading)) continue;
 
     for (const item of body.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)) {
-      const text = htmlText(item[1] ?? "");
+      const text = toPlainText(item[1] ?? "");
       if (text !== "") items.push(text);
     }
   }

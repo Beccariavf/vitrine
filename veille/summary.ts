@@ -75,11 +75,11 @@ export function decodeHtmlEntities(text: string): string {
 }
 
 /**
- * Ramène le texte de la source à une ligne propre.
+ * Ramène un fragment à une ligne de texte visible.
  * L'ordre compte : décoder deux fois neutralise aussi les balises doublement encodées
  * (`&amp;lt;p&amp;gt;`), que retirer les balises avant décodage laisserait passer.
  */
-function clean(text: string): string {
+export function toPlainText(text: string): string {
   return decodeHtmlEntities(decodeHtmlEntities(text))
     .replace(TAG, " ")
     .replace(NON_BREAKING_SPACE, " ")
@@ -105,7 +105,7 @@ function truncate(text: string): string {
  */
 export function toSummary(text: string | null): string | null {
   if (text === null) return null;
-  const cleaned = clean(text);
+  const cleaned = toPlainText(text);
   if (cleaned === "") return null;
   return Array.from(cleaned).length > SUMMARY_MAX_LENGTH ? truncate(cleaned) : cleaned;
 }

@@ -451,6 +451,42 @@ describe("les pages CNIL dans la passe", () => {
     }
   });
 
+  it("ne réécrit pas de snapshot quand seules les parties volatiles changent", async () => {
+    const root = tempRoot();
+    try {
+      const bodiesFor = (page: string) =>
+        new Map<string, string>([
+          [CNIL.feedUrl, FULL],
+          ...CNIL_PAGES.map(([url]) => [url, url === FNAC_URL ? page : EMPTY_PAGE] as const),
+        ]);
+
+      await run({ fetchImpl: fetchByUrl(bodiesFor(FNAC_PAGE)), rootDir: root, sources: [CNIL] });
+      const firstCount = listFiles(root).filter(
+        (file) => file.startsWith(join("data", "raw")) && file.endsWith(".html"),
+      ).length;
+      assert.equal(firstCount, 1);
+
+      const volatile = FNAC_PAGE.replace("<body>", '<body data-build="2">');
+      const result = await run({
+        fetchImpl: fetchByUrl(bodiesFor(volatile)),
+        rootDir: root,
+        sources: [CNIL],
+      });
+
+      assert.equal(result.sources[0]?.pagePaths.length, 0);
+      assert.equal(
+        listFiles(root).filter(
+          (file) => file.startsWith(join("data", "raw")) && file.endsWith(".html"),
+        ).length,
+        firstCount,
+      );
+      const fnac = entrySources(root).find((entry) => entry.url === FNAC_URL);
+      assert.deepEqual(fnac?.references, ["Loi Informatique et Libertés · art. 82"]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   for (const mode of ["network", "http"] as const) {
     it(`conserve l'entrée avec [] quand la page échoue (${mode})`, async () => {
       const root = tempRoot();

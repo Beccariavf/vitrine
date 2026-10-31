@@ -40,7 +40,8 @@ flowchart LR
 
 - Git : chaque snapshot brut est adressé par son `sha256`, chaque entrée par un `id` stable.
 - Les entrées ne changent pas quand le contenu est inchangé ; une page CNIL modifiée peut changer `references`.
-- Les pages CNIL dont les références sont retenues sont conservées en `.html` adressé par son `sha256` ; les autres pages ne sont pas archivées.
+- Une page CNIL dont les références sont retenues est conservée en `.html` à sa première extraction ou quand ses références changent ; les autres pages ne sont pas archivées.
+- Une page dont les références extraites n'ont pas changé ne réécrit pas de snapshot : les jetons volatils de la page (Drupal) ne créent pas de nouveau fichier à chaque passe.
 - Le snapshot brut CJUE peut varier avec l'horodatage et l'ordre des items du flux : chaque passe ajoute alors un fichier `data/raw/` (~96 Ko), sans changer `data/entries/`.
 - Aucune donnée personnelle : uniquement des textes publics.
 - Un flux CJUE en panne laisse les entrées CNIL en place ; une page CNIL en panne laisse l'entrée avec `references: []` et un avertissement.
