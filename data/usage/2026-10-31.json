@@ -5,64 +5,92 @@
       "source": "piste",
       "endpoint": "oauth",
       "status": 200,
-      "durationMs": 200,
-      "at": "2026-10-31T17:01:24.198Z"
+      "durationMs": 201,
+      "at": "2026-10-31T23:02:57.321Z"
     },
     {
       "source": "legifrance",
       "endpoint": "search",
       "status": 200,
-      "durationMs": 712,
-      "at": "2026-10-31T17:01:24.910Z"
+      "durationMs": 840,
+      "at": "2026-10-31T23:02:58.162Z"
     },
     {
       "source": "legifrance",
       "endpoint": "search",
       "status": 200,
-      "durationMs": 680,
-      "at": "2026-10-31T17:01:25.625Z"
+      "durationMs": 606,
+      "at": "2026-10-31T23:02:58.797Z"
     },
     {
       "source": "legifrance",
       "endpoint": "search",
       "status": 200,
-      "durationMs": 704,
-      "at": "2026-10-31T17:01:26.350Z"
+      "durationMs": 409,
+      "at": "2026-10-31T23:02:59.241Z"
     },
     {
       "source": "legifrance",
       "endpoint": "search",
       "status": 200,
-      "durationMs": 607,
-      "at": "2026-10-31T17:01:26.959Z"
+      "durationMs": 635,
+      "at": "2026-10-31T23:02:59.878Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 582,
+      "at": "2026-10-31T23:03:00.461Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 514,
+      "at": "2026-10-31T23:03:00.977Z"
     },
     {
       "source": "judilibre",
       "endpoint": "search",
       "status": 200,
-      "durationMs": 118,
-      "at": "2026-10-31T17:01:27.104Z"
+      "durationMs": 783,
+      "at": "2026-10-31T23:03:01.790Z"
     },
     {
       "source": "judilibre",
       "endpoint": "search",
       "status": 200,
-      "durationMs": 777,
-      "at": "2026-10-31T17:01:27.888Z"
+      "durationMs": 112,
+      "at": "2026-10-31T23:03:01.904Z"
     },
     {
       "source": "judilibre",
       "endpoint": "search",
       "status": 200,
-      "durationMs": 119,
-      "at": "2026-10-31T17:01:28.008Z"
+      "durationMs": 90,
+      "at": "2026-10-31T23:03:01.995Z"
     },
     {
       "source": "judilibre",
       "endpoint": "search",
       "status": 200,
-      "durationMs": 413,
-      "at": "2026-10-31T17:01:28.422Z"
+      "durationMs": 203,
+      "at": "2026-10-31T23:03:02.198Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 146,
+      "at": "2026-10-31T23:03:02.345Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 675,
+      "at": "2026-10-31T23:03:03.020Z"
     }
   ]
 }

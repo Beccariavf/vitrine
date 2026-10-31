@@ -1,5 +1,5 @@
 ---
-status: pending
+status: done
 ---
 
 # Instruction: Preuve des pages
@@ -8,10 +8,14 @@ status: pending
 
 ```txt
 .
-└── data/
-    ├── entries/ ✏
-    ├── raw/ ✏
-    └── usage/ ✏
+├── data/
+│   ├── entries/ ✏
+│   ├── raw/ ✏
+│   └── usage/ ✏
+└── src/
+    └── pages/
+        └── veille/
+            └── index.astro ✏
 ```
 
 ## Test Scope
@@ -49,7 +53,7 @@ status: pending
 
 1. Lancer `npm run build`.
 2. Dans `dist/veille/index.html`, vérifier les cinq libellés, l'identifiant `f-plateformes`, les badges « Commission européenne — DMA » et « ARCOM ».
-3. Vérifier que `src/pages/veille/index.astro` n'a pas eu à changer : sa boucle sur `themes` et son filtre CSS par sous-ensembles rendent la cinquième pastille et masquent les entrées décochées.
+3. Dans `src/pages/veille/index.astro`, la boucle sur `themes` rend la cinquième pastille et le filtre CSS par sous-ensembles masque les entrées décochées ; une media query à 640 px réduit padding, taille et interlettrage pour tenir sur deux lignes à 375 px.
 4. Vérifier l'absence de `<script>` et de requête réseau au chargement.
 5. Vérifier qu'au moins une publication DMA, une publication DSA de la Commission et une publication ARCOM sont rendues.
 
