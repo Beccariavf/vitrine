@@ -20,9 +20,11 @@ La langue visuelle : jetons, typographie, modules et conventions. Ce que ça res
 - En-tête : wordmark `VITRINE_` en mono, navigation encadrée, page courante en aplat encre.
 - Accueil « Registre » : grand titre, bloc rouge de dernière publication, bandeau de chiffres, bloc `pipeline.log` en encre, méthode numérotée, produits en cartes avec filet rouge, bleu ou jaune.
 - Veille : bascule grille / liste sans JavaScript, grille par défaut. Grille de cartes sur 3 colonnes ; liste de lecture centrée à 56rem.
+- Un sélecteur compact de matières (pills, toutes actives par défaut) précède la liste et masque les publications des matières décochées, sans JavaScript. Une ligne d'explication avec un « i » rappelle le geste.
+- Chaque publication porte un badge de matière rouge et son label de source.
 - Chaque carte porte un en-tête coloré avec le grand jour et la source, puis un corps papier avec titre, résumé, références et « Lire ». Le cycle rouge → bleu → jaune → béton casse les colonnes uniformes ; le béton joue la fenêtre neutre.
-- Les références juridiques sont des petits tags mono à filet 1 px sous le résumé : instrument + articles, jamais un texte long sur la couleur.
-- La tête de veille affiche les sources réelles (`CNIL + CJUE`) et les tags actifs en lecture seule ; le pied de page crédite EUR-Lex (CC BY 4.0).
+- Les références juridiques sont des pastilles mono à filet 1 px sous le résumé : instrument + articles, jamais un texte long sur la couleur.
+- La tête de veille affiche le compte des publications et la dernière date ; le sélecteur porte les matières actives en lecture seule. Le pied de page crédite Légifrance, la Cour de cassation et EUR-Lex (CC BY 4.0).
 - Le texte long n'est jamais posé sur un aplat coloré : les en-têtes colorés ne portent que le jour et la source.
 - Survol : translation de 2 px et ombre dure qui grandit ; ligne de veille sur papier ; le texte courant ne change jamais de couleur, seuls les contrôles de navigation inversent encre et papier.
 - Aucun arrondi, aucune animation hors survol.
