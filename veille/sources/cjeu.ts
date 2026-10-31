@@ -3,8 +3,6 @@ import type { Entry } from "../types.ts";
 import { hashFullUrl } from "../normalize.ts";
 import { extractReferences } from "../references.ts";
 import { decodeHtmlEntities, toSummary } from "../summary.ts";
-import type { Tag } from "../tags.ts";
-import { matchesActiveTags } from "../tags.ts";
 
 /** Identifiant stable de la source, écrit dans chaque entrée. */
 export const SOURCE_ID = "cjeu";
@@ -137,9 +135,9 @@ export function parseCaseTitle(official: string): { title: string; summary: stri
 
 /**
  * Transforme le flux CJUE en entrées normalisées.
- * Le filtre porte sur le titre officiel : le titre d'affichage ne garde pas le sujet.
+ * Le filtre par matière est appliqué après le parse, sur le titre officiel complet.
  */
-export function parseFeed(xml: string, tags: Tag[]): Entry[] {
+export function parseFeed(xml: string): Entry[] {
   const validity = XMLValidator.validate(xml);
   if (validity !== true) {
     throw new Error(`CJUE feed is not valid XML: ${validity.err.msg}`);
@@ -180,7 +178,6 @@ export function parseFeed(xml: string, tags: Tag[]): Entry[] {
     if (suffix === "INF") return;
 
     const official = decodeHtmlEntities(rawTitle.slice(celexMatch[0].length)).trim();
-    if (!matchesActiveTags(official, tags)) return;
 
     const base = celex.replace(/_(SUM|RES|INF)$/, "");
     const url = `https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:${base}`;
@@ -195,6 +192,7 @@ export function parseFeed(xml: string, tags: Tag[]): Entry[] {
       publishedAt,
       summary: toSummary(summary),
       references: extractReferences(official),
+      themes: [],
       source: SOURCE_ID,
     };
 

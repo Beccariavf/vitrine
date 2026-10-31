@@ -1,8 +1,6 @@
 import { strict as assert } from "node:assert";
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
-import { readTags } from "../veille/tags.ts";
 import {
   parseCaseTitle,
   parseDecisionDate,
@@ -10,21 +8,19 @@ import {
   parsePublicationDate,
 } from "../veille/sources/cjeu.ts";
 
-const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const FEED = readFileSync(new URL("./fixtures/cjeu/feed.xml", import.meta.url), "utf8");
-const tags = readTags(ROOT);
 
 describe("le flux CJUE figé", () => {
-  const entries = parseFeed(FEED, tags);
+  const entries = parseFeed(FEED);
 
-  it("retient les arrêts des tags actifs, sans les autres", () => {
-    assert.equal(entries.length, 3);
+  it("parse tous les arrêts du flux, y compris ceux hors matière", () => {
+    assert.equal(entries.length, 5);
     const titles = entries.map((entry) => entry.title);
     assert.ok(titles.some((title) => title.startsWith("Jautiva (C-798/24)")));
     assert.ok(titles.some((title) => title.startsWith("Commission européenne contre Hongrie. (C-681/24)")));
     assert.ok(titles.some((title) => title.startsWith("Test contre Autorité. (C-999/25)")));
-    assert.ok(!titles.some((title) => title.includes("Minister for Justice")));
-    assert.ok(!titles.some((title) => title.includes("IA")));
+    assert.ok(titles.some((title) => title.includes("Minister for Justice")));
+    assert.ok(titles.some((title) => title.includes("Commission européenne contre IA")));
   });
 
   it("dédoublonne _SUM/_RES et ignore _INF", () => {
@@ -62,17 +58,17 @@ describe("le flux CJUE figé", () => {
     assert.equal(fallback.publishedAt, "2026-10-30T12:00:00.000Z");
   });
 
-  it("inclut les arrêts IA quand le tag est actif", () => {
-    const withIa = tags.map((tag) => (tag.id === "ia" ? { ...tag, active: true } : tag));
-    const withIaEntries = parseFeed(FEED, withIa);
-    assert.equal(withIaEntries.length, 4);
-    assert.ok(withIaEntries.some((entry) => entry.title.includes("Commission européenne contre IA")));
+  it("parse l'arrêt IA et le marque sans matière à ce stade", () => {
+    const ia = entries.find((entry) => entry.title.includes("Commission européenne contre IA"));
+    assert.ok(ia);
+    assert.deepEqual(ia.references, []);
+    assert.deepEqual(ia.themes, []);
   });
 
   it("refuse un XML invalide ou un flux vide", () => {
-    assert.throws(() => parseFeed("<rss><channel><item></rss>", tags), /not valid XML/);
+    assert.throws(() => parseFeed("<rss><channel><item></rss>"), /not valid XML/);
     assert.throws(
-      () => parseFeed('<?xml version="1.0"?><rss version="2.0"><channel><title>x</title></channel></rss>', tags),
+      () => parseFeed('<?xml version="1.0"?><rss version="2.0"><channel><title>x</title></channel></rss>'),
       /CJUE feed has no item/,
     );
   });

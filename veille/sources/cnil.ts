@@ -147,6 +147,7 @@ export function parseFeed(xml: string): Entry[] {
       publishedAt: toIsoUtc(textOf(item["pubDate"])),
       summary: toSummary(textOf(item["description"])),
       references: [],
+      themes: [],
       source: SOURCE_ID,
     });
   });

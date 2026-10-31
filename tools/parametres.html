@@ -59,14 +59,14 @@
         font-size: 0.75rem;
       }
       #status.error { border-color: var(--red); color: var(--red); }
-      #tags { list-style: none; padding: 0; margin: 1.25rem 0 0; display: grid; gap: 0.75rem; }
-      #tags li { border: 2px solid var(--ink); background: var(--paper); padding: 1rem 1rem 0.85rem; }
-      #tags li:has(input:checked) { border-left: 8px solid var(--red); }
-      .tag { display: flex; align-items: baseline; gap: 0.75rem; cursor: pointer; }
-      .tag input { width: 1.1rem; height: 1.1rem; accent-color: var(--red); }
-      .tag-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.75rem; }
-      .tag-name { font-weight: 700; font-size: 1.05rem; }
-      .tag-id { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.7rem; color: var(--muted); }
+      #themes { list-style: none; padding: 0; margin: 1.25rem 0 0; display: grid; gap: 0.75rem; }
+      #themes li { border: 2px solid var(--ink); background: var(--paper); padding: 1rem 1rem 0.85rem; }
+      #themes li:has(input:checked) { border-left: 8px solid var(--red); }
+      .theme { display: flex; align-items: baseline; gap: 0.75rem; cursor: pointer; }
+      .theme input { width: 1.1rem; height: 1.1rem; accent-color: var(--red); }
+      .theme-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.75rem; }
+      .theme-name { font-weight: 700; font-size: 1.05rem; }
+      .theme-id { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.7rem; color: var(--muted); }
       .terms {
         margin: 0.5rem 0 0 1.85rem;
         font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -92,103 +92,129 @@
       <p class="eyebrow">Vitrine · outil local</p>
       <h1>Paramètres de la veille</h1>
       <p class="lead">
-        Choisis les tags publiés. L'outil écrit <code>veille/tags.json</code> ; le site reste
+        Choisis les matières publiées. L'outil écrit <code>veille/themes.json</code> ; le site reste
         statique et ne charge aucun script.
       </p>
 
       <div class="toolbar">
-        <button id="load" type="button">Charger tags.json</button>
-        <button id="save" type="button" disabled>Enregistrer tags.json</button>
+        <button id="load" type="button">Charger themes.json</button>
+        <button id="save" type="button" disabled>Enregistrer themes.json</button>
       </div>
-      <p id="status" role="status">Aucun fichier chargé. Clique sur « Charger tags.json ».</p>
+      <p id="status" role="status">Aucun fichier chargé. Clique sur « Charger themes.json ».</p>
 
-      <ul id="tags" aria-label="Tags de veille"></ul>
+      <ul id="themes" aria-label="Matières de veille"></ul>
 
       <p class="note">
         Outil local, non déployé. Après enregistrement : <code>npm run veille</code> puis
-        <code>npm run build</code>. Le snapshot brut reste dans <code>data/raw/</code> ; les
-        arrêts CJUE des tags inactifs sont retirés de <code>data/entries/</code>.
+        <code>npm run build</code>. Le snapshot brut reste dans <code>data/raw/</code> ; désactiver
+        une matière la masque au build sans supprimer les entrées.
       </p>
     </div>
 
     <script>
       (() => {
         const $ = (id) => document.getElementById(id);
-        const tagList = $("tags");
+        const themeList = $("themes");
         const status = $("status");
         const saveButton = $("save");
         const PICKER_TYPES = [{ description: "Configuration", accept: { "application/json": [".json"] } }];
-        let tags = null;
+        let themes = null;
 
         function setStatus(message, isError = false) {
           status.textContent = message;
           status.classList.toggle("error", isError);
         }
 
+        function strings(value, field, index) {
+          if (!Array.isArray(value) || value.length === 0 || !value.every((item) => typeof item === "string" && item.trim() !== "")) {
+            throw new Error(`Matière #${index} : « ${field} » doit être une liste non vide.`);
+          }
+          return value.map((item) => item.trim());
+        }
+
         function validate(value) {
-          if (!value || !Array.isArray(value.tags) || value.tags.length !== 4) {
-            throw new Error("Le fichier doit contenir exactement quatre tags.");
+          if (!value || !Array.isArray(value.themes) || value.themes.length !== 4) {
+            throw new Error("Le fichier doit contenir exactement quatre matières.");
           }
 
           const ids = new Set();
-          return value.tags.map((tag, index) => {
-            if (!tag || typeof tag !== "object") throw new Error(`Tag #${index} : objet attendu.`);
-            if (typeof tag.id !== "string" || !/^[a-z0-9-]+$/.test(tag.id)) {
-              throw new Error(`Tag #${index} : identifiant invalide.`);
+          return value.themes.map((theme, index) => {
+            if (!theme || typeof theme !== "object") throw new Error(`Matière #${index} : objet attendu.`);
+            if (typeof theme.id !== "string" || !/^[a-z0-9-]+$/.test(theme.id)) {
+              throw new Error(`Matière #${index} : identifiant invalide.`);
             }
-            if (ids.has(tag.id)) throw new Error(`Tag #${index} : identifiant dupliqué.`);
-            ids.add(tag.id);
-            if (typeof tag.label !== "string" || tag.label.trim() === "") {
-              throw new Error(`Tag #${index} : libellé manquant.`);
+            if (ids.has(theme.id)) throw new Error(`Matière #${index} : identifiant dupliqué.`);
+            ids.add(theme.id);
+            for (const field of ["label", "description"]) {
+              if (typeof theme[field] !== "string" || theme[field].trim() === "") {
+                throw new Error(`Matière #${index} : « ${field} » manquant.`);
+              }
             }
-            if (typeof tag.active !== "boolean") {
-              throw new Error(`Tag #${index} : « active » doit être un booléen.`);
+            if (typeof theme.active !== "boolean") {
+              throw new Error(`Matière #${index} : « active » doit être un booléen.`);
             }
-            if (!Array.isArray(tag.terms) || tag.terms.length === 0 || !tag.terms.every((term) => typeof term === "string" && term.trim() !== "")) {
-              throw new Error(`Tag #${index} : motifs manquants.`);
-            }
-            return { id: tag.id, label: tag.label.trim(), active: tag.active, terms: tag.terms.map((term) => term.trim()) };
+            return {
+              id: theme.id,
+              label: theme.label.trim(),
+              description: theme.description.trim(),
+              instruments: strings(theme.instruments, "instruments", index),
+              terms: strings(theme.terms, "terms", index),
+              sources: strings(theme.sources, "sources", index),
+              active: theme.active,
+            };
           });
         }
 
         function render(next) {
-          tags = next;
-          tagList.replaceChildren(
-            ...next.map((tag, index) => {
+          themes = next;
+          themeList.replaceChildren(
+            ...next.map((theme, index) => {
               const item = document.createElement("li");
 
               const label = document.createElement("label");
-              label.className = "tag";
+              label.className = "theme";
 
               const input = document.createElement("input");
               input.type = "checkbox";
-              input.checked = tag.active;
+              input.checked = theme.active;
               input.dataset.index = String(index);
-              input.id = `tag-${tag.id}`;
+              input.id = `theme-${theme.id}`;
 
               const head = document.createElement("span");
-              head.className = "tag-head";
+              head.className = "theme-head";
               const name = document.createElement("span");
-              name.className = "tag-name";
-              name.textContent = tag.label;
+              name.className = "theme-name";
+              name.textContent = theme.label;
               const id = document.createElement("span");
-              id.className = "tag-id";
-              id.textContent = tag.id;
+              id.className = "theme-id";
+              id.textContent = theme.id;
               head.append(name, id);
 
               label.append(input, head);
 
+              const description = document.createElement("p");
+              description.className = "terms";
+              description.textContent = theme.description;
+
+              const instruments = document.createElement("p");
+              instruments.className = "terms";
+              instruments.textContent = `Textes : ${theme.instruments.join(" · ")}`;
+
+              const sources = document.createElement("p");
+              sources.className = "terms";
+              sources.textContent = `Sources : ${theme.sources.join(" · ")}`;
+
               const terms = document.createElement("p");
               terms.className = "terms";
-              terms.textContent = tag.terms.join(" · ");
+              terms.textContent = `Termes : ${theme.terms.join(" · ")}`;
 
-              item.append(label, terms);
+              item.append(label, description, instruments, sources, terms);
               return item;
             }),
           );
           saveButton.disabled = false;
-          const active = next.filter((tag) => tag.active).length;
-          setStatus(`Chargé : ${next.length} tags, ${active} actifs.`);
+          const active = next.filter((theme) => theme.active).length;
+          setStatus(`Chargé : ${next.length} matières, ${active} actives.`);
         }
 
         async function readFile(file) {
@@ -225,20 +251,20 @@
         }
 
         async function save() {
-          if (!tags) return;
+          if (!themes) return;
           try {
-            const next = tags.map((tag, index) => {
-              const input = tagList.querySelector(`input[data-index="${index}"]`);
-              return { ...tag, active: input instanceof HTMLInputElement ? input.checked : tag.active };
+            const next = themes.map((theme, index) => {
+              const input = themeList.querySelector(`input[data-index="${index}"]`);
+              return { ...theme, active: input instanceof HTMLInputElement ? input.checked : theme.active };
             });
-            const text = `${JSON.stringify({ tags: next }, null, 2)}\n`;
+            const text = `${JSON.stringify({ themes: next }, null, 2)}\n`;
 
             if (typeof window.showSaveFilePicker === "function") {
-              const handle = await window.showSaveFilePicker({ suggestedName: "tags.json", types: PICKER_TYPES });
+              const handle = await window.showSaveFilePicker({ suggestedName: "themes.json", types: PICKER_TYPES });
               const writable = await handle.createWritable();
               await writable.write(text);
               await writable.close();
-              setStatus("Enregistré. Vérifie que le fichier est veille/tags.json, puis lance npm run veille et npm run build.");
+              setStatus("Enregistré. Vérifie que le fichier est veille/themes.json, puis lance npm run build.");
               return;
             }
 
@@ -246,10 +272,10 @@
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.href = url;
-            link.download = "tags.json";
+            link.download = "themes.json";
             link.click();
             setTimeout(() => URL.revokeObjectURL(url), 1000);
-            setStatus("Téléchargé. Place le fichier dans veille/tags.json.");
+            setStatus("Téléchargé. Place le fichier dans veille/themes.json.");
           } catch (error) {
             if (error && error.name === "AbortError") return;
             setStatus(`Erreur : ${error.message}`, true);

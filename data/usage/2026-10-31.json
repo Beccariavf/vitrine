@@ -1,0 +1,68 @@
+{
+  "date": "2026-10-31",
+  "calls": [
+    {
+      "source": "piste",
+      "endpoint": "oauth",
+      "status": 200,
+      "durationMs": 200,
+      "at": "2026-10-31T17:01:24.198Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 712,
+      "at": "2026-10-31T17:01:24.910Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 680,
+      "at": "2026-10-31T17:01:25.625Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 704,
+      "at": "2026-10-31T17:01:26.350Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 607,
+      "at": "2026-10-31T17:01:26.959Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 118,
+      "at": "2026-10-31T17:01:27.104Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 777,
+      "at": "2026-10-31T17:01:27.888Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 119,
+      "at": "2026-10-31T17:01:28.008Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 413,
+      "at": "2026-10-31T17:01:28.422Z"
+    }
+  ]
+}

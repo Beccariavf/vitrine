@@ -1,0 +1,147 @@
+{
+  "themes": [
+    {
+      "id": "donnees-personnelles",
+      "label": "Données personnelles",
+      "description": "RGPD, loi Informatique et Libertés et ePrivacy.",
+      "instruments": [
+        "Règlement (UE) 2016/679",
+        "Loi Informatique et Libertés",
+        "Directive 2002/58/CE",
+        "Code des postes et des communications électroniques",
+        "Code de la consommation"
+      ],
+      "terms": [
+        "protection des données",
+        "données personnelles",
+        "données à caractère personnel",
+        "RGPD",
+        "règlement 2016/679",
+        "directive 95/46",
+        "CNIL",
+        "CEPD",
+        "cookies",
+        "traceurs",
+        "consentement",
+        "transfert de données",
+        "décision d'adéquation",
+        "clauses contractuelles types",
+        "Privacy Shield",
+        "portabilité",
+        "effacement",
+        "droit à l'oubli",
+        "violation de données",
+        "personne concernée",
+        "responsable du traitement",
+        "sous-traitant",
+        "conservation des données",
+        "décision automatisée",
+        "profilage",
+        "vie privée",
+        "ePrivacy",
+        "données de santé",
+        "biométrie",
+        "reconnaissance faciale",
+        "vidéosurveillance",
+        "géolocalisation",
+        "PNR",
+        "dossiers passagers"
+      ],
+      "sources": [
+        "CNIL",
+        "CEPD",
+        "ARCEP",
+        "CJUE",
+        "Conseil d'État",
+        "Cour de cassation"
+      ],
+      "active": true
+    },
+    {
+      "id": "ia",
+      "label": "IA",
+      "description": "AI Act et systèmes d'intelligence artificielle.",
+      "instruments": [
+        "Règlement (UE) 2024/1689"
+      ],
+      "terms": [
+        "intelligence artificielle",
+        "IA",
+        "AI Act",
+        "règlement 2024/1689",
+        "système d'IA",
+        "modèle d'IA",
+        "apprentissage automatique",
+        "algorithme"
+      ],
+      "sources": [
+        "CNIL",
+        "Commission européenne",
+        "CJUE",
+        "Conseil d'État",
+        "Cour de cassation"
+      ],
+      "active": true
+    },
+    {
+      "id": "cybersecurite",
+      "label": "Cybersécurité",
+      "description": "NIS2, CER, DORA et CRA.",
+      "instruments": [
+        "Directive (UE) 2022/2555",
+        "Directive (UE) 2022/2557",
+        "Règlement (UE) 2022/2554",
+        "Règlement (UE) 2024/2847"
+      ],
+      "terms": [
+        "cybersécurité",
+        "cyberrésilience",
+        "NIS2",
+        "directive 2022/2555",
+        "DORA",
+        "règlement 2022/2554",
+        "CRA",
+        "cyberattaque",
+        "sécurité des réseaux et des systèmes d'information",
+        "vulnérabilité",
+        "CERT-FR"
+      ],
+      "sources": [
+        "ANSSI",
+        "CJUE",
+        "Conseil d'État",
+        "Cour de cassation"
+      ],
+      "active": true
+    },
+    {
+      "id": "donnees-non-personnelles",
+      "label": "Données non personnelles",
+      "description": "Data Act et partage des données.",
+      "instruments": [
+        "Règlement (UE) 2023/2854"
+      ],
+      "terms": [
+        "Data Act",
+        "règlement 2023/2854",
+        "données non personnelles",
+        "partage de données",
+        "changement de fournisseur",
+        "portabilité des données",
+        "espace européen des données",
+        "EDIB",
+        "réutilisation des données",
+        "données ouvertes",
+        "cloud"
+      ],
+      "sources": [
+        "ARCEP",
+        "Commission européenne",
+        "CJUE",
+        "Conseil d'État",
+        "Cour de cassation"
+      ],
+      "active": true
+    }
+  ]
+}

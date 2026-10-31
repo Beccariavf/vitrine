@@ -6,23 +6,27 @@ import {
   parseFeed as parseCnilFeed,
 } from "./sources/cnil.ts";
 import { FEED_URL as CJEU_FEED_URL, parseFeed as parseCjeuFeed } from "./sources/cjeu.ts";
-import { matchesActiveTags, readTags } from "./tags.ts";
-import type { Tag } from "./tags.ts";
+import { FEED_URL as ANSSI_FEED_URL, parseFeed as parseAnssiFeed } from "./sources/anssi.ts";
+import { FEED_URL as CEPD_FEED_URL, parseFeed as parseCepdFeed } from "./sources/cepd.ts";
+import { FEED_URL as ARCEP_FEED_URL, parseFeed as parseArcepFeed } from "./sources/arcep.ts";
+import { FEED_URL as COMMISSION_FEED_URL, parseFeed as parseCommissionFeed } from "./sources/commission.ts";
+import { fetchEntries as fetchCetatEntries } from "./sources/cetat.ts";
+import { fetchEntries as fetchJudilibreEntries } from "./sources/judilibre.ts";
+import { flushUsage } from "./piste.ts";
+import { assignThemes, readThemes } from "./themes.ts";
+import type { Theme } from "./themes.ts";
 import type { Entry } from "./types.ts";
-import { pruneSourceEntries, readEntryById, writeEntries, writeRaw } from "./write.ts";
+import { readEntryById, writeEntries, writeRaw } from "./write.ts";
+import type { FetchLike } from "./fetch.ts";
 
-/** Ce que `run` attend d'un `fetch` : le minimum, injectable en test. */
-export type FetchLike = (url: string) => Promise<{
-  ok: boolean;
-  status: number;
-  text(): Promise<string>;
-}>;
+export type { FetchLike } from "./fetch.ts";
 
-/** Une source : son identité, son flux et le parseur qui produit ses entrées. */
+/** Une source à flux : son identité, son flux et le parseur qui produit ses entrées. */
 export type Source = {
+  kind: "rss";
   id: string;
   feedUrl: string;
-  parse(xml: string, tags: Tag[]): Entry[];
+  parse(xml: string): Entry[];
   /** Enrichissement optionnel depuis la page officielle de chaque entrée. */
   references?: {
     pageUrl(entry: Entry): string;
@@ -30,8 +34,31 @@ export type Source = {
   };
 };
 
-export const SOURCES: Source[] = [
+/** Ce qu'une source API rend : ses réponses brutes, ses entrées et ses avertissements. */
+export type ApiResult = {
+  raw: string[];
+  entries: Entry[];
+  warnings: string[];
+};
+
+export type ApiContext = {
+  fetchImpl: FetchLike;
+  themes: Theme[];
+  now?: Date;
+};
+
+/** Une source API : elle interroge un service et rend des entrées normalisées. */
+export type ApiSource = {
+  kind: "api";
+  id: string;
+  fetchEntries(context: ApiContext): Promise<ApiResult>;
+};
+
+export type AnySource = Source | ApiSource;
+
+export const SOURCES: AnySource[] = [
   {
+    kind: "rss",
     id: "cnil",
     feedUrl: CNIL_FEED_URL,
     parse: (xml) => parseCnilFeed(xml),
@@ -41,9 +68,44 @@ export const SOURCES: Source[] = [
     },
   },
   {
+    kind: "rss",
     id: "cjeu",
     feedUrl: CJEU_FEED_URL,
-    parse: (xml, tags) => parseCjeuFeed(xml, tags),
+    parse: (xml) => parseCjeuFeed(xml),
+  },
+  {
+    kind: "rss",
+    id: "anssi",
+    feedUrl: ANSSI_FEED_URL,
+    parse: (xml) => parseAnssiFeed(xml),
+  },
+  {
+    kind: "rss",
+    id: "cepd",
+    feedUrl: CEPD_FEED_URL,
+    parse: (xml) => parseCepdFeed(xml),
+  },
+  {
+    kind: "rss",
+    id: "arcep",
+    feedUrl: ARCEP_FEED_URL,
+    parse: (xml) => parseArcepFeed(xml),
+  },
+  {
+    kind: "rss",
+    id: "commission",
+    feedUrl: COMMISSION_FEED_URL,
+    parse: (xml) => parseCommissionFeed(xml),
+  },
+  {
+    kind: "api",
+    id: "cetat",
+    fetchEntries: (context) => fetchCetatEntries(context),
+  },
+  {
+    kind: "api",
+    id: "judilibre",
+    fetchEntries: (context) => fetchJudilibreEntries(context),
   },
 ];
 
@@ -51,15 +113,17 @@ export type RunOptions = {
   fetchImpl: FetchLike;
   /** Racine du dépôt : `data/` est écrit en dessous. */
   rootDir: string;
-  /** Sources à exécuter ; les deux par défaut. */
-  sources?: Source[];
+  /** Sources à exécuter ; toutes par défaut. */
+  sources?: AnySource[];
   /** Catalogue déjà chargé, utile aux tests hors d'un dépôt complet. */
-  tags?: Tag[];
+  themes?: Theme[];
 };
 
 export type SourceRun = {
   source: string;
+  /** Première réponse brute ; conservée pour les flux. */
   rawPath: string;
+  rawPaths: string[];
   pagePaths: string[];
   entryPaths: string[];
 };
@@ -120,10 +184,9 @@ export async function run({
   fetchImpl,
   rootDir,
   sources = SOURCES,
-  tags,
+  themes,
 }: RunOptions): Promise<RunResult> {
-  const needsTags = sources.some((source) => source.id === "cjeu");
-  const topicTags = tags ?? (needsTags ? readTags(rootDir) : []);
+  const catalog = themes ?? readThemes(rootDir);
 
   const results: SourceRun[] = [];
   const errors: string[] = [];
@@ -131,9 +194,24 @@ export async function run({
 
   for (const source of sources) {
     try {
+      if (source.kind === "api") {
+        const result = await source.fetchEntries({ fetchImpl, themes: catalog });
+        warnings.push(...result.warnings);
+        const rawPaths = result.raw.map((body) => writeRaw(rootDir, body, "json"));
+        const entryPaths = writeEntries(rootDir, assignThemes(result.entries, catalog));
+        results.push({
+          source: source.id,
+          rawPath: rawPaths[0] ?? "",
+          rawPaths,
+          pagePaths: [],
+          entryPaths,
+        });
+        continue;
+      }
+
       const xml = await fetchFeed(fetchImpl, source.feedUrl, source.id);
       const rawPath = writeRaw(rootDir, xml);
-      let entries = source.parse(xml, topicTags);
+      let entries = source.parse(xml);
       const pagePaths: string[] = [];
 
       if (source.references) {
@@ -168,20 +246,16 @@ export async function run({
         entries = enriched;
       }
 
-      const entryPaths = writeEntries(rootDir, entries);
+      const entryPaths = writeEntries(rootDir, assignThemes(entries, catalog));
 
-      if (source.id === "cjeu") {
-        pruneSourceEntries(rootDir, source.id, (entry) =>
-          matchesActiveTags(entry.officialTitle, topicTags),
-        );
-      }
-
-      results.push({ source: source.id, rawPath, pagePaths, entryPaths });
+      results.push({ source: source.id, rawPath, rawPaths: [rawPath], pagePaths, entryPaths });
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
       errors.push(`${source.id}: ${reason}`);
     }
   }
+
+  flushUsage(rootDir);
 
   if (errors.length > 0) {
     throw new Error(errors.join("; "));
@@ -197,10 +271,11 @@ export async function run({
 const USER_AGENT = "vitrine-veille/0.1 (+https://github.com/Beccariavf/vitrine)";
 
 /** Le vrai réseau, borné dans le temps et identifié auprès de la source. */
-const cliFetch: FetchLike = (url) =>
+const cliFetch: FetchLike = (url, init = {}) =>
   fetch(url, {
+    ...init,
     signal: AbortSignal.timeout(10_000),
-    headers: { "user-agent": USER_AGENT },
+    headers: { "user-agent": USER_AGENT, ...init.headers },
   });
 
 const calledDirectly =
@@ -208,6 +283,12 @@ const calledDirectly =
   import.meta.url === pathToFileURL(resolve(process.argv[1])).href;
 
 if (calledDirectly) {
+  try {
+    process.loadEnvFile(resolve(process.cwd(), ".env"));
+  } catch {
+    // Pas de `.env` : les secrets peuvent venir de l'environnement.
+  }
+
   run({ fetchImpl: cliFetch, rootDir: process.cwd() })
     .then(({ sources, entryPaths, warnings }) => {
       for (const warning of warnings) console.warn(`warning: ${warning}`);

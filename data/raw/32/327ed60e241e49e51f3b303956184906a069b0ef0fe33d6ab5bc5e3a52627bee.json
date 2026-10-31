@@ -1,0 +1,1517 @@
+{
+  "page": 0,
+  "page_size": 50,
+  "query": {
+    "query": "protection des données",
+    "operator": "or",
+    "date_start": "2026-10-01",
+    "date_end": "2026-10-31",
+    "sort": "date",
+    "order": "desc",
+    "page_size": 50,
+    "field": [],
+    "type": [],
+    "theme": [],
+    "chamber": [],
+    "formation": [],
+    "jurisdiction": [],
+    "location": [],
+    "publication": [],
+    "solution": []
+  },
+  "total": 286,
+  "previous_page": null,
+  "next_page": "query=protection+des+donn%C3%A9es&operator=or&date_start=2026-10-01&date_end=2026-10-31&sort=date&order=desc&page_size=50&page=1",
+  "took": 49,
+  "max_score": 25.456339,
+  "results": [
+    {
+      "score": 0.22127615051009497,
+      "highlights": {
+        "text": [
+          "caractériser une faute faisant dégénérer en abus le droit d'agir en justice, la cour d'appel n'a pas <em>donné</em>"
+        ]
+      },
+      "id": "6ad9d7147a1020213734da56",
+      "jurisdiction": "cc",
+      "chamber": "civ3",
+      "number": "24-22.258",
+      "numbers": [
+        "24-22.258",
+        "24-22.258"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C300597",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "cassation",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.22682320501781503,
+      "highlights": {
+        "text": [
+          "qui, pouvant être réparée par la procédure prévue à l'article 463 du code de procédure civile, ne <em>donne</em>"
+        ]
+      },
+      "id": "6ad9d7077a1020213734c94c",
+      "jurisdiction": "cc",
+      "chamber": "civ3",
+      "number": "25-11.154",
+      "numbers": [
+        "25-11.154",
+        "25-11.154"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C300601",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "rejet",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.29052834345111445,
+      "highlights": {
+        "text": [
+          "Dans le pourvoi n° M 24-21.427, il est <em>donné</em> acte à la société Le Forum du lac du désistement partiel",
+          "Dans le pourvoi n° V 24-21.481, il est <em>donné</em> acte à la société Avenir déconstruction du désistement partiel"
+        ]
+      },
+      "id": "6ad9d6bc7a1020213734672a",
+      "jurisdiction": "cc",
+      "chamber": "civ3",
+      "number": "24-21.427",
+      "numbers": [
+        "24-21.427",
+        "24-21.481",
+        "24-21.427",
+        "24-21.481"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C310692",
+      "formation": "frr",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "rejet",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.3449788479011063,
+      "highlights": {
+        "text": [
+          "Il est <em>donné</em> acte à M",
+          "R] et de Mme [G], et notamment du vol d'une base de <em>données</em> de clients, expressément dénoncé dans la",
+          "non contradictoire, et que si la requête dénonce par ailleurs des faits de transfert de la base de <em>données</em>"
+        ]
+      },
+      "id": "6ad9d8067a1020213736164b",
+      "jurisdiction": "cc",
+      "chamber": "civ2",
+      "number": "23-16.970",
+      "numbers": [
+        "23-16.970",
+        "23-16.970"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C201069",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "rejet",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.5908525966754292,
+      "highlights": {
+        "text": [
+          "contre l'arrêt rendu le 20 février 2026 par la cour d'appel de Saint-Denis de La Réunion (chambre de la <em>protection</em>",
+          "de Saint-Denis de La Réunion sur son recours contre deux ordonnances du juge des contentieux de la <em>protection</em>"
+        ]
+      },
+      "id": "6ad9d7ca7a1020213735c632",
+      "jurisdiction": "cc",
+      "chamber": "civ2",
+      "number": "26-50.022",
+      "numbers": [
+        "26-50.022",
+        "26-50.022"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C201092",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "irrecevabilite",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.4342610695119986,
+      "highlights": {
+        "text": [
+          "qu'aucun des défendeurs n'avait requis qu'il soit statué sur le fond, le juge des contentieux de la <em>protection</em>"
+        ]
+      },
+      "id": "6ad9d7aa7a10202137359a58",
+      "jurisdiction": "cc",
+      "chamber": "civ2",
+      "number": "25-12.093",
+      "numbers": [
+        "25-12.093",
+        "25-12.093"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C201111",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "cassation",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.2624000646754429,
+      "highlights": {
+        "text": [
+          "Après avis <em>donné</em> aux parties conformément à l'article 1015 du code de procédure civile, il est fait application"
+        ]
+      },
+      "id": "6ad9d8227a1020213736374d",
+      "jurisdiction": "cc",
+      "chamber": "civ2",
+      "number": "24-17.369",
+      "numbers": [
+        "24-17.369",
+        "24-17.369"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C201078",
+      "formation": "frh",
+      "publication": [
+        "b"
+      ],
+      "decision_date": "2026-10-22",
+      "solution": "cassation",
+      "type": "other",
+      "summary": "Il résulte de l'article 2241, alinéa 2, du code civil que l'acte de saisine de la juridiction, même entachée d'un vice de procédure, interrompt les délais de prescription comme de forclusion.\nDoit, dès lors, être censuré l'arrêt qui, pour constater la nullité d'une déclaration d'appel affectée d'une irrégularité de forme tenant à l'indication inexacte d'un domicile d'une appelante, retient que c'est dans le délai de trois mois de celle-ci que sa régularisation devait intervenir alors que cette déclaration d'appel ayant interrompu le délai d'appel, sa régularisation était possible jusqu'au prononcé de l'ordonnance du conseiller de la mise en état statuant sur sa validité",
+      "themes": [
+        "prescription civile"
+      ],
+      "files": [],
+      "titlesAndSummaries": [
+        {
+          "titles": [
+            "PRESCRIPTION CIVILE"
+          ],
+          "summary": "Il résulte de l'article 2241, alinéa 2, du code civil que l'acte de saisine de la juridiction, même entachée d'un vice de procédure, interrompt les délais de prescription comme de forclusion. Doit, dès lors, être censuré l'arrêt qui, pour constater la nullité d'une déclaration d'appel affectée d'une irrégularité de forme tenant à l'indication inexacte d'un domicile d'une appelante, retient que c'est dans le délai de trois mois de celle-ci que sa régularisation devait intervenir alors que cette déclaration d'appel ayant interrompu le délai d'appel, sa régularisation était possible jusqu'au prononcé de l'ordonnance du conseiller de la mise en état statuant sur sa validité",
+          "secondaryTitles": []
+        }
+      ],
+      "particularInterest": false
+    },
+    {
+      "score": 0.22063467178057303,
+      "highlights": {
+        "text": [
+          "Il est <em>donné</em> acte à la société Pasa immo du désistement de son pourvoi en ce qu'il est dirigé contre"
+        ]
+      },
+      "id": "6ad9d7327a1020213734fbcb",
+      "jurisdiction": "cc",
+      "chamber": "civ3",
+      "number": "24-21.115",
+      "numbers": [
+        "24-21.115",
+        "24-21.115"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C300588",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "cassation",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.2586340714585864,
+      "highlights": {
+        "text": [
+          "contractuelles, elle était fondée à reprocher un défaut d'exécution à l'entrepreneur, la cour d'appel n'a pas <em>donné</em>"
+        ]
+      },
+      "id": "6ad9d71a7a1020213734e1a7",
+      "jurisdiction": "cc",
+      "chamber": "civ3",
+      "number": "24-13.737",
+      "numbers": [
+        "24-13.737",
+        "24-13.737"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C300595",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "cassation",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.23199658442637802,
+      "highlights": {
+        "text": [
+          "Il est <em>donné</em> acte à Mme [R] [V], épouse [C] du désistement de son pourvoi en ce qu'il est dirigé contre"
+        ]
+      },
+      "id": "6ad9d7117a1020213734d5f1",
+      "jurisdiction": "cc",
+      "chamber": "civ3",
+      "number": "24-22.491",
+      "numbers": [
+        "24-22.491",
+        "24-22.491"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C300598",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "cassation",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.2624000646754429,
+      "highlights": {
+        "text": [
+          "Après avis <em>donné</em> aux parties, conformément à l'article 16 du code de procédure civile, il y a lieu d'examiner"
+        ]
+      },
+      "id": "6ad9d70d7a1020213734d1d2",
+      "jurisdiction": "cc",
+      "chamber": "civ3",
+      "number": "25-12.109",
+      "numbers": [
+        "25-12.109",
+        "25-12.109"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C300599",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "rejet",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.2586340714585864,
+      "highlights": {
+        "text": [
+          "Il est <em>donné</em> acte à la Mutuelle des architectes français, à M"
+        ]
+      },
+      "id": "6ad9d6f97a1020213734b6db",
+      "jurisdiction": "cc",
+      "chamber": "civ3",
+      "number": "24-16.454",
+      "numbers": [
+        "24-16.454",
+        "24-16.454"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C300605",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "rejet",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.4098092424052021,
+      "highlights": {
+        "text": [
+          "fondamental reconnu par les lois de la République relatif à la compétence de l'autorité judiciaire pour la <em>protection</em>"
+        ]
+      },
+      "id": "6ad9d6f27a1020213734af5b",
+      "jurisdiction": "cc",
+      "chamber": "civ3",
+      "number": "26-13.947",
+      "numbers": [
+        "26-13.947",
+        "26-13.947"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C300682",
+      "formation": "fs",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "qpcother",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.27027107079301543,
+      "highlights": {
+        "text": [
+          "Il est <em>donné</em> acte à M. et Mme [O], M"
+        ]
+      },
+      "id": "6ad9d6ef7a1020213734ab44",
+      "jurisdiction": "cc",
+      "chamber": "civ3",
+      "number": "24-11.408",
+      "numbers": [
+        "24-11.408",
+        "24-11.408"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C310674",
+      "formation": "frr",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "rejet",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.26627740933211175,
+      "highlights": {
+        "text": [
+          "Il est <em>donné</em> acte à la société [Y] [O] du désistement partiel de son pourvoi en ce qu'il est dirigé contre"
+        ]
+      },
+      "id": "6ad9d6c87a1020213734753c",
+      "jurisdiction": "cc",
+      "chamber": "civ3",
+      "number": "24-19.391",
+      "numbers": [
+        "24-19.391",
+        "24-19.391"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C310688",
+      "formation": "frr",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "rejet",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.22617301725908034,
+      "highlights": {
+        "text": [
+          "En statuant ainsi, la cour d'appel a <em>donné</em> une portée aux articles 542, 908 et 954 du code de procédure"
+        ]
+      },
+      "id": "6ad9d8007a10202137360dcf",
+      "jurisdiction": "cc",
+      "chamber": "civ2",
+      "number": "23-19.328",
+      "numbers": [
+        "23-19.328",
+        "23-19.328"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C201071",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "cassation",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.3235283361052035,
+      "highlights": {
+        "text": [
+          "Il est <em>donné</em> acte à M",
+          "Ce jugement a notamment fixé le montant de l'actif successoral en ce compris les biens <em>donnés</em> à M",
+          "antérieurement soulevé, si ces demandes nouvelles étaient ou non recevables, la cour d'appel n'a pas <em>donné</em>"
+        ]
+      },
+      "id": "6ad9d7dc7a1020213735dfc6",
+      "jurisdiction": "cc",
+      "chamber": "civ2",
+      "number": "24-13.810",
+      "numbers": [
+        "24-13.810",
+        "24-13.810"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C201085",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "cassation",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.28516215155682834,
+      "highlights": {
+        "text": [
+          "Il est <em>donné</em> acte à la société Le litier vosgien (la société) et son gérant, M",
+          "Il est <em>donné</em> acte à la société et à son gérant du désistement de leur pourvoi en ce qu'il est dirig"
+        ]
+      },
+      "id": "6ad9d7cd7a1020213735cb20",
+      "jurisdiction": "cc",
+      "chamber": "civ2",
+      "number": "25-20.246",
+      "numbers": [
+        "25-20.246",
+        "24-14.348",
+        "25-20.246",
+        "24-14.348",
+        "24-14.348",
+        "25-20.246"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C201091",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "annulation",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.20095168830050542,
+      "highlights": {
+        "text": [
+          "Le moyen, qui <em>donne</em> une portée à l'ordonnance du délégué du premier président de la Cour de cassation"
+        ]
+      },
+      "id": "6ad9d7a77a1020213735952f",
+      "jurisdiction": "cc",
+      "chamber": "civ2",
+      "number": "23-18.380",
+      "numbers": [
+        "23-18.380",
+        "23-18.380"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C201112",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "cassation",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.2786288593972605,
+      "highlights": {
+        "text": [
+          "Il est <em>donné</em> acte à M"
+        ]
+      },
+      "id": "6ad9d78f7a102021373573f2",
+      "jurisdiction": "cc",
+      "chamber": "civ2",
+      "number": "24-10.830",
+      "numbers": [
+        "24-10.830",
+        "24-10.830"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C210929",
+      "formation": "frr",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "rejet",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.5350937147717902,
+      "highlights": {
+        "text": [
+          "pourvoi le 19 mai 2026 contre l'arrêt rendu le 19 mars\npar la cour d'appel de Versailles (chambre <em>protection</em>"
+        ]
+      },
+      "id": "6ad9d64b7a1020213733cc4f",
+      "jurisdiction": "cc",
+      "chamber": "ordo",
+      "number": "26-15.361",
+      "numbers": [
+        "26-15.361"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:OR50906",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "decheance",
+      "type": "ordonnance",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.31795891781610863,
+      "highlights": {
+        "text": [
+          "laquelle le délai de dépôt des conclusions d'appelant avait expiré, la cour d'appel n'a pas davantage <em>donné</em>",
+          "cours de laquelle le délai de dépôt des conclusions d'appelant avait expiré, la cour d'appel n'a pas <em>donné</em>"
+        ]
+      },
+      "id": "6ad9d81e7a10202137363314",
+      "jurisdiction": "cc",
+      "chamber": "civ2",
+      "number": "24-12.983",
+      "numbers": [
+        "24-12.983",
+        "24-12.983"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C201082",
+      "formation": "frh",
+      "publication": [
+        "b"
+      ],
+      "decision_date": "2026-10-22",
+      "solution": "cassation",
+      "type": "other",
+      "summary": "Constitue, au sens de l'article 910-3 du code de procédure civile, dans sa rédaction issue du décret n° 2017-891 du 6 mai 2017, un cas de force majeure la circonstance non imputable au fait de la partie qui l'invoque et qui revêt pour elle un caractère insurmontable.\nPar conséquent, ne donne pas de base légale à sa décision la cour d'appel, qui, pour déclarer caduque une déclaration d'appel en raison de la remise tardive des conclusions de l'appelant, retient que l'indisponibilité de l'avocate de ce dernier, en raison d'un malaise, n'avait concerné que les derniers jours du délai pour conclure, et qu'il n'était pas établi qu'elle n'avait pas été en mesure d'organiser son cabinet pour se faire substituer ou donner des instructions, alors qu'il résultait de ses propres constatations que cette avocate avait produit un certificat médical établissant qu'elle s'était trouvée, à la suite d'un malaise, dans l'incapacité d'exercer sa profession pendant la période au cours de laquelle le délai de dépôt des conclusions d'appelant avait expiré",
+      "themes": [
+        "appel civil"
+      ],
+      "files": [],
+      "titlesAndSummaries": [
+        {
+          "titles": [
+            "APPEL CIVIL"
+          ],
+          "summary": "Constitue, au sens de l'article 910-3 du code de procédure civile, dans sa rédaction issue du décret n° 2017-891 du 6 mai 2017, un cas de force majeure la circonstance non imputable au fait de la partie qui l'invoque et qui revêt pour elle un caractère insurmontable. Par conséquent, ne donne pas de base légale à sa décision la cour d'appel, qui, pour déclarer caduque une déclaration d'appel en raison de la remise tardive des conclusions de l'appelant, retient que l'indisponibilité de l'avocate de ce dernier, en raison d'un malaise, n'avait concerné que les derniers jours du délai pour conclure, et qu'il n'était pas établi qu'elle n'avait pas été en mesure d'organiser son cabinet pour se faire substituer ou donner des instructions, alors qu'il résultait de ses propres constatations que cette avocate avait produit un certificat médical établissant qu'elle s'était trouvée, à la suite d'un malaise, dans l'incapacité d'exercer sa profession pendant la période au cours de laquelle le délai de dépôt des conclusions d'appelant avait expiré",
+          "secondaryTitles": []
+        }
+      ],
+      "particularInterest": false
+    },
+    {
+      "score": 0.23421356857323436,
+      "highlights": {
+        "text": [
+          "de sorte que l'article L. 313-41 n'est pas applicable, d'autre part, que l'accord de principe <em>donné</em>"
+        ]
+      },
+      "id": "6ad9d7387a1020213735041d",
+      "jurisdiction": "cc",
+      "chamber": "civ3",
+      "number": "24-13.456",
+      "numbers": [
+        "24-13.456",
+        "24-13.456"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C300586",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "cassation",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.23421356857323436,
+      "highlights": {
+        "text": [
+          "Il est <em>donné</em> acte à la société Guigon associés, agissant en sa qualité de liquidateur judiciaire de la"
+        ]
+      },
+      "id": "6ad9d7177a1020213734de31",
+      "jurisdiction": "cc",
+      "chamber": "civ3",
+      "number": "25-11.153",
+      "numbers": [
+        "25-11.153",
+        "25-11.153"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C300596",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "rejet",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.23421356857323436,
+      "highlights": {
+        "text": [
+          "Après avis <em>donné</em> aux parties, conformément à l'article 1015 du code de procédure civile, il est fait"
+        ]
+      },
+      "id": "6ad9d70a7a1020213734cdbf",
+      "jurisdiction": "cc",
+      "chamber": "civ3",
+      "number": "25-13.957",
+      "numbers": [
+        "25-13.957",
+        "25-13.957"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C300600",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "cassation",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.3021487103860457,
+      "highlights": {
+        "text": [
+          "Il est <em>donné</em> acte aux sociétés Agrosaline et Ferme de la saline du désistement de leur pourvoi en ce",
+          "L'immeuble a été <em>donné</em> à bail rural à la société de Marchanville, aux droits de laquelle vient la sociét"
+        ]
+      },
+      "id": "6ad9d6f67a1020213734b35e",
+      "jurisdiction": "cc",
+      "chamber": "civ3",
+      "number": "24-21.151",
+      "numbers": [
+        "24-21.151",
+        "24-21.151"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C300606",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "cassation",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.28117706556311967,
+      "highlights": {
+        "text": [
+          "Il est <em>donné</em> acte à la société Les Demeures occitanes du désistement partiel de son pourvoi en ce qu'il"
+        ]
+      },
+      "id": "6ad9d6e77a1020213734a09f",
+      "jurisdiction": "cc",
+      "chamber": "civ3",
+      "number": "25-16.871",
+      "numbers": [
+        "25-16.871",
+        "25-16.871"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C310677",
+      "formation": "frr",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "rejet",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.7927557847182974,
+      "highlights": {
+        "text": [
+          "novembre 2023), Mme [A] a saisi un juge aux affaires familiales afin d'obtenir une ordonnance de <em>protection</em>",
+          "Le 9 juin 2023, ce dernier a relevé appel de l'ordonnance de <em>protection</em> après avoir obtenu le bénéfice",
+          "l'intéressé avait été informé de la décision d'admission à l'aide juridictionnelle, la cour d'appel n'a pas <em>donné</em>"
+        ]
+      },
+      "id": "6ad9d7f27a1020213735fc0e",
+      "jurisdiction": "cc",
+      "chamber": "civ2",
+      "number": "24-19.252",
+      "numbers": [
+        "24-19.252",
+        "24-19.252"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C201076",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "cassation",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.7291885137136177,
+      "highlights": {
+        "text": [
+          "F 23-20.705 contre l'arrêt rendu le 4 juillet 2023 par la cour d'appel de Lyon (chambre sociale D, <em>protection</em>",
+          "les parties conformément au dispositif de mise en état de la procédure orale, la cour d'appel n'a pas <em>donné</em>",
+          "la procédure orale, avec l'accord des parties, la mise en état de l'affaire, la cour d'appel n'a pas <em>donné</em>"
+        ]
+      },
+      "id": "6ad9d7e97a1020213735f00d",
+      "jurisdiction": "cc",
+      "chamber": "civ2",
+      "number": "23-20.705",
+      "numbers": [
+        "23-20.705",
+        "23-20.705"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C201080",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "cassation",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.2948191921862763,
+      "highlights": {
+        "text": [
+          "PAR CES MOTIFS, la Cour\n<em>DONNE</em> ACTE à la caisse d'épargne et de prévoyance Ile-de-France de son désistement"
+        ]
+      },
+      "id": "6ad9d7c77a1020213735c238",
+      "jurisdiction": "cc",
+      "chamber": "civ2",
+      "number": "24-15.839",
+      "numbers": [
+        "24-15.839",
+        "24-15.839"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C201093",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "other",
+      "solution_alt": "Désistement",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.8052948619202471,
+      "highlights": {
+        "text": [
+          "octobre 2022 et 13 février 2023 par le tribunal de proximité de Villejuif (Juge des contentieux de la <em>protection</em>",
+          "Il est <em>donné</em> acte à Mme [F] du désistement de son pourvoi en ce qu'il est dirigé contre le jugement avant",
+          "Selon le jugement attaqué (juge des contentieux de la <em>protection</em> du tribunal de proximité de Villejuif",
+          "créanciers, soit nettement inférieur au patrimoine de la débitrice, le juge des contentieux de la <em>protection</em>"
+        ]
+      },
+      "id": "6ad9d7b47a1020213735a91c",
+      "jurisdiction": "cc",
+      "chamber": "civ2",
+      "number": "23-22.969",
+      "numbers": [
+        "23-22.969",
+        "23-22.969"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C201106",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-22",
+      "solution": "rejet",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.21599398090982366,
+      "highlights": {
+        "text": [
+          "Avis a été <em>donné</em> aux parties en application de l'article 16 du code de procédure civile"
+        ]
+      },
+      "id": "6ad888af7a1020213707fcd6",
+      "jurisdiction": "cc",
+      "chamber": "civ1",
+      "number": "24-19.513",
+      "numbers": [
+        "24-19.513",
+        "24-19.513"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C100611",
+      "formation": "fs",
+      "publication": [
+        "b"
+      ],
+      "decision_date": "2026-10-21",
+      "solution": "rejet",
+      "type": "other",
+      "summary": "Il se déduit des articles 826 et 830 du code civil, que le juge du partage, tenu de former des lots d'égale valeur, doit s'efforcer de parvenir à une répartition en nature des biens à partager favorisant une moindre soulte, en considération des intérêts en présence, souverainement appréciés, et qu'à cette fin, il peut, si cela lui est demandé, procéder à la division d'une unité économique ou d'un ensemble de biens, sous réserve de tenir compte d'une éventuelle dépréciation pouvant en résulter",
+      "themes": [
+        "partage"
+      ],
+      "files": [],
+      "titlesAndSummaries": [
+        {
+          "titles": [
+            "PARTAGE"
+          ],
+          "summary": "Il se déduit des articles 826 et 830 du code civil, que le juge du partage, tenu de former des lots d'égale valeur, doit s'efforcer de parvenir à une répartition en nature des biens à partager favorisant une moindre soulte, en considération des intérêts en présence, souverainement appréciés, et qu'à cette fin, il peut, si cela lui est demandé, procéder à la division d'une unité économique ou d'un ensemble de biens, sous réserve de tenir compte d'une éventuelle dépréciation pouvant en résulter",
+          "secondaryTitles": []
+        }
+      ],
+      "particularInterest": false
+    },
+    {
+      "score": 0.8195414902354969,
+      "highlights": {
+        "text": [
+          "Une ordonnance de <em>protection</em> du 14 octobre 2020 a attribué à Mme [V] la jouissance de ce logement, ordonn",
+          "Après avis <em>donné</em> aux parties conformément à l'article 1015 du code de procédure civile, il est fait application",
+          "Selon le premier, à l'occasion de la délivrance d'une ordonnance de <em>protection</em>, après avoir recueilli",
+          "Il se déduit de la combinaison de ces textes qu'une ordonnance de <em>protection</em> ayant pour effet d'empêcher",
+          "a été expulsé du logement familial, avec interdiction d'y paraître, par l'effet d'une ordonnance de <em>protection</em>"
+        ]
+      },
+      "id": "6ad888ab7a1020213707fcba",
+      "jurisdiction": "cc",
+      "chamber": "civ1",
+      "number": "25-10.590",
+      "numbers": [
+        "25-10.590",
+        "25-10.590"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C100612",
+      "formation": "fs",
+      "publication": [
+        "b"
+      ],
+      "decision_date": "2026-10-21",
+      "solution": "cassation",
+      "type": "other",
+      "themes": [
+        "indivision"
+      ],
+      "files": [],
+      "titlesAndSummaries": [
+        {
+          "titles": [
+            "INDIVISION"
+          ],
+          "summary": null,
+          "secondaryTitles": []
+        }
+      ],
+      "particularInterest": false
+    },
+    {
+      "score": 0.2015593954810234,
+      "highlights": {
+        "text": [
+          "O] a <em>donné</em> à bail un appartement à usage d'habitation à M. [C] et Mme [B\nM"
+        ]
+      },
+      "id": "6ad888877a1020213707fb81",
+      "jurisdiction": "cc",
+      "chamber": "civ1",
+      "number": "24-21.980",
+      "numbers": [
+        "24-21.980",
+        "24-21.980"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C100613",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-21",
+      "solution": "cassation",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.3532630124072436,
+      "highlights": {
+        "text": [
+          "le retour immédiat de l'enfant [P] [B] [G] au Pérou, alors\nque pour que soit assurée la <em>protection</em>"
+        ]
+      },
+      "id": "6ad8887d7a1020213707fb17",
+      "jurisdiction": "cc",
+      "chamber": "civ1",
+      "number": "26-12.720",
+      "numbers": [
+        "26-12.720",
+        "26-12.720"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C100616",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-21",
+      "solution": "rejet",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.33029918402642267,
+      "highlights": {
+        "text": [
+          "Après avis <em>donné</em> aux parties conformément à l'article 1015 du code de procédure civile, il est fait application",
+          "Après avis <em>donné</em> aux parties, conformément à l'article 1015 du code de procédure civile, il est fait"
+        ]
+      },
+      "id": "6ad888677a1020213707f521",
+      "jurisdiction": "cc",
+      "chamber": "civ1",
+      "number": "24-21.406",
+      "numbers": [
+        "24-21.406",
+        "24-21.406"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C100622",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-21",
+      "solution": "cassation",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.2977264051991137,
+      "highlights": {
+        "text": [
+          "PAR CES MOTIFS, la Cour\n<em>DONNE</em> ACTE à Mme [L] de son désistement de pourvoi\nDit que chaque partie"
+        ]
+      },
+      "id": "6ad8884d7a1020213707ec65",
+      "jurisdiction": "cc",
+      "chamber": "civ1",
+      "number": "23-20.685",
+      "numbers": [
+        "23-20.685",
+        "23-20.685"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C100630",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-21",
+      "solution": "other",
+      "solution_alt": "Désistement",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.24526859105702514,
+      "highlights": {
+        "text": [
+          "publiée ou liés au débiteur par un contrat publié, à compter de la réception de l'avis qui leur est <em>donné</em>"
+        ]
+      },
+      "id": "6ad8880b7a1020213707d66d",
+      "jurisdiction": "cc",
+      "chamber": "comm",
+      "number": "25-13.599",
+      "numbers": [
+        "25-13.599",
+        "25-13.599"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:CO00531",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-21",
+      "solution": "cassation",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.25210229954904356,
+      "highlights": {
+        "text": [
+          "Berlain [V] immobilier ne mentionnait pas le local appartenant à la SCI Les Grisettes qui lui avait été <em>donné</em>"
+        ]
+      },
+      "id": "6ad887f47a1020213707ceff",
+      "jurisdiction": "cc",
+      "chamber": "comm",
+      "number": "25-17.496",
+      "numbers": [
+        "25-17.496",
+        "25-17.496"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:CO00540",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-21",
+      "solution": "rejet",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.9038614311350898,
+      "highlights": {
+        "text": [
+          "moyen devant être rejeté\" ; qu'en se déterminant aux termes de tels motifs dont il ressort que les <em>données</em>",
+          "g du règlement (UE) 2016/679 du Parlement européen et du Conseil du 27 avril 2016 relatif à la <em>protection</em>",
+          "de ces <em>données</em>\nRéponse de la Cour",
+          "dispositions du règlement (UE) 2016/679 du Parlement européen et du Conseil du 27 avril 2016 relatif à la <em>protection</em>",
+          "de ces <em>données</em>, est nouveau et mélangé de fait et de droit"
+        ]
+      },
+      "id": "6ad887a07a1020213707a836",
+      "jurisdiction": "cc",
+      "chamber": "soc",
+      "number": "24-13.852",
+      "numbers": [
+        "24-13.852",
+        "24-13.852"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:SO00850",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-21",
+      "solution": "rejet",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.2837227694052943,
+      "highlights": {
+        "text": [
+          "PAR CES MOTIFS, la Cour\n<em>DONNE</em> ACTE à Mme [U] et à la société Clinique Les Fontaines de leur désistement"
+        ]
+      },
+      "id": "6ad887977a1020213707a49f",
+      "jurisdiction": "cc",
+      "chamber": "soc",
+      "number": "24-21.482",
+      "numbers": [
+        "24-21.482",
+        "24-21.482"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:SO00854",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-21",
+      "solution": "other",
+      "solution_alt": "Désistement",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.2837227694052943,
+      "highlights": {
+        "text": [
+          "PAR CES MOTIFS, la Cour\n<em>DONNE</em> ACTE à Mme [W] et à la société Clinique Les Fontaines de leur désistement"
+        ]
+      },
+      "id": "6ad887947a1020213707a385",
+      "jurisdiction": "cc",
+      "chamber": "soc",
+      "number": "24-21.803",
+      "numbers": [
+        "24-21.803",
+        "24-21.803"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:SO00855",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-21",
+      "solution": "other",
+      "solution_alt": "Désistement",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.2520745579323091,
+      "highlights": {
+        "text": [
+          "l'activité des salariés et de diriger, contrôler et le cas échéant sanctionner le manquements aux directives <em>données</em>",
+          "directrice des ressources humaines, ce qui ne faisait que corroborer les nombreuses instructions <em>données</em>",
+          "Après avis <em>donné</em> aux parties, conformément à l'article 1015 du code de procédure civile, il est fait"
+        ]
+      },
+      "id": "6ad887687a1020213707980e",
+      "jurisdiction": "cc",
+      "chamber": "soc",
+      "number": "24-21.050",
+      "numbers": [
+        "24-21.050",
+        "24-21.051",
+        "24-21.052",
+        "24-21.053",
+        "24-21.054",
+        "24-21.055",
+        "24-21.056",
+        "24-21.057",
+        "24-21.058",
+        "24-21.050",
+        "24-21.051",
+        "24-21.052",
+        "24-21.053",
+        "24-21.054",
+        "24-21.055",
+        "24-21.056",
+        "24-21.057",
+        "24-21.058",
+        "24-21.050",
+        "24-21.058"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:SO00867",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-21",
+      "solution": "cassation",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.5077127940510221,
+      "highlights": {
+        "text": [
+          "Mousset n'a fait que contester le quantum de l'indemnité sollicitée et que la fin de la période de <em>protection</em>",
+          "statue, ce qui s'oppose à tout moyen d'évolution du litige, en sorte que le terme de la période de <em>protection</em>",
+          "Réponse de la Cour\nRecevabilité du moyen, examinée d'office, après avis <em>donné</em> aux parties, conformément"
+        ]
+      },
+      "id": "6ad887567a102021370790a5",
+      "jurisdiction": "cc",
+      "chamber": "soc",
+      "number": "25-11.312",
+      "numbers": [
+        "25-11.312",
+        "25-11.312"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:SO00872",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-21",
+      "solution": "rejet",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.21599398090982366,
+      "highlights": {
+        "text": [
+          "Après avis <em>donné</em> aux parties, conformément à l'article 1015 du code de procédure civile et tel que suggér"
+        ]
+      },
+      "id": "6ad8888b7a1020213707fba3",
+      "jurisdiction": "cc",
+      "chamber": "soc",
+      "number": "25-13.382",
+      "numbers": [
+        "25-13.382",
+        "25-13.382"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:SO00873",
+      "formation": "frh",
+      "publication": [
+        "b"
+      ],
+      "decision_date": "2026-10-21",
+      "solution": "cassation",
+      "type": "other",
+      "summary": "Il résulte de l'article L. 2312-81 du code du travail, dans sa rédaction issue de la loi n° 2018-217 du 29 mars 2018, qu'en cas de fixation par un accord d'entreprise du montant de la contribution aux activités sociales et culturelles gérées par le comité social et économique et de prise en charge directe par l'employeur de l'activité de restauration, les économies réalisées par l'employeur sur les dépenses liées à cette activité de restauration gérée par lui sur délégation du comité n'ont pas à être reversées à ce dernier si l'accord ne prévoit pas l'imputation des dépenses sociales exposées directement par l'employeur sur la contribution aux activités sociales et culturelles versée au comité",
+      "themes": [
+        "representation des salaries",
+        "comité social et économique",
+        "attributions",
+        "activités sociales et culturelles",
+        "financement",
+        "contribution de l'employeur",
+        "montant",
+        "fixation",
+        "accord d¿entreprise",
+        "activité de restauration déléguée à l¿employeur",
+        "dépenses liées à cette activité",
+        "economies",
+        "reversement non prévu par l¿accord d¿entreprise"
+      ],
+      "files": [],
+      "titlesAndSummaries": [
+        {
+          "titles": [
+            "REPRESENTATION DES SALARIES",
+            "Comité social et économique",
+            "Attributions",
+            "Activités sociales et culturelles",
+            "Financement",
+            "Contribution de l'employeur",
+            "Montant",
+            "Fixation",
+            "Accord d¿entreprise",
+            "Activité de restauration déléguée à l¿employeur",
+            "Dépenses liées à cette activité",
+            "Economies",
+            "Reversement non prévu par l¿accord d¿entreprise"
+          ],
+          "summary": "Il résulte de l'article L. 2312-81 du code du travail, dans sa rédaction issue de la loi n° 2018-217 du 29 mars 2018, qu'en cas de fixation par un accord d'entreprise du montant de la contribution aux activités sociales et culturelles gérées par le comité social et économique et de prise en charge directe par l'employeur de l'activité de restauration, les économies réalisées par l'employeur sur les dépenses liées à cette activité de restauration gérée par lui sur délégation du comité n'ont pas à être reversées à ce dernier si l'accord ne prévoit pas l'imputation des dépenses sociales exposées directement par l'employeur sur la contribution aux activités sociales et culturelles versée au comité",
+          "secondaryTitles": []
+        }
+      ],
+      "particularInterest": false
+    },
+    {
+      "score": 0.3167959461884916,
+      "highlights": {
+        "text": [
+          "Y] [U] se serait soustrait volontairement à la procédure et n'a ainsi pas <em>donné</em> de base légale à sa",
+          "M] [U] se serait soustrait volontairement à la procédure et n'a ainsi pas <em>donné</em> de base légale a sa",
+          "recherché par les autorités françaises ; qu'en statuant ainsi, la chambre de l'instruction n'a pas <em>donné</em>"
+        ]
+      },
+      "id": "6adb185d7a102021375ed345",
+      "jurisdiction": "cc",
+      "chamber": "cr",
+      "number": "26-85.257",
+      "numbers": [
+        "26-85.257"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:CR01578",
+      "formation": "fs",
+      "publication": [
+        "b"
+      ],
+      "decision_date": "2026-10-21",
+      "solution": "rejet",
+      "type": "other",
+      "themes": [
+        "chambre de l'instruction"
+      ],
+      "files": [
+        {
+          "id": "cba93fb43e6de073b152b38ca58056bf",
+          "type": "prep_rapp",
+          "isCommunication": false,
+          "isPreparatoire": true,
+          "isAttache": false,
+          "date": "2026-10-30",
+          "name": "2685257_rapport.pdf",
+          "size": "488 kB",
+          "url": "https://search.judilibre.io/decision?id=6adb185d7a102021375ed345&fileId=cba93fb43e6de073b152b38ca58056bf",
+          "rawUrl": "https://judilibre-attachments-d0df9293-a1ed-49eb-87d6-59f30784a645.s3.fr-par.scw.cloud/2685257_rapport-cba93fb43e6de073b152b38ca58056bf.pdf"
+        },
+        {
+          "id": "9cc7d19493386aeef712b4c3f20c8676",
+          "type": "prep_avis",
+          "isCommunication": false,
+          "isPreparatoire": true,
+          "isAttache": false,
+          "date": "2026-10-30",
+          "name": "2685257_avis.pdf",
+          "size": "379 kB",
+          "url": "https://search.judilibre.io/decision?id=6adb185d7a102021375ed345&fileId=9cc7d19493386aeef712b4c3f20c8676",
+          "rawUrl": "https://judilibre-attachments-d0df9293-a1ed-49eb-87d6-59f30784a645.s3.fr-par.scw.cloud/2685257_avis-9cc7d19493386aeef712b4c3f20c8676.pdf"
+        }
+      ],
+      "titlesAndSummaries": [
+        {
+          "titles": [
+            "CHAMBRE DE L'INSTRUCTION"
+          ],
+          "summary": null,
+          "secondaryTitles": []
+        }
+      ],
+      "particularInterest": false
+    },
+    {
+      "score": 0.22127615051009497,
+      "highlights": {
+        "text": [
+          "Il est <em>donné</em> acte à la société BNP paribas du désistement de son pourvoi n° 25-18.799 en ce qu'il est"
+        ]
+      },
+      "id": "6ad9d6ae7a10202137345304",
+      "jurisdiction": "cc",
+      "chamber": "comm",
+      "number": "25-17.937",
+      "numbers": [
+        "25-17.937",
+        "25-18.799",
+        "25-17.937",
+        "25-18.799",
+        "25-17.937",
+        "25-18.799",
+        "25-17.937",
+        "25-18.799",
+        "25-18.799"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:CO00538",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-21",
+      "solution": "cassation",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.21033370902233822,
+      "highlights": {
+        "text": [
+          "l'état de santé du salarié fait obstacle à tout reclassement dans un emploi\", la cour d'appel n'a pas <em>donné</em>"
+        ]
+      },
+      "id": "6ad888927a1020213707fbe3",
+      "jurisdiction": "cc",
+      "chamber": "soc",
+      "number": "25-10.793",
+      "numbers": [
+        "25-10.793",
+        "25-10.793"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:SO00861",
+      "formation": "frh",
+      "publication": [
+        "b"
+      ],
+      "decision_date": "2026-10-21",
+      "solution": "cassation",
+      "type": "other",
+      "summary": "Il résulte de l'article L.1152-1 du code du travail que l'existence d'un harcèlement moral n'implique pas que la répétition exigée par cet texte, s'attache à des agissements de nature différente",
+      "themes": [
+        "contrat de travail, execution",
+        "harcèlement",
+        "harcèlement moral",
+        "eléments constitutifs",
+        "applications diverses",
+        "agissements répétés de nature différente",
+        "nécessité (non)",
+        "détermination",
+        "portée"
+      ],
+      "files": [],
+      "titlesAndSummaries": [
+        {
+          "titles": [
+            "CONTRAT DE TRAVAIL, EXECUTION",
+            "Harcèlement",
+            "Harcèlement moral",
+            "Eléments constitutifs",
+            "Applications diverses",
+            "Agissements répétés de nature différente",
+            "Nécessité (non)",
+            "Détermination",
+            "Portée"
+          ],
+          "summary": "Il résulte de l'article L.1152-1 du code du travail que l'existence d'un harcèlement moral n'implique pas que la répétition exigée par cet texte, s'attache à des agissements de nature différente",
+          "secondaryTitles": [
+            [
+              "CONTRAT DE TRAVAIL, EXECUTION",
+              "Harcèlement",
+              "Harcèlement moral",
+              "Eléments constitutifs",
+              "Applications diverses",
+              "Qualification",
+              "Limites",
+              "Détermination",
+              "Portée"
+            ]
+          ]
+        }
+      ],
+      "particularInterest": false
+    },
+    {
+      "score": 0.21033370902233822,
+      "highlights": {
+        "text": [
+          "PAR CES MOTIFS, la Cour\nSur le pourvoi formé le 21 juillet\n<em>DONNE</em> ACTE du désistement"
+        ]
+      },
+      "id": "6ad9d8757a10202137369b26",
+      "jurisdiction": "cc",
+      "chamber": "cr",
+      "number": "26-85.237",
+      "numbers": [
+        "26-85.237"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:CR01572",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-21",
+      "solution": "cassation",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 0.24459220157305417,
+      "highlights": {
+        "text": [
+          "et, partant, de justifier du montant réellement perçu lors de leur cession, la cour d'appel n'a pas <em>donné</em>"
+        ]
+      },
+      "id": "6ad888757a1020213707f9d2",
+      "jurisdiction": "cc",
+      "chamber": "civ1",
+      "number": "24-15.073",
+      "numbers": [
+        "24-15.073",
+        "24-15.073"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:C100618",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-21",
+      "solution": "cassation",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    }
+  ],
+  "relaxed": false,
+  "searchQuery": "{\"index\":\"judilibre_0\",\"preference\":\"preventbouncingresults\",\"explain\":false,\"from\":0,\"size\":50,\"_source\":true,\"body\":{\"track_scores\":true,\"query\":{\"function_score\":{\"query\":{\"bool\":{\"filter\":[{\"terms\":{\"jurisdiction\":[\"cc\"]}},{\"range\":{\"decision_date\":{\"gte\":\"2026-10-01\",\"lte\":\"2026-10-31\"}}}],\"must\":{\"simple_query_string\":{\"query\":\"protection des données\",\"fields\":[\"text\"],\"default_operator\":\"OR\",\"auto_generate_synonyms_phrase_query\":true,\"fuzzy_max_expansions\":50,\"fuzzy_transpositions\":true}}}},\"boost\":5,\"score_mode\":\"max\",\"boost_mode\":\"multiply\"}},\"sort\":[{\"decision_date\":\"desc\"}],\"highlight\":{\"fields\":{\"text\":{}}}}}",
+  "date": "2026-10-31T15:22:03.330Z"
+}

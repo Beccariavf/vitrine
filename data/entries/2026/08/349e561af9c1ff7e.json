@@ -1,0 +1,13 @@
+{
+  "id": "349e561af9c1ff7e",
+  "title": "Bulletin d'actualité CERTFR-2026-ACT-034 (10 août 2026)",
+  "officialTitle": "Bulletin d'actualité CERTFR-2026-ACT-034 (10 août 2026)",
+  "url": "https://www.cert.cyber.gouv.fr/actualite/CERTFR-2026-ACT-034",
+  "publishedAt": "2026-08-10T00:00:00.000Z",
+  "summary": "Ce bulletin d'actualité du CERT-FR revient sur les vulnérabilités significatives de la semaine passée pour souligner leurs criticités. Il ne remplace pas l'analyse de l'ensemble des avis et alertes…",
+  "references": [],
+  "themes": [
+    "cybersecurite"
+  ],
+  "source": "anssi"
+}

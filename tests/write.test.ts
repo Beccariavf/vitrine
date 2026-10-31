@@ -7,7 +7,8 @@ import { fileURLToPath } from "node:url";
 import { after, before, describe, it } from "node:test";
 import { run, SOURCES } from "../veille/main.ts";
 import type { FetchLike, Source } from "../veille/main.ts";
-import { readTags } from "../veille/tags.ts";
+import { readThemes, visibleEntries } from "../veille/themes.ts";
+import type { Entry } from "../veille/types.ts";
 import { writeEntries, writeRaw } from "../veille/write.ts";
 
 const FULL = readFileSync(new URL("./fixtures/cnil/feed.xml", import.meta.url), "utf8");
@@ -17,10 +18,16 @@ const CJUE_REDUCED = CJUE_FEED.replace(/<item>\s*<title>CELEX:62024CA0798[\s\S]*
 const CJUE_EMPTY =
   '<?xml version="1.0"?><rss version="2.0"><channel><title>x</title></channel></rss>';
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
-const TOPIC_TAGS = readTags(ROOT);
+const THEMES = readThemes(ROOT);
+
+/** Une passe de test avec le catalogue réel, sans lire le dépôt temporaire. */
+function runTest(options: Parameters<typeof run>[0]): ReturnType<typeof run> {
+  return run({ ...options, themes: THEMES });
+}
 
 const CNIL = SOURCES.find((source) => source.id === "cnil") as Source;
 const CJEU = SOURCES.find((source) => source.id === "cjeu") as Source;
+const CORE_SOURCES = SOURCES.filter((source) => source.id === "cnil" || source.id === "cjeu");
 
 /** Identifiant de l'actualité FNAC, calculé hors test à partir de `feed.xml`. */
 const FNAC_ID = "1fb831fb8c3243d4";
@@ -37,7 +44,7 @@ const EMPTY_PAGE = readFileSync(
   new URL("./fixtures/cnil/page-no-references.html", import.meta.url),
   "utf8",
 );
-const CNIL_PAGES = CNIL.parse(FULL, []).map((entry) => [entry.url, EMPTY_PAGE] as const);
+const CNIL_PAGES = CNIL.parse(FULL).map((entry) => [entry.url, EMPTY_PAGE] as const);
 
 /** Le même flux, avec la date de l'actualité FNAC décalée d'un mois. */
 const SHIFTED = FULL.replace(FNAC_PUB_DATE, "Sun, 29 Nov 2026 13:00:00 +0100");
@@ -92,7 +99,7 @@ describe("une passe complète", () => {
   });
 
   it("écrit un snapshot brut et une entrée par actualité", async () => {
-    const result = await run({ fetchImpl: fetchReturning(FULL), rootDir: root, sources: [CNIL] });
+    const result = await runTest({ fetchImpl: fetchReturning(FULL), rootDir: root, sources: [CNIL] });
 
     assert.equal(result.entryPaths.length, 10);
     const rawPath = result.sources[0]?.rawPath;
@@ -108,7 +115,7 @@ describe("une passe complète", () => {
   });
 
   it("adresse le snapshot par son contenu", async () => {
-    const result = await run({ fetchImpl: fetchReturning(FULL), rootDir: root, sources: [CNIL] });
+    const result = await runTest({ fetchImpl: fetchReturning(FULL), rootDir: root, sources: [CNIL] });
 
     const rawPath = result.sources[0]?.rawPath;
     assert.ok(rawPath);
@@ -119,7 +126,7 @@ describe("une passe complète", () => {
   });
 
   it("range chaque entrée à la date UTC de publication", async () => {
-    const result = await run({ fetchImpl: fetchReturning(FULL), rootDir: root, sources: [CNIL] });
+    const result = await runTest({ fetchImpl: fetchReturning(FULL), rootDir: root, sources: [CNIL] });
 
     for (const path of result.entryPaths) {
       const entry = JSON.parse(readFileSync(path, "utf8")) as { id: string; publishedAt: string };
@@ -135,7 +142,7 @@ describe("une passe complète", () => {
     const before = snapshotFiles(root);
     const stamps = listFiles(root).map((file) => statSync(join(root, file)).mtimeMs);
 
-    await run({ fetchImpl: fetchReturning(FULL), rootDir: root, sources: [CNIL] });
+    await runTest({ fetchImpl: fetchReturning(FULL), rootDir: root, sources: [CNIL] });
 
     assert.deepEqual(snapshotFiles(root), before);
     assert.deepEqual(
@@ -147,7 +154,7 @@ describe("une passe complète", () => {
   it("conserve les entrées antérieures quand le flux se réduit", async () => {
     const before = snapshotFiles(root);
 
-    const result = await run({ fetchImpl: fetchReturning(REDUCED), rootDir: root, sources: [CNIL] });
+    const result = await runTest({ fetchImpl: fetchReturning(REDUCED), rootDir: root, sources: [CNIL] });
 
     assert.equal(result.entryPaths.length, 3);
     const after = snapshotFiles(root);
@@ -162,11 +169,11 @@ describe("une date corrigée", () => {
   it("remplace l'entrée au lieu d'en laisser une copie", async () => {
     const root = tempRoot();
     try {
-      await run({ fetchImpl: fetchReturning(FULL), rootDir: root, sources: [CNIL] });
+      await runTest({ fetchImpl: fetchReturning(FULL), rootDir: root, sources: [CNIL] });
       const stalePath = join(root, "data", "entries", "2026", "10", `${FNAC_ID}.json`);
       assert.ok(existsSync(stalePath));
 
-      const result = await run({ fetchImpl: fetchReturning(SHIFTED), rootDir: root, sources: [CNIL] });
+      const result = await runTest({ fetchImpl: fetchReturning(SHIFTED), rootDir: root, sources: [CNIL] });
 
       const movedPath = join(root, "data", "entries", "2026", "11", `${FNAC_ID}.json`);
       const copies = listFiles(root).filter((file) => basename(file) === `${FNAC_ID}.json`);
@@ -184,9 +191,9 @@ describe("une actualité sans date dans le flux", () => {
   it("finit sous unknown/ et n'a qu'un seul fichier", async () => {
     const root = tempRoot();
     try {
-      await run({ fetchImpl: fetchReturning(FULL), rootDir: root, sources: [CNIL] });
+      await runTest({ fetchImpl: fetchReturning(FULL), rootDir: root, sources: [CNIL] });
 
-      const result = await run({ fetchImpl: fetchReturning(UNDATED), rootDir: root, sources: [CNIL] });
+      const result = await runTest({ fetchImpl: fetchReturning(UNDATED), rootDir: root, sources: [CNIL] });
 
       const unknownPath = join(root, "data", "entries", "unknown", `${FNAC_ID}.json`);
       assert.ok(result.entryPaths.includes(unknownPath));
@@ -214,6 +221,7 @@ describe("une entrée sans date", () => {
         publishedAt: null,
         summary: "Une actualité sans date.",
         references: [],
+        themes: ["donnees-personnelles"],
         source: "cnil",
       };
       const [path] = writeEntries(root, [entry]);
@@ -239,7 +247,7 @@ describe("une passe qui échoue", () => {
 
   it("lève une erreur et n'écrit aucun fichier quand la source est injoignable", async () => {
     await assert.rejects(
-      run({ fetchImpl: fetchFailing(), rootDir: root, sources: [CNIL] }),
+      runTest({ fetchImpl: fetchFailing(), rootDir: root, sources: [CNIL] }),
       /network down/,
     );
     assert.deepEqual(listFiles(root), []);
@@ -253,7 +261,7 @@ describe("une passe qui échoue", () => {
     });
 
     await assert.rejects(
-      run({ fetchImpl: fetchHttpError, rootDir: root, sources: [CNIL] }),
+      runTest({ fetchImpl: fetchHttpError, rootDir: root, sources: [CNIL] }),
       /HTTP 503/,
     );
     assert.deepEqual(listFiles(root), []);
@@ -261,7 +269,7 @@ describe("une passe qui échoue", () => {
 
   it("conserve le snapshot brut et n'écrit aucune entrée quand le flux est illisible", async () => {
     await assert.rejects(
-      run({ fetchImpl: fetchReturning("<rss><channel><item></rss>"), rootDir: root, sources: [CNIL] }),
+      runTest({ fetchImpl: fetchReturning("<rss><channel><item></rss>"), rootDir: root, sources: [CNIL] }),
       /not valid XML/,
     );
 
@@ -281,21 +289,10 @@ function fetchByUrl(bodies: Map<string, string>): FetchLike {
 }
 
 /** Les entrées écrites, avec leur source, pour vérifier le mélange. */
-function entrySources(
-  root: string,
-): Array<{ source: string; title: string; id: string; url: string; references: string[] }> {
+function entrySources(root: string): Entry[] {
   return listFiles(root)
     .filter((file) => file.includes("entries"))
-    .map(
-      (file) =>
-        JSON.parse(readFileSync(join(root, file), "utf8")) as {
-          source: string;
-          title: string;
-          id: string;
-          url: string;
-          references: string[];
-        },
-    );
+    .map((file) => JSON.parse(readFileSync(join(root, file), "utf8")) as Entry);
 }
 
 describe("deux sources", () => {
@@ -315,64 +312,67 @@ describe("deux sources", () => {
   });
 
   it("écrit les deux snapshots et les entrées des deux sources", async () => {
-    const result = await run({
+    const result = await runTest({
       fetchImpl: fetchByUrl(both),
       rootDir: root,
-      sources: SOURCES,
-      tags: TOPIC_TAGS,
+      sources: CORE_SOURCES,
     });
 
     assert.equal(result.sources.length, 2);
-    assert.equal(result.entryPaths.length, 13);
+    assert.equal(result.entryPaths.length, 14);
     const entries = entrySources(root);
     assert.equal(entries.filter((entry) => entry.source === "cnil").length, 10);
-    assert.equal(entries.filter((entry) => entry.source === "cjeu").length, 3);
+    assert.equal(entries.filter((entry) => entry.source === "cjeu").length, 4);
     assert.ok(entries.some((entry) => entry.source === "cjeu" && entry.title.startsWith("Jautiva")));
     assert.equal(listFiles(root).filter((file) => file.startsWith(join("data", "raw"))).length, 2);
     assert.equal(new Set(entries.map((entry) => entry.id)).size, entries.length);
   });
 
-  it("conserve un arrêt sorti du flux tant que son tag est actif", async () => {
+  it("conserve un arrêt sorti du flux", async () => {
     const reduced = new Map<string, string>([
       [CNIL.feedUrl, FULL],
       [CJEU.feedUrl, CJUE_REDUCED],
       ...CNIL_PAGES,
     ]);
 
-    const result = await run({
+    const result = await runTest({
       fetchImpl: fetchByUrl(reduced),
       rootDir: root,
-      sources: SOURCES,
-      tags: TOPIC_TAGS,
+      sources: CORE_SOURCES,
     });
 
-    assert.equal(result.entryPaths.length, 12);
+    assert.equal(result.entryPaths.length, 13);
     const entries = entrySources(root);
     assert.ok(entries.some((entry) => entry.source === "cjeu" && entry.title.startsWith("Jautiva")));
-    assert.equal(entries.filter((entry) => entry.source === "cjeu").length, 3);
+    assert.equal(entries.filter((entry) => entry.source === "cjeu").length, 4);
   });
 
-  it("retire les arrêts CJUE quand le tag RGPD est désactivé", async () => {
-    const withoutRgpd = TOPIC_TAGS.map((tag) => (tag.id === "rgpd" ? { ...tag, active: false } : tag));
+  it("ne supprime aucune entrée quand une matière est désactivée", async () => {
+    const withoutDp = THEMES.map((theme) =>
+      theme.id === "donnees-personnelles" ? { ...theme, active: false } : theme,
+    );
+    const before = entrySources(root).length;
 
-    const result = await run({
+    const result = await runTest({
       fetchImpl: fetchByUrl(both),
       rootDir: root,
-      sources: SOURCES,
-      tags: withoutRgpd,
+      sources: CORE_SOURCES,
     });
 
-    assert.equal(result.entryPaths.length, 10);
-    const entries = entrySources(root);
-    assert.equal(entries.filter((entry) => entry.source === "cjeu").length, 0);
-    assert.equal(entries.filter((entry) => entry.source === "cnil").length, 10);
+    assert.equal(result.entryPaths.length, 14);
+    assert.equal(entrySources(root).length, before);
+    const cjeu = entrySources(root).filter((entry) => entry.source === "cjeu");
+    assert.equal(cjeu.length, 4);
+    const visible = visibleEntries(entrySources(root), withoutDp).filter((entry) => entry.source === "cjeu");
+    assert.equal(visible.length, 1);
+    assert.ok(visible[0]?.themes.includes("ia"));
   });
 
   it("traite un flux CJUE vide comme une panne", async () => {
     const fresh = tempRoot();
     try {
-      await run({ fetchImpl: fetchByUrl(both), rootDir: fresh, sources: SOURCES, tags: TOPIC_TAGS });
-      assert.equal(entrySources(fresh).filter((entry) => entry.source === "cjeu").length, 3);
+      await runTest({ fetchImpl: fetchByUrl(both), rootDir: fresh, sources: CORE_SOURCES });
+      assert.equal(entrySources(fresh).filter((entry) => entry.source === "cjeu").length, 4);
 
       const empty = new Map([
         [CNIL.feedUrl, FULL],
@@ -381,12 +381,12 @@ describe("deux sources", () => {
       ]);
 
       await assert.rejects(
-        run({ fetchImpl: fetchByUrl(empty), rootDir: fresh, sources: SOURCES, tags: TOPIC_TAGS }),
+        runTest({ fetchImpl: fetchByUrl(empty), rootDir: fresh, sources: CORE_SOURCES }),
         /CJUE feed has no item/,
       );
       const entries = entrySources(fresh);
       assert.equal(entries.filter((entry) => entry.source === "cnil").length, 10);
-      assert.equal(entries.filter((entry) => entry.source === "cjeu").length, 3);
+      assert.equal(entries.filter((entry) => entry.source === "cjeu").length, 4);
       assert.ok(entries.some((entry) => entry.title.startsWith("Jautiva")));
     } finally {
       rmSync(fresh, { recursive: true, force: true });
@@ -402,7 +402,7 @@ describe("deux sources", () => {
 
     try {
       await assert.rejects(
-        run({ fetchImpl: fetchCjeuFails, rootDir: fresh, sources: SOURCES, tags: TOPIC_TAGS }),
+        runTest({ fetchImpl: fetchCjeuFails, rootDir: fresh, sources: CORE_SOURCES }),
         /cjeu: cjeu feed fetch failed/,
       );
       const entries = entrySources(fresh);
@@ -423,7 +423,7 @@ describe("les pages CNIL dans la passe", () => {
         ...CNIL_PAGES.map(([url]) => [url, url === FNAC_URL ? FNAC_PAGE : EMPTY_PAGE] as const),
       ]);
 
-      const result = await run({ fetchImpl: fetchByUrl(bodies), rootDir: root, sources: [CNIL] });
+      const result = await runTest({ fetchImpl: fetchByUrl(bodies), rootDir: root, sources: [CNIL] });
       const entries = entrySources(root);
       const fnac = entries.find((entry) => entry.url === FNAC_URL);
       const cepd = entries.find(
@@ -460,14 +460,14 @@ describe("les pages CNIL dans la passe", () => {
           ...CNIL_PAGES.map(([url]) => [url, url === FNAC_URL ? page : EMPTY_PAGE] as const),
         ]);
 
-      await run({ fetchImpl: fetchByUrl(bodiesFor(FNAC_PAGE)), rootDir: root, sources: [CNIL] });
+      await runTest({ fetchImpl: fetchByUrl(bodiesFor(FNAC_PAGE)), rootDir: root, sources: [CNIL] });
       const firstCount = listFiles(root).filter(
         (file) => file.startsWith(join("data", "raw")) && file.endsWith(".html"),
       ).length;
       assert.equal(firstCount, 1);
 
       const volatile = FNAC_PAGE.replace("<body>", '<body data-build="2">');
-      const result = await run({
+      const result = await runTest({
         fetchImpl: fetchByUrl(bodiesFor(volatile)),
         rootDir: root,
         sources: [CNIL],
@@ -508,7 +508,7 @@ describe("les pages CNIL dans la passe", () => {
           return { ok: true, status: 200, text: async () => body };
         };
 
-        const result = await run({
+        const result = await runTest({
           fetchImpl: fetchPageFailure,
           rootDir: root,
           sources: [CNIL],

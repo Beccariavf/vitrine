@@ -9,5 +9,8 @@
     "Règlement (UE) 2016/679 · art. 5, 6",
     "Directive (UE) 2017/1132 · art. 14"
   ],
+  "themes": [
+    "donnees-personnelles"
+  ],
   "source": "cjeu"
 }

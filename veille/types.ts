@@ -17,6 +17,8 @@ export type Entry = {
   summary: string | null;
   /** Références principales citées par le titre officiel (CJUE) ou la page liée (CNIL) ; tableau vide si aucune. */
   references: string[];
-  /** Identifiant de la source : `cnil` ou `cjeu`. */
+  /** Matières auxquelles l'entrée appartient, calculées à l'ingestion ; au moins une. */
+  themes: string[];
+  /** Identifiant de la source : `cnil`, `cjeu`, etc. */
   source: string;
 };

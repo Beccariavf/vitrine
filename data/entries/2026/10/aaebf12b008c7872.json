@@ -6,5 +6,8 @@
   "publishedAt": "2026-10-16T12:00:00.000Z",
   "summary": "La CNIL, l’ICO et la CNPD publient leur étude conjointe « De la protection des données à la création de valeur en finance : évaluation des données, comptabilité, fusions-acquisitions et gouvernance…",
   "references": [],
+  "themes": [
+    "donnees-personnelles"
+  ],
   "source": "cnil"
 }

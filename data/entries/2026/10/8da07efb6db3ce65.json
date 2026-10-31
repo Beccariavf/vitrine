@@ -8,5 +8,8 @@
   "references": [
     "Règlement (UE) 2016/679 · art. 6"
   ],
+  "themes": [
+    "donnees-personnelles"
+  ],
   "source": "cnil"
 }

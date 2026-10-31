@@ -1,9 +1,11 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import type { Entry } from "../../veille/types.ts";
+import { activeThemes, readThemes } from "../../veille/themes.ts";
+import type { Theme } from "../../veille/themes.ts";
 
-/** Les huit champs du contrat `veille/types.ts`. */
-const FIELDS = ["id", "title", "officialTitle", "url", "publishedAt", "summary", "references", "source"] as const;
+/** Les neuf champs du contrat `veille/types.ts`. */
+const FIELDS = ["id", "title", "officialTitle", "url", "publishedAt", "summary", "references", "themes", "source"] as const;
 
 /** Champs qui doivent porter une chaîne non vide ; `publishedAt` et `summary` acceptent `null`. */
 const STRING_FIELDS = ["id", "title", "officialTitle", "url", "source"] as const;
@@ -58,6 +60,10 @@ function parseEntry(text: string, file: string): Entry {
   if (Array.isArray(references) === false || !references.every((reference) => typeof reference === "string" && reference.length > 0)) {
     throw new Error(`Invalid entry ${file}: field "references" must be an array of non-empty strings`);
   }
+  const themes = record.themes;
+  if (Array.isArray(themes) === false || themes.length === 0 || !themes.every((theme) => typeof theme === "string" && theme.length > 0)) {
+    throw new Error(`Invalid entry ${file}: field "themes" must be a non-empty array of non-empty strings`);
+  }
 
   return {
     id: record.id as string,
@@ -67,6 +73,7 @@ function parseEntry(text: string, file: string): Entry {
     publishedAt: record.publishedAt as string | null,
     summary: record.summary as string | null,
     references: references as string[],
+    themes: themes as string[],
     source: record.source as string,
   };
 }
@@ -154,4 +161,14 @@ export function getEntries(rootDir: string = process.cwd()): Entry[] {
     );
   }
   return files.map(readEntry).sort(compareEntries);
+}
+
+/**
+ * Entrées visibles pour les matières actives. Le site filtre ici, jamais dans
+ * les données : désactiver une matière masque sans supprimer.
+ */
+export function getVisibleEntries(rootDir: string = process.cwd(), themes?: Theme[]): Entry[] {
+  const catalog = themes ?? readThemes(rootDir);
+  const active = new Set(activeThemes(catalog).map((theme) => theme.id));
+  return getEntries(rootDir).filter((entry) => entry.themes.some((theme) => active.has(theme)));
 }

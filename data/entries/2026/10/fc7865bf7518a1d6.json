@@ -6,5 +6,8 @@
   "publishedAt": "2026-10-13T12:00:00.000Z",
   "summary": "Lors de sa dernière plénière, le CEPD a adopté une déclaration sur les lunettes connectées et publié le rapport intitulé « Le regard connecté. Une sociologie des usages et des défis liés aux…",
   "references": [],
+  "themes": [
+    "donnees-personnelles"
+  ],
   "source": "cnil"
 }
