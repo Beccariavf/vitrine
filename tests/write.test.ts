@@ -345,6 +345,9 @@ describe("deux sources", () => {
   it("traite un flux CJUE vide comme une panne", async () => {
     const fresh = tempRoot();
     try {
+      await run({ fetchImpl: fetchByUrl(both), rootDir: fresh, sources: SOURCES, tags: TOPIC_TAGS });
+      assert.equal(entrySources(fresh).filter((entry) => entry.source === "cjeu").length, 3);
+
       const empty = new Map([
         [CNIL.feedUrl, FULL],
         [CJEU.feedUrl, CJUE_EMPTY],
@@ -356,7 +359,8 @@ describe("deux sources", () => {
       );
       const entries = entrySources(fresh);
       assert.equal(entries.filter((entry) => entry.source === "cnil").length, 10);
-      assert.equal(entries.filter((entry) => entry.source === "cjeu").length, 0);
+      assert.equal(entries.filter((entry) => entry.source === "cjeu").length, 3);
+      assert.ok(entries.some((entry) => entry.title.startsWith("Jautiva")));
     } finally {
       rmSync(fresh, { recursive: true, force: true });
     }

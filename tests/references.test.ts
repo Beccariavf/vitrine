@@ -46,6 +46,13 @@ describe("les références juridiques", () => {
     );
   });
 
+  it("ne rattache pas à un instrument un article d'une convention voisine", () => {
+    assert.deepEqual(
+      extractReferences("Convention de Rome – Article 5 – Règlement (UE) 2016/679 – Article 6"),
+      ["Règlement (UE) 2016/679 · art. 6"],
+    );
+  });
+
   it("gère une directive sans institution entre parenthèses", () => {
     assert.deepEqual(
       extractReferences("Directive 95/46/CE – Article 7 – Consentement"),

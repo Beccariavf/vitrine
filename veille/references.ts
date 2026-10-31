@@ -11,7 +11,7 @@ const INSTRUMENT =
 const ARTICLE = /\bArticles?\s+(\d+(?:\s*(?:,|et|à|-|–)\s*\d+)*)/gi;
 
 /** Une mention de charte ou de traité avant l'article ne relève pas de l'instrument courant. */
-const OTHER_INSTRUMENT = /\bcharte\b|\btrait[ée]\b|\bTFUE\b|\bTUE\b/i;
+const OTHER_INSTRUMENT = /\bcharte\b|\btrait[ée]\b|\bTFUE\b|\bTUE\b|\bconvention\b|\baccord\b|\bprotocole\b|\bpacte\b|\bstatut\b/i;
 
 function normalize(text: string): string {
   return text.replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
