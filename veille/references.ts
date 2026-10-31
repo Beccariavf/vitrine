@@ -1,6 +1,7 @@
 /**
- * Références juridiques principales d'un arrêt, extraites de son titre officiel.
- * Aucune invention : on ne rend que les instruments et articles réellement cités.
+ * Références juridiques principales : titre officiel des arrêts CJUE, section
+ * « Textes de référence » des pages CNIL. Aucune invention : on ne rend que les
+ * instruments et articles réellement cités.
  */
 
 /** Instrument : règlement, directive, décision, avec son numéro officiel. */
@@ -31,6 +32,108 @@ function articleNumbers(body: string): string[] {
     return [`${numbers[0]}–${numbers[1]}`];
   }
   return numbers;
+}
+
+/** Instruments CNIL nommés, avec leur libellé canonique. */
+const CNIL_INSTRUMENTS: ReadonlyArray<{ pattern: RegExp; label: string }> = [
+  {
+    pattern: /\b(?:RGPD|règlement général sur la protection des données|règlement\s*\(UE\)\s*(?:n[o°]\s*)?2016\/679)\b/i,
+    label: "Règlement (UE) 2016/679",
+  },
+  {
+    pattern: /\b(?:loi\s+Informatique\s+et\s+Libertés|loi\s+n[o°]\s*78-17)\b/i,
+    label: "Loi Informatique et Libertés",
+  },
+  {
+    pattern: /\b(?:Code\s+des\s+postes\s+et\s+des\s+communications\s+électroniques|CPCE)\b/i,
+    label: "Code des postes et des communications électroniques",
+  },
+  {
+    pattern: /\bdirective\s+ePrivacy\b/i,
+    label: "Directive 2002/58/CE",
+  },
+  {
+    pattern: /\bCode\s+de\s+la\s+consommation\b/i,
+    label: "Code de la consommation",
+  },
+];
+
+/** Directive générique : « Directive (UE) 2016/680 », « Directive 95/46/CE ». */
+const CNIL_DIRECTIVE =
+  /\bDirective\s*(?:\((UE|CE|CEE|Euratom)\))?\s*(?:n[o°]\s*)?(\d{1,4}\/\d{1,4}(?:\/[A-Z]{1,4})?)/i;
+
+/** Article CNIL : simple, L./R./D., point, 1er, liste, plage, « et suivants ». */
+const CNIL_ARTICLE =
+  /\bArticles?\s+((?:[LRD]\.\s*)?\d+(?:er)?(?:[.-]\d+)*(?:\s*(?:,|et|à|-|–)\s*(?:[LRD]\.\s*)?\d+(?:er)?(?:[.-]\d+)*)*(?:\s+et\s+suivants?)?)/gi;
+
+/** Numéro d'article normalisé : `L.223-1` devient `L. 223-1`. */
+function normalizeCnilArticle(value: string): string {
+  return value
+    .replace(/\s+/g, " ")
+    .replace(/^([LRD])\.\s*/i, "$1. ")
+    .trim();
+}
+
+/** Découpe une liste ou une plage d'articles CNIL, suffixe « et suivants » compris. */
+function cnilArticleNumbers(body: string): string[] {
+  const suffixMatch = body.match(/\s+et\s+suivants?$/i);
+  const suffix = suffixMatch ? " et suivants" : "";
+  const core = suffixMatch ? body.slice(0, suffixMatch.index) : body;
+  const parts = [...core.matchAll(/[LRD]\.\s*\d+(?:er)?(?:[.-]\d+)*|\d+(?:er)?(?:[.-]\d+)*/gi)].map(
+    (match) => normalizeCnilArticle(match[0]),
+  );
+
+  if (
+    parts.length === 2 &&
+    /^(?:[LRD]\.\s*)?\d+(?:er)?(?:[.-]\d+)*\s*(?:à|-|–)\s*(?:[LRD]\.\s*)?\d+(?:er)?(?:[.-]\d+)*$/i.test(
+      core.trim(),
+    )
+  ) {
+    return [`${parts[0]}–${parts[1]}${suffix}`];
+  }
+
+  if (suffix && parts.length > 0) parts[parts.length - 1] += suffix;
+  return parts;
+}
+
+/** Instrument CNIL reconnu dans un item, ou `null`. */
+function cnilInstrument(text: string): string | null {
+  for (const instrument of CNIL_INSTRUMENTS) {
+    if (instrument.pattern.test(text)) return instrument.label;
+  }
+
+  const directive = CNIL_DIRECTIVE.exec(text);
+  if (directive === null) return null;
+  return instrumentLabel("Directive", directive[1], directive[2] ?? "");
+}
+
+/**
+ * Extrait les références des items de la section CNIL « Textes de référence ».
+ * Un item sans instrument reconnu ou sans article est ignoré ; les articles d'un
+ * même instrument sont regroupés, comme pour les arrêts CJUE.
+ */
+export function extractCnilReferences(items: readonly string[]): string[] {
+  const byInstrument = new Map<string, string[]>();
+
+  for (const item of items) {
+    const text = normalize(item);
+    const instrument = cnilInstrument(text);
+    if (instrument === null) continue;
+
+    const articles: string[] = [];
+    for (const match of text.matchAll(CNIL_ARTICLE)) {
+      articles.push(...cnilArticleNumbers(match[1] ?? ""));
+    }
+    if (articles.length === 0) continue;
+
+    const existing = byInstrument.get(instrument) ?? [];
+    for (const article of articles) {
+      if (!existing.includes(article)) existing.push(article);
+    }
+    byInstrument.set(instrument, existing);
+  }
+
+  return [...byInstrument].map(([instrument, articles]) => `${instrument} · art. ${articles.join(", ")}`);
 }
 
 /**
