@@ -37,6 +37,7 @@ flowchart LR
 ## Reproducibility
 
 - Git : chaque snapshot brut est adressé par son `sha256`, chaque entrée par un `id` stable.
-- Une passe sur un flux inchangé ne produit aucun diff.
+- Les entrées ne changent pas quand le contenu est inchangé.
+- Le snapshot brut CJUE peut varier avec l'horodatage du flux : chaque passe ajoute alors un fichier `data/raw/`, sans changer `data/entries/`.
 - Aucune donnée personnelle : uniquement des textes publics.
 - Un flux CJUE en panne laisse les entrées CNIL en place ; la passe signale la source.
