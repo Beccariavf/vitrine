@@ -12,7 +12,7 @@ Les vérifications qui doivent passer pour qu'un code compte comme terminé. Min
 
 | Order | Command | Checks |
 | ----- | ------- | ------ |
-| 1 | `npm test` | Suite hors ligne : normalisation, dates, idempotence, échecs, lecteur du site |
+| 1 | `npm test` | Suite hors ligne : normalisation, dates, idempotence, échecs, références CJUE/CNIL, lecteur du site |
 | 2 | `npm run build` | Génération statique du site depuis `data/`, sans réseau |
 
 ## Rules

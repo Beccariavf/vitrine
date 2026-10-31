@@ -4,7 +4,7 @@ Le versant données : sources, pipeline et modèles.
 
 ## Sources
 
-- CNIL, flux RSS officiel.
+- CNIL, flux RSS officiel et pages liées pour la section « Textes de référence ».
 - CJUE, jurisprudence via le flux public EUR-Lex `rssId=163` ; pas de compte ni de PISTE.
 - Prévues, non branchées : Légifrance (PISTE), Judilibre, data.gouv.
 
