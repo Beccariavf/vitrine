@@ -1,0 +1,88 @@
+{
+  "tags": [
+    {
+      "id": "rgpd",
+      "label": "RGPD",
+      "active": true,
+      "terms": [
+        "protection des données",
+        "données à caractère personnel",
+        "données personnelles",
+        "RGPD",
+        "règlement 2016/679",
+        "règlement (UE) 2016/679",
+        "directive 95/46",
+        "CNIL",
+        "CEPD",
+        "consentement",
+        "transfert de données",
+        "décision d'adéquation",
+        "clauses types",
+        "clauses contractuelles types",
+        "Privacy Shield",
+        "portabilité",
+        "effacement",
+        "droit à l'oubli",
+        "violation de données",
+        "personne concernée",
+        "responsable du traitement",
+        "sous-traitant",
+        "conservation des données",
+        "décision automatisée",
+        "profilage"
+      ]
+    },
+    {
+      "id": "droits-donnees",
+      "label": "Droits des données",
+      "active": true,
+      "terms": [
+        "vie privée",
+        "ePrivacy",
+        "cookies",
+        "traceurs",
+        "données de santé",
+        "biométrie",
+        "données biométriques",
+        "reconnaissance faciale",
+        "vidéosurveillance",
+        "géolocalisation",
+        "PNR",
+        "dossiers passagers",
+        "espace européen des données",
+        "données ouvertes"
+      ]
+    },
+    {
+      "id": "ia",
+      "label": "IA",
+      "active": false,
+      "terms": [
+        "intelligence artificielle",
+        "IA",
+        "AI Act",
+        "règlement 2024/1689",
+        "système d'IA",
+        "modèle d'IA",
+        "apprentissage automatique",
+        "algorithme"
+      ]
+    },
+    {
+      "id": "cybersecurite",
+      "label": "Cybersécurité",
+      "active": false,
+      "terms": [
+        "cybersécurité",
+        "cyberrésilience",
+        "NIS2",
+        "directive 2022/2555",
+        "DORA",
+        "règlement 2022/2554",
+        "CRA",
+        "cyberattaque",
+        "sécurité des réseaux et des systèmes d'information"
+      ]
+    }
+  ]
+}
