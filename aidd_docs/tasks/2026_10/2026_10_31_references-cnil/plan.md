@@ -1,6 +1,6 @@
 ---
 objective: "Les actualités CNIL dont la page officielle cite des textes portent les références instrument + articles de leur section « Textes de référence », avec snapshot des pages retenues et avertissement sans blocage en cas d'échec."
-status: in-progress
+status: implemented
 ---
 
 # Plan: Références juridiques des actualités CNIL
