@@ -1,6 +1,6 @@
 import { strict as assert } from "node:assert";
 import { describe, it } from "node:test";
-import { extractReferences } from "../veille/references.ts";
+import { extractCnilReferences, extractReferences } from "../veille/references.ts";
 
 /** Le titre officiel de Jautiva, avec les espaces insécables du flux réel. */
 const JAUTIVA =
@@ -72,5 +72,84 @@ describe("les références juridiques", () => {
       ),
       ["Règlement (UE) 2016/679 · art. 5, 6, 7"],
     );
+  });
+});
+
+describe("les références CNIL", () => {
+  it("lit l'article avant l'instrument, comme sur la page FNAC", () => {
+    assert.deepEqual(
+      extractCnilReferences([
+        "Article 82 de la loi Informatique et Libertés (règles pour les cookies et autres traceurs)",
+      ]),
+      ["Loi Informatique et Libertés · art. 82"],
+    );
+  });
+
+  it("canonise RGPD et regroupe ses articles", () => {
+    assert.deepEqual(
+      extractCnilReferences([
+        "Article 6 du RGPD (bases légales)",
+        "Article 7 du RGPD (conditions applicables au consentement)",
+        "Article 21 du RGPD (droit d'opposition)",
+        "Article 4.11 du règlement général sur la protection des données (définition du consentement)",
+      ]),
+      ["Règlement (UE) 2016/679 · art. 6, 7, 21, 4.11"],
+    );
+  });
+
+  it("reconnaît le Code de la consommation et ignore les décrets", () => {
+    assert.deepEqual(
+      extractCnilReferences([
+        "Article L.223-1 du code de la consommation - Légifrance",
+        "Décret n°2026-662 du 23 juillet 2026 relatif aux modalités de recueil",
+        "Articles 134 à 137 du décret n°2019-539 du 29 mai 2019 (droit des personnes)",
+      ]),
+      ["Code de la consommation · art. L. 223-1"],
+    );
+  });
+
+  it("reconnaît les alias d'instruments et les directives citées", () => {
+    assert.deepEqual(
+      extractCnilReferences([
+        "Article L. 34-5 du Code des postes et des communications électroniques",
+        "Article 7 de la directive 95/46/CE",
+        "Article 5 de la directive 2002/58/CE",
+        "Article 5 de la directive ePrivacy",
+        "Article 82 de la loi n° 78-17 du 6 janvier 1978",
+      ]),
+      [
+        "Code des postes et des communications électroniques · art. L. 34-5",
+        "Directive 95/46/CE · art. 7",
+        "Directive 2002/58/CE · art. 5",
+        "Loi Informatique et Libertés · art. 82",
+      ],
+    );
+  });
+
+  it("conserve le suffixe « et suivants »", () => {
+    assert.deepEqual(
+      extractCnilReferences([
+        "Article L. 34-5 et suivants du Code des postes et des communications électroniques",
+      ]),
+      ["Code des postes et des communications électroniques · art. L. 34-5 et suivants"],
+    );
+  });
+
+  it("rend les plages, les articles 1er et le dédoublonnage", () => {
+    assert.deepEqual(
+      extractCnilReferences([
+        "Articles 134 à 137 du Code de la consommation",
+        "Article 1er du Code de la consommation",
+        "Article 6 du RGPD",
+        "Article 6 du RGPD",
+      ]),
+      ["Code de la consommation · art. 134–137, 1er", "Règlement (UE) 2016/679 · art. 6"],
+    );
+  });
+
+  it("ignore un instrument inconnu ou un instrument sans article", () => {
+    assert.deepEqual(extractCnilReferences(["Décret n°2026-662 du 23 juillet 2026"]), []);
+    assert.deepEqual(extractCnilReferences(["Article 5 du décret n°2019-539"]), []);
+    assert.deepEqual(extractCnilReferences(["Règlement (UE) 2016/679"]), []);
   });
 });

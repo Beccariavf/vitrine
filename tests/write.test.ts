@@ -8,7 +8,7 @@ import { after, before, describe, it } from "node:test";
 import { run, SOURCES } from "../veille/main.ts";
 import type { FetchLike, Source } from "../veille/main.ts";
 import { readTags } from "../veille/tags.ts";
-import { writeEntries } from "../veille/write.ts";
+import { writeEntries, writeRaw } from "../veille/write.ts";
 
 const FULL = readFileSync(new URL("./fixtures/cnil/feed.xml", import.meta.url), "utf8");
 const REDUCED = readFileSync(new URL("./fixtures/cnil/feed-reduced.xml", import.meta.url), "utf8");
@@ -24,7 +24,20 @@ const CJEU = SOURCES.find((source) => source.id === "cjeu") as Source;
 
 /** Identifiant de l'actualité FNAC, calculé hors test à partir de `feed.xml`. */
 const FNAC_ID = "1fb831fb8c3243d4";
+const FNAC_URL = "https://www.cnil.fr/fr/sanction-cookies-app-fnac";
+const RECONSTITUTION_URL =
+  "https://www.cnil.fr/fr/reconstitution-adresses-professionnelles-quel-cadre";
 const FNAC_PUB_DATE = "Thu, 29 Oct 2026 13:00:00 +0100";
+const FNAC_PAGE = readFileSync(new URL("./fixtures/cnil/page-fnac.html", import.meta.url), "utf8");
+const SINGULAR_PAGE = readFileSync(
+  new URL("./fixtures/cnil/page-singular.html", import.meta.url),
+  "utf8",
+);
+const EMPTY_PAGE = readFileSync(
+  new URL("./fixtures/cnil/page-no-references.html", import.meta.url),
+  "utf8",
+);
+const CNIL_PAGES = CNIL.parse(FULL, []).map((entry) => [entry.url, EMPTY_PAGE] as const);
 
 /** Le même flux, avec la date de l'actualité FNAC décalée d'un mois. */
 const SHIFTED = FULL.replace(FNAC_PUB_DATE, "Sun, 29 Nov 2026 13:00:00 +0100");
@@ -268,17 +281,29 @@ function fetchByUrl(bodies: Map<string, string>): FetchLike {
 }
 
 /** Les entrées écrites, avec leur source, pour vérifier le mélange. */
-function entrySources(root: string): Array<{ source: string; title: string; id: string }> {
+function entrySources(
+  root: string,
+): Array<{ source: string; title: string; id: string; url: string; references: string[] }> {
   return listFiles(root)
     .filter((file) => file.includes("entries"))
-    .map((file) => JSON.parse(readFileSync(join(root, file), "utf8")) as { source: string; title: string; id: string });
+    .map(
+      (file) =>
+        JSON.parse(readFileSync(join(root, file), "utf8")) as {
+          source: string;
+          title: string;
+          id: string;
+          url: string;
+          references: string[];
+        },
+    );
 }
 
 describe("deux sources", () => {
   let root: string;
-  const both = new Map([
+  const both = new Map<string, string>([
     [CNIL.feedUrl, FULL],
     [CJEU.feedUrl, CJUE_FEED],
+    ...CNIL_PAGES,
   ]);
 
   before(() => {
@@ -308,9 +333,10 @@ describe("deux sources", () => {
   });
 
   it("conserve un arrêt sorti du flux tant que son tag est actif", async () => {
-    const reduced = new Map([
+    const reduced = new Map<string, string>([
       [CNIL.feedUrl, FULL],
       [CJEU.feedUrl, CJUE_REDUCED],
+      ...CNIL_PAGES,
     ]);
 
     const result = await run({
@@ -351,6 +377,7 @@ describe("deux sources", () => {
       const empty = new Map([
         [CNIL.feedUrl, FULL],
         [CJEU.feedUrl, CJUE_EMPTY],
+        ...CNIL_PAGES,
       ]);
 
       await assert.rejects(
@@ -383,6 +410,139 @@ describe("deux sources", () => {
       assert.equal(entries.filter((entry) => entry.source === "cjeu").length, 0);
     } finally {
       rmSync(fresh, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("les pages CNIL dans la passe", () => {
+  it("enrichit la FNAC et conserve sa page en snapshot HTML", async () => {
+    const root = tempRoot();
+    try {
+      const bodies = new Map<string, string>([
+        [CNIL.feedUrl, FULL],
+        ...CNIL_PAGES.map(([url]) => [url, url === FNAC_URL ? FNAC_PAGE : EMPTY_PAGE] as const),
+      ]);
+
+      const result = await run({ fetchImpl: fetchByUrl(bodies), rootDir: root, sources: [CNIL] });
+      const entries = entrySources(root);
+      const fnac = entries.find((entry) => entry.url === FNAC_URL);
+      const cepd = entries.find(
+        (entry) => entry.url === "https://www.cnil.fr/fr/cepd-declaration-lunettes-connectees",
+      );
+
+      assert.deepEqual(fnac?.references, ["Loi Informatique et Libertés · art. 82"]);
+      assert.deepEqual(cepd?.references, []);
+      assert.deepEqual(result.warnings, []);
+      assert.equal(result.sources[0]?.pagePaths.length, 1);
+
+      const pagePath = result.sources[0]?.pagePaths[0] ?? "";
+      assert.ok(pagePath.endsWith(".html"));
+      assert.ok(
+        readFileSync(pagePath, "utf8").includes("Article 82 de la loi Informatique et Libertés"),
+      );
+      assert.equal(
+        listFiles(root).filter(
+          (file) => file.startsWith(join("data", "raw")) && file.endsWith(".html"),
+        ).length,
+        1,
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("ne réécrit pas de snapshot quand seules les parties volatiles changent", async () => {
+    const root = tempRoot();
+    try {
+      const bodiesFor = (page: string) =>
+        new Map<string, string>([
+          [CNIL.feedUrl, FULL],
+          ...CNIL_PAGES.map(([url]) => [url, url === FNAC_URL ? page : EMPTY_PAGE] as const),
+        ]);
+
+      await run({ fetchImpl: fetchByUrl(bodiesFor(FNAC_PAGE)), rootDir: root, sources: [CNIL] });
+      const firstCount = listFiles(root).filter(
+        (file) => file.startsWith(join("data", "raw")) && file.endsWith(".html"),
+      ).length;
+      assert.equal(firstCount, 1);
+
+      const volatile = FNAC_PAGE.replace("<body>", '<body data-build="2">');
+      const result = await run({
+        fetchImpl: fetchByUrl(bodiesFor(volatile)),
+        rootDir: root,
+        sources: [CNIL],
+      });
+
+      assert.equal(result.sources[0]?.pagePaths.length, 0);
+      assert.equal(
+        listFiles(root).filter(
+          (file) => file.startsWith(join("data", "raw")) && file.endsWith(".html"),
+        ).length,
+        firstCount,
+      );
+      const fnac = entrySources(root).find((entry) => entry.url === FNAC_URL);
+      assert.deepEqual(fnac?.references, ["Loi Informatique et Libertés · art. 82"]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  for (const mode of ["network", "http"] as const) {
+    it(`conserve l'entrée avec [] quand la page échoue (${mode})`, async () => {
+      const root = tempRoot();
+      try {
+        const bodies = new Map<string, string>([
+          [CNIL.feedUrl, FULL],
+          ...CNIL_PAGES.map(
+            ([url]) => [url, url === RECONSTITUTION_URL ? SINGULAR_PAGE : EMPTY_PAGE] as const,
+          ),
+        ]);
+
+        const fetchPageFailure: FetchLike = async (url) => {
+          if (url === FNAC_URL) {
+            if (mode === "network") throw new Error("page down");
+            return { ok: false, status: 500, text: async () => "" };
+          }
+          const body = bodies.get(url);
+          if (body === undefined) throw new Error(`unexpected URL ${url}`);
+          return { ok: true, status: 200, text: async () => body };
+        };
+
+        const result = await run({
+          fetchImpl: fetchPageFailure,
+          rootDir: root,
+          sources: [CNIL],
+        });
+        const entries = entrySources(root);
+        const fnac = entries.find((entry) => entry.url === FNAC_URL);
+        const reconstitution = entries.find((entry) => entry.url === RECONSTITUTION_URL);
+
+        assert.deepEqual(fnac?.references, []);
+        assert.deepEqual(reconstitution?.references, ["Règlement (UE) 2016/679 · art. 6"]);
+        assert.ok(
+          result.warnings.some(
+            (warning) =>
+              warning.includes(FNAC_URL) &&
+              warning.includes(mode === "network" ? "page down" : "HTTP 500"),
+          ),
+        );
+        assert.equal(result.sources[0]?.pagePaths.length, 1);
+      } finally {
+        rmSync(root, { recursive: true, force: true });
+      }
+    });
+  }
+
+  it("adresse un snapshot HTML par son contenu", () => {
+    const root = tempRoot();
+    try {
+      const path = writeRaw(root, "<html>page</html>", "html");
+      assert.ok(path.endsWith(".html"));
+      const hash = createHash("sha256").update(readFileSync(path)).digest("hex");
+      assert.equal(basename(path), `${hash}.html`);
+      assert.equal(basename(dirname(path)), hash.slice(0, 2));
+    } finally {
+      rmSync(root, { recursive: true, force: true });
     }
   });
 });

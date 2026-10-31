@@ -15,9 +15,9 @@ flowchart TD
 
 ## Areas
 
-- `veille/` : le pipeline. Adaptateurs CNIL et CJUE, normalisation des URL, résumés, références, catalogue de tags, écriture des entrées. Seule zone qui parle aux sources.
+- `veille/` : le pipeline. Adaptateurs CNIL et CJUE, normalisation des URL, résumés, références, catalogue de tags, écriture des entrées. La page CNIL est lue pour sa section « Textes de référence » (`parseCnilPageReferences`), les instruments sont canonicalisés par `extractCnilReferences` et les pages retenues sont snapshotées en HTML. Seule zone qui parle aux sources.
 - `src/` : le site Astro, rendu statique. `layouts/Base.astro` porte la coquille, `pages/` les deux routes, `styles/global.css` les jetons Tailwind, `lib/entries.ts` lit `data/entries/` au build et filtre les résumés redondants, `lib/sources.ts` porte les libellés CNIL/CJUE. Les pages ne parlent à aucune API. Jetable : les données lui survivent.
-- `tests/` : la suite `node:test` et les fixtures CNIL/CJUE, hors ligne.
+- `tests/` : la suite `node:test` et les fixtures CNIL/CJUE, dont les captures HTML des sections « Textes de référence », hors ligne.
 - `data/` : la sortie du pipeline, versionnée par git. Snapshots bruts adressés par leur contenu, entrées JSON par `id`.
 - `tools/` : l'outil local de paramètres (`parametres.html`), non déployé ; il écrit `veille/tags.json`.
 - `.github/` : la CI, seul automatisme ; aucun déploiement.

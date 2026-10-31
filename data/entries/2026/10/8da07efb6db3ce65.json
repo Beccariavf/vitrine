@@ -5,6 +5,8 @@
   "url": "https://www.cnil.fr/fr/reconstitution-adresses-professionnelles-quel-cadre",
   "publishedAt": "2026-10-16T12:00:00.000Z",
   "summary": "La reconstitution d’adresses électroniques professionnelles à partir de données accessibles en ligne est utilisée pour contacter des interlocuteurs, notamment dans le cadre de la prospection. Elle…",
-  "references": [],
+  "references": [
+    "Règlement (UE) 2016/679 · art. 6"
+  ],
   "source": "cnil"
 }

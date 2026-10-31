@@ -88,6 +88,22 @@ describe("les entrées committées", () => {
       assert.ok(entries.slice(firstNull).every((item) => item.publishedAt === null));
     }
   });
+
+  it("porte les références extraites de la page FNAC", () => {
+    const fnac = entries.find(
+      (item) => item.url === "https://www.cnil.fr/fr/sanction-cookies-app-fnac",
+    );
+    assert.ok(fnac, "l'entrée FNAC doit être committée");
+    assert.deepEqual(fnac.references, ["Loi Informatique et Libertés · art. 82"]);
+  });
+
+  it("laisse vides les références d'une actualité sans textes de référence", () => {
+    const cepd = entries.find(
+      (item) => item.url === "https://www.cnil.fr/fr/cepd-declaration-lunettes-connectees",
+    );
+    assert.ok(cepd, "l'entrée CEPD doit être committée");
+    assert.deepEqual(cepd.references, []);
+  });
 });
 
 describe("le tri du lecteur", () => {

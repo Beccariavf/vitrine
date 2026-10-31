@@ -1,7 +1,8 @@
 import { XMLParser, XMLValidator } from "fast-xml-parser";
 import type { Entry } from "../types.ts";
 import { canonicalUrl, hashId } from "../normalize.ts";
-import { toSummary } from "../summary.ts";
+import { extractCnilReferences } from "../references.ts";
+import { toPlainText, toSummary } from "../summary.ts";
 
 /** Identifiant stable de la source, écrit dans chaque entrée. */
 export const SOURCE_ID = "cnil";
@@ -63,6 +64,35 @@ function assertTrustedLink(link: string, index: number): void {
   if (!TRUSTED_HOSTS.has(parsed.hostname)) {
     throw new Error(`CNIL feed item #${index} link leaves cnil.fr: ${link}`);
   }
+}
+
+/**
+ * Bloc CNIL : la classe extérieure exacte, son contenu et la paire `</div></div>`
+ * qui ferme le wrapper puis le bloc. Un simple préfixe matcherait `-contenu` et
+ * `-lien`, d'où l'ancrage sur la classe complète.
+ */
+const SECTION_BLOCK =
+  /<div[^>]*class=['"]ctn-gen-textes-references['"][^>]*>([\s\S]*?)<\/div>\s*<\/div>/gi;
+
+/**
+ * Lit les références de la section « Textes de référence » d'une page CNIL.
+ * Une page sans section, ou sans texte reconnu, rend `[]` sans lever.
+ */
+export function parseCnilPageReferences(html: string): string[] {
+  const items: string[] = [];
+
+  for (const block of html.matchAll(SECTION_BLOCK)) {
+    const body = block[1] ?? "";
+    const heading = toPlainText(body.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i)?.[1] ?? "");
+    if (!/^Textes?\s+de\s+références?$/i.test(heading)) continue;
+
+    for (const item of body.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)) {
+      const text = toPlainText(item[1] ?? "");
+      if (text !== "") items.push(text);
+    }
+  }
+
+  return extractCnilReferences(items);
 }
 
 /**
