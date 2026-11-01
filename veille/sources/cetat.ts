@@ -1,9 +1,9 @@
 import type { Entry } from "../types.ts";
 import type { FetchLike } from "../fetch.ts";
-import { extractCnilReferences } from "../references.ts";
+import { extractCetatReferences } from "../references.ts";
 import { toSummary } from "../summary.ts";
 import type { Theme } from "../themes.ts";
-import { activeThemes, themeQueries } from "../themes.ts";
+import { activeThemes, followedInstruments, instrumentOf, themeQueries } from "../themes.ts";
 import { PisteSession, readPisteConfig } from "../piste.ts";
 
 /** Identifiant stable de la source, écrit dans chaque entrée. */
@@ -11,6 +11,13 @@ export const SOURCE_ID = "cetat";
 
 /** Les décisions administratives sont publiées avec du retard ; 90 jours restent utiles. */
 export const WINDOW_DAYS = 90;
+
+/**
+ * Appels PISTE réservés aux six recherches Judilibre : CETAT passe avant
+ * Judilibre dans la passe, et la lecture de ses textes ne doit pas leur prendre
+ * leur part du plafond.
+ */
+export const JUDILIBRE_SEARCH_RESERVE = 6;
 
 type CetatTitle = { id?: unknown; title?: unknown };
 type CetatResult = {
@@ -35,6 +42,15 @@ export function parseCetatDate(title: string): string | null {
   return date.toISOString();
 }
 
+/** Texte intégral d'une décision, tel que le rend `/consult/juri` ; `""` s'il manque. */
+export function decisionText(response: unknown): string {
+  if (typeof response !== "object" || response === null) return "";
+  const text = (response as { text?: unknown }).text;
+  if (typeof text !== "object" || text === null) return "";
+  const body = (text as { texte?: unknown }).texte;
+  return typeof body === "string" ? body : "";
+}
+
 function textArray(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return value.filter((item): item is string => typeof item === "string" && item.trim() !== "");
@@ -46,6 +62,10 @@ function firstTitle(value: unknown): CetatTitle | null {
   return typeof first === "object" && first !== null ? (first as CetatTitle) : null;
 }
 
+/**
+ * Une décision retenue par la recherche : son titre et son résumé, sans
+ * référence. Les articles se lisent dans le texte intégral, après le rattachement.
+ */
 function toEntry(result: CetatResult): Entry | null {
   const title = firstTitle(result.titles);
   const id = typeof title?.id === "string" ? title.id : typeof result.id === "string" ? result.id : null;
@@ -54,7 +74,6 @@ function toEntry(result: CetatResult): Entry | null {
 
   const rawSummary = textArray(result.resumePrincipal)[0] ?? (typeof result.text === "string" ? result.text : null);
   const summary = toSummary(rawSummary);
-  const references = extractCnilReferences([`${label} ${rawSummary ?? ""}`]);
 
   return {
     id,
@@ -63,7 +82,7 @@ function toEntry(result: CetatResult): Entry | null {
     url: `https://www.legifrance.gouv.fr/ceta/id/${id}`,
     publishedAt: parseCetatDate(label),
     summary,
-    references,
+    references: [],
     themes: [],
     source: SOURCE_ID,
   };
@@ -75,15 +94,23 @@ type ApiContext = {
   now?: Date;
 };
 
+type CetatApiResult = {
+  raw: string[];
+  entries: Entry[];
+  warnings: string[];
+  enrich?: (entry: Entry) => Promise<string[] | null>;
+};
+
 /**
- * Une recherche par matière active sur le fonds CETAT, triée par date.
- * Aucune consultation par décision : le résumé et l'identifiant suffisent.
+ * Une recherche par matière active sur le fonds CETAT, triée par date. Le texte
+ * intégral de chaque décision nouvelle est lu ensuite, décision par décision :
+ * la recherche ne porte pas les articles appliqués.
  */
 export async function fetchEntries({
   fetchImpl,
   themes,
   now = new Date(),
-}: ApiContext): Promise<{ raw: string[]; entries: Entry[]; warnings: string[] }> {
+}: ApiContext): Promise<CetatApiResult> {
   const config = readPisteConfig();
   if (config === null) {
     return {
@@ -95,6 +122,7 @@ export async function fetchEntries({
 
   const session = new PisteSession(config);
   const raw: string[] = [];
+  const warnings: string[] = [];
   const byId = new Map<string, Entry>();
   const cutoff = now.getTime() - WINDOW_DAYS * 24 * 60 * 60 * 1000;
 
@@ -134,5 +162,26 @@ export async function fetchEntries({
     }
   }
 
-  return { raw, entries: [...byId.values()], warnings: [] };
+  return {
+    raw,
+    entries: [...byId.values()],
+    warnings,
+    /** Lit le texte d'une décision retenue, sous le budget restant de la passe. */
+    async enrich(entry: Entry): Promise<string[] | null> {
+      if (session.remainingCalls() <= JUDILIBRE_SEARCH_RESERVE) {
+        warnings.push(
+          `cetat decision ${entry.id}: PISTE call budget reserved for ${JUDILIBRE_SEARCH_RESERVE} Judilibre searches, entry deferred`,
+        );
+        return null;
+      }
+
+      const response = await session.consultJuri(fetchImpl, entry.id);
+      raw.push(JSON.stringify(response, null, 2));
+
+      const instruments = followedInstruments(entry, themes);
+      return extractCetatReferences(decisionText(response)).filter((reference) =>
+        instruments.has(instrumentOf(reference)),
+      );
+    },
+  };
 }

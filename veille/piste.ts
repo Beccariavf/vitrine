@@ -7,6 +7,7 @@ export const MAX_CALLS_PER_RUN = 16;
 
 const OAUTH_URL = "https://oauth.piste.gouv.fr/api/oauth/token";
 const LEGIFRANCE_SEARCH = "https://api.piste.gouv.fr/dila/legifrance/lf-engine-app/search";
+const LEGIFRANCE_CONSULT = "https://api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/juri";
 const JUDILIBRE_SEARCH = "https://api.piste.gouv.fr/cassation/judilibre/v1.0/search";
 const JUDILIBRE_DECISION = "https://api.piste.gouv.fr/cassation/judilibre/v1.0/decision";
 
@@ -122,11 +123,30 @@ export class PisteSession {
 
   /** Recherche Légifrance ; un 401 invalide le jeton et retente une fois. */
   async legifrance(fetchImpl: FetchLike, body: unknown): Promise<unknown> {
+    return this.postLegifrance(fetchImpl, LEGIFRANCE_SEARCH, "search", body, "Légifrance search");
+  }
+
+  /**
+   * Texte intégral d'une décision, lu par son identifiant : la recherche ne le
+   * porte pas, et le Conseil d'État n'a pas de visa structuré à lire.
+   */
+  async consultJuri(fetchImpl: FetchLike, id: string): Promise<unknown> {
+    return this.postLegifrance(fetchImpl, LEGIFRANCE_CONSULT, "consult", { textId: id }, "Légifrance consult");
+  }
+
+  /** Un POST Légifrance authentifié ; un 401 invalide le jeton et retente une fois. */
+  private async postLegifrance(
+    fetchImpl: FetchLike,
+    url: string,
+    endpoint: string,
+    body: unknown,
+    label: string,
+  ): Promise<unknown> {
     for (let attempt = 0; attempt < 2; attempt += 1) {
       const token = await this.fetchToken(fetchImpl);
       assertQuota();
       const started = Date.now();
-      const response = await fetchImpl(LEGIFRANCE_SEARCH, {
+      const response = await fetchImpl(url, {
         method: "POST",
         headers: {
           authorization: `Bearer ${token}`,
@@ -134,15 +154,15 @@ export class PisteSession {
         },
         body: JSON.stringify(body),
       });
-      record("legifrance", "search", response.status, started);
+      record("legifrance", endpoint, response.status, started);
       if (response.status === 401 && attempt === 0) {
         this.token = null;
         this.expiresAt = 0;
         continue;
       }
-      return readJson(response, "Légifrance search");
+      return readJson(response, label);
     }
-    throw new Error("Légifrance search: unauthorized after token refresh");
+    throw new Error(`${label}: unauthorized after token refresh`);
   }
 
   /** Recherche Judilibre, authentifiée par `KeyId`. */

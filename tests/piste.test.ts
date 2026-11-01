@@ -98,6 +98,46 @@ describe("la session PISTE", () => {
     }
   });
 
+  it("lit un texte avec le jeton, le textId et le journalise comme consult", async () => {
+    resetUsage();
+    const root = mkdtempSync(join(tmpdir(), "vitrine-usage-"));
+    let seenUrl = "";
+    let seenAuthorization = "";
+    let seenBody = "";
+    const fetchImpl: FetchLike = async (url, init) => {
+      if (url.includes("oauth")) {
+        return response(200, JSON.stringify({ access_token: "t", expires_in: 3600 }));
+      }
+      seenUrl = url;
+      seenAuthorization = init?.headers?.authorization ?? "";
+      seenBody = init?.body ?? "";
+      return response(200, JSON.stringify({ text: { id: "CETATEXT000055005484", texte: "Considérant …" } }));
+    };
+
+    try {
+      const session = new PisteSession(CONFIG);
+      const body = await session.consultJuri(fetchImpl, "CETATEXT000055005484");
+
+      assert.deepEqual(body, { text: { id: "CETATEXT000055005484", texte: "Considérant …" } });
+      assert.equal(seenUrl, "https://api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/juri");
+      assert.equal(seenAuthorization, "Bearer t");
+      assert.deepEqual(JSON.parse(seenBody), { textId: "CETATEXT000055005484" });
+
+      flushUsage(root);
+      const date = new Date().toISOString().slice(0, 10);
+      const usage = JSON.parse(readFileSync(join(root, "data", "usage", `${date}.json`), "utf8")) as {
+        calls: Array<{ source: string; endpoint: string; status: number }>;
+      };
+      assert.deepEqual(
+        usage.calls.map((call) => `${call.source}/${call.endpoint}/${call.status}`),
+        ["piste/oauth/200", "legifrance/consult/200"],
+      );
+    } finally {
+      resetUsage();
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("compte les appels restants jusqu'à zéro", async () => {
     resetUsage();
     const fetchImpl: FetchLike = async () => response(200, JSON.stringify({ id: "abc" }));

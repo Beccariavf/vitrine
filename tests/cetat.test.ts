@@ -2,17 +2,22 @@ import { strict as assert } from "node:assert";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { after, before, beforeEach, describe, it } from "node:test";
+import type { Entry } from "../veille/types.ts";
 import type { FetchLike } from "../veille/fetch.ts";
-import { resetUsage } from "../veille/piste.ts";
-import { fetchEntries, parseCetatDate } from "../veille/sources/cetat.ts";
+import { MAX_CALLS_PER_RUN, PisteSession, resetUsage } from "../veille/piste.ts";
+import { decisionText, fetchEntries, JUDILIBRE_SEARCH_RESERVE, parseCetatDate } from "../veille/sources/cetat.ts";
 import { assignThemes, readThemes } from "../veille/themes.ts";
 import type { Theme } from "../veille/themes.ts";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const THEMES = readThemes(ROOT);
 const SEARCH = readFileSync(new URL("./fixtures/cetat/search.json", import.meta.url), "utf8");
+const CONSULT = readFileSync(new URL("./fixtures/cetat/consult.json", import.meta.url), "utf8");
 const NOW = new Date("2023-05-10T00:00:00.000Z");
 const saved = { ...process.env };
+
+/** L'identifiant porté par `consult.json` : la décision 511155. */
+const CONSULT_ID = "CETATEXT000055005484";
 
 before(() => {
   process.env.PISTE_CLIENT_ID = "client";
@@ -42,13 +47,31 @@ function only(id: string): Theme[] {
   return THEMES.map((theme) => ({ ...theme, active: theme.id === id }));
 }
 
-function fakeFetch(calls: string[]): FetchLike {
+function fakeFetch(calls: string[], consult = CONSULT): FetchLike {
   return async (url) => {
     calls.push(url);
     if (url.includes("oauth")) {
       return { ok: true, status: 200, text: async () => JSON.stringify({ access_token: "token", expires_in: 3600 }) };
     }
+    if (url.includes("consult")) {
+      return { ok: true, status: 200, text: async () => consult };
+    }
     return { ok: true, status: 200, text: async () => SEARCH };
+  };
+}
+
+/** Une décision retenue par la recherche, rattachée aux matières données. */
+function decisionEntry(themes: string[]): Entry {
+  return {
+    id: CONSULT_ID,
+    title: "Conseil d'État, 10ème chambre jugeant seule, 20/10/2026, 511155, Inédit au recueil Lebon",
+    officialTitle: "Conseil d'État, 10ème chambre jugeant seule, 20/10/2026, 511155, Inédit au recueil Lebon",
+    url: `https://www.legifrance.gouv.fr/ceta/id/${CONSULT_ID}`,
+    publishedAt: "2026-10-20T12:00:00.000Z",
+    summary: null,
+    references: [],
+    themes,
+    source: "cetat",
   };
 }
 
@@ -62,7 +85,7 @@ describe("la source CETAT", () => {
     assert.equal(parseCetatDate("Conseil d'État, 31/02/2023, 1"), null);
   });
 
-  it("construit une entrée avec résumé, URL et matière", async () => {
+  it("construit une entrée avec résumé, URL et matière, sans référence", async () => {
     const calls: string[] = [];
     const result = await fetchEntries({ fetchImpl: fakeFetch(calls), themes: only("donnees-personnelles"), now: NOW });
 
@@ -73,7 +96,7 @@ describe("la source CETAT", () => {
     assert.equal(entry.publishedAt, "2023-05-04T12:00:00.000Z");
     assert.equal(entry.url, "https://www.legifrance.gouv.fr/ceta/id/CETATEXT000047525048");
     assert.match(entry.summary ?? "", /RGPD/);
-    assert.ok(entry.references.some((reference) => reference.includes("2016/679")));
+    assert.deepEqual(entry.references, []);
     assert.deepEqual(assignThemes([entry], THEMES)[0]?.themes, ["donnees-personnelles"]);
     assert.equal(result.raw.length, 1);
   });
@@ -129,6 +152,60 @@ describe("la source CETAT", () => {
     assert.equal(calls.filter((url) => url.includes("oauth")).length, 1);
     assert.equal(calls.length, 7);
     assert.equal(result.entries.length, 1);
+  });
+
+  it("enrichit une décision des articles lus dans son texte", async () => {
+    const calls: string[] = [];
+    const result = await fetchEntries({ fetchImpl: fakeFetch(calls), themes: only("donnees-personnelles"), now: NOW });
+    assert.ok(result.enrich);
+
+    const references = await result.enrich(decisionEntry(["donnees-personnelles"]));
+
+    assert.deepEqual(references, ["Règlement (UE) 2016/679 · art. 15"]);
+    assert.equal(calls.filter((url) => url.includes("consult")).length, 1);
+    assert.ok(result.raw.some((body) => body.includes(`"${CONSULT_ID}"`)));
+  });
+
+  it("écarte un instrument hors des matières de l'entrée", async () => {
+    const calls: string[] = [];
+    const result = await fetchEntries({ fetchImpl: fakeFetch(calls), themes: only("donnees-personnelles"), now: NOW });
+    assert.ok(result.enrich);
+
+    assert.deepEqual(await result.enrich(decisionEntry(["ia"])), []);
+  });
+
+  it("rend un tableau vide pour un texte sans formule", async () => {
+    const calls: string[] = [];
+    const empty = JSON.stringify({ text: { id: CONSULT_ID, texte: "" } });
+    const result = await fetchEntries({ fetchImpl: fakeFetch(calls, empty), themes: only("donnees-personnelles"), now: NOW });
+    assert.ok(result.enrich);
+
+    assert.deepEqual(await result.enrich(decisionEntry(["donnees-personnelles"])), []);
+  });
+
+  it("diffère une décision quand le budget restant est réservé à Judilibre", async () => {
+    const calls: string[] = [];
+    const fetchImpl = fakeFetch(calls);
+    const session = new PisteSession({ clientId: "client", clientSecret: "secret", keyId: "key" });
+
+    const burnt = MAX_CALLS_PER_RUN - JUDILIBRE_SEARCH_RESERVE - 2;
+    for (let index = 0; index < burnt; index += 1) await session.judilibreDecision(fetchImpl, "abc");
+
+    const result = await fetchEntries({ fetchImpl, themes: only("donnees-personnelles"), now: NOW });
+    assert.ok(result.enrich);
+
+    assert.equal(await result.enrich(decisionEntry(["donnees-personnelles"])), null);
+    assert.equal(calls.filter((url) => url.includes("consult")).length, 0);
+    assert.match(
+      result.warnings[0] ?? "",
+      new RegExp(`budget reserved for ${JUDILIBRE_SEARCH_RESERVE} Judilibre searches`),
+    );
+  });
+
+  it("lit le texte intégral de la réponse de consultation", () => {
+    assert.match(decisionText(JSON.parse(CONSULT)), /Aux termes du paragraphe 3 de l’article 15 du RGPD/);
+    assert.equal(decisionText({ text: {} }), "");
+    assert.equal(decisionText(null), "");
   });
 
   it("avertit et n'appelle rien sans secrets", async () => {
