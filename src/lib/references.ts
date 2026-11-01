@@ -28,6 +28,38 @@ function celexUrl(type: string, year: string, number: string): string {
 }
 
 /**
+ * Libellé court d'un instrument canonique, pour la pastille : le libellé complet
+ * reste dans l'attribut `title`, et dans l'URL officielle.
+ */
+const SHORT_LABELS: Readonly<Record<string, string>> = {
+  "Règlement (UE) 2016/679": "RGPD",
+  "Loi Informatique et Libertés": "LIL",
+  "Code des postes et des communications électroniques": "CPCE",
+  "Directive 2002/58/CE": "ePrivacy",
+  "Code de la consommation": "C. conso",
+  "Règlement (UE) 2024/1689": "AI Act",
+  "Règlement (UE) 2022/2065": "DSA",
+  "Règlement (UE) 2022/1925": "DMA",
+  "Règlement (UE) 2022/2554": "DORA",
+  "Directive (UE) 2022/2555": "NIS2",
+  "Règlement (UE) 2024/2847": "CRA",
+  "Règlement (UE) 2023/2854": "Data Act",
+};
+
+/**
+ * Libellé court d'une référence (`Instrument · art. …`) : l'instrument est
+ * abrégé, le suffixe d'articles conservé. Un instrument inconnu rend la
+ * référence entière, sans invention.
+ */
+export function referenceLabel(reference: string): string {
+  const separator = reference.indexOf(" · ");
+  const instrument = (separator === -1 ? reference : reference.slice(0, separator)).trim();
+  const short = SHORT_LABELS[instrument];
+  if (short === undefined) return reference;
+  return separator === -1 ? short : `${short}${reference.slice(separator)}`;
+}
+
+/**
  * URL du texte officiel d'une référence (`Instrument · art. …`), ou `null` quand
  * l'instrument n'est pas connu : la pastille reste alors un texte.
  */
