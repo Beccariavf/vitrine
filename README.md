@@ -11,8 +11,9 @@ sélection est locale ; le site public la lit sans JavaScript.
 
 ```bash
 npm install
-cp .env.example .env   # renseigner les accès PISTE
-npm run veille         # lit les sources et écrit data/
+cp .env.example .env                    # renseigner les accès PISTE
+git config core.hooksPath .githooks     # active le garde-fou secrets
+npm run veille                          # lit les sources et écrit data/
 npm run backfill       # recalcule themes sur les entrées existantes
 npm run dev            # http://localhost:4321
 npm test               # suite hors ligne
