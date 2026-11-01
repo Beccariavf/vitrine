@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+  <channel>
+    <title>La presse</title>
+    <link>https://www.arcom.fr/</link>
+    <description>Communiqués de presse de l'Arcom</description>
+    <item>
+      <title>Arcom launches an investigation into the French platform Mym</title>
+      <link>https://www.arcom.fr/en/press/arcom-launches-investigation-french-platform-mym</link>
+      <description/>
+      <pubDate/>
+      <guid isPermaLink="true">https://www.arcom.fr/822f38ea-d6cb-4696-bd46-0e95fa300e5c</guid>
+    </item>
+    <item>
+      <title>L’Arcom ouvre une enquête sur la plateforme française Mym</title>
+      <link>https://www.arcom.fr/presse/larcom-ouvre-une-enquete-sur-la-plateforme-francaise-mym</link>
+      <description/>
+      <pubDate>Fri, 16 Oct 2026 14:00:00 +0200</pubDate>
+      <guid isPermaLink="true">https://www.arcom.fr/822f38ea-d6cb-4696-bd46-0e95fa300e5c</guid>
+    </item>
+    <item>
+      <title>Call for applications for the allocation of frequencies for the diffusion of national DTT channels</title>
+      <link>https://www.arcom.fr/en/press/call-applications-allocation-frequencies-diffusion-national-dtt-channels</link>
+      <description/>
+      <pubDate/>
+      <guid isPermaLink="true">https://www.arcom.fr/3b6e6683-e668-4bdb-8187-55b48d0d16ba</guid>
+    </item>
+    <item>
+      <title>Appel aux candidatures pour l’attribution de fréquences pour la diffusion de chaînes nationales de la TNT</title>
+      <link>https://www.arcom.fr/presse/appel-aux-candidatures-pour-lattribution-de-frequences-pour-la-diffusion-de-chaines-nationales-de-la-tnt</link>
+      <description/>
+      <pubDate>Thu, 08 Oct 2026 14:00:00 +0200</pubDate>
+      <guid isPermaLink="true">https://www.arcom.fr/3b6e6683-e668-4bdb-8187-55b48d0d16ba</guid>
+    </item>
+  </channel>
+</rss>

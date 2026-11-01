@@ -2,10 +2,12 @@ import { strict as assert } from "node:assert";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
-import { parseFeed } from "../veille/sources/commission.ts";
+import { PAGE, parseFeed } from "../veille/sources/commission.ts";
 import { assignThemes, readThemes } from "../veille/themes.ts";
 
 const FEED = readFileSync(new URL("./fixtures/commission/rss.xml", import.meta.url), "utf8");
+const FR_PAGE = readFileSync(new URL("./fixtures/commission/page-fr.html", import.meta.url), "utf8");
+const EN_PAGE = readFileSync(new URL("./fixtures/commission/page-en.html", import.meta.url), "utf8");
 const THEMES = readThemes(fileURLToPath(new URL("..", import.meta.url)));
 
 describe("le flux Commission", () => {
@@ -36,5 +38,35 @@ describe("le flux Commission", () => {
 
   it("refuse un XML invalide", () => {
     assert.throws(() => parseFeed("<rss><channel></rss>"), /not valid XML/);
+  });
+});
+
+describe("la page française Commission", () => {
+  const entry = parseFeed(FEED)[0];
+
+  it("remplace l'URL anglaise par la française", () => {
+    assert.ok(entry);
+    assert.equal(
+      PAGE.url(entry),
+      "https://digital-strategy.ec.europa.eu/fr/news/commission-launches-ai-act-support-platform",
+    );
+  });
+
+  it("lit le titre et le résumé français", () => {
+    const page = PAGE.parse(FR_PAGE);
+    assert.equal(page.keep, true);
+    assert.equal(page.localized, true);
+    assert.equal(
+      page.title,
+      "La Commission lance une plateforme d’appui à l’application du règlement sur l’IA",
+    );
+    assert.match(page.summary ?? "", /règlement sur l’IA/);
+  });
+
+  it("garde l'anglais quand la page n'est pas traduite", () => {
+    const page = PAGE.parse(EN_PAGE);
+    assert.equal(page.keep, true);
+    assert.equal(page.localized, undefined);
+    assert.equal(page.summary, null);
   });
 });

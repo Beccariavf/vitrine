@@ -3,7 +3,7 @@ import type { FetchLike } from "../fetch.ts";
 import { extractCnilReferences } from "../references.ts";
 import { toSummary } from "../summary.ts";
 import type { Theme } from "../themes.ts";
-import { activeThemes } from "../themes.ts";
+import { activeThemes, themeQueries } from "../themes.ts";
 import { PisteSession, readPisteConfig } from "../piste.ts";
 
 /** Identifiant stable de la source, écrit dans chaque entrée. */
@@ -114,29 +114,30 @@ export async function fetchEntries({
   const byId = new Map<string, Entry>();
 
   for (const theme of activeThemes(themes)) {
-    const term = theme.terms[0] ?? theme.instruments[0] ?? theme.label;
-    const params = new URLSearchParams({
-      query: `"${term}"`,
-      operator: "and",
-      field: "text",
-      date_start: start,
-      date_end: end,
-      sort: "date",
-      order: "desc",
-      page_size: "50",
-    });
+    for (const term of themeQueries(theme)) {
+      const params = new URLSearchParams({
+        query: `"${term}"`,
+        operator: "and",
+        field: "text",
+        date_start: start,
+        date_end: end,
+        sort: "date",
+        order: "desc",
+        page_size: "50",
+      });
 
-    const response = await session.judilibre(fetchImpl, params);
-    raw.push(JSON.stringify(response, null, 2));
+      const response = await session.judilibre(fetchImpl, params);
+      raw.push(JSON.stringify(response, null, 2));
 
-    const results = typeof response === "object" && response !== null && Array.isArray((response as { results?: unknown }).results)
-      ? ((response as { results: unknown[] }).results as JudilibreResult[])
-      : [];
+      const results = typeof response === "object" && response !== null && Array.isArray((response as { results?: unknown }).results)
+        ? ((response as { results: unknown[] }).results as JudilibreResult[])
+        : [];
 
-    for (const result of results) {
-      const entry = toEntry(result);
-      if (entry === null) continue;
-      if (!byId.has(entry.id)) byId.set(entry.id, entry);
+      for (const result of results) {
+        const entry = toEntry(result);
+        if (entry === null) continue;
+        if (!byId.has(entry.id)) byId.set(entry.id, entry);
+      }
     }
   }
 

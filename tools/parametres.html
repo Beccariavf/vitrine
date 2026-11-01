@@ -133,8 +133,8 @@
         }
 
         function validate(value) {
-          if (!value || !Array.isArray(value.themes) || value.themes.length !== 4) {
-            throw new Error("Le fichier doit contenir exactement quatre matières.");
+          if (!value || !Array.isArray(value.themes) || value.themes.length !== 5) {
+            throw new Error("Le fichier doit contenir exactement cinq matières.");
           }
 
           const ids = new Set();
@@ -153,6 +153,7 @@
             if (typeof theme.active !== "boolean") {
               throw new Error(`Matière #${index} : « active » doit être un booléen.`);
             }
+            const queries = theme.queries === undefined ? undefined : strings(theme.queries, "queries", index);
             return {
               id: theme.id,
               label: theme.label.trim(),
@@ -160,6 +161,7 @@
               instruments: strings(theme.instruments, "instruments", index),
               terms: strings(theme.terms, "terms", index),
               sources: strings(theme.sources, "sources", index),
+              ...(queries === undefined ? {} : { queries }),
               active: theme.active,
             };
           });

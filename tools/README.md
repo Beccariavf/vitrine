@@ -26,9 +26,9 @@ La collecte n'est pas nécessaire pour changer la sélection : le site filtre au
 ## Ce que fait l'outil
 
 - Il lit et écrit le même fichier que le pipeline et le site, `veille/themes.json`.
-- Il valide la forme : quatre matières, identifiants uniques, libellé, description, textes,
-  termes, sources et booléen `active`.
-- Il conserve tout le contenu ; il ne change que les cases.
+- Il valide la forme : cinq matières, identifiants uniques, libellé, description, textes,
+  termes, requêtes, sources et booléen `active`.
+- Il conserve tout le contenu, y compris `queries` ; il ne change que les cases.
 
 ## Effet sur la publication
 

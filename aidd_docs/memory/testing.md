@@ -13,11 +13,13 @@ Comment le projet est testé : les couches, les outils et les conventions. Où v
 - Unitaire : section CNIL (`parseCnilPageReferences`) sur des captures HTML réelles : FNAC, webinaire, titre singulier, page sans section, guillemets doubles, blocs « Pour approfondir » ignorés.
 - Intégration : une passe avec pages simulées : la FNAC reçoit ses références et son snapshot HTML ; une page en panne réseau ou HTTP 500 laisse l'entrée avec `[]` et un avertissement sans rejeter la passe ; une page sans référence n'écrit pas de snapshot ; une page dont seules les parties volatiles changent n'ajoute pas de snapshot.
 - Intégration : données committées (`tests/entries.test.ts`) : la FNAC porte `Loi Informatique et Libertés · art. 82`, une entrée sans section reste `[]`.
-- Unitaire : catalogue et rattachement (`veille/themes.ts`) : quatre matières, instruments exacts, termes de repli, défauts CNIL/CEPD/ANSSI, faux positifs « droit d'accès à un avocat » et « relative », catalogue invalide, matière inactive conservée mais masquée.
-- Unitaire : parseurs ANSSI, CEPD, ARCEP et Commission : dates, résumés, liens hors domaine, XML invalide, événements et consultations exclus, identifiants ARCEP distincts.
-- Unitaire : client PISTE et sources CETAT/Judilibre : jeton réutilisé, 401 retenté, plafond d'appels, secrets absents, dates, URL officielles, fenêtres 90/30 jours, dédoublonnage multi-matières. Aucun appel réseau.
+- Unitaire : catalogue et rattachement (`veille/themes.ts`) : cinq matières, instruments exacts, termes de repli, requêtes PISTE, défauts CNIL/CEPD/ANSSI/Commission DMA, faux positifs « droit d'accès à un avocat », « relative » et « plateforme » seule, catalogue invalide, matière inactive conservée mais masquée.
+- Unitaire : parseurs ANSSI, CEPD, ARCEP, Commission et Commission DMA : dates, résumés, liens hors domaine, XML invalide, événements et consultations exclus, identifiants ARCEP distincts, publications DMA conservées.
+- Unitaire : parseur ARCOM : doublons FR/EN, page article, filtre DSA, résumé de page, exclusion de l'audiovisuel.
+- Unitaire : page française Commission (`PAGE`) : bascule `/en/` → `/fr/`, titre `og:title`, résumé meta, page anglaise laissée telle quelle ; intégration de la passe et page facultative en panne.
+- Unitaire : client PISTE et sources CETAT/Judilibre : jeton réutilisé, 401 retenté, plafond d'appels, secrets absents, dates, URL officielles, fenêtres 90/30 jours, dédoublonnage multi-matières, deux requêtes pour Plateformes. Aucun appel réseau.
 - Unitaire : parseur CJUE (`veille/sources/cjeu.ts`) : deux formats de titre, date de décision, `pubDate` en secours, `_SUM`/`_RES`, `_INF`, XML invalide.
-- Intégration : `run` avec un `fetch` injecté, sur une racine temporaire, les sources demandées ; une panne ou un flux CJUE vide laisse CNIL ; une matière désactivée ne supprime rien ; un arrêt sorti du flux reste.
+- Intégration : `run` avec un `fetch` injecté, sur une racine temporaire, les sources demandées ; une panne ou un flux CJUE vide laisse CNIL ; une matière désactivée ne supprime rien ; un arrêt sorti du flux reste ; une page ARCOM absente écarte l'entrée et avertit.
 - Aucun test ne touche le réseau : les fixtures sont des captures du flux réel. Le build (`npm run build`) ne fait aucun appel réseau non plus.
 
 ## Tools
@@ -44,4 +46,5 @@ Comment le projet est testé : les couches, les outils et les conventions. Où v
 - Lancer `npm run build` : les publications de cette matière disparaissent ; réactiver et reconstruire : elles reviennent sans collecte.
 - Lancer `npm run veille` puis `npm run build` : la carte et la ligne FNAC portent `Loi Informatique et Libertés · art. 82` ; une page sans section reste sans référence.
 - Vérifier que le snapshot brut reste dans `data/raw/` et que les pages publiques ne chargent aucun script.
-- Vérifier `/veille` : bloc matières, badges, sources et liens Légifrance/Cour de cassation.
+- Vérifier `/veille` : sélecteur à cinq matières, badges, sources et liens Légifrance/Cour de cassation.
+- Vérifier à 375 px : les cinq pastilles tiennent sur deux lignes, sans débordement horizontal, et le décochage de Plateformes masque ses publications.

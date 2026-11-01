@@ -1,7 +1,7 @@
 import { XMLParser, XMLValidator } from "fast-xml-parser";
 import type { Entry } from "../types.ts";
 import { canonicalUrl, hashId } from "../normalize.ts";
-import { toSummary } from "../summary.ts";
+import { decodeHtmlEntities, toPlainText, toSummary } from "../summary.ts";
 import { toIsoUtc } from "./cnil.ts";
 
 /** Identifiant stable de la source, écrit dans chaque entrée. */
@@ -107,3 +107,55 @@ export function parseFeed(xml: string): Entry[] {
 
   return entries;
 }
+
+/** Contenu d'une balise meta, par `name` ou `property`. */
+function metaContent(html: string, key: string): string | null {
+  const tag = new RegExp(`<meta[^>]+(?:name|property)=["']${key}["'][^>]*>`, "i").exec(html)?.[0];
+  if (tag === undefined) return null;
+  const content = /content=["']([^"']*)["']/i.exec(tag)?.[1];
+  if (content === undefined) return null;
+  return decodeHtmlEntities(content).trim();
+}
+
+/** Titre officiel de la page : `og:title`, puis `h1`, puis `title` sans le suffixe du site. */
+function pageTitle(html: string): string | null {
+  const og = metaContent(html, "og:title");
+  if (og !== null && og !== "") return og;
+
+  const h1 = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)?.[1];
+  if (h1 !== undefined) {
+    const text = toPlainText(h1);
+    if (text !== "") return text;
+  }
+
+  const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1];
+  if (title === undefined) return null;
+  const text = toPlainText(title).split(" | ")[0]?.trim() ?? "";
+  return text === "" ? null : text;
+}
+
+/**
+ * Version française officielle de la page Commission.
+ * Le flux reste anglais ; la page `/fr/` fournit le titre, le résumé et l'URL.
+ */
+export const PAGE = {
+  required: false,
+  url(entry: Entry): string {
+    return entry.url.includes("/en/") ? entry.url.replace("/en/", "/fr/") : entry.url;
+  },
+  parse(html: string): {
+    summary: string | null;
+    keep: boolean;
+    title?: string;
+    localized?: boolean;
+  } {
+    const lang = html.match(/<html[^>]+lang=["']([^"']+)["']/i)?.[1]?.toLowerCase();
+    if (lang !== "fr") return { summary: null, keep: true };
+
+    const title = pageTitle(html);
+    const summary = toSummary(metaContent(html, "description"));
+    if (title === null) return { summary, keep: true };
+
+    return { summary, keep: true, title, localized: true };
+  },
+};

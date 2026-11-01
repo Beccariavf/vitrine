@@ -4,8 +4,8 @@ Veille juridique française publiée en statique : les publications des autorit�
 des juridictions françaises sont collectées, normalisées, versionnées dans git, puis rendues en
 HTML.
 
-Quatre matières : données personnelles, IA, cybersécurité, données non personnelles. La sélection
-est locale ; le site public la lit sans JavaScript.
+Cinq matières : données personnelles, IA, cybersécurité, données non personnelles, plateformes. La
+sélection est locale ; le site public la lit sans JavaScript.
 
 ## En local
 
@@ -21,10 +21,10 @@ npm run build          # génère dist/
 
 ## Comment ça marche
 
-- `veille/` — le pipeline : huit sources → normalisation → rattachement aux matières → `data/`.
+- `veille/` — le pipeline : dix adaptateurs (neuf autorités, la Commission a deux flux) → normalisation → rattachement aux matières → `data/`.
 - `src/` — les pages Astro, qui lisent `data/` au build et filtrent les matières actives.
 - `data/` — snapshots bruts adressés par leur contenu, entrées JSON et journal d'appels PISTE,
   versionnés dans git.
-- `veille/themes.json` — les quatre matières, leurs textes, leurs sources et leur état.
+- `veille/themes.json` — les cinq matières, leurs textes, leurs sources et leur état.
 - `tools/parametres.html` — l'outil local qui active ou désactive une matière.
 - `aidd_docs/INSTALL.md` — les décisions d'architecture et les étapes d'installation.

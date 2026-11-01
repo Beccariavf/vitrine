@@ -17,7 +17,7 @@ Ce que ce projet est, le problème qu'il résout et son vocabulaire métier. Le 
 | Term | Meaning |
 | ---- | ------- |
 | Veille | Détection des nouveautés publiées par les autorités sur un périmètre donné. |
-| Matière | Un des quatre blocs sélectionnables : données personnelles, IA, cybersécurité, données non personnelles. |
+| Matière | Un des cinq blocs sélectionnables : données personnelles, IA, cybersécurité, données non personnelles, plateformes. |
 | Source officielle | Texte ou décision publié par une autorité (Légifrance, Judilibre, EUR-Lex, CNIL). |
 | Snapshot | La réponse brute d'une source, conservée telle quelle pour prouver ce qui a été lu. |
 | Entrée | Une nouveauté normalisée, identifiée par un hash, prête à être publiée. |
@@ -26,8 +26,8 @@ Ce que ce projet est, le problème qu'il résout et son vocabulaire métier. Le 
 
 ## Key features
 
-- Veille sélectionnable par matière : données personnelles, IA, cybersécurité, données non personnelles.
-- Huit sources officielles : CNIL, CJUE, ANSSI, CEPD, ARCEP, Commission, Conseil d'État, Cour de cassation.
+- Veille sélectionnable par matière : données personnelles, IA, cybersécurité, données non personnelles, plateformes.
+- Neuf autorités officielles, dix adaptateurs : CNIL, CJUE, ANSSI, CEPD, ARCEP, Commission (numérique et DMA), ARCOM, Conseil d'État, Cour de cassation.
 - MCP juridique sur sources officielles.
 - Plugin de workflows juridiques déterministes, inspiré d'AIDD.
 - Mode « Explique-moi » : chaque livraison explique le code et les choix.

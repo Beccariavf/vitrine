@@ -10,6 +10,8 @@ flowchart LR
   Cepd["CEPD · actualités · data.md"]
   Arcep["ARCEP · avis et décisions · data.md"]
   Commission["Commission · numérique · data.md"]
+  CommissionDma["Commission · DMA · data.md"]
+  Arcom["ARCOM · presse + page · data.md"]
   Piste["PISTE · Légifrance CETAT + Judilibre · data.md"]
 
   Agent -- cli --> Vcs
@@ -19,5 +21,7 @@ flowchart LR
   Agent -- cli --> Cepd
   Agent -- cli --> Arcep
   Agent -- cli --> Commission
+  Agent -- cli --> CommissionDma
+  Agent -- cli --> Arcom
   Agent -- cli --> Piste
 ```

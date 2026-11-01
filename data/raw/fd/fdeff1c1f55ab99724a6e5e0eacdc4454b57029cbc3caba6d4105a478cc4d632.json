@@ -1,0 +1,33 @@
+{
+  "page": 0,
+  "page_size": 50,
+  "query": {
+    "query": "\"2022/2065\"",
+    "operator": "or",
+    "field": [
+      "text"
+    ],
+    "date_start": "2026-10-01",
+    "date_end": "2026-10-31",
+    "sort": "date",
+    "order": "desc",
+    "page_size": 50,
+    "type": [],
+    "theme": [],
+    "chamber": [],
+    "formation": [],
+    "jurisdiction": [],
+    "location": [],
+    "publication": [],
+    "solution": []
+  },
+  "total": 0,
+  "previous_page": null,
+  "next_page": null,
+  "took": 2,
+  "max_score": 0,
+  "results": [],
+  "relaxed": true,
+  "searchQuery": "{\"index\":\"judilibre_0\",\"preference\":\"preventbouncingresults\",\"explain\":false,\"from\":0,\"size\":50,\"_source\":true,\"body\":{\"track_scores\":true,\"query\":{\"function_score\":{\"query\":{\"bool\":{\"filter\":[{\"terms\":{\"jurisdiction\":[\"cc\"]}},{\"range\":{\"decision_date\":{\"gte\":\"2026-10-01\",\"lte\":\"2026-10-31\"}}}],\"must\":{\"simple_query_string\":{\"query\":\"\\\"2022 2065\\\"\",\"fields\":[\"text.exact\"],\"default_operator\":\"AND\",\"auto_generate_synonyms_phrase_query\":false,\"fuzzy_max_expansions\":0,\"fuzzy_transpositions\":false}}}},\"boost\":5,\"score_mode\":\"max\",\"boost_mode\":\"multiply\"}},\"sort\":[{\"decision_date\":\"desc\"}],\"highlight\":{\"fields\":{\"text.exact\":{}}}}}",
+  "date": "2026-10-31T23:40:15.588Z"
+}
