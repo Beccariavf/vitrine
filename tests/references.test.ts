@@ -226,6 +226,18 @@ describe("les références du visa de la Cour de cassation", () => {
     );
   });
 
+  it("ne donne pas l'article de l'instrument précédent au suivant", () => {
+    assert.deepEqual(
+      extractVisaReferences([
+        "Règlement (UE) 2016/679 – Article 5 – Directive 2002/58/CE – Article 6",
+      ]),
+      [
+        "Règlement (UE) 2016/679 · art. 5",
+        "Directive 2002/58/CE · art. 6",
+      ],
+    );
+  });
+
   it("ne rend qu'un article par doublon", () => {
     assert.deepEqual(
       extractVisaReferences([

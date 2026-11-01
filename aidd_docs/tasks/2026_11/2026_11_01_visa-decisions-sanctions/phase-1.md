@@ -41,7 +41,7 @@ status: completed
 > Des tests hors ligne, sans réseau.
 
 1. Ajouter le visa réel de 25-10.664 : code du travail ignoré, RGPD articles 4, 5, 6.
-2. Ajouter LIL, CPCE, directive, AI Act, DMA, DSA, DORA, NIS2, deux instruments dans un visa, doublon, visa sans article, `code de justice administrative` et balises HTML.
+2. Ajouter LIL, CPCE, directive, AI Act, DMA, DSA, DORA, NIS2, deux instruments avec articles avant ou après, doublon, visa sans article, `code de justice administrative` et balises HTML.
 3. Lancer `npm test`.
 
 ## Test acceptance criteria

@@ -226,9 +226,10 @@ function visaInstruments(text: string): VisaInstrument[] {
 function visaItemReferences(text: string): string[] {
   const instruments = visaInstruments(text);
   const byInstrument = new Map<string, string[]>();
+  let cursor = 0;
 
   instruments.forEach((instrument, index) => {
-    const start = index === 0 ? 0 : (instruments[index - 1]?.end ?? 0);
+    const start = cursor;
     let end = index + 1 < instruments.length ? (instruments[index + 1]?.index ?? text.length) : text.length;
 
     const between = text.slice(start, end);
@@ -236,6 +237,8 @@ function visaItemReferences(text: string): string[] {
     if (nextList !== -1) end = start + nextList;
 
     const window = text.slice(start, end);
+    cursor = end;
+
     const articles: string[] = [];
     for (const article of window.matchAll(CNIL_ARTICLE)) {
       const at = article.index ?? 0;
