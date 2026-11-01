@@ -7,7 +7,9 @@ Les cartes des décisions du Conseil d'État affichent les articles des textes d
 ## Hard constraints
 
 - Les articles sont extraits du texte intégral de la décision, pas du titre ni du résumé.
-- Seuls les articles introduits par une formule d'application ou une phrase de considérant sont retenus : « aux termes », « il résulte des dispositions (combinées) », « en vertu », « en application », « sur le fondement », « L'article X du … garantit/permet/prévoit », et l'anaphore « du même règlement/loi/code/directive » quand elle ouvre une phrase et qu'un verbe d'application la suit.
+- Seuls les motifs sont lus, après « Considérant ce qui suit » ; un moyen ou un grief cité avant ne produit rien.
+- Dans les motifs, seuls les articles introduits par une formule d'application ou une phrase de considérant sont retenus : « aux termes », « il résulte des dispositions (combinées) », « en vertu », « en application », « sur le fondement », « L'article X du … garantit/permet/prévoit », et l'anaphore « du même règlement/loi/code/directive » quand elle ouvre une phrase et qu'un verbe d'application la suit.
+- Une formule introduite par « soutient que », « est soutenu que », « selon une partie » ou « moyen/grief tiré de ce que » est ignorée ; « il résulte de l'instruction » ne déclenche rien.
 - Un article cité au titre d'un grief ou d'un manquement n'est jamais affiché.
 - Seuls les instruments rattachés aux matières de l'entrée sont retenus ; la lecture ne crée pas de matière.
 - Une pastille n'apparaît que si au moins un article est trouvé ; l'instrument seul n'est pas affiché.
@@ -27,7 +29,7 @@ Les cartes des décisions du Conseil d'État affichent les articles des textes d
 
 ## Done-when
 
-- La décision 501268 affiche `Code des postes et des communications électroniques · art. L. 34-5` et `Loi Informatique et Libertés · art. 82, 20`.
+- La décision 501268 affiche `Loi Informatique et Libertés · art. 8, 82, 20`, `Code des postes et des communications électroniques · art. L. 34-5` et `Règlement (UE) 2016/679 · art. 83` ; l'ordre des pastilles n'est pas contractuel.
 - La décision 509589 affiche `Loi Informatique et Libertés · art. 8, 20`.
 - La décision 513996 affiche `Loi Informatique et Libertés · art. 31, 118`.
 - La décision 509210 affiche `Règlement (UE) 2016/679 · art. 15, 16`.
@@ -50,4 +52,4 @@ None
 
 ## Context
 
-Brief approuvé après test sur les 9 décisions du Conseil d'État déjà collectées : 5 sur 9 gagnent des articles appliqués, une se précise (509210), une perd un faux positif (520279). Le visa structuré (`visas`, `visasHtml`) est vide pour le Conseil d'État, même sur une décision publiée au Recueil ; la recherche `typeChamp: "VISA"` ne rend que des identifiants ; le site du Conseil d'État rend le même texte mais impose un scraping. La solution retenue est la lecture du texte intégral par décision, sous le plafond existant.
+Brief approuvé après test sur les 9 décisions du Conseil d'État déjà collectées : 5 sur 9 gagnent des articles appliqués, une se précise (509210), une perd un faux positif (520279). La revue a montré que les moyens des parties pouvaient porter une formule : la lecture est limitée aux motifs, et le garde de discours rapporté est élargi au « que » non élidé. Le visa structuré (`visas`, `visasHtml`) est vide pour le Conseil d'État, même sur une décision publiée au Recueil ; la recherche `typeChamp: "VISA"` ne rend que des identifiants ; le site du Conseil d'État rend le même texte mais impose un scraping. La solution retenue est la lecture du texte intégral par décision, sous le plafond existant.

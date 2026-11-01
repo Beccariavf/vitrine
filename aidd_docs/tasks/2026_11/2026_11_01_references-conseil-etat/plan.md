@@ -1,6 +1,6 @@
 ---
 objective: "Les décisions du Conseil d'État affichent les articles des textes qu'elles appliquent, lus dans leur texte intégral et sous le plafond PISTE inchangé."
-status: completed
+status: pending
 ---
 
 # Plan: Références des décisions du Conseil d'État
@@ -14,6 +14,8 @@ Source: aidd_docs/tasks/2026_11/2026_11_01_references-conseil-etat/spec.md
 | 1   | Extraction des articles appliqués | [`phase-1.md`](./phase-1.md) | none |
 | 2   | Lecture du texte et enrichissement | [`phase-2.md`](./phase-2.md) | 1 |
 | 3   | Données et mémoire | [`phase-3.md`](./phase-3.md) | 2 |
+| 4   | Précision des griefs | [`phase-4.md`](./phase-4.md) | 1 |
+| 5   | Journal quotidien | [`phase-5.md`](./phase-5.md) | none |
 
 ## External sources
 
@@ -27,8 +29,9 @@ Source: aidd_docs/tasks/2026_11/2026_11_01_references-conseil-etat/spec.md
 
 | Category                                           | Verdict and evidence | Handled in         |
 | -------------------------------------------------- | -------------------- | ------------------ |
-| runtime | `/consult/juri` a répondu 200 sur les 10 décisions sondées ; la passe complète reste à observer en phase 3 (`data/usage`). Un appel par nouvelle décision, sous le plafond de 16. | 2, 3 |
-| regression | Les références CETAT passent du titre et du résumé aux articles du texte ; risque moyen, la phase 1 verrouille l'extraction sur six textes réels couvrant les neuf résultats avant le branchement. | 1, 2 |
+| runtime | `/consult/juri` a répondu 200 sur les 10 décisions sondées. La passe complète n'est pas observée dans un journal réel : le plafond et le report sont vérifiés par les tests. Un appel par nouvelle décision. | 2, 3 |
+| observability | `flushUsage` écrase le journal du jour à chaque passe (`veille/piste.ts:41`), donc une passe complète ne laisse pas de trace cumulative. | 5 |
+| regression | Les références CETAT passent du titre et du résumé aux articles du texte ; risque moyen. Six textes réels portent les références, trois décisions sans référence sont vérifiées en phase 3. | 1, 2, 3 |
 | architecture | Le crochet `ApiResult.enrich`, le report et le cache existent déjà pour Judilibre ; CETAT les réutilise sans changer `Entry.references`. | 2 |
 | documentation | La mémoire décrit la lecture du texte CE, la règle des formules et la couverture réelle. | 3 |
 
