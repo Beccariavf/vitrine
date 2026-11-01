@@ -13,6 +13,9 @@ Comment le projet est testé : les couches, les outils et les conventions. Où v
 - Unitaire : URL des références (`src/lib/references.ts`) : RGPD, LIL, CPCE, ePrivacy, Code de la consommation, règlements et directives par CELEX, instrument inconnu qui rend `null`.
 - Intégration : enrichissement d'une source API (`tests/main.test.ts`) : visa écrit après le rattachement, entrée déjà écrite non rappelée même sans référence, panne ou plafond qui diffère l'entrée sans la perdre, snapshot brut écrit après l'enrichissement.
 - Unitaire : lecture d'une décision Judilibre : URL, `KeyId`, journal `decision`, budget restant, visa vide, instrument hors matières, décision retenue par sa requête malgré un résumé muet, plafond atteint qui avertit.
+- Unitaire : extraction des références du Conseil d'État (`extractCetatReferences`) sur les textes intégraux réels de six décisions (`tests/fixtures/cetat/textes.json`) : 501268 (CPCE `L. 34-5`, LIL `82, 20`, RGPD `83`), 509210 (considérant et anaphore `du même règlement`), 509589 (liste `8 et 20`), 511155, 513996, 520279 (`[]`), l'article 8 cité « des dispositions du I de l'article 8 » écarté, griefs et « les dispositions de l'article » ignorés, anaphore sans instrument nommé, plages, texte vide.
+- Unitaire : `consultJuri` : URL `/consult/juri`, jeton Bearer, corps `{ textId }`, journal `legifrance/consult`, budget restant.
+- Intégration : enrichissement CETAT : articles lus dans le texte (`tests/fixtures/cetat/consult.json`), snapshot brut poussé après la lecture, instrument hors matières écarté, texte vide qui rend `[]`, budget réservé aux six recherches Judilibre qui diffère l'entrée et avertit sans appeler.
 - Unitaire : extraction CNIL (`extractCnilReferences`) : article avant instrument, alias RGPD/LIL/CPCE/ePrivacy/95-46/Code de la consommation, `L. 223-1`, `4.11`, `1er`, `et suivants`, plages, décrets ignorés, dédoublonnage.
 - Unitaire : section CNIL (`parseCnilPageReferences`) sur des captures HTML réelles : FNAC, webinaire, titre singulier, page sans section, guillemets doubles, blocs « Pour approfondir » ignorés.
 - Intégration : une passe avec pages simulées : la FNAC reçoit ses références et son snapshot HTML ; une page en panne réseau ou HTTP 500 laisse l'entrée avec `[]` et un avertissement sans rejeter la passe ; une page sans référence n'écrit pas de snapshot ; une page dont seules les parties volatiles changent n'ajoute pas de snapshot.
@@ -34,6 +37,7 @@ Comment le projet est testé : les couches, les outils et les conventions. Où v
 ## Conventions
 
 - Tests dans `tests/`, fixtures dans `tests/fixtures/<source>/`.
+- La fixture des textes du Conseil d'État est le `texte` intégral rendu par `/consult/juri`, sans retouche ; la fixture de consultation est la réponse complète pour 511155.
 - Les fixtures de flux sont des captures réelles ; les fixtures HTML sont des captures réduites des pages CNIL, avec leurs classes et guillemets d'origine.
 - Un test par comportement observable.
 - Les valeurs figées (identifiants, hashes) sont calculées indépendamment du code testé, jamais comparées à leur propre sortie.
@@ -50,6 +54,7 @@ Comment le projet est testé : les couches, les outils et les conventions. Où v
 - Lancer `npm run build` : les publications de cette matière disparaissent ; réactiver et reconstruire : elles reviennent sans collecte.
 - Lancer `npm run veille` puis `npm run build` : la carte et la ligne FNAC portent `Loi Informatique et Libertés · art. 82` ; une page sans section reste sans référence.
 - Vérifier que la décision 25-10.664 porte le visa `Règlement (UE) 2016/679 · art. 4, 5, 6` et qu'aucun code du travail n'apparaît ; la pastille ouvre EUR-Lex dans un nouvel onglet, comme le titre et « Lire ».
+- Vérifier que la décision 501268 du Conseil d'État porte `Code des postes et des communications électroniques · art. L. 34-5` et `Loi Informatique et Libertés · art. 82, 20`, et que 520279 n'en porte plus.
 - Vérifier que le snapshot brut reste dans `data/raw/` et que les pages publiques ne chargent aucun script.
 - Vérifier `/veille` : sélecteur à cinq matières, badges, sources et liens Légifrance/Cour de cassation.
 - Vérifier à 375 px : les cinq pastilles tiennent sur deux lignes, sans débordement horizontal, et le décochage de Plateformes masque ses publications.
