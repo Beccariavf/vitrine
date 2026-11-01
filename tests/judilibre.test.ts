@@ -45,10 +45,10 @@ function only(id: string): Theme[] {
 }
 
 /** Un `fetch` simulé : la recherche d'un côté, la décision de l'autre. */
-function fakeFetch(calls: string[], decision = DECISION): FetchLike {
+function fakeFetch(calls: string[], decision = DECISION, search = SEARCH): FetchLike {
   return async (url) => {
     calls.push(url);
-    return { ok: true, status: 200, text: async () => (url.includes("/decision") ? decision : SEARCH) };
+    return { ok: true, status: 200, text: async () => (url.includes("/decision") ? decision : search) };
   };
 }
 
@@ -121,7 +121,26 @@ describe("la source Judilibre", () => {
     const result = await fetchEntries({ fetchImpl: fakeFetch(calls), themes: two, now: NOW });
 
     assert.equal(result.entries.length, 1);
-    assert.deepEqual(assignThemes(result.entries, THEMES)[0]?.themes, ["donnees-personnelles"]);
+    assert.deepEqual(assignThemes(result.entries, THEMES)[0]?.themes, ["donnees-personnelles", "ia"]);
+  });
+
+  it("garde une décision que seule la requête rattache", async () => {
+    const search = JSON.parse(SEARCH) as {
+      results: Array<{ highlights?: unknown; summary?: string }>;
+    };
+    delete search.results[0]?.highlights;
+    if (search.results[0] !== undefined) search.results[0].summary = "Décision sans terme de matière";
+
+    const calls: string[] = [];
+    const result = await fetchEntries({
+      fetchImpl: fakeFetch(calls, DECISION, JSON.stringify(search)),
+      themes: only("donnees-personnelles"),
+      now: NOW,
+    });
+
+    const entry = assignThemes(result.entries, THEMES)[0];
+    assert.ok(entry);
+    assert.deepEqual(entry.themes, ["donnees-personnelles"]);
   });
 
   it("interroge les deux requêtes de plateformes et déduplique", async () => {

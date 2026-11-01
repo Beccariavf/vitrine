@@ -168,7 +168,15 @@ export async function fetchEntries({
       for (const result of results) {
         const entry = toEntry(result);
         if (entry === null) continue;
-        if (!byId.has(entry.id)) byId.set(entry.id, entry);
+
+        // La requête est un indice de matière : une décision trouvée par une
+        // matière doit survivre au rattachement même si son résumé la tait.
+        const existing = byId.get(entry.id);
+        if (existing === undefined) {
+          byId.set(entry.id, { ...entry, themes: [theme.id] });
+        } else if (!existing.themes.includes(theme.id)) {
+          existing.themes.push(theme.id);
+        }
       }
     }
   }

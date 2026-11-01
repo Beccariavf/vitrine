@@ -38,7 +38,7 @@ Source: aidd_docs/tasks/2026_11/2026_11_01_visa-decisions-sanctions/spec.md
 
 | Rule   | Why it applies |
 | ------ | -------------- |
-| Les sources API ne pré-remplissent pas la matière ; le rattachement reste central. | L'enrichissement s'exécute après `assignThemes`. |
+| Le rattachement reste central ; Judilibre conserve seulement la matière de sa requête comme indice. | Une décision trouvée par une matière ne doit pas être écartée avant la lecture du visa. |
 | Le site ne lit aucune API au runtime. | Les URL de référence sont statiques, dérivées au build. |
 | Une panne de source n'emporte pas les autres. | Une erreur d'enrichissement devient un avertissement, pas un échec de passe. |
 | `Entry.references` reste un tableau de chaînes. | Aucun changement de schéma ; l'URL se déduit du libellé. |
@@ -50,5 +50,6 @@ Source: aidd_docs/tasks/2026_11/2026_11_01_visa-decisions-sanctions/spec.md
 | Decision   | Why   |
 | ---------- | ----- |
 | Enrichir les sources API après le rattachement, via un crochet porté par le résultat de la source. | Garde le rattachement central et évite de lire le visa des décisions écartées. |
+| Conserver la matière de la requête Judilibre sur chaque résultat. | Une décision peut ne correspondre que par son visa ; sans cet indice, elle serait écartée avant d'être lue. |
 | Dériver l'URL de référence du libellé canonique au build. | Préserve le contrat de données et couvre toutes les sources avec une seule table. |
 | Lire le visa de la Cour de cassation par décision, sous le plafond, plutôt qu'en export global. | L'export non abrégé porte le texte intégral ; la lecture par décision reste bornée. |

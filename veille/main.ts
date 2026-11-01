@@ -238,7 +238,7 @@ export async function run({
 
           for (const entry of assigned) {
             const previous = readEntryById(rootDir, entry.id);
-            if (previous !== null && previous.references.length > 0) {
+            if (previous !== null) {
               enriched.push({ ...entry, references: previous.references });
               continue;
             }

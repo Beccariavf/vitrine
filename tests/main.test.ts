@@ -139,7 +139,7 @@ describe("l'enrichissement d'une source API", () => {
   );
 
   it(
-    "enrichit une entrée existante laissée sans référence",
+    "ne rappelle pas une entrée existante laissée sans référence",
     withRoot(async (temp) => {
       const calls: string[] = [];
       writePrevious(temp, entry({ references: [] }));
@@ -151,8 +151,8 @@ describe("l'enrichissement d'une source API", () => {
         themes: THEMES,
       });
 
-      assert.deepEqual(calls, ["0123456789abcdef"]);
-      assert.deepEqual(readWritten(temp, "0123456789abcdef").references, [VISA]);
+      assert.deepEqual(calls, []);
+      assert.deepEqual(readWritten(temp, "0123456789abcdef").references, []);
     }),
   );
 
