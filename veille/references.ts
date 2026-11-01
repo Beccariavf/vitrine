@@ -300,11 +300,11 @@ const CETAT_SENTENCE_START = /(?:^|[.!?;:»]\s+|\d+\.\s+)$/;
 
 /** Verbes de grief : ce qu'une partie reproche n'est pas ce que la décision applique. */
 const CETAT_GRIEVANCE =
-  /\b(?:soutient|soutiennent|est soutenu|sont soutenus|allègue|allèguent|invoque|invoquent|fait valoir|font valoir|reproche|reprochent|conteste|contestent|se plaint|se plaignent)\b\s*(?:(?:qu['’]|que)\s*)?,?\s*$/iu;
+  /\b(?:soutient|soutiennent|est soutenu|sont soutenus|allègue|allèguent|invoque|invoquent|fait valoir|font valoir|reproche|reprochent|conteste|contestent|se plaint|se plaignent)\b\s*(?:(?:qu['’]|que|de ce que)\s*)?,?\s*$/iu;
 
 /** « Selon la requérante » : le locuteur d'un grief, à distinguer d'une formule appliquée. */
 const CETAT_SELON_PARTY =
-  /\bselon\s+(?:l['’]|la\s+|le\s+|les\s+)?(?:requérant|requérante|société|partie|ministre|administration|CNIL|défendeur|demandeur|elles|elle|eux|lui)(?![\p{L}\p{N}])[^.;:]{0,40},\s*$/iu;
+  /\bselon\s+(?:l['’]|la\s+|le\s+|les\s+|un\s+|une\s+|cette\s+|ces\s+)?(?:requérant(?:e)?s?|société?s?|partie?s?|ministre?s?|administration?s?|CNIL|défendeur(?:e)?s?|demandeur(?:e)?s?|elles|elle|eux|lui)(?![\p{L}\p{N}])[^.;:]{0,40},\s*$/iu;
 
 /** Marqueur de discours rapporté qui introduit directement la formule : la suite est un grief. */
 const CETAT_REPORTED = new RegExp(

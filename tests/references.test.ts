@@ -361,6 +361,12 @@ describe("les références du Conseil d'État", () => {
       "Il est soutenu, sur le fondement de l'article 83 du RGPD, que l'amende est excessive.",
       "Il est soutenu que, sur le fondement de l'article 83 du RGPD, l'amende est excessive.",
       "Selon la requérante, en vertu de l'article 15 du RGPD, la CNIL devait agir.",
+      "Selon les requérantes, en vertu de l'article 15 du RGPD, la CNIL devait agir.",
+      "Selon un requérant, en vertu de l'article 15 du RGPD, la CNIL devait agir.",
+      "Selon une partie, en vertu de l'article 15 du RGPD, la CNIL devait agir.",
+      "Selon cette partie, en vertu de l'article 15 du RGPD, la CNIL devait agir.",
+      "Selon les sociétés, en vertu de l'article 15 du RGPD, la CNIL devait agir.",
+      "La requérante se plaint de ce que, en vertu de l'article 82 de la loi du 6 janvier 1978, la CNIL a erré.",
       "Le moyen tiré de ce que, sur le fondement de l'article 83 du RGPD, l'amende est excessive.",
       "Le grief tiré de ce que, sur le fondement de l'article 83 du RGPD, l'amende est excessive.",
     ]) {
@@ -458,6 +464,13 @@ describe("les références du Conseil d'État", () => {
   it("ne rend rien pour une anaphore sans instrument nommé", () => {
     assert.deepEqual(extractCetatReferences(motifs("L'article 16 du même règlement permet à la personne concernée d'agir.")), []);
     assert.deepEqual(extractCetatReferences(""), []);
+  });
+
+  it("garde une formule appliquée attribuée à la Cour de justice", () => {
+    assert.deepEqual(
+      extractCetatReferences(motifs("Selon la Cour de justice, en vertu de l'article 5 du RGPD, le traitement est licite.")),
+      ["Règlement (UE) 2016/679 · art. 5"],
+    );
   });
 
   it("lit les plages et reconnaît les instruments canoniques", () => {
