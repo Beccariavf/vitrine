@@ -1,6 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro";
 import { getVisibleEntries, isRedundantSummary } from "../../lib/entries.ts";
+import { referenceUrl } from "../../lib/references.ts";
 import { sourceLabel } from "../../lib/sources.ts";
 import { activeThemes, readThemes } from "../../../veille/themes.ts";
 
@@ -154,11 +155,7 @@ const CARD_COLORS = [
           const date = entry.publishedAt !== null ? new Date(entry.publishedAt) : null;
           return (
             <li class:list={["entry", ...entry.themes.map((theme) => `theme-${theme}`)]}>
-              <a
-                href={entry.url}
-                aria-label={`${entry.title} — ${sourceLabel(entry.source)}`}
-                class="flex h-full flex-col border-2 border-ink bg-paper no-underline hover:-translate-x-0.5 hover:-translate-y-0.5 hover:no-underline hover:shadow-hard"
-              >
+              <div class="flex h-full flex-col border-2 border-ink bg-paper hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-hard">
                 <div
                   class:list={[
                     "flex items-end justify-between gap-3 border-b-2 border-ink px-4 pb-2 pt-3",
@@ -178,17 +175,41 @@ const CARD_COLORS = [
                   </span>
                 </div>
                 <div class="flex flex-1 flex-col p-4">
-                  <h2 class="text-lg leading-snug">{entry.title}</h2>
+                  <h2 class="text-lg leading-snug">
+                    <a
+                      href={entry.url}
+                      target="_blank"
+                      rel="noopener"
+                      aria-label={`${entry.title} — ${sourceLabel(entry.source)}`}
+                      class="text-ink underline decoration-red decoration-2 underline-offset-4 hover:decoration-4"
+                    >
+                      {entry.title}
+                    </a>
+                  </h2>
                   {summary !== null && (
                     <p class="mt-2 line-clamp-3 text-sm leading-relaxed text-muted">{summary}</p>
                   )}
                   {entry.references.length > 0 && (
                     <ul class="mt-3 flex flex-wrap gap-1.5">
-                      {entry.references.map((reference) => (
-                        <li class="border border-ink px-1.5 py-0.5 font-mono text-[0.7rem] leading-snug break-words">
-                          {reference}
-                        </li>
-                      ))}
+                      {entry.references.map((reference) => {
+                        const href = referenceUrl(reference);
+                        return (
+                          <li class="border border-ink px-1.5 py-0.5 font-mono text-[0.7rem] leading-snug break-words">
+                            {href === null ? (
+                              reference
+                            ) : (
+                              <a
+                                href={href}
+                                target="_blank"
+                                rel="noopener"
+                                class="text-ink no-underline hover:underline hover:decoration-2 hover:underline-offset-2"
+                              >
+                                {reference}
+                              </a>
+                            )}
+                          </li>
+                        );
+                      })}
                     </ul>
                   )}
                   <ul class="mt-2 flex flex-wrap gap-1.5" aria-label="Matières">
@@ -198,11 +219,16 @@ const CARD_COLORS = [
                       </li>
                     ))}
                   </ul>
-                  <span class="mt-auto pt-4 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-ink">
+                  <a
+                    href={entry.url}
+                    target="_blank"
+                    rel="noopener"
+                    class="mt-auto pt-4 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-ink no-underline hover:underline"
+                  >
                     Lire ↗
-                  </span>
+                  </a>
                 </div>
-              </a>
+              </div>
             </li>
           );
         })
@@ -241,6 +267,8 @@ const CARD_COLORS = [
                   <h2 class="text-lg leading-snug sm:text-xl">
                     <a
                       href={entry.url}
+                      target="_blank"
+                      rel="noopener"
                       class="text-ink underline decoration-red decoration-2 underline-offset-4 hover:decoration-4"
                     >
                       {entry.title}
@@ -251,11 +279,25 @@ const CARD_COLORS = [
                   )}
                   {entry.references.length > 0 && (
                     <ul class="mt-2 flex flex-wrap gap-1.5">
-                      {entry.references.map((reference) => (
-                        <li class="border border-ink px-1.5 py-0.5 font-mono text-[0.7rem] leading-snug break-words">
-                          {reference}
-                        </li>
-                      ))}
+                      {entry.references.map((reference) => {
+                        const href = referenceUrl(reference);
+                        return (
+                          <li class="border border-ink px-1.5 py-0.5 font-mono text-[0.7rem] leading-snug break-words">
+                            {href === null ? (
+                              reference
+                            ) : (
+                              <a
+                                href={href}
+                                target="_blank"
+                                rel="noopener"
+                                class="text-ink no-underline hover:underline hover:decoration-2 hover:underline-offset-2"
+                              >
+                                {reference}
+                              </a>
+                            )}
+                          </li>
+                        );
+                      })}
                     </ul>
                   )}
                   <div class="mt-3 flex flex-wrap gap-1.5">

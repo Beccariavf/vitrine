@@ -1,0 +1,68 @@
+{
+  "date": "2026-11-01",
+  "calls": [
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 238,
+      "at": "2026-11-01T11:47:26.452Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 870,
+      "at": "2026-11-01T11:47:27.334Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 111,
+      "at": "2026-11-01T11:47:27.445Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 106,
+      "at": "2026-11-01T11:47:27.552Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 134,
+      "at": "2026-11-01T11:47:27.687Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 376,
+      "at": "2026-11-01T11:47:28.064Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "decision",
+      "status": 200,
+      "durationMs": 113,
+      "at": "2026-11-01T11:47:28.184Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "decision",
+      "status": 200,
+      "durationMs": 92,
+      "at": "2026-11-01T11:47:28.293Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "decision",
+      "status": 200,
+      "durationMs": 164,
+      "at": "2026-11-01T11:47:28.461Z"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "id": "6ac6079ec27382d099f5a06e",
+  "jurisdiction": "cc",
+  "chamber": "soc",
+  "number": "25-10.664",
+  "numbers": ["25-10.664"],
+  "ecli": "ECLI:FR:CCASS:2026:SO00813",
+  "formation": "fs",
+  "publication": ["b"],
+  "decision_date": "2026-10-07",
+  "solution": "rejet",
+  "type": "other",
+  "visa": [
+    {
+      "title": "Articles L. <a href=\"https://www.legifrance.gouv.fr/search/code?tab_selection=code&searchField=ALL&query=2315-34+code+du+travail&page=1&init=true\" target=\"_blank\">2315-34</a> et D. <a href=\"https://www.legifrance.gouv.fr/search/code?tab_selection=code&searchField=ALL&query=2315-27+code+du+travail&page=1&init=true\" target=\"_blank\">2315-27</a> du code du travail."
+    },
+    {
+      "title": "Articles 4, § 1, 5 et 6, § 1, du règlement (UE) n° 2016/679 du Parlement européen et du Conseil du 27 avril 2016, relatif à la protection des personnes physiques à l'égard du traitement des données à caractère personnel et à la libre circulation de ces données."
+    }
+  ]
+}

@@ -7,8 +7,12 @@ Comment le projet est testé : les couches, les outils et les conventions. Où v
 - Unitaire : parseur CNIL, canonisation d'URL, identifiant, écriture (idempotence, déplacement d'une entrée).
 - Unitaire : nettoyage et troncature du résumé (`veille/summary.ts`) : entités doublement encodées, entités françaises, balises hors liste blanche, espaces, coupe sur frontière de mot dans le budget de 200, emoji non tranché.
 - Unitaire : filtre de redondance titre/résumé (`isRedundantSummary`), y compris textes vides ou de ponctuation.
-- Unitaire : lecteur d'entrées (`src/lib/entries.ts`), sur le `data/` committé et sur des racines temporaires : une entrée par fichier, `summary`, `officialTitle`, `references` et `themes` validés, tri décroissant avec les dates nulles en dernier, JSON ou champ invalide qui lève, `data/` absent qui lève, matières inactives masquées.
+- Unitaire : lecteur d'entrées (`src/lib/entries.ts`), sur le `data/` committé et sur des racines temporaires : une entrée par fichier, `summary`, `officialTitle`, `references` et `themes` validés, tri décroissant avec les dates nulles en dernier, JSON ou champ invalide qui lève, `data/` absent qui lève, matières inactives masquées, décision Judilibre sans visa masquée.
 - Unitaire : extraction des références CJUE (`veille/references.ts`) : instruments, articles, listes, plages, espaces insécables, absence de référence.
+- Unitaire : visa de la Cour de cassation (`extractVisaReferences`) sur le visa réel de 25-10.664 : balises HTML, `§ 1`, virgules, LIL, CPCE, directive, AI Act, DMA, DSA, DORA, NIS2, deux instruments avec articles avant ou après, doublon, visa sans article, code du travail et code de justice administrative ignorés.
+- Unitaire : URL des références (`src/lib/references.ts`) : RGPD, LIL, CPCE, ePrivacy, Code de la consommation, règlements et directives par CELEX, instrument inconnu qui rend `null`.
+- Intégration : enrichissement d'une source API (`tests/main.test.ts`) : visa écrit après le rattachement, entrée déjà écrite non rappelée même sans référence, panne ou plafond qui diffère l'entrée sans la perdre, snapshot brut écrit après l'enrichissement.
+- Unitaire : lecture d'une décision Judilibre : URL, `KeyId`, journal `decision`, budget restant, visa vide, instrument hors matières, décision retenue par sa requête malgré un résumé muet, plafond atteint qui avertit.
 - Unitaire : extraction CNIL (`extractCnilReferences`) : article avant instrument, alias RGPD/LIL/CPCE/ePrivacy/95-46/Code de la consommation, `L. 223-1`, `4.11`, `1er`, `et suivants`, plages, décrets ignorés, dédoublonnage.
 - Unitaire : section CNIL (`parseCnilPageReferences`) sur des captures HTML réelles : FNAC, webinaire, titre singulier, page sans section, guillemets doubles, blocs « Pour approfondir » ignorés.
 - Intégration : une passe avec pages simulées : la FNAC reçoit ses références et son snapshot HTML ; une page en panne réseau ou HTTP 500 laisse l'entrée avec `[]` et un avertissement sans rejeter la passe ; une page sans référence n'écrit pas de snapshot ; une page dont seules les parties volatiles changent n'ajoute pas de snapshot.
@@ -45,6 +49,7 @@ Comment le projet est testé : les couches, les outils et les conventions. Où v
 - Ouvrir `tools/parametres.html` dans Chrome, charger `veille/themes.json`, désactiver une matière, enregistrer.
 - Lancer `npm run build` : les publications de cette matière disparaissent ; réactiver et reconstruire : elles reviennent sans collecte.
 - Lancer `npm run veille` puis `npm run build` : la carte et la ligne FNAC portent `Loi Informatique et Libertés · art. 82` ; une page sans section reste sans référence.
+- Vérifier que la décision 25-10.664 porte le visa `Règlement (UE) 2016/679 · art. 4, 5, 6` et qu'aucun code du travail n'apparaît ; la pastille ouvre EUR-Lex dans un nouvel onglet, comme le titre et « Lire ».
 - Vérifier que le snapshot brut reste dans `data/raw/` et que les pages publiques ne chargent aucun script.
 - Vérifier `/veille` : sélecteur à cinq matières, badges, sources et liens Légifrance/Cour de cassation.
 - Vérifier à 375 px : les cinq pastilles tiennent sur deux lignes, sans débordement horizontal, et le décochage de Plateformes masque ses publications.

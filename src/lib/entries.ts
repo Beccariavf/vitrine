@@ -165,10 +165,14 @@ export function getEntries(rootDir: string = process.cwd()): Entry[] {
 
 /**
  * Entrées visibles pour les matières actives. Le site filtre ici, jamais dans
- * les données : désactiver une matière masque sans supprimer.
+ * les données : désactiver une matière masque sans supprimer. Une décision de la
+ * Cour de cassation sans visa exploitable est conservée mais masquée : sa carte
+ * n'aurait aucune référence.
  */
 export function getVisibleEntries(rootDir: string = process.cwd(), themes?: Theme[]): Entry[] {
   const catalog = themes ?? readThemes(rootDir);
   const active = new Set(activeThemes(catalog).map((theme) => theme.id));
-  return getEntries(rootDir).filter((entry) => entry.themes.some((theme) => active.has(theme)));
+  return getEntries(rootDir)
+    .filter((entry) => entry.themes.some((theme) => active.has(theme)))
+    .filter((entry) => entry.source !== "judilibre" || entry.references.length > 0);
 }

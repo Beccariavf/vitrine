@@ -1,12 +1,10 @@
 import { strict as assert } from "node:assert";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, it } from "node:test";
 import type { FetchLike } from "../veille/fetch.ts";
-import {
-  MAX_CALLS_PER_RUN,
-  PisteSession,
-  readPisteConfig,
-  resetUsage,
-} from "../veille/piste.ts";
+import { flushUsage, MAX_CALLS_PER_RUN, PisteSession, readPisteConfig, resetUsage } from "../veille/piste.ts";
 
 const CONFIG = { clientId: "client", clientSecret: "secret", keyId: "key" };
 
@@ -60,5 +58,60 @@ describe("la session PISTE", () => {
       { clientId: "a", clientSecret: "b", keyId: "c" },
     );
     assert.equal(readPisteConfig({ PISTE_CLIENT_ID: "a" }), null);
+  });
+
+  it("lit une décision avec le KeyId et la journalise", async () => {
+    resetUsage();
+    const root = mkdtempSync(join(tmpdir(), "vitrine-usage-"));
+    let seenUrl = "";
+    let seenKeyId = "";
+    const fetchImpl: FetchLike = async (url, init) => {
+      seenUrl = url;
+      seenKeyId = init?.headers?.KeyId ?? "";
+      return response(200, JSON.stringify({ id: "6ac6079ec27382d099f5a06e", visa: [] }));
+    };
+
+    try {
+      const session = new PisteSession(CONFIG);
+      const decision = await session.judilibreDecision(fetchImpl, "6ac6079ec27382d099f5a06e");
+
+      assert.deepEqual(decision, { id: "6ac6079ec27382d099f5a06e", visa: [] });
+      assert.equal(
+        seenUrl,
+        "https://api.piste.gouv.fr/cassation/judilibre/v1.0/decision?id=6ac6079ec27382d099f5a06e",
+      );
+      assert.equal(seenKeyId, "key");
+      assert.equal(session.remainingCalls(), MAX_CALLS_PER_RUN - 1);
+
+      flushUsage(root);
+      const date = new Date().toISOString().slice(0, 10);
+      const usage = JSON.parse(readFileSync(join(root, "data", "usage", `${date}.json`), "utf8")) as {
+        calls: Array<{ source: string; endpoint: string; status: number }>;
+      };
+      assert.equal(usage.calls.length, 1);
+      assert.equal(usage.calls[0]?.source, "judilibre");
+      assert.equal(usage.calls[0]?.endpoint, "decision");
+      assert.equal(usage.calls[0]?.status, 200);
+    } finally {
+      resetUsage();
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("compte les appels restants jusqu'à zéro", async () => {
+    resetUsage();
+    const fetchImpl: FetchLike = async () => response(200, JSON.stringify({ id: "abc" }));
+    const session = new PisteSession(CONFIG);
+
+    try {
+      for (let index = 0; index < MAX_CALLS_PER_RUN; index += 1) {
+        assert.equal(session.remainingCalls(), MAX_CALLS_PER_RUN - index);
+        await session.judilibreDecision(fetchImpl, "abc");
+      }
+      assert.equal(session.remainingCalls(), 0);
+      await assert.rejects(() => session.judilibreDecision(fetchImpl, "abc"), /PISTE quota guard/);
+    } finally {
+      resetUsage();
+    }
   });
 });

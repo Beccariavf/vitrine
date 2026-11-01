@@ -1,6 +1,6 @@
 import { strict as assert } from "node:assert";
 import { describe, it } from "node:test";
-import { extractCnilReferences, extractReferences } from "../veille/references.ts";
+import { extractCnilReferences, extractReferences, extractVisaReferences } from "../veille/references.ts";
 
 /** Le titre officiel de Jautiva, avec les espaces insécables du flux réel. */
 const JAUTIVA =
@@ -151,5 +151,133 @@ describe("les références CNIL", () => {
     assert.deepEqual(extractCnilReferences(["Décret n°2026-662 du 23 juillet 2026"]), []);
     assert.deepEqual(extractCnilReferences(["Article 5 du décret n°2019-539"]), []);
     assert.deepEqual(extractCnilReferences(["Règlement (UE) 2016/679"]), []);
+  });
+});
+
+/** Le visa réel de la décision 25-10.664, tel que rendu par Judilibre. */
+const VISA_25_10_664 = [
+  'Articles L. <a href="https://www.legifrance.gouv.fr/search/code?query=2315-34" target="_blank">2315-34</a> ' +
+    'et D. <a href="https://www.legifrance.gouv.fr/search/code?query=2315-27" target="_blank">2315-27</a> ' +
+    "du code du travail.",
+  "Articles 4, § 1, 5 et 6, § 1, du règlement (UE) n° 2016/679 du Parlement européen et du Conseil du " +
+    "27 avril 2016, relatif à la protection des personnes physiques à l'égard du traitement des données " +
+    "à caractère personnel et à la libre circulation de ces données.",
+];
+
+describe("les références du visa de la Cour de cassation", () => {
+  it("lit le visa de 25-10.664 et ignore le code du travail", () => {
+    assert.deepEqual(extractVisaReferences(VISA_25_10_664), [
+      "Règlement (UE) 2016/679 · art. 4, 5, 6",
+    ]);
+  });
+
+  it("nettoie les balises, les paragraphes et les virgules du visa", () => {
+    assert.deepEqual(
+      extractVisaReferences([
+        'Articles 5, § 1, et 6, § 2, du <a href="#">règlement (UE) n° 2016/679</a>.',
+      ]),
+      ["Règlement (UE) 2016/679 · art. 5, 6"],
+    );
+  });
+
+  it("reconnaît la LIL, le CPCE et une directive", () => {
+    assert.deepEqual(
+      extractVisaReferences([
+        "Article 82, de la loi n° 78-17 du 6 janvier 1978 relative à l'informatique, aux fichiers et aux libertés.",
+        "Article L. 34-5 du code des postes et des communications électroniques.",
+        "Article 5, § 3, de la directive 2002/58/CE du Parlement européen et du Conseil.",
+      ]),
+      [
+        "Loi Informatique et Libertés · art. 82",
+        "Code des postes et des communications électroniques · art. L. 34-5",
+        "Directive 2002/58/CE · art. 5",
+      ],
+    );
+  });
+
+  it("reconnaît les actes européens des autres matières", () => {
+    assert.deepEqual(
+      extractVisaReferences([
+        "Article 6 du règlement (UE) 2024/1689.",
+        "Article 5 du règlement (UE) 2022/1925.",
+        "Article 13 du règlement (UE) 2022/2065.",
+        "Article 7 du règlement (UE) 2022/2554.",
+        "Article 21 de la directive (UE) 2022/2555.",
+      ]),
+      [
+        "Règlement (UE) 2024/1689 · art. 6",
+        "Règlement (UE) 2022/1925 · art. 5",
+        "Règlement (UE) 2022/2065 · art. 13",
+        "Règlement (UE) 2022/2554 · art. 7",
+        "Directive (UE) 2022/2555 · art. 21",
+      ],
+    );
+  });
+
+  it("rattache chaque liste d'articles à son instrument", () => {
+    assert.deepEqual(
+      extractVisaReferences([
+        "Articles 4 et 5 du règlement (UE) 2016/679 et articles 6 et 7 de la directive 2002/58/CE",
+      ]),
+      [
+        "Règlement (UE) 2016/679 · art. 4, 5",
+        "Directive 2002/58/CE · art. 6, 7",
+      ],
+    );
+  });
+
+  it("ne donne pas l'article de l'instrument précédent au suivant", () => {
+    assert.deepEqual(
+      extractVisaReferences([
+        "Règlement (UE) 2016/679 – Article 5 – Directive 2002/58/CE – Article 6",
+      ]),
+      [
+        "Règlement (UE) 2016/679 · art. 5",
+        "Directive 2002/58/CE · art. 6",
+      ],
+    );
+  });
+
+  it("sépare aussi une liste introduite par une virgule ou « ainsi que »", () => {
+    assert.deepEqual(
+      extractVisaReferences([
+        "Articles 4 et 5 du règlement (UE) 2016/679, articles 6 et 7 de la directive 2002/58/CE",
+      ]),
+      [
+        "Règlement (UE) 2016/679 · art. 4, 5",
+        "Directive 2002/58/CE · art. 6, 7",
+      ],
+    );
+    assert.deepEqual(
+      extractVisaReferences([
+        "Articles 4 et 5 du règlement (UE) 2016/679 ainsi que l'article 6 de la directive 2002/58/CE",
+      ]),
+      [
+        "Règlement (UE) 2016/679 · art. 4, 5",
+        "Directive 2002/58/CE · art. 6",
+      ],
+    );
+  });
+
+  it("ne rend qu'un article par doublon", () => {
+    assert.deepEqual(
+      extractVisaReferences([
+        "Article 6 du règlement (UE) n° 2016/679.",
+        "Articles 6, § 1, du règlement (UE) n° 2016/679.",
+      ]),
+      ["Règlement (UE) 2016/679 · art. 6"],
+    );
+  });
+
+  it("n'invente rien sans article, ni pour un code non suivi", () => {
+    assert.deepEqual(
+      extractVisaReferences(["Règlement (UE) n° 2016/679 du Parlement européen et du Conseil."]),
+      [],
+    );
+    assert.deepEqual(
+      extractVisaReferences(["Article 1er du code de justice administrative."]),
+      [],
+    );
+    assert.deepEqual(extractVisaReferences([]), []);
   });
 });

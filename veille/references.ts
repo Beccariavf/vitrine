@@ -1,8 +1,10 @@
 /**
  * Références juridiques principales : titre officiel des arrêts CJUE, section
- * « Textes de référence » des pages CNIL. Aucune invention : on ne rend que les
- * instruments et articles réellement cités.
+ * « Textes de référence » des pages CNIL, visa de la Cour de cassation. Aucune
+ * invention : on ne rend que les instruments et articles réellement cités.
  */
+
+import { toPlainText } from "./summary.ts";
 
 /** Instrument : règlement, directive, décision, avec son numéro officiel. */
 const INSTRUMENT =
@@ -134,6 +136,142 @@ export function extractCnilReferences(items: readonly string[]): string[] {
   }
 
   return [...byInstrument].map(([instrument, articles]) => `${instrument} · art. ${articles.join(", ")}`);
+}
+
+/** Paragraphe d'un visa : « § 1 » qualifie l'article, il ne le numérote pas. */
+const VISA_PARAGRAPH = /\s*§\s*\d+/g;
+
+/** Deux virgules qui se suivent après la suppression d'un paragraphe. */
+const VISA_DOUBLE_COMMA = /(?:,\s*){2,}/g;
+
+/** Virgule laissée devant la conjonction après la suppression d'un paragraphe. */
+const VISA_CONJUNCTION_COMMA = /,\s*(?=(?:et|ou)\s)/gi;
+
+/** Virgule qui sépare la liste d'articles de l'instrument qu'elle vise. */
+const VISA_INSTRUMENT_COMMA = /,\s*(?=(?:du\s|de\s+la\s|des\s|de\s+l['’]|d['’]|de\s))/gi;
+
+/**
+ * Ramène un visa de la Cour de cassation à la liste de ses articles : le champ
+ * porte des titres HTML et des paragraphes, pas une phrase lisible.
+ */
+function cleanVisaItem(item: string): string {
+  return toPlainText(item)
+    .replace(VISA_PARAGRAPH, "")
+    .replace(VISA_DOUBLE_COMMA, ", ")
+    .replace(VISA_CONJUNCTION_COMMA, " ")
+    .replace(VISA_INSTRUMENT_COMMA, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * Fusionne des listes `instrument · art. …` : mêmes instruments regroupés,
+ * articles dédoublonnés, ordre de première rencontre conservé.
+ */
+function mergeReferences(...lists: readonly string[][]): string[] {
+  const byInstrument = new Map<string, string[]>();
+
+  for (const list of lists) {
+    for (const reference of list) {
+      const separator = reference.indexOf(" · art. ");
+      if (separator === -1) continue;
+
+      const instrument = reference.slice(0, separator);
+      const articles = reference.slice(separator + " · art. ".length).split(", ");
+      const existing = byInstrument.get(instrument) ?? [];
+      for (const article of articles) {
+        if (article !== "" && !existing.includes(article)) existing.push(article);
+      }
+      byInstrument.set(instrument, existing);
+    }
+  }
+
+  return [...byInstrument].map(([instrument, articles]) => `${instrument} · art. ${articles.join(", ")}`);
+}
+
+/** Instrument trouvé dans un visa : son libellé canonique et sa position. */
+type VisaInstrument = { label: string; index: number; end: number };
+
+/** Un instrument nommé (RGPD, LIL, CPCE, ePrivacy, Code de la consommation) ou un acte européen. */
+function visaInstruments(text: string): VisaInstrument[] {
+  const matches: VisaInstrument[] = [];
+
+  for (const instrument of CNIL_INSTRUMENTS) {
+    const flags = instrument.pattern.flags.includes("g") ? instrument.pattern.flags : `${instrument.pattern.flags}g`;
+    for (const match of text.matchAll(new RegExp(instrument.pattern.source, flags))) {
+      const index = match.index ?? 0;
+      matches.push({ label: instrument.label, index, end: index + match[0].length });
+    }
+  }
+
+  for (const match of text.matchAll(INSTRUMENT)) {
+    const index = match.index ?? 0;
+    const end = index + match[0].length;
+    if (matches.some((known) => index < known.end && end > known.index)) continue;
+    matches.push({
+      label: instrumentLabel(match[1] ?? "", match[2], match[3] ?? ""),
+      index,
+      end,
+    });
+  }
+
+  return matches.sort((a, b) => a.index - b.index);
+}
+
+/**
+ * Références d'un visa : chaque instrument ne reçoit que les articles de sa
+ * fenêtre. La fenêtre s'arrête au prochain instrument, ou à la liste « et
+ * articles … » qui introduit ses articles.
+ */
+function visaItemReferences(text: string): string[] {
+  const instruments = visaInstruments(text);
+  const byInstrument = new Map<string, string[]>();
+  let cursor = 0;
+
+  instruments.forEach((instrument, index) => {
+    const start = cursor;
+    let end = index + 1 < instruments.length ? (instruments[index + 1]?.index ?? text.length) : text.length;
+
+    const between = text.slice(start, end);
+    const nextList =
+      index + 1 < instruments.length
+        ? between.search(
+            /\bet\s+(?:l['’])?articles?\b|,\s*(?:et\s+)?(?:l['’])?articles?\b|ainsi\s+que\s+(?:l['’])?articles?\b/i,
+          )
+        : -1;
+    if (nextList !== -1) end = start + nextList;
+
+    const window = text.slice(start, end);
+    cursor = end;
+
+    const articles: string[] = [];
+    for (const article of window.matchAll(CNIL_ARTICLE)) {
+      const at = article.index ?? 0;
+      const before = window.slice(Math.max(0, at - 40), at);
+      if (OTHER_INSTRUMENT.test(before)) continue;
+      articles.push(...cnilArticleNumbers(article[1] ?? ""));
+    }
+    if (articles.length === 0) return;
+
+    const existing = byInstrument.get(instrument.label) ?? [];
+    for (const article of articles) {
+      if (!existing.includes(article)) existing.push(article);
+    }
+    byInstrument.set(instrument.label, existing);
+  });
+
+  return [...byInstrument].map(([instrument, articles]) => `${instrument} · art. ${articles.join(", ")}`);
+}
+
+/**
+ * Extrait les références du visa d'une décision de la Cour de cassation.
+ * Chaque visa est nettoyé puis découpé par instrument : les instruments
+ * français nommés (LIL, CPCE, ePrivacy, Code de la consommation) et les actes
+ * européens génériques (règlements, directives, décisions) sont reconnus. Un
+ * texte de procédure ou un code non suivi est ignoré.
+ */
+export function extractVisaReferences(items: readonly string[]): string[] {
+  return mergeReferences(...items.map((item) => visaItemReferences(cleanVisaItem(item))));
 }
 
 /**
