@@ -17,7 +17,8 @@ Les vérifications qui doivent passer pour qu'un code compte comme terminé. Min
 
 ## Rules
 
-- La CI (`.github/workflows/ci.yml`) rejoue `npm run typecheck`, `npm test` et `npm run build` à chaque push et pull request : ce qui passe ici doit passer là-bas.
+- La CI (`.github/workflows/ci.yml`) rejoue le contrôle des secrets PISTE, puis `npm run typecheck`, `npm test` et `npm run build` à chaque push et pull request : ce qui passe ici doit passer là-bas.
+- Le hook `.githooks/pre-commit` refuse `.env` et les valeurs non vides de `PISTE_CLIENT_SECRET` et `PISTE_KEY_ID` ; l'activer avec `git config core.hooksPath .githooks`.
 
 - Un commit = une préoccupation ; message conventionnel à l'impératif.
 - Chaque source a sa fixture et son test ; un adaptateur sans test n'est pas terminé.

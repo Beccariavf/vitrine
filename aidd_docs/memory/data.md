@@ -49,7 +49,7 @@ flowchart LR
 - Une matière peut porter plusieurs `queries` : Plateformes interroge 2022/2065 et 2022/1925 ; les autres matières gardent leur premier terme.
 - Fenêtres de collecte : CETAT 90 jours, Judilibre 30 jours ; les autres sources suivent leur flux.
 - `data/usage/<date>.json` journalise les appels PISTE ; le plafond est de 16 appels par passe, et une passe à cinq matières en consomme 13.
-- La page article ARCOM n'est pas snapshotée : elle sert de filtre et de résumé ; le flux brut reste la preuve conservée.
+- Les pages d'enrichissement (ARCOM, Commission) ne sont pas snapshotées : elles servent de filtre, de résumé ou de version française ; le flux brut reste la preuve conservée.
 
 ## Models
 

@@ -4,23 +4,25 @@ La disposition macro : les zones de premier niveau et ce qu'elles portent. Une c
 
 ```mermaid
 flowchart TD
-    CLI["veille/ — pipeline CNIL + CJUE"] --> DATA["data/ — sortie versionnée"]
+    CLI["veille/ — pipeline des sources"] --> DATA["data/ — sortie versionnée"]
     TESTS["tests/ — suite hors ligne"] --> CLI
     SRC["src/ — site Astro statique"] --> DATA
     TOOLS["tools/ — paramètres locaux"] --> CLI
     CI[".github/ — CI"] -.-> CLI
     CI -.-> SRC
+    HOOKS[".githooks/ — garde-fou secrets"] -.-> CLI
     DOCS["aidd_docs/ — spec, plan, mémoire"]
 ```
 
 ## Areas
 
-- `veille/` : le pipeline. Dix adaptateurs : CNIL, CJUE, ANSSI, CEPD, ARCEP, Commission, Commission DMA, ARCOM, CETAT et Judilibre ; catalogue `themes.json` ; rattachement par instruments puis termes ; normalisation, résumés, références, écriture. La page CNIL est lue pour sa section « Textes de référence » (`parseCnilPageReferences`), les instruments sont canonicalisés par `extractCnilReferences` et les pages retenues sont snapshotées en HTML. La page ARCOM est lue pour filtrer le DSA et fournir le résumé. Seule zone qui parle aux sources.
+- `veille/` : le pipeline. Dix adaptateurs : CNIL, CJUE, ANSSI, CEPD, ARCEP, Commission, Commission DMA, ARCOM, CETAT et Judilibre ; catalogue `themes.json` ; rattachement par instruments puis termes ; normalisation, résumés, références, écriture. La page CNIL est lue pour sa section « Textes de référence » (`parseCnilPageReferences`), les instruments sont canonicalisés par `extractCnilReferences` et les pages retenues sont snapshotées en HTML. La page ARCOM filtre le DSA et fournit le résumé ; la page Commission `/fr/` fournit le titre, le résumé et le lien français. Seule zone qui parle aux sources.
 - `src/` : le site Astro, rendu statique. `layouts/Base.astro` porte la coquille, `pages/` les deux routes, `styles/global.css` les jetons Tailwind, `lib/entries.ts` lit `data/entries/` au build, valide `themes` et filtre les matières actives, `lib/sources.ts` porte les libellés des dix adaptateurs. Les pages ne parlent à aucune API. Jetable : les données lui survivent.
 - `tests/` : la suite `node:test` et les fixtures des dix adaptateurs, hors ligne.
 - `data/` : la sortie du pipeline, versionnée par git. Snapshots bruts adressés par leur contenu, entrées JSON par `id`, journal d'appels PISTE.
 - `tools/` : l'outil local de paramètres (`parametres.html`), non déployé ; il écrit `veille/themes.json`.
-- `.github/` : la CI, seul automatisme ; aucun déploiement.
+- `.github/` : la CI — contrôle des secrets PISTE, typecheck, tests et build ; aucun déploiement.
+- `.githooks/` : le hook `pre-commit` qui refuse `.env` et les valeurs PISTE non vides.
 - `aidd_docs/` : le contrat (`spec.md`), les plans et la mémoire projet.
 
 ## Entry points
