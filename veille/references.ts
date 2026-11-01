@@ -300,7 +300,7 @@ const CETAT_SENTENCE_START = /(?:^|[.!?;:»]\s+|\d+\.\s+)$/;
 
 /** Marqueur de discours rapporté qui introduit directement la formule : la suite est un grief. */
 const CETAT_REPORTED =
-  /\b(?:soutient|soutiennent|est soutenu|sont soutenus|allègue|allèguent|invoque|invoquent|fait valoir|font valoir|moyen tiré de ce que)\s*(?:qu['’])?\s*,?\s*$/i;
+  /\b(?:soutient|soutiennent|est soutenu|sont soutenus|allègue|allèguent|invoque|invoquent|fait valoir|font valoir)\b\s*(?:(?:qu['’]|que)\s*)?,?\s*$|\bselon\b[^.;:]{0,40},\s*$|\b(?:moyen|grief)\s+tiré\s+de\s+ce\s+que\s*,?\s*$/i;
 
 /** Ponctuation qui ferme une proposition : l'instrument doit la précéder. */
 const CETAT_CLAUSE_END = /[.;:,«»]/;
@@ -311,7 +311,7 @@ const CETAT_CLAUSE_END = /[.;:,«»]/;
  * Sans ce repère, rien n'est extrait plutôt que de risquer un grief.
  */
 function reasoningPart(text: string): string {
-  const match = text.match(/Considérant ce qui suit\s*:/i);
+  const match = text.match(/Considérant ce qui suit\s*[.:]?/i);
   return match === null ? "" : text.slice((match.index ?? 0) + match[0].length);
 }
 
@@ -345,7 +345,7 @@ function formulaReferences(text: string): Map<string, string[]> {
 
   for (const formula of text.matchAll(CETAT_FORMULA)) {
     const start = (formula.index ?? 0) + formula[0].length;
-    const rest = text.slice(start, start + 160);
+    const rest = text.slice(start);
     const article = [...rest.matchAll(CNIL_ARTICLE)][0];
     if (article === undefined) continue;
 

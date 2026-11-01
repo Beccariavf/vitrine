@@ -355,19 +355,27 @@ describe("les références du Conseil d'État", () => {
   });
 
   it("écarte une formule introduite par un grief dans les motifs", () => {
+    for (const text of [
+      "Le requérant soutient qu'en vertu de l'article 82 de la loi du 6 janvier 1978, la CNIL a commis une erreur.",
+      "Le requérant soutient que, en vertu de l'article 82 de la loi du 6 janvier 1978, la CNIL a commis une erreur.",
+      "Il est soutenu, sur le fondement de l'article 83 du RGPD, que l'amende est excessive.",
+      "Il est soutenu que, sur le fondement de l'article 83 du RGPD, l'amende est excessive.",
+      "Selon la requérante, en vertu de l'article 15 du RGPD, la CNIL devait agir.",
+      "Le moyen tiré de ce que, sur le fondement de l'article 83 du RGPD, l'amende est excessive.",
+      "Le grief tiré de ce que, sur le fondement de l'article 83 du RGPD, l'amende est excessive.",
+    ]) {
+      assert.deepEqual(extractCetatReferences(motifs(text)), [], text);
+    }
+  });
+
+  it("ne rend rien sans le repère des motifs", () => {
     assert.deepEqual(
-      extractCetatReferences(
-        motifs("Le requérant soutient qu'en vertu de l'article 82 de la loi du 6 janvier 1978, la CNIL a commis une erreur."),
-      ),
+      extractCetatReferences("Aux termes de l'article 82 de la loi du 6 janvier 1978, la CNIL peut sanctionner."),
       [],
     );
     assert.deepEqual(
-      extractCetatReferences(motifs("Il est soutenu, sur le fondement de l'article 83 du RGPD, que l'amende est excessive.")),
-      [],
-    );
-    assert.deepEqual(
-      extractCetatReferences(motifs("Le moyen tiré de ce que, sur le fondement de l'article 83 du RGPD, l'amende est excessive.")),
-      [],
+      extractCetatReferences("Considérant ce qui suit 1. Aux termes de l'article 82 de la loi du 6 janvier 1978"),
+      ["Loi Informatique et Libertés · art. 82"],
     );
   });
 

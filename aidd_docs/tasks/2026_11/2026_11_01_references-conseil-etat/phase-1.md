@@ -56,5 +56,5 @@ status: pending
 | Task | Acceptance criteria              |
 | ---- | -------------------------------- |
 | 1 | Les cinq instruments suivis et un acte européen générique sont reconnus avec leur libellé canonique. |
-| 2 | 501268 rend `CPCE · art. L. 34-5`, `LIL · art. 8, 82, 20` et `RGPD · art. 83` (le texte réel cite aussi le barème et l'article 8) ; 509210 rend `RGPD · art. 15, 16` ; 509589 rend `LIL · art. 8, 20` ; 511155 rend `RGPD · art. 15` ; 513996 rend `LIL · art. 31, 118` ; 520279 rend `[]`. |
+| 2 | 501268 rend `LIL · art. 8, 82, 20`, `CPCE · art. L. 34-5` et `RGPD · art. 83` (le texte réel cite aussi le barème et l'article 8) ; 509210 rend `RGPD · art. 15, 16` ; 509589 rend `LIL · art. 8, 20` ; 511155 rend `RGPD · art. 15` ; 513996 rend `LIL · art. 31, 118` ; 520279 rend `[]`. |
 | 3 | Les tests de `tests/references.test.ts` passent hors ligne, y compris l'exclusion des moyens et des griefs, de « il résulte de l'instruction » et de « les dispositions de l'article ». |
