@@ -1,7 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro";
 import { getVisibleEntries, isRedundantSummary } from "../../lib/entries.ts";
-import { referenceUrl } from "../../lib/references.ts";
+import { referenceLabel, referenceUrl } from "../../lib/references.ts";
 import { sourceLabel } from "../../lib/sources.ts";
 import { activeThemes, readThemes } from "../../../veille/themes.ts";
 
@@ -196,15 +196,16 @@ const CARD_COLORS = [
                         return (
                           <li class="border border-ink px-1.5 py-0.5 font-mono text-[0.7rem] leading-snug break-words">
                             {href === null ? (
-                              reference
+                              <span title={reference}>{referenceLabel(reference)}</span>
                             ) : (
                               <a
                                 href={href}
                                 target="_blank"
                                 rel="noopener"
+                                title={reference}
                                 class="text-ink no-underline hover:underline hover:decoration-2 hover:underline-offset-2"
                               >
-                                {reference}
+                                {referenceLabel(reference)}
                               </a>
                             )}
                           </li>
@@ -284,15 +285,16 @@ const CARD_COLORS = [
                         return (
                           <li class="border border-ink px-1.5 py-0.5 font-mono text-[0.7rem] leading-snug break-words">
                             {href === null ? (
-                              reference
+                              <span title={reference}>{referenceLabel(reference)}</span>
                             ) : (
                               <a
                                 href={href}
                                 target="_blank"
                                 rel="noopener"
+                                title={reference}
                                 class="text-ink no-underline hover:underline hover:decoration-2 hover:underline-offset-2"
                               >
-                                {reference}
+                                {referenceLabel(reference)}
                               </a>
                             )}
                           </li>

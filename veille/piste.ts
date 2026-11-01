@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { FetchLike } from "./fetch.ts";
 
@@ -7,6 +7,7 @@ export const MAX_CALLS_PER_RUN = 16;
 
 const OAUTH_URL = "https://oauth.piste.gouv.fr/api/oauth/token";
 const LEGIFRANCE_SEARCH = "https://api.piste.gouv.fr/dila/legifrance/lf-engine-app/search";
+const LEGIFRANCE_CONSULT = "https://api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/juri";
 const JUDILIBRE_SEARCH = "https://api.piste.gouv.fr/cassation/judilibre/v1.0/search";
 const JUDILIBRE_DECISION = "https://api.piste.gouv.fr/cassation/judilibre/v1.0/decision";
 
@@ -31,13 +32,34 @@ export function resetUsage(): void {
   calls.length = 0;
 }
 
-/** Écrit le journal du jour et le vide. Aucun appel, aucun fichier. */
+/** Appels déjà journalisés aujourd'hui ; un fichier absent ou illisible ne rend rien. */
+function readUsage(path: string): Call[] {
+  let text: string;
+  try {
+    text = readFileSync(path, "utf8");
+  } catch {
+    return [];
+  }
+
+  try {
+    const value: unknown = JSON.parse(text);
+    if (typeof value !== "object" || value === null) return [];
+    const stored = (value as { calls?: unknown }).calls;
+    return Array.isArray(stored) ? (stored as Call[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Écrit le journal du jour, fusionné avec les passes précédentes, puis le vide. */
 export function flushUsage(rootDir: string): void {
   if (calls.length === 0) return;
   const date = new Date().toISOString().slice(0, 10);
   const dir = join(rootDir, "data", "usage");
   mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, `${date}.json`), `${JSON.stringify({ date, calls }, null, 2)}\n`, "utf8");
+  const path = join(dir, `${date}.json`);
+  const journal = [...readUsage(path), ...calls];
+  writeFileSync(path, `${JSON.stringify({ date, calls: journal }, null, 2)}\n`, "utf8");
   calls.length = 0;
 }
 
@@ -122,11 +144,41 @@ export class PisteSession {
 
   /** Recherche Légifrance ; un 401 invalide le jeton et retente une fois. */
   async legifrance(fetchImpl: FetchLike, body: unknown): Promise<unknown> {
+    return this.postLegifrance(fetchImpl, LEGIFRANCE_SEARCH, "search", body, "Légifrance search");
+  }
+
+  /**
+   * Texte intégral d'une décision, lu par son identifiant : la recherche ne le
+   * porte pas, et le Conseil d'État n'a pas de visa structuré à lire.
+   */
+  async consultJuri(fetchImpl: FetchLike, id: string, floor = 0): Promise<unknown> {
+    return this.postLegifrance(fetchImpl, LEGIFRANCE_CONSULT, "consult", { textId: id }, "Légifrance consult", floor);
+  }
+
+  /**
+   * Un POST Légifrance authentifié ; un 401 invalide le jeton et retente une fois.
+   * `floor` réserve au moins ce nombre d'appels : un 401 peut coûter un jeton et
+   * une seconde requête, et le plancher est vérifié avant chaque consommation.
+   */
+  private async postLegifrance(
+    fetchImpl: FetchLike,
+    url: string,
+    endpoint: string,
+    body: unknown,
+    label: string,
+    floor = 0,
+  ): Promise<unknown> {
     for (let attempt = 0; attempt < 2; attempt += 1) {
+      if (floor > 0 && this.remainingCalls() <= floor) {
+        throw new Error(`${label}: PISTE call budget reserved (${floor} calls)`);
+      }
       const token = await this.fetchToken(fetchImpl);
+      if (floor > 0 && this.remainingCalls() <= floor) {
+        throw new Error(`${label}: PISTE call budget reserved (${floor} calls)`);
+      }
       assertQuota();
       const started = Date.now();
-      const response = await fetchImpl(LEGIFRANCE_SEARCH, {
+      const response = await fetchImpl(url, {
         method: "POST",
         headers: {
           authorization: `Bearer ${token}`,
@@ -134,15 +186,15 @@ export class PisteSession {
         },
         body: JSON.stringify(body),
       });
-      record("legifrance", "search", response.status, started);
+      record("legifrance", endpoint, response.status, started);
       if (response.status === 401 && attempt === 0) {
         this.token = null;
         this.expiresAt = 0;
         continue;
       }
-      return readJson(response, "Légifrance search");
+      return readJson(response, label);
     }
-    throw new Error("Légifrance search: unauthorized after token refresh");
+    throw new Error(`${label}: unauthorized after token refresh`);
   }
 
   /** Recherche Judilibre, authentifiée par `KeyId`. */

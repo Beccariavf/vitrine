@@ -274,6 +274,186 @@ export function extractVisaReferences(items: readonly string[]): string[] {
   return mergeReferences(...items.map((item) => visaItemReferences(cleanVisaItem(item))));
 }
 
+/** Formule d'application qui introduit un article dans les motifs d'une décision administrative. */
+const CETAT_FORMULA = /\b(?:aux termes|il résulte|en vertu|en application|sur le fondement)\b/gi;
+
+/**
+ * La loi Informatique et Libertés, telle que le Conseil d'État la nomme : par sa
+ * date et son objet, pas par son numéro seul. La forme longue est ramenée au
+ * libellé canonique pour que `visaInstruments` la reconnaisse.
+ */
+const CETAT_LIL =
+  /\bloi\s+(?:n[o°]\s*78-17\s+)?du\s+6\s+janvier\s+1978(?:\s+relative\s+à\s+l['’]informatique,\s*aux\s+fichiers\s+et\s+aux\s+libertés)?/gi;
+
+/** Verbe d'application qui suit l'instrument dans une phrase de considérant. */
+const CETAT_VERB =
+  /^(?:garantit|permet|prévoit|dispose|oblige|impose|interdit|exige|confère|ouvre|accorde|définit|fixe|soumet|autorise|protège|énonce)\b/i;
+
+/** Anaphore d'un instrument déjà nommé : « du même règlement », « de la même loi ». */
+const CETAT_ANAPHORA = /\b(?:du|de\s+la|de\s+l['’]|des)\s+même\s+(règlement|loi|code|directive)\b/i;
+
+/** « L'article 15 du RGPD … » : l'article nomme son instrument, sans anaphore. */
+const CETAT_ARTICLE_OPENING = /\bL['’]articles?\s+((?:[LRD]\.\s*)?\d+(?:er)?(?:[.-]\d+)*)/g;
+
+/** Ouverture de phrase : début du texte, après une ponctuation forte ou un numéro de point. */
+const CETAT_SENTENCE_START = /(?:^|[.!?;:»]\s+|\d+\.\s+)$/;
+
+/** Verbes de grief : ce qu'une partie reproche n'est pas ce que la décision applique. */
+const CETAT_GRIEVANCE =
+  /\b(?:soutient|soutiennent|est soutenu|sont soutenus|allègue|allèguent|invoque|invoquent|fait valoir|font valoir|reproche|reprochent|conteste|contestent|se plaint|se plaignent)\b\s*(?:(?:qu['’]|que|de ce que)\s*)?,?\s*$/iu;
+
+/** « Selon la requérante » : le locuteur d'un grief, à distinguer d'une formule appliquée. */
+const CETAT_SELON_PARTY =
+  /\bselon\s+(?:l['’]|la\s+|le\s+|les\s+|un\s+|une\s+|cette\s+|ces\s+)?(?:requérant(?:e)?s?|société?s?|partie?s?|ministre?s?|administration?s?|CNIL|défendeur(?:e)?s?|défenderesse?s?|demandeur(?:e)?s?|demanderesse?s?|elles|elle|eux|lui)(?![\p{L}\p{N}])[^.;:]{0,40},\s*$/iu;
+
+/** Marqueur de discours rapporté qui introduit directement la formule : la suite est un grief. */
+const CETAT_REPORTED = new RegExp(
+  `${CETAT_GRIEVANCE.source}|${CETAT_SELON_PARTY.source}|\\b(?:moyen|grief)\\s+tiré\\s+de\\s+ce\\s+que\\s*,?\\s*$`,
+  "iu",
+);
+
+/** Ponctuation qui ferme une proposition : l'instrument doit la précéder. */
+const CETAT_CLAUSE_END = /[.;:,«»]/;
+
+/**
+ * Les motifs commencent à « Considérant ce qui suit » : avant, ce sont les visas
+ * et les moyens des parties, où une formule d'application peut n'être qu'un grief.
+ * Sans ce repère, rien n'est extrait plutôt que de risquer un grief.
+ */
+function reasoningPart(text: string): string {
+  const match = text.match(/Considérant ce qui suit\s*[.:]?/i);
+  return match === null ? "" : text.slice((match.index ?? 0) + match[0].length);
+}
+
+/** Ramène le texte de la décision à la forme que lisent les motifs. */
+function normalizeCetatText(text: string): string {
+  return normalize(text).replace(CETAT_LIL, "loi Informatique et Libertés");
+}
+
+/** Nature d'un instrument : le mot qui porte son type, pour résoudre une anaphore. */
+function instrumentNature(label: string): string {
+  return (label.split(" ")[0] ?? "").toLowerCase();
+}
+
+/** Ajoute des articles à un instrument, sans doublon et dans l'ordre de rencontre. */
+function addArticles(byInstrument: Map<string, string[]>, label: string, articles: readonly string[]): void {
+  const existing = byInstrument.get(label) ?? [];
+  for (const article of articles) {
+    if (!existing.includes(article)) existing.push(article);
+  }
+  byInstrument.set(label, existing);
+}
+
+/**
+ * Articles introduits par une formule d'application : « aux termes de l'article
+ * 82 de la loi … », « il résulte des dispositions combinées des articles 8 et 20
+ * de la loi … ». La formule doit porter sur le premier article de la proposition,
+ * et l'instrument est celui qui le suit immédiatement.
+ */
+function formulaReferences(text: string): Map<string, string[]> {
+  const byInstrument = new Map<string, string[]>();
+
+  for (const formula of text.matchAll(CETAT_FORMULA)) {
+    const start = (formula.index ?? 0) + formula[0].length;
+    const rest = text.slice(start);
+    const article = [...rest.matchAll(CNIL_ARTICLE)][0];
+    if (article === undefined) continue;
+
+    const gap = rest.slice(0, article.index ?? 0);
+    if (CETAT_CLAUSE_END.test(gap)) continue;
+
+    // « Il résulte de l'instruction que … » n'énonce pas une règle appliquée :
+    // la formule doit porter sur un article ou sur ses dispositions.
+    if (/^il résulte$/i.test(formula[0]) && !/^\s*(?:de\s+l['’]articles?|des\s+dispositions)/i.test(rest)) {
+      continue;
+    }
+
+    // Une formule directement introduite par « soutient que » ou « est soutenu »
+    // énonce un grief, même dans les motifs.
+    const before = text.slice(Math.max(0, (formula.index ?? 0) - 40), formula.index ?? 0);
+    if (CETAT_REPORTED.test(before)) continue;
+
+    const articles = cnilArticleNumbers(article[1] ?? "");
+    if (articles.length === 0) continue;
+
+    const after = rest.slice((article.index ?? 0) + article[0].length);
+    const instrument = visaInstruments(after)[0];
+    if (instrument === undefined) continue;
+    if (CETAT_CLAUSE_END.test(after.slice(0, instrument.index))) continue;
+
+    addArticles(byInstrument, instrument.label, articles);
+  }
+
+  return byInstrument;
+}
+
+/**
+ * Articles introduits par une phrase de considérant : « L'article 15 du RGPD
+ * garantit … », « L'article 16 du même règlement permet … ». Seule une phrase
+ * qui ouvre la proposition et qu'un verbe d'application suit compte.
+ */
+function considerantReferences(text: string): Map<string, string[]> {
+  const byInstrument = new Map<string, string[]>();
+
+  for (const match of text.matchAll(CETAT_ARTICLE_OPENING)) {
+    const index = match.index ?? 0;
+    if (!CETAT_SENTENCE_START.test(text.slice(0, index))) continue;
+
+    const start = index + match[0].length;
+    const tail = text.slice(start, start + 120);
+    const end = tail.search(CETAT_CLAUSE_END);
+    const clause = end === -1 ? tail : tail.slice(0, end);
+
+    let label: string | null = null;
+    let instrumentEnd = 0;
+
+    const anaphora = CETAT_ANAPHORA.exec(clause);
+    if (anaphora !== null) {
+      const nature = anaphora[1] ?? "";
+      const named = visaInstruments(text.slice(0, index)).filter(
+        (instrument) => instrumentNature(instrument.label) === nature,
+      );
+      const previous = named[named.length - 1];
+      if (previous === undefined) continue;
+      label = previous.label;
+      instrumentEnd = (anaphora.index ?? 0) + anaphora[0].length;
+    } else {
+      const named = visaInstruments(clause)[0];
+      if (named === undefined) continue;
+      label = named.label;
+      instrumentEnd = named.end;
+    }
+
+    if (!CETAT_VERB.test(clause.slice(instrumentEnd).trimStart())) continue;
+
+    const articles = cnilArticleNumbers(match[1] ?? "");
+    if (articles.length === 0) continue;
+    addArticles(byInstrument, label, articles);
+  }
+
+  return byInstrument;
+}
+
+/**
+ * Extrait les articles que la décision du Conseil d'État applique, lus dans son
+ * texte intégral : formules d'application (« aux termes », « il résulte », « en
+ * vertu », « en application », « sur le fondement »), phrases de considérant et
+ * leur anaphore. Un article cité au titre d'un grief n'est pas retenu : la
+ * tournure « les dispositions de l'article » ne déclenche rien.
+ */
+export function extractCetatReferences(text: string): string[] {
+  const reasoning = reasoningPart(normalizeCetatText(text));
+  if (reasoning === "") return [];
+
+  const byInstrument = formulaReferences(reasoning);
+
+  for (const [label, articles] of considerantReferences(reasoning)) {
+    addArticles(byInstrument, label, articles);
+  }
+
+  return [...byInstrument].map(([instrument, articles]) => `${instrument} · art. ${articles.join(", ")}`);
+}
+
 /**
  * Extrait les références principales d'un titre officiel.
  * Seuls les instruments suivis d'au moins un article sont rendus, pour éviter

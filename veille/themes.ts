@@ -152,6 +152,16 @@ export function instrumentOf(reference: string): string {
   return reference.split(" · ")[0] ?? reference;
 }
 
+/** Instruments des matières rattachées à l'entrée : une lecture ne peut citer qu'eux. */
+export function followedInstruments(entry: Entry, themes: Theme[]): Set<string> {
+  const instruments = new Set<string>();
+  for (const theme of themes) {
+    if (!entry.themes.includes(theme.id)) continue;
+    for (const instrument of theme.instruments) instruments.add(instrument);
+  }
+  return instruments;
+}
+
 /** Forme comparable d'un instrument, indifférente à la casse, aux accents et au `n°`. */
 function normalizeInstrument(text: string): string {
   return text

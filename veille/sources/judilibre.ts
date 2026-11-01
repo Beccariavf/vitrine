@@ -3,7 +3,7 @@ import type { FetchLike } from "../fetch.ts";
 import { extractVisaReferences } from "../references.ts";
 import { toSummary } from "../summary.ts";
 import type { Theme } from "../themes.ts";
-import { activeThemes, instrumentOf, themeQueries } from "../themes.ts";
+import { activeThemes, followedInstruments, instrumentOf, themeQueries } from "../themes.ts";
 import { PisteSession, readPisteConfig } from "../piste.ts";
 
 /** Identifiant stable de la source, écrit dans chaque entrée. */
@@ -101,16 +101,6 @@ function visaTitles(decision: unknown): string[] {
   return visa
     .map((item) => (typeof item === "object" && item !== null ? (item as { title?: unknown }).title : null))
     .filter((title): title is string => typeof title === "string" && title.trim() !== "");
-}
-
-/** Instruments des matières rattachées à l'entrée : le visa ne peut citer qu'eux. */
-function followedInstruments(entry: Entry, themes: Theme[]): Set<string> {
-  const instruments = new Set<string>();
-  for (const theme of themes) {
-    if (!entry.themes.includes(theme.id)) continue;
-    for (const instrument of theme.instruments) instruments.add(instrument);
-  }
-  return instruments;
 }
 
 type JudilibreApiResult = {
