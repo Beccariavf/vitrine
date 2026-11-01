@@ -1,9 +1,9 @@
 import type { Entry } from "../types.ts";
 import type { FetchLike } from "../fetch.ts";
-import { extractCnilReferences } from "../references.ts";
+import { extractVisaReferences } from "../references.ts";
 import { toSummary } from "../summary.ts";
 import type { Theme } from "../themes.ts";
-import { activeThemes, themeQueries } from "../themes.ts";
+import { activeThemes, instrumentOf, themeQueries } from "../themes.ts";
 import { PisteSession, readPisteConfig } from "../piste.ts";
 
 /** Identifiant stable de la source, écrit dans chaque entrée. */
@@ -72,7 +72,6 @@ function toEntry(result: JudilibreResult): Entry | null {
   const title = `Cour de cassation, chambre ${chamberLabel}, ${readableDate}${number === null ? "" : `, ${number}`}`;
   const rawSummary = highlightText(result.highlights) ?? (typeof result.summary === "string" ? result.summary : null);
   const summary = toSummary(rawSummary);
-  const references = extractCnilReferences([`${title} ${rawSummary ?? ""}`]);
 
   return {
     id,
@@ -81,7 +80,7 @@ function toEntry(result: JudilibreResult): Entry | null {
     url: `https://www.courdecassation.fr/decision/${id}`,
     publishedAt: `${decisionDate}T12:00:00.000Z`,
     summary,
-    references,
+    references: [],
     themes: [],
     source: SOURCE_ID,
   };
@@ -93,12 +92,44 @@ type ApiContext = {
   now?: Date;
 };
 
-/** Une recherche par matière sur les 30 derniers jours, dédupliquée par décision. */
+/** Titres du visa d'une décision ; un visa absent rend un tableau vide. */
+function visaTitles(decision: unknown): string[] {
+  if (typeof decision !== "object" || decision === null) return [];
+  const visa = (decision as { visa?: unknown }).visa;
+  if (!Array.isArray(visa)) return [];
+
+  return visa
+    .map((item) => (typeof item === "object" && item !== null ? (item as { title?: unknown }).title : null))
+    .filter((title): title is string => typeof title === "string" && title.trim() !== "");
+}
+
+/** Instruments des matières rattachées à l'entrée : le visa ne peut citer qu'eux. */
+function followedInstruments(entry: Entry, themes: Theme[]): Set<string> {
+  const instruments = new Set<string>();
+  for (const theme of themes) {
+    if (!entry.themes.includes(theme.id)) continue;
+    for (const instrument of theme.instruments) instruments.add(instrument);
+  }
+  return instruments;
+}
+
+type JudilibreApiResult = {
+  raw: string[];
+  entries: Entry[];
+  warnings: string[];
+  enrich?: (entry: Entry) => Promise<string[]>;
+};
+
+/**
+ * Une recherche par matière sur les 30 derniers jours, dédupliquée par décision.
+ * Les références viennent ensuite du visa, lu décision par décision après le
+ * rattachement : la recherche ne le porte pas.
+ */
 export async function fetchEntries({
   fetchImpl,
   themes,
   now = new Date(),
-}: ApiContext): Promise<{ raw: string[]; entries: Entry[]; warnings: string[] }> {
+}: ApiContext): Promise<JudilibreApiResult> {
   const config = readPisteConfig();
   if (config === null) {
     return {
@@ -111,6 +142,7 @@ export async function fetchEntries({
   const session = new PisteSession(config);
   const { start, end } = dateWindow(now);
   const raw: string[] = [];
+  const warnings: string[] = [];
   const byId = new Map<string, Entry>();
 
   for (const theme of activeThemes(themes)) {
@@ -141,5 +173,24 @@ export async function fetchEntries({
     }
   }
 
-  return { raw, entries: [...byId.values()], warnings: [] };
+  return {
+    raw,
+    entries: [...byId.values()],
+    warnings,
+    /** Lit le visa d'une décision retenue, sous le budget restant de la passe. */
+    async enrich(entry: Entry): Promise<string[]> {
+      if (session.remainingCalls() <= 0) {
+        warnings.push(`judilibre decision ${entry.id}: PISTE call budget exhausted, visa not read`);
+        return [];
+      }
+
+      const response = await session.judilibreDecision(fetchImpl, entry.id);
+      raw.push(JSON.stringify(response, null, 2));
+
+      const instruments = followedInstruments(entry, themes);
+      return extractVisaReferences(visaTitles(response)).filter((reference) =>
+        instruments.has(instrumentOf(reference)),
+      );
+    },
+  };
 }

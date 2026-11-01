@@ -1,0 +1,54 @@
+{
+  "date": "2026-11-01",
+  "calls": [
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 183,
+      "at": "2026-11-01T11:30:10.521Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 182,
+      "at": "2026-11-01T11:30:10.723Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 106,
+      "at": "2026-11-01T11:30:10.830Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 111,
+      "at": "2026-11-01T11:30:10.941Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 122,
+      "at": "2026-11-01T11:30:11.064Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 158,
+      "at": "2026-11-01T11:30:11.223Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "decision",
+      "status": 200,
+      "durationMs": 215,
+      "at": "2026-11-01T11:30:11.446Z"
+    }
+  ]
+}

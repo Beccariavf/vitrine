@@ -8,6 +8,7 @@ export const MAX_CALLS_PER_RUN = 16;
 const OAUTH_URL = "https://oauth.piste.gouv.fr/api/oauth/token";
 const LEGIFRANCE_SEARCH = "https://api.piste.gouv.fr/dila/legifrance/lf-engine-app/search";
 const JUDILIBRE_SEARCH = "https://api.piste.gouv.fr/cassation/judilibre/v1.0/search";
+const JUDILIBRE_DECISION = "https://api.piste.gouv.fr/cassation/judilibre/v1.0/decision";
 
 export type PisteConfig = {
   clientId: string;
@@ -154,5 +155,26 @@ export class PisteSession {
     });
     record("judilibre", "search", response.status, started);
     return readJson(response, "Judilibre search");
+  }
+
+  /**
+   * Une décision Judilibre, lue par son identifiant : le visa ne figure que dans
+   * la décision, pas dans les résultats de recherche.
+   */
+  async judilibreDecision(fetchImpl: FetchLike, id: string): Promise<unknown> {
+    assertQuota();
+    const started = Date.now();
+    const params = new URLSearchParams({ id });
+    const response = await fetchImpl(`${JUDILIBRE_DECISION}?${params.toString()}`, {
+      method: "GET",
+      headers: { KeyId: this.config.keyId, accept: "application/json" },
+    });
+    record("judilibre", "decision", response.status, started);
+    return readJson(response, "Judilibre decision");
+  }
+
+  /** Appels encore autorisés dans cette passe ; `0` interdit tout nouvel appel. */
+  remainingCalls(): number {
+    return Math.max(0, MAX_CALLS_PER_RUN - calls.length);
   }
 }

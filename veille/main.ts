@@ -53,6 +53,12 @@ export type ApiResult = {
   raw: string[];
   entries: Entry[];
   warnings: string[];
+  /**
+   * Enrichissement optionnel, appelé après le rattachement et seulement pour une
+   * entrée nouvelle ou sans référence écrite. Il rend les références de l'entrée
+   * et peut pousser ses réponses brutes dans `raw`.
+   */
+  enrich?: (entry: Entry) => Promise<string[]>;
 };
 
 export type ApiContext = {
@@ -224,9 +230,35 @@ export async function run({
     try {
       if (source.kind === "api") {
         const result = await source.fetchEntries({ fetchImpl, themes: catalog });
-        warnings.push(...result.warnings);
+        let assigned = assignThemes(result.entries, catalog);
+
+        if (result.enrich) {
+          const enrich = result.enrich;
+          const enriched: Entry[] = [];
+
+          for (const entry of assigned) {
+            const previous = readEntryById(rootDir, entry.id);
+            if (previous !== null && previous.references.length > 0) {
+              enriched.push({ ...entry, references: previous.references });
+              continue;
+            }
+
+            try {
+              enriched.push({ ...entry, references: await enrich(entry) });
+            } catch (error) {
+              const reason = error instanceof Error ? error.message : String(error);
+              warnings.push(`${source.id} entry ${entry.id}: ${reason}`);
+              enriched.push({ ...entry, references: [] });
+            }
+          }
+
+          assigned = enriched;
+        }
+
+        // Le snapshot couvre l'enrichissement : il s'écrit une fois les lectures faites.
         const rawPaths = result.raw.map((body) => writeRaw(rootDir, body, "json"));
-        const entryPaths = writeEntries(rootDir, assignThemes(result.entries, catalog));
+        warnings.push(...result.warnings);
+        const entryPaths = writeEntries(rootDir, assigned);
         results.push({
           source: source.id,
           rawPath: rawPaths[0] ?? "",

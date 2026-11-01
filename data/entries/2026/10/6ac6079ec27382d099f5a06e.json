@@ -5,7 +5,9 @@
   "url": "https://www.courdecassation.fr/decision/6ac6079ec27382d099f5a06e",
   "publishedAt": "2026-10-07T12:00:00.000Z",
   "summary": "des personnes physiques à l'égard du traitement des données à caractère personnel et à la libre circulation",
-  "references": [],
+  "references": [
+    "Règlement (UE) 2016/679 · art. 4, 5, 6"
+  ],
   "themes": [
     "donnees-personnelles"
   ],

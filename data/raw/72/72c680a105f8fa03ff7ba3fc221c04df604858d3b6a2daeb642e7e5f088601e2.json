@@ -1,0 +1,235 @@
+{
+  "page": 0,
+  "page_size": 50,
+  "query": {
+    "query": "\"protection des données\"",
+    "operator": "exact",
+    "field": [
+      "text"
+    ],
+    "date_start": "2026-10-02",
+    "date_end": "2026-11-01",
+    "sort": "date",
+    "order": "desc",
+    "page_size": 50,
+    "type": [],
+    "theme": [],
+    "chamber": [],
+    "formation": [],
+    "jurisdiction": [],
+    "location": [],
+    "publication": [],
+    "solution": []
+  },
+  "total": 3,
+  "previous_page": null,
+  "next_page": null,
+  "took": 11,
+  "max_score": 31.257196,
+  "results": [
+    {
+      "score": 0.8176546610258962,
+      "highlights": {
+        "text": [
+          "d'extraction et procédant à l'analyse <em>des</em> <em>données</em>, daté du 20 mai 2025 et joint à la procédure qu'en",
+          "<em>des</em> opérations d'extraction <em>des</em> <em>données</em> contenues dans le téléphone portable de Monsieur [V] et du rapport",
+          "l'enquête, un accès au contenu <em>des</em> communications ou à <em>des</em> <em>données</em> sensibles n'apparaît pas justifi",
+          "<em>protection</em> du droit au respect de la vie privée, du droit à la <em>protection</em> <em>des</em> <em>données</em> à caractère personnel",
+          "léments objectifs et suffisants, d'autre part, l'accès au contenu <em>des</em> communications ou à <em>des</em> <em>données</em>"
+        ]
+      },
+      "id": "6ad754077a10202137e751ba",
+      "jurisdiction": "cc",
+      "chamber": "cr",
+      "number": "26-80.559",
+      "numbers": [
+        "26-80.559"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:CR01234",
+      "formation": "fs",
+      "publication": [
+        "b",
+        "r"
+      ],
+      "decision_date": "2026-10-20",
+      "solution": "cassation",
+      "type": "other",
+      "summary": "Le principe de primauté du droit de l'Union européenne impose d'assurer le plein effet de ses dispositions en laissant, au besoin, inappliquée toute réglementation contraire de la législation nationale.\nLe droit de l'Union ne s'oppose pas à une réglementation nationale qui octroie aux autorités compétentes la possibilité d'accéder aux données contenues dans un téléphone portable, à des fins de prévention, de recherche, de détection et de poursuite d'infractions pénales en général, si cette réglementation définit de manière suffisamment précise la nature ou les catégories des infractions concernées, garantit le respect du principe de proportionnalité, et soumet l'exercice de cette possibilité à un contrôle préalable d'un juge ou d'une entité administrative indépendante, sauf cas d'urgence dûment justifié, auquel cas ledit contrôle doit intervenir dans de brefs délais.\nCe contrôle préalable, susceptible d'assurer un juste équilibre entre, d'une part, les intérêts liés aux besoins de l'enquête, d'autre part, les droits fondamentaux au respect de la vie privée et à la protection des données à caractère personnel, doit donner lieu à un refus de la mesure si l'existence de soupçons raisonnables à l'égard de la personne concernée d'avoir commis, de commettre ou de projeter de commettre une infraction ou d'être impliquée dans une telle infraction n'est pas étayée par des éléments objectifs et suffisants, ou si, compte tenu de la gravité de l'infraction et des besoins de l'enquête, un accès au contenu des communications ou à des données sensibles n'apparaît pas justifié.\nLa législation française apparaît conforme au droit européen, dès lors que, par une application combinée des articles 53 et 60-3 du code de procédure pénale, l'accès aux données contenues dans un téléphone portable lors d'une enquête de flagrance ne peut concerner que les seuls crimes et délits.\nEn revanche, doivent être écartées les dispositions de l'article 60-3 du code de procédure pénale en ce qu'elles ne prévoient pas un contrôle préalable par une juridiction ou une entité administrative indépendante de l'accès ou de la tentative d'accès aux données contenues dans un téléphone portable.\nL'absence de contrôle indépendant préalable à l'accès ou à la tentative d'accès aux données d'un téléphone portable ne peut faire grief au requérant que s'il établit l'existence d'une ingérence injustifiée dans sa vie privée, de sorte que cet accès aurait dû être prohibé.\nIl appartient, dès lors, à la chambre de l'instruction, saisie d'un tel moyen, de s'assurer que, d'une part, s'il s'agit du téléphone portable d'une personne faisant l'objet d'une enquête pénale, l'existence de soupçons raisonnables à l'égard de celle-ci, d'avoir commis, de commettre ou de projeter de commettre une infraction ou d'être impliquée dans une telle infraction est étayée par des éléments objectifs et suffisants, d'autre part, l'accès au contenu des communications ou à des données sensibles apparaît justifié compte tenu de la gravité de l'infraction et des besoins de l'enquête",
+      "themes": [
+        "union europeenne"
+      ],
+      "files": [
+        {
+          "id": "f4becd769d24eb45f5663cfadd9589db",
+          "type": "prep_rapp",
+          "isCommunication": false,
+          "isPreparatoire": true,
+          "isAttache": false,
+          "date": "2026-10-20",
+          "name": "rapport_2680559.pdf",
+          "size": "347 kB",
+          "url": "https://search.judilibre.io/decision?id=6ad754077a10202137e751ba&fileId=f4becd769d24eb45f5663cfadd9589db",
+          "rawUrl": "https://judilibre-attachments-d0df9293-a1ed-49eb-87d6-59f30784a645.s3.fr-par.scw.cloud/rapport_2680559-f4becd769d24eb45f5663cfadd9589db.pdf"
+        },
+        {
+          "id": "c35fc62296aed12175e43cbe579eb91f",
+          "type": "prep_avis",
+          "isCommunication": false,
+          "isPreparatoire": true,
+          "isAttache": false,
+          "date": "2026-10-20",
+          "name": "avis_2680559.pdf",
+          "size": "181 kB",
+          "url": "https://search.judilibre.io/decision?id=6ad754077a10202137e751ba&fileId=c35fc62296aed12175e43cbe579eb91f",
+          "rawUrl": "https://judilibre-attachments-d0df9293-a1ed-49eb-87d6-59f30784a645.s3.fr-par.scw.cloud/avis_2680559-c35fc62296aed12175e43cbe579eb91f.pdf"
+        }
+      ],
+      "titlesAndSummaries": [
+        {
+          "titles": [
+            "UNION EUROPEENNE"
+          ],
+          "summary": "Le principe de primauté du droit de l'Union européenne impose d'assurer le plein effet de ses dispositions en laissant, au besoin, inappliquée toute réglementation contraire de la législation nationale. Le droit de l'Union ne s'oppose pas à une réglementation nationale qui octroie aux autorités compétentes la possibilité d'accéder aux données contenues dans un téléphone portable, à des fins de prévention, de recherche, de détection et de poursuite d'infractions pénales en général, si cette réglementation définit de manière suffisamment précise la nature ou les catégories des infractions concernées, garantit le respect du principe de proportionnalité, et soumet l'exercice de cette possibilité à un contrôle préalable d'un juge ou d'une entité administrative indépendante, sauf cas d'urgence dûment justifié, auquel cas ledit contrôle doit intervenir dans de brefs délais. Ce contrôle préalable, susceptible d'assurer un juste équilibre entre, d'une part, les intérêts liés aux besoins de l'enquête, d'autre part, les droits fondamentaux au respect de la vie privée et à la protection des données à caractère personnel, doit donner lieu à un refus de la mesure si l'existence de soupçons raisonnables à l'égard de la personne concernée d'avoir commis, de commettre ou de projeter de commettre une infraction ou d'être impliquée dans une telle infraction n'est pas étayée par des éléments objectifs et suffisants, ou si, compte tenu de la gravité de l'infraction et des besoins de l'enquête, un accès au contenu des communications ou à des données sensibles n'apparaît pas justifié. La législation française apparaît conforme au droit européen, dès lors que, par une application combinée des articles 53 et 60-3 du code de procédure pénale, l'accès aux données contenues dans un téléphone portable lors d'une enquête de flagrance ne peut concerner que les seuls crimes et délits. En revanche, doivent être écartées les dispositions de l'article 60-3 du code de procédure pénale en ce qu'elles ne prévoient pas un contrôle préalable par une juridiction ou une entité administrative indépendante de l'accès ou de la tentative d'accès aux données contenues dans un téléphone portable. L'absence de contrôle indépendant préalable à l'accès ou à la tentative d'accès aux données d'un téléphone portable ne peut faire grief au requérant que s'il établit l'existence d'une ingérence injustifiée dans sa vie privée, de sorte que cet accès aurait dû être prohibé. Il appartient, dès lors, à la chambre de l'instruction, saisie d'un tel moyen, de s'assurer que, d'une part, s'il s'agit du téléphone portable d'une personne faisant l'objet d'une enquête pénale, l'existence de soupçons raisonnables à l'égard de celle-ci, d'avoir commis, de commettre ou de projeter de commettre une infraction ou d'être impliquée dans une telle infraction est étayée par des éléments objectifs et suffisants, d'autre part, l'accès au contenu des communications ou à des données sensibles apparaît justifié compte tenu de la gravité de l'infraction et des besoins de l'enquête",
+          "secondaryTitles": []
+        }
+      ],
+      "particularInterest": false
+    },
+    {
+      "score": 0.8041367498223448,
+      "highlights": {
+        "text": [
+          "<em>Des</em> mémoires, en demande et en défense, ainsi que <em>des</em> observations complémentaires, ont été produits",
+          "tait un doctorant, mais l'a déclaré recevable en son intervention et l'a autorisée à récupérer les <em>données</em>",
+          "de la recherche de <em>données</em> numériques n'étant pas expressément prévue par la loi, le président n'était",
+          "loi ou le règlement au sens de l'article L. 712-2 du code de l'éducation, et ce afin de garantir la <em>protection</em>",
+          "<em>des</em> <em>données</em> de recherche imposée par l'article L. 533-4 du code de la recherche, d'ordre public"
+        ]
+      },
+      "id": "6ad753e37a10202137e74fa7",
+      "jurisdiction": "cc",
+      "chamber": "cr",
+      "number": "25-82.338",
+      "numbers": [
+        "25-82.338"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:CR01358",
+      "formation": "frh",
+      "publication": [],
+      "decision_date": "2026-10-20",
+      "solution": "cassation",
+      "type": "other",
+      "files": [],
+      "titlesAndSummaries": [],
+      "particularInterest": false
+    },
+    {
+      "score": 1,
+      "highlights": {
+        "text": [
+          "<em>des</em> personnes physiques à l'égard du traitement <em>des</em> <em>données</em> à caractère personnel et à la libre circulation",
+          "de ces <em>données</em>, et abrogeant la directive 95/46/CE (règlement général sur la <em>protection</em> <em>des</em> <em>données</em>",
+          "<em>des</em> personnes physiques à l'égard du traitement <em>des</em> <em>données</em> à caractère personnel et à la libre circulation",
+          "<em>données</em> ou <em>des</em> ensembles de <em>données</em> à caractère personnel, telles que la collecte, l'enregistrement",
+          "<em>des</em> <em>données</em> à caractère personnel, notamment lorsque la personne concernée est un enfant"
+        ]
+      },
+      "id": "6ac6079ec27382d099f5a06e",
+      "jurisdiction": "cc",
+      "chamber": "soc",
+      "number": "25-10.664",
+      "numbers": [
+        "25-10.664",
+        "25-10.664"
+      ],
+      "ecli": "ECLI:FR:CCASS:2026:SO00813",
+      "formation": "fs",
+      "publication": [
+        "b"
+      ],
+      "decision_date": "2026-10-07",
+      "solution": "rejet",
+      "type": "other",
+      "summary": "En application des articles L. 2315-34 et D. 2315-27 du code du travail, l'enregistrement ou la sténographie des séances du comité social et économique a pour seule finalité la rédaction du procès-verbal des délibérations de l'instance, dont l'établissement est une prérogative exclusive du secrétaire du comité.\nAyant constaté que l'employeur avait enregistré les séances du comité social et économique et de ses commissions afin de contrôler la fidélité de la retranscription des débats dans les procès-verbaux des réunions, tracer le bon déroulement de celles-ci et se constituer des éléments de preuve du contenu des échanges, une cour d'appel en a exactement déduit que l'employeur avait recueilli les données personnelles des représentants du personnel au sens de l'article 4, § 1, du règlement (UE) n° 2016/679 du Parlement européen et du Conseil du 27 avril 2016, relatif à la protection des personnes physiques à l'égard du traitement des données à caractère personnel et à la libre circulation de ces données (RGPD) et qu'il avait procédé aux enregistrements litigieux à des fins étrangères à l'obligation légale d'établissement par le secrétaire du comité des procès-verbaux des délibérations de l'instance, en sorte que l'employeur ne poursuivait pas un intérêt légitime justifiant la nécessité desdits enregistrements en application de l'article 6, § 1, du RGPD",
+      "themes": [
+        "representation des salaries",
+        "comité social et économique",
+        "fonctionnement",
+        "fonctionnement dans les entreprises d'au moins cinquante salariés",
+        "réunions",
+        "enregistrement ou sténographie",
+        "finalité",
+        "rédaction du procès-verbal des délibérations",
+        "prérogative exclusive du secrétaire du comité",
+        "effets",
+        "enregistrement par l'employeur des réunions",
+        "poursuite d'un intérêt légitime (non)",
+        "portée"
+      ],
+      "files": [
+        {
+          "id": "1d87020afb6307d37f249e6bc85ad9cb",
+          "type": "prep_rapp",
+          "isCommunication": false,
+          "isPreparatoire": true,
+          "isAttache": false,
+          "date": "2026-10-07",
+          "name": "rapport_2510664.pdf",
+          "size": "441 kB",
+          "url": "https://search.judilibre.io/decision?id=6ac6079ec27382d099f5a06e&fileId=1d87020afb6307d37f249e6bc85ad9cb",
+          "rawUrl": "https://judilibre-attachments-d0df9293-a1ed-49eb-87d6-59f30784a645.s3.fr-par.scw.cloud/rapport_2510664-1d87020afb6307d37f249e6bc85ad9cb.pdf"
+        },
+        {
+          "id": "3351ecae9381015492ccfe05e99ecd08",
+          "type": "prep_avis",
+          "isCommunication": false,
+          "isPreparatoire": true,
+          "isAttache": false,
+          "date": "2026-10-07",
+          "name": "avis_2510664.pdf",
+          "size": "207 kB",
+          "url": "https://search.judilibre.io/decision?id=6ac6079ec27382d099f5a06e&fileId=3351ecae9381015492ccfe05e99ecd08",
+          "rawUrl": "https://judilibre-attachments-d0df9293-a1ed-49eb-87d6-59f30784a645.s3.fr-par.scw.cloud/avis_2510664-3351ecae9381015492ccfe05e99ecd08.pdf"
+        }
+      ],
+      "titlesAndSummaries": [
+        {
+          "titles": [
+            "REPRESENTATION DES SALARIES",
+            "Comité social et économique",
+            "Fonctionnement",
+            "Fonctionnement dans les entreprises d'au moins cinquante salariés",
+            "Réunions",
+            "Enregistrement ou sténographie",
+            "Finalité",
+            "Rédaction du procès-verbal des délibérations",
+            "Prérogative exclusive du secrétaire du comité",
+            "Effets",
+            "Enregistrement par l'employeur des réunions",
+            "Poursuite d'un intérêt légitime (non)",
+            "Portée"
+          ],
+          "summary": "En application des articles L. 2315-34 et D. 2315-27 du code du travail, l'enregistrement ou la sténographie des séances du comité social et économique a pour seule finalité la rédaction du procès-verbal des délibérations de l'instance, dont l'établissement est une prérogative exclusive du secrétaire du comité. Ayant constaté que l'employeur avait enregistré les séances du comité social et économique et de ses commissions afin de contrôler la fidélité de la retranscription des débats dans les procès-verbaux des réunions, tracer le bon déroulement de celles-ci et se constituer des éléments de preuve du contenu des échanges, une cour d'appel en a exactement déduit que l'employeur avait recueilli les données personnelles des représentants du personnel au sens de l'article 4, § 1, du règlement (UE) n° 2016/679 du Parlement européen et du Conseil du 27 avril 2016, relatif à la protection des personnes physiques à l'égard du traitement des données à caractère personnel et à la libre circulation de ces données (RGPD) et qu'il avait procédé aux enregistrements litigieux à des fins étrangères à l'obligation légale d'établissement par le secrétaire du comité des procès-verbaux des délibérations de l'instance, en sorte que l'employeur ne poursuivait pas un intérêt légitime justifiant la nécessité desdits enregistrements en application de l'article 6, § 1, du RGPD",
+          "secondaryTitles": [
+            [
+              "UNION EUROPEENNE",
+              "Règlement (UE) 2016/679 du Parlement européen et du Conseil du 27 avril 2016",
+              "Principes relatifs au traitement des données à caractère personnel",
+              "Liceité du traitement",
+              "Conditions",
+              "Traitement nécessaire aux fins des intérêts légitimes poursuivis par le responsable du traitement ou par un tiers",
+              "Applications diverses",
+              "Enregistrement par l'employeur des réunions du comité social et économique",
+              "Poursuite d'un intérêt légitime (non)",
+              "Portée"
+            ]
+          ]
+        }
+      ],
+      "particularInterest": false
+    }
+  ],
+  "relaxed": false,
+  "searchQuery": "{\"index\":\"judilibre_0\",\"preference\":\"preventbouncingresults\",\"explain\":false,\"from\":0,\"size\":50,\"_source\":true,\"body\":{\"track_scores\":true,\"query\":{\"function_score\":{\"query\":{\"bool\":{\"filter\":[{\"terms\":{\"jurisdiction\":[\"cc\"]}},{\"range\":{\"decision_date\":{\"gte\":\"2026-10-02\",\"lte\":\"2026-11-01\"}}}],\"must\":{\"simple_query_string\":{\"query\":\"\\\"protection des données\\\"\",\"fields\":[\"text.exact\"],\"default_operator\":\"AND\",\"auto_generate_synonyms_phrase_query\":false,\"fuzzy_max_expansions\":0,\"fuzzy_transpositions\":false}}}},\"boost\":5,\"score_mode\":\"max\",\"boost_mode\":\"multiply\"}},\"sort\":[{\"decision_date\":\"desc\"}],\"highlight\":{\"fields\":{\"text.exact\":{}}}}}",
+  "date": "2026-11-01T11:30:10.532Z"
+}
