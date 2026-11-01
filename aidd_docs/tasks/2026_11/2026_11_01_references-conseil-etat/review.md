@@ -46,3 +46,17 @@ Confiance : **88 %**. Aucun bloqueur.
 - Reconstituer un journal de passe complète, et décider du sort de l'écrasement quotidien.
 - Reconnaître la directive ePrivacy nommée par sa date.
 - Partager le type de résultat des sources API.
+
+## Passe 2 — précision et journal
+
+Statut : **cleared** sur `020bfb7` ; confiance 90 %, aucun bloqueur.
+
+| Constat | Suite |
+| ------- | ----- |
+| « selon les requérantes », « selon une partie », « selon cette partie » passaient encore. | Corrigé : préfixes définis, indéfinis et démonstratifs, formes plurielles et féminines (`défenderesse`, `demanderesse`). |
+| « se plaint de ce que, en vertu de… » passait. | Corrigé : le connecteur `de ce que` est reconnu. |
+| Le contrat ne nommait pas les sept verbes de grief. | Corrigé : la spec les nomme, `testing.md` les liste. |
+| Journal : aucune erreur ; l'écriture reste non atomique entre deux passes concurrentes. | Note : même limite qu'avant, hors périmètre. |
+| Limite assumée : « reproche à la CNIL d'avoir, en application de… » n'est pas couvert. | Documenté comme limite de l'heuristique. |
+
+Validation : `npm test` 238 tests, 0 échec ; typecheck et build propres ; les neuf entrées CETAT rejouées depuis `data/raw` sont identiques.

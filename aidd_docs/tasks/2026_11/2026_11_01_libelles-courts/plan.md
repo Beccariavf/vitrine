@@ -1,6 +1,6 @@
 ---
 objective: "Chaque pastille de référence affiche le nom court d'un instrument connu, sans changer la donnée ni le lien officiel."
-status: pending
+status: completed
 ---
 
 # Plan: Libellés courts des références

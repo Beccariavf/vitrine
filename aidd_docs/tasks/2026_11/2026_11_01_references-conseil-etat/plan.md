@@ -1,6 +1,6 @@
 ---
 objective: "Les décisions du Conseil d'État affichent les articles des textes qu'elles appliquent, lus dans leur texte intégral et sous le plafond PISTE inchangé."
-status: pending
+status: completed
 ---
 
 # Plan: Références des décisions du Conseil d'État
