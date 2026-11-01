@@ -298,12 +298,22 @@ const CETAT_ARTICLE_OPENING = /\bL['’]articles?\s+((?:[LRD]\.\s*)?\d+(?:er)?(?
 /** Ouverture de phrase : début du texte, après une ponctuation forte ou un numéro de point. */
 const CETAT_SENTENCE_START = /(?:^|[.!?;:»]\s+|\d+\.\s+)$/;
 
-/** Marqueur de discours rapporté : la formule qui suit énonce un grief, pas une règle appliquée. */
+/** Marqueur de discours rapporté qui introduit directement la formule : la suite est un grief. */
 const CETAT_REPORTED =
-  /\b(?:soutient|soutiennent|selon|invoque|invoquent|allègue|allèguent|fait valoir|reproche|grief|moyen)\b[^.!?;:]{0,80}$/i;
+  /\b(?:soutient|soutiennent|est soutenu|sont soutenus|allègue|allèguent|invoque|invoquent|fait valoir|font valoir|moyen tiré de ce que)\s*(?:qu['’])?\s*,?\s*$/i;
 
 /** Ponctuation qui ferme une proposition : l'instrument doit la précéder. */
 const CETAT_CLAUSE_END = /[.;:,«»]/;
+
+/**
+ * Les motifs commencent à « Considérant ce qui suit » : avant, ce sont les visas
+ * et les moyens des parties, où une formule d'application peut n'être qu'un grief.
+ * Sans ce repère, rien n'est extrait plutôt que de risquer un grief.
+ */
+function reasoningPart(text: string): string {
+  const match = text.match(/Considérant ce qui suit\s*:/i);
+  return match === null ? "" : text.slice((match.index ?? 0) + match[0].length);
+}
 
 /** Ramène le texte de la décision à la forme que lisent les motifs. */
 function normalizeCetatText(text: string): string {
@@ -342,17 +352,16 @@ function formulaReferences(text: string): Map<string, string[]> {
     const gap = rest.slice(0, article.index ?? 0);
     if (CETAT_CLAUSE_END.test(gap)) continue;
 
-    // Une formule introduite par « soutient que », « selon » ou « moyen » énonce
-    // un grief : on ne remonte que jusqu'à la ponctuation qui ouvre la proposition.
-    const before = text.slice(Math.max(0, (formula.index ?? 0) - 120), formula.index ?? 0);
-    const sentence = Math.max(
-      before.lastIndexOf("."),
-      before.lastIndexOf("!"),
-      before.lastIndexOf("?"),
-      before.lastIndexOf(";"),
-      before.lastIndexOf(":"),
-    );
-    if (CETAT_REPORTED.test(sentence === -1 ? before : before.slice(sentence + 1))) continue;
+    // « Il résulte de l'instruction que … » n'énonce pas une règle appliquée :
+    // la formule doit porter sur un article ou sur ses dispositions.
+    if (/^il résulte$/i.test(formula[0]) && !/^\s*(?:de\s+l['’]articles?|des\s+dispositions)/i.test(rest)) {
+      continue;
+    }
+
+    // Une formule directement introduite par « soutient que » ou « est soutenu »
+    // énonce un grief, même dans les motifs.
+    const before = text.slice(Math.max(0, (formula.index ?? 0) - 40), formula.index ?? 0);
+    if (CETAT_REPORTED.test(before)) continue;
 
     const articles = cnilArticleNumbers(article[1] ?? "");
     if (articles.length === 0) continue;
@@ -423,10 +432,12 @@ function considerantReferences(text: string): Map<string, string[]> {
  * tournure « les dispositions de l'article » ne déclenche rien.
  */
 export function extractCetatReferences(text: string): string[] {
-  const normalized = normalizeCetatText(text);
-  const byInstrument = formulaReferences(normalized);
+  const reasoning = reasoningPart(normalizeCetatText(text));
+  if (reasoning === "") return [];
 
-  for (const [label, articles] of considerantReferences(normalized)) {
+  const byInstrument = formulaReferences(reasoning);
+
+  for (const [label, articles] of considerantReferences(reasoning)) {
     addArticles(byInstrument, label, articles);
   }
 

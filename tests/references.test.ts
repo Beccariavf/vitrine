@@ -14,6 +14,12 @@ const CETAT = JSON.parse(readFileSync(new URL("./fixtures/cetat/textes.json", im
   { id: string; text: string }
 >;
 
+
+/** Le début des motifs : avant, ce sont les visas et les moyens des parties. */
+function motifs(text: string): string {
+  return `Considérant ce qui suit : ${text}`;
+}
+
 function cetatText(number: string): string {
   const decision = CETAT[number];
   if (decision === undefined) throw new Error(`missing CETAT fixture ${number}`);
@@ -306,8 +312,8 @@ describe("les références du Conseil d'État", () => {
     // « aux termes », et l'article 8 de la LIL, cité « en vertu des dispositions
     // du I de l'article 8 » ; les notes du plan n'en attendaient que deux.
     assert.deepEqual(extractCetatReferences(cetatText("501268")), [
-      "Code des postes et des communications électroniques · art. L. 34-5",
       "Loi Informatique et Libertés · art. 8, 82, 20",
+      "Code des postes et des communications électroniques · art. L. 34-5",
       "Règlement (UE) 2016/679 · art. 83",
     ]);
   });
@@ -339,54 +345,87 @@ describe("les références du Conseil d'État", () => {
     assert.equal(lil, "Loi Informatique et Libertés · art. 8, 82, 20");
   });
 
-  it("écarte une formule introduite par un grief", () => {
+  it("ignore les moyens des parties, avant les motifs", () => {
     assert.deepEqual(
       extractCetatReferences(
-        "Le requérant soutient qu'en vertu de l'article 82 de la loi du 6 janvier 1978, la CNIL a commis une erreur.",
+        "Il soutient que : - a méconnu les dispositions de l'article L. 34-5 du code des postes et des communications électroniques, sur le fondement de l'article 82 de la loi du 6 janvier 1978.",
+      ),
+      [],
+    );
+  });
+
+  it("écarte une formule introduite par un grief dans les motifs", () => {
+    assert.deepEqual(
+      extractCetatReferences(
+        motifs("Le requérant soutient qu'en vertu de l'article 82 de la loi du 6 janvier 1978, la CNIL a commis une erreur."),
       ),
       [],
     );
     assert.deepEqual(
-      extractCetatReferences("Le moyen tiré de ce que, sur le fondement de l'article 83 du RGPD, l'amende est excessive."),
+      extractCetatReferences(motifs("Il est soutenu, sur le fondement de l'article 83 du RGPD, que l'amende est excessive.")),
       [],
+    );
+    assert.deepEqual(
+      extractCetatReferences(motifs("Le moyen tiré de ce que, sur le fondement de l'article 83 du RGPD, l'amende est excessive.")),
+      [],
+    );
+  });
+
+  it("garde une formule appliquée qui suit un moyen écarté", () => {
+    assert.deepEqual(
+      extractCetatReferences(
+        motifs("Le moyen étant écarté, aux termes de l'article 82 de la loi du 6 janvier 1978, la CNIL peut sanctionner."),
+      ),
+      ["Loi Informatique et Libertés · art. 82"],
+    );
+  });
+
+  it("ne retient pas une règle qui constate l'inapplication", () => {
+    assert.deepEqual(
+      extractCetatReferences(motifs("Il résulte de l'instruction que les données ne relèvent pas de l'article 2 du RGPD.")),
+      [],
+    );
+    assert.deepEqual(
+      extractCetatReferences(motifs("Il résulte des dispositions de l'article 5 du RGPD que le traitement est licite.")),
+      ["Règlement (UE) 2016/679 · art. 5"],
     );
   });
 
   it("ne retient pas un grief ni « les dispositions de l'article »", () => {
     assert.deepEqual(
       extractCetatReferences(
-        "Le requérant soutient que la décision méconnaît les dispositions de l'article 82 de la loi du 6 janvier 1978.",
+        motifs("Le requérant soutient que la décision méconnaît les dispositions de l'article 82 de la loi du 6 janvier 1978."),
       ),
       [],
     );
     assert.deepEqual(
-      extractCetatReferences("Il soutient une violation de l'article 15 du RGPD et de l'article 16 du même règlement."),
+      extractCetatReferences(motifs("Il soutient une violation de l'article 15 du RGPD et de l'article 16 du même règlement.")),
       [],
     );
   });
 
   it("ne rend rien pour une anaphore sans instrument nommé", () => {
-    assert.deepEqual(extractCetatReferences("L'article 16 du même règlement permet à la personne concernée d'agir."), []);
+    assert.deepEqual(extractCetatReferences(motifs("L'article 16 du même règlement permet à la personne concernée d'agir.")), []);
     assert.deepEqual(extractCetatReferences(""), []);
   });
 
   it("lit les plages et reconnaît les instruments canoniques", () => {
     assert.deepEqual(
-      extractCetatReferences("Aux termes des articles 5 à 7 du règlement (UE) 2016/679, le responsable …"),
+      extractCetatReferences(motifs("Aux termes des articles 5 à 7 du règlement (UE) 2016/679, le responsable …")),
       ["Règlement (UE) 2016/679 · art. 5–7"],
     );
     assert.deepEqual(
       extractCetatReferences(
-        "Aux termes de l'article 5 de la directive 2002/58/CE, l'utilisation des cookies est encadrée.",
+        motifs("Aux termes de l'article 5 de la directive 2002/58/CE, l'utilisation des cookies est encadrée."),
       ),
       ["Directive 2002/58/CE · art. 5"],
     );
     assert.deepEqual(
-      extractCetatReferences("Aux termes de l'article 6 du règlement (UE) 2024/1689, le système est conforme."),
+      extractCetatReferences(motifs("Aux termes de l'article 6 du règlement (UE) 2024/1689, le système est conforme.")),
       ["Règlement (UE) 2024/1689 · art. 6"],
     );
     assert.deepEqual(
-      extractCetatReferences("Aux termes de l'article L. 34-5 du code des postes et des communications électroniques,"),
+      extractCetatReferences(motifs("Aux termes de l'article L. 34-5 du code des postes et des communications électroniques,")),
       ["Code des postes et des communications électroniques · art. L. 34-5"],
     );
   });
