@@ -304,6 +304,26 @@ describe("une entrée illisible", () => {
     }
   });
 
+  it("masque une décision Judilibre sans visa exploitable", () => {
+    const root = tempRoot();
+    try {
+      writeEntry(root, "sans-visa", entry({ source: "judilibre", title: "Sans visa", url: "https://www.courdecassation.fr/decision/sans" }));
+      writeEntry(root, "avec-visa", entry({
+        source: "judilibre",
+        title: "Avec visa",
+        url: "https://www.courdecassation.fr/decision/avec",
+        references: ["Règlement (UE) 2016/679 · art. 6"],
+      }));
+
+      const themes = [
+        { id: "donnees-personnelles", label: "DP", description: "", instruments: ["x"], terms: ["x"], sources: ["x"], active: true },
+      ];
+      assert.deepEqual(getVisibleEntries(root, themes).map((item) => item.title), ["Avec visa"]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("lève une erreur quand le résumé est vide ou d'un autre type", () => {
     const root = tempRoot();
     try {

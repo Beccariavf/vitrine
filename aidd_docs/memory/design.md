@@ -24,7 +24,7 @@ La langue visuelle : jetons, typographie, modules et conventions. Ce que ça res
 - Chaque publication porte un badge de matière rouge et son label de source.
 - Chaque carte porte un en-tête coloré avec le grand jour et la source, puis un corps papier avec titre, résumé, références et « Lire ». Le cycle rouge → bleu → jaune → béton casse les colonnes uniformes ; le béton joue la fenêtre neutre.
 - La carte n'est pas un lien unique : le titre, « Lire » et chaque pastille de référence sont des liens distincts, tous ouverts dans un nouvel onglet (`target="_blank"`, `rel="noopener"`) pour ne pas quitter la veille. L'en-tête et les matières ne sont pas cliquables.
-- Les références juridiques sont des pastilles mono à filet 1 px sous le résumé : instrument + articles, jamais un texte long sur la couleur. Une pastille connue ouvre son texte officiel ; un instrument inconnu reste un texte.
+- Les références juridiques sont des pastilles mono à filet 1 px sous le résumé : instrument + articles, jamais un texte long sur la couleur. Une pastille connue ouvre son texte officiel ; un instrument inconnu reste un texte. Une décision de la Cour de cassation sans référence n'est pas publiée.
 - La tête de veille affiche le compte des publications et la dernière date ; le sélecteur porte les matières actives en lecture seule. Le pied de page crédite Légifrance, la Cour de cassation et EUR-Lex (CC BY 4.0).
 - Le texte long n'est jamais posé sur un aplat coloré : les en-têtes colorés ne portent que le jour et la source.
 - Survol : translation de 2 px et ombre dure qui grandit ; ligne de veille sur papier ; le texte courant ne change jamais de couleur, seuls les contrôles de navigation inversent encre et papier.

@@ -53,7 +53,7 @@ function fakeFetch(calls: string[], decision = DECISION, search = SEARCH): Fetch
 }
 
 /** L'enrichissement d'une source qui en rend un, ou l'échec explicite du test. */
-function enrichOf(result: { enrich?: (entry: Entry) => Promise<string[]> }): (entry: Entry) => Promise<string[]> {
+function enrichOf(result: { enrich?: (entry: Entry) => Promise<string[] | null> }): (entry: Entry) => Promise<string[] | null> {
   assert.ok(result.enrich, "la source Judilibre doit porter un enrichissement");
   return result.enrich;
 }
@@ -216,7 +216,7 @@ describe("la source Judilibre", () => {
     assert.equal(session.remainingCalls(), 0);
     const entry = assignThemes(result.entries, THEMES)[0];
     assert.ok(entry);
-    assert.deepEqual(await enrichOf(result)(entry), []);
+    assert.equal(await enrichOf(result)(entry), null);
     assert.equal(calls.filter((url) => url.includes("/decision")).length, 0);
     assert.match(result.warnings[0] ?? "", /budget exhausted/);
   });

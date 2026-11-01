@@ -20,7 +20,7 @@ status: completed
 | Setup        | Construire le site depuis les données | `dist/veille/index.html` existe | cli |
 | Happy path   | Ouvrir une carte avec référence | La pastille est un lien officiel, nouvel onglet | cli |
 | Happy path   | Ouvrir la carte CNIL FNAC | La pastille `Loi Informatique et Libertés · art. 82` est inchangée | cli |
-| Edge case    | Afficher une référence inconnue | La pastille reste un texte sans lien | cli |
+| Edge case    | Afficher une référence inconnue ou une décision Judilibre sans visa | La pastille inconnue reste un texte ; la décision sans visa n'apparaît pas | cli |
 | Teardown     | Supprimer la sortie de build | Aucun artefact | cli |
 
 ## Wireframe
@@ -76,7 +76,8 @@ status: completed
 1. Lancer `npm run build`.
 2. Chercher les URL officielles et `target="_blank"` dans `dist/veille/index.html`.
 3. Vérifier que la carte FNAC porte toujours `Loi Informatique et Libertés · art. 82`.
-4. Lancer `npm test`.
+4. Vérifier qu'une décision Judilibre sans visa n'apparaît pas dans la page.
+5. Lancer `npm test`.
 
 ## Test acceptance criteria
 
@@ -85,4 +86,4 @@ status: completed
 | 1 | RGPD, LIL, CPCE, ePrivacy et Code de la consommation rendent l'URL officielle ; un instrument inconnu rend `null`. |
 | 2 | Le titre, « Lire » et chaque pastille sont des liens distincts. |
 | 3 | Les liens d'actualité et de référence portent `target="_blank"` et `rel="noopener"`. |
-| 4 | Le build produit une page avec les URL officielles, les liens en nouvel onglet, et la carte FNAC inchangée. |
+| 4 | Le build produit une page avec les URL officielles, les liens en nouvel onglet, la carte FNAC inchangée et aucune décision Judilibre sans visa. |

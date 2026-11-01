@@ -55,10 +55,11 @@ export type ApiResult = {
   warnings: string[];
   /**
    * Enrichissement optionnel, appelé après le rattachement et seulement pour une
-   * entrée nouvelle ou sans référence écrite. Il rend les références de l'entrée
-   * et peut pousser ses réponses brutes dans `raw`.
+   * entrée pas encore écrite. Il rend les références de l'entrée, `null` quand le
+   * visa n'a pas pu être lu (l'entrée est différée), ou `[]` quand le visa est vide.
+   * Il peut pousser ses réponses brutes dans `raw`.
    */
-  enrich?: (entry: Entry) => Promise<string[]>;
+  enrich?: (entry: Entry) => Promise<string[] | null>;
 };
 
 export type ApiContext = {
@@ -244,11 +245,15 @@ export async function run({
             }
 
             try {
-              enriched.push({ ...entry, references: await enrich(entry) });
+              const references = await enrich(entry);
+              if (references === null) {
+                warnings.push(`${source.id} entry ${entry.id}: visa not read, entry deferred`);
+                continue;
+              }
+              enriched.push({ ...entry, references });
             } catch (error) {
               const reason = error instanceof Error ? error.message : String(error);
-              warnings.push(`${source.id} entry ${entry.id}: ${reason}`);
-              enriched.push({ ...entry, references: [] });
+              warnings.push(`${source.id} entry ${entry.id}: visa not read (${reason}), entry deferred`);
             }
           }
 

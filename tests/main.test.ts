@@ -39,7 +39,7 @@ function entry(overrides: Partial<Entry> = {}): Entry {
  * qui note chaque appel et ajoute sa propre réponse brute.
  */
 function apiSource(
-  options: { entry?: Entry; references?: string[]; fail?: boolean; calls?: string[] } = {},
+  options: { entry?: Entry; references?: string[]; fail?: boolean; defer?: boolean; calls?: string[] } = {},
 ): ApiSource {
   const calls = options.calls ?? [];
   const source: ApiSource = {
@@ -51,9 +51,10 @@ function apiSource(
         raw,
         entries: [options.entry ?? entry()],
         warnings: [],
-        async enrich(current: Entry): Promise<string[]> {
+        async enrich(current: Entry): Promise<string[] | null> {
           calls.push(current.id);
           if (options.fail === true) throw new Error("HTTP 503");
+          if (options.defer === true) return null;
           raw.push('{"visa":[{"title":"Article 6 du RGPD"}]}');
           return options.references ?? [VISA];
         },
@@ -157,7 +158,7 @@ describe("l'enrichissement d'une source API", () => {
   );
 
   it(
-    "garde l'entrée sans référence et avertit quand l'enrichissement échoue",
+    "diffère l'entrée sans la perdre quand l'enrichissement échoue",
     withRoot(async (temp) => {
       const result = await run({
         fetchImpl: NO_FETCH,
@@ -166,8 +167,23 @@ describe("l'enrichissement d'une source API", () => {
         themes: THEMES,
       });
 
-      assert.deepEqual(readWritten(temp, "0123456789abcdef").references, []);
-      assert.match(result.warnings.join(" "), /factice entry 0123456789abcdef: HTTP 503/);
+      assert.throws(() => readFileSync(entryPath(temp, "0123456789abcdef")), /ENOENT/);
+      assert.match(result.warnings.join(" "), /factice entry 0123456789abcdef: visa not read \(HTTP 503\), entry deferred/);
+    }),
+  );
+
+  it(
+    "diffère l'entrée quand le visa n'a pas été lu",
+    withRoot(async (temp) => {
+      const result = await run({
+        fetchImpl: NO_FETCH,
+        rootDir: temp,
+        sources: [apiSource({ defer: true })],
+        themes: THEMES,
+      });
+
+      assert.throws(() => readFileSync(entryPath(temp, "0123456789abcdef")), /ENOENT/);
+      assert.match(result.warnings.join(" "), /visa not read, entry deferred/);
     }),
   );
 

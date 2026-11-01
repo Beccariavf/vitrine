@@ -52,4 +52,5 @@ Source: aidd_docs/tasks/2026_11/2026_11_01_visa-decisions-sanctions/spec.md
 | Enrichir les sources API après le rattachement, via un crochet porté par le résultat de la source. | Garde le rattachement central et évite de lire le visa des décisions écartées. |
 | Conserver la matière de la requête Judilibre sur chaque résultat. | Une décision peut ne correspondre que par son visa ; sans cet indice, elle serait écartée avant d'être lue. |
 | Dériver l'URL de référence du libellé canonique au build. | Préserve le contrat de données et couvre toutes les sources avec une seule table. |
+| Ne pas publier une décision de la Cour de cassation sans visa exploitable. | Une carte sans référence n'apporte pas le clin d'œil attendu et laisserait passer des décisions trouvées par un nom de partie. |
 | Lire le visa de la Cour de cassation par décision, sous le plafond, plutôt qu'en export global. | L'export non abrégé porte le texte intégral ; la lecture par décision reste bornée. |

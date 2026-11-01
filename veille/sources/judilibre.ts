@@ -117,7 +117,7 @@ type JudilibreApiResult = {
   raw: string[];
   entries: Entry[];
   warnings: string[];
-  enrich?: (entry: Entry) => Promise<string[]>;
+  enrich?: (entry: Entry) => Promise<string[] | null>;
 };
 
 /**
@@ -186,10 +186,10 @@ export async function fetchEntries({
     entries: [...byId.values()],
     warnings,
     /** Lit le visa d'une décision retenue, sous le budget restant de la passe. */
-    async enrich(entry: Entry): Promise<string[]> {
+    async enrich(entry: Entry): Promise<string[] | null> {
       if (session.remainingCalls() <= 0) {
-        warnings.push(`judilibre decision ${entry.id}: PISTE call budget exhausted, visa not read`);
-        return [];
+        warnings.push(`judilibre decision ${entry.id}: PISTE call budget exhausted, entry deferred`);
+        return null;
       }
 
       const response = await session.judilibreDecision(fetchImpl, entry.id);

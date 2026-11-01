@@ -23,7 +23,7 @@ status: completed
 | ------------ | ----------------------- | -------------------- | ------------------------------- |
 | Setup        | Secrets PISTE simulés et journal remis à zéro | La session est prête | cli |
 | Happy path   | Rechercher puis enrichir la décision | L'entrée porte le visa et le JSON de décision est snapshoté | cli |
-| Edge case    | Plafond atteint, entrée déjà écrite même sans référence, visa vide ou instrument hors matières | Aucun appel inutile, références conservées ou vides, avertissement | cli |
+| Edge case    | Plafond atteint, entrée déjà écrite, visa vide, instrument hors matières ou panne | Entrée différée si le visa n'est pas lu ; références vides seulement si le visa est vide ; avertissement | cli |
 | Teardown     | Restaurer l'environnement et vider le journal | État initial | cli |
 
 ## Tasks to do
@@ -42,7 +42,7 @@ status: completed
 
 1. Ajouter `enrich?: (entry) => Promise<string[]>` à `ApiResult`.
 2. Dans `run`, enrichir après `assignThemes`, ne pas rappeler une entrée déjà écrite, écrire les snapshots bruts après l'enrichissement.
-3. Tester avec `tests/main.test.ts` : entrée nouvelle enrichie, entrée existante non rappelée.
+3. Tester avec `tests/main.test.ts` : entrée nouvelle enrichie, entrée existante non rappelée, visa non lu différé.
 
 ### `3)` Brancher Judilibre
 
@@ -66,6 +66,6 @@ status: completed
 | Task | Acceptance criteria              |
 | ---- | -------------------------------- |
 | 1 | Un appel `/decision` porte le `KeyId` et apparaît au journal. |
-| 2 | Une entrée nouvelle reçoit le visa ; une entrée déjà écrite, même sans référence, n'est pas rappelée. |
-| 3 | Une décision trouvée par une matière survit au rattachement même si son résumé la tait ; une décision enrichie expose `Règlement (UE) 2016/679 · art. 4, 5, 6` ; un visa vide ou un instrument hors matières laisse `[]` et un avertissement si le plafond est atteint. |
+| 2 | Une entrée nouvelle reçoit le visa ; une entrée déjà écrite n'est pas rappelée ; une panne ou un plafond diffère l'entrée, qui sera relue. |
+| 3 | Une décision trouvée par une matière survit au rattachement même si son résumé la tait ; une décision enrichie expose `Règlement (UE) 2016/679 · art. 4, 5, 6` ; un visa vide ou un instrument hors matières laisse `[]`. |
 | 4 | Les tests Judilibre et PISTE passent hors ligne, avec le visa réel de 25-10.664. |
