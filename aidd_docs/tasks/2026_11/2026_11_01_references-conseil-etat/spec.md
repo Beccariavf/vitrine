@@ -9,7 +9,7 @@ Les cartes des décisions du Conseil d'État affichent les articles des textes d
 - Les articles sont extraits du texte intégral de la décision, pas du titre ni du résumé.
 - Seuls les motifs sont lus, après « Considérant ce qui suit » ; un moyen ou un grief cité avant ne produit rien.
 - Dans les motifs, seuls les articles introduits par une formule d'application ou une phrase de considérant sont retenus : « aux termes », « il résulte des dispositions (combinées) », « en vertu », « en application », « sur le fondement », « L'article X du … garantit/permet/prévoit », et l'anaphore « du même règlement/loi/code/directive » quand elle ouvre une phrase et qu'un verbe d'application la suit.
-- Une formule introduite par un verbe de grief (« soutient », « allègue », « invoque », « fait valoir », « reproche », « conteste », « se plaint »), par « selon une partie » (y compris les formes plurielles et indéfinies) ou par « moyen/grief tiré de ce que » est ignorée ; « il résulte de l'instruction » ne déclenche rien.
+- Une formule introduite par un verbe de grief (« soutient », « est soutenu », « allègue », « invoque », « fait valoir », « reproche », « conteste », « se plaint »), par « selon une partie » (y compris les formes plurielles et indéfinies) ou par « moyen/grief tiré de ce que » est ignorée ; « il résulte de l'instruction » ne déclenche rien.
 - Un article cité au titre d'un grief ou d'un manquement n'est jamais affiché.
 - Seuls les instruments rattachés aux matières de l'entrée sont retenus ; la lecture ne crée pas de matière.
 - Une pastille n'apparaît que si au moins un article est trouvé ; l'instrument seul n'est pas affiché.

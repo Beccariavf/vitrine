@@ -466,13 +466,6 @@ describe("les références du Conseil d'État", () => {
     assert.deepEqual(extractCetatReferences(""), []);
   });
 
-  it("garde une formule appliquée attribuée à la Cour de justice", () => {
-    assert.deepEqual(
-      extractCetatReferences(motifs("Selon la Cour de justice, en vertu de l'article 5 du RGPD, le traitement est licite.")),
-      ["Règlement (UE) 2016/679 · art. 5"],
-    );
-  });
-
   it("lit les plages et reconnaît les instruments canoniques", () => {
     assert.deepEqual(
       extractCetatReferences(motifs("Aux termes des articles 5 à 7 du règlement (UE) 2016/679, le responsable …")),

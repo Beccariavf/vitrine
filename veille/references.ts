@@ -304,7 +304,7 @@ const CETAT_GRIEVANCE =
 
 /** « Selon la requérante » : le locuteur d'un grief, à distinguer d'une formule appliquée. */
 const CETAT_SELON_PARTY =
-  /\bselon\s+(?:l['’]|la\s+|le\s+|les\s+|un\s+|une\s+|cette\s+|ces\s+)?(?:requérant(?:e)?s?|société?s?|partie?s?|ministre?s?|administration?s?|CNIL|défendeur(?:e)?s?|demandeur(?:e)?s?|elles|elle|eux|lui)(?![\p{L}\p{N}])[^.;:]{0,40},\s*$/iu;
+  /\bselon\s+(?:l['’]|la\s+|le\s+|les\s+|un\s+|une\s+|cette\s+|ces\s+)?(?:requérant(?:e)?s?|société?s?|partie?s?|ministre?s?|administration?s?|CNIL|défendeur(?:e)?s?|défenderesse?s?|demandeur(?:e)?s?|demanderesse?s?|elles|elle|eux|lui)(?![\p{L}\p{N}])[^.;:]{0,40},\s*$/iu;
 
 /** Marqueur de discours rapporté qui introduit directement la formule : la suite est un grief. */
 const CETAT_REPORTED = new RegExp(
