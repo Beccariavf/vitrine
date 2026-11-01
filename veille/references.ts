@@ -285,6 +285,14 @@ const CETAT_FORMULA = /\b(?:aux termes|il résulte|en vertu|en application|sur l
 const CETAT_LIL =
   /\bloi\s+(?:n[o°]\s*78-17\s+)?du\s+6\s+janvier\s+1978(?:\s+relative\s+à\s+l['’]informatique,\s*aux\s+fichiers\s+et\s+aux\s+libertés)?/gi;
 
+/**
+ * La directive ePrivacy, nommée par sa date dans les motifs : « la directive du
+ * Parlement européen et du Conseil du 12 juillet 2002 ». La date est ramenée au
+ * numéro que `visaInstruments` reconnaît.
+ */
+const CETAT_EPRIVACY =
+  /\bdirective\s+(?:du Parlement européen et du Conseil\s+)?du\s+12\s+juillet\s+2002\b/gi;
+
 /** Verbe d'application qui suit l'instrument dans une phrase de considérant. */
 const CETAT_VERB =
   /^(?:garantit|permet|prévoit|dispose|oblige|impose|interdit|exige|confère|ouvre|accorde|définit|fixe|soumet|autorise|protège|énonce)\b/i;
@@ -327,7 +335,9 @@ function reasoningPart(text: string): string {
 
 /** Ramène le texte de la décision à la forme que lisent les motifs. */
 function normalizeCetatText(text: string): string {
-  return normalize(text).replace(CETAT_LIL, "loi Informatique et Libertés");
+  return normalize(text)
+    .replace(CETAT_LIL, "loi Informatique et Libertés")
+    .replace(CETAT_EPRIVACY, "directive 2002/58/CE");
 }
 
 /** Nature d'un instrument : le mot qui porte son type, pour résoudre une anaphore. */

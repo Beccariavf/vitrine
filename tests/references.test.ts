@@ -314,6 +314,7 @@ describe("les références du Conseil d'État", () => {
     assert.deepEqual(extractCetatReferences(cetatText("501268")), [
       "Loi Informatique et Libertés · art. 8, 82, 20",
       "Code des postes et des communications électroniques · art. L. 34-5",
+      "Directive 2002/58/CE · art. 13",
       "Règlement (UE) 2016/679 · art. 83",
     ]);
   });

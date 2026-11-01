@@ -22,7 +22,7 @@ Statut : **cleared**, aucun bloqueur. Revue indépendante et challenge terminés
 | F1 | majeur | Le plancher de 6 appels ne couvrait pas la consultation qui retente après un 401 (3 appels). | Corrigé : `postLegifrance` prend un plancher et le vérifie avant le jeton et avant le POST ; test dédié. |
 | F2 | mineur | Une passe à froid laisse zéro lecture à Judilibre et la mémoire annonçait 14 appels. | Corrigé : la mémoire décrit 13 appels de recherche et le partage des 3 restants. |
 | F3 | mineur | L'article 8 de la LIL, cité « en vertu des dispositions du I de l'article 8 », était écarté. | Corrigé : l'article est retenu, l'entrée et le test sont à jour. |
-| F4 | mineur | La directive ePrivacy nommée par sa date (« du 12 juillet 2002 ») reste non reconnue. | Laissé en suggestion ; aucun texte du corpus n'en dépend pour une pastille. |
+| F4 | mineur | La directive ePrivacy nommée par sa date (« du 12 juillet 2002 ») restait non reconnue. | Corrigé après la fusion : la date est ramenée à `2002/58/CE`, et 501268 affiche `Directive 2002/58/CE · art. 13`. |
 | F5 | majeur | Une formule introduite par un grief pouvait passer (« soutient que, », « est soutenu que, », « selon la partie, »). | Corrigé : lecture limitée aux motifs après « Considérant ce qui suit », garde de discours rapporté élargi, « il résulte de l'instruction » neutralisé. |
 | F6 | mineur | Le report CETAT était journalisé « visa not read ». | Corrigé : « references not read ». |
 | F7 | mineur | `data/usage/<date>.json` est écrasé à chaque passe ; la journée du 1er novembre ne garde que le dernier passage. | Laissé en suggestion ; comportement existant de `flushUsage`. |
@@ -44,7 +44,6 @@ Confiance : **88 %**. Aucun bloqueur.
 - Ajouter un repère de repli pour une décision sans « Considérant ce qui suit ».
 - Aligner `spec.md` sur les trois références de 501268, ou acter que seul le contrat compte.
 - Reconstituer un journal de passe complète, et décider du sort de l'écrasement quotidien.
-- Reconnaître la directive ePrivacy nommée par sa date.
 - Partager le type de résultat des sources API.
 
 ## Passe 2 — précision et journal

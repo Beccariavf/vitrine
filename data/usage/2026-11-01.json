@@ -14,6 +14,20 @@
       "status": 200,
       "durationMs": 286,
       "at": "2026-11-01T16:09:28.562Z"
+    },
+    {
+      "source": "piste",
+      "endpoint": "oauth",
+      "status": 200,
+      "durationMs": 373,
+      "at": "2026-11-01T18:41:28.659Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "consult",
+      "status": 200,
+      "durationMs": 1258,
+      "at": "2026-11-01T18:41:29.925Z"
     }
   ]
 }

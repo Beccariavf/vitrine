@@ -29,7 +29,7 @@ Les cartes des décisions du Conseil d'État affichent les articles des textes d
 
 ## Done-when
 
-- La décision 501268 affiche `Loi Informatique et Libertés · art. 8, 82, 20`, `Code des postes et des communications électroniques · art. L. 34-5` et `Règlement (UE) 2016/679 · art. 83` ; l'ordre des pastilles n'est pas contractuel.
+- La décision 501268 affiche `Loi Informatique et Libertés · art. 8, 82, 20`, `Code des postes et des communications électroniques · art. L. 34-5`, `Directive 2002/58/CE · art. 13` et `Règlement (UE) 2016/679 · art. 83` ; l'ordre des pastilles n'est pas contractuel.
 - La décision 509589 affiche `Loi Informatique et Libertés · art. 8, 20`.
 - La décision 513996 affiche `Loi Informatique et Libertés · art. 31, 118`.
 - La décision 509210 affiche `Règlement (UE) 2016/679 · art. 15, 16`.
