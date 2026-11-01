@@ -298,9 +298,19 @@ const CETAT_ARTICLE_OPENING = /\bL['’]articles?\s+((?:[LRD]\.\s*)?\d+(?:er)?(?
 /** Ouverture de phrase : début du texte, après une ponctuation forte ou un numéro de point. */
 const CETAT_SENTENCE_START = /(?:^|[.!?;:»]\s+|\d+\.\s+)$/;
 
+/** Verbes de grief : ce qu'une partie reproche n'est pas ce que la décision applique. */
+const CETAT_GRIEVANCE =
+  /\b(?:soutient|soutiennent|est soutenu|sont soutenus|allègue|allèguent|invoque|invoquent|fait valoir|font valoir|reproche|reprochent|conteste|contestent|se plaint|se plaignent)\b\s*(?:(?:qu['’]|que)\s*)?,?\s*$/iu;
+
+/** « Selon la requérante » : le locuteur d'un grief, à distinguer d'une formule appliquée. */
+const CETAT_SELON_PARTY =
+  /\bselon\s+(?:l['’]|la\s+|le\s+|les\s+)?(?:requérant|requérante|société|partie|ministre|administration|CNIL|défendeur|demandeur|elles|elle|eux|lui)(?![\p{L}\p{N}])[^.;:]{0,40},\s*$/iu;
+
 /** Marqueur de discours rapporté qui introduit directement la formule : la suite est un grief. */
-const CETAT_REPORTED =
-  /\b(?:soutient|soutiennent|est soutenu|sont soutenus|allègue|allèguent|invoque|invoquent|fait valoir|font valoir)\b\s*(?:(?:qu['’]|que)\s*)?,?\s*$|\bselon\b[^.;:]{0,40},\s*$|\b(?:moyen|grief)\s+tiré\s+de\s+ce\s+que\s*,?\s*$/i;
+const CETAT_REPORTED = new RegExp(
+  `${CETAT_GRIEVANCE.source}|${CETAT_SELON_PARTY.source}|\\b(?:moyen|grief)\\s+tiré\\s+de\\s+ce\\s+que\\s*,?\\s*$`,
+  "iu",
+);
 
 /** Ponctuation qui ferme une proposition : l'instrument doit la précéder. */
 const CETAT_CLAUSE_END = /[.;:,«»]/;

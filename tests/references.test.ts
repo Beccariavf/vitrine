@@ -368,6 +368,49 @@ describe("les références du Conseil d'État", () => {
     }
   });
 
+  it("écarte les autres verbes de grief, avec et sans « que »", () => {
+    const formulas = [
+      "qu'en vertu de l'article 82 de la loi du 6 janvier 1978, la CNIL a commis une erreur.",
+      "que, en vertu de l'article 82 de la loi du 6 janvier 1978, la CNIL a commis une erreur.",
+      ", en vertu de l'article 82 de la loi du 6 janvier 1978, la CNIL a commis une erreur.",
+    ];
+    const verbs = ["reproche", "reprochent", "conteste", "contestent", "se plaint", "se plaignent"];
+
+    for (const verb of verbs) {
+      const subject = verb.endsWith("nt") ? "Les requérants" : "Le requérant";
+      for (const formula of formulas) {
+        const text = motifs(`${subject} ${verb} ${formula}`);
+        assert.deepEqual(extractCetatReferences(text), [], text);
+      }
+    }
+  });
+
+  it("n'écarte « selon » que devant une partie", () => {
+    assert.deepEqual(
+      extractCetatReferences(motifs("Selon la Cour de justice, en vertu de l'article 5 du RGPD, le traitement est licite.")),
+      ["Règlement (UE) 2016/679 · art. 5"],
+    );
+
+    for (const party of [
+      "le requérant",
+      "la requérante",
+      "la société",
+      "la partie",
+      "le ministre",
+      "l'administration",
+      "la CNIL",
+      "le défendeur",
+      "le demandeur",
+      "lui",
+      "elle",
+      "eux",
+      "elles",
+    ]) {
+      const text = motifs(`Selon ${party}, en vertu de l'article 82 de la loi du 6 janvier 1978, la CNIL a commis une erreur.`);
+      assert.deepEqual(extractCetatReferences(text), [], text);
+    }
+  });
+
   it("ne rend rien sans le repère des motifs", () => {
     assert.deepEqual(
       extractCetatReferences("Aux termes de l'article 82 de la loi du 6 janvier 1978, la CNIL peut sanctionner."),

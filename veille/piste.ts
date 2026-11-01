@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { FetchLike } from "./fetch.ts";
 
@@ -32,13 +32,34 @@ export function resetUsage(): void {
   calls.length = 0;
 }
 
-/** Écrit le journal du jour et le vide. Aucun appel, aucun fichier. */
+/** Appels déjà journalisés aujourd'hui ; un fichier absent ou illisible ne rend rien. */
+function readUsage(path: string): Call[] {
+  let text: string;
+  try {
+    text = readFileSync(path, "utf8");
+  } catch {
+    return [];
+  }
+
+  try {
+    const value: unknown = JSON.parse(text);
+    if (typeof value !== "object" || value === null) return [];
+    const stored = (value as { calls?: unknown }).calls;
+    return Array.isArray(stored) ? (stored as Call[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Écrit le journal du jour, fusionné avec les passes précédentes, puis le vide. */
 export function flushUsage(rootDir: string): void {
   if (calls.length === 0) return;
   const date = new Date().toISOString().slice(0, 10);
   const dir = join(rootDir, "data", "usage");
   mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, `${date}.json`), `${JSON.stringify({ date, calls }, null, 2)}\n`, "utf8");
+  const path = join(dir, `${date}.json`);
+  const journal = [...readUsage(path), ...calls];
+  writeFileSync(path, `${JSON.stringify({ date, calls: journal }, null, 2)}\n`, "utf8");
   calls.length = 0;
 }
 

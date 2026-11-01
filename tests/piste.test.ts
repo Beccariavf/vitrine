@@ -1,5 +1,5 @@
 import { strict as assert } from "node:assert";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
@@ -58,6 +58,67 @@ describe("la session PISTE", () => {
       { clientId: "a", clientSecret: "b", keyId: "c" },
     );
     assert.equal(readPisteConfig({ PISTE_CLIENT_ID: "a" }), null);
+  });
+
+  it("fusionne les passes d'une même journée dans le journal du jour", async () => {
+    resetUsage();
+    const root = mkdtempSync(join(tmpdir(), "vitrine-usage-"));
+    const fetchImpl: FetchLike = async (url) => {
+      if (url.includes("oauth")) {
+        return response(200, JSON.stringify({ access_token: "t", expires_in: 3600 }));
+      }
+      return response(200, JSON.stringify({ results: [] }));
+    };
+    const date = new Date().toISOString().slice(0, 10);
+
+    try {
+      const session = new PisteSession(CONFIG);
+      await session.judilibreDecision(fetchImpl, "a");
+      await session.judilibre(fetchImpl, new URLSearchParams({ query: "rgpd" }));
+      flushUsage(root);
+
+      await session.judilibreDecision(fetchImpl, "b");
+      await session.judilibre(fetchImpl, new URLSearchParams({ query: "cnil" }));
+      flushUsage(root);
+
+      const usage = JSON.parse(readFileSync(join(root, "data", "usage", `${date}.json`), "utf8")) as {
+        calls: Array<{ source: string; endpoint: string }>;
+      };
+      assert.deepEqual(
+        usage.calls.map((call) => `${call.source}/${call.endpoint}`),
+        ["judilibre/decision", "judilibre/search", "judilibre/decision", "judilibre/search"],
+      );
+    } finally {
+      resetUsage();
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("repart d'un journal neuf quand le fichier du jour est illisible", async () => {
+    resetUsage();
+    const root = mkdtempSync(join(tmpdir(), "vitrine-usage-"));
+    const fetchImpl: FetchLike = async () => response(200, JSON.stringify({ id: "abc" }));
+    const date = new Date().toISOString().slice(0, 10);
+
+    try {
+      mkdirSync(join(root, "data", "usage"), { recursive: true });
+      writeFileSync(join(root, "data", "usage", `${date}.json`), "{ pas du json", "utf8");
+
+      const session = new PisteSession(CONFIG);
+      await session.judilibreDecision(fetchImpl, "abc");
+      flushUsage(root);
+
+      const usage = JSON.parse(readFileSync(join(root, "data", "usage", `${date}.json`), "utf8")) as {
+        calls: Array<{ source: string; endpoint: string; status: number }>;
+      };
+      assert.deepEqual(
+        usage.calls.map((call) => `${call.source}/${call.endpoint}/${call.status}`),
+        ["judilibre/decision/200"],
+      );
+    } finally {
+      resetUsage();
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 
   it("lit une décision avec le KeyId et la journalise", async () => {
