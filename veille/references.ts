@@ -233,7 +233,12 @@ function visaItemReferences(text: string): string[] {
     let end = index + 1 < instruments.length ? (instruments[index + 1]?.index ?? text.length) : text.length;
 
     const between = text.slice(start, end);
-    const nextList = index + 1 < instruments.length ? between.search(/\bet\s+(?:l['’])?articles?\b/i) : -1;
+    const nextList =
+      index + 1 < instruments.length
+        ? between.search(
+            /\bet\s+(?:l['’])?articles?\b|,\s*(?:et\s+)?(?:l['’])?articles?\b|ainsi\s+que\s+(?:l['’])?articles?\b/i,
+          )
+        : -1;
     if (nextList !== -1) end = start + nextList;
 
     const window = text.slice(start, end);
