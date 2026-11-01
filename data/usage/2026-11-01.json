@@ -2,67 +2,74 @@
   "date": "2026-11-01",
   "calls": [
     {
-      "source": "judilibre",
-      "endpoint": "search",
+      "source": "piste",
+      "endpoint": "oauth",
       "status": 200,
-      "durationMs": 238,
-      "at": "2026-11-01T11:47:26.452Z"
+      "durationMs": 290,
+      "at": "2026-11-01T13:55:21.143Z"
     },
     {
-      "source": "judilibre",
-      "endpoint": "search",
+      "source": "legifrance",
+      "endpoint": "consult",
       "status": 200,
-      "durationMs": 870,
-      "at": "2026-11-01T11:47:27.334Z"
+      "durationMs": 366,
+      "at": "2026-11-01T13:55:21.511Z"
     },
     {
-      "source": "judilibre",
-      "endpoint": "search",
+      "source": "legifrance",
+      "endpoint": "consult",
       "status": 200,
-      "durationMs": 111,
-      "at": "2026-11-01T11:47:27.445Z"
+      "durationMs": 309,
+      "at": "2026-11-01T13:55:21.858Z"
     },
     {
-      "source": "judilibre",
-      "endpoint": "search",
+      "source": "legifrance",
+      "endpoint": "consult",
       "status": 200,
-      "durationMs": 106,
-      "at": "2026-11-01T11:47:27.552Z"
+      "durationMs": 161,
+      "at": "2026-11-01T13:55:22.347Z"
     },
     {
-      "source": "judilibre",
-      "endpoint": "search",
+      "source": "legifrance",
+      "endpoint": "consult",
       "status": 200,
-      "durationMs": 134,
-      "at": "2026-11-01T11:47:27.687Z"
+      "durationMs": 154,
+      "at": "2026-11-01T13:55:22.545Z"
     },
     {
-      "source": "judilibre",
-      "endpoint": "search",
+      "source": "legifrance",
+      "endpoint": "consult",
       "status": 200,
-      "durationMs": 376,
-      "at": "2026-11-01T11:47:28.064Z"
+      "durationMs": 185,
+      "at": "2026-11-01T13:55:22.736Z"
     },
     {
-      "source": "judilibre",
-      "endpoint": "decision",
+      "source": "legifrance",
+      "endpoint": "consult",
       "status": 200,
-      "durationMs": 113,
-      "at": "2026-11-01T11:47:28.184Z"
+      "durationMs": 168,
+      "at": "2026-11-01T13:55:22.906Z"
     },
     {
-      "source": "judilibre",
-      "endpoint": "decision",
+      "source": "legifrance",
+      "endpoint": "consult",
       "status": 200,
-      "durationMs": 92,
-      "at": "2026-11-01T11:47:28.293Z"
+      "durationMs": 192,
+      "at": "2026-11-01T13:55:23.106Z"
     },
     {
-      "source": "judilibre",
-      "endpoint": "decision",
+      "source": "legifrance",
+      "endpoint": "consult",
       "status": 200,
-      "durationMs": 164,
-      "at": "2026-11-01T11:47:28.461Z"
+      "durationMs": 136,
+      "at": "2026-11-01T13:55:23.248Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "consult",
+      "status": 200,
+      "durationMs": 165,
+      "at": "2026-11-01T13:55:23.429Z"
     }
   ]
 }
