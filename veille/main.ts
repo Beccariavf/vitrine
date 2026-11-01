@@ -56,7 +56,7 @@ export type ApiResult = {
   /**
    * Enrichissement optionnel, appelé après le rattachement et seulement pour une
    * entrée pas encore écrite. Il rend les références de l'entrée, `null` quand le
-   * visa n'a pas pu être lu (l'entrée est différée), ou `[]` quand le visa est vide.
+   * références n'ont pas pu être lues (l'entrée est différée), ou `[]` quand la source n'en rend aucune.
    * Il peut pousser ses réponses brutes dans `raw`.
    */
   enrich?: (entry: Entry) => Promise<string[] | null>;
@@ -247,13 +247,13 @@ export async function run({
             try {
               const references = await enrich(entry);
               if (references === null) {
-                warnings.push(`${source.id} entry ${entry.id}: visa not read, entry deferred`);
+                warnings.push(`${source.id} entry ${entry.id}: references not read, entry deferred`);
                 continue;
               }
               enriched.push({ ...entry, references });
             } catch (error) {
               const reason = error instanceof Error ? error.message : String(error);
-              warnings.push(`${source.id} entry ${entry.id}: visa not read (${reason}), entry deferred`);
+              warnings.push(`${source.id} entry ${entry.id}: references not read (${reason}), entry deferred`);
             }
           }
 

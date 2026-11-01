@@ -5,71 +5,71 @@
       "source": "piste",
       "endpoint": "oauth",
       "status": 200,
-      "durationMs": 290,
-      "at": "2026-11-01T13:55:21.143Z"
+      "durationMs": 473,
+      "at": "2026-11-01T14:19:38.012Z"
     },
     {
       "source": "legifrance",
       "endpoint": "consult",
       "status": 200,
-      "durationMs": 366,
-      "at": "2026-11-01T13:55:21.511Z"
+      "durationMs": 405,
+      "at": "2026-11-01T14:19:38.422Z"
     },
     {
       "source": "legifrance",
       "endpoint": "consult",
       "status": 200,
-      "durationMs": 309,
-      "at": "2026-11-01T13:55:21.858Z"
+      "durationMs": 258,
+      "at": "2026-11-01T14:19:38.753Z"
     },
     {
       "source": "legifrance",
       "endpoint": "consult",
       "status": 200,
-      "durationMs": 161,
-      "at": "2026-11-01T13:55:22.347Z"
+      "durationMs": 133,
+      "at": "2026-11-01T14:19:38.933Z"
     },
     {
       "source": "legifrance",
       "endpoint": "consult",
       "status": 200,
-      "durationMs": 154,
-      "at": "2026-11-01T13:55:22.545Z"
+      "durationMs": 202,
+      "at": "2026-11-01T14:19:39.201Z"
     },
     {
       "source": "legifrance",
       "endpoint": "consult",
       "status": 200,
-      "durationMs": 185,
-      "at": "2026-11-01T13:55:22.736Z"
+      "durationMs": 194,
+      "at": "2026-11-01T14:19:39.400Z"
     },
     {
       "source": "legifrance",
       "endpoint": "consult",
       "status": 200,
       "durationMs": 168,
-      "at": "2026-11-01T13:55:22.906Z"
+      "at": "2026-11-01T14:19:39.580Z"
     },
     {
       "source": "legifrance",
       "endpoint": "consult",
       "status": 200,
-      "durationMs": 192,
-      "at": "2026-11-01T13:55:23.106Z"
+      "durationMs": 155,
+      "at": "2026-11-01T14:19:39.739Z"
     },
     {
       "source": "legifrance",
       "endpoint": "consult",
       "status": 200,
       "durationMs": 136,
-      "at": "2026-11-01T13:55:23.248Z"
+      "at": "2026-11-01T14:19:39.879Z"
     },
     {
       "source": "legifrance",
       "endpoint": "consult",
       "status": 200,
-      "durationMs": 165,
-      "at": "2026-11-01T13:55:23.429Z"
+      "durationMs": 168,
+      "at": "2026-11-01T14:19:40.052Z"
     }
   ]
 }

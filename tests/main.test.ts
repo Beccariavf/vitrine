@@ -168,7 +168,7 @@ describe("l'enrichissement d'une source API", () => {
       });
 
       assert.throws(() => readFileSync(entryPath(temp, "0123456789abcdef")), /ENOENT/);
-      assert.match(result.warnings.join(" "), /factice entry 0123456789abcdef: visa not read \(HTTP 503\), entry deferred/);
+      assert.match(result.warnings.join(" "), /factice entry 0123456789abcdef: references not read \(HTTP 503\), entry deferred/);
     }),
   );
 
@@ -183,7 +183,7 @@ describe("l'enrichissement d'une source API", () => {
       });
 
       assert.throws(() => readFileSync(entryPath(temp, "0123456789abcdef")), /ENOENT/);
-      assert.match(result.warnings.join(" "), /visa not read, entry deferred/);
+      assert.match(result.warnings.join(" "), /references not read, entry deferred/);
     }),
   );
 

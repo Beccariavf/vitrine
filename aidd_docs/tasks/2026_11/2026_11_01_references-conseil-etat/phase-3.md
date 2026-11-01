@@ -38,7 +38,7 @@ status: pending
 > Le cache empêche de les relire en passe normale : une passe ciblée les réécrit.
 
 1. Exécuter un script temporaire hors du dépôt qui lit chaque entrée `source: "cetat"`, appelle `consultJuri`, applique l'extraction et le filtrage par matières, puis réécrit l'entrée et le snapshot brut.
-2. Vérifier 501268 (`CPCE · art. L. 34-5`, `LIL · art. 82, 20`, `RGPD · art. 83`), 509210 (`RGPD · art. 15, 16`), 509589 (`LIL · art. 8, 20`), 511155 (`RGPD · art. 15`), 513996 (`LIL · art. 31, 118`).
+2. Vérifier 501268 (`CPCE · art. L. 34-5`, `LIL · art. 8, 82, 20`, `RGPD · art. 83`), 509210 (`RGPD · art. 15, 16`), 509589 (`LIL · art. 8, 20`), 511155 (`RGPD · art. 15`), 513996 (`LIL · art. 31, 118`).
 3. Vérifier que 520279 perd `Règlement (UE) 2016/679 · art. 5` et que 510485, 511156 et 519056 restent sans référence.
 4. Reconstruire le site et vérifier les pastilles et leurs liens.
 5. Vérifier que seules les entrées `source: "cetat"` ont changé dans `git status`.

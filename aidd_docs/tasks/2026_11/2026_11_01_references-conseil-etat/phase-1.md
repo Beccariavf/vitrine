@@ -18,7 +18,7 @@ status: pending
 | Scenario     | Action                  | Observable outcome   | Actor                           |
 | ------------ | ----------------------- | -------------------- | ------------------------------- |
 | Setup        | Charger les extraits réels des décisions 501268, 509210, 509589, 511155, 513996 et 520279 | Les textes sont prêts | cli |
-| Happy path   | Extraire le texte de 501268 | `CPCE · art. L. 34-5` et `LIL · art. 82, 20` | cli |
+| Happy path   | Extraire le texte de 501268 | `CPCE · art. L. 34-5`, `LIL · art. 8, 82, 20` et `RGPD · art. 83` | cli |
 | Happy path   | Extraire 511155 et 513996 | `RGPD · art. 15` et `LIL · art. 31, 118` | cli |
 | Edge case    | Extraire un grief (« violation de l'article 15 du RGPD », « les dispositions de l'article 58 ») | Aucune référence | cli |
 | Edge case    | Extraire « L'article 15 du RGPD garantit » puis « L'article 16 du même règlement permet » | `RGPD · art. 15, 16` | cli |
@@ -56,5 +56,5 @@ status: pending
 | Task | Acceptance criteria              |
 | ---- | -------------------------------- |
 | 1 | Les cinq instruments suivis et un acte européen générique sont reconnus avec leur libellé canonique. |
-| 2 | 501268 rend `CPCE · art. L. 34-5`, `LIL · art. 82, 20` et `RGPD · art. 83` (le texte réel cite aussi le barème) ; 509210 rend `RGPD · art. 15, 16` ; 509589 rend `LIL · art. 8, 20` ; 511155 rend `RGPD · art. 15` ; 513996 rend `LIL · art. 31, 118` ; 520279 rend `[]`. |
+| 2 | 501268 rend `CPCE · art. L. 34-5`, `LIL · art. 8, 82, 20` et `RGPD · art. 83` (le texte réel cite aussi le barème et l'article 8) ; 509210 rend `RGPD · art. 15, 16` ; 509589 rend `LIL · art. 8, 20` ; 511155 rend `RGPD · art. 15` ; 513996 rend `LIL · art. 31, 118` ; 520279 rend `[]`. |
 | 3 | Les tests de `tests/references.test.ts` passent hors ligne, y compris l'exclusion des griefs et de « les dispositions de l'article ». |

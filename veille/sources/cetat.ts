@@ -175,7 +175,7 @@ export async function fetchEntries({
         return null;
       }
 
-      const response = await session.consultJuri(fetchImpl, entry.id);
+      const response = await session.consultJuri(fetchImpl, entry.id, JUDILIBRE_SEARCH_RESERVE);
       raw.push(JSON.stringify(response, null, 2));
 
       const instruments = followedInstruments(entry, themes);

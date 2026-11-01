@@ -130,20 +130,31 @@ export class PisteSession {
    * Texte intégral d'une décision, lu par son identifiant : la recherche ne le
    * porte pas, et le Conseil d'État n'a pas de visa structuré à lire.
    */
-  async consultJuri(fetchImpl: FetchLike, id: string): Promise<unknown> {
-    return this.postLegifrance(fetchImpl, LEGIFRANCE_CONSULT, "consult", { textId: id }, "Légifrance consult");
+  async consultJuri(fetchImpl: FetchLike, id: string, floor = 0): Promise<unknown> {
+    return this.postLegifrance(fetchImpl, LEGIFRANCE_CONSULT, "consult", { textId: id }, "Légifrance consult", floor);
   }
 
-  /** Un POST Légifrance authentifié ; un 401 invalide le jeton et retente une fois. */
+  /**
+   * Un POST Légifrance authentifié ; un 401 invalide le jeton et retente une fois.
+   * `floor` réserve au moins ce nombre d'appels : un 401 peut coûter un jeton et
+   * une seconde requête, et le plancher est vérifié avant chaque consommation.
+   */
   private async postLegifrance(
     fetchImpl: FetchLike,
     url: string,
     endpoint: string,
     body: unknown,
     label: string,
+    floor = 0,
   ): Promise<unknown> {
     for (let attempt = 0; attempt < 2; attempt += 1) {
+      if (floor > 0 && this.remainingCalls() <= floor) {
+        throw new Error(`${label}: PISTE call budget reserved (${floor} calls)`);
+      }
       const token = await this.fetchToken(fetchImpl);
+      if (floor > 0 && this.remainingCalls() <= floor) {
+        throw new Error(`${label}: PISTE call budget reserved (${floor} calls)`);
+      }
       assertQuota();
       const started = Date.now();
       const response = await fetchImpl(url, {

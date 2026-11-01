@@ -298,6 +298,10 @@ const CETAT_ARTICLE_OPENING = /\bL['’]articles?\s+((?:[LRD]\.\s*)?\d+(?:er)?(?
 /** Ouverture de phrase : début du texte, après une ponctuation forte ou un numéro de point. */
 const CETAT_SENTENCE_START = /(?:^|[.!?;:»]\s+|\d+\.\s+)$/;
 
+/** Marqueur de discours rapporté : la formule qui suit énonce un grief, pas une règle appliquée. */
+const CETAT_REPORTED =
+  /\b(?:soutient|soutiennent|selon|invoque|invoquent|allègue|allèguent|fait valoir|reproche|grief|moyen)\b[^.!?;:]{0,80}$/i;
+
 /** Ponctuation qui ferme une proposition : l'instrument doit la précéder. */
 const CETAT_CLAUSE_END = /[.;:,«»]/;
 
@@ -336,10 +340,19 @@ function formulaReferences(text: string): Map<string, string[]> {
     if (article === undefined) continue;
 
     const gap = rest.slice(0, article.index ?? 0);
-    // « les dispositions de l'article X » est aussi la tournure des griefs ; seule
-    // la variante « dispositions combinées » énonce une règle de droit.
-    if (/dispositions/i.test(gap) && !/combinées/i.test(gap)) continue;
     if (CETAT_CLAUSE_END.test(gap)) continue;
+
+    // Une formule introduite par « soutient que », « selon » ou « moyen » énonce
+    // un grief : on ne remonte que jusqu'à la ponctuation qui ouvre la proposition.
+    const before = text.slice(Math.max(0, (formula.index ?? 0) - 120), formula.index ?? 0);
+    const sentence = Math.max(
+      before.lastIndexOf("."),
+      before.lastIndexOf("!"),
+      before.lastIndexOf("?"),
+      before.lastIndexOf(";"),
+      before.lastIndexOf(":"),
+    );
+    if (CETAT_REPORTED.test(sentence === -1 ? before : before.slice(sentence + 1))) continue;
 
     const articles = cnilArticleNumbers(article[1] ?? "");
     if (articles.length === 0) continue;

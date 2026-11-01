@@ -302,11 +302,12 @@ describe("les références du visa de la Cour de cassation", () => {
 
 describe("les références du Conseil d'État", () => {
   it("lit les instruments appliqués de 501268", () => {
-    // L'article 83 § 2 du RGPD est lui aussi cité « aux termes » ; le plan n'en
-    // attendait que deux, le texte réel en porte trois.
+    // Le texte réel porte aussi le barème de l'article 83 § 2 du RGPD, cité
+    // « aux termes », et l'article 8 de la LIL, cité « en vertu des dispositions
+    // du I de l'article 8 » ; les notes du plan n'en attendaient que deux.
     assert.deepEqual(extractCetatReferences(cetatText("501268")), [
       "Code des postes et des communications électroniques · art. L. 34-5",
-      "Loi Informatique et Libertés · art. 82, 20",
+      "Loi Informatique et Libertés · art. 8, 82, 20",
       "Règlement (UE) 2016/679 · art. 83",
     ]);
   });
@@ -332,10 +333,23 @@ describe("les références du Conseil d'État", () => {
     ]);
   });
 
-  it("ne retient pas l'article 8 cité « des dispositions du I de l'article 8 »", () => {
+  it("lit l'article 8 cité « des dispositions du I de l'article 8 »", () => {
     const references = extractCetatReferences(cetatText("501268"));
     const lil = references.find((reference) => reference.startsWith("Loi Informatique et Libertés · art. "));
-    assert.equal(lil, "Loi Informatique et Libertés · art. 82, 20");
+    assert.equal(lil, "Loi Informatique et Libertés · art. 8, 82, 20");
+  });
+
+  it("écarte une formule introduite par un grief", () => {
+    assert.deepEqual(
+      extractCetatReferences(
+        "Le requérant soutient qu'en vertu de l'article 82 de la loi du 6 janvier 1978, la CNIL a commis une erreur.",
+      ),
+      [],
+    );
+    assert.deepEqual(
+      extractCetatReferences("Le moyen tiré de ce que, sur le fondement de l'article 83 du RGPD, l'amende est excessive."),
+      [],
+    );
   });
 
   it("ne retient pas un grief ni « les dispositions de l'article »", () => {

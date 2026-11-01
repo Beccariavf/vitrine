@@ -138,6 +138,33 @@ describe("la session PISTE", () => {
     }
   });
 
+  it("réserve le plancher d'appels quand une consultation retente après un 401", async () => {
+    resetUsage();
+    let posts = 0;
+    const fetchImpl: FetchLike = async (url) => {
+      if (url.includes("oauth")) {
+        return response(200, JSON.stringify({ access_token: "t", expires_in: 3600 }));
+      }
+      if (url.includes("consult")) {
+        posts += 1;
+        return response(401, "");
+      }
+      return response(200, JSON.stringify({ id: "abc" }));
+    };
+
+    try {
+      const session = new PisteSession(CONFIG);
+      for (let index = 0; index < 8; index += 1) await session.judilibreDecision(fetchImpl, "abc");
+      assert.equal(session.remainingCalls(), 8);
+
+      await assert.rejects(() => session.consultJuri(fetchImpl, "CETATEXT000055005484", 6), /budget reserved/);
+      assert.equal(posts, 1);
+      assert.equal(session.remainingCalls(), 6);
+    } finally {
+      resetUsage();
+    }
+  });
+
   it("compte les appels restants jusqu'à zéro", async () => {
     resetUsage();
     const fetchImpl: FetchLike = async () => response(200, JSON.stringify({ id: "abc" }));
