@@ -32,7 +32,8 @@ flowchart LR
 - Le site ne lit aucune API au runtime : il lit `data/`.
 - Une panne de source n'emporte pas les autres : les écritures réussies restent, la passe échoue avec un message nommant la source.
 - Le catalogue `veille/themes.json` est la seule configuration de sélection ; cinq matières actives, lues par le pipeline et le site. Le rattachement est stocké sur chaque entrée ; le site filtre au build, aucune purge.
-- `Entry.references` porte les instruments et articles cités : titre officiel pour les arrêts CJUE, section « Textes de référence » de la page liée pour les actualités CNIL, résumé officiel pour le Conseil d'État et la Cour de cassation.
+- `Entry.references` porte les instruments et articles cités : titre officiel pour les arrêts CJUE, section « Textes de référence » de la page liée pour les actualités CNIL, résumé officiel pour le Conseil d'État et visa de la décision pour la Cour de cassation.
+- Une source API peut enrichir ses entrées retenues après le rattachement (`ApiResult.enrich`) : la Cour de cassation y lit le visa de la décision, un appel par décision, et n'expose que les instruments des matières de l'entrée. Une entrée déjà référencée n'est pas rappelée ; une erreur ou un budget épuisé devient un avertissement et laisse `[]`.
 - `Entry.themes` porte les matières calculées à l'ingestion : instruments cités d'abord, termes de repli ensuite, défauts de source pour CNIL, CEPD, ANSSI et Commission DMA ; les sources API ne pré-remplissent pas la matière.
 - Les sources PISTE (Conseil d'État, Cour de cassation) utilisent un jeton OAuth ou un `KeyId`, un plafond de 16 appels par passe et un journal dans `data/usage/`.
 - Une page CNIL en échec laisse l'entrée publiée avec `references: []` et un avertissement ; les pages dont les références sont retenues sont conservées en snapshot HTML.
