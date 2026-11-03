@@ -36,7 +36,8 @@ status: done
    - a task that produces or changes rendered UI (HTML, CSS, component, page) makes its plan carry a design contract; otherwise skip silently
    - the contract names the tokens used, the components reused, the interaction states (hover, focus, active, disabled, empty, error), and the responsive behavior
    - source of truth in order: the project's design documentation, then the existing components, then an installed UI skill; a documented value wins over a skill default
-   - when the plan format has a `## Rules` table, the contract is one row of it
+   - when the plan format has a `## Rules` table, the contract is one row of it, and detailed values go where the work happens
+   - even with no plan, name the contract before editing rendered UI
    - when asserting a UI change, compare the rendered result to the contract; when no frontend can be run, state what was not visually verified instead of claiming it holds
    - never invent a visual language the project already documents
 
@@ -61,6 +62,6 @@ status: done
 
 | Task | Acceptance criteria              |
 | ---- | -------------------------------- |
-| 1 | the source file exists and carries all six rules |
+| 1 | the source file exists and carries all seven rules |
 | 2 | `cmp` reports no difference between source and installed copy, and the config parses with the glob present |
 | 3 | the glob lists one file and the aidd skill digests match the baseline |

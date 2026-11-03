@@ -20,7 +20,7 @@ Source: conversation of 2026-11-03 (brainstorm, pivot to a global rule confirmed
 | ----- | ----------------- |
 | https://opencode.ai/docs/rules/ | `instructions` in the global `opencode.json` is combined with every project's `AGENTS.md`, and glob patterns are allowed |
 | https://github.com/ibelick/ui-skills | the registry ships a CLI that prints a full skill markdown, so installation is a reviewed copy, not a runtime fetch |
-| https://raw.githubusercontent.com/ibelick/ui-skills/main/skills/baseline-ui/SKILL.md | `baseline-ui` content; its Stack and Components sections mandate React primitives (`motion/react`, Base UI, React Aria, Radix, `cn`), so only its typography, layout, and animation rules apply to a stack without React |
+| https://raw.githubusercontent.com/ibelick/ui-skills/main/skills/baseline-ui/SKILL.md | `baseline-ui` content; its Stack and Components sections mandate React primitives (`motion/react`, Base UI, React Aria, Radix, `cn`), while its Interaction, Animation, Typography, and Layout rules apply to any stack |
 | https://raw.githubusercontent.com/ibelick/ui-skills/main/skills/fixing-accessibility/SKILL.md | `fixing-accessibility` content and its `name` |
 | https://opencode.ai/docs/skills/ | skills load from `~/.config/opencode/skills/<name>/SKILL.md`, `name` must match the folder and the lowercase-hyphen regex; a session lists them in the `skill` tool description |
 
