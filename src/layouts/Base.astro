@@ -22,7 +22,8 @@ const path = Astro.url.pathname;
     <title>{title}</title>
     <meta name="description" content={description} />
   </head>
-  <body class="min-h-screen bg-concrete text-ink antialiased">
+  <body class="min-h-dvh bg-concrete text-ink antialiased">
+    <a href="#contenu" class="skip-link">Aller au contenu</a>
     <header class="border-b-2 border-ink bg-paper">
       <div
         class:list={[
@@ -53,7 +54,7 @@ const path = Astro.url.pathname;
       </div>
     </header>
 
-    <main class="flex-1 py-12 sm:py-16">
+    <main id="contenu" tabindex="-1" class="flex-1 py-12 sm:py-16">
       <div class:list={["mx-auto w-full px-5 sm:px-8", containerClass]}>
         <slot />
       </div>
@@ -81,3 +82,39 @@ const path = Astro.url.pathname;
     </footer>
   </body>
 </html>
+
+<style>
+  .skip-link {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .skip-link:focus {
+    position: fixed;
+    left: 1rem;
+    top: 1rem;
+    z-index: 50;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 0.5rem 1rem;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+    border: 2px solid var(--color-ink);
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    text-decoration: none;
+  }
+</style>

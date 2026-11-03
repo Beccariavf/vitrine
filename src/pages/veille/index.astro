@@ -180,7 +180,7 @@ const CARD_COLORS = [
                       href={entry.url}
                       target="_blank"
                       rel="noopener"
-                      aria-label={`${entry.title} — ${sourceLabel(entry.source)}`}
+                      aria-label={`${entry.title} — ${sourceLabel(entry.source)} (nouvel onglet)`}
                       class="text-ink underline decoration-red decoration-2 underline-offset-4 hover:decoration-4"
                     >
                       {entry.title}
@@ -206,6 +206,7 @@ const CARD_COLORS = [
                                 class="text-ink no-underline hover:underline hover:decoration-2 hover:underline-offset-2"
                               >
                                 {referenceLabel(reference)}
+                                <span class="sr-only"> (nouvel onglet)</span>
                               </a>
                             )}
                           </li>
@@ -224,6 +225,7 @@ const CARD_COLORS = [
                     href={entry.url}
                     target="_blank"
                     rel="noopener"
+                    aria-label={`Lire : ${entry.title} — ${sourceLabel(entry.source)} (nouvel onglet)`}
                     class="mt-auto pt-4 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-ink no-underline hover:underline"
                   >
                     Lire ↗
@@ -273,6 +275,7 @@ const CARD_COLORS = [
                       class="text-ink underline decoration-red decoration-2 underline-offset-4 hover:decoration-4"
                     >
                       {entry.title}
+                      <span class="sr-only"> (nouvel onglet)</span>
                     </a>
                   </h2>
                   {summary !== null && (
@@ -295,6 +298,7 @@ const CARD_COLORS = [
                                 class="text-ink no-underline hover:underline hover:decoration-2 hover:underline-offset-2"
                               >
                                 {referenceLabel(reference)}
+                                <span class="sr-only"> (nouvel onglet)</span>
                               </a>
                             )}
                           </li>
