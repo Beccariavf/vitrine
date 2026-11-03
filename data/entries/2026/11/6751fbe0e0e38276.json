@@ -1,0 +1,13 @@
+{
+  "id": "6751fbe0e0e38276",
+  "title": "Bulletin d'actualité CERTFR-2026-ACT-046 (02 novembre 2026)",
+  "officialTitle": "Bulletin d'actualité CERTFR-2026-ACT-046 (02 novembre 2026)",
+  "url": "https://www.cert.cyber.gouv.fr/actualite/CERTFR-2026-ACT-046",
+  "publishedAt": "2026-11-02T00:00:00.000Z",
+  "summary": "Ce bulletin d'actualité du CERT-FR revient sur les vulnérabilités significatives de la semaine passée pour souligner leurs criticités. Il ne remplace pas l'analyse de l'ensemble des avis et alertes…",
+  "references": [],
+  "themes": [
+    "cybersecurite"
+  ],
+  "source": "anssi"
+}
