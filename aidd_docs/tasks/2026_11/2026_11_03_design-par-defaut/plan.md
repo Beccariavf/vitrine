@@ -1,6 +1,6 @@
 ---
 objective: "Every session that changes rendered UI plans and verifies it against a design contract sourced from the project's design docs first, backed by two installed UI skills."
-status: pending
+status: implemented
 ---
 
 # Plan: Design contract in every session
@@ -20,7 +20,7 @@ Source: conversation of 2026-11-03 (brainstorm, pivot to a global rule confirmed
 | ----- | ----------------- |
 | https://opencode.ai/docs/rules/ | `instructions` in the global `opencode.json` is combined with every project's `AGENTS.md`, and glob patterns are allowed |
 | https://github.com/ibelick/ui-skills | the registry ships a CLI that prints a full skill markdown, so installation is a reviewed copy, not a runtime fetch |
-| https://raw.githubusercontent.com/ibelick/ui-skills/main/skills/baseline-ui/SKILL.md | `baseline-ui` content is stack-agnostic except its React section; its `name` is `baseline-ui` |
+| https://raw.githubusercontent.com/ibelick/ui-skills/main/skills/baseline-ui/SKILL.md | `baseline-ui` content; its Stack and Components sections mandate React primitives (`motion/react`, Base UI, React Aria, Radix, `cn`), so only its typography, layout, and animation rules apply to a stack without React |
 | https://raw.githubusercontent.com/ibelick/ui-skills/main/skills/fixing-accessibility/SKILL.md | `fixing-accessibility` content and its `name` |
 | https://opencode.ai/docs/skills/ | skills load from `~/.config/opencode/skills/<name>/SKILL.md`, `name` must match the folder and the lowercase-hyphen regex; a session lists them in the `skill` tool description |
 
