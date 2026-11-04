@@ -1,0 +1,307 @@
+import { strict as assert } from "node:assert";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { after, before, describe, it } from "node:test";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
+import { SEUIL_BAS, SEUIL_HAUT, niveauConfiance } from "../mcp/confidence.ts";
+import { normaliser } from "../mcp/embed/embedder.ts";
+import type { Embedder } from "../mcp/embed/embedder.ts";
+import { buildIndex } from "../mcp/index/build.ts";
+import { openIndex } from "../mcp/index/search.ts";
+import type { Index } from "../mcp/index/search.ts";
+import { createServer } from "../mcp/server.ts";
+import { getArticle, search } from "../mcp/tools.ts";
+import type { Unite } from "../mcp/corpus/parse.ts";
+
+const DOCUMENT = "32016R0679";
+
+const SIX: Unite[] = [
+  { numero: 1, texte: "objet et objectifs du règlement" },
+  { numero: 2, texte: "champ d'application matériel du règlement" },
+  { numero: 3, texte: "droit d'accès de la personne concernée aux données" },
+  { numero: 4, texte: "droit de rectification des données inexactes" },
+  { numero: 5, texte: "principes relatifs au traitement des données" },
+  { numero: 6, texte: "licéité du traitement des données personnelles" },
+].map(({ numero, texte }) => ({
+  ref: `${DOCUMENT}#art_${numero}`,
+  document: DOCUMENT,
+  niveau: "article",
+  numero: String(numero),
+  chemin: "RGPD > Chapitre III > Droits de la personne concernée",
+  texte,
+  date_acte: "2016-04-27",
+  date_debut: "2018-05-25",
+  date_fin: null,
+  statut: "en_vigueur",
+  url: `https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:${DOCUMENT}#art_${numero}`,
+}));
+
+/** Embedder déterministe : sac de mots hachés, 8 dimensions, aucun réseau. */
+function embedderFactice(): Embedder {
+  const vecteur = (texte: string): number[] => {
+    const valeurs = new Array<number>(8).fill(0);
+    for (const mot of texte.toLowerCase().split(/\s+/)) {
+      if (mot === "") continue;
+      let empreinte = 7;
+      for (const caractere of mot) empreinte = (empreinte * 31 + (caractere.codePointAt(0) ?? 0)) % 1_000_003;
+      valeurs[empreinte % 8] = (valeurs[empreinte % 8] ?? 0) + 1;
+    }
+    return normaliser(valeurs);
+  };
+  return {
+    model: "factice",
+    dim: 8,
+    embedPassages: async (textes) => textes.map(vecteur),
+    embedQuery: async (texte) => vecteur(texte),
+  };
+}
+
+/** Un vecteur négatif : la similarité cosinus de tout passage reste sous le seuil bas. */
+const EMBEDDER_HORS_SUJET: Embedder = {
+  model: "factice",
+  dim: 8,
+  embedPassages: async (textes) => textes.map(() => normaliser(new Array<number>(8).fill(-1))),
+  embedQuery: async () => normaliser(new Array<number>(8).fill(-1)),
+};
+
+const EMBEDDER_INTERDIT: Embedder = {
+  model: "factice",
+  dim: 8,
+  embedPassages: async () => {
+    throw new Error("l'embedder ne doit pas être appelé");
+  },
+  embedQuery: async () => {
+    throw new Error("l'embedder ne doit pas être appelé");
+  },
+};
+
+function ecrireCorpus(root: string): void {
+  const dossier = join(root, "data", "corpus", "rgpd");
+  mkdirSync(dossier, { recursive: true });
+  writeFileSync(
+    join(dossier, "unites.jsonl"),
+    `${SIX.map((unite) => JSON.stringify(unite)).join("\n")}\n`,
+    "utf8",
+  );
+}
+
+function contenu(resultat: unknown): Record<string, unknown> {
+  const bloc = (resultat as { content?: { type: string; text?: string }[] }).content?.[0];
+  assert.ok(bloc?.text, "le résultat doit porter un bloc texte");
+  return JSON.parse(bloc.text) as Record<string, unknown>;
+}
+
+describe("les outils, sans transport", () => {
+  it("lit un article exact", () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-tools-"));
+    try {
+      ecrireCorpus(root);
+      const article = getArticle(root, { document: DOCUMENT, numero: "3" });
+
+      assert.equal(article.trouve, true);
+      assert.equal(article.ref, `${DOCUMENT}#art_3`);
+      assert.equal(article.niveau, "article");
+      assert.match(article.texte, /droit d'accès/);
+      assert.equal(article.date_acte, "2016-04-27");
+      assert.equal(article.url, SIX[2]?.url);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("dit introuvable plutôt que de rendre une chaîne vide", () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-tools-"));
+    try {
+      ecrireCorpus(root);
+      const article = getArticle(root, { document: DOCUMENT, numero: "99" });
+
+      assert.equal(article.trouve, false);
+      assert.equal("texte" in article, false);
+      assert.match(article.message, /99/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("rend confiant sur une référence exacte sans interroger l'index", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-tools-"));
+    try {
+      ecrireCorpus(root);
+      const resultat = await search(
+        root,
+        { question: "article 3 du RGPD" },
+        { embedder: EMBEDDER_INTERDIT },
+      );
+
+      assert.equal(resultat.niveau_confiance, "confiant");
+      assert.equal(resultat.passages[0]?.ref, `${DOCUMENT}#art_3`);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("refuse une question hors corpus sans rendre de passage", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-tools-"));
+    try {
+      ecrireCorpus(root);
+      const { chemin } = await buildIndex(root, embedderFactice());
+      const index = openIndex(chemin);
+      try {
+        const resultat = await search(
+          root,
+          { question: "Quel est le tarif d'une place de stationnement ?" },
+          { embedder: EMBEDDER_HORS_SUJET, index },
+        );
+
+        assert.equal(resultat.niveau_confiance, "aucun_resultat_fiable");
+        assert.deepEqual(resultat.passages, []);
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("nomme l'article absent quand la question le cite", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-tools-"));
+    try {
+      ecrireCorpus(root);
+      const resultat = await search(root, { question: "article 999 du RGPD" }, { embedder: EMBEDDER_INTERDIT });
+
+      assert.equal(resultat.niveau_confiance, "aucun_resultat_fiable");
+      assert.deepEqual(resultat.passages, []);
+      assert.match(resultat.message ?? "", /article 999/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("niveauConfiance", () => {
+  it("est confiant sur une référence exacte, même sans résultat", () => {
+    assert.equal(niveauConfiance([], true), "confiant");
+  });
+
+  it("est confiant au-dessus du seuil haut avec la marge", () => {
+    assert.equal(niveauConfiance([{ distance: 0.2 }, { distance: 0.4 }], false), "confiant");
+  });
+
+  it("reste incertain quand la marge manque", () => {
+    assert.equal(niveauConfiance([{ distance: 0.2 }, { distance: 0.21 }], false), "incertain");
+  });
+
+  it("reste incertain entre les deux seuils", () => {
+    assert.equal(niveauConfiance([{ distance: 1 - (SEUIL_BAS + 0.05) }], false), "incertain");
+  });
+
+  it("ne rend aucun résultat fiable sous le seuil bas ou sans résultat", () => {
+    assert.equal(niveauConfiance([{ distance: 1 - (SEUIL_BAS - 0.05) }], false), "aucun_resultat_fiable");
+    assert.equal(niveauConfiance([], false), "aucun_resultat_fiable");
+  });
+
+  it("laisse les seuils se régler", () => {
+    assert.equal(niveauConfiance([{ distance: 0.2 }], false, { haut: 1.1 }), "incertain");
+    assert.equal(niveauConfiance([{ distance: 0.2 }], false, { haut: 0.5, marge: 0 }), "confiant");
+    assert.equal(
+      niveauConfiance([{ distance: 1 - (SEUIL_HAUT + 0.1) }], false, { bas: 0.9 }),
+      "aucun_resultat_fiable",
+    );
+  });
+});
+
+describe("le serveur en mémoire", () => {
+  let root: string;
+  let index: Index;
+  let client: Client;
+  let serveur: ReturnType<typeof createServer>;
+
+  before(async () => {
+    root = mkdtempSync(join(tmpdir(), "vitrine-mcp-"));
+    ecrireCorpus(root);
+    const construit = await buildIndex(root, embedderFactice());
+    index = openIndex(construit.chemin);
+    serveur = createServer({ rootDir: root, embedder: embedderFactice(), index });
+    client = new Client({ name: "test", version: "0.0.0" });
+
+    const [transportClient, transportServeur] = InMemoryTransport.createLinkedPair();
+    await Promise.all([client.connect(transportClient), serveur.connect(transportServeur)]);
+  });
+
+  after(async () => {
+    await client.close();
+    await serveur.close();
+    index.db.close();
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  it("expose exactement get_article et search", async () => {
+    const { tools } = await client.listTools();
+
+    assert.deepEqual(
+      tools.map((outil) => outil.name).sort(),
+      ["get_article", "search"],
+    );
+  });
+
+  it("rend l'article 3 par get_article", async () => {
+    const resultat = await client.callTool({
+      name: "get_article",
+      arguments: { document: DOCUMENT, numero: "3" },
+    });
+    const payload = contenu(resultat);
+
+    assert.equal(payload.trouve, true);
+    assert.equal(payload.ref, `${DOCUMENT}#art_3`);
+    assert.match(String(payload.texte), /droit d'accès/);
+    assert.equal(payload.date_acte, "2016-04-27");
+    assert.equal(payload.url, SIX[2]?.url);
+  });
+
+  it("répond introuvable pour un article absent", async () => {
+    const resultat = await client.callTool({
+      name: "get_article",
+      arguments: { document: DOCUMENT, numero: "42" },
+    });
+    const payload = contenu(resultat);
+
+    assert.equal(payload.trouve, false);
+    assert.match(String(payload.message), /42/);
+  });
+
+  it("cherche par le sens et garde art_3 dans les cinq premiers", async () => {
+    const resultat = await client.callTool({
+      name: "search",
+      arguments: { question: "droit d'accès aux données" },
+    });
+    const payload = contenu(resultat);
+    const passages = payload.passages as { ref: string; similarite: number }[];
+
+    assert.ok(["confiant", "incertain"].includes(String(payload.niveau_confiance)));
+    assert.ok(passages.length <= 5);
+    assert.equal(passages[0]?.ref, `${DOCUMENT}#art_3`);
+    assert.equal(typeof passages[0]?.similarite, "number");
+  });
+
+  it("court-circuite une référence exacte", async () => {
+    const resultat = await client.callTool({
+      name: "search",
+      arguments: { question: "article 5 du RGPD" },
+    });
+    const payload = contenu(resultat);
+
+    assert.equal(payload.niveau_confiance, "confiant");
+    assert.equal((payload.passages as { ref: string }[])[0]?.ref, `${DOCUMENT}#art_5`);
+  });
+});
+
+describe("le code du serveur", () => {
+  it("n'appelle fetch ni dans server.ts ni dans tools.ts", () => {
+    for (const fichier of ["../mcp/server.ts", "../mcp/tools.ts"]) {
+      const source = readFileSync(new URL(fichier, import.meta.url), "utf8");
+      assert.equal(/\bfetch\b/.test(source), false, `${fichier} ne doit pas appeler le réseau`);
+    }
+  });
+});
