@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 ---
 
 # Instruction: Rapport et documentation
@@ -39,7 +39,7 @@ status: pending
 
 1. Dans `eval.md`, séparer les résultats `dev` (réglage) des résultats `test` (constat).
 2. Donner pour chaque split : top 5, top 1, MRR, pièges cités, taux d'`incertain`.
-3. Rapporter l'expérience 4b : article 20 au rang 2, 138 s pour 272 unités contre 10 s avec 0.6b.
+3. Rapporter l'expérience 4b : article 20 au rang 2, 2 560 dimensions, 129,6 s pour 272 unités contre 19,3 s avec 0.6b.
 4. Nommer les limites restantes : paraphrase, précision au rang 1, échantillon de 15 questions.
 
 ### `2)` Mettre la mémoire à jour

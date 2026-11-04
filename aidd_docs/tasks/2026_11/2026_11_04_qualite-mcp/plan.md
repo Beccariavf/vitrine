@@ -1,6 +1,6 @@
 ---
 objective: "Sur les 15 questions tenues à l'écart, la référence attendue est dans le top 5 à 90 % et aucun piège n'est cité avec confiance ; l'index ne recalcule que le delta."
-status: pending
+status: implemented
 ---
 
 # Plan: Qualité mesurée du MCP et index incrémental
@@ -22,7 +22,7 @@ Source: aidd_docs/tasks/2026_11/2026_11_04_qualite-mcp/brainstorm.md
 | URL   | What it settled   |
 | ----- | ----------------- |
 | https://docs.ollama.com/api/embed | `POST /api/embed` avec `{ model, input }` rend `{ embeddings }` ; vérifié localement sur 0.6b et 4b. |
-| https://ollama.com/library/qwen3-embedding | `qwen3-embedding:0.6b` rend 1 024 dimensions en Q8_0 ; `4b` rend 1 024 dimensions et place l'article 20 au rang 2 sur la paraphrase, pour 138 s sur 272 unités contre 10 s. |
+| https://ollama.com/library/qwen3-embedding | `qwen3-embedding:0.6b` rend 1 024 dimensions en Q8_0 ; `4b` rend 2 560 dimensions et place l'article 20 au rang 2 sur la paraphrase, pour 129,6 s sur 272 unités contre 19,3 s mesurés le 4 novembre 2026. |
 | https://github.com/asg017/sqlite-vec | `vec0` accepte `DELETE` et `INSERT` par `rowid` ; aucune structure ANN à réentraîner, donc l'incrémental ne coûte que les nouveaux vecteurs. |
 | https://nodejs.org/api/sqlite.html | `DatabaseSync` accepte `allowExtension: true` et des transactions explicites. |
 
@@ -30,7 +30,7 @@ Source: aidd_docs/tasks/2026_11/2026_11_04_qualite-mcp/brainstorm.md
 
 | Category                                           | Verdict and evidence | Handled in         |
 | -------------------------------------------------- | -------------------- | ------------------ |
-| runtime | Mesuré : `qwen3-embedding:0.6b` indexe 272 unités en ~10 s ; `4b` en 138 s. L'index incrémental ne paie que le delta. | 1, 4 |
+| runtime | Mesuré : `qwen3-embedding:0.6b` indexe 272 unités en ~19 s ; `4b` en ~130 s. L'index incrémental ne paie que le delta. | 1, 4 |
 | regression | La suite actuelle (295 tests) est rejouée à chaque phase ; les outils et le serveur gardent leur contrat. Risque : moyen sur le classement et la confiance, couvert par les tests existants. | 1, 2, 3 |
 | architecture | L'index gagne une empreinte de contenu et un diff ; le classement gagne une bande de préférence ; la confiance gagne une marge. Aucun changement de transport ni de corpus. | 2, 3, 4 |
 | documentation | `eval.md` porte les résultats de développement et de test, l'expérience 4b et les limites ; la mémoire et le README suivent. | 5 |
@@ -50,8 +50,8 @@ Source: aidd_docs/tasks/2026_11/2026_11_04_qualite-mcp/brainstorm.md
 
 | Decision   | Why   |
 | ---------- | ----- |
-| Garder `qwen3-embedding:0.6b` comme modèle du produit. | 41 min pour la CNIL contre 9 h avec 4b ; la barre choisie est une preuve crédible, pas un outil de production. |
-| Documenter l'expérience 4b au lieu de l'intégrer. | Elle prouve que la limite de paraphrase vient du modèle, sans imposer un index vingt fois plus lent. |
+| Garder `qwen3-embedding:0.6b` comme modèle du produit. | ~75 min pour la CNIL contre ~8,5 h avec 4b ; la barre choisie est une preuve crédible, pas un outil de production. |
+| Documenter l'expérience 4b au lieu de l'intégrer. | Elle prouve que la limite de paraphrase vient du modèle, sans imposer un index 6,7 fois plus lent. |
 | Un article passe devant un considérant dans une bande de similarité calibrée. | Le considérant éclaire, l'article pose la règle ; on ne supprime pas le contexte. |
 | Marge de confiance non nulle. | `incertain` doit exister quand les deux premiers passages sont proches. |
 | Index incrémental par empreinte de contenu et table `ref → rowid`. | Le `rowid` positionnel actuel glisse dès que l'ordre change. |
