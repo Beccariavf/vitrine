@@ -21,7 +21,7 @@ const CONSIGNE_PROVENANCE =
 export type ServerDeps = {
   rootDir: string;
   embedder: Embedder;
-  /** Index déjà ouvert ; sinon il est ouvert à la première recherche. */
+  /** Index déjà ouvert ; sinon il est ouvert à la première recherche sémantique. */
   index?: Index;
 };
 

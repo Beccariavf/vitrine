@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 ---
 
 # Instruction: Index vectoriel
@@ -84,7 +84,7 @@ status: pending
 1. Écrire `tests/index.test.ts` avec un embedder déterministe de 8 dimensions.
 2. Vérifier la construction, le nombre de lignes, le contenu de `meta`, l'ordre cosinus et `k`.
 3. Vérifier l'erreur d'index absent, l'erreur de dimension, l'insert d'un `rowid` explicite et le second descripteur.
-4. Vérifier que le test du vrai modèle est sauté proprement quand `OLLAMA_HOST` est absent (`test.skipIf`).
+4. Vérifier que le test du vrai modèle est sauté proprement sauf quand `MCP_TEST_OLLAMA=1`.
 5. Lancer `npm test` et `npm run typecheck`.
 
 ## Test acceptance criteria
@@ -95,4 +95,4 @@ status: pending
 | 2 | L'index contient 272 lignes, `meta` porte le modèle et la dimension, et le fichier final n'existe qu'après renommage ; un second descripteur s'indexe et se filtre par `document` sans modification du code. |
 | 3 | La recherche rend les `k` meilleurs passages triés par distance cosinus croissante, avec `ref`, `document`, les dates et l'URL. |
 | 4 | `npm run corpus:index` construit le fichier ; `data/corpus/index/` n'apparaît pas dans `git status` ; `npm run mcp:smoke` vérifie 1 024 dimensions et la norme 1. |
-| 5 | Les tests passent hors ligne avec l'embedder factice ; le test réel est sauté sans `OLLAMA_HOST`. |
+| 5 | Les tests passent hors ligne avec l'embedder factice ; le test réel est sauté sauf si `MCP_TEST_OLLAMA=1`. |

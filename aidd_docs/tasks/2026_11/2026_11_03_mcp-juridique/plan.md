@@ -1,6 +1,6 @@
 ---
-objective: "Un MCP local expose le RGPD par article exact et par recherche sémantique, avec provenance, et se mesure sur un jeu de 20 questions."
-status: pending
+objective: "Un MCP local expose le RGPD par article exact et par recherche sémantique, avec provenance, et se mesure sur un jeu de 22 questions."
+status: implemented
 ---
 
 # Plan: MCP juridique RGPD
@@ -43,7 +43,7 @@ Source: aidd_docs/tasks/2026_11/2026_11_03_mcp-juridique/brainstorm.md
 
 | Rule   | Why it applies |
 | ------ | -------------- |
-| Aucun test ne touche le réseau. | Le corpus et l'embedder sont injectés ; les fixtures sont des captures réelles. |
+| Le jeu de tests par défaut ne touche pas le réseau. | Le corpus et l'embedder sont injectés ; les fixtures sont des captures réelles. Le contrôle `MCP_TEST_OLLAMA=1` interroge Ollama local, à la demande. |
 | `data/` n'est jamais édité à la main. | `corpus:build` et `corpus:index` produisent `data/corpus/`. |
 | Versions épinglées. | Les dépendances ajoutées sont en version exacte, comme le reste du projet. |
 | Typecheck strict sur tout le code. | `mcp/**/*.ts` entre dans `tsconfig.json` et passe `npm run typecheck`. |

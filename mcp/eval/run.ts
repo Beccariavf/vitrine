@@ -13,7 +13,7 @@ const ICI = dirname(fileURLToPath(import.meta.url));
 const QUESTIONS = join(ICI, "questions.csv");
 const RACINE = fileURLToPath(new URL("../..", import.meta.url));
 
-/** Un pli de validation croisée : quatre plis de cinq questions. */
+/** Un pli de validation croisée : quatre plis aussi égaux que possible. */
 export const NB_PLIS = 4;
 
 export type TypeQuestion = "reference" | "conceptuelle" | "piege";

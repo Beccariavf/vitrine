@@ -21,7 +21,7 @@ Pour un avocat ou un recruteur : retrouver un texte officiel par référence exa
 - Corpus RGPD lu directement depuis CELLAR en XHTML, sans la CLI `eurlex`.
 - Deuxième corpus prévu : délibérations CNIL (64 466 chunks déjà vectorisés en bge-m3, Etalab 2.0), avec index incrémental et découpage parent avant ingestion.
 - Seuils de confiance calibrés par validation croisée à 4 plis.
-- Premier slice : RGPD seul, exact + sémantique + jeu de 20 questions.
+- Premier slice : RGPD seul, exact + sémantique + jeu de 22 questions.
 
 ## Assumed
 
