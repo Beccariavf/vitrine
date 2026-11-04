@@ -40,6 +40,12 @@ function passageExact(unite: Unite): Passage {
   return { ...unite, distance: 0, similarite: 1 };
 }
 
+/** Numéro cité par « article N », « art. N » ou « art N » ; `null` sinon. */
+export function referenceExacte(question: string): string | null {
+  const reference = /\b(?:article|art\.?)\s*(\d+)/i.exec(question);
+  return reference === null ? null : (reference[1] ?? "");
+}
+
 /** Cherche un article par son numéro, dans un document ou dans tout le corpus. */
 function trouverArticle(
   rootDir: string,
@@ -94,9 +100,8 @@ export async function search(
   demande: SearchDemande,
   deps: SearchDeps,
 ): Promise<ResultatRechercheOutil> {
-  const reference = /\b(?:article|art\.?)\s*(\d+)/i.exec(demande.question);
-  if (reference !== null) {
-    const numero = reference[1] ?? "";
+  const numero = referenceExacte(demande.question);
+  if (numero !== null) {
     const article = trouverArticle(rootDir, demande.document, numero);
     if (article !== null) {
       return { niveau_confiance: "confiant", passages: [passageExact(article)] };

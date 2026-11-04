@@ -1,13 +1,13 @@
 import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { niveauConfiance } from "../confidence.ts";
+import { niveauConfiance, SEUIL_BAS } from "../confidence.ts";
 import { createOllamaEmbedder } from "../embed/embedder.ts";
 import type { Embedder } from "../embed/embedder.ts";
 import { cheminIndex, lireUnites } from "../index/build.ts";
 import { openIndex } from "../index/search.ts";
 import type { Index } from "../index/search.ts";
-import { search } from "../tools.ts";
+import { referenceExacte, search } from "../tools.ts";
 
 const ICI = dirname(fileURLToPath(import.meta.url));
 const QUESTIONS = join(ICI, "questions.csv");
@@ -201,14 +201,17 @@ export function validerCroise(mesures: Mesure[], plis = NB_PLIS): Pli[] {
     const tenusAEcart = new Set(pli);
     const entrainement = mesures.filter((mesure) => !tenusAEcart.has(mesure));
     const seuils = calibrer(entrainement);
-    const pieges = pli.filter((mesure) => mesure.question.piege);
-    const cites = pieges.filter((mesure) => !refusee(mesure, seuils)).length;
+    const classements: ClassementPiege[] = pli.map((mesure) => ({
+      piege: mesure.question.piege,
+      refusee: refusee(mesure, seuils),
+    }));
+    const pieges = classements.filter((classement) => classement.piege);
     return {
       numero: index + 1,
       seuils,
       pieges: pieges.length,
-      cites,
-      taux: pieges.length === 0 ? 0 : cites / pieges.length,
+      cites: pieges.filter((classement) => !classement.refusee).length,
+      taux: tauxCitationsInvalides(classements),
     };
   });
 }
@@ -248,6 +251,20 @@ function compter(mesures: Mesure[], type: TypeQuestion): number {
   return mesures.filter((mesure) => mesure.question.type === type).length;
 }
 
+/** Vrai si la question est servie par le court-circuit exact, sans vecteurs. */
+function estExacte(mesure: Mesure): boolean {
+  return referenceExacte(mesure.question.question) !== null;
+}
+
+function classer(mesures: Mesure[]): Classement[] {
+  return mesures.map((mesure) => ({ attendues: mesure.question.attendues, rendus: mesure.refs }));
+}
+
+/** Similarité du premier passage, seule à décider du niveau de confiance. */
+function premiereSimilarite(mesure: Mesure): number {
+  return 1 - (mesure.distances[0] ?? Number.POSITIVE_INFINITY);
+}
+
 async function main(): Promise<void> {
   const questions = lireQuestions(readFileSync(QUESTIONS, "utf8"));
   const unites = lireUnites(RACINE);
@@ -257,12 +274,29 @@ async function main(): Promise<void> {
   const index = openIndex(cheminIndex(RACINE));
   try {
     const mesures = await mesurer(RACINE, questions, embedder, index);
-    const classements: Classement[] = mesures.map((mesure) => ({
-      attendues: mesure.question.attendues,
-      rendus: mesure.refs,
-    }));
     const plis = validerCroise(mesures);
     const seuils = calibrer(mesures);
+
+    const exactes = mesures.filter((mesure) => !mesure.question.piege && estExacte(mesure));
+    const semantiques = mesures.filter((mesure) => !mesure.question.piege && !estExacte(mesure));
+    const classementsSemantiques = classer(semantiques);
+    const trouveesSemantiques = classementsSemantiques.filter((classement) =>
+      classement.rendus.slice(0, 5).some((ref) => classement.attendues.includes(ref)),
+    ).length;
+    const piegesSeuil = mesures.filter((mesure) => mesure.question.piege && !estExacte(mesure));
+    const piegesDeterministes = mesures.filter((mesure) => mesure.question.piege && estExacte(mesure));
+
+    const similariteMaxPieges = Math.max(...piegesSeuil.map(premiereSimilarite));
+    const similariteMinSemantiques = Math.min(...semantiques.map(premiereSimilarite));
+    const incertaines = mesures.filter(
+      (mesure) =>
+        !mesure.question.piege &&
+        niveauConfiance(
+          mesure.distances.map((distance) => ({ distance })),
+          false,
+          seuils,
+        ) === "incertain",
+    ).length;
 
     const effacement = mesures.find(
       (mesure) => mesure.question.question === "effacement et moteurs de recherche",
@@ -284,8 +318,18 @@ async function main(): Promise<void> {
       `jeu : ${questions.length} questions (${compter(mesures, "reference")} références, ` +
         `${compter(mesures, "conceptuelle")} conceptuelles, ${compter(mesures, "piege")} pièges)`,
       `seuils finaux : bas=${arrondi(seuils.bas)} haut=${arrondi(seuils.haut)} marge=${arrondi(seuils.marge)}`,
-      `recall@5 : ${arrondi(recallAt5(classements))} (${classements.filter((c) => c.attendues.length > 0).length} questions à référence)`,
-      `MRR : ${arrondi(mrr(classements))}`,
+      `références exactes : ${exactes.length} questions, rang 1 par construction ` +
+        `(recall@5 ${arrondi(recallAt5(classer(exactes)))}, MRR ${arrondi(mrr(classer(exactes)))})`,
+      `recherche sémantique : ${semantiques.length} questions, recall@5 ` +
+        `${arrondi(recallAt5(classementsSemantiques))} ` +
+        `(${trouveesSemantiques}/${semantiques.length}), ` +
+        `MRR ${arrondi(mrr(classementsSemantiques))}`,
+      `pièges : ${piegesSeuil.length} par seuil, ${piegesDeterministes.length} déterministe ` +
+        `(${piegesDeterministes.map((mesure) => mesure.question.question).join(" · ") || "aucun"})`,
+      `similarité : max des pièges par seuil ${arrondi(similariteMaxPieges)}, ` +
+        `min des questions sémantiques ${arrondi(similariteMinSemantiques)}, ` +
+        `marge sous SEUIL_BAS ${arrondi(SEUIL_BAS - similariteMaxPieges)}`,
+      `questions sémantiques incertaines aux seuils finaux : ${incertaines}`,
       `citations invalides par pli : ${plis.map((pli) => `${pourcentage(pli.taux)} (${pli.cites}/${pli.pieges})`).join(" · ")}`,
       `moyenne des plis : ${pourcentage(moyenne)} (min–max ${pourcentage(minimum)}–${pourcentage(maximum)})`,
       `rang de « effacement et moteurs de recherche » : ${rangEffacement === 0 ? "absent" : rangEffacement}`,

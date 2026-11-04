@@ -26,19 +26,24 @@ npm run mcp            # serveur MCP sur stdio
 npm run mcp:eval       # 20 questions, métriques datées (hors CI)
 ```
 
-Le MCP lit le RGPD par article exact et par recherche sémantique, avec provenance. Il exige Ollama
-sur `127.0.0.1:11434` et le modèle `qwen3-embedding:0.6b` (`ollama pull qwen3-embedding:0.6b`) ;
-sans eux, `corpus:index` et la recherche échouent avec un message qui nomme la commande.
+Le MCP lit le RGPD par article exact et par recherche sémantique, avec provenance. Seule la
+recherche sémantique exige Ollama sur `127.0.0.1:11434` et le modèle `qwen3-embedding:0.6b`
+(`ollama pull qwen3-embedding:0.6b`) : une question qui cite un article (« article 17 ») est servie
+sans index. Sans Ollama, `corpus:index` et la recherche sémantique échouent avec un message qui
+nomme la commande.
 
-Pour le brancher dans un client MCP, déclarer un serveur stdio :
+Pour le brancher dans un client MCP, déclarer un serveur stdio avec le chemin absolu du serveur :
 
 ```json
 {
   "mcpServers": {
-    "rgpd": { "command": "node", "args": ["mcp/server.ts"] }
+    "rgpd": { "command": "node", "args": ["/Users/val/Developer/Vitrine-mcp/mcp/server.ts"] }
   }
 }
 ```
+
+`mcp/server.ts` résout la racine du dépôt depuis `import.meta.url`, jamais depuis le répertoire
+courant : un chemin relatif échouerait hors de la racine.
 
 ## Comment ça marche
 

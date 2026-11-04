@@ -29,7 +29,7 @@ flowchart LR
 ## Key decisions
 
 - Static-first : la passe est manuelle et hebdomadaire ; aucun cron n'est configuré ; le site n'est pas déployé, voir `deployment.md`.
-- `mcp/` est une quatrième zone, distincte du pipeline et du site : corpus, index, outils, transport stdio. `veille/` et `src/` sont inchangés ; seul `writeRaw` de `veille/write.ts` est réutilisé pour le snapshot brut.
+- `mcp/` est une quatrième zone, distincte du pipeline et du site : corpus, index, outils, transport stdio. `veille/` et `src/` sont inchangés ; seuls `writeRaw` de `veille/write.ts` et le type `FetchLike` de `veille/fetch.ts` sont réutilisés.
 - `npm run corpus:build` récupère le XHTML CELLAR et écrit `data/corpus/rgpd/` ; `npm run corpus:index` construit `data/corpus/index/index.db`, jamais commité. `npm run mcp` ouvre le serveur sur stdio.
 - L'embedding reste local : Ollama sur `127.0.0.1:11434` avec `qwen3-embedding:0.6b`, appelé seulement à l'indexation et à la requête. Le site ne lit aucune API.
 - Git est la base : snapshots bruts + hash + JSON commités ; l'index se reconstruit au build.

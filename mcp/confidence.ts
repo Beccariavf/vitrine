@@ -4,7 +4,11 @@
  * Les seuils sont exprimés en similarité cosinus (`1 - distance`). Les valeurs
  * ci-dessous sont celles calibrées en phase 4 sur le jeu de vingt questions
  * (`aidd_docs/tasks/2026_11/2026_11_03_mcp-juridique/eval.md`) ; elles séparent
- * les cinq pièges des quinze questions à référence. Le niveau dit ce que le
+ * les quatre pièges soumis aux seuils (similarité maximale 0,631) des sept
+ * questions servies par les vecteurs (similarité minimale 0,704), soit 0,019 de
+ * marge sous `SEUIL_BAS`. Le cinquième piège, « article 100 », est refusé par le
+ * court-circuit des articles absents, pas par ces seuils. `MARGE` valant zéro,
+ * aucune question mesurée ne tombe dans `incertain`. Le niveau dit ce que le
  * serveur sait du rapprochement, jamais la qualité de la rédaction.
  */
 export type NiveauConfiance = "confiant" | "incertain" | "aucun_resultat_fiable";

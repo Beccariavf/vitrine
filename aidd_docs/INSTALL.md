@@ -81,7 +81,7 @@ flowchart LR
   P --> W["Cloudflare Workers<br/>static assets"]
 ```
 
-Quatre frontières structurent le projet. `veille/sources/` est la seule zone fragile : chaque source est un adaptateur isolé dans son fichier, donc une API qui casse se répare à un seul endroit. `data/` est la vérité : le site ne lit jamais une API, il lit des fichiers commités, ce qui rend le site et le MCP reconstructibles indépendamment. `src/` est jetable par conception : si Astro devient pénible, les données survivent et le site se régénère autrement. `mcp/` est un produit distinct : il lit `data/corpus/`, réutilise seulement `writeRaw` de `veille/write.ts` pour le snapshot brut, et n'altère ni `veille/` ni `src/`.
+Quatre frontières structurent le projet. `veille/sources/` est la seule zone fragile : chaque source est un adaptateur isolé dans son fichier, donc une API qui casse se répare à un seul endroit. `data/` est la vérité : le site ne lit jamais une API, il lit des fichiers commités, ce qui rend le site et le MCP reconstructibles indépendamment. `src/` est jetable par conception : si Astro devient pénible, les données survivent et le site se régénère autrement. `mcp/` est un produit distinct : il lit `data/corpus/`, réutilise seulement `writeRaw` de `veille/write.ts` pour le snapshot brut et le type `FetchLike` de `veille/fetch.ts`, et n'altère ni `veille/` ni `src/`.
 
 ## Folder structure
 

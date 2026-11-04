@@ -44,7 +44,7 @@ Comment le projet est testé : les couches, les outils et les conventions. Où v
 - Tests dans `tests/`, fixtures dans `tests/fixtures/<source>/`.
 - La fixture des textes du Conseil d'État est le `texte` intégral rendu par `/consult/juri`, sans retouche ; la fixture de consultation est la réponse complète pour 511155.
 - Les fixtures de flux sont des captures réelles ; les fixtures HTML sont des captures réduites des pages CNIL, avec leurs classes et guillemets d'origine.
-- Exception : `tests/fixtures/eurlex/rgpd.xhtml` est la capture intégrale du RGPD (876 858 octets, 99 ancres `art_N`, 173 `rct_N`), sans réduction, parce que le parseur vérifie ces comptes et que le corpus committé doit en sortir à l'identique.
+- Exception : `tests/fixtures/eurlex/rgpd.xhtml` est la capture intégrale du RGPD (876 859 octets, 99 ancres `art_N`, 173 `rct_N`), octet pour octet le snapshot `data/raw/6e/6e6495….xhtml`, sans réduction, parce que le parseur vérifie ces comptes et que le corpus committé doit en sortir à l'identique.
 - L'index vectoriel n'est jamais une fixture : les tests le construisent dans une racine temporaire avec un embedder factice.
 - Un test par comportement observable.
 - Les valeurs figées (identifiants, hashes) sont calculées indépendamment du code testé, jamais comparées à leur propre sortie.
