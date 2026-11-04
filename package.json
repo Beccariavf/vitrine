@@ -14,7 +14,8 @@
     "preview": "astro preview",
     "typecheck": "tsc --noEmit",
     "veille": "node veille/main.ts",
-    "backfill": "node veille/backfill.ts"
+    "backfill": "node veille/backfill.ts",
+    "corpus:build": "node mcp/corpus/build.ts"
   },
   "dependencies": {
     "fast-xml-parser": "5.11.2"
