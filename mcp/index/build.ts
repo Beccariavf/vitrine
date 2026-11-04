@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { DatabaseSync } from "node:sqlite";
@@ -20,6 +21,23 @@ export type MetaIndex = {
   dim: number;
   construit_le: string;
   unites: number;
+};
+
+/** Le delta d'une construction : ce qui a été ajouté, modifié, supprimé, gardé. */
+export type DeltaIndex = {
+  ajoutees: number;
+  modifiees: number;
+  supprimees: number;
+  inchangees: number;
+};
+
+export type ResultatBuild = {
+  chemin: string;
+  unites: number;
+  delta: DeltaIndex;
+  mode: "complet" | "incremental";
+  /** Renseigné en mode complet quand l'index existant n'était pas réutilisable. */
+  raison?: string;
 };
 
 export function cheminIndex(rootDir: string): string {
@@ -61,27 +79,6 @@ function lireMeta(db: DatabaseSync): Partial<MetaIndex> {
   }
 }
 
-/**
- * Refuse de réutiliser un index construit avec un autre modèle ou une autre
- * dimension : le message nomme le fichier à supprimer.
- */
-function verifierIndexExistant(chemin: string, embedder: Embedder): void {
-  if (!existsSync(chemin)) return;
-  const db = new DatabaseSync(chemin);
-  try {
-    const meta = lireMeta(db);
-    if (meta.model !== undefined && meta.dim !== undefined && (meta.model !== embedder.model || meta.dim !== embedder.dim)) {
-      throw new Error(
-        `Index existant construit avec ${meta.model} (${meta.dim} dimensions) ; ` +
-          `supprimez ${chemin} puis relancez « npm run corpus:index » ` +
-          `pour ${embedder.model} (${embedder.dim} dimensions).`,
-      );
-    }
-  } finally {
-    db.close();
-  }
-}
-
 const SCHEMA = (dim: number): string => `
 CREATE TABLE meta (
   cle TEXT PRIMARY KEY,
@@ -99,7 +96,8 @@ CREATE TABLE unites (
   date_debut TEXT NOT NULL,
   date_fin TEXT,
   statut TEXT NOT NULL,
-  url TEXT NOT NULL
+  url TEXT NOT NULL,
+  empreinte TEXT NOT NULL
 );
 CREATE VIRTUAL TABLE vec_unites USING vec0(embedding float[${dim}] distance_metric=cosine);
 `;
@@ -110,30 +108,145 @@ function passage(unite: Unite): string {
 }
 
 /**
- * Reconstruit `data/corpus/index/index.db` à partir de tous les corpus. Le
- * fichier n'existe qu'après renommage du temporaire : un échec ne laisse pas
- * d'index partiel.
+ * Empreinte du vecteur d'une unité : le modèle, la dimension et le passage
+ * contextualisé. Elle change dès que l'embedding changerait, sans toucher aux
+ * autres champs d'affichage.
  */
-export async function buildIndex(
-  rootDir: string,
-  embedder: Embedder,
-): Promise<{ chemin: string; unites: number }> {
-  const unites = lireUnites(rootDir);
-  if (unites.length === 0) {
-    throw new Error("Aucune unité à indexer. Lancez « npm run corpus:build ».");
+export function empreinteUnite(unite: Unite, embedder: Embedder): string {
+  return createHash("sha256")
+    .update(`${embedder.model}\n${embedder.dim}\n${passage(unite)}`)
+    .digest("hex");
+}
+
+type LigneIndex = { ref: string; rowid: number; empreinte: string };
+
+type Existant =
+  | { compatible: true; db: DatabaseSync; lignes: LigneIndex[]; maxRowid: number }
+  | { compatible: false; raison: string };
+
+/**
+ * Ouvre l'index existant seulement s'il est lisible, du même modèle et de la
+ * même dimension, et s'il porte l'empreinte. Sinon, la construction complète
+ * reprend, avec une raison explicite.
+ */
+function ouvrirExistant(chemin: string, embedder: Embedder): Existant {
+  if (!existsSync(chemin)) return { compatible: false, raison: "index absent" };
+
+  let db: DatabaseSync;
+  try {
+    db = new DatabaseSync(chemin, { allowExtension: true });
+  } catch {
+    return { compatible: false, raison: "index illisible" };
   }
 
-  const chemin = cheminIndex(rootDir);
-  verifierIndexExistant(chemin, embedder);
+  try {
+    sqliteVec.load(db);
+    const meta = lireMeta(db);
+    if (meta.model !== embedder.model || meta.dim !== embedder.dim) {
+      db.close();
+      return {
+        compatible: false,
+        raison:
+          `index construit avec ${meta.model ?? "un modèle inconnu"} ` +
+          `(${meta.dim ?? "?"} dimensions)`,
+      };
+    }
 
-  const vecteurs: number[][] = [];
+    const colonnes = db.prepare("PRAGMA table_info(unites)").all() as { name: string }[];
+    if (!colonnes.some((colonne) => colonne.name === "empreinte")) {
+      db.close();
+      return { compatible: false, raison: "index sans empreinte" };
+    }
+
+    const lignes = db.prepare("SELECT ref, rowid, empreinte FROM unites").all() as {
+      ref: string;
+      rowid: number | bigint;
+      empreinte: string;
+    }[];
+    const maximum = db.prepare("SELECT max(rowid) AS maximum FROM unites").get() as {
+      maximum: number | bigint | null;
+    };
+    return {
+      compatible: true,
+      db,
+      lignes: lignes.map((ligne) => ({
+        ref: ligne.ref,
+        rowid: Number(ligne.rowid),
+        empreinte: ligne.empreinte,
+      })),
+      maxRowid: maximum.maximum === null ? 0 : Number(maximum.maximum),
+    };
+  } catch {
+    try {
+      db.close();
+    } catch {
+      // La base reste inutilisable ; la construction complète la remplacera.
+    }
+    return { compatible: false, raison: "index illisible" };
+  }
+}
+
+type Delta = {
+  ajoutees: Unite[];
+  modifiees: Unite[];
+  supprimees: LigneIndex[];
+  inchangees: Unite[];
+};
+
+function calculerDelta(
+  lignes: LigneIndex[],
+  unites: Unite[],
+  empreintes: Map<string, string>,
+): Delta {
+  const parRef = new Map(lignes.map((ligne) => [ligne.ref, ligne]));
+  const refsCorpus = new Set(unites.map((unite) => unite.ref));
+
+  const ajoutees: Unite[] = [];
+  const modifiees: Unite[] = [];
+  const inchangees: Unite[] = [];
+  for (const unite of unites) {
+    const existante = parRef.get(unite.ref);
+    if (existante === undefined) ajoutees.push(unite);
+    else if (existante.empreinte !== empreintes.get(unite.ref)) modifiees.push(unite);
+    else inchangees.push(unite);
+  }
+  return {
+    ajoutees,
+    modifiees,
+    supprimees: lignes.filter((ligne) => !refsCorpus.has(ligne.ref)),
+    inchangees,
+  };
+}
+
+/** Embarque les passages par lots et rend un vecteur par `ref`. */
+async function embarquer(
+  unites: Unite[],
+  embedder: Embedder,
+): Promise<Map<string, number[]>> {
+  const vecteurs = new Map<string, number[]>();
   for (let debut = 0; debut < unites.length; debut += LOT) {
     const lot = unites.slice(debut, debut + LOT);
-    vecteurs.push(...(await embedder.embedPassages(lot.map(passage))));
+    const rendus = await embedder.embedPassages(lot.map(passage));
+    if (rendus.length !== lot.length) {
+      throw new Error(`${rendus.length} vecteurs pour ${lot.length} unités : index abandonné`);
+    }
+    lot.forEach((unite, index) => {
+      const vecteur = rendus[index];
+      if (vecteur === undefined) throw new Error(`Vecteur manquant pour ${unite.ref}`);
+      vecteurs.set(unite.ref, vecteur);
+    });
   }
-  if (vecteurs.length !== unites.length) {
-    throw new Error(`${vecteurs.length} vecteurs pour ${unites.length} unités : index abandonné`);
-  }
+  return vecteurs;
+}
+
+/** Écrit un index neuf dans `chemin.tmp`, puis le renomme : aucun index partiel. */
+async function construireComplet(
+  chemin: string,
+  unites: Unite[],
+  empreintes: Map<string, string>,
+  embedder: Embedder,
+): Promise<void> {
+  const vecteurs = await embarquer(unites, embedder);
 
   mkdirSync(dirname(chemin), { recursive: true });
   const temporaire = `${chemin}.tmp`;
@@ -146,8 +259,8 @@ export async function buildIndex(
     db.exec(SCHEMA(embedder.dim));
 
     const insererUnite = db.prepare(`
-      INSERT INTO unites (rowid, ref, document, niveau, numero, chemin, texte, date_acte, date_debut, date_fin, statut, url)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO unites (rowid, ref, document, niveau, numero, chemin, texte, date_acte, date_debut, date_fin, statut, url, empreinte)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     const insererVecteur = db.prepare("INSERT INTO vec_unites (rowid, embedding) VALUES (?, ?)");
     const insererMeta = db.prepare("INSERT INTO meta (cle, valeur) VALUES (?, ?)");
@@ -156,7 +269,7 @@ export async function buildIndex(
     transaction = true;
     unites.forEach((unite, index) => {
       const rowid = BigInt(index + 1);
-      const vecteur = vecteurs[index];
+      const vecteur = vecteurs.get(unite.ref);
       if (vecteur === undefined) throw new Error(`Vecteur manquant pour ${unite.ref}`);
       insererUnite.run(
         rowid,
@@ -171,6 +284,7 @@ export async function buildIndex(
         unite.date_fin,
         unite.statut,
         unite.url,
+        empreintes.get(unite.ref) ?? "",
       );
       insererVecteur.run(rowid, JSON.stringify(vecteur));
     });
@@ -188,7 +302,172 @@ export async function buildIndex(
   }
 
   renameSync(temporaire, chemin);
-  return { chemin, unites: unites.length };
+}
+
+/** Applique le delta dans une transaction ; un échec annule tout. */
+async function appliquerDelta(
+  db: DatabaseSync,
+  delta: Delta,
+  empreintes: Map<string, string>,
+  embedder: Embedder,
+  maxRowid: number,
+  total: number,
+): Promise<void> {
+  const aEmbarquer = [...delta.ajoutees, ...delta.modifiees];
+  const vecteurs = await embarquer(aEmbarquer, embedder);
+
+  const supprimerVecteur = db.prepare("DELETE FROM vec_unites WHERE rowid = ?");
+  const supprimerUnite = db.prepare("DELETE FROM unites WHERE rowid = ?");
+  const modifierUnite = db.prepare(`
+    UPDATE unites
+       SET document = ?, niveau = ?, numero = ?, chemin = ?, texte = ?, date_acte = ?,
+           date_debut = ?, date_fin = ?, statut = ?, url = ?, empreinte = ?
+     WHERE rowid = ?
+  `);
+  const insererUnite = db.prepare(`
+    INSERT INTO unites (rowid, ref, document, niveau, numero, chemin, texte, date_acte, date_debut, date_fin, statut, url, empreinte)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  const insererVecteur = db.prepare("INSERT INTO vec_unites (rowid, embedding) VALUES (?, ?)");
+  const ecrireMeta = db.prepare(
+    "INSERT INTO meta (cle, valeur) VALUES (?, ?) ON CONFLICT(cle) DO UPDATE SET valeur = excluded.valeur",
+  );
+  const anciennes = new Map<string, number>();
+  for (const unite of delta.modifiees) {
+    const ligne = db.prepare("SELECT rowid FROM unites WHERE ref = ?").get(unite.ref) as
+      | { rowid: number | bigint }
+      | undefined;
+    if (ligne === undefined) throw new Error(`Ligne introuvable pour ${unite.ref}`);
+    anciennes.set(unite.ref, Number(ligne.rowid));
+  }
+
+  let prochain = maxRowid;
+  const nouveaux = new Map<string, number>();
+  for (const unite of delta.ajoutees) {
+    prochain += 1;
+    nouveaux.set(unite.ref, prochain);
+  }
+
+  db.exec("BEGIN");
+  try {
+    for (const ligne of delta.supprimees) {
+      supprimerVecteur.run(BigInt(ligne.rowid));
+      supprimerUnite.run(BigInt(ligne.rowid));
+    }
+
+    for (const unite of delta.modifiees) {
+      const rowid = anciennes.get(unite.ref);
+      const vecteur = vecteurs.get(unite.ref);
+      if (rowid === undefined || vecteur === undefined) {
+        throw new Error(`Delta incohérent pour ${unite.ref}`);
+      }
+      modifierUnite.run(
+        unite.document,
+        unite.niveau,
+        unite.numero,
+        unite.chemin,
+        unite.texte,
+        unite.date_acte,
+        unite.date_debut,
+        unite.date_fin,
+        unite.statut,
+        unite.url,
+        empreintes.get(unite.ref) ?? "",
+        BigInt(rowid),
+      );
+      supprimerVecteur.run(BigInt(rowid));
+      insererVecteur.run(BigInt(rowid), JSON.stringify(vecteur));
+    }
+
+    for (const unite of delta.ajoutees) {
+      const rowid = nouveaux.get(unite.ref);
+      const vecteur = vecteurs.get(unite.ref);
+      if (rowid === undefined || vecteur === undefined) {
+        throw new Error(`Delta incohérent pour ${unite.ref}`);
+      }
+      insererUnite.run(
+        BigInt(rowid),
+        unite.ref,
+        unite.document,
+        unite.niveau,
+        unite.numero,
+        unite.chemin,
+        unite.texte,
+        unite.date_acte,
+        unite.date_debut,
+        unite.date_fin,
+        unite.statut,
+        unite.url,
+        empreintes.get(unite.ref) ?? "",
+      );
+      insererVecteur.run(BigInt(rowid), JSON.stringify(vecteur));
+    }
+
+    ecrireMeta.run("construit_le", new Date().toISOString());
+    ecrireMeta.run("unites", String(total));
+    db.exec("COMMIT");
+  } catch (error) {
+    db.exec("ROLLBACK");
+    throw error;
+  }
+}
+
+/**
+ * Construit `data/corpus/index/index.db` : incrémental quand l'index est
+ * réutilisable, complet sinon. Un index complet s'écrit dans `index.db.tmp`
+ * puis se renomme ; un delta s'écrit dans une transaction et s'annule en cas
+ * d'erreur.
+ */
+export async function buildIndex(rootDir: string, embedder: Embedder): Promise<ResultatBuild> {
+  const unites = lireUnites(rootDir);
+  if (unites.length === 0) {
+    throw new Error("Aucune unité à indexer. Lancez « npm run corpus:build ».");
+  }
+
+  const chemin = cheminIndex(rootDir);
+  const empreintes = new Map(unites.map((unite) => [unite.ref, empreinteUnite(unite, embedder)]));
+  const existant = ouvrirExistant(chemin, embedder);
+
+  if (!existant.compatible) {
+    await construireComplet(chemin, unites, empreintes, embedder);
+    return {
+      chemin,
+      unites: unites.length,
+      delta: {
+        ajoutees: unites.length,
+        modifiees: 0,
+        supprimees: 0,
+        inchangees: 0,
+      },
+      mode: "complet",
+      raison: existant.raison,
+    };
+  }
+
+  try {
+    const delta = calculerDelta(existant.lignes, unites, empreintes);
+    await appliquerDelta(
+      existant.db,
+      delta,
+      empreintes,
+      embedder,
+      existant.maxRowid,
+      unites.length,
+    );
+    return {
+      chemin,
+      unites: unites.length,
+      delta: {
+        ajoutees: delta.ajoutees.length,
+        modifiees: delta.modifiees.length,
+        supprimees: delta.supprimees.length,
+        inchangees: delta.inchangees.length,
+      },
+      mode: "incremental",
+    };
+  } finally {
+    existant.db.close();
+  }
 }
 
 /** Valeur qui suit `--nom`, ou `undefined`. */
@@ -197,13 +476,21 @@ function valeurDe(nom: string, argv: string[]): string | undefined {
   return index >= 0 ? argv[index + 1] : undefined;
 }
 
+/** Journal stderr : le mode, la raison et les quatre comptes du delta. */
+export function formaterJournal(resultat: ResultatBuild, embedder: Embedder): string {
+  const raison = resultat.raison === undefined ? "" : ` (${resultat.raison})`;
+  return (
+    `${resultat.unites} unités indexées dans ${resultat.chemin} ` +
+    `(${embedder.model}, ${embedder.dim} dimensions, ${resultat.mode}${raison}) : ` +
+    `${resultat.delta.ajoutees} ajoutées, ${resultat.delta.modifiees} modifiées, ` +
+    `${resultat.delta.supprimees} supprimées, ${resultat.delta.inchangees} inchangées\n`
+  );
+}
+
 async function main(argv: string[]): Promise<void> {
   const embedder = createOllamaEmbedder();
   const resultat = await buildIndex(valeurDe("--root", argv) ?? RACINE, embedder);
-  process.stderr.write(
-    `${resultat.unites} unités indexées dans ${resultat.chemin} ` +
-      `(${embedder.model}, ${embedder.dim} dimensions)\n`,
-  );
+  process.stderr.write(formaterJournal(resultat, embedder));
 }
 
 const entre = process.argv[1];

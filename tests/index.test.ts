@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { describe, it } from "node:test";
 import * as sqliteVec from "sqlite-vec";
-import { buildIndex, cheminIndex } from "../mcp/index/build.ts";
+import { buildIndex, cheminIndex, empreinteUnite, formaterJournal } from "../mcp/index/build.ts";
 import { openIndex, searchIndex } from "../mcp/index/search.ts";
 import { INSTRUCTION_REQUETE, createOllamaEmbedder, normaliser } from "../mcp/embed/embedder.ts";
 import type { Embedder } from "../mcp/embed/embedder.ts";
@@ -37,6 +37,63 @@ function embedderFactice(dim = 8, model = "factice"): Embedder {
 
 function tempRoot(): string {
   return mkdtempSync(join(tmpdir(), "vitrine-index-"));
+}
+
+/** Embedder qui compte les passages reçus et délègue au vecteur déterministe. */
+function embedderCompteur(dim = 8, model = "factice"): {
+  embedder: Embedder;
+  compteur: { passages: number };
+  textes: string[];
+} {
+  const base = embedderFactice(dim, model);
+  const compteur = { passages: 0 };
+  const textes: string[] = [];
+  return {
+    compteur,
+    textes,
+    embedder: {
+      model,
+      dim,
+      embedPassages: async (entrees) => {
+        compteur.passages += entrees.length;
+        textes.push(...entrees);
+        return base.embedPassages(entrees);
+      },
+      embedQuery: base.embedQuery,
+    },
+  };
+}
+
+/** Vecteurs de l'index, par `ref`, en hexadécimal pour comparer les octets. */
+function vecteurs(chemin: string): Map<string, string> {
+  const db = new DatabaseSync(chemin, { allowExtension: true });
+  try {
+    sqliteVec.load(db);
+    const lignes = db
+      .prepare(
+        `SELECT u.ref AS ref, v.embedding AS embedding
+           FROM unites u JOIN vec_unites v ON v.rowid = u.rowid
+          ORDER BY u.ref`,
+      )
+      .all() as { ref: string; embedding: Uint8Array }[];
+    return new Map(lignes.map((ligne) => [ligne.ref, Buffer.from(ligne.embedding).toString("hex")]));
+  } finally {
+    db.close();
+  }
+}
+
+/** `ref → rowid` de l'index. */
+function rowids(chemin: string): Map<string, number> {
+  const db = new DatabaseSync(chemin);
+  try {
+    const lignes = db.prepare("SELECT ref, rowid FROM unites ORDER BY ref").all() as {
+      ref: string;
+      rowid: number | bigint;
+    }[];
+    return new Map(lignes.map((ligne) => [ligne.ref, Number(ligne.rowid)]));
+  } finally {
+    db.close();
+  }
 }
 
 function unite(
@@ -208,16 +265,30 @@ describe("buildIndex", () => {
     }
   });
 
-  it("refuse de réutiliser un index d'une autre dimension", async () => {
+  it("reconstruit complètement un index d'une autre dimension", async () => {
     const root = tempRoot();
     try {
       ecrireCorpus(root, "rgpd", SIX);
       await buildIndex(root, embedderFactice(8));
 
-      await assert.rejects(
-        buildIndex(root, embedderFactice(4)),
-        /Index existant construit avec factice \(8 dimensions\).*supprimez/s,
-      );
+      const { embedder, compteur } = embedderCompteur(4);
+      const resultat = await buildIndex(root, embedder);
+
+      assert.equal(resultat.mode, "complet");
+      assert.match(resultat.raison ?? "", /index construit avec factice \(8 dimensions\)/);
+      assert.deepEqual(resultat.delta, {
+        ajoutees: 6,
+        modifiees: 0,
+        supprimees: 0,
+        inchangees: 0,
+      });
+      assert.equal(compteur.passages, 6);
+      const index = openIndex(resultat.chemin);
+      try {
+        assert.equal(index.dim, 4);
+      } finally {
+        index.db.close();
+      }
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
@@ -245,6 +316,209 @@ describe("buildIndex", () => {
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
+  });
+});
+
+describe("buildIndex incrémental", () => {
+  it("embarque six passages au premier passage puis zéro au second, vecteurs identiques", async () => {
+    const root = tempRoot();
+    try {
+      ecrireCorpus(root, "rgpd", SIX);
+      const { embedder, compteur } = embedderCompteur();
+      const premier = await buildIndex(root, embedder);
+      assert.equal(premier.mode, "complet");
+      assert.equal(compteur.passages, 6);
+      const avant = vecteurs(premier.chemin);
+
+      const second = await buildIndex(root, embedder);
+      assert.equal(second.mode, "incremental");
+      assert.deepEqual(second.delta, {
+        ajoutees: 0,
+        modifiees: 0,
+        supprimees: 0,
+        inchangees: 6,
+      });
+      assert.equal(compteur.passages, 6);
+      assert.deepEqual(vecteurs(second.chemin), avant);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("n'embarque que l'unité ajoutée et lui donne un rowid après le maximum", async () => {
+    const root = tempRoot();
+    try {
+      ecrireCorpus(root, "rgpd", SIX);
+      const { embedder, compteur } = embedderCompteur();
+      const { chemin } = await buildIndex(root, embedder);
+      const avant = rowids(chemin);
+      const vecteursAvant = vecteurs(chemin);
+
+      ecrireCorpus(root, "rgpd", [...SIX, unite(7, "droit à la portabilité des données")]);
+      const resultat = await buildIndex(root, embedder);
+
+      assert.deepEqual(resultat.delta, {
+        ajoutees: 1,
+        modifiees: 0,
+        supprimees: 0,
+        inchangees: 6,
+      });
+      assert.equal(compteur.passages, 7);
+      const apres = rowids(chemin);
+      for (const [ref, rowid] of avant) assert.equal(apres.get(ref), rowid, ref);
+      assert.equal(apres.get(`${DOCUMENT}#art_7`), Math.max(...avant.values()) + 1);
+
+      const vecteursApres = vecteurs(chemin);
+      for (const [ref, vecteur] of vecteursAvant) assert.equal(vecteursApres.get(ref), vecteur, ref);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("n'embarque qu'une unité modifiée et garde les autres vecteurs identiques", async () => {
+    const root = tempRoot();
+    try {
+      ecrireCorpus(root, "rgpd", SIX);
+      const { embedder, compteur } = embedderCompteur();
+      const { chemin } = await buildIndex(root, embedder);
+      const vecteursAvant = vecteurs(chemin);
+
+      ecrireCorpus(
+        root,
+        "rgpd",
+        SIX.map((element, index) =>
+          index === 2 ? { ...element, texte: "droit d'accès corrigé aux données" } : element,
+        ),
+      );
+      const resultat = await buildIndex(root, embedder);
+
+      assert.deepEqual(resultat.delta, {
+        ajoutees: 0,
+        modifiees: 1,
+        supprimees: 0,
+        inchangees: 5,
+      });
+      assert.equal(compteur.passages, 7);
+      const vecteursApres = vecteurs(chemin);
+      for (const [ref, vecteur] of vecteursAvant) {
+        if (ref === `${DOCUMENT}#art_3`) assert.notEqual(vecteursApres.get(ref), vecteur, ref);
+        else assert.equal(vecteursApres.get(ref), vecteur, ref);
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("supprime la ligne et le vecteur sans rien embarquer", async () => {
+    const root = tempRoot();
+    try {
+      ecrireCorpus(root, "rgpd", SIX);
+      const { embedder, compteur } = embedderCompteur();
+      const { chemin } = await buildIndex(root, embedder);
+
+      ecrireCorpus(root, "rgpd", SIX.slice(0, 5));
+      const resultat = await buildIndex(root, embedder);
+
+      assert.deepEqual(resultat.delta, {
+        ajoutees: 0,
+        modifiees: 0,
+        supprimees: 1,
+        inchangees: 5,
+      });
+      assert.equal(compteur.passages, 6);
+      assert.equal(rowids(chemin).has(`${DOCUMENT}#art_6`), false);
+      assert.equal(vecteurs(chemin).has(`${DOCUMENT}#art_6`), false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("attribue les nouveaux rowid hors de la position du corpus", async () => {
+    const root = tempRoot();
+    try {
+      ecrireCorpus(root, "rgpd", SIX);
+      const { embedder } = embedderCompteur();
+      const { chemin } = await buildIndex(root, embedder);
+      const avant = rowids(chemin);
+
+      ecrireCorpus(root, "rgpd", [unite(7, "nouvelle unité en tête"), ...SIX]);
+      await buildIndex(root, embedder);
+
+      const apres = rowids(chemin);
+      for (const [ref, rowid] of avant) assert.equal(apres.get(ref), rowid, ref);
+      assert.equal(apres.get(`${DOCUMENT}#art_7`), Math.max(...avant.values()) + 1);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("annule tout le delta quand l'embedding échoue", async () => {
+    const root = tempRoot();
+    try {
+      ecrireCorpus(root, "rgpd", SIX);
+      const { embedder } = embedderCompteur();
+      const { chemin } = await buildIndex(root, embedder);
+      const avant = vecteurs(chemin);
+
+      ecrireCorpus(
+        root,
+        "rgpd",
+        SIX.map((element, index) =>
+          index === 2 ? { ...element, texte: "texte qui ne doit jamais être écrit" } : element,
+        ),
+      );
+      const enPanne: Embedder = {
+        model: "factice",
+        dim: 8,
+        embedPassages: async () => {
+          throw new Error("panne d'embedding");
+        },
+        embedQuery: async () => {
+          throw new Error("panne d'embedding");
+        },
+      };
+
+      await assert.rejects(buildIndex(root, enPanne), /panne d'embedding/);
+      assert.deepEqual(vecteurs(chemin), avant);
+      assert.ok(!existsSync(`${chemin}.tmp`));
+      const index = openIndex(chemin);
+      try {
+        const ligne = index.db
+          .prepare("SELECT texte FROM unites WHERE ref = ?")
+          .get(`${DOCUMENT}#art_3`) as { texte: string };
+        assert.match(ligne.texte, /droit d'accès de la personne concernée/);
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("fait dépendre l'empreinte du modèle, de la dimension et du passage", () => {
+    const base = empreinteUnite(SIX[0]!, embedderFactice(8, "factice"));
+
+    assert.notEqual(base, empreinteUnite(SIX[0]!, embedderFactice(8, "autre")));
+    assert.notEqual(base, empreinteUnite(SIX[0]!, embedderFactice(4, "factice")));
+    assert.notEqual(base, empreinteUnite({ ...SIX[0]!, texte: "autre texte" }, embedderFactice()));
+    assert.equal(base, empreinteUnite(SIX[0]!, embedderFactice()));
+  });
+
+  it("journalise les quatre comptes du delta", () => {
+    const journal = formaterJournal(
+      {
+        chemin: "/tmp/index.db",
+        unites: 7,
+        mode: "incremental",
+        delta: { ajoutees: 1, modifiees: 2, supprimees: 3, inchangees: 4 },
+      },
+      embedderFactice(),
+    );
+
+    assert.match(journal, /1 ajoutées/);
+    assert.match(journal, /2 modifiées/);
+    assert.match(journal, /3 supprimées/);
+    assert.match(journal, /4 inchangées/);
   });
 });
 

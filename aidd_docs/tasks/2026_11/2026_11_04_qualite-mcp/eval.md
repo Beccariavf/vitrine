@@ -75,4 +75,19 @@ Les seuils sont calibrés sur les 35 questions `dev` uniquement, puis figés ava
 
 Quatre des huit questions sémantiques `test` tombent en `incertain` : leur premier passage est proche du second ou reste entre les deux seuils. Aucun seuil n'a été retouché après la mesure `test`.
 
+## Index incrémental (phase 4)
+
+Chaque unité porte une empreinte `sha256` du modèle, de la dimension et du passage contextualisé (`chemin` + `texte`). La construction compare `ref → rowid, empreinte` avant d'embarquer : seules les unités ajoutées ou modifiées reçoivent un vecteur ; les unités supprimées perdent leur ligne et leur vecteur ; les autres gardent leurs octets.
+
+Sur le corpus réel (272 unités), avec `qwen3-embedding:0.6b` et Ollama 0.40.14 :
+
+| Passage | Mode | Embarquées | Delta | Durée |
+| --- | --- | --- | --- | --- |
+| Premier après la migration (index sans empreinte) | complet | 272 | 272 ajoutées, 0 modifiée, 0 supprimée, 0 inchangée | 19,6 s |
+| Deuxième, corpus inchangé | incrémental | 0 | 0 ajoutée, 0 modifiée, 0 supprimée, 272 inchangées | 0,12 s |
+| Troisième, corpus inchangé | incrémental | 0 | 0 ajoutée, 0 modifiée, 0 supprimée, 272 inchangées | 0,12 s |
+
+L'empreinte `sha256` de la concaténation des 272 vecteurs vaut `e58dffad232bf139d088b69fe5af4abb1a1e5b5b7d8da5954387c256b10bdafc` avant et après le troisième passage : les vecteurs inchangés sont identiques octet pour octet. Les nouveaux `rowid` sont attribués après le maximum existant, jamais par position ; changer de modèle ou de dimension reconstruit l'index complet avec une raison explicite.
+
+
 
