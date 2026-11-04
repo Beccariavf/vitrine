@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { niveauConfiance, SEUIL_BAS, SEUIL_HAUT } from "../confidence.ts";
+import { MARGE, SEUIL_BAS, SEUIL_HAUT, niveauConfiance } from "../confidence.ts";
 import { createOllamaEmbedder } from "../embed/embedder.ts";
 import type { Embedder } from "../embed/embedder.ts";
 import { cheminIndex, lireUnites } from "../index/build.ts";
@@ -16,6 +16,9 @@ const RACINE = fileURLToPath(new URL("../..", import.meta.url));
 /** Un pli de validation croisée : blocs contigus de `ceil(n / 4)`. */
 export const NB_PLIS = 4;
 
+export type Split = "dev" | "test";
+export type FiltreSplit = Split | "all";
+
 export type TypeQuestion = "reference" | "conceptuelle" | "piege";
 
 export type Question = {
@@ -23,6 +26,7 @@ export type Question = {
   type: TypeQuestion;
   attendues: string[];
   piege: boolean;
+  split: Split;
 };
 
 export type Seuils = { bas: number; haut: number; marge: number };
@@ -30,8 +34,9 @@ export type Seuils = { bas: number; haut: number; marge: number };
 export type Classement = { attendues: string[]; rendus: string[] };
 export type ClassementPiege = { piege: boolean; refusee: boolean };
 
-const ENTETE = "question,type,sources_attendues,piege";
+const ENTETE = "question,type,sources_attendues,piege,split";
 const TYPES: TypeQuestion[] = ["reference", "conceptuelle", "piege"];
+const SPLITS: Split[] = ["dev", "test"];
 
 /** Lit `questions.csv` ; lève sur une ligne mal formée. */
 export function lireQuestions(csv: string): Question[] {
@@ -43,21 +48,30 @@ export function lireQuestions(csv: string): Question[] {
 
   return lignes.map((ligne, index) => {
     const champs = ligne.split(",");
-    if (champs.length !== 4) throw new Error(`Ligne ${index + 2} illisible : ${ligne}`);
-    const [question = "", type = "", sources = "", piege = ""] = champs;
+    if (champs.length !== 5) throw new Error(`Ligne ${index + 2} illisible : ${ligne}`);
+    const [question = "", type = "", sources = "", piege = "", split = ""] = champs;
     if (!TYPES.includes(type as TypeQuestion)) {
       throw new Error(`Ligne ${index + 2} : type inconnu « ${type} »`);
     }
     if (piege !== "oui" && piege !== "non") {
       throw new Error(`Ligne ${index + 2} : colonne piege attendue oui ou non`);
     }
+    if (!SPLITS.includes(split as Split)) {
+      throw new Error(`Ligne ${index + 2} : split attendu dev ou test, reçu « ${split} »`);
+    }
     return {
       question,
       type: type as TypeQuestion,
       attendues: sources === "" ? [] : sources.split("|"),
       piege: piege === "oui",
+      split: split as Split,
     };
   });
+}
+
+/** Garde les questions d'un split ; `all` les garde toutes. */
+export function filtrerSplit(questions: Question[], split: FiltreSplit): Question[] {
+  return split === "all" ? questions : questions.filter((question) => question.split === split);
 }
 
 /** Échoue avant toute mesure si une référence attendue manque au corpus. */
@@ -146,9 +160,15 @@ function refusee(mesure: Mesure, seuils: Seuils): boolean {
  * Choisit les seuils sur un jeu de mesures : d'abord le plus de décisions
  * justes (piège refusé, question à référence rendue), puis le moins de pièges
  * cités, puis le plus de références exactes rendues « confiant », puis les
- * seuils les plus prudents. Aucune mesure tenue à l'écart n'entre ici.
+ * seuils les plus prudents. Une question `test` fait lever : le split tenu à
+ * l'écart ne règle aucun seuil.
  */
 export function calibrer(mesures: Mesure[]): Seuils {
+  const fuite = mesures.find((mesure) => mesure.question.split === "test");
+  if (fuite !== undefined) {
+    throw new Error(`Calibration interdite sur une question test : « ${fuite.question.question} »`);
+  }
+
   let meilleur: { seuils: Seuils; score: number[] } | null = null;
 
   for (const bas of grille(0.2, 0.8, 0.01)) {
@@ -321,7 +341,97 @@ function rangDe(mesure: Mesure | undefined, ref: string): number {
   return mesure.refs.indexOf(ref) + 1;
 }
 
-async function main(): Promise<void> {
+function niveau(mesure: Mesure, seuils: Seuils) {
+  return niveauConfiance(
+    mesure.distances.map((distance) => ({ distance })),
+    false,
+    seuils,
+  );
+}
+
+/** Le rapport d'un split : `dev` règle, `test` constate avec les seuils figés. */
+function rapport(mesures: Mesure[], seuils: Seuils, origineSeuils: string): string[] {
+  const exactes = mesures.filter((mesure) => !mesure.question.piege && estExacte(mesure));
+  const semantiques = mesures.filter((mesure) => !mesure.question.piege && !estExacte(mesure));
+  const classementsSemantiques = classer(semantiques);
+  const positions = semantiques.map(positionAttendue);
+  const considerants = semantiques.filter(teteConsiderant);
+  const inattendues = semantiques
+    .map(teteInattendue)
+    .filter((valeur): valeur is string => valeur !== null);
+
+  const piegesSeuil = mesures.filter((mesure) => mesure.question.piege && !estExacte(mesure));
+  const piegesDeterministes = mesures.filter((mesure) => mesure.question.piege && estExacte(mesure));
+  const piegesCites = piegesSeuil.filter((mesure) => !refusee(mesure, seuils));
+  const piegesConfiants = piegesSeuil.filter((mesure) => niveau(mesure, seuils) === "confiant");
+  const incertaines = semantiques.filter((mesure) => niveau(mesure, seuils) === "incertain");
+  const confiantes = semantiques.filter((mesure) => niveau(mesure, seuils) === "confiant");
+  const refusees = semantiques.filter((mesure) => refusee(mesure, seuils));
+
+  const paraphrase = mesures.find(
+    (mesure) => mesure.question.question === "droit de récupérer mes données",
+  );
+  const rangParaphrase = rangDe(paraphrase, "32016R0679#art_20");
+
+  return [
+    `jeu : ${mesures.length} questions (${compter(mesures, "reference")} références, ` +
+      `${compter(mesures, "conceptuelle")} conceptuelles, ${compter(mesures, "piege")} pièges)`,
+    `seuils : bas=${arrondi(seuils.bas)} haut=${arrondi(seuils.haut)} marge=${arrondi(seuils.marge)} (${origineSeuils})`,
+    `références exactes : ${exactes.length} questions, rang 1 par construction ` +
+      `(recall@5 ${arrondi(recallAt5(classer(exactes)))}, MRR ${arrondi(mrr(classer(exactes)))})`,
+    `recherche sémantique : ${semantiques.length} questions, recall@5 ` +
+      `${arrondi(recallAt5(classementsSemantiques))} ` +
+      `(${classementsSemantiques.filter((classement) => classement.rendus.slice(0, 5).some((ref) => classement.attendues.includes(ref))).length}/${semantiques.length}), ` +
+      `MRR ${arrondi(mrr(classementsSemantiques))}`,
+    `top-1 sémantique : ${pourcentage(precisionAt1(classementsSemantiques))}`,
+    `niveaux sémantiques : ${confiantes.length} confiant, ${incertaines.length} incertain, ${refusees.length} aucun_resultat_fiable`,
+    `pièges : ${piegesSeuil.length} par seuil, ${piegesDeterministes.length} déterministe ` +
+      `(${piegesDeterministes.map((mesure) => mesure.question.question).join(" · ") || "aucun"})`,
+    `pièges cités : ${piegesCites.length}/${piegesSeuil.length}` +
+      `${piegesCites.length === 0 ? "" : ` (${piegesCites.map((mesure) => mesure.question.question).join(" · ")})`}`,
+    `pièges confiants : ${piegesConfiants.length}` +
+      `${piegesConfiants.length === 0 ? "" : ` (${piegesConfiants.map((mesure) => mesure.question.question).join(" · ")})`}`,
+    `référence attendue, rang et similarité :`,
+    ...(positions.length === 0
+      ? ["  aucune question sémantique"]
+      : positions.map(
+          (position) =>
+            `  ${position.question.question} → ` +
+            `${position.question.attendues.map(refCourte).join("|")} : rang ` +
+            `${position.rang === 0 ? "absent" : position.rang}` +
+            `${position.similarite === null ? "" : ` (${arrondi(position.similarite)})`}`,
+        )),
+    `premiers passages inattendus : ${inattendues.length === 0 ? "aucun" : inattendues.join(" · ")}`,
+    `têtes considérant pour un article attendu : ${considerants.length}/${semantiques.length}` +
+      (considerants.length === 0
+        ? ""
+        : ` (${considerants
+            .map(
+              (mesure) =>
+                `${mesure.question.attendues.map(refCourte).join("|")} ← ` +
+                `${refCourte(mesure.refs[0] ?? "")}`,
+            )
+            .join(" · ")})`),
+    `paraphrase « droit de récupérer mes données » → art_20 : ` +
+      (paraphrase === undefined
+        ? "question absente de ce split"
+        : rangParaphrase === 0
+          ? "hors des cinq premiers (top 5 : non)"
+          : `rang ${rangParaphrase} (top 5 : oui)`),
+  ];
+}
+
+function lireSplit(argv: string[]): FiltreSplit {
+  const index = argv.indexOf("--split");
+  const valeur = index >= 0 ? argv[index + 1] : "dev";
+  if (valeur !== "dev" && valeur !== "test" && valeur !== "all") {
+    throw new Error(`--split attendu dev, test ou all ; reçu « ${valeur ?? "(vide)"} »`);
+  }
+  return valeur;
+}
+
+async function main(argv: string[]): Promise<void> {
+  const split = lireSplit(argv);
   const questions = lireQuestions(readFileSync(QUESTIONS, "utf8"));
   const unites = lireUnites(RACINE);
   validerReferences(questions, new Set(unites.map((unite) => unite.ref)));
@@ -329,111 +439,30 @@ async function main(): Promise<void> {
   const embedder = createOllamaEmbedder();
   const index = openIndex(cheminIndex(RACINE));
   try {
-    const mesures = await mesurer(RACINE, questions, embedder, index);
-    const plis = validerCroise(mesures);
-    const seuils = calibrer(mesures);
+    const demandees = filtrerSplit(questions, split);
+    const mesures = await mesurer(RACINE, demandees, embedder, index);
 
-    const exactes = mesures.filter((mesure) => !mesure.question.piege && estExacte(mesure));
-    const semantiques = mesures.filter((mesure) => !mesure.question.piege && !estExacte(mesure));
-    const classementsSemantiques = classer(semantiques);
-    const trouveesSemantiques = classementsSemantiques.filter((classement) =>
-      classement.rendus.slice(0, 5).some((ref) => classement.attendues.includes(ref)),
-    ).length;
-    const justesTop1 = classementsSemantiques.filter((classement) =>
-      classement.attendues.includes(classement.rendus[0] ?? ""),
-    ).length;
-    const positions = semantiques.map(positionAttendue);
-    const considerants = semantiques.filter(teteConsiderant);
-    const inattendues = semantiques
-      .map(teteInattendue)
-      .filter((valeur): valeur is string => valeur !== null);
-
-    const piegesSeuil = mesures.filter((mesure) => mesure.question.piege && !estExacte(mesure));
-    const piegesDeterministes = mesures.filter((mesure) => mesure.question.piege && estExacte(mesure));
-
-    const similariteMaxPieges = Math.max(...piegesSeuil.map(premiereSimilarite));
-    const similariteMinSemantiques = Math.min(...semantiques.map(premiereSimilarite));
-    const margeBasse = SEUIL_BAS - similariteMaxPieges;
-    const margeHaute = similariteMinSemantiques - SEUIL_HAUT;
-    const incertaines = semantiques.filter(
-      (mesure) =>
-        niveauConfiance(
-          mesure.distances.map((distance) => ({ distance })),
-          false,
-          seuils,
-        ) === "incertain",
-    ).length;
-
-    const effacement = mesures.find((mesure) => mesure.question.question === "effacement");
-    const rangEffacement = rangDe(effacement, "32016R0679#art_17");
-    const effacementLong = mesures.find(
-      (mesure) => mesure.question.question === "effacement et moteurs de recherche",
-    );
-    const rangEffacementLong = rangDe(effacementLong, "32016R0679#art_17");
-    const paraphrase = mesures.find(
-      (mesure) => mesure.question.question === "droit de récupérer mes données",
-    );
-    const rangParaphrase = rangDe(paraphrase, "32016R0679#art_20");
-    const piegesEchoues = mesures
-      .filter((mesure) => mesure.question.piege && !refusee(mesure, seuils))
-      .map((mesure) => mesure.question.question);
-
-    const taux = plis.map((pli) => pli.taux);
-    const minimum = Math.min(...taux);
-    const maximum = Math.max(...taux);
-    const moyenne = taux.reduce((total, valeur) => total + valeur, 0) / taux.length;
+    const mesuresDev = split === "all" ? mesures.filter((mesure) => mesure.question.split === "dev") : mesures;
+    const seuils =
+      split === "test"
+        ? { bas: SEUIL_BAS, haut: SEUIL_HAUT, marge: MARGE }
+        : calibrer(mesuresDev);
+    const origine = split === "test" ? "figés avant la mesure" : "calibrés sur dev";
 
     const lignes = [
       `date : ${new Date().toISOString().slice(0, 10)}`,
       `modèle : ${embedder.model} (${embedder.dim} dimensions)`,
-      `jeu : ${questions.length} questions (${compter(mesures, "reference")} références, ` +
-        `${compter(mesures, "conceptuelle")} conceptuelles, ${compter(mesures, "piege")} pièges)`,
-      `seuils finaux : bas=${arrondi(seuils.bas)} haut=${arrondi(seuils.haut)} marge=${arrondi(seuils.marge)}`,
-      `références exactes : ${exactes.length} questions, rang 1 par construction ` +
-        `(recall@5 ${arrondi(recallAt5(classer(exactes)))}, MRR ${arrondi(mrr(classer(exactes)))})`,
-      `recherche sémantique : ${semantiques.length} questions, recall@5 ` +
-        `${arrondi(recallAt5(classementsSemantiques))} ` +
-        `(${trouveesSemantiques}/${semantiques.length}), ` +
-        `MRR ${arrondi(mrr(classementsSemantiques))}`,
-      `top-1 sémantique : ${pourcentage(precisionAt1(classementsSemantiques))} ` +
-        `(${justesTop1}/${semantiques.length})`,
-      `référence attendue, rang et similarité :`,
-      ...(positions.length === 0
-        ? ["  aucune question sémantique"]
-        : positions.map(
-            (position) =>
-              `  ${position.question.question} → ` +
-              `${position.question.attendues.map(refCourte).join("|")} : rang ` +
-              `${position.rang === 0 ? "absent" : position.rang}` +
-              `${position.similarite === null ? "" : ` (${arrondi(position.similarite)})`}`,
-          )),
-      `premiers passages inattendus : ${inattendues.length === 0 ? "aucun" : inattendues.join(" · ")}`,
-      `têtes considérant pour un article attendu : ${considerants.length}/${semantiques.length}` +
-        (considerants.length === 0
-          ? ""
-          : ` (${considerants
-              .map(
-                (mesure) =>
-                  `${mesure.question.attendues.map(refCourte).join("|")} ← ` +
-                  `${refCourte(mesure.refs[0] ?? "")}`,
-              )
-              .join(" · ")})`),
-      `pièges : ${piegesSeuil.length} par seuil, ${piegesDeterministes.length} déterministe ` +
-        `(${piegesDeterministes.map((mesure) => mesure.question.question).join(" · ") || "aucun"})`,
-      `similarité : max des pièges par seuil ${arrondi(similariteMaxPieges)}, ` +
-        `min des questions sémantiques ${arrondi(similariteMinSemantiques)}`,
-      `marges : basse ${arrondi(margeBasse)} (piège max → SEUIL_BAS), ` +
-        `haute ${arrondi(margeHaute)} (SEUIL_HAUT → premier passage sémantique le plus faible)`,
-      `confiance : « confiant » ne dit que la similarité du premier passage, jamais que ` +
-        `l'article attendu est en tête ; marge calibrée ${arrondi(seuils.marge)}, ` +
-        `${incertaines} question(s) sémantique(s) incertaine(s)`,
-      `citations invalides par pli : ${plis.map((pli) => `${pourcentage(pli.taux)} (${pli.cites}/${pli.pieges})`).join(" · ")}`,
-      `moyenne des plis : ${pourcentage(moyenne)} (min–max ${pourcentage(minimum)}–${pourcentage(maximum)})`,
-      `rangs d'« effacement » : « effacement » ${rangEffacement === 0 ? "absent" : rangEffacement}, ` +
-        `« effacement et moteurs de recherche » ${rangEffacementLong === 0 ? "absent" : rangEffacementLong}`,
-      `paraphrase inédite « droit de récupérer mes données » → art_20 : ` +
-        `${rangParaphrase === 0 ? "hors des cinq premiers (top 5 : non)" : `rang ${rangParaphrase} (top 5 : oui)`}`,
-      `pièges échoués aux seuils finaux : ${piegesEchoues.length === 0 ? "aucun" : piegesEchoues.join(" · ")}`,
+      `split : ${split}`,
+      ...(split === "all"
+        ? [
+            "",
+            "== dev ==",
+            ...rapport(mesures.filter((mesure) => mesure.question.split === "dev"), seuils, origine),
+            "",
+            "== test ==",
+            ...rapport(mesures.filter((mesure) => mesure.question.split === "test"), seuils, origine),
+          ]
+        : rapport(mesures, seuils, origine)),
     ];
     process.stdout.write(`${lignes.join("\n")}\n`);
   } finally {
@@ -443,7 +472,7 @@ async function main(): Promise<void> {
 
 const entre = process.argv[1];
 if (entre !== undefined && import.meta.url === pathToFileURL(resolve(entre)).href) {
-  main().catch((error: unknown) => {
+  main(process.argv.slice(2)).catch((error: unknown) => {
     process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
     process.exitCode = 1;
   });

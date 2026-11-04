@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import {
   calibrer,
+  filtrerSplit,
   lireQuestions,
   mrr,
   precisionAt1,
@@ -12,7 +13,7 @@ import {
   validerCroise,
   validerReferences,
 } from "../mcp/eval/run.ts";
-import type { Mesure, Question } from "../mcp/eval/run.ts";
+import type { Mesure, Question, Split } from "../mcp/eval/run.ts";
 
 const QUESTIONS = readFileSync(new URL("../mcp/eval/questions.csv", import.meta.url), "utf8");
 const CORPUS = readFileSync(new URL("../data/corpus/rgpd/unites.jsonl", import.meta.url), "utf8")
@@ -22,12 +23,27 @@ const CORPUS = readFileSync(new URL("../data/corpus/rgpd/unites.jsonl", import.m
 
 describe("questions.csv", () => {
   const questions = lireQuestions(QUESTIONS);
+  const dev = filtrerSplit(questions, "dev");
+  const test = filtrerSplit(questions, "test");
 
-  it("porte vingt-deux lignes : huit références, neuf conceptuelles, cinq pièges", () => {
-    assert.equal(questions.length, 22);
-    assert.equal(questions.filter((question) => question.type === "reference").length, 8);
-    assert.equal(questions.filter((question) => question.type === "conceptuelle").length, 9);
-    assert.equal(questions.filter((question) => question.piege).length, 5);
+  it("porte cinquante lignes : douze références, vingt-huit conceptuelles, dix pièges", () => {
+    assert.equal(questions.length, 50);
+    assert.equal(questions.filter((question) => question.type === "reference").length, 12);
+    assert.equal(questions.filter((question) => question.type === "conceptuelle").length, 28);
+    assert.equal(questions.filter((question) => question.piege).length, 10);
+  });
+
+  it("répartit trente-cinq questions en dev et quinze en test", () => {
+    assert.equal(dev.length, 35);
+    assert.equal(test.length, 15);
+    assert.ok(dev.every((question) => question.split === "dev"));
+    assert.ok(test.every((question) => question.split === "test"));
+    assert.equal(dev.filter((question) => question.type === "reference").length, 8);
+    assert.equal(dev.filter((question) => question.type === "conceptuelle").length, 20);
+    assert.equal(dev.filter((question) => question.piege).length, 7);
+    assert.equal(test.filter((question) => question.type === "reference").length, 4);
+    assert.equal(test.filter((question) => question.type === "conceptuelle").length, 8);
+    assert.equal(test.filter((question) => question.piege).length, 3);
   });
 
   it("n'attend que des références présentes dans le corpus", () => {
@@ -36,7 +52,13 @@ describe("questions.csv", () => {
 
   it("nomme la référence absente avant toute mesure", () => {
     const fautives: Question[] = [
-      { question: "test", type: "conceptuelle", attendues: ["32016R0679#art_404"], piege: false },
+      {
+        question: "test",
+        type: "conceptuelle",
+        attendues: ["32016R0679#art_404"],
+        piege: false,
+        split: "dev",
+      },
     ];
     assert.throws(
       () => validerReferences(fautives, new Set(CORPUS.map((unite) => unite.ref))),
@@ -51,11 +73,27 @@ describe("questions.csv", () => {
     }
   });
 
-  it("porte la paraphrase inédite « droit de récupérer mes données » sur l'article 20", () => {
+  it("porte la paraphrase inédite « droit de récupérer mes données » en test sur l'article 20", () => {
     const paraphrase = questions.find(
       (question) => question.question === "droit de récupérer mes données",
     );
+    assert.equal(paraphrase?.split, "test");
     assert.deepEqual(paraphrase?.attendues, ["32016R0679#art_20"]);
+  });
+
+  it("filtre chaque split sans mélanger les lignes", () => {
+    assert.deepEqual(
+      filtrerSplit(questions, "all").map((question) => question.question),
+      questions.map((question) => question.question),
+    );
+    assert.equal(
+      filtrerSplit(questions, "dev").some((question) => question.split === "test"),
+      false,
+    );
+    assert.equal(
+      filtrerSplit(questions, "test").some((question) => question.split === "dev"),
+      false,
+    );
   });
 });
 
@@ -122,12 +160,23 @@ describe("les métriques", () => {
   });
 });
 
-function question(texte: string, piege: boolean, attendues: string[] = []): Question {
-  return { question: texte, type: piege ? "piege" : "conceptuelle", attendues, piege };
+function question(
+  texte: string,
+  piege: boolean,
+  attendues: string[] = [],
+  split: Split = "dev",
+): Question {
+  return { question: texte, type: piege ? "piege" : "conceptuelle", attendues, piege, split };
 }
 
-function mesure(texte: string, piege: boolean, distance: number, attendues: string[] = []): Mesure {
-  return { question: question(texte, piege, attendues), refs: attendues, distances: [distance] };
+function mesure(
+  texte: string,
+  piege: boolean,
+  distance: number,
+  attendues: string[] = [],
+  split: Split = "dev",
+): Mesure {
+  return { question: question(texte, piege, attendues, split), refs: attendues, distances: [distance] };
 }
 
 describe("la calibration", () => {
@@ -142,6 +191,15 @@ describe("la calibration", () => {
 
     assert.ok(seuils.bas > 0.5, `bas ${seuils.bas} doit refuser les pièges`);
     assert.ok(seuils.bas <= 0.9, `bas ${seuils.bas} doit rendre les questions`);
+  });
+
+  it("refuse de calibrer sur une question test en la nommant", () => {
+    const mesures: Mesure[] = [
+      mesure("question dev", false, 0.1, ["32016R0679#art_17"], "dev"),
+      mesure("fuite de test", true, 0.5, [], "test"),
+    ];
+
+    assert.throws(() => calibrer(mesures), /Calibration interdite.*fuite de test/);
   });
 
   it("découpe vingt mesures en quatre plis de cinq", () => {

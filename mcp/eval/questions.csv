@@ -1,23 +1,51 @@
-question,type,sources_attendues,piege
-Que prévoit l'article 5 du RGPD ?,reference,32016R0679#art_5,non
-Que dit l'article 6 sur la licéité du traitement ?,reference,32016R0679#art_6,non
-délai de conservation des données personnelles,conceptuelle,32016R0679#art_5,non
-Que prévoit l'article 100 du RGPD ?,piege,,oui
-Quel est le contenu de l'article 15 du RGPD ?,reference,32016R0679#art_15,non
-Que dit l'article 17 du RGPD ?,reference,32016R0679#art_17,non
-effacement et moteurs de recherche,conceptuelle,32016R0679#art_17,non
-effacement,conceptuelle,32016R0679#art_17,non
-conditions du consentement pour les services en ligne,conceptuelle,32016R0679#art_7,non
-Quel est le délai de prescription pour un licenciement ?,piege,,oui
-Que prévoit l'article 20 sur la portabilité ?,reference,32016R0679#art_20,non
-droit de recevoir ses données dans un format structuré,conceptuelle,32016R0679#art_20,non
-droit de récupérer mes données,conceptuelle,32016R0679#art_20,non
-obligations lorsqu'un traitement est confié à un prestataire,conceptuelle,32016R0679#art_28,non
-Que dit l'article 32 sur la sécurité du traitement ?,reference,32016R0679#art_32,non
-Quelles sanctions prévoit la directive 95/46/CE pour les transferts illicites ?,piege,,oui
-notification d'une violation de données à l'autorité de contrôle,conceptuelle,32016R0679#art_33,non
-Que prévoit l'article 35 sur l'analyse d'impact ?,reference,32016R0679#art_35,non
-transfert de données vers un pays tiers hors Union européenne,conceptuelle,32016R0679#art_44|32016R0679#art_45,non
-Quelles amendes prévoit l'article 83 ?,reference,32016R0679#art_83,non
-Quel est le montant de la taxe sur les logements vacants ?,piege,,oui
-Quelles règles encadrent le stationnement payant en zone bleue ?,piege,,oui
+question,type,sources_attendues,piege,split
+Que prévoit l'article 5 du RGPD ?,reference,32016R0679#art_5,non,dev
+Que dit l'article 6 sur la licéité du traitement ?,reference,32016R0679#art_6,non,dev
+Quel est le contenu de l'article 15 du RGPD ?,reference,32016R0679#art_15,non,dev
+Que dit l'article 17 du RGPD ?,reference,32016R0679#art_17,non,dev
+Que prévoit l'article 20 sur la portabilité ?,reference,32016R0679#art_20,non,dev
+Que dit l'article 32 sur la sécurité du traitement ?,reference,32016R0679#art_32,non,dev
+Que prévoit l'article 35 sur l'analyse d'impact ?,reference,32016R0679#art_35,non,dev
+Quelles amendes prévoit l'article 83 ?,reference,32016R0679#art_83,non,dev
+délai de conservation des données personnelles,conceptuelle,32016R0679#art_5,non,dev
+effacement et moteurs de recherche,conceptuelle,32016R0679#art_17,non,dev
+effacement,conceptuelle,32016R0679#art_17,non,dev
+conditions du consentement pour les services en ligne,conceptuelle,32016R0679#art_7,non,dev
+droit de recevoir ses données dans un format structuré,conceptuelle,32016R0679#art_20,non,dev
+obligations lorsqu'un traitement est confié à un prestataire,conceptuelle,32016R0679#art_28,non,dev
+notification d'une violation de données à l'autorité de contrôle,conceptuelle,32016R0679#art_33,non,dev
+transfert de données vers un pays tiers hors Union européenne,conceptuelle,32016R0679#art_44|32016R0679#art_45,non,dev
+droit d'accéder à ses données personnelles,conceptuelle,32016R0679#art_15,non,dev
+rectification des données inexactes,conceptuelle,32016R0679#art_16,non,dev
+opposition au traitement pour des raisons personnelles,conceptuelle,32016R0679#art_21,non,dev
+décision automatisée et profilage,conceptuelle,32016R0679#art_22,non,dev
+protection des données dès la conception,conceptuelle,32016R0679#art_25,non,dev
+registre des activités de traitement,conceptuelle,32016R0679#art_30,non,dev
+analyse d'impact relative à la protection des données,conceptuelle,32016R0679#art_35,non,dev
+désignation d'un délégué à la protection des données,conceptuelle,32016R0679#art_37,non,dev
+codes de conduite sectoriels,conceptuelle,32016R0679#art_40,non,dev
+certification en matière de protection des données,conceptuelle,32016R0679#art_42,non,dev
+droit à réparation en cas de dommage,conceptuelle,32016R0679#art_82,non,dev
+sanctions autres que les amendes administratives,conceptuelle,32016R0679#art_84,non,dev
+Que prévoit l'article 100 du RGPD ?,piege,,oui,dev
+Quel est le délai de prescription pour un licenciement ?,piege,,oui,dev
+Quel est le montant de la taxe sur les logements vacants ?,piege,,oui,dev
+Quelles règles encadrent le stationnement payant en zone bleue ?,piege,,oui,dev
+Quel est le taux de TVA applicable aux services numériques ?,piege,,oui,dev
+Comment contester une contravention pour excès de vitesse ?,piege,,oui,dev
+Quelles sont les conditions de validité d'un bail commercial ?,piege,,oui,dev
+Que prévoit l'article 33 sur la notification des violations ?,reference,32016R0679#art_33,non,test
+Que dit l'article 28 sur le sous-traitant ?,reference,32016R0679#art_28,non,test
+Que prévoit l'article 44 sur les transferts ?,reference,32016R0679#art_44,non,test
+Que dit l'article 9 sur les données sensibles ?,reference,32016R0679#art_9,non,test
+droit de récupérer mes données,conceptuelle,32016R0679#art_20,non,test
+communication à la personne concernée d'une violation de données,conceptuelle,32016R0679#art_34,non,test
+limitation du traitement pendant une vérification,conceptuelle,32016R0679#art_18,non,test
+règles d'entreprise contraignantes pour les groupes,conceptuelle,32016R0679#art_47,non,test
+autorité de contrôle chef de file,conceptuelle,32016R0679#art_56,non,test
+droit d'introduire une réclamation auprès d'une autorité de contrôle,conceptuelle,32016R0679#art_77,non,test
+traitement de données dans le cadre des relations de travail,conceptuelle,32016R0679#art_88,non,test
+traitement à des fins archivistiques ou de recherche scientifique,conceptuelle,32016R0679#art_89,non,test
+Quelles sanctions prévoit la directive 95/46/CE pour les transferts illicites ?,piege,,oui,test
+Quel est le montant du smic horaire au 1er janvier 2026 ?,piege,,oui,test
+Quelles formalités pour créer une société à responsabilité limitée ?,piege,,oui,test
