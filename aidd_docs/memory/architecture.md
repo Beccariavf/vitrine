@@ -21,8 +21,8 @@ flowchart LR
   P --> E["data/entries"]
   E --> S["Site Astro"]
   S --> W["Cloudflare Workers (cible, non configurée)"]
-  CELLAR["CELLAR · EUR-Lex"] --> MCP["mcp/ — corpus + index + outils"]
-  E --> MCP
+  CELLAR["CELLAR · EUR-Lex"] --> C["data/corpus"]
+  C --> MCP["mcp/ — corpus + index + outils"]
   MCP --> IDX["data/corpus/index — dérivé, non commité"]
 ```
 
@@ -49,6 +49,6 @@ flowchart LR
 ## Gotchas
 
 - Les quotas PISTE ne sont pas publics et l'API n'offre qu'une cible de disponibilité de 95 %/jour.
-- Sans Ollama et sans `qwen3-embedding:0.6b`, `corpus:index`, `mcp:smoke` et la recherche échouent ; le message nomme `ollama pull qwen3-embedding:0.6b`.
+- Sans Ollama et sans `qwen3-embedding:0.6b`, `corpus:index`, `mcp:smoke` et la recherche sémantique échouent ; le message nomme `ollama pull qwen3-embedding:0.6b`. La lecture d'un article exact (« article 17 ») reste servie sans index ni modèle.
 - Le serveur MCP journalise sur `stderr` uniquement : `stdout` porte le protocole JSON-RPC.
 - Aucun workflow planifié n'existe : une passe oubliée laisse les données en l'état.

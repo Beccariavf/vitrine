@@ -36,7 +36,7 @@ status: pending
 
 1. Ajouter `mcp/` dans `architecture.md` : corpus, index, outils, transport stdio.
 2. Décrire `corpus:build` et `corpus:index`, et le fait que l'index n'est pas commité.
-3. Noter que `veille/` et `src/` sont inchangés, que `mcp/` ne fait que lire `writeRaw`, et que le site ne lit aucune API.
+3. Noter que `veille/` et `src/` sont inchangés, que `mcp/` ne fait que réutiliser `writeRaw` et le type `FetchLike`, et que le site ne lit aucune API.
 
 ### `2)` Décrire les données
 

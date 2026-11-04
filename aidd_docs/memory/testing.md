@@ -29,9 +29,9 @@ Comment le projet est testé : les couches, les outils et les conventions. Où v
 - Unitaire : parseur CJUE (`veille/sources/cjeu.ts`) : deux formats de titre, date de décision, `pubDate` en secours, `_SUM`/`_RES`, `_INF`, XML invalide.
 - Intégration : `run` avec un `fetch` injecté, sur une racine temporaire, les sources demandées ; une panne ou un flux CJUE vide laisse CNIL ; une matière désactivée ne supprime rien ; un arrêt sorti du flux reste ; une page ARCOM absente écarte l'entrée et avertit.
 - Unitaire : corpus RGPD (`tests/corpus.test.ts`) : 99 articles, 173 considérants, article 17 non vide et son chapitre III, en-têtes CELLAR et statut non 2xx, manifeste et nom du snapshot `sha256`, 272 lignes, idempotence des deux écritures, capture amputée de `art_17` qui lève avant toute écriture.
-- Unitaire : index vectoriel (`tests/index.test.ts`) : embedder factice de 8 dimensions, six unités, `meta` (modèle, dimension, nombre), ordre cosinus et `k`, index absent qui nomme `npm run corpus:index`, dimension refusée, `rowid` explicite en `BigInt`, second descripteur filtré par `document`, adaptateur Ollama sur un `fetch` injecté (en-têtes, normalisation, `ollama pull`), vrai modèle sauté sans `OLLAMA_HOST`.
-- Unitaire : outils et serveur (`tests/mcp.test.ts`) : article exact, article absent qui ne rend pas de chaîne vide, court-circuit « article N » sans embedder, piège hors corpus rendu `aucun_resultat_fiable` sans passage, trois niveaux de confiance, deux outils vus par un client en mémoire, aucun `fetch` dans `mcp/server.ts` ni `mcp/tools.ts`.
-- Unitaire : évaluation (`tests/eval.test.ts`) : 20 questions (8 références, 7 conceptuelles, 5 pièges), références toutes présentes dans `unites.jsonl`, `recall@5`, `MRR`, taux de citations invalides, calibration et quatre plis.
+- Unitaire : index vectoriel (`tests/index.test.ts`) : embedder factice de 8 dimensions, six unités, `meta` (modèle, dimension, nombre), ordre cosinus et `k`, index absent qui nomme `npm run corpus:index`, dimension refusée, `rowid` explicite en `BigInt`, second descripteur filtré par `document`, adaptateur Ollama sur un `fetch` injecté (en-têtes, normalisation, `ollama pull`), vrai modèle sauté sauf si `MCP_TEST_OLLAMA=1`.
+- Unitaire : outils et serveur (`tests/mcp.test.ts`) : article exact, article absent qui ne rend pas de chaîne vide, court-circuit « article N » sans embedder, piège hors corpus rendu `aucun_resultat_fiable` sans passage, trois niveaux de confiance, deux outils vus par un client en mémoire, serveur sans index qui sert « article 17 » et refuse « article 100 » sans accuser l'index absent, aucun `fetch` dans `mcp/server.ts` ni `mcp/tools.ts`.
+- Unitaire : évaluation (`tests/eval.test.ts`) : 22 questions (8 références, 9 conceptuelles, 5 pièges), références toutes présentes dans `unites.jsonl`, `recall@5`, `MRR`, précision au rang 1, taux de citations invalides, calibration et quatre plis.
 - Aucun test ne touche le réseau : les fixtures sont des captures du flux réel. Le build (`npm run build`) ne fait aucun appel réseau non plus.
 
 ## Tools
@@ -60,7 +60,8 @@ Comment le projet est testé : les couches, les outils et les conventions. Où v
 - `npm run corpus:build` : récupère CELLAR et écrit `data/corpus/rgpd/` (réseau).
 - `npm run corpus:index` : construit `data/corpus/index/index.db` (Ollama et `qwen3-embedding:0.6b`).
 - `npm run mcp:smoke` : vérifie 1024 dimensions et la norme 1 auprès du vrai Ollama.
-- `npm run mcp:eval` : mesure les 20 questions sur l'index réel, hors CI ; le rapport daté vit dans `aidd_docs/tasks/2026_11/2026_11_03_mcp-juridique/eval.md`.
+- `npm run mcp:eval` : mesure les 22 questions sur l'index réel, hors CI ; le rapport daté vit dans `aidd_docs/tasks/2026_11/2026_11_03_mcp-juridique/eval.md`.
+- `MCP_TEST_OLLAMA=1 npm test` : lance aussi le contrôle du vrai modèle (1024 dimensions, norme 1) ; sans cette variable, le test est sauté même si `OLLAMA_HOST` est défini.
 - Ouvrir `tools/parametres.html` dans Chrome, charger `veille/themes.json`, désactiver une matière, enregistrer.
 - Lancer `npm run build` : les publications de cette matière disparaissent ; réactiver et reconstruire : elles reviennent sans collecte.
 - Lancer `npm run veille` puis `npm run build` : la carte et la ligne FNAC portent `LIL · art. 82`, avec `Loi Informatique et Libertés · art. 82` au survol ; une page sans section reste sans référence.

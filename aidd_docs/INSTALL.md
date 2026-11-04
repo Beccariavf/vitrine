@@ -124,7 +124,7 @@ vitrine/
 │   ├── tools.ts                    # get_article, search
 │   ├── confidence.ts               # seuils de confiance
 │   ├── server.ts                   # transport stdio
-│   └── eval/                       # 20 questions et métriques
+│   └── eval/                       # 22 questions et métriques
 │
 ├── data/                           # "BASE" — git = historique
 │   ├── raw/<2 hex>/<sha256>.xml    # snapshots bruts adressés par contenu

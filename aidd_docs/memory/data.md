@@ -66,7 +66,7 @@ flowchart LR
 ## Models
 
 - Le pipeline de veille est déterministe : aucun modèle, aucune inférence.
-- Le MCP local embarque uniquement à l'indexation et à la requête : `qwen3-embedding:0.6b` (Q8_0, 1024 dimensions), servi par Ollama sur `127.0.0.1:11434`, jamais un service cloud. Les vecteurs sont normalisés dans le code ; la similarité vaut `1 - distance` et les seuils de confiance sont calibrés sur 20 questions RGPD (`aidd_docs/tasks/2026_11/2026_11_03_mcp-juridique/eval.md`).
+- Le MCP local embarque uniquement à l'indexation et à la requête : `qwen3-embedding:0.6b` (Q8_0, 1024 dimensions), servi par Ollama sur `127.0.0.1:11434`, jamais un service cloud. Les vecteurs sont normalisés dans le code ; la similarité vaut `1 - distance` et les seuils de confiance sont calibrés sur 22 questions RGPD (`aidd_docs/tasks/2026_11/2026_11_03_mcp-juridique/eval.md`).
 
 ## Reproducibility
 

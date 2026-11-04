@@ -63,7 +63,7 @@ Source: aidd_docs/tasks/2026_11/2026_11_03_mcp-juridique/brainstorm.md
 | Un index unique avec une colonne `document`. | Ajouter un corpus ne change pas le code ; le filtre `document` isole les résultats. |
 | CELLAR en XHTML direct, pas la CLI `eurlex`. | Vérifié sans clé ni outil supplémentaire, et le parseur reste en TypeScript. |
 | Index vectoriel non commité. | Dépôt petit ; `npm run corpus:index` le reconstruit. |
-| Corpus, index et outils passent par `mcp/`, pas `veille/`. | Le MCP est un produit distinct ; `veille/` reste le pipeline des actualités. Seul `writeRaw` est réutilisé, sans modifier `veille/`. |
+| Corpus, index et outils passent par `mcp/`, pas `veille/`. | Le MCP est un produit distinct ; `veille/` reste le pipeline des actualités. Seuls `writeRaw` et le type `FetchLike` sont réutilisés, sans modifier `veille/`. |
 | Métrique cosinus nommée, seuils exprimés en similarité. | `vec0(… distance_metric=cosine)` ; `similarité = 1 - distance`. |
 | Tout est public au premier slice, jeu d'évaluation compris. | Portfolio ouvert ; la séparation public/propriétaire ne concerne que la phase hébergée. |
 | Le premier slice reste le RGPD ; la CNIL arrive après. | 64 466 chunks tiennent dans sqlite-vec, mais imposent un index incrémental et un découpage avec document parent avant d'être ingérés. |
