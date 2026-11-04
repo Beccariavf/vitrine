@@ -144,10 +144,12 @@ describe("l'adaptateur Ollama", () => {
   });
 
   it(
-    "contrôle le vrai modèle quand OLLAMA_HOST est défini",
-    { skip: process.env.OLLAMA_HOST === undefined },
+    "contrôle le vrai modèle quand MCP_TEST_OLLAMA=1",
+    { skip: process.env.MCP_TEST_OLLAMA !== "1" },
     async () => {
-      const embedder = createOllamaEmbedder({ host: process.env.OLLAMA_HOST ?? "" });
+      const embedder = createOllamaEmbedder(
+        process.env.OLLAMA_HOST === undefined ? {} : { host: process.env.OLLAMA_HOST },
+      );
       const vecteur = await embedder.embedQuery("effacement");
 
       assert.equal(vecteur.length, 1024);
