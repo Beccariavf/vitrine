@@ -41,7 +41,7 @@ status: completed
 1. Ajouter `BANDE_ARTICLE = 0.02` dans `mcp/index/search.ts`, exprimée en similarité.
 2. Calculer un score de classement : similarité brute, plus `BANDE_ARTICLE` pour un `niveau` `article`.
 3. Trier sur ce score, rendre la similarité brute inchangée.
-4. Documenter que la bande se calibre en phase 5 sur les questions de développement.
+4. Documenter que la bande est mesurée sur les questions de développement, et que 0,02 est retenue pour rester minimale.
 
 ### `2)` Étiqueter dans l'outil
 

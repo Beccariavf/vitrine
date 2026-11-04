@@ -248,7 +248,8 @@ describe("la bande article", () => {
   });
 });
 
-describe("niveauConfiance", () => {  it("est confiant sur une référence exacte, même sans résultat", () => {
+describe("niveauConfiance", () => {
+  it("est confiant sur une référence exacte, même sans résultat", () => {
     assert.equal(niveauConfiance([], true), "confiant");
   });
 

@@ -7,7 +7,7 @@
  * `aidd_docs/tasks/2026_11/2026_11_04_qualite-mcp/eval.md`.
  *
  * `confiant` ne dit qu'une chose : la similarité du premier passage dépasse
- * `SEUIL_HAUT` et devance le second d'au moins `MARGE`. Il ne dit jamais que
+ * `SEUIL_HAUT` et devance le second de plus de `MARGE`. Il ne dit jamais que
  * l'article attendu est en tête, ni que la réponse est juste. La marge sépare le
  * premier du second passage, pas le vrai du faux : une réponse `confiante` peut
  * rester le mauvais article. `incertain` apparaît quand les deux premiers

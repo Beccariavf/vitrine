@@ -102,7 +102,7 @@ Seuils figés : `SEUIL_BAS = 0,69`, `SEUIL_HAUT = 0,74`, `MARGE = 0,01` ; bande 
 | Pièges par seuil | 6, 0 cité, 0 confiant | 3, 0 cité, 0 confiant |
 | Piège déterministe | 1 (« article 100 ») refusé | 0 |
 
-Le critère de 90 % n'est pas atteint sur `test` : 10 des 12 questions à référence (83,3 %) ont leur référence attendue dans les cinq premiers — 4/4 en exact et 6/8 en sémantique. En revanche, aucune question piège n'est citée ni marquée `confiant`. La paraphrase « droit de récupérer mes données » reste hors des cinq premiers avec `0.6b`.
+Le critère de 90 % n'est pas atteint sur `test` : 10 des 12 questions hors piège (83,3 %) ont leur référence attendue dans les cinq premiers — 4/4 en exact et 6/8 en sémantique. En revanche, aucune question piège n'est citée ni marquée `confiant`. La paraphrase « droit de récupérer mes données » reste hors des cinq premiers avec `0.6b`.
 
 ## Expérience `qwen3-embedding:4b` (hors produit)
 
@@ -120,6 +120,6 @@ Le rang 2 confirme que la limite de paraphrase vient du modèle, pas de l'archit
 - La paraphrase reste un échec mesuré avec `0.6b` : `art_15` (droit d'accès) devance `art_20` (portabilité), et `art_20` sort des cinq premiers.
 - La précision au rang 1 reste de 75 % sur `dev` et `test` : un article attendu peut être derrière un considérant ou un autre article.
 - L'échantillon `test` ne compte que 15 questions, dont 8 sémantiques : les taux valent pour le RGPD, pas pour un corpus plus large ni pour la CNIL.
-- Les seuils et la bande sont calibrés sur 35 questions `dev` ; la marge de 0,01 est étroite et `incertain` dépend d'écarts de similarité faibles.
+- Les seuils sont calibrés sur 35 questions `dev` ; la bande article est mesurée sur `dev` et `0,02` est retenue pour rester minimale. La marge de 0,01 est étroite et `incertain` dépend d'écarts de similarité faibles.
 - `confiant` porte sur la similarité du premier passage, pas sur la correction : une réponse `confiante` peut citer le mauvais article.
 - La recherche sémantique exige un index construit ; sans index, seul le court-circuit d'un article exact fonctionne.

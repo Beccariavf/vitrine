@@ -1,5 +1,5 @@
 ---
-objective: "Sur les 15 questions tenues à l'écart, la référence attendue est dans le top 5 à 90 % et aucun piège n'est cité avec confiance ; l'index ne recalcule que le delta."
+objective: "Sur les 15 questions tenues à l'écart, la référence attendue est dans le top 5 à 90 % et aucun piège n'est cité avec confiance ; l'index ne recalcule que le delta. Constat : 10/12 hors piège (83,3 %), sous la barre."
 status: implemented
 ---
 
@@ -52,7 +52,7 @@ Source: aidd_docs/tasks/2026_11/2026_11_04_qualite-mcp/brainstorm.md
 | ---------- | ----- |
 | Garder `qwen3-embedding:0.6b` comme modèle du produit. | ~75 min pour la CNIL contre ~8,5 h avec 4b ; la barre choisie est une preuve crédible, pas un outil de production. |
 | Documenter l'expérience 4b au lieu de l'intégrer. | Elle prouve que la limite de paraphrase vient du modèle, sans imposer un index 6,7 fois plus lent. |
-| Un article passe devant un considérant dans une bande de similarité calibrée. | Le considérant éclaire, l'article pose la règle ; on ne supprime pas le contexte. |
+| Un article passe devant un considérant dans une bande de similarité mesurée sur `dev`. | Le considérant éclaire, l'article pose la règle ; on ne supprime pas le contexte. La métrique `dev` ne pénalisant pas la sur-promotion, `0,02` est retenue pour rester minimale. |
 | Marge de confiance non nulle. | `incertain` doit exister quand les deux premiers passages sont proches. |
 | Index incrémental par empreinte de contenu et table `ref → rowid`. | Le `rowid` positionnel actuel glisse dès que l'ordre change. |
 | Le découpage fin reste hors périmètre. | Les articles du RGPD sont déjà courts ; il servira aux délibérations CNIL. |

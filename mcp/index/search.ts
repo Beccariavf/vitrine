@@ -13,8 +13,10 @@ export type Index = {
 
 /**
  * Bande de similarité qui fait passer un article devant un considérant à
- * pertinence comparable. Elle se calibre en phase 5 sur les questions `dev` :
- * elle ne supprime jamais le considérant, elle le place après l'article.
+ * pertinence comparable. Elle est mesurée sur les questions `dev` ; `0,02` est
+ * retenue pour rester minimale, car la métrique de développement ne pénalise pas
+ * la sur-promotion des articles. Elle ne supprime jamais le considérant, elle le
+ * place après l'article.
  */
 export const BANDE_ARTICLE = 0.02;
 
