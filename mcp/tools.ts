@@ -80,8 +80,11 @@ export function getArticle(
 
 export type SearchDeps = {
   embedder: Embedder;
-  /** Index déjà ouvert ; sinon il est ouvert depuis `data/corpus/index/index.db`. */
-  index?: Index;
+  /**
+   * Index déjà ouvert, ou fournisseur évalué seulement si la question n'est pas
+   * une référence exacte ; sinon il est ouvert depuis `data/corpus/index/index.db`.
+   */
+  index?: Index | (() => Index);
   seuils?: { bas?: number; haut?: number; marge?: number };
 };
 
@@ -115,7 +118,8 @@ export async function search(
     };
   }
 
-  const index = deps.index ?? openIndex(cheminIndex(rootDir));
+  const index =
+    typeof deps.index === "function" ? deps.index() : deps.index ?? openIndex(cheminIndex(rootDir));
   const k = Math.max(1, Math.trunc(demande.k ?? 5));
   const vecteur = await deps.embedder.embedQuery(demande.question);
   const resultats = searchIndex(

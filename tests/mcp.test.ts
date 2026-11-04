@@ -17,26 +17,33 @@ import type { Unite } from "../mcp/corpus/parse.ts";
 
 const DOCUMENT = "32016R0679";
 
+function unite(numero: number, texte: string): Unite {
+  return {
+    ref: `${DOCUMENT}#art_${numero}`,
+    document: DOCUMENT,
+    niveau: "article",
+    numero: String(numero),
+    chemin: "RGPD > Chapitre III > Droits de la personne concernée",
+    texte,
+    date_acte: "2016-04-27",
+    date_debut: "2018-05-25",
+    date_fin: null,
+    statut: "en_vigueur",
+    url: `https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:${DOCUMENT}#art_${numero}`,
+  };
+}
+
 const SIX: Unite[] = [
-  { numero: 1, texte: "objet et objectifs du règlement" },
-  { numero: 2, texte: "champ d'application matériel du règlement" },
-  { numero: 3, texte: "droit d'accès de la personne concernée aux données" },
-  { numero: 4, texte: "droit de rectification des données inexactes" },
-  { numero: 5, texte: "principes relatifs au traitement des données" },
-  { numero: 6, texte: "licéité du traitement des données personnelles" },
-].map(({ numero, texte }) => ({
-  ref: `${DOCUMENT}#art_${numero}`,
-  document: DOCUMENT,
-  niveau: "article",
-  numero: String(numero),
-  chemin: "RGPD > Chapitre III > Droits de la personne concernée",
-  texte,
-  date_acte: "2016-04-27",
-  date_debut: "2018-05-25",
-  date_fin: null,
-  statut: "en_vigueur",
-  url: `https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:${DOCUMENT}#art_${numero}`,
-}));
+  unite(1, "objet et objectifs du règlement"),
+  unite(2, "champ d'application matériel du règlement"),
+  unite(3, "droit d'accès de la personne concernée aux données"),
+  unite(4, "droit de rectification des données inexactes"),
+  unite(5, "principes relatifs au traitement des données"),
+  unite(6, "licéité du traitement des données personnelles"),
+];
+
+/** Corpus réduit portant l'article 17, pour le serveur sans index. */
+const SIX_ET_17: Unite[] = [...SIX, unite(17, "droit à l'effacement des données personnelles")];
 
 /** Embedder déterministe : sac de mots hachés, 8 dimensions, aucun réseau. */
 function embedderFactice(): Embedder {
@@ -77,12 +84,12 @@ const EMBEDDER_INTERDIT: Embedder = {
   },
 };
 
-function ecrireCorpus(root: string): void {
+function ecrireCorpus(root: string, unites: Unite[] = SIX): void {
   const dossier = join(root, "data", "corpus", "rgpd");
   mkdirSync(dossier, { recursive: true });
   writeFileSync(
     join(dossier, "unites.jsonl"),
-    `${SIX.map((unite) => JSON.stringify(unite)).join("\n")}\n`,
+    `${unites.map((unite) => JSON.stringify(unite)).join("\n")}\n`,
     "utf8",
   );
 }
@@ -298,6 +305,53 @@ describe("le serveur en mémoire", () => {
 
     assert.equal(payload.niveau_confiance, "confiant");
     assert.equal((payload.passages as { ref: string }[])[0]?.ref, `${DOCUMENT}#art_5`);
+  });
+});
+
+describe("le serveur sans index", () => {
+  let root: string;
+  let client: Client;
+  let serveur: ReturnType<typeof createServer>;
+
+  before(async () => {
+    root = mkdtempSync(join(tmpdir(), "vitrine-mcp-sans-index-"));
+    ecrireCorpus(root, SIX_ET_17);
+    serveur = createServer({ rootDir: root, embedder: EMBEDDER_INTERDIT });
+    client = new Client({ name: "test", version: "0.0.0" });
+
+    const [transportClient, transportServeur] = InMemoryTransport.createLinkedPair();
+    await Promise.all([client.connect(transportClient), serveur.connect(transportServeur)]);
+  });
+
+  after(async () => {
+    await client.close();
+    await serveur.close();
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  it("sert « article 17 » sans index", async () => {
+    const resultat = await client.callTool({
+      name: "search",
+      arguments: { question: "article 17" },
+    });
+    const payload = contenu(resultat);
+
+    assert.equal(payload.niveau_confiance, "confiant");
+    assert.equal((payload.passages as { ref: string }[])[0]?.ref, `${DOCUMENT}#art_17`);
+  });
+
+  it("refuse « article 100 » sans accuser l'index absent", async () => {
+    const resultat = await client.callTool({
+      name: "search",
+      arguments: { question: "article 100" },
+    });
+    const payload = contenu(resultat);
+    const message = String(payload.message);
+
+    assert.equal(payload.niveau_confiance, "aucun_resultat_fiable");
+    assert.deepEqual(payload.passages, []);
+    assert.match(message, /article 100/);
+    assert.doesNotMatch(message, /Index introuvable/);
   });
 });
 

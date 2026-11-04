@@ -79,7 +79,7 @@ export function createServer(deps: ServerDeps): McpServer {
         ...(k === undefined ? {} : { k }),
         ...(document === undefined ? {} : { document }),
       };
-      const resultat = await search(rootDir, demande, { embedder, index: index() });
+      const resultat = await search(rootDir, demande, { embedder, index });
       return { content: [{ type: "text", text: JSON.stringify(resultat, null, 2) }] };
     },
   );
