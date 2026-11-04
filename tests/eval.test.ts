@@ -5,6 +5,7 @@ import {
   calibrer,
   lireQuestions,
   mrr,
+  precisionAt1,
   recallAt5,
   repartirPlis,
   tauxCitationsInvalides,
@@ -22,10 +23,10 @@ const CORPUS = readFileSync(new URL("../data/corpus/rgpd/unites.jsonl", import.m
 describe("questions.csv", () => {
   const questions = lireQuestions(QUESTIONS);
 
-  it("porte vingt lignes : huit références, sept conceptuelles, cinq pièges", () => {
-    assert.equal(questions.length, 20);
+  it("porte vingt-deux lignes : huit références, neuf conceptuelles, cinq pièges", () => {
+    assert.equal(questions.length, 22);
     assert.equal(questions.filter((question) => question.type === "reference").length, 8);
-    assert.equal(questions.filter((question) => question.type === "conceptuelle").length, 7);
+    assert.equal(questions.filter((question) => question.type === "conceptuelle").length, 9);
     assert.equal(questions.filter((question) => question.piege).length, 5);
   });
 
@@ -43,11 +44,18 @@ describe("questions.csv", () => {
     );
   });
 
-  it("garde « effacement » attendu sur l'article 17", () => {
-    const effacement = questions.find(
-      (question) => question.question === "effacement et moteurs de recherche",
+  it("garde « effacement » attendu sur l'article 17, court et long", () => {
+    for (const texte of ["effacement", "effacement et moteurs de recherche"]) {
+      const effacement = questions.find((question) => question.question === texte);
+      assert.deepEqual(effacement?.attendues, ["32016R0679#art_17"], texte);
+    }
+  });
+
+  it("porte la paraphrase inédite « droit de récupérer mes données » sur l'article 20", () => {
+    const paraphrase = questions.find(
+      (question) => question.question === "droit de récupérer mes données",
     );
-    assert.deepEqual(effacement?.attendues, ["32016R0679#art_17"]);
+    assert.deepEqual(paraphrase?.attendues, ["32016R0679#art_20"]);
   });
 });
 
@@ -67,6 +75,19 @@ describe("les métriques", () => {
       ]),
       0.5,
     );
+  });
+
+  it("calcule la précision au rang 1 sur les questions à référence", () => {
+    assert.equal(precisionAt1([{ attendues: [REF], rendus: [REF] }]), 1);
+    assert.equal(precisionAt1([{ attendues: [REF], rendus: [AUTRE, REF] }]), 0);
+    assert.equal(
+      precisionAt1([
+        { attendues: [REF], rendus: [REF] },
+        { attendues: [REF], rendus: [AUTRE, REF] },
+      ]),
+      0.5,
+    );
+    assert.equal(precisionAt1([{ attendues: [], rendus: [AUTRE] }]), 0);
   });
 
   it("ne compte pas au-delà du cinquième rang", () => {
