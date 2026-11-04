@@ -31,8 +31,10 @@ flowchart LR
 - Static-first : la passe est manuelle et hebdomadaire ; aucun cron n'est configuré ; le site n'est pas déployé, voir `deployment.md`.
 - `mcp/` est une quatrième zone, distincte du pipeline et du site : corpus, index, outils, transport stdio. `veille/` et `src/` sont inchangés ; seuls `writeRaw` de `veille/write.ts` et le type `FetchLike` de `veille/fetch.ts` sont réutilisés.
 - `npm run corpus:build` récupère le XHTML CELLAR et écrit `data/corpus/rgpd/` ; `npm run corpus:index` construit `data/corpus/index/index.db`, jamais commité. `npm run mcp` ouvre le serveur sur stdio.
+- L'index est incrémental : chaque unité porte une empreinte `sha256` du modèle, de la dimension et du passage contextualisé. La construction lit `ref → rowid, empreinte`, n'embarque que les unités ajoutées ou modifiées, supprime les absentes et laisse les autres vecteurs intacts. Les nouveaux `rowid` suivent le maximum existant, jamais la position ; un changement de modèle ou de dimension reconstruit l'index complet.
+- Le classement d'une recherche ajoute `BANDE_ARTICLE = 0,02` à la similarité d'un article, sans changer la similarité rendue : à pertinence comparable, l'article passe devant le considérant, qui reste rendu et étiqueté. La bande se calibre sur les questions `dev` dans `aidd_docs/tasks/2026_11/2026_11_04_qualite-mcp/eval.md`.
 - L'embedding reste local : Ollama sur `127.0.0.1:11434` avec `qwen3-embedding:0.6b`, appelé seulement à l'indexation et à la requête. Le site ne lit aucune API.
-- Git est la base : snapshots bruts + hash + JSON commités ; l'index se reconstruit au build.
+- Git est la base : snapshots bruts + hash + JSON commités ; l'index se met à jour par delta avec `npm run corpus:index`.
 - `src/` est jetable : les données survivent à un changement de générateur.
 - Un adaptateur par source, isolé dans `veille/sources/` : CNIL, CJUE, ANSSI, CEPD, ARCEP, Commission, Commission DMA, ARCOM, Conseil d'État (CETAT) et Cour de cassation (Judilibre) — dix adaptateurs pour neuf autorités.
 - Le site ne lit aucune API au runtime : il lit `data/`.

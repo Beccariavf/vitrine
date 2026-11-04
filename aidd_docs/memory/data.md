@@ -32,7 +32,8 @@ flowchart LR
 - Provenance : CELLAR, `https://publications.europa.eu/resource/celex/32016R0679`, rendu XHTML en `fra` avec `Accept: application/xhtml+xml` ; réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0).
 - 272 unités : 99 articles (`art_N`) et 173 considérants (`rct_N`), découpées sur les ancres ELI ; le texte est copié, jamais reformulé.
 - Le snapshot brut du XHTML vit dans `data/raw/` ; le manifeste le nomme par son `sha256`.
-- `data/corpus/index/index.db` est dérivé : SQLite + `sqlite-vec`, table `unites` et table virtuelle `vec_unites` en cosinus. Non commité, reconstruit par `npm run corpus:index`.
+- `data/corpus/index/index.db` est dérivé : SQLite + `sqlite-vec`, table `unites` (avec `empreinte`) et table virtuelle `vec_unites` en cosinus. Non commité, mis à jour par `npm run corpus:index`.
+- L'index est incrémental : l'empreinte `sha256` du modèle, de la dimension et du passage contextualisé décide du delta. Seules les unités ajoutées ou modifiées sont embarquées ; les unités supprimées perdent leur ligne et leur vecteur ; les unités inchangées gardent des vecteurs identiques octet pour octet. Les `rowid` nouveaux suivent le maximum existant ; changer de modèle ou de dimension force une reconstruction complète.
 - Ajouter un corpus, c'est déposer un autre `data/corpus/<corpus>/unites.jsonl` ; la colonne `document` filtre les résultats sans changer le code.
 
 ## Summaries
@@ -66,7 +67,7 @@ flowchart LR
 ## Models
 
 - Le pipeline de veille est déterministe : aucun modèle, aucune inférence.
-- Le MCP local embarque uniquement à l'indexation et à la requête : `qwen3-embedding:0.6b` (Q8_0, 1024 dimensions), servi par Ollama sur `127.0.0.1:11434`, jamais un service cloud. Les vecteurs sont normalisés dans le code ; la similarité vaut `1 - distance` et les seuils de confiance sont calibrés sur 22 questions RGPD (`aidd_docs/tasks/2026_11/2026_11_03_mcp-juridique/eval.md`).
+- Le MCP local embarque uniquement à l'indexation et à la requête : `qwen3-embedding:0.6b` (Q8_0, 1024 dimensions), servi par Ollama sur `127.0.0.1:11434`, jamais un service cloud. Les vecteurs sont normalisés dans le code ; la similarité vaut `1 - distance`. Les seuils (`bas 0,69`, `haut 0,74`, `marge 0,01`) et la bande article (`0,02`) sont calibrés sur les 35 questions `dev` du jeu de 50, jamais sur les 15 `test` (`aidd_docs/tasks/2026_11/2026_11_04_qualite-mcp/eval.md`). L'expérience `qwen3-embedding:4b` (2560 dimensions, 129,6 s pour 272 unités, `art_20` au rang 2 sur la paraphrase) est documentée hors produit : le produit garde `0.6b`.
 
 ## Reproducibility
 

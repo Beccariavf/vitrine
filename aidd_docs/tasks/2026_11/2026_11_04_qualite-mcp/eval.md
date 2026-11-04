@@ -89,5 +89,37 @@ Sur le corpus réel (272 unités), avec `qwen3-embedding:0.6b` et Ollama 0.40.14
 
 L'empreinte `sha256` de la concaténation des 272 vecteurs vaut `e58dffad232bf139d088b69fe5af4abb1a1e5b5b7d8da5954387c256b10bdafc` avant et après le troisième passage : les vecteurs inchangés sont identiques octet pour octet. Les nouveaux `rowid` sont attribués après le maximum existant, jamais par position ; changer de modèle ou de dimension reconstruit l'index complet avec une raison explicite.
 
+## Résultats finaux
 
+Seuils figés : `SEUIL_BAS = 0,69`, `SEUIL_HAUT = 0,74`, `MARGE = 0,01` ; bande article `0,02`.
 
+| Métrique | `dev` (35, réglage) | `test` (15, constat) |
+| --- | --- | --- |
+| Références exactes | 8, rang 1 par construction, `recall@5` 1,000, `MRR` 1,000 | 4, rang 1 par construction, `recall@5` 1,000, `MRR` 1,000 |
+| Recherche sémantique | 20, `recall@5` 1,000 (20/20), `MRR` 0,858 | 8, `recall@5` 0,750 (6/8), `MRR` 0,750 |
+| Top-1 sémantique | 75,0 % (15/20) | 75,0 % (6/8) |
+| `incertain` | 6/20 (30,0 %) | 4/8 (50,0 %) |
+| Pièges par seuil | 6, 0 cité, 0 confiant | 3, 0 cité, 0 confiant |
+| Piège déterministe | 1 (« article 100 ») refusé | 0 |
+
+Le critère de 90 % n'est pas atteint sur `test` : 10 des 12 questions à référence (83,3 %) ont leur référence attendue dans les cinq premiers — 4/4 en exact et 6/8 en sémantique. En revanche, aucune question piège n'est citée ni marquée `confiant`. La paraphrase « droit de récupérer mes données » reste hors des cinq premiers avec `0.6b`.
+
+## Expérience `qwen3-embedding:4b` (hors produit)
+
+Le produit garde `qwen3-embedding:0.6b` (1024 dimensions). L'expérience `4b` est reproduite dans une racine temporaire, sans toucher l'index du produit.
+
+| Modèle | Dimensions | Indexation des 272 unités | Rang de `art_20` sur « droit de récupérer mes données » |
+| --- | --- | --- | --- |
+| `qwen3-embedding:0.6b` | 1024 | 19,3 s | absent du top 5 (`art_15`, `art_13`, `rct_65`, `rct_63`, `art_17`) |
+| `qwen3-embedding:4b` | 2560 | 129,6 s | rang 2 (`art_15`, `art_20`, `rct_68`, `art_12`, `art_13`) |
+
+Le rang 2 confirme que la limite de paraphrase vient du modèle, pas de l'architecture : la même recherche, le même corpus et la même bande article placent `art_20` au rang 2 avec `4b` et l'absentent du top 5 avec `0.6b`. En revanche, `4b` indexe 6,7 fois plus lentement et rend 2560 dimensions, pas 1024 comme l'annonçait la source externe du plan ; il n'est donc pas le modèle du produit. Le plan citait 138 s pour `4b` et 10 s pour `0.6b` : la mesure du jour donne 129,6 s et 19,3 s, avec le même rang.
+
+## Limites
+
+- La paraphrase reste un échec mesuré avec `0.6b` : `art_15` (droit d'accès) devance `art_20` (portabilité), et `art_20` sort des cinq premiers.
+- La précision au rang 1 reste de 75 % sur `dev` et `test` : un article attendu peut être derrière un considérant ou un autre article.
+- L'échantillon `test` ne compte que 15 questions, dont 8 sémantiques : les taux valent pour le RGPD, pas pour un corpus plus large ni pour la CNIL.
+- Les seuils et la bande sont calibrés sur 35 questions `dev` ; la marge de 0,01 est étroite et `incertain` dépend d'écarts de similarité faibles.
+- `confiant` porte sur la similarité du premier passage, pas sur la correction : une réponse `confiante` peut citer le mauvais article.
+- La recherche sémantique exige un index construit ; sans index, seul le court-circuit d'un article exact fonctionne.

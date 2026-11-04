@@ -23,7 +23,7 @@ Le différenciateur est double : **la preuve** (un pipeline de veille qui tourne
 
 - **Runtime / langage :** Node 24 LTS, TypeScript exécuté par type stripping natif (pas de `tsx`, pas de bundler pour les scripts).
 - **Front-end :** Astro 7 (version exacte épinglée à l'initialisation), Tailwind CSS 4 via `@tailwindcss/vite` (l'intégration `@astrojs/tailwind` est dépréciée), composants `.astro` et JS vanilla uniquement.
-- **Recherche :** le MCP RGPD fait une recherche sémantique locale (`sqlite-vec` + Ollama) ; le site n'en a pas encore, Pagefind reste prévu quand son corpus le justifiera.
+- **Recherche :** le MCP RGPD fait une recherche sémantique locale (`sqlite-vec` + Ollama) une fois l'index construit par `npm run corpus:index` ; le site n'en a pas encore, Pagefind reste prévu quand son corpus le justifiera.
 - **Back-end :** scripts TypeScript dans `veille/`, un adaptateur par source, aucune dépendance de framework HTTP.
 - **Base de données :** aucune pour la veille : `data/raw/` (snapshots adressés par contenu) et `data/entries/` (une entrée par `id`) sont la vérité versionnée. Pour le MCP : `data/corpus/rgpd/` est versionné et `data/corpus/index/index.db` (SQLite + `sqlite-vec`) est un dérivé ignoré par git.
 - **Auth :** aucune.
@@ -34,7 +34,7 @@ Le différenciateur est double : **la preuve** (un pipeline de veille qui tourne
 ### Mitigations retenues après audit
 
 1. **Versions figées** (Astro, Tailwind) et Dependabot désactivé les 6 premiers mois : une montée de version est une décision, pas une surprise.
-2. **SQLite seulement pour le MCP local** : `node:sqlite` + `sqlite-vec`, un fichier, aucun serveur ; l'index se reconstruit par `npm run corpus:index` et n'est pas versionné. La veille garde JSON + hash.
+2. **SQLite seulement pour le MCP local** : `node:sqlite` + `sqlite-vec`, un fichier, aucun serveur ; l'index se met à jour par `npm run corpus:index` et n'est pas versionné. L'index est incrémental : une empreinte par unité ne réembarque que les ajouts et modifications, et un second passage sur un corpus inchangé embarque zéro unité. La veille garde JSON + hash.
 3. **Pas de `tsx`** : type stripping natif de Node 24.
 4. **Découplage contenu / framework** : la sortie est du HTML/JSON statique ; changer de générateur ne fait perdre aucune donnée.
 5. **Déploiement dans le même workflow** : un push fait avec `GITHUB_TOKEN` ne déclenche aucun autre workflow.
@@ -124,7 +124,7 @@ vitrine/
 │   ├── tools.ts                    # get_article, search
 │   ├── confidence.ts               # seuils de confiance
 │   ├── server.ts                   # transport stdio
-│   └── eval/                       # 22 questions et métriques
+│   └── eval/                       # 50 questions, split dev/test et métriques
 │
 ├── data/                           # "BASE" — git = historique
 │   ├── raw/<2 hex>/<sha256>.xml    # snapshots bruts adressés par contenu

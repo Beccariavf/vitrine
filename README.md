@@ -22,17 +22,26 @@ npm test               # suite hors ligne
 npm run build          # génère dist/
 
 npm run corpus:build   # CELLAR → data/corpus/rgpd/
-npm run corpus:index   # Ollama + sqlite-vec → data/corpus/index/index.db
+npm run corpus:index   # index incrémental Ollama + sqlite-vec → data/corpus/index/index.db
 npm run mcp:smoke      # vérifie Ollama et qwen3-embedding:0.6b
 npm run mcp            # serveur MCP sur stdio
-npm run mcp:eval       # 22 questions, métriques datées (hors CI)
+npm run mcp:eval -- --split dev    # 35 questions de développement, réglage (hors CI)
+npm run mcp:eval -- --split test   # 15 questions tenues à l'écart, constat (hors CI)
 ```
 
 Le MCP lit le RGPD par article exact et par recherche sémantique, avec provenance. Seule la
 recherche sémantique exige Ollama sur `127.0.0.1:11434` et le modèle `qwen3-embedding:0.6b`
 (`ollama pull qwen3-embedding:0.6b`) : une question qui cite un article (« article 17 ») est servie
 sans index ni modèle. Sans Ollama, `corpus:index` et la recherche sémantique échouent avec un
-message qui nomme la commande.
+message qui nomme la commande. L'index est incrémental : un second passage sur un corpus inchangé
+embarque zéro unité et laisse les vecteurs identiques.
+
+L'évaluation porte sur 50 questions écrites contre le texte du corpus : 12 références exactes,
+28 conceptuelles et 10 pièges, réparties en 35 `dev` et 15 `test`. Les 15 questions `test` ne
+règlent aucun seuil. Avec `qwen3-embedding:0.6b`, la paraphrase « droit de récupérer mes données »
+reste hors des cinq premiers ; l'expérience `qwen3-embedding:4b` la place au rang 2 mais indexe
+beaucoup plus lentement, et le produit garde `0.6b`. Les chiffres datés vivent dans
+`aidd_docs/tasks/2026_11/2026_11_04_qualite-mcp/eval.md`.
 
 Pour le brancher dans un client MCP, déclarer un serveur stdio avec le chemin absolu du serveur et
 remplacer `/absolute/path/to/Vitrine-mcp` par la racine de votre clone :

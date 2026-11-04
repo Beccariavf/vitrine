@@ -29,9 +29,11 @@ Comment le projet est testé : les couches, les outils et les conventions. Où v
 - Unitaire : parseur CJUE (`veille/sources/cjeu.ts`) : deux formats de titre, date de décision, `pubDate` en secours, `_SUM`/`_RES`, `_INF`, XML invalide.
 - Intégration : `run` avec un `fetch` injecté, sur une racine temporaire, les sources demandées ; une panne ou un flux CJUE vide laisse CNIL ; une matière désactivée ne supprime rien ; un arrêt sorti du flux reste ; une page ARCOM absente écarte l'entrée et avertit.
 - Unitaire : corpus RGPD (`tests/corpus.test.ts`) : 99 articles, 173 considérants, article 17 non vide et son chapitre III, en-têtes CELLAR et statut non 2xx, manifeste et nom du snapshot `sha256`, 272 lignes, idempotence des deux écritures, capture amputée de `art_17` qui lève avant toute écriture.
-- Unitaire : index vectoriel (`tests/index.test.ts`) : embedder factice de 8 dimensions, six unités, `meta` (modèle, dimension, nombre), ordre cosinus et `k`, index absent qui nomme `npm run corpus:index`, dimension refusée, `rowid` explicite en `BigInt`, second descripteur filtré par `document`, adaptateur Ollama sur un `fetch` injecté (en-têtes, normalisation, `ollama pull`), vrai modèle sauté sauf si `MCP_TEST_OLLAMA=1`.
+- Unitaire : index vectoriel (`tests/index.test.ts`) : embedder factice de 8 dimensions, six unités, `meta` (modèle, dimension, nombre), ordre cosinus et `k`, index absent qui nomme `npm run corpus:index`, dimension différente qui reconstruit l'index, `rowid` explicite en `BigInt`, second descripteur filtré par `document`, adaptateur Ollama sur un `fetch` injecté (en-têtes, normalisation, `ollama pull`), vrai modèle sauté sauf si `MCP_TEST_OLLAMA=1`.
+- Unitaire : index incrémental (`tests/index.test.ts`) : embedder compteur, premier passage 6 vecteurs, second passage 0, ajout 1, modification 1, suppression 0, vecteurs inchangés identiques octet pour octet, `rowid` stable hors position, reconstruction complète sur changement de modèle ou de dimension, échec d'embedding qui annule tout le delta, empreinte dépendante du modèle, de la dimension et du passage, journal des quatre comptes.
 - Unitaire : outils et serveur (`tests/mcp.test.ts`) : article exact, article absent qui ne rend pas de chaîne vide, court-circuit « article N » sans embedder, piège hors corpus rendu `aucun_resultat_fiable` sans passage, trois niveaux de confiance, deux outils vus par un client en mémoire, serveur sans index qui sert « article 17 » et refuse « article 100 » sans accuser l'index absent, aucun `fetch` dans `mcp/server.ts` ni `mcp/tools.ts`.
-- Unitaire : évaluation (`tests/eval.test.ts`) : 22 questions (8 références, 9 conceptuelles, 5 pièges), références toutes présentes dans `unites.jsonl`, `recall@5`, `MRR`, précision au rang 1, taux de citations invalides, calibration et quatre plis.
+- Unitaire : évaluation (`tests/eval.test.ts`) : 50 questions (12 références, 28 conceptuelles, 10 pièges), 35 `dev` et 15 `test`, références toutes présentes dans `unites.jsonl`, `recall@5`, `MRR`, précision au rang 1, taux de citations invalides, calibration et quatre plis, garde qui refuse une question `test` à la calibration en la nommant, filtrage `dev`/`test`.
+- Unitaire : bande article et confiance (`tests/mcp.test.ts`) : article à 0,79 devant un considérant à 0,80, considérant à 0,90 devant un article à 0,70, ordre stable entre deux articles, considérant conservé et étiqueté, similarité brute rendue, frontière de marge (à marge égale `incertain`, au-delà `confiant`), seuil bas et absence de résultat, passage portant `niveau`, `numero` et `chemin`.
 - Le jeu de tests par défaut ne touche pas le réseau : les fixtures sont des captures du flux réel. Le build (`npm run build`) ne fait aucun appel réseau non plus.
 
 ## Tools
@@ -58,9 +60,10 @@ Comment le projet est testé : les couches, les outils et les conventions. Où v
 ## Manuel
 
 - `npm run corpus:build` : récupère CELLAR et écrit `data/corpus/rgpd/` (réseau).
-- `npm run corpus:index` : construit `data/corpus/index/index.db` (Ollama et `qwen3-embedding:0.6b`).
+- `npm run corpus:index` : construit ou met à jour `data/corpus/index/index.db` (Ollama et `qwen3-embedding:0.6b`) ; un second passage sur un corpus inchangé embarque zéro unité.
 - `npm run mcp:smoke` : vérifie 1024 dimensions et la norme 1 auprès du vrai Ollama.
-- `npm run mcp:eval` : mesure les 22 questions sur l'index réel, hors CI ; le rapport daté vit dans `aidd_docs/tasks/2026_11/2026_11_03_mcp-juridique/eval.md`.
+- `npm run mcp:eval -- --split dev` : calibre et mesure les 35 questions de développement sur l'index réel, hors CI.
+- `npm run mcp:eval -- --split test` : constate sur les 15 questions tenues à l'écart, avec les seuils figés ; le rapport daté vit dans `aidd_docs/tasks/2026_11/2026_11_04_qualite-mcp/eval.md`.
 - `MCP_TEST_OLLAMA=1 npm test` : lance aussi le contrôle du vrai modèle (1024 dimensions, norme 1) ; sans cette variable, le test est sauté même si `OLLAMA_HOST` est défini.
 - Ouvrir `tools/parametres.html` dans Chrome, charger `veille/themes.json`, désactiver une matière, enregistrer.
 - Lancer `npm run build` : les publications de cette matière disparaissent ; réactiver et reconstruire : elles reviennent sans collecte.
