@@ -190,11 +190,15 @@ describe("niveauConfiance", () => {
   });
 
   it("reste incertain quand la marge manque", () => {
-    assert.equal(niveauConfiance([{ distance: 0.2 }, { distance: 0.21 }], false), "incertain");
+    assert.equal(
+      niveauConfiance([{ distance: 0.2 }, { distance: 0.21 }], false, { marge: 0.02 }),
+      "incertain",
+    );
   });
 
   it("reste incertain entre les deux seuils", () => {
-    assert.equal(niveauConfiance([{ distance: 1 - (SEUIL_BAS + 0.05) }], false), "incertain");
+    const entre = (SEUIL_BAS + SEUIL_HAUT) / 2;
+    assert.equal(niveauConfiance([{ distance: 1 - entre }], false), "incertain");
   });
 
   it("ne rend aucun résultat fiable sous le seuil bas ou sans résultat", () => {
@@ -274,7 +278,7 @@ describe("le serveur en mémoire", () => {
   it("cherche par le sens et garde art_3 dans les cinq premiers", async () => {
     const resultat = await client.callTool({
       name: "search",
-      arguments: { question: "droit d'accès aux données" },
+      arguments: { question: "droit d'accès de la personne concernée aux données" },
     });
     const payload = contenu(resultat);
     const passages = payload.passages as { ref: string; similarite: number }[];

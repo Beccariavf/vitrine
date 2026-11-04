@@ -1,19 +1,20 @@
 /**
  * Les trois niveaux de confiance rendus au lecteur, et leurs seuils.
  *
- * Les seuils sont exprimés en similarité cosinus (`1 - distance`). Ce sont des
- * valeurs de départ : la phase 4 les calibre sur le jeu de vingt questions et
- * documente les valeurs retenues. Le niveau dit ce que le serveur sait du
- * rapprochement, jamais la qualité de la rédaction.
+ * Les seuils sont exprimés en similarité cosinus (`1 - distance`). Les valeurs
+ * ci-dessous sont celles calibrées en phase 4 sur le jeu de vingt questions
+ * (`aidd_docs/tasks/2026_11/2026_11_03_mcp-juridique/eval.md`) ; elles séparent
+ * les cinq pièges des quinze questions à référence. Le niveau dit ce que le
+ * serveur sait du rapprochement, jamais la qualité de la rédaction.
  */
 export type NiveauConfiance = "confiant" | "incertain" | "aucun_resultat_fiable";
 
 /** Sous ce seuil, aucun passage n'est digne d'être présenté. */
-export const SEUIL_BAS = 0.3;
+export const SEUIL_BAS = 0.65;
 /** Au-dessus de ce seuil, avec la marge, le premier passage est tenu pour sûr. */
-export const SEUIL_HAUT = 0.45;
+export const SEUIL_HAUT = 0.7;
 /** Écart minimal entre le premier et le second passage pour parler de confiance. */
-export const MARGE = 0.02;
+export const MARGE = 0;
 
 export type ResultatAvecDistance = { distance: number };
 

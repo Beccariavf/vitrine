@@ -7,7 +7,7 @@ import { describe, it } from "node:test";
 import * as sqliteVec from "sqlite-vec";
 import { buildIndex, cheminIndex } from "../mcp/index/build.ts";
 import { openIndex, searchIndex } from "../mcp/index/search.ts";
-import { createOllamaEmbedder, normaliser } from "../mcp/embed/embedder.ts";
+import { INSTRUCTION_REQUETE, createOllamaEmbedder, normaliser } from "../mcp/embed/embedder.ts";
 import type { Embedder } from "../mcp/embed/embedder.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";
 import type { FetchLike } from "../veille/fetch.ts";
@@ -94,9 +94,26 @@ describe("l'adaptateur Ollama", () => {
     const vecteur = await embedder.embedQuery("test");
 
     assert.equal(url, "http://127.0.0.1:9999/api/embed");
-    assert.deepEqual(JSON.parse(corps), { model: "qwen3-embedding:0.6b", input: ["test"] });
+    assert.deepEqual(JSON.parse(corps), {
+      model: "qwen3-embedding:0.6b",
+      input: [`${INSTRUCTION_REQUETE}test`],
+    });
     assert.deepEqual(vecteur, [0.6, 0.8]);
     assert.equal(embedder.dim, 2);
+  });
+
+  it("préfixe la requête sans toucher aux passages", async () => {
+    const entrees: unknown[] = [];
+    const fetchImpl: FetchLike = async (_url, init) => {
+      entrees.push(JSON.parse(init?.body ?? "{}").input);
+      return { ok: true, status: 200, text: async () => JSON.stringify({ embeddings: [[1, 0]] }) };
+    };
+    const embedder = createOllamaEmbedder({ dim: 2, fetchImpl });
+
+    await embedder.embedQuery("question");
+    await embedder.embedPassages(["passage"]);
+
+    assert.deepEqual(entrees, [[`${INSTRUCTION_REQUETE}question`], ["passage"]]);
   });
 
   it("nomme ollama pull quand le modèle manque", async () => {
