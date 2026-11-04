@@ -13,7 +13,7 @@ const ICI = dirname(fileURLToPath(import.meta.url));
 const QUESTIONS = join(ICI, "questions.csv");
 const RACINE = fileURLToPath(new URL("../..", import.meta.url));
 
-/** Un pli de validation croisée : quatre plis aussi égaux que possible. */
+/** Un pli de validation croisée : blocs contigus de `ceil(n / 4)`. */
 export const NB_PLIS = 4;
 
 export type TypeQuestion = "reference" | "conceptuelle" | "piege";
@@ -112,7 +112,7 @@ export function tauxCitationsInvalides(classements: ClassementPiege[]): number {
   return pieges.filter((classement) => !classement.refusee).length / pieges.length;
 }
 
-/** Découpe en `plis` blocs contigus de taille aussi égale que possible. */
+/** Découpe en `plis` blocs contigus de `ceil(n / plis)`. */
 export function repartirPlis<T>(elements: T[], plis = NB_PLIS): T[][] {
   const blocs: T[][] = [];
   const taille = Math.ceil(elements.length / plis);

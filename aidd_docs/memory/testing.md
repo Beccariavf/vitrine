@@ -32,7 +32,7 @@ Comment le projet est testé : les couches, les outils et les conventions. Où v
 - Unitaire : index vectoriel (`tests/index.test.ts`) : embedder factice de 8 dimensions, six unités, `meta` (modèle, dimension, nombre), ordre cosinus et `k`, index absent qui nomme `npm run corpus:index`, dimension refusée, `rowid` explicite en `BigInt`, second descripteur filtré par `document`, adaptateur Ollama sur un `fetch` injecté (en-têtes, normalisation, `ollama pull`), vrai modèle sauté sauf si `MCP_TEST_OLLAMA=1`.
 - Unitaire : outils et serveur (`tests/mcp.test.ts`) : article exact, article absent qui ne rend pas de chaîne vide, court-circuit « article N » sans embedder, piège hors corpus rendu `aucun_resultat_fiable` sans passage, trois niveaux de confiance, deux outils vus par un client en mémoire, serveur sans index qui sert « article 17 » et refuse « article 100 » sans accuser l'index absent, aucun `fetch` dans `mcp/server.ts` ni `mcp/tools.ts`.
 - Unitaire : évaluation (`tests/eval.test.ts`) : 22 questions (8 références, 9 conceptuelles, 5 pièges), références toutes présentes dans `unites.jsonl`, `recall@5`, `MRR`, précision au rang 1, taux de citations invalides, calibration et quatre plis.
-- Le jeu de tests par défaut ne touche pas le réseau : les fixtures sont des captures du flux réel. Le build (`npm run build`) ne fait aucun appel réseau non plus. Le contrôle `MCP_TEST_OLLAMA=1` interroge Ollama local, à la demande.
+- Le jeu de tests par défaut ne touche pas le réseau : les fixtures sont des captures du flux réel. Le build (`npm run build`) ne fait aucun appel réseau non plus.
 
 ## Tools
 

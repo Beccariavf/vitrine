@@ -57,7 +57,7 @@ status: completed
 
 > Les seuils se calent sur une partie, se mesurent sur l'autre.
 
-1. Découper les 22 questions en 4 plis aussi égaux que possible (6, 6, 6, 4).
+1. Découper les 22 questions en 4 blocs contigus de `ceil(22/4) = 6` : 6, 6, 6, 4.
 2. Pour chaque pli : calibrer `SEUIL_BAS`, `SEUIL_HAUT` et `MARGE` sur les autres questions, mesurer le taux de citations invalides sur le pli tenu à l'écart.
 3. Rapporter `recall@5` et `MRR` sur les 22 (sans seuil), et le taux de citations invalides en moyenne des 4 plis, avec l'intervalle min–max.
 4. Ajuster ensuite les seuils finaux sur les 22 et le noter ; les chiffres rapportés restent ceux de la validation croisée.
