@@ -50,3 +50,29 @@ Mesure sur `dev` uniquement, avec les seuils recalibrés par le code de l'époqu
 
 La bande est conservée : le top-1 progresse de 5 points et le top-5 ne perd rien. Les deux têtes considérant restantes sont `art_20` derrière `rct_68` et `art_25` derrière `rct_78` ; leurs similarités ne sont pas dans la bande.
 
+## Confiance calibrée sur dev (phase 3)
+
+Les seuils sont calibrés sur les 35 questions `dev` uniquement, puis figés avant toute mesure `test` : `SEUIL_BAS = 0,69`, `SEUIL_HAUT = 0,74`, `MARGE = 0,01`. La marge est non nulle et l'écart doit être strictement supérieur à 0,01 pour parler de confiance.
+
+`confiant` ne porte que sur la similarité du premier passage et son avance sur le second ; il ne dit jamais que l'article attendu est en tête, ni que la réponse est juste. La marge sépare le premier du second passage, pas le vrai du faux : une réponse `confiante` peut rester le mauvais article.
+
+### Développement (réglage)
+
+| Métrique `dev` | Valeur |
+| --- | --- |
+| Recherche sémantique (20) | `recall@5` 1,000 (20/20), `MRR` 0,858, top-1 75,0 % |
+| Niveaux sémantiques | 14 confiant, 6 incertain (30,0 %), 0 aucun_resultat_fiable |
+| Pièges par seuil (6) | 0 cité, 0 marqué confiant |
+
+### Test (constat, seuils figés)
+
+| Métrique `test` | Valeur |
+| --- | --- |
+| Recherche sémantique (8) | `recall@5` 0,750 (6/8), `MRR` 0,750, top-1 75,0 % |
+| Niveaux sémantiques | 4 confiant, 4 incertain (50,0 %), 0 aucun_resultat_fiable |
+| Pièges par seuil (3) | 0 cité, 0 marqué confiant |
+| Paraphrase « droit de récupérer mes données » → `art_20` | hors des cinq premiers (top 5 : non) |
+
+Quatre des huit questions sémantiques `test` tombent en `incertain` : leur premier passage est proche du second ou reste entre les deux seuils. Aucun seuil n'a été retouché après la mesure `test`.
+
+

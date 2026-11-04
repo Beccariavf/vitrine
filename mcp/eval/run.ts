@@ -173,7 +173,7 @@ export function calibrer(mesures: Mesure[]): Seuils {
 
   for (const bas of grille(0.2, 0.8, 0.01)) {
     for (const haut of grille(bas + 0.05, 0.95, 0.05)) {
-      for (const marge of [0, 0.01, 0.02, 0.05]) {
+      for (const marge of [0.01, 0.02, 0.05]) {
         const seuils: Seuils = { bas, haut, marge };
         let corrects = 0;
         let invalides = 0;

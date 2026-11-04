@@ -263,6 +263,19 @@ describe("niveauConfiance", () => {  it("est confiant sur une référence exacte
     );
   });
 
+  it("passe de incertain à confiant au-delà de la marge", () => {
+    const resultats = [{ distance: 0.25 }, { distance: 0.5 }];
+
+    assert.equal(
+      niveauConfiance(resultats, false, { bas: 0.5, haut: 0.7, marge: 0.25 }),
+      "incertain",
+    );
+    assert.equal(
+      niveauConfiance(resultats, false, { bas: 0.5, haut: 0.7, marge: 0.24 }),
+      "confiant",
+    );
+  });
+
   it("reste incertain entre les deux seuils", () => {
     const entre = (SEUIL_BAS + SEUIL_HAUT) / 2;
     assert.equal(niveauConfiance([{ distance: 1 - entre }], false), "incertain");
