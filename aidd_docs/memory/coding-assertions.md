@@ -6,7 +6,7 @@ Les vérifications qui doivent passer pour qu'un code compte comme terminé. Min
 
 | Order | Command | Checks |
 | ----- | ------- | ------ |
-| 1 | `npm run typecheck` | Typage strict de `veille/`, `src/lib/` et `tests/`, sans émission |
+| 1 | `npm run typecheck` | Typage strict de `veille/`, `src/lib/`, `mcp/` et `tests/`, sans émission |
 
 ## Before push
 
@@ -22,6 +22,8 @@ Les vérifications qui doivent passer pour qu'un code compte comme terminé. Min
 
 - Un commit = une préoccupation ; message conventionnel à l'impératif.
 - Chaque source a sa fixture et son test ; un adaptateur sans test n'est pas terminé.
+- `mcp/**/*.ts` est dans le périmètre du typecheck ; le serveur n'écrit que sur `stderr` hors JSON-RPC.
+- `data/corpus/index/` est un dérivé ignoré par git ; `data/corpus/rgpd/` est produit par `npm run corpus:build`, jamais édité à la main.
 - `data/` n'est jamais édité à la main.
 - Aucun secret versionné.
 - Versions épinglées ; une mise à jour est une branche dédiée.

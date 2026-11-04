@@ -6,7 +6,9 @@ La disposition macro : les zones de premier niveau et ce qu'elles portent. Une c
 flowchart TD
     CLI["veille/ — pipeline des sources"] --> DATA["data/ — sortie versionnée"]
     TESTS["tests/ — suite hors ligne"] --> CLI
+    TESTS --> MCP
     SRC["src/ — site Astro statique"] --> DATA
+    MCP["mcp/ — corpus et serveur MCP"] --> DATA
     TOOLS["tools/ — paramètres locaux"] --> CLI
     CI[".github/ — CI"] -.-> CLI
     CI -.-> SRC
@@ -18,8 +20,9 @@ flowchart TD
 
 - `veille/` : le pipeline. Dix adaptateurs : CNIL, CJUE, ANSSI, CEPD, ARCEP, Commission, Commission DMA, ARCOM, CETAT et Judilibre ; catalogue `themes.json` ; rattachement par instruments puis termes ; normalisation, résumés, références, écriture. La page CNIL est lue pour sa section « Textes de référence » (`parseCnilPageReferences`), les instruments sont canonicalisés par `extractCnilReferences` et les pages retenues sont snapshotées en HTML. La page ARCOM filtre le DSA et fournit le résumé ; la page Commission `/fr/` fournit le titre, le résumé et le lien français. Seule zone qui parle aux sources.
 - `src/` : le site Astro, rendu statique. `layouts/Base.astro` porte la coquille, `pages/` les deux routes, `styles/global.css` les jetons Tailwind, `lib/entries.ts` lit `data/entries/` au build, valide `themes` et filtre les matières actives, `lib/references.ts` résout l'URL officielle d'un instrument (Légifrance ou CELEX) sans réseau et abrège son libellé d'affichage (`RGPD`, `LIL`, `CPCE`, `ePrivacy`, `C. conso`, `AI Act`, `DSA`, `DMA`, `DORA`, `NIS2`, `CRA`, `Data Act`), le libellé complet restant dans `title`, `lib/sources.ts` porte les libellés des dix adaptateurs. Les pages ne parlent à aucune API. Jetable : les données lui survivent.
-- `tests/` : la suite `node:test` et les fixtures des dix adaptateurs, hors ligne.
-- `data/` : la sortie du pipeline, versionnée par git. Snapshots bruts adressés par leur contenu, entrées JSON par `id`, journal d'appels PISTE.
+- `mcp/` : le corpus RGPD et le serveur MCP, séparés du pipeline et du site. `corpus/` récupère le XHTML CELLAR, le parse en 272 unités et écrit `data/corpus/rgpd/` ; `index/` construit et interroge `data/corpus/index/index.db` (SQLite + `sqlite-vec`, cosinus) ; `embed/` isole Ollama derrière l'interface `Embedder` ; `tools.ts` porte `get_article` et `search`, `confidence.ts` les trois niveaux, `server.ts` le transport stdio ; `eval/` porte les 20 questions et les métriques. Seul `veille/write.ts` est réutilisé.
+- `tests/` : la suite `node:test` et les fixtures des dix adaptateurs et du corpus RGPD, hors ligne.
+- `data/` : la sortie du pipeline et le corpus, versionnés par git. Snapshots bruts adressés par leur contenu, entrées JSON par `id`, journal d'appels PISTE, `corpus/rgpd/` (manifeste et unités) ; `corpus/index/` est dérivé et ignoré.
 - `tools/` : l'outil local de paramètres (`parametres.html`), non déployé ; il écrit `veille/themes.json`.
 - `.github/` : la CI — contrôle des secrets PISTE, typecheck, tests et build ; aucun déploiement.
 - `.githooks/` : le hook `pre-commit` qui refuse `.env` et les valeurs PISTE non vides.
@@ -31,5 +34,9 @@ flowchart TD
 - `veille/themes.json` : le catalogue des cinq matières et de leur état, écrit par l’outil local.
 - `veille/backfill.ts` : recalcule `themes` sur les entrées existantes, lancé par `npm run backfill`.
 - `src/pages/index.astro` et `src/pages/veille/index.astro` : les deux pages, générées par `npm run build`.
+- `mcp/corpus/build.ts` : `npm run corpus:build`, la capture CELLAR vers `data/corpus/rgpd/`.
+- `mcp/index/build.ts` : `npm run corpus:index`, l'index `sqlite-vec` depuis Ollama.
+- `mcp/server.ts` : `npm run mcp`, le serveur MCP stdio (`get_article`, `search`).
+- `mcp/eval/run.ts` : `npm run mcp:eval`, les métriques datées, hors CI.
 - `tools/parametres.html` : l'outil local de sélection des matières.
 - `npm test` : la suite de tests ; `npm run typecheck` vérifie les types.

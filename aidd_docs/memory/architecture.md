@@ -6,7 +6,7 @@ La forme technique macro : la stack, comment les pièces s'articulent, et les d�
 
 - TypeScript sur Node 24, exécuté par type stripping natif : aucun build step pour le pipeline.
 - Astro en rendu statique, Tailwind pour le style. Aucune intégration de framework front ; la recherche viendra plus tard.
-- Aucune base de données, aucun serveur permanent : une passe hebdomadaire manuelle produit des fichiers, le site les rend.
+- Aucune base de données pour le site ni le pipeline, aucun serveur permanent : une passe hebdomadaire manuelle produit des fichiers, le site les rend. Le MCP local ajoute SQLite + `sqlite-vec` dans `data/corpus/index/`, un dérivé non commité.
 
 ## How it fits together
 
@@ -21,11 +21,17 @@ flowchart LR
   P --> E["data/entries"]
   E --> S["Site Astro"]
   S --> W["Cloudflare Workers (cible, non configurée)"]
+  CELLAR["CELLAR · EUR-Lex"] --> MCP["mcp/ — corpus + index + outils"]
+  E --> MCP
+  MCP --> IDX["data/corpus/index — dérivé, non commité"]
 ```
 
 ## Key decisions
 
 - Static-first : la passe est manuelle et hebdomadaire ; aucun cron n'est configuré ; le site n'est pas déployé, voir `deployment.md`.
+- `mcp/` est une quatrième zone, distincte du pipeline et du site : corpus, index, outils, transport stdio. `veille/` et `src/` sont inchangés ; seul `writeRaw` de `veille/write.ts` est réutilisé pour le snapshot brut.
+- `npm run corpus:build` récupère le XHTML CELLAR et écrit `data/corpus/rgpd/` ; `npm run corpus:index` construit `data/corpus/index/index.db`, jamais commité. `npm run mcp` ouvre le serveur sur stdio.
+- L'embedding reste local : Ollama sur `127.0.0.1:11434` avec `qwen3-embedding:0.6b`, appelé seulement à l'indexation et à la requête. Le site ne lit aucune API.
 - Git est la base : snapshots bruts + hash + JSON commités ; l'index se reconstruit au build.
 - `src/` est jetable : les données survivent à un changement de générateur.
 - Un adaptateur par source, isolé dans `veille/sources/` : CNIL, CJUE, ANSSI, CEPD, ARCEP, Commission, Commission DMA, ARCOM, Conseil d'État (CETAT) et Cour de cassation (Judilibre) — dix adaptateurs pour neuf autorités.
@@ -43,4 +49,6 @@ flowchart LR
 ## Gotchas
 
 - Les quotas PISTE ne sont pas publics et l'API n'offre qu'une cible de disponibilité de 95 %/jour.
+- Sans Ollama et sans `qwen3-embedding:0.6b`, `corpus:index`, `mcp:smoke` et la recherche échouent ; le message nomme `ollama pull qwen3-embedding:0.6b`.
+- Le serveur MCP journalise sur `stderr` uniquement : `stdout` porte le protocole JSON-RPC.
 - Aucun workflow planifié n'existe : une passe oubliée laisse les données en l'état.

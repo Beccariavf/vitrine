@@ -26,6 +26,15 @@ flowchart LR
     P --> E["data/entries — une entrée par actualité ou arrêt"]
 ```
 
+## Corpus RGPD
+
+- `data/corpus/rgpd/` est versionné : `manifest.json` (document CELEX, titre, langue, URL, licence, les trois dates, nom du snapshot, nombre d'unités) et `unites.jsonl` (une ligne par unité : `ref`, `document`, `niveau`, `numero`, `chemin`, `texte`, `date_acte`, `date_debut`, `date_fin`, `statut`, `url`).
+- Provenance : CELLAR, `https://publications.europa.eu/resource/celex/32016R0679`, rendu XHTML en `fra` avec `Accept: application/xhtml+xml` ; réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0).
+- 272 unités : 99 articles (`art_N`) et 173 considérants (`rct_N`), découpées sur les ancres ELI ; le texte est copié, jamais reformulé.
+- Le snapshot brut du XHTML vit dans `data/raw/` ; le manifeste le nomme par son `sha256`.
+- `data/corpus/index/index.db` est dérivé : SQLite + `sqlite-vec`, table `unites` et table virtuelle `vec_unites` en cosinus. Non commité, reconstruit par `npm run corpus:index`.
+- Ajouter un corpus, c'est déposer un autre `data/corpus/<corpus>/unites.jsonl` ; la colonne `document` filtre les résultats sans changer le code.
+
 ## Summaries
 
 - Chaque entrée porte un résumé extrait de la description de la source, nettoyé puis tronqué à 200 caractères ellipse comprise (`veille/summary.ts`) ; `null` quand la description manque.
@@ -56,7 +65,8 @@ flowchart LR
 
 ## Models
 
-- Aucun modèle, aucune inférence : le pipeline est déterministe.
+- Le pipeline de veille est déterministe : aucun modèle, aucune inférence.
+- Le MCP local embarque uniquement à l'indexation et à la requête : `qwen3-embedding:0.6b` (Q8_0, 1024 dimensions), servi par Ollama sur `127.0.0.1:11434`, jamais un service cloud. Les vecteurs sont normalisés dans le code ; la similarité vaut `1 - distance` et les seuils de confiance sont calibrés sur 20 questions RGPD (`aidd_docs/tasks/2026_11/2026_11_03_mcp-juridique/eval.md`).
 
 ## Reproducibility
 
