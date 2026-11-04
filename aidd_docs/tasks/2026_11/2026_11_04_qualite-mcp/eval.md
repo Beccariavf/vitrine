@@ -33,3 +33,20 @@ Code d'avant la bande article et avant la marge de confiance. Les seuils `dev` s
 | Paraphrase « droit de récupérer mes données » → `art_20` | hors des cinq premiers (top 5 : non) |
 
 Les deux questions sémantiques manquées au `test` sont « autorité de contrôle chef de file » (`art_56` absent, `art_51` en tête) et la paraphrase `art_20` (`art_15` en tête, `art_20` absent). Ce sont des constats, pas des réglages : aucune question `test` n'entre dans la calibration.
+
+## Bande article à 0,02 (phase 2)
+
+À pertinence comparable, un article passe devant un considérant : le score de classement vaut la similarité brute, plus `BANDE_ARTICLE = 0,02` pour un `niveau` `article`. La similarité rendue reste la valeur brute et aucun considérant n'est retiré.
+
+Mesure sur `dev` uniquement, avec les seuils recalibrés par le code de l'époque :
+
+| Métrique `dev` | Avant la bande | Avec 0,02 |
+| --- | --- | --- |
+| `recall@5` sémantique (20) | 1,000 (20/20) | 1,000 (20/20) |
+| `MRR` sémantique | 0,829 | 0,858 |
+| Top-1 sémantique | 70,0 % (14/20) | 75,0 % (15/20) |
+| Têtes considérant pour un article attendu | 4/20 | 2/20 |
+| Pièges cités par seuil (6) | 0/6 | 0/6 |
+
+La bande est conservée : le top-1 progresse de 5 points et le top-5 ne perd rien. Les deux têtes considérant restantes sont `art_20` derrière `rct_68` et `art_25` derrière `rct_78` ; leurs similarités ne sont pas dans la bande.
+

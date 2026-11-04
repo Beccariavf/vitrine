@@ -62,6 +62,8 @@ export function createServer(deps: ServerDeps): McpServer {
       description:
         "Cherche par le sens dans le corpus RGPD et rend les passages les plus proches avec leur provenance " +
         "et un niveau de confiance (confiant, incertain, aucun_resultat_fiable). " +
+        "L'article pose la règle et le considérant l'éclaire : à pertinence comparable, l'article passe " +
+        "devant, mais aucun considérant n'est retiré du résultat. " +
         "Une question qui cite un article rend cet article exact, sans recherche vectorielle. " +
         CONSIGNE_PROVENANCE,
       inputSchema: {

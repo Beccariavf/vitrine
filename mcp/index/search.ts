@@ -11,9 +11,18 @@ export type Index = {
   unites: number;
 };
 
+/**
+ * Bande de similarité qui fait passer un article devant un considérant à
+ * pertinence comparable. Elle se calibre en phase 5 sur les questions `dev` :
+ * elle ne supprime jamais le considérant, elle le place après l'article.
+ */
+export const BANDE_ARTICLE = 0.02;
+
 export type ResultatRecherche = {
   ref: string;
   document: string;
+  niveau: string;
+  numero: string;
   texte: string;
   chemin: string;
   url: string;
@@ -77,6 +86,8 @@ function ligneVersResultat(ligne: Ligne): ResultatRecherche {
   return {
     ref: texte(ligne.ref),
     document: texte(ligne.document),
+    niveau: texte(ligne.niveau),
+    numero: texte(ligne.numero),
     texte: texte(ligne.texte),
     chemin: texte(ligne.chemin),
     url: texte(ligne.url),
@@ -89,9 +100,33 @@ function ligneVersResultat(ligne: Ligne): ResultatRecherche {
 }
 
 /**
- * Rend les `k` passages les plus proches, distance cosinus croissante. Le filtre
- * `document` s'applique après la recherche vectorielle : on demande alors plus de
- * candidats pour rendre tout de même `k` passages du document demandé.
+ * Classe les passages : similarité brute, plus `BANDE_ARTICLE` pour un article.
+ * La distance et la similarité rendues restent les valeurs brutes ; seuls les
+ * articles à moins de 0,02 d'un considérant le dépassent.
+ */
+export function rangerPassages(resultats: ResultatRecherche[], k: number): ResultatRecherche[] {
+  const nombre = Math.max(0, Math.trunc(k));
+  if (nombre === 0) return [];
+  return resultats
+    .map((resultat, position) => ({
+      resultat,
+      score: 1 - resultat.distance + (resultat.niveau === "article" ? BANDE_ARTICLE : 0),
+      position,
+    }))
+    .sort(
+      (gauche, droite) =>
+        droite.score - gauche.score ||
+        gauche.resultat.distance - droite.resultat.distance ||
+        gauche.position - droite.position,
+    )
+    .slice(0, nombre)
+    .map((entree) => entree.resultat);
+}
+
+/**
+ * Rend les `k` passages les plus proches, rangés par la bande article. Le filtre
+ * `document` s'applique avant le classement : on demande plus de candidats pour
+ * que l'article promu reste dans la fenêtre, puis on rend `k` passages.
  */
 export function searchIndex(index: Index, vecteur: number[], options: SearchOptions): ResultatRecherche[] {
   if (vecteur.length !== index.dim) {
@@ -104,11 +139,11 @@ export function searchIndex(index: Index, vecteur: number[], options: SearchOpti
   const k = Math.max(0, Math.trunc(options.k));
   if (k === 0) return [];
 
-  const candidats = options.document === undefined ? k : Math.max(k * 10, 50);
+  const candidats = Math.max(k * 10, 50);
   const lignes = index.db
     .prepare(
-      `SELECT u.ref, u.document, u.texte, u.chemin, u.url, u.date_acte, u.date_debut, u.date_fin,
-              u.statut, v.distance
+      `SELECT u.ref, u.document, u.niveau, u.numero, u.texte, u.chemin, u.url,
+              u.date_acte, u.date_debut, u.date_fin, u.statut, v.distance
          FROM vec_unites v
          JOIN unites u ON u.rowid = v.rowid
         WHERE v.embedding MATCH ? AND k = ?
@@ -117,8 +152,9 @@ export function searchIndex(index: Index, vecteur: number[], options: SearchOpti
     .all(JSON.stringify(vecteur), candidats) as Ligne[];
 
   const resultats = lignes.map(ligneVersResultat);
-  return (options.document === undefined
-    ? resultats
-    : resultats.filter((resultat) => resultat.document === options.document)
-  ).slice(0, k);
+  const filtres =
+    options.document === undefined
+      ? resultats
+      : resultats.filter((resultat) => resultat.document === options.document);
+  return rangerPassages(filtres, k);
 }

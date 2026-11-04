@@ -9,8 +9,8 @@ import { SEUIL_BAS, SEUIL_HAUT, niveauConfiance } from "../mcp/confidence.ts";
 import { normaliser } from "../mcp/embed/embedder.ts";
 import type { Embedder } from "../mcp/embed/embedder.ts";
 import { buildIndex } from "../mcp/index/build.ts";
-import { openIndex } from "../mcp/index/search.ts";
-import type { Index } from "../mcp/index/search.ts";
+import { BANDE_ARTICLE, openIndex, rangerPassages } from "../mcp/index/search.ts";
+import type { Index, ResultatRecherche } from "../mcp/index/search.ts";
 import { createServer } from "../mcp/server.ts";
 import { getArticle, search } from "../mcp/tools.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";
@@ -187,8 +187,68 @@ describe("les outils, sans transport", () => {
   });
 });
 
-describe("niveauConfiance", () => {
-  it("est confiant sur une référence exacte, même sans résultat", () => {
+/** Un passage synthétique à une similarité donnée, pour la bande article. */
+function passage(niveau: "article" | "considérant", similarite: number, numero = "1"): ResultatRecherche {
+  return {
+    ref: `${DOCUMENT}#${niveau === "article" ? "art" : "rct"}_${numero}`,
+    document: DOCUMENT,
+    niveau,
+    numero,
+    texte: "texte",
+    chemin: "RGPD > Chapitre I",
+    url: "https://eur-lex.europa.eu/",
+    date_acte: "2016-04-27",
+    date_debut: "2018-05-25",
+    date_fin: null,
+    statut: "en_vigueur",
+    distance: 1 - similarite,
+  };
+}
+
+describe("la bande article", () => {
+  it("fait passer un article à 0,79 devant un considérant à 0,80", () => {
+    const ordre = rangerPassages([passage("considérant", 0.8), passage("article", 0.79)], 2);
+
+    assert.deepEqual(
+      ordre.map((resultat) => resultat.niveau),
+      ["article", "considérant"],
+    );
+    assert.ok(Math.abs((ordre[0]?.distance ?? 0) - (1 - 0.79)) < 1e-12);
+    assert.ok(Math.abs((ordre[1]?.distance ?? 0) - (1 - 0.8)) < 1e-12);
+  });
+
+  it("laisse un considérant à 0,90 devant un article à 0,70", () => {
+    const ordre = rangerPassages([passage("article", 0.7), passage("considérant", 0.9)], 2);
+
+    assert.deepEqual(
+      ordre.map((resultat) => resultat.niveau),
+      ["considérant", "article"],
+    );
+  });
+
+  it("garde l'ordre de similarité entre deux articles", () => {
+    const ordre = rangerPassages(
+      [passage("article", 0.79, "2"), passage("article", 0.8, "1")],
+      2,
+    );
+
+    assert.deepEqual(
+      ordre.map((resultat) => resultat.numero),
+      ["1", "2"],
+    );
+  });
+
+  it("ne retire jamais un considérant sans article comparable et garde son étiquette", () => {
+    const ordre = rangerPassages([passage("article", 0.9), passage("considérant", 0.3, "7")], 5);
+
+    assert.equal(ordre.length, 2);
+    assert.equal(ordre[1]?.niveau, "considérant");
+    assert.equal(ordre[1]?.numero, "7");
+    assert.equal(BANDE_ARTICLE, 0.02);
+  });
+});
+
+describe("niveauConfiance", () => {  it("est confiant sur une référence exacte, même sans résultat", () => {
     assert.equal(niveauConfiance([], true), "confiant");
   });
 
@@ -288,11 +348,20 @@ describe("le serveur en mémoire", () => {
       arguments: { question: "droit d'accès de la personne concernée aux données" },
     });
     const payload = contenu(resultat);
-    const passages = payload.passages as { ref: string; similarite: number }[];
+    const passages = payload.passages as {
+      ref: string;
+      niveau: string;
+      numero: string;
+      chemin: string;
+      similarite: number;
+    }[];
 
     assert.ok(["confiant", "incertain"].includes(String(payload.niveau_confiance)));
     assert.ok(passages.length <= 5);
     assert.equal(passages[0]?.ref, `${DOCUMENT}#art_3`);
+    assert.equal(passages[0]?.niveau, "article");
+    assert.equal(passages[0]?.numero, "3");
+    assert.equal(typeof passages[0]?.chemin, "string");
     assert.equal(typeof passages[0]?.similarite, "number");
   });
 
