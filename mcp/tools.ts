@@ -26,7 +26,7 @@ export type Passage = ResultatRecherche & { similarite: number };
 export type ResultatRechercheOutil = {
   niveau_confiance: NiveauConfiance;
   passages: Passage[];
-  /** Présent quand la question citait une référence exacte introuvable. */
+  /** Présent quand une référence exacte est introuvable ou existe dans plusieurs documents. */
   message?: string;
 };
 
@@ -46,21 +46,24 @@ export function referenceExacte(question: string): string | null {
   return reference === null ? null : (reference[1] ?? "");
 }
 
-/** Cherche un article par son numéro, dans un document ou dans tout le corpus. */
-function trouverArticle(
+/**
+ * Cherche les articles portant ce numéro, dans un document ou dans tout le
+ * corpus. Plusieurs documents peuvent porter le même numéro : l'appelant décide
+ * s'il rend le premier ou s'il expose l'ambiguïté.
+ */
+function trouverArticles(
   rootDir: string,
   document: string | undefined,
   numero: string | number,
-): Unite | null {
+): Unite[] {
   const cherche = normaliserNumero(numero);
-  if (cherche === null) return null;
-  for (const unite of lireUnites(rootDir)) {
-    if (document !== undefined && unite.document !== document) continue;
-    if (unite.niveau !== "article") continue;
-    if (normaliserNumero(unite.numero) !== cherche) continue;
-    return unite;
-  }
-  return null;
+  if (cherche === null) return [];
+  return lireUnites(rootDir).filter(
+    (unite) =>
+      (document === undefined || unite.document === document) &&
+      unite.niveau === "article" &&
+      normaliserNumero(unite.numero) === cherche,
+  );
 }
 
 /** Lit un article exact dans le corpus de `document`. */
@@ -68,8 +71,8 @@ export function getArticle(
   rootDir: string,
   demande: { document: string; numero: string | number },
 ): ResultatArticle {
-  const article = trouverArticle(rootDir, demande.document, demande.numero);
-  if (article !== null) return { ...article, trouve: true };
+  const article = trouverArticles(rootDir, demande.document, demande.numero)[0];
+  if (article !== undefined) return { ...article, trouve: true };
   return {
     trouve: false,
     document: demande.document,
@@ -107,9 +110,20 @@ export async function search(
 ): Promise<ResultatRechercheOutil> {
   const numero = referenceExacte(demande.question);
   if (numero !== null) {
-    const article = trouverArticle(rootDir, demande.document, numero);
-    if (article !== null) {
-      return { niveau_confiance: "confiant", passages: [passageExact(article)] };
+    const articles = trouverArticles(rootDir, demande.document, numero);
+    if (articles.length > 0) {
+      const documents = articles.map((article) => article.document);
+      return {
+        niveau_confiance: articles.length === 1 ? "confiant" : "incertain",
+        passages: articles.map(passageExact),
+        ...(articles.length === 1
+          ? {}
+          : {
+              message:
+                `L'article ${numero} existe dans plusieurs documents ` +
+                `(${documents.join(", ")}). Précisez « document » pour n'en rendre qu'un.`,
+            }),
+      };
     }
     return {
       niveau_confiance: "aucun_resultat_fiable",

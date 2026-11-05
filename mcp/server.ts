@@ -78,6 +78,9 @@ export function createServer(deps: ServerDeps): McpServer {
         "L'article pose la règle et le considérant l'éclaire : à pertinence comparable, l'article passe " +
         "devant, mais aucun considérant n'est retiré du résultat. " +
         "Une question qui cite un article rend cet article exact, sans recherche vectorielle. " +
+        "Si le numéro existe dans plusieurs documents et que `document` est absent, les articles " +
+        "de chaque document sont rendus avec leur provenance et le niveau est `incertain` ; " +
+        "préciser `document` lève l'ambiguïté. " +
         CONSIGNE_PROVENANCE,
       inputSchema: {
         question: z.string().describe("Question en langage naturel, par exemple « effacement et moteurs de recherche »"),

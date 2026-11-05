@@ -16,11 +16,12 @@ import { getArticle, search } from "../mcp/tools.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";
 
 const DOCUMENT = "32016R0679";
+const DOCUMENT_AIAct = "32024R1689";
 
-function unite(numero: number, texte: string): Unite {
+function unite(numero: number, texte: string, document = DOCUMENT): Unite {
   return {
-    ref: `${DOCUMENT}#art_${numero}`,
-    document: DOCUMENT,
+    ref: `${document}#art_${numero}`,
+    document,
     niveau: "article",
     numero: String(numero),
     chemin: "RGPD > Chapitre III > Droits de la personne concernée",
@@ -29,7 +30,7 @@ function unite(numero: number, texte: string): Unite {
     date_debut: "2018-05-25",
     date_fin: null,
     statut: "en_vigueur",
-    url: `https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:${DOCUMENT}#art_${numero}`,
+    url: `https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:${document}#art_${numero}`,
   };
 }
 
@@ -84,8 +85,8 @@ const EMBEDDER_INTERDIT: Embedder = {
   },
 };
 
-function ecrireCorpus(root: string, unites: Unite[] = SIX): void {
-  const dossier = join(root, "data", "corpus", "rgpd");
+function ecrireCorpus(root: string, unites: Unite[] = SIX, nom = "rgpd"): void {
+  const dossier = join(root, "data", "corpus", nom);
   mkdirSync(dossier, { recursive: true });
   writeFileSync(
     join(dossier, "unites.jsonl"),
@@ -143,7 +144,67 @@ describe("les outils, sans transport", () => {
       );
 
       assert.equal(resultat.niveau_confiance, "confiant");
+      assert.equal(resultat.passages.length, 1);
       assert.equal(resultat.passages[0]?.ref, `${DOCUMENT}#art_3`);
+      assert.equal(resultat.passages[0]?.document, DOCUMENT);
+      assert.equal(resultat.message, undefined);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("rend tous les articles quand le même numéro existe dans deux documents", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-tools-"));
+    try {
+      ecrireCorpus(root, [unite(5, "principes relatifs au traitement des données")]);
+      ecrireCorpus(
+        root,
+        [unite(5, "pratiques d'IA interdites", DOCUMENT_AIAct)],
+        "aiact",
+      );
+      const resultat = await search(
+        root,
+        { question: "Que prévoit l'article 5 ?" },
+        { embedder: EMBEDDER_INTERDIT },
+      );
+
+      assert.equal(resultat.niveau_confiance, "incertain");
+      assert.deepEqual(
+        resultat.passages.map((passage) => passage.ref).sort(),
+        [`${DOCUMENT}#art_5`, `${DOCUMENT_AIAct}#art_5`].sort(),
+      );
+      assert.deepEqual(
+        resultat.passages.map((passage) => passage.document).sort(),
+        [DOCUMENT, DOCUMENT_AIAct].sort(),
+      );
+      assert.match(resultat.message ?? "", /plusieurs documents/);
+      assert.match(resultat.message ?? "", /document/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("ne rend que le document demandé quand le numéro est ambigu", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-tools-"));
+    try {
+      ecrireCorpus(root, [unite(5, "principes relatifs au traitement des données")]);
+      ecrireCorpus(
+        root,
+        [unite(5, "pratiques d'IA interdites", DOCUMENT_AIAct)],
+        "aiact",
+      );
+      const resultat = await search(
+        root,
+        { question: "Que prévoit l'article 5 ?", document: DOCUMENT_AIAct },
+        { embedder: EMBEDDER_INTERDIT },
+      );
+
+      assert.equal(resultat.niveau_confiance, "confiant");
+      assert.deepEqual(
+        resultat.passages.map((passage) => passage.ref),
+        [`${DOCUMENT_AIAct}#art_5`],
+      );
+      assert.equal(resultat.message, undefined);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
