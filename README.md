@@ -67,15 +67,21 @@ questions AI Act, sans classement) ; le rapport v1 reste
 `aidd_docs/tasks/2026_11/2026_11_04_qualite-mcp/eval.md`, jamais fusionné avec le v2.
 
 `qwen3-embedding:4b` a été mesuré sur les 30 questions `dev` : il répare une question au top 5
-(`art_56`), en casse une autre (`art_35`), garde le même top 1 et coûte 6,9× plus d'indexation selon cette mesure v2.
+(`art_56`), en casse une autre (`art_35`), garde le même top 1 et coûte 6,9× plus d'indexation selon cette mesure v2,
+un chiffre que la mesure v3 porte à 15,5× pour la même indexation : le coût reste imprécis.
 Le produit garde `0.6b` ; l'expérience est dans `eval-v2.md`.
 
 Le jeu v3 porte 80 questions écrites contre les 99 articles du RGPD avant toute mesure : 40 `dev`,
 40 `test`, dont 34 sémantiques par split, 3 références exactes et 3 pièges. Chaque modèle a été
-mesuré une seule fois sur le `test` avec les seuils calibrés sur son propre `dev`. `4b` gagne une
-question au top 5 et en perd une au rang 1 ; les paires discordantes (`b = 2`, `c = 3`, `b + c = 5`)
+mesuré une seule fois sur le `test` avec les seuils calibrés sur son propre `dev`. Sur la vue rendue,
+`0.6b` place la référence attendue au top 5 pour 29 questions sur 34 (30 au brut) et `4b` pour 31
+sur 34 (31 au brut) ; au rang 1 rendu, les deux sont à 25 (26 contre 25 au brut). Les paires
+discordantes rendues (`b = 2`, `c = 2`, `b + c = 4` ; `b = 2`, `c = 3`, `b + c = 5` au brut)
 restent sous le plancher de six, donc le verdict est **non établi** et `0.6b` reste le modèle du
-produit. Le rapport v3 est
+produit. L'avance de `4b` sur `dev` (30 contre 26 au rang 1, `b = 6`, `c = 2`, p ≈ 0,29) n'était pas
+significative : c'était du bruit, et le test ne la reproduit pas. Avec 34 questions sémantiques, il
+ne détecte qu'un écart d'environ six questions, donc un effet plus petit demanderait un test tenu à
+l'écart plus grand ou répété. Le rapport v3 est
 `aidd_docs/tasks/2026_11/2026_11_05_mesure-v3-modeles/eval-v3.md` ; il n'est pas fusionné avec le v2.
 
 Pour le brancher dans un client MCP, déclarer un serveur stdio avec le chemin absolu du serveur et
