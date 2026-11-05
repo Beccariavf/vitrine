@@ -27,6 +27,10 @@ import type { Marqueur, Mesure, Question, Split } from "../mcp/eval/run.ts";
 
 const QUESTIONS = readFileSync(new URL("../mcp/eval/questions.csv", import.meta.url), "utf8");
 const QUESTIONS_V2 = readFileSync(new URL("../mcp/eval/questions-v2.csv", import.meta.url), "utf8");
+const QUESTIONS_AIAct = readFileSync(
+  new URL("../mcp/eval/questions-aiact.csv", import.meta.url),
+  "utf8",
+);
 const CORPUS = readFileSync(new URL("../data/corpus/rgpd/unites.jsonl", import.meta.url), "utf8")
   .trimEnd()
   .split("\n")
@@ -401,5 +405,54 @@ describe("l'intervalle de Wilson", () => {
 describe("la résolution du fichier de questions", () => {
   it("trouve le jeu livré dans mcp/eval", () => {
     assert.equal(resoudreQuestions("questions-v2.csv"), new URL("../mcp/eval/questions-v2.csv", import.meta.url).pathname);
+  });
+});
+
+describe("questions-aiact.csv", () => {
+  const questions = lireQuestions(QUESTIONS_AIAct);
+  const refs = new Set(
+    readFileSync(new URL("../data/corpus/aiact/unites.jsonl", import.meta.url), "utf8")
+      .trimEnd()
+      .split("\n")
+      .map((ligne) => (JSON.parse(ligne) as { ref: string }).ref),
+  );
+
+  it("porte douze lignes : sept références, trois conceptuelles, deux pièges", () => {
+    assert.equal(questions.length, 12);
+    assert.equal(questions.filter((question) => question.type === "reference").length, 7);
+    assert.equal(questions.filter((question) => question.type === "conceptuelle").length, 3);
+    assert.equal(questions.filter((question) => question.piege).length, 2);
+  });
+
+  it("n'attend que des références présentes dans l'AI Act", () => {
+    validerReferences(questions, refs);
+    assert.ok(questions.flatMap((question) => question.attendues).every((ref) => ref.startsWith("32024R1689#")));
+  });
+
+  it("chercherait chaque question dans le document 32024R1689", () => {
+    assert.equal(documentDuJeu(questions), "32024R1689");
+  });
+
+  it("refuse une question RGPD glissée dans le jeu AI Act", () => {
+    const melange: Question[] = [
+      ...questions,
+      {
+        question: "Que prévoit l'article 17 du RGPD ?",
+        type: "reference",
+        attendues: ["32016R0679#art_17"],
+        piege: false,
+        split: "dev",
+      },
+    ];
+
+    assert.throws(() => documentDuJeu(melange), /plusieurs documents/);
+  });
+
+  it("ne laisse aucune référence RGPD dans le rapport AI Act", () => {
+    const rapport = readFileSync(
+      new URL("../aidd_docs/tasks/2026_11/2026_11_05_qualite-v2-aiact/eval-aiact.md", import.meta.url),
+      "utf8",
+    );
+    assert.doesNotMatch(rapport, /32016R0679/);
   });
 });
