@@ -13,7 +13,12 @@ const REF = "32016R0679#art_17";
 const AUTRE = "32016R0679#art_5";
 const SEUILS = { bas: 0.6, haut: 0.7, marge: 0.01 };
 
-type Resultat = { question: string; top1: boolean; top5?: boolean };
+type Resultat = {
+  question: string;
+  top1: boolean;
+  top5?: boolean;
+  niveau?: "confiant" | "incertain" | "aucun_resultat_fiable";
+};
 
 function mesure(modele: string, resultats: Resultat[]): ObjetMesureJson {
   return {
@@ -35,7 +40,7 @@ function mesure(modele: string, resultats: Resultat[]): ObjetMesureJson {
         refs,
         rangs: [top5 ? (resultat.top1 ? 1 : 2) : 0],
         similarites: refs.map(() => 0.5),
-        niveau: "confiant",
+        niveau: resultat.niveau ?? "confiant",
       };
     }),
     agregats: resume([], SEUILS),
@@ -136,7 +141,7 @@ describe("la comparaison appariée", () => {
     assert.match(decision.raisons.join(" "), /aucun désaccord/);
   });
 
-  it("distingue le succès au top 5 du succès au rang 1", () => {
+  it("distingue le succès au top 5 du succès au rang 1, brut et rendu", () => {
     const base = mesure("qwen3-embedding:0.6b", [
       { question: "q1", top1: false, top5: true },
       { question: "q2", top1: true, top5: true },
@@ -147,12 +152,42 @@ describe("la comparaison appariée", () => {
     ]);
     const decision = analyser(base, candidat);
 
-    assert.equal(decision.baseTop5, 2);
-    assert.equal(decision.candidatTop5, 2);
-    assert.equal(decision.baseTop1, 1);
-    assert.equal(decision.candidatTop1, 1);
+    assert.equal(decision.baseTop5Brut, 2);
+    assert.equal(decision.candidatTop5Brut, 2);
+    assert.equal(decision.baseTop1Brut, 1);
+    assert.equal(decision.candidatTop1Brut, 1);
+    assert.equal(decision.baseTop5Rendu, 2);
+    assert.equal(decision.candidatTop5Rendu, 2);
+    assert.equal(decision.baseTop1Rendu, 1);
+    assert.equal(decision.candidatTop1Rendu, 1);
     assert.equal(decision.b, 1);
     assert.equal(decision.c, 1);
+  });
+
+  it("compte une question refusée dans le brut, jamais dans le rendu", () => {
+    const base = mesure("qwen3-embedding:0.6b", [
+      { question: "q1", top1: true, niveau: "aucun_resultat_fiable" },
+      { question: "q2", top1: true },
+    ]);
+    const candidat = mesure("qwen3-embedding:4b", [
+      { question: "q1", top1: false, top5: false },
+      { question: "q2", top1: true },
+    ]);
+    const decision = analyser(base, candidat);
+
+    // Brut : la référence classée reste comptée malgré le refus.
+    assert.equal(decision.baseTop5Brut, 2);
+    assert.equal(decision.baseTop1Brut, 2);
+    // Rendu : le refus ne rend aucun passage, donc le succès disparaît.
+    assert.equal(decision.baseTop5Rendu, 1);
+    assert.equal(decision.baseTop1Rendu, 1);
+    assert.equal(decision.candidatTop5Rendu, 1);
+    assert.equal(decision.candidatTop1Rendu, 1);
+    // La décision suit le rendu : plus aucune paire discordante.
+    assert.equal(decision.b, 0);
+    assert.equal(decision.c, 0);
+    assert.equal(decision.verdict, "non_etabli");
+    assert.match(decision.raisons.join(" "), /aucun désaccord/);
   });
 
   it("refuse deux jeux qui ne portent pas les mêmes questions", () => {
@@ -185,8 +220,8 @@ describe("la règle de décision", () => {
       b: 5,
       c: 0,
       p: 0.001,
-      baseTop5: 10,
-      candidatTop5: 10,
+      baseTop5Rendu: 10,
+      candidatTop5Rendu: 10,
     });
 
     assert.equal(decision.verdict, "non_etabli");
@@ -198,12 +233,12 @@ describe("la règle de décision", () => {
       b: 9,
       c: 1,
       p: 0.02,
-      baseTop5: 20,
-      candidatTop5: 18,
+      baseTop5Rendu: 20,
+      candidatTop5Rendu: 18,
     });
 
     assert.equal(decision.verdict, "conserver");
-    assert.match(decision.raisons.join(" "), /top 5 retourné dégradé de 2 questions/);
+    assert.match(decision.raisons.join(" "), /top 5 rendu dégradé de 2 questions/);
   });
 
   it("conserve la référence quand le candidat ne gagne pas plus qu'il ne perd", () => {
@@ -211,8 +246,8 @@ describe("la règle de décision", () => {
       b: 2,
       c: 5,
       p: 0.45,
-      baseTop5: 20,
-      candidatTop5: 20,
+      baseTop5Rendu: 20,
+      candidatTop5Rendu: 20,
     });
 
     assert.equal(decision.verdict, "conserver");
@@ -223,8 +258,8 @@ describe("la règle de décision", () => {
       b: 6,
       c: 1,
       p: 0.06,
-      baseTop5: 20,
-      candidatTop5: 20,
+      baseTop5Rendu: 20,
+      candidatTop5Rendu: 20,
     });
 
     assert.equal(decision.verdict, "non_etabli");
@@ -254,8 +289,10 @@ describe("la commande compare.ts", () => {
       assert.equal(premier.status, 0);
       assert.equal(premier.stderr, "");
       assert.match(premier.stdout, /b = 9 .*c = 1/);
+      assert.match(premier.stdout, /top 5 brut/);
+      assert.match(premier.stdout, /top 5 rendu/);
       assert.match(premier.stdout, /McNemar exact : p = 0\.021484375/);
-      assert.match(premier.stdout, /verdict : adopter/);
+      assert.match(premier.stdout, /verdict \(rendu\) : adopter/);
       assert.equal(second.stdout, premier.stdout);
 
       const texte = formater(base, candidat, analyser(base, candidat));
