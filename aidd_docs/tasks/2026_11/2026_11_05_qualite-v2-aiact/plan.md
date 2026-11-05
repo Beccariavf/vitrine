@@ -21,7 +21,7 @@ Source: aidd_docs/tasks/2026_11/2026_11_05_qualite-v2-aiact/brainstorm.md
 
 | URL   | What it settled   |
 | ----- | ----------------- |
-| https://publications.europa.eu/resource/celex/32024R1689 | Répond 200 en `application/xhtml+xml` avec `Accept-Language: fra` : 1 383 324 octets, 113 ancres `art_N`, 180 ancres `rct_N`, 12 chapitres `cpt_<romain>`. |
+| https://publications.europa.eu/resource/celex/32024R1689 | Répond 200 en `application/xhtml+xml` avec `Accept-Language: fra` : 1 383 324 octets, 113 ancres `art_N`, 180 ancres `rct_N`, 13 chapitres `cpt_<romain>`. |
 | https://nodejs.org/api/sqlite.html | `node:sqlite` embarque FTS5 ; vérifié : `fts5(texte, tokenize="unicode61 remove_diacritics 2")` indexe et classe « autorite chef de file ». |
 | https://github.com/asg017/sqlite-vec | `vec0` et une table FTS5 cohabitent dans le même fichier ; le delta s'applique aux deux tables. |
 | https://docs.ollama.com/api/embed | `POST /api/embed` reste la source des vecteurs ; `qwen3-embedding:0.6b`, 1 024 dimensions. |
