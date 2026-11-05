@@ -33,7 +33,9 @@ npm run mcp:eval -- --questions questions-v2.csv --split test --mesurer-test   #
 Le MCP lit le RGPD et l'AI Act par article exact et par recherche sémantique, avec provenance. Seule
 la recherche sémantique exige Ollama sur `127.0.0.1:11434` et le modèle `qwen3-embedding:0.6b`
 (`ollama pull qwen3-embedding:0.6b`) : une question qui cite un article (« article 17 ») est servie
-sans index ni modèle. Sans Ollama, `corpus:index` et la recherche sémantique échouent avec un
+sans index ni modèle. Si le numéro cité existe dans les deux corpus et que `document` est absent,
+chaque article est rendu avec son document et le niveau est `incertain` ; préciser `document` lève
+l'ambiguïté. Sans Ollama, `corpus:index` et la recherche sémantique échouent avec un
 message qui nomme la commande. L'index est incrémental : un second passage sur un corpus inchangé
 embarque zéro unité et laisse les vecteurs identiques. La construction suit les descripteurs
 `mcp/corpus/*.json` ; `--document <corpus>` n'en construit qu'un.
@@ -42,7 +44,7 @@ L'évaluation v2 porte sur 60 questions écrites contre le texte du RGPD : 12 r�
 38 conceptuelles et 10 pièges, réparties en 30 `dev` et 30 `test`. Chaque mesure est filtrée sur le
 document de ses références, pour que le second corpus ne change pas la tâche. Les 30 questions
 `test` ne règlent rien et ne se mesurent qu'une fois : `--mesurer-test` est obligatoire et un
-marqueur commité refuse la seconde exécution. Ce marqueur est un engagement, pas une preuve
+marqueur commité refuse la seconde exécution. Ce marqueur est une trace de consommation, pas une preuve
 d'exécution : le supprimer ou copier le CSV sous un autre nom contourne le garde, qui n'arrête
 qu'une seconde exécution accidentelle. Sur le `test` tenu à l'écart, le produit rend la référence
 attendue dans les cinq passages pour 17 des 19 questions sémantiques (23/25 hors pièges), et au rang
