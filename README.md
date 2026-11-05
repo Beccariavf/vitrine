@@ -44,8 +44,12 @@ document de ses références, pour que le second corpus ne change pas la tâche.
 `test` ne règlent rien et ne se mesurent qu'une fois : `--mesurer-test` est obligatoire et un
 marqueur commité refuse la seconde exécution. Ce marqueur est un engagement, pas une preuve
 d'exécution : le supprimer ou copier le CSV sous un autre nom contourne le garde, qui n'arrête
-qu'une seconde exécution accidentelle. Avec `qwen3-embedding:0.6b`, la paraphrase « droit de
-récupérer mes données » reste hors des cinq premiers. La recherche hybride FTS5 + RRF a été mesurée
+qu'une seconde exécution accidentelle. Sur le `test` tenu à l'écart, le produit rend la référence
+attendue dans les cinq passages pour 17 des 19 questions sémantiques (23/25 hors pièges), et au rang
+1 pour 16/19. La paraphrase « droit de récupérer mes données » est rendue `confiant` sur `art_15`
+alors que `art_20` est attendu ; une seconde question (`art_80`) est refusée sous le seuil bas alors
+que son rang brut est 1 ; 1 piège sur 5 est cité. Le classement brut donne 18/19 au top 5 et 17/19
+au rang 1 : ces chiffres ne sont pas ceux que le produit rend. La recherche hybride FTS5 + RRF a été mesurée
 sur `dev` mais n'est pas retenue comme voie par défaut : elle gagne une question au top 5 et perd
 26 points de top 1. Les chiffres datés vivent dans
 `aidd_docs/tasks/2026_11/2026_11_05_qualite-v2-aiact/eval-v2.md` (v2) et `eval-aiact.md` (12

@@ -6,7 +6,7 @@ Le jeu `mcp/eval/questions-v2.csv` compte 60 questions écrites contre le texte 
 
 ## Périmètre de l'évaluation : un document par jeu
 
-L'index peut porter plusieurs corpus. Une question RGPD cherchée sur tout l'index concourrait donc aussi contre les unités de l'AI Act, et `dev` comme `test` mesureraient une tâche plus difficile que celle du rapport. Pour que les deux splits voient les mêmes conditions, le document de chaque jeu est déduit du préfixe des `sources_attendues` (avant `#`), puis passé à `search(..., { document })`. Un jeu qui mélange deux documents est refusé ; les pièges sans référence héritent du document des autres lignes. La recherche par défaut du produit, elle, peut toujours couvrir tous les corpus : seul le banc d'évaluation est filtré.
+L'index peut porter plusieurs corpus. Une question RGPD cherchée sur tout l'index concourrait donc aussi contre les unités de l'AI Act, et `dev` comme `test` mesureraient une tâche plus difficile que celle du rapport. Pour que les deux splits voient les mêmes conditions, le document de chaque jeu est déduit du préfixe des `sources_attendues` (avant `#`), puis passé à `search(..., { document })`. Un jeu qui mélange deux documents est refusé ; les pièges sans référence héritent du document des autres lignes. La recherche par défaut du produit, elle, peut toujours couvrir tous les corpus : seul le banc d'évaluation est filtré. **Cette recherche mixte par défaut n'est mesurée par aucun chiffre de ce rapport** : aucun résultat mêlant les deux corpus n'a été produit.
 
 Le jeu `questions-aiact.csv` suit la même règle et se mesure avec `document = 32024R1689` ; son rapport est séparé.
 
@@ -40,7 +40,7 @@ La table `fts_unites` partage le `rowid` de `unites` et suit le même delta (ajo
 | Pièges marqués confiant | 0 | 0 | inchangé |
 | Seuils calibrés sur `dev` | 0,680 / 0,730 / 0,010 | 0,640 / 0,690 / 0,010 | plus permissifs |
 
-L'hybride rattrape la seule question manquée par la voie dense (« autorité de contrôle chef de file », `art_56`, rang 1), mais il fait reculer cinq articles attendus : `art_5` du rang 1 au rang 2, `art_14` au rang 3, `art_30` au rang 3, `art_35` au rang 2, `art_39` au rang 2. Les `OR` lexicaux ramènent des articles qui partagent un mot courant et le RRF les place devant l'article dense le plus proche. Le top 5 gagne une question, le top 1 et le MRR perdent nettement, et les seuils devraient descendre à `0,640 / 0,690` pour continuer à rendre des passages — donc `confiant` deviendrait plus permissif.
+L'hybride rattrape la seule question manquée par la voie dense (« autorité de contrôle chef de file », `art_56`, rang 1), mais il fait reculer six articles attendus : `art_5` du rang 1 au rang 2, `art_14` au rang 3, `art_30` au rang 3, `art_35` au rang 2, `art_39` au rang 2 et `art_58` du rang 1 au rang 2. Les `OR` lexicaux ramènent des articles qui partagent un mot courant et le RRF les place devant l'article dense le plus proche. Le top 5 gagne une question, le top 1 et le MRR perdent nettement, et les seuils devraient descendre à `0,640 / 0,690` pour continuer à rendre des passages — donc `confiant` deviendrait plus permissif.
 
 **Décision : l'hybride n'est pas retenu comme voie par défaut.** Le critère « top 5 ou top 1 progresse et pièges à zéro » est techniquement satisfait par le top 5, mais le système global dégrade : −26,3 points de top 1, −0,128 de MRR, cinq questions de plus en `incertain`, et des seuils plus bas. Le critère de sécurité « si l'hybride dégrade, revenir au dense » l'emporte. `search` garde la voie dense par défaut ; `rechercheHybride` et la table `fts_unites` restent dans le code et se mesurent avec `--recherche hybride`, sans être branchés sur le produit.
 
@@ -54,25 +54,58 @@ Après l'ingestion de l'AI Act, l'index porte 565 unités (272 RGPD, 293 AI Act)
 
 ## Mesure `test` (une seule fois)
 
-Mesure du 5 novembre 2026, après la fin des corrections, avec les seuils figés `0,69 / 0,74 / 0,01`, la bande article `0,02`, la voie dense par défaut et `document = 32016R0679`. L'index porte 565 unités (272 RGPD, 293 AI Act). Aucune question `test` n'a servi à régler un seuil, la décision hybride, le nombre de candidats lexicaux ou la bande article ; aucune mesure n'a été rejouée.
+Mesure du 5 novembre 2026, après la fin des corrections, avec les seuils figés `0,69 / 0,74 / 0,01`, la bande article `0,02`, la voie dense par défaut et `document = 32016R0679`. L'index porte 565 unités (272 RGPD, 293 AI Act). Aucune question `test` n'a servi à régler un seuil, la décision hybride, le nombre de candidats lexicaux ou la bande article ; aucune mesure `test` n'a été rejouée. Le split `dev` avait été rejoué sur l'index final avant cette mesure (section précédente).
 
-| Métrique `test` | Valeur |
-| --- | --- |
-| Références exactes (6) | rang 1 par construction, `recall@5` 1,000, `MRR` 1,000 |
-| Recherche sémantique (19) | `recall@5` 0,947 (18/19), `MRR` 0,905 |
-| Top-1 sémantique | 89,5 % (17/19) |
-| Niveaux sémantiques | 14 confiant, 4 incertain, 1 aucun_resultat_fiable |
-| Top 5 global, hors pièges (25) | 96,0 % (24/25), IC 95 % de Wilson 80,5 %–99,3 % |
-| Top 5 sémantique seul (19) | 94,7 % (18/19), IC 95 % de Wilson 75,4 %–99,1 % |
-| Pièges cités par seuil (5) | 1/5 (20,0 %), IC 95 % de Wilson 3,6 %–62,4 % |
-| Piège déterministe | aucun dans ce split |
-| Pièges marqués confiant | 0 |
+Deux lectures des mêmes 19 questions sémantiques sont distinguées :
 
-La question sémantique manquée est la paraphrase « droit de récupérer mes données » : `art_20` reste hors des cinq premiers, `art_15` passe en tête. C'est le même échec que dans l'évaluation v1 avec `0.6b`, constaté ici sur une question nouvelle du jeu v2. « Transfert vers un pays tiers sans décision d'adéquation » place `art_46` au rang 5, derrière `art_45` en tête : la référence attendue reste dans le top 5.
+- **brute** : le rang avant le filtre de confiance, celui que mesurent `recall@5`, le top 1 et le `MRR` ;
+- **rendue** : ce que `search` rend réellement, une fois les passages sous `SEUIL_BAS` retirés.
+
+| Métrique `test` | Brut (classement) | Rendu au produit |
+| --- | --- | --- |
+| Références exactes (6) | rang 1 par construction, `recall@5` 1,000, `MRR` 1,000 | identique |
+| Recherche sémantique (19) | `recall@5` 0,947 (18/19), `MRR` 0,905 | `recall@5` 0,895 (17/19), `MRR` 0,853 |
+| Top-1 sémantique | 89,5 % (17/19) | 84,2 % (16/19) |
+| Niveaux sémantiques | — | 14 confiant, 4 incertain, 1 aucun_resultat_fiable |
+| Top 5 global, hors pièges (25) | 96,0 % (24/25), IC 95 % de Wilson 80,5 %–99,3 % | 92,0 % (23/25), IC 95 % de Wilson 75,0 %–97,8 % |
+| Top 5 sémantique seul (19) | 94,7 % (18/19), IC 95 % de Wilson 75,4 %–99,1 % | 89,5 % (17/19), IC 95 % de Wilson 68,6 %–97,1 % |
+| Pièges cités par seuil (5) | — | 1/5 (20,0 %), IC 95 % de Wilson 3,6 %–62,4 % |
+| Piège déterministe | aucun dans ce split | identique |
+| Pièges marqués confiant | — | 0 |
+
+**La paraphrase `art_20` n'est pas seulement hors du top 5 : elle est rendue `confiant`.** « droit de récupérer mes données » place `art_15` en tête à `0,770` ; `art_20` est absent. Avec `SEUIL_HAUT = 0,74` et `MARGE = 0,01`, l'écart de `0,027` avec le deuxième passage suffit : le niveau rendu est `confiant`. Une réponse fausse a donc atteint l'utilisateur avec l'étiquette de confiance la plus forte dans le split tenu à l'écart. C'est le même échec de classement que dans l'évaluation v1 avec `0.6b`, mais la couche de confiance ne le rattrape pas ici.
+
+**L'unique `aucun_resultat_fiable` est `art_80`, « représentation des personnes concernées par un organisme ».** Son rang brut est 1, mais sa similarité de tête est `0,677`, sous `SEUIL_BAS = 0,69` : le produit ne rend aucun passage. Le classement brut le compte pourtant comme un succès top 5, d'où les 18/19 bruts ; la lecture rendue tombe à 17/19. C'est la deuxième défaillance visible, et elle n'apparaissait pas dans la narration précédente.
+
+Détail par question, dans l'ordre du fichier. Le rang et la similarité sont ceux du classement brut ; le niveau est celui que `search` rend.
+
+| Question sémantique (`test`) | Référence attendue | Rang | Similarité du 1er passage | Niveau rendu |
+| --- | --- | --- | --- | --- |
+| droit de récupérer mes données | `art_20` | absent | 0,770 | `confiant` |
+| accès à une copie des données détenues par une entreprise | `art_15` | 1 | 0,770 | `incertain` |
+| effacement des données et retrait des liens des moteurs de recherche | `art_17` | 1 | 0,846 | `confiant` |
+| limitation du traitement pendant une vérification | `art_18` | 1 | 0,770 | `incertain` |
+| notification d'une violation à l'autorité de contrôle | `art_33` | 1 | 0,774 | `confiant` |
+| communication d'une violation aux personnes concernées | `art_34` | 1 | 0,776 | `confiant` |
+| certification des traitements de données | `art_42` | 1 | 0,854 | `confiant` |
+| transfert vers un pays tiers sans décision d'adéquation | `art_46` | 5 | 0,719 | `confiant` |
+| indépendance des autorités de contrôle | `art_52` | 1 | 0,768 | `incertain` |
+| coopération entre autorités de contrôle | `art_60` | 1 | 0,801 | `confiant` |
+| comité européen de la protection des données | `art_68` | 1 | 0,809 | `confiant` |
+| recours effectif devant une juridiction contre une autorité | `art_78` | 1 | 0,803 | `confiant` |
+| représentation des personnes concernées par un organisme | `art_80` | 1 brut (aucun passage rendu) | 0,677 | `aucun_resultat_fiable` |
+| traitement des données dans le cadre de l'emploi | `art_88` | 1 | 0,858 | `confiant` |
+| liberté d'expression et protection des données | `art_85` | 1 | 0,877 | `confiant` |
+| accès du public aux documents officiels | `art_86` | 1 | 0,799 | `incertain` |
+| numéro d'identification national | `art_87` | 1 | 0,862 | `confiant` |
+| églises et associations religieuses | `art_91` | 1 | 0,845 | `confiant` |
+| entrée en vigueur du règlement | `art_99` | 1 | 0,833 | `confiant` |
+
+« Transfert vers un pays tiers sans décision d'adéquation » place `art_46` au rang 5, derrière `art_45` en tête : la référence attendue reste dans le top 5 brut, mais le premier passage est `confiant`.
 
 Un piège est cité : « Quelles sanctions prévoit la directive 95/46/CE ? » rend au moins un passage au-dessus du seuil bas. Aucun piège n'est marqué `confiant`. Ce résultat est rapporté tel quel : le taux de citations invalides passe de 0/4 en `dev` à 1/5 en `test`, avec un intervalle large (3,6 %–62,4 %) qui interdit d'en tirer une tendance.
 
-La mesure est consommée : `mcp/eval/questions-v2.test-consomme.json` enregistre la date, l'empreinte `sha256` du fichier de questions (`1795dbd1…`), le modèle, la voie dense et les chiffres ci-dessus. Une seconde exécution de `--split test --mesurer-test` refuse avant tout appel au modèle. Le marqueur est commité : il est la preuve de la mesure unique.
+La mesure est consommée : `mcp/eval/questions-v2.test-consomme.json` enregistre la date, l'empreinte `sha256` du fichier de questions (`1795dbd1…`), le modèle, la voie dense, les chiffres bruts et rendus, les niveaux, les pièges confiants, les seuils, la bande article, les intervalles de Wilson, les snapshots des deux corpus et le nombre d'unités. Ses champs complémentaires ont été transcrits de cette mesure unique, pas d'une nouvelle exécution : le champ `note` le dit. Une seconde exécution de `--split test --mesurer-test` refuse avant tout appel au modèle. Le marqueur est commité : il est la preuve de la mesure unique.
 
 Le marqueur est un engagement, pas une preuve d'exécution : supprimer le fichier ou copier le CSV sous un autre nom contourne le garde. C'est délibéré. Le garde arrête une seconde exécution accidentelle ; il ne prouve pas la bonne foi de l'opérateur.
 
