@@ -520,7 +520,12 @@ export function formaterJournal(resultat: ResultatBuild, embedder: Embedder): st
 }
 
 async function main(argv: string[]): Promise<void> {
-  const embedder = createOllamaEmbedder();
+  const modele = valeurDe("--modele", argv);
+  const dim = valeurDe("--dim", argv);
+  const embedder = createOllamaEmbedder({
+    ...(modele === undefined ? {} : { model: modele }),
+    ...(dim === undefined ? {} : { dim: Number(dim) }),
+  });
   const resultat = await buildIndex(valeurDe("--root", argv) ?? RACINE, embedder);
   process.stderr.write(formaterJournal(resultat, embedder));
 }

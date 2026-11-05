@@ -713,24 +713,32 @@ async function main(argv: string[]): Promise<void> {
   const recherche = lireRecherche(argv);
   verifierAutorisationTest(split, argv.includes("--mesurer-test"));
   const date = new Date().toISOString().slice(0, 10);
+  // Racine alternative : permet de mesurer un autre index sans toucher le corpus
+  // ni l'index du produit (expérience de modèle, par exemple).
+  const rootDir = resolve(valeurDe("--root", argv) ?? RACINE);
 
   const cheminQuestions = resoudreQuestions(valeurDe("--questions", argv) ?? basename(QUESTIONS));
   const contenu = readFileSync(cheminQuestions, "utf8");
   const jeu = lireJeu(contenu);
   const questions = jeu.questions;
   const document = documentDuJeu(questions);
-  const unites = lireUnites(RACINE);
+  const unites = lireUnites(rootDir);
   validerReferences(questions, new Set(unites.map((unite) => unite.ref)));
 
   const consommeTest = split === "test" || split === "all";
   const marqueurPath = cheminMarqueur(cheminQuestions);
   if (consommeTest) verifierTestNonConsomme(marqueurPath);
 
-  const embedder = createOllamaEmbedder();
-  const index = openIndex(cheminIndex(RACINE));
+  const modele = valeurDe("--modele", argv);
+  const dim = valeurDe("--dim", argv);
+  const embedder = createOllamaEmbedder({
+    ...(modele === undefined ? {} : { model: modele }),
+    ...(dim === undefined ? {} : { dim: Number(dim) }),
+  });
+  const index = openIndex(cheminIndex(rootDir));
   try {
     const demandees = filtrerSplit(questions, split);
-    const mesures = await mesurer(RACINE, demandees, embedder, index, document, recherche);
+    const mesures = await mesurer(rootDir, demandees, embedder, index, document, recherche);
 
     const mesuresDev =
       split === "all" ? mesures.filter((mesure) => mesure.question.split === "dev") : mesures;
@@ -836,7 +844,7 @@ async function main(argv: string[]): Promise<void> {
             ),
             pieges_cites: intervalleWilson(chiffres.pieges_cites, chiffres.pieges_mesures),
           },
-          snapshots: snapshotsCorpus(RACINE),
+          snapshots: snapshotsCorpus(rootDir),
           unites_index: index.unites,
         },
         `Chiffres de la mesure du ${date}, produits par cette exécution ; ` +
