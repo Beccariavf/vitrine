@@ -23,15 +23,19 @@ npm run build          # génère dist/
 
 npm run corpus:build   # CELLAR → data/corpus/{rgpd,aiact}/
 npm run corpus:build -- --document aiact   # un seul descripteur
+npm run cnil:sync -- --tout                # historique DINUM + incréments DILA → data/corpus/cnil/
+npm run cnil:sync -- --increments --dry-run   # ce que les archives ajouteraient, sans écrire
 npm run corpus:index   # index incrémental Ollama + sqlite-vec → data/corpus/index/index.db
 npm run mcp:smoke      # vérifie Ollama et qwen3-embedding:0.6b
 npm run mcp            # serveur MCP sur stdio
 npm run mcp:eval -- --questions questions-v2.csv --split dev    # 30 questions de développement (hors CI)
 npm run mcp:eval -- --questions questions-v2.csv --split test --mesurer-test   # 30 questions tenues à l'écart, une seule fois (hors CI)
 npm run mcp:eval -- --questions questions-v3.csv --split dev --json            # 40 questions de développement v3, sortie machine (hors CI)
+npm run mcp:eval -- --questions questions-cnil.csv                             # 20 questions CNIL (hors CI)
 ```
 
-Le MCP lit le RGPD et l'AI Act par article exact et par recherche sémantique, avec provenance. Seule
+Le MCP lit le RGPD, l'AI Act et les sanctions de la CNIL par passage exact et par recherche
+sémantique, avec provenance. Seule
 la recherche sémantique exige Ollama sur `127.0.0.1:11434` et le modèle `qwen3-embedding:0.6b`
 (`ollama pull qwen3-embedding:0.6b`) : une question qui cite un article (« article 17 ») est servie
 sans index ni modèle. Un document nommé dans la question est honoré quand `document` est absent : les
@@ -47,6 +51,24 @@ dans les deux, chaque article est rendu avec son document et le niveau est aussi
 avec un message qui nomme la commande. L'index est incrémental : un second passage sur un corpus inchangé
 embarque zéro unité et laisse les vecteurs identiques. La construction suit les descripteurs
 `mcp/corpus/*.json` ; `--document <corpus>` n'en construit qu'un.
+
+Le troisième corpus, `cnil`, porte les délibérations de sanction : 249 documents et 6 342 fragments,
+filtrés sur la nature `Sanction`. Deux origines de fragments cohabitent et sont déclarées dans
+`data/corpus/cnil/manifest.json` : `dinum` pour l'historique publié (le parquet vectorisé, dont on
+ré-embed le texte et dont on garde le `chunk_index` publié comme base de citation) et `dila` pour les
+incréments (découpage local de 600 à 1 200 caractères, dit dans le `chemin`). `npm run cnil:sync`
+télécharge le parquet une fois sous `data/raw/cnil/` — non commité, 334 Mo — puis les archives
+`CNIL_YYYYMMDD-HHMMSS.tar.gz` de la DILA ; un document déjà présent n'est remplacé que si l'archive
+est plus récente que sa date, sinon il garde sa numérotation publiée. `get_decision` rend une
+décision entière par identifiant `CNILTEXT…` ou par numéro `SAN-…`, et `search` accepte un
+paramètre `corpus` (`rgpd`, `aiact`, `cnil`). Le filtre est d'abord un choix de corpus, pas de
+document. La route Légifrance `https://www.legifrance.gouv.fr/cnil/id/<id>` est déclarée dans le
+manifeste mais n'a pas été vérifiée : elle répond 403 aux robots.
+
+L'évaluation CNIL est séparée : 20 questions dans `mcp/eval/questions-cnil.csv` (12 visant un
+document, 6 conceptuelles, 2 pièges), mesurées avec `corpus: cnil` et rapportées dans
+`aidd_docs/tasks/2026_11/2026_11_05_corpus-cnil/eval-cnil.md`. Vingt questions ne classent pas le
+corpus : les seuils restent ceux du produit, il n'y a pas de calibration propre.
 
 L'évaluation v2 porte sur 60 questions écrites contre le texte du RGPD : 12 références exactes,
 38 conceptuelles et 10 pièges, réparties en 30 `dev` et 30 `test`. Chaque mesure est filtrée sur le
@@ -103,10 +125,11 @@ travail explicite, ajoutez `"cwd": "/absolute/path/to/Vitrine-mcp"` à côté de
 
 - `veille/` — le pipeline : dix adaptateurs (neuf autorités, la Commission a deux flux) → normalisation → rattachement aux matières → `data/`.
 - `src/` — les pages Astro, qui lisent `data/` au build et filtrent les matières actives.
-- `mcp/` — les corpus RGPD et AI Act, l'index vectoriel et lexical, le serveur MCP stdio
-  (`get_article`, `search`), séparés du pipeline et du site.
+- `mcp/` — les corpus RGPD, AI Act et CNIL, l'index vectoriel et lexical, le serveur MCP stdio
+  (`get_article`, `get_decision`, `search`), séparés du pipeline et du site.
 - `data/` — snapshots bruts adressés par leur contenu, entrées JSON, journal d'appels PISTE et
-  corpus RGPD/AI Act, versionnés dans git ; l'index `data/corpus/index/` est un dérivé ignoré.
+  corpus RGPD/AI Act/CNIL, versionnés dans git ; l'index `data/corpus/index/` est un dérivé ignoré,
+  et le parquet DINUM sous `data/raw/cnil/` aussi.
 - `veille/themes.json` — les cinq matières, leurs textes, leurs sources et leur état.
 - `tools/parametres.html` — l'outil local qui active ou désactive une matière.
 - `aidd_docs/INSTALL.md` — les décisions d'architecture et les étapes d'installation.

@@ -187,6 +187,123 @@ export type SearchDemande = {
   document?: string;
 };
 
+/** Un fragment d'une décision, dans l'ordre du document. */
+export type FragmentDecision = {
+  ref: string;
+  numero: string;
+  chemin: string;
+  texte: string;
+};
+
+/** Une décision entière rendue par son identifiant ou son numéro. */
+export type DecisionTrouvee = {
+  document: string;
+  numero: string;
+  date_acte: string;
+  statut: string;
+  url: string;
+  /** `dinum` ou `dila` : d'où vient le découpage des fragments. */
+  origine?: string;
+  fragments: FragmentDecision[];
+};
+
+/** La réponse de `get_decision` : des décisions entières, ou une absence dite. */
+export type ResultatDecision = {
+  trouve: boolean;
+  decisions: DecisionTrouvee[];
+  message?: string;
+};
+
+export type DecisionDemande = {
+  /** Identifiant du document, par exemple `CNILTEXT000055022778`. */
+  document?: string;
+  /** Numéro de délibération, par exemple `SAN-2026-015`. */
+  numero?: string;
+  /** Restreint à une collection ; absent, tous les corpus répondent. */
+  corpus?: string;
+};
+
+/** Rang d'un fragment dans son document : le nombre final de la référence. */
+function rangDeRef(ref: string): [number, string] {
+  const chiffres = /(\d+)$/.exec(ref);
+  return [chiffres === null ? Number.POSITIVE_INFINITY : Number(chiffres[1]), ref];
+}
+
+/**
+ * Lit une décision entière, par identifiant de document ou par numéro, dans un
+ * corpus ou dans tous. Plusieurs documents peuvent porter le même numéro :
+ * chacun est rendu avec son identifiant. Une absence est dite, jamais comblée.
+ */
+export function getDecision(rootDir: string, demande: DecisionDemande): ResultatDecision {
+  const document = demande.document?.trim();
+  const numero = demande.numero?.trim();
+  const corpus = demande.corpus?.trim();
+  const portee = corpus === undefined || corpus === "" ? "" : ` dans le corpus ${corpus}`;
+
+  if ((document === undefined || document === "") && (numero === undefined || numero === "")) {
+    return {
+      trouve: false,
+      decisions: [],
+      message:
+        "Précisez « document » (identifiant CNILTEXT…) ou « numero » (par exemple SAN-2026-015).",
+    };
+  }
+
+  const unites = lireUnites(rootDir).filter(
+    (unite) =>
+      (corpus === undefined || corpus === "" || unite.corpus === corpus) &&
+      (document === undefined || document === "" || unite.document === document) &&
+      (numero === undefined || numero === "" || unite.numero.toLowerCase() === numero.toLowerCase()),
+  );
+
+  if (unites.length === 0) {
+    const quoi =
+      document !== undefined && document !== ""
+        ? `le document ${document}`
+        : `le numéro ${numero ?? ""}`;
+    return {
+      trouve: false,
+      decisions: [],
+      message: `Aucune décision pour ${quoi}${portee}.`,
+    };
+  }
+
+  const parDocument = new Map<string, Unite[]>();
+  for (const unite of unites) {
+    const liste = parDocument.get(unite.document) ?? [];
+    liste.push(unite);
+    parDocument.set(unite.document, liste);
+  }
+
+  const decisions: DecisionTrouvee[] = [...parDocument.entries()]
+    .sort((gauche, droite) => gauche[0].localeCompare(droite[0]))
+    .map(([identifiant, fragments]) => {
+      const premiers = [...fragments].sort((gauche, droite) => {
+        const [rangGauche, refGauche] = rangDeRef(gauche.ref);
+        const [rangDroite, refDroite] = rangDeRef(droite.ref);
+        return rangGauche - rangDroite || refGauche.localeCompare(refDroite);
+      });
+      const premier = premiers[0];
+      if (premier === undefined) throw new Error(`Décision vide pour ${identifiant}`);
+      return {
+        document: identifiant,
+        numero: premier.numero,
+        date_acte: premier.date_acte,
+        statut: premier.statut,
+        url: premier.url,
+        ...(premier.origine === undefined ? {} : { origine: premier.origine }),
+        fragments: premiers.map((unite) => ({
+          ref: unite.ref,
+          numero: unite.numero,
+          chemin: unite.chemin,
+          texte: unite.texte,
+        })),
+      };
+    });
+
+  return { trouve: true, decisions };
+}
+
 /**
  * Cherche par le sens, après un court-circuit déterministe : une question qui
  * cite un article rend cet article sans interroger l'index.

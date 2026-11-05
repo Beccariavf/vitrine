@@ -12,7 +12,7 @@ import { buildIndex } from "../mcp/index/build.ts";
 import { BANDE_ARTICLE, openIndex, rangerPassages } from "../mcp/index/search.ts";
 import type { Index, ResultatRecherche } from "../mcp/index/search.ts";
 import { createServer } from "../mcp/server.ts";
-import { documentNomme, getArticle, search } from "../mcp/tools.ts";
+import { documentNomme, getArticle, getDecision, search } from "../mcp/tools.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";
 
 const DOCUMENT = "32016R0679";
@@ -675,12 +675,12 @@ describe("le serveur en mémoire", () => {
     rmSync(root, { recursive: true, force: true });
   });
 
-  it("expose exactement get_article et search", async () => {
+  it("expose exactement get_article, get_decision et search", async () => {
     const { tools } = await client.listTools();
 
     assert.deepEqual(
       tools.map((outil) => outil.name).sort(),
-      ["get_article", "search"],
+      ["get_article", "get_decision", "search"],
     );
   });
 
@@ -797,6 +797,149 @@ describe("le code du serveur", () => {
     for (const fichier of ["../mcp/server.ts", "../mcp/tools.ts"]) {
       const source = readFileSync(new URL(fichier, import.meta.url), "utf8");
       assert.equal(/\bfetch\b/.test(source), false, `${fichier} ne doit pas appeler le réseau`);
+    }
+  });
+});
+
+/** Un fragment CNIL synthétique, prêt à être écrit dans un corpus. */
+function fragment(
+  document: string,
+  index: number,
+  texte: string,
+  numero = "SAN-2026-015",
+  date = "2026-10-22",
+): Unite {
+  return {
+    ref: `${document}#f${index}`,
+    document,
+    corpus: "cnil",
+    niveau: "fragment",
+    numero,
+    chemin: `CNIL > Sanctions > Délibération ${numero}`,
+    texte,
+    date_acte: date,
+    date_debut: date,
+    date_fin: null,
+    statut: "VIGUEUR",
+    url: `https://www.legifrance.gouv.fr/cnil/id/${document}`,
+    origine: "dinum",
+  };
+}
+
+describe("get_decision", () => {
+  function racine(unites: Unite[]): string {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-decision-"));
+    ecrireCorpus(root, unites, "cnil");
+    return root;
+  }
+
+  it("rend tous les fragments d'un document dans l'ordre numérique", () => {
+    const unites = Array.from({ length: 11 }, (_, index) =>
+      fragment("CNILTEXT000055022778", index, `fragment ${index}`),
+    );
+    const root = racine([...unites].reverse());
+    try {
+      const resultat = getDecision(root, { document: "CNILTEXT000055022778" });
+
+      assert.equal(resultat.trouve, true);
+      assert.equal(resultat.decisions.length, 1);
+      const decision = resultat.decisions[0];
+      assert.equal(decision?.numero, "SAN-2026-015");
+      assert.equal(decision?.date_acte, "2026-10-22");
+      assert.equal(decision?.statut, "VIGUEUR");
+      assert.equal(decision?.origine, "dinum");
+      assert.deepEqual(
+        decision?.fragments.map((element) => element.ref),
+        Array.from({ length: 11 }, (_, index) => `CNILTEXT000055022778#f${index}`),
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("trouve une décision par son numéro", () => {
+    const root = racine([
+      fragment("CNILTEXT000055022778", 0, "premier"),
+      fragment("CNILTEXT000099999999", 0, "autre", "SAN-2019-001", "2019-01-21"),
+    ]);
+    try {
+      const resultat = getDecision(root, { numero: "san-2019-001" });
+
+      assert.equal(resultat.trouve, true);
+      assert.deepEqual(
+        resultat.decisions.map((decision) => decision.document),
+        ["CNILTEXT000099999999"],
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("rend les deux documents quand un numéro est porté deux fois", () => {
+    const root = racine([
+      fragment("CNILTEXT000053352594", 0, "un", "SAN-2026-001", "2026-01-08"),
+      fragment("CNILTEXT000053352664", 0, "deux", "SAN-2026-001", "2026-01-08"),
+    ]);
+    try {
+      const resultat = getDecision(root, { numero: "SAN-2026-001" });
+
+      assert.equal(resultat.decisions.length, 2);
+      assert.deepEqual(
+        resultat.decisions.map((decision) => decision.document).sort(),
+        ["CNILTEXT000053352594", "CNILTEXT000053352664"],
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("dit l'absence sans inventer de fragment", () => {
+    const root = racine([fragment("CNILTEXT000055022778", 0, "texte")]);
+    try {
+      const absent = getDecision(root, { document: "CNILTEXT000000000000" });
+      const sansIdentifiant = getDecision(root, {});
+      const autreCorpus = getDecision(root, { document: "CNILTEXT000055022778", corpus: "rgpd" });
+
+      assert.equal(absent.trouve, false);
+      assert.deepEqual(absent.decisions, []);
+      assert.match(absent.message ?? "", /Aucune décision pour le document CNILTEXT000000000000/);
+      assert.match(sansIdentifiant.message ?? "", /Précisez « document »/);
+      assert.match(autreCorpus.message ?? "", /dans le corpus rgpd/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("la recherche restreinte à un corpus", () => {
+  it("ne rend aucun fragment d'un autre corpus", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-corpus-filtre-"));
+    try {
+      ecrireCorpus(root, SIX, "rgpd");
+      ecrireCorpus(
+        root,
+        [
+          fragment("CNILTEXT000055022778", 0, "sanction pécuniaire pour le dépôt de cookies"),
+          fragment("CNILTEXT000055022778", 1, "la formation restreinte prononce une amende"),
+        ],
+        "cnil",
+      );
+      const { chemin } = await buildIndex(root, embedderFactice());
+      const index = openIndex(chemin);
+      try {
+        const resultat = await search(
+          root,
+          { question: "sanction cookies amende", corpus: "cnil", k: 5 },
+          { embedder: embedderFactice(), index, seuils: { bas: -1, haut: 2, marge: 0 } },
+        );
+
+        assert.ok(resultat.passages.length > 0);
+        assert.ok(resultat.passages.every((passage) => passage.corpus === "cnil"));
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
     }
   });
 });

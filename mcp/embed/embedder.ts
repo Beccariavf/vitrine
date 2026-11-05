@@ -26,12 +26,17 @@ export const INSTRUCTION_REQUETE =
 export const INSTRUCTION_AIAct =
   "Instruction : retrouve les passages du règlement européen sur l'intelligence artificielle qui répondent à la question\nRequête : ";
 
+/** Instruction de requête propre aux sanctions CNIL, de la même forme. */
+export const INSTRUCTION_CNIL =
+  "Instruction : retrouve les passages d'une délibération de sanction de la CNIL qui répondent à la question\nRequête : ";
+
 /** Instructions connues par identifiant CELEX et par nom de corpus. */
 export const INSTRUCTIONS_REQUETE: Record<string, string> = {
   "32016R0679": INSTRUCTION_REQUETE,
   "32024R1689": INSTRUCTION_AIAct,
   rgpd: INSTRUCTION_REQUETE,
   aiact: INSTRUCTION_AIAct,
+  cnil: INSTRUCTION_CNIL,
 };
 
 export type OllamaEmbedderOptions = {

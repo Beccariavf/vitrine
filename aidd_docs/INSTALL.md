@@ -23,9 +23,9 @@ Le différenciateur est double : **la preuve** (un pipeline de veille qui tourne
 
 - **Runtime / langage :** Node 24 LTS, TypeScript exécuté par type stripping natif (pas de `tsx`, pas de bundler pour les scripts).
 - **Front-end :** Astro 7 (version exacte épinglée à l'initialisation), Tailwind CSS 4 via `@tailwindcss/vite` (l'intégration `@astrojs/tailwind` est dépréciée), composants `.astro` et JS vanilla uniquement.
-- **Recherche :** le MCP RGPD + AI Act fait une recherche sémantique locale (`sqlite-vec` + Ollama) une fois l'index construit par `npm run corpus:index` ; la table FTS5 `fts_unites` permet une fusion lexicale mesurée mais non retenue par défaut. Le site n'en a pas encore, Pagefind reste prévu quand son corpus le justifiera.
+- **Recherche :** le MCP RGPD + AI Act + CNIL fait une recherche sémantique locale (`sqlite-vec` + Ollama) une fois l'index construit par `npm run corpus:index` ; la table FTS5 `fts_unites` permet une fusion lexicale mesurée mais non retenue par défaut. Le site n'en a pas encore, Pagefind reste prévu quand son corpus le justifiera.
 - **Back-end :** scripts TypeScript dans `veille/`, un adaptateur par source, aucune dépendance de framework HTTP.
-- **Base de données :** aucune pour la veille : `data/raw/` (snapshots adressés par contenu) et `data/entries/` (une entrée par `id`) sont la vérité versionnée. Pour le MCP : `data/corpus/rgpd/` et `data/corpus/aiact/` sont versionnés et `data/corpus/index/index.db` (SQLite + `sqlite-vec` + FTS5) est un dérivé ignoré par git.
+- **Base de données :** aucune pour la veille : `data/raw/` (snapshots adressés par contenu) et `data/entries/` (une entrée par `id`) sont la vérité versionnée. Pour le MCP : `data/corpus/rgpd/`, `data/corpus/aiact/` et `data/corpus/cnil/` sont versionnés et `data/corpus/index/index.db` (SQLite + `sqlite-vec` + FTS5) est un dérivé ignoré par git. Le parquet DINUM de la CNIL (334 Mo) n'est pas commité : `npm run cnil:sync` le télécharge une fois sous `data/raw/cnil/`, ignoré lui aussi, puis `npm run corpus:index` n'embarque que le delta.
 - **Auth :** aucune.
 - **Hébergement :** Cloudflare Workers static assets (`*.workers.dev`), déploiement par `wrangler` dans le même job que le cron.
 - **CI :** GitHub Actions, cron à `:17` (les crons GitHub sont retardés au début de chaque heure), dépôt **privé** (visibilité modifiable), secrets `PISTE_CLIENT_ID` / `PISTE_CLIENT_SECRET`.
@@ -118,20 +118,22 @@ vitrine/
 │   ├── write.ts                    # snapshots + entrées, écriture atomique
 │   └── types.ts
 │
-├── mcp/                            # MCP local — corpus RGPD + AI Act et serveur stdio
+├── mcp/                            # MCP local — corpus RGPD + AI Act + CNIL et serveur stdio
 │   ├── corpus/                     # descripteurs *.json → data/corpus/<corpus>/
+│   │   └── cnil/                   # descripteur, historique DINUM, incréments DILA, sync
 │   ├── embed/                      # interface Embedder + adaptateur Ollama
 │   ├── index/                      # sqlite-vec + FTS5 : construction et recherche
-│   ├── tools.ts                    # get_article, search
+│   ├── tools.ts                    # get_article, get_decision, search
 │   ├── confidence.ts               # seuils de confiance
 │   ├── server.ts                   # transport stdio
-│   └── eval/                       # jeux v1/v2/v3 (80 questions v3), 12 questions AI Act, comparaison appariée
+│   └── eval/                       # jeux v1/v2/v3 (80 questions v3), 12 questions AI Act, 20 questions CNIL, comparaison appariée
 │
 ├── data/                           # "BASE" — git = historique
 │   ├── raw/<2 hex>/<sha256>.xml    # snapshots bruts adressés par contenu
 │   ├── corpus/
 │   │   ├── rgpd/                   # manifeste + unites.jsonl, versionnés
 │   │   ├── aiact/                  # manifeste + unites.jsonl, versionnés
+│   │   ├── cnil/                   # manifeste, unites.jsonl, etat.json, versionnés
 │   │   └── index/                  # index.db dérivé, ignoré par git
 │   └── entries/
 │       ├── <yyyy>/<mm>/            # JSON normalisés, 1 fichier par entrée

@@ -35,6 +35,7 @@ import {
   verifierTestNonConsomme,
 } from "../mcp/eval/run.ts";
 import type { MarqueurV3, Mesure, Question, Split } from "../mcp/eval/run.ts";
+import { referenceExacte } from "../mcp/tools.ts";
 
 const QUESTIONS = readFileSync(new URL("../mcp/eval/questions.csv", import.meta.url), "utf8");
 const QUESTIONS_V2 = readFileSync(new URL("../mcp/eval/questions-v2.csv", import.meta.url), "utf8");
@@ -981,5 +982,62 @@ describe("questions-aiact.csv", () => {
       "utf8",
     );
     assert.doesNotMatch(rapport, /32016R0679/);
+  });
+});
+
+describe("questions-cnil.csv", () => {
+  const CSV = readFileSync(new URL("../mcp/eval/questions-cnil.csv", import.meta.url), "utf8");
+  const jeu = lireJeu(CSV);
+  const questions = jeu.questions;
+  const unites = (
+    JSON.parse(
+      `[${readFileSync(
+        new URL("../data/corpus/cnil/unites.jsonl", import.meta.url),
+        "utf8",
+      )
+        .trimEnd()
+        .split("\n")
+        .join(",")}]`,
+    ) as { ref: string; document: string }[]
+  );
+  const refs = new Set(unites.map((unite) => unite.ref));
+  const documents = new Set(unites.map((unite) => unite.document));
+
+  it("porte vingt lignes : douze documents, six conceptuelles, deux pièges", () => {
+    assert.equal(questions.length, 20);
+    assert.equal(questions.filter((question) => question.type === "reference").length, 12);
+    assert.equal(questions.filter((question) => question.type === "conceptuelle").length, 6);
+    assert.equal(questions.filter((question) => question.piege).length, 2);
+  });
+
+  it("vise le corpus cnil sur chaque ligne", () => {
+    assert.equal(corpusDuJeu(questions), "cnil");
+    assert.ok(questions.every((question) => question.corpus === "cnil"));
+    assert.equal(jeu.avecSplit, false);
+  });
+
+  it("n'attend que des références présentes, documents entiers compris", () => {
+    validerReferences(questions, refs, documents);
+
+    const documentaires = questions
+      .flatMap((question) => question.attendues)
+      .filter((ref) => !ref.includes("#"));
+    assert.equal(documentaires.length, 12);
+    assert.ok(documentaires.every((ref) => documents.has(ref)));
+  });
+
+  it("ne donne aucune source attendue à un piège", () => {
+    for (const piege of questions.filter((question) => question.piege)) {
+      assert.deepEqual(piege.attendues, [], piege.question);
+    }
+  });
+
+  it("n'emploie de référence d'article singulière que dans le piège déterministe", () => {
+    const singulieres = questions.filter((question) => referenceExacte(question.question) !== null);
+
+    assert.deepEqual(
+      singulieres.map((question) => question.question),
+      ["Quel est le plafond de l'amende prévue à l'article 84 du RGPD ?"],
+    );
   });
 });
