@@ -5,9 +5,9 @@ import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
-import { buildCorpus } from "../mcp/corpus/build.ts";
+import { buildCorpus, buildCorpusSet, lireDescripteurs } from "../mcp/corpus/build.ts";
 import { fetchCellar } from "../mcp/corpus/fetch.ts";
-import { parseRgpd, texteVisible } from "../mcp/corpus/parse.ts";
+import { parseCellar, parseRgpd, texteVisible } from "../mcp/corpus/parse.ts";
 import type { Descripteur } from "../mcp/corpus/parse.ts";
 import type { FetchInit, FetchLike } from "../veille/fetch.ts";
 
@@ -16,6 +16,13 @@ const FIXTURE = readFileSync(FIXTURE_URL, "utf8");
 const FIXTURE_PATH = fileURLToPath(FIXTURE_URL);
 const DESCRIPTEUR = JSON.parse(
   readFileSync(new URL("../mcp/corpus/rgpd.json", import.meta.url), "utf8"),
+) as Descripteur;
+
+const FIXTURE_AIAct_URL = new URL("./fixtures/eurlex/aiact.xhtml", import.meta.url);
+const FIXTURE_AIAct = readFileSync(FIXTURE_AIAct_URL, "utf8");
+const FIXTURE_AIAct_PATH = fileURLToPath(FIXTURE_AIAct_URL);
+const DESCRIPTEUR_AIAct = JSON.parse(
+  readFileSync(new URL("../mcp/corpus/aiact.json", import.meta.url), "utf8"),
 ) as Descripteur;
 
 function tempRoot(): string {
@@ -185,6 +192,136 @@ describe("buildCorpus", () => {
       await assert.rejects(
         buildCorpus({ rootDir: root, fixturePath: ampute }),
         /art_17 absente/,
+      );
+      assert.equal(existsSync(join(root, "data")), false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("les descripteurs", () => {
+  it("lit le RGPD et l'AI Act avec leurs comptes attendus", () => {
+    const descripteurs = lireDescripteurs();
+    const rgpd = descripteurs.find((descripteur) => descripteur.corpus === "rgpd");
+    const aiact = descripteurs.find((descripteur) => descripteur.corpus === "aiact");
+
+    assert.equal(descripteurs.length, 2);
+    assert.deepEqual(
+      { articles: rgpd?.articles_attendus, considerants: rgpd?.considerants_attendus },
+      { articles: 99, considerants: 173 },
+    );
+    assert.deepEqual(
+      {
+        document: aiact?.document,
+        nom: aiact?.nom,
+        articles: aiact?.articles_attendus,
+        considerants: aiact?.considerants_attendus,
+        date_acte: aiact?.date_acte,
+        date_publication: aiact?.date_publication,
+        date_debut: aiact?.date_debut,
+      },
+      {
+        document: "32024R1689",
+        nom: "AI Act",
+        articles: 113,
+        considerants: 180,
+        date_acte: "2024-06-13",
+        date_publication: "2024-07-12",
+        date_debut: "2024-08-01",
+      },
+    );
+  });
+});
+
+describe("parseCellar sur l'AI Act", () => {
+  const unites = parseCellar(FIXTURE_AIAct, DESCRIPTEUR_AIAct);
+
+  it("rend 113 articles et 180 considérants", () => {
+    assert.equal(unites.filter((unite) => unite.niveau === "article").length, 113);
+    assert.equal(unites.filter((unite) => unite.niveau === "considérant").length, 180);
+    assert.equal(unites.length, 293);
+    assert.equal(new Set(unites.map((unite) => unite.ref)).size, 293);
+  });
+
+  it("remplit l'article 1 et nomme le chapitre I", () => {
+    const article1 = unites.find((unite) => unite.ref === "32024R1689#art_1");
+
+    assert.ok(article1);
+    assert.equal(article1.niveau, "article");
+    assert.equal(article1.numero, "1");
+    assert.ok(article1.texte.length > 0);
+    assert.match(article1.chemin, /^AI Act > Chapitre I/);
+  });
+
+  it("range les considérants sous le nom de l'acte", () => {
+    const considerant = unites.find((unite) => unite.ref === "32024R1689#rct_1");
+
+    assert.ok(considerant);
+    assert.equal(considerant.chemin, "AI Act > Considérants");
+    assert.ok(considerant.texte.startsWith("(1)"));
+  });
+
+  it("copie les trois dates et le statut du descripteur", () => {
+    const article = unites.find((unite) => unite.ref === "32024R1689#art_113");
+
+    assert.ok(article);
+    assert.equal(article.date_acte, "2024-06-13");
+    assert.equal(article.date_debut, "2024-08-01");
+    assert.equal(article.date_fin, null);
+    assert.equal(article.statut, "en_vigueur");
+    assert.equal(article.url, `${DESCRIPTEUR_AIAct.url}#art_113`);
+  });
+});
+
+describe("les comptes du descripteur", () => {
+  it("lève quand un article manque en nommant le document et le compte", () => {
+    assert.throws(
+      () => parseCellar(FIXTURE, { ...DESCRIPTEUR, articles_attendus: 100 }),
+      /Capture 32016R0679 incomplète : ancre art_100 absente \(99 articles au lieu de 100\)/,
+    );
+  });
+
+  it("lève quand le descripteur annonce trop peu d'articles", () => {
+    assert.throws(
+      () => parseCellar(FIXTURE, { ...DESCRIPTEUR, articles_attendus: 98 }),
+      /Capture 32016R0679 : 99 articles au lieu de 98 attendus/,
+    );
+  });
+
+  it("lève quand un considérant manque en nommant le compte", () => {
+    assert.throws(
+      () => parseCellar(FIXTURE, { ...DESCRIPTEUR, considerants_attendus: 174 }),
+      /Capture 32016R0679 incomplète : ancre rct_174 absente \(173 considérants au lieu de 174\)/,
+    );
+  });
+});
+
+describe("buildCorpusSet", () => {
+  it("ne construit que le corpus demandé", async () => {
+    const root = tempRoot();
+    try {
+      const resultats = await buildCorpusSet({
+        rootDir: root,
+        document: "aiact",
+        fixturePath: FIXTURE_AIAct_PATH,
+      });
+
+      assert.equal(resultats.length, 1);
+      assert.equal(resultats[0]?.unites.length, 293);
+      assert.ok(existsSync(join(root, "data", "corpus", "aiact", "unites.jsonl")));
+      assert.equal(existsSync(join(root, "data", "corpus", "rgpd")), false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("nomme les corpus disponibles quand le document est inconnu", async () => {
+    const root = tempRoot();
+    try {
+      await assert.rejects(
+        buildCorpusSet({ rootDir: root, document: "lil" }),
+        /Aucun descripteur pour « lil » : aiact, rgpd/,
       );
       assert.equal(existsSync(join(root, "data")), false);
     } finally {

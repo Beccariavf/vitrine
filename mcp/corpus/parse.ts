@@ -23,6 +23,10 @@ export type Descripteur = {
   date_debut: string;
   date_fin: string | null;
   statut: string;
+  /** Nombre d'articles que la capture doit porter. */
+  articles_attendus: number;
+  /** Nombre de considérants que la capture doit porter. */
+  considerants_attendus: number;
 };
 
 export type Niveau = "article" | "considérant";
@@ -41,10 +45,6 @@ export type Unite = {
   statut: string;
   url: string;
 };
-
-/** Compte attendu par le plan pour le RGPD : 99 articles et 173 considérants. */
-export const NB_ARTICLES = 99;
-export const NB_CONSIDERANTS = 173;
 
 const ENTITES: Record<string, string> = {
   amp: "&",
@@ -140,11 +140,12 @@ function uniteDe(
 }
 
 /**
- * Rend les 99 articles et les 173 considérants du RGPD, dans l'ordre du document.
- * Lève en nommant l'ancre absente quand la capture est incomplète ; aucun
+ * Rend les articles et les considérants d'un acte CELLAR, dans l'ordre du
+ * document. Les comptes viennent du descripteur : une capture incomplète ou un
+ * descripteur périmé lèvent en nommant le document et le compte attendu ; aucun
  * appelant n'écrit alors de fichier.
  */
-export function parseRgpd(xhtml: string, descripteur: Descripteur): Unite[] {
+export function parseCellar(xhtml: string, descripteur: Descripteur): Unite[] {
   const releves = ancres(xhtml);
   const numerosArticles = new Set(
     releves.filter((ancre) => ancre.genre === "art").map((ancre) => Number(ancre.numero)),
@@ -153,18 +154,33 @@ export function parseRgpd(xhtml: string, descripteur: Descripteur): Unite[] {
     releves.filter((ancre) => ancre.genre === "rct").map((ancre) => Number(ancre.numero)),
   );
 
-  const articleManquant = premierManquant(numerosArticles, NB_ARTICLES);
+  const articleManquant = premierManquant(numerosArticles, descripteur.articles_attendus);
   if (articleManquant !== null) {
     throw new Error(
       `Capture ${descripteur.document} incomplète : ancre art_${articleManquant} absente ` +
-        `(${numerosArticles.size} articles au lieu de ${NB_ARTICLES})`,
+        `(${numerosArticles.size} articles au lieu de ${descripteur.articles_attendus})`,
     );
   }
-  const considerantManquant = premierManquant(numerosConsiderants, NB_CONSIDERANTS);
+  if (numerosArticles.size !== descripteur.articles_attendus) {
+    throw new Error(
+      `Capture ${descripteur.document} : ${numerosArticles.size} articles au lieu de ` +
+        `${descripteur.articles_attendus} attendus`,
+    );
+  }
+  const considerantManquant = premierManquant(
+    numerosConsiderants,
+    descripteur.considerants_attendus,
+  );
   if (considerantManquant !== null) {
     throw new Error(
       `Capture ${descripteur.document} incomplète : ancre rct_${considerantManquant} absente ` +
-        `(${numerosConsiderants.size} considérants au lieu de ${NB_CONSIDERANTS})`,
+        `(${numerosConsiderants.size} considérants au lieu de ${descripteur.considerants_attendus})`,
+    );
+  }
+  if (numerosConsiderants.size !== descripteur.considerants_attendus) {
+    throw new Error(
+      `Capture ${descripteur.document} : ${numerosConsiderants.size} considérants au lieu de ` +
+        `${descripteur.considerants_attendus} attendus`,
     );
   }
 
@@ -200,4 +216,9 @@ export function parseRgpd(xhtml: string, descripteur: Descripteur): Unite[] {
   }
 
   return unites;
+}
+
+/** Enveloppe historique : le RGPD se parse comme tout acte CELLAR. */
+export function parseRgpd(xhtml: string, descripteur: Descripteur): Unite[] {
+  return parseCellar(xhtml, descripteur);
 }

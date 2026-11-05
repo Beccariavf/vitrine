@@ -10,5 +10,7 @@
   "date_publication": "2016-05-04",
   "date_debut": "2018-05-25",
   "date_fin": null,
-  "statut": "en_vigueur"
+  "statut": "en_vigueur",
+  "articles_attendus": 99,
+  "considerants_attendus": 173
 }
