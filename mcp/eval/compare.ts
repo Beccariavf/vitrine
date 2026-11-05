@@ -147,7 +147,7 @@ export function decider(args: {
     return {
       verdict: "conserver",
       raisons: [
-        `top 5 rendu dégradé de ${baseTop5 - candidatTop5} questions ` +
+        `top 5 retourné dégradé de ${baseTop5 - candidatTop5} questions ` +
           `(${baseTop5} → ${candidatTop5}) : le gain au rang 1 ne compense pas`,
       ],
     };
@@ -156,7 +156,7 @@ export function decider(args: {
     verdict: "adopter",
     raisons: [
       `b=${b} > c=${c}, p = ${p.toFixed(4)} < 0,05, ${discordantes} paires discordantes, ` +
-        `top 5 rendu non dégradé (${baseTop5} → ${candidatTop5})`,
+        `top 5 retourné non dégradé (${baseTop5} → ${candidatTop5})`,
     ],
   };
 }
@@ -204,11 +204,11 @@ export function formater(base: ObjetMesureJson, candidat: ObjetMesureJson, decis
     `comparaison appariée : « ${base.modele} » (référence) contre « ${candidat.modele} » (candidat)`,
     `questions alignées : ${base.questions.length}`,
     `domaine de décision : ${decision.questions} questions sémantiques`,
-    `top 5 rendu : « ${base.modele} » ${decision.baseTop5}/${decision.questions} ` +
+    `top 5 retourné : « ${base.modele} » ${decision.baseTop5}/${decision.questions} ` +
       `(${pourcentage(decision.baseTop5, decision.questions)}) ; ` +
       `« ${candidat.modele} » ${decision.candidatTop5}/${decision.questions} ` +
       `(${pourcentage(decision.candidatTop5, decision.questions)})`,
-    `top 1 rendu : « ${base.modele} » ${decision.baseTop1}/${decision.questions} ` +
+    `top 1 retourné : « ${base.modele} » ${decision.baseTop1}/${decision.questions} ` +
       `(${pourcentage(decision.baseTop1, decision.questions)}) ; ` +
       `« ${candidat.modele} » ${decision.candidatTop1}/${decision.questions} ` +
       `(${pourcentage(decision.candidatTop1, decision.questions)})`,

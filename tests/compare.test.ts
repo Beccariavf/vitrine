@@ -203,7 +203,7 @@ describe("la règle de décision", () => {
     });
 
     assert.equal(decision.verdict, "conserver");
-    assert.match(decision.raisons.join(" "), /top 5 rendu dégradé de 2 questions/);
+    assert.match(decision.raisons.join(" "), /top 5 retourné dégradé de 2 questions/);
   });
 
   it("conserve la référence quand le candidat ne gagne pas plus qu'il ne perd", () => {
