@@ -477,6 +477,22 @@ describe("le document nommé dans la question", () => {
     );
   });
 
+  it("n'affirme pas qu'aucun document n'est nommé quand deux le sont", async () => {
+    const resultat = await search(
+      root,
+      { question: "Que prévoit l'article 100 du RGPD et de l'AI Act ?" },
+      { embedder: EMBEDDER_INTERDIT, index },
+    );
+
+    assert.equal(resultat.niveau_confiance, "incertain");
+    assert.deepEqual(
+      resultat.passages.map((passage) => passage.ref),
+      [`${DOCUMENT_AIAct}#art_100`],
+    );
+    assert.doesNotMatch(resultat.message ?? "", /ne nomme aucun document/);
+    assert.match(resultat.message ?? "", /plusieurs documents/);
+  });
+
   it("filtre la recherche sémantique sur le document nommé", async () => {
     const base = embedderFactice();
     const vus: (string | undefined)[] = [];

@@ -98,10 +98,11 @@ function libelleDocument(document: string): string {
 }
 
 /**
- * Document nommé par la question, quand ses alias désignent un seul corpus ;
- * `null` si aucun alias ne s'y trouve ou si deux corpus sont nommés.
+ * Tous les corpus nommés par la question. Zéro, un ou deux : « le RGPD et l'AI
+ * Act » en nomme deux, et l'appelant doit alors distinguer « aucun nom » de
+ * « deux noms » dans ses messages.
  */
-export function documentNomme(question: string): string | null {
+export function documentsNommes(question: string): string[] {
   const texte = normaliserTexte(question);
   const compact = compacter(texte);
   const documents = new Set<string>();
@@ -117,7 +118,16 @@ export function documentNomme(question: string): string | null {
   ) {
     documents.add("32024R1689");
   }
-  return documents.size === 1 ? ([...documents][0] ?? null) : null;
+  return [...documents];
+}
+
+/**
+ * Document nommé par la question, quand ses alias désignent un seul corpus ;
+ * `null` si aucun alias ne s'y trouve ou si deux corpus sont nommés.
+ */
+export function documentNomme(question: string): string | null {
+  const documents = documentsNommes(question);
+  return documents.length === 1 ? (documents[0] ?? null) : null;
 }
 
 /**
@@ -208,13 +218,19 @@ export async function search(
         return { niveau_confiance: "aucun_resultat_fiable", passages: [] };
       }
       if (!corpusNomme) {
+        const nommes = documentsNommes(demande.question);
+        const motif =
+          nommes.length > 1
+            ? `La question nomme plusieurs documents (${nommes.map(libelleDocument).join(", ")}) ` +
+              `et l'article ${numero} n'existe que dans ${libelleDocument(article.document)} : ` +
+              "nommez le corpus qui le porte, ou précisez « document » pour lever l'ambiguïté."
+            : `L'article ${numero} n'existe que dans ${libelleDocument(article.document)}. ` +
+              "La question ne nomme aucun document : nommez le corpus ou précisez « document » " +
+              "pour lever l'ambiguïté.";
         return {
           niveau_confiance: "incertain",
           passages: [passageExact(article)],
-          message:
-            `L'article ${numero} n'existe que dans ${libelleDocument(article.document)}. ` +
-            "La question ne nomme aucun document : nommez le corpus ou précisez « document » " +
-            "pour lever l'ambiguïté.",
+          message: motif,
         };
       }
       return { niveau_confiance: "confiant", passages: [passageExact(article)] };
