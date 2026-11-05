@@ -33,12 +33,16 @@ npm run mcp:eval -- --questions questions-v2.csv --split test --mesurer-test   #
 Le MCP lit le RGPD et l'AI Act par article exact et par recherche sémantique, avec provenance. Seule
 la recherche sémantique exige Ollama sur `127.0.0.1:11434` et le modèle `qwen3-embedding:0.6b`
 (`ollama pull qwen3-embedding:0.6b`) : une question qui cite un article (« article 17 ») est servie
-sans index ni modèle. Un document nommé dans la question (« RGPD », « AI Act », « règlement général
-sur la protection des données », « règlement sur l'intelligence artificielle ») est honoré quand
-`document` est absent : la référence exacte et la recherche sémantique s'y restreignent, et un numéro
-absent de ce document est refusé explicitement. Si aucun document n'est nommé et que le numéro cité
-existe dans les deux corpus, chaque article est rendu avec son document et le niveau est `incertain` ;
-préciser `document` lève l'ambiguïté. Sans Ollama, `corpus:index` et la recherche sémantique échouent
+sans index ni modèle. Un document nommé dans la question est honoré quand `document` est absent : les
+sigles et noms ordinaires sont reconnus après normalisation de la casse, des diacritiques et de la
+ponctuation (« RGPD », « R.G.P.D. », « règlement général sur la protection des données », « règlement
+général », « règlement (UE) 2016/679 », « AI Act », « IA Act », « règlement IA », « règlement européen
+sur l'intelligence artificielle », « règlement (UE) 2024/1689 ») ; la référence exacte et la recherche
+sémantique s'y restreignent, et un numéro absent de ce document est refusé explicitement. Deux corpus
+nommés n'infèrent rien. Si aucun document n'est nommé et que le numéro cité n'existe que dans un
+corpus, l'article est rendu avec le niveau `incertain` et un message qui nomme ce corpus ; s'il existe
+dans les deux, chaque article est rendu avec son document et le niveau est aussi `incertain`. Préciser
+`document` ou nommer le corpus lève l'ambiguïté. Sans Ollama, `corpus:index` et la recherche sémantique échouent
 avec un message qui nomme la commande. L'index est incrémental : un second passage sur un corpus inchangé
 embarque zéro unité et laisse les vecteurs identiques. La construction suit les descripteurs
 `mcp/corpus/*.json` ; `--document <corpus>` n'en construit qu'un.

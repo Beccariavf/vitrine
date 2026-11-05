@@ -46,20 +46,45 @@ export function referenceExacte(question: string): string | null {
   return reference === null ? null : (reference[1] ?? "");
 }
 
-/** Alias qui nomment un corpus dans une question, et le CELEX qu'ils désignent. */
-const ALIAS_DOCUMENTS: readonly { alias: RegExp; document: string }[] = [
-  { alias: /\bRGPD\b/i, document: "32016R0679" },
-  {
-    alias: /r[eè]glement g[eé]n[eé]ral sur la protection des donn[eé]es/i,
-    document: "32016R0679",
-  },
-  { alias: /\bAI Act\b/i, document: "32024R1689" },
-  {
-    alias: /r[eè]glement sur l['’]intelligence artificielle/i,
-    document: "32024R1689",
-  },
-  { alias: /\br[eè]glement IA\b/i, document: "32024R1689" },
+/**
+ * Forme comparable d'une question : minuscules, sans diacritiques, ponctuation
+ * remplacée par une espace. « R.G.P.D. » y devient « r g p d ».
+ */
+function normaliserTexte(question: string): string {
+  return question
+    .normalize("NFD")
+    .replace(/\p{M}+/gu, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+/** Forme sans espaces : rattrape les sigles pointés et les identifiants CELEX. */
+function compacter(texteNormalise: string): string {
+  return texteNormalise.replace(/\s+/g, "");
+}
+
+/**
+ * Alias qui nomment chaque corpus, cherchés sur la forme normalisée (jetons)
+ * ou compacte. `IA` n'est admis que comme jeton isolé, jamais dans un mot.
+ */
+const ALIAS_RGPD_TEXTE: readonly RegExp[] = [
+  /\breglement general sur la protection des donnees\b/,
+  /\breglement general\b/,
+  /\breglement ue 2016 679\b/,
+  /\b2016 679\b/,
 ];
+const ALIAS_RGPD_COMPACT: readonly RegExp[] = [/rgpd/, /32016r0679/];
+const ALIAS_AIA_TEXTE: readonly RegExp[] = [
+  /\bai act\b/,
+  /\bia act\b/,
+  /\bia\b/,
+  /\breglement (?:europeen )?sur l intelligence artificielle\b/,
+  /\breglement ue 2024 1689\b/,
+  /\b2024 1689\b/,
+];
+const ALIAS_AIA_COMPACT: readonly RegExp[] = [/32024r1689/];
 
 /** Nom lisible d'un corpus connu, pour les messages de refus. */
 const NOMS_DOCUMENTS: Record<string, string> = {
@@ -77,9 +102,21 @@ function libelleDocument(document: string): string {
  * `null` si aucun alias ne s'y trouve ou si deux corpus sont nommés.
  */
 export function documentNomme(question: string): string | null {
-  const documents = new Set(
-    ALIAS_DOCUMENTS.filter(({ alias }) => alias.test(question)).map(({ document }) => document),
-  );
+  const texte = normaliserTexte(question);
+  const compact = compacter(texte);
+  const documents = new Set<string>();
+  if (
+    ALIAS_RGPD_TEXTE.some((alias) => alias.test(texte)) ||
+    ALIAS_RGPD_COMPACT.some((alias) => alias.test(compact))
+  ) {
+    documents.add("32016R0679");
+  }
+  if (
+    ALIAS_AIA_TEXTE.some((alias) => alias.test(texte)) ||
+    ALIAS_AIA_COMPACT.some((alias) => alias.test(compact))
+  ) {
+    documents.add("32024R1689");
+  }
   return documents.size === 1 ? ([...documents][0] ?? null) : null;
 }
 
@@ -147,23 +184,40 @@ export async function search(
 ): Promise<ResultatRechercheOutil> {
   // Le document nommé par la question vaut document demandé : une question qui
   // cite « l'article 100 du RGPD » ne doit jamais rendre l'article 100 de l'AI Act.
-  const document = demande.document ?? documentNomme(demande.question) ?? undefined;
+  const documentInferé =
+    demande.document === undefined ? documentNomme(demande.question) : null;
+  const document = demande.document ?? documentInferé ?? undefined;
+  // La confiance ne peut certifier un corpus que la question ou l'appel nomme.
+  const corpusNomme = demande.document !== undefined || documentInferé !== null;
   const numero = referenceExacte(demande.question);
   if (numero !== null) {
     const articles = trouverArticles(rootDir, document, numero);
     if (articles.length > 0) {
-      const documents = articles.map((article) => article.document);
-      return {
-        niveau_confiance: articles.length === 1 ? "confiant" : "incertain",
-        passages: articles.map(passageExact),
-        ...(articles.length === 1
-          ? {}
-          : {
-              message:
-                `L'article ${numero} existe dans plusieurs documents ` +
-                `(${documents.join(", ")}). Précisez « document » pour n'en rendre qu'un.`,
-            }),
-      };
+      const documents = [...new Set(articles.map((article) => article.document))];
+      if (documents.length > 1) {
+        return {
+          niveau_confiance: "incertain",
+          passages: articles.map(passageExact),
+          message:
+            `L'article ${numero} existe dans plusieurs documents ` +
+            `(${documents.join(", ")}). Précisez « document » pour n'en rendre qu'un.`,
+        };
+      }
+      const article = articles[0];
+      if (article === undefined) {
+        return { niveau_confiance: "aucun_resultat_fiable", passages: [] };
+      }
+      if (!corpusNomme) {
+        return {
+          niveau_confiance: "incertain",
+          passages: [passageExact(article)],
+          message:
+            `L'article ${numero} n'existe que dans ${libelleDocument(article.document)}. ` +
+            "La question ne nomme aucun document : nommez le corpus ou précisez « document » " +
+            "pour lever l'ambiguïté.",
+        };
+      }
+      return { niveau_confiance: "confiant", passages: [passageExact(article)] };
     }
     return {
       niveau_confiance: "aucun_resultat_fiable",

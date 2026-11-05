@@ -280,23 +280,42 @@ describe("les outils, sans transport", () => {
 });
 
 describe("les alias de document", () => {
-  it("reconnaît les sigles et les noms complets", () => {
-    assert.equal(documentNomme("le RGPD"), "32016R0679");
-    assert.equal(
-      documentNomme("le règlement général sur la protection des données"),
-      "32016R0679",
-    );
-    assert.equal(documentNomme("l'AI Act"), "32024R1689");
-    assert.equal(
-      documentNomme("le règlement sur l'intelligence artificielle"),
-      "32024R1689",
-    );
-    assert.equal(documentNomme("le règlement IA"), "32024R1689");
+  it("reconnaît les sigles et les noms complets du RGPD", () => {
+    for (const question of [
+      "le RGPD",
+      "le R.G.P.D.",
+      "le règlement général sur la protection des données",
+      "le règlement général",
+      "le règlement (UE) 2016/679",
+      "la décision 2016/679",
+      "le règlement 32016R0679",
+    ]) {
+      assert.equal(documentNomme(question), "32016R0679", question);
+    }
+  });
+
+  it("reconnaît les sigles et les noms complets de l'AI Act", () => {
+    for (const question of [
+      "l'AI Act",
+      "l'IA Act",
+      "le règlement IA",
+      "le règlement sur l'intelligence artificielle",
+      "le règlement européen sur l'intelligence artificielle",
+      "le règlement (UE) 2024/1689",
+      "la décision 2024/1689",
+      "le règlement 32024R1689",
+    ]) {
+      assert.equal(documentNomme(question), "32024R1689", question);
+    }
   });
 
   it("n'infère rien sans alias ou quand deux corpus sont nommés", () => {
     assert.equal(documentNomme("Que prévoit l'article 5 ?"), null);
     assert.equal(documentNomme("Que prévoit l'article 5 du RGPD et de l'AI Act ?"), null);
+  });
+
+  it("ne lit pas « IA » à l'intérieur d'un mot comme un corpus", () => {
+    assert.equal(documentNomme("un traitement spécial de l'article 5"), null);
   });
 });
 
@@ -314,6 +333,7 @@ describe("le document nommé dans la question", () => {
       root,
       [
         unite(5, "pratiques d'IA interdites", DOCUMENT_AIAct),
+        unite(17, "système de gestion de la qualité", DOCUMENT_AIAct),
         unite(100, "mesures d'appui pour l'innovation", DOCUMENT_AIAct),
       ],
       "aiact",
@@ -339,6 +359,65 @@ describe("le document nommé dans la question", () => {
     assert.match(resultat.message ?? "", /article 100/);
     assert.match(resultat.message ?? "", /32016R0679/);
     assert.equal((resultat.message ?? "").includes(DOCUMENT_AIAct), false);
+  });
+
+  it("refuse l'article 100 quand la question dit « règlement général »", async () => {
+    const resultat = await search(
+      root,
+      { question: "Que prévoit l'article 100 du règlement général ?" },
+      { embedder: EMBEDDER_INTERDIT, index },
+    );
+
+    assert.equal(resultat.niveau_confiance, "aucun_resultat_fiable");
+    assert.deepEqual(resultat.passages, []);
+    assert.match(resultat.message ?? "", /article 100/);
+    assert.match(resultat.message ?? "", /32016R0679/);
+    assert.equal((resultat.message ?? "").includes(DOCUMENT_AIAct), false);
+  });
+
+  it("refuse l'article 100 quand la question dit « règlement (UE) 2016/679 »", async () => {
+    const resultat = await search(
+      root,
+      { question: "Que prévoit l'article 100 du règlement (UE) 2016/679 ?" },
+      { embedder: EMBEDDER_INTERDIT, index },
+    );
+
+    assert.equal(resultat.niveau_confiance, "aucun_resultat_fiable");
+    assert.deepEqual(resultat.passages, []);
+    assert.match(resultat.message ?? "", /article 100/);
+    assert.match(resultat.message ?? "", /32016R0679/);
+    assert.equal((resultat.message ?? "").includes(DOCUMENT_AIAct), false);
+  });
+
+  it("rend incertain et nomme l'AI Act pour l'article 100 sans document nommé", async () => {
+    const resultat = await search(
+      root,
+      { question: "Que prévoit l'article 100 ?" },
+      { embedder: EMBEDDER_INTERDIT, index },
+    );
+
+    assert.equal(resultat.niveau_confiance, "incertain");
+    assert.deepEqual(
+      resultat.passages.map((passage) => passage.ref),
+      [`${DOCUMENT_AIAct}#art_100`],
+    );
+    assert.match(resultat.message ?? "", /AI Act/);
+    assert.match(resultat.message ?? "", /32024R1689/);
+  });
+
+  it("garde l'ambiguïté pour l'article 17 sans document nommé", async () => {
+    const resultat = await search(
+      root,
+      { question: "Que prévoit l'article 17 ?" },
+      { embedder: EMBEDDER_INTERDIT, index },
+    );
+
+    assert.equal(resultat.niveau_confiance, "incertain");
+    assert.deepEqual(
+      resultat.passages.map((passage) => passage.ref).sort(),
+      [`${DOCUMENT}#art_17`, `${DOCUMENT_AIAct}#art_17`].sort(),
+    );
+    assert.match(resultat.message ?? "", /plusieurs documents/);
   });
 
   it("rend l'article 5 du RGPD quand la question nomme le RGPD", async () => {
@@ -418,6 +497,28 @@ describe("le document nommé dans la question", () => {
     assert.deepEqual(vus, [DOCUMENT]);
     assert.ok(resultat.passages.length > 0);
     assert.ok(resultat.passages.every((passage) => passage.document === DOCUMENT));
+  });
+
+  it("filtre la recherche sémantique sur le nom complet de l'AI Act", async () => {
+    const base = embedderFactice();
+    const vus: (string | undefined)[] = [];
+    const embedder: Embedder = {
+      ...base,
+      embedQuery: async (texte, document) => {
+        vus.push(document);
+        return base.embedQuery(texte);
+      },
+    };
+
+    const resultat = await search(
+      root,
+      { question: "obligations de transparence du règlement européen sur l'intelligence artificielle" },
+      { embedder, index, seuils: { bas: -1, haut: 2, marge: 0 } },
+    );
+
+    assert.deepEqual(vus, [DOCUMENT_AIAct]);
+    assert.ok(resultat.passages.length > 0);
+    assert.ok(resultat.passages.every((passage) => passage.document === DOCUMENT_AIAct));
   });
 });
 
@@ -646,15 +747,16 @@ describe("le serveur sans index", () => {
     rmSync(root, { recursive: true, force: true });
   });
 
-  it("sert « article 17 » sans index", async () => {
+  it("sert « article 17 » sans index en nommant le corpus", async () => {
     const resultat = await client.callTool({
       name: "search",
       arguments: { question: "article 17" },
     });
     const payload = contenu(resultat);
 
-    assert.equal(payload.niveau_confiance, "confiant");
+    assert.equal(payload.niveau_confiance, "incertain");
     assert.equal((payload.passages as { ref: string }[])[0]?.ref, `${DOCUMENT}#art_17`);
+    assert.match(String(payload.message), /RGPD/);
   });
 
   it("refuse « article 100 » sans accuser l'index absent", async () => {
