@@ -1,8 +1,24 @@
 import { strict as assert } from "node:assert";
-import { readFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, statSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, it } from "node:test";
 import { canonicalUrl, hashId } from "../veille/normalize.ts";
 import { parseFeed, toIsoUtc } from "../veille/sources/cnil.ts";
+import {
+  compterOrigines,
+  lireCorpus,
+  manifesteCnil,
+  syncHistorique,
+  validerUnites,
+} from "../mcp/corpus/cnil/sync.ts";
+import {
+  estDeNature,
+  lireDescripteur,
+  unitesDinum,
+} from "../mcp/corpus/cnil/historique.ts";
+import type { DescripteurCnil, FichierDinum, LigneDinum } from "../mcp/corpus/cnil/historique.ts";
+import type { Unite } from "../mcp/corpus/parse.ts";
 
 const FIXTURE = new URL("./fixtures/cnil/feed.xml", import.meta.url);
 const xml = readFileSync(FIXTURE, "utf8");
@@ -263,5 +279,190 @@ describe("flux dégénérés", () => {
     );
     assert.equal(entries.length, 1);
     assert.equal(entries[0]?.title, "Première");
+  });
+});
+
+const DESCRIPTEUR = lireDescripteur(
+  new URL("../mcp/corpus/cnil/descripteur.json", import.meta.url).pathname,
+);
+const LIGNES = JSON.parse(
+  readFileSync(new URL("./fixtures/cnil/lignes.json", import.meta.url), "utf8"),
+) as LigneDinum[];
+const FICHIERS: FichierDinum[] = [
+  {
+    url: "https://exemple.test/cnil_part_0.parquet",
+    chemin: "/dev/null",
+    sha256: "0".repeat(64),
+  },
+];
+
+function descriptorReduit(attendus: { documents: number; fragments: number }): DescripteurCnil {
+  return { ...DESCRIPTEUR, ...attendus };
+}
+
+describe("l'historique DINUM", () => {
+  it("ne retient que la nature filtrée", () => {
+    const sanctions = LIGNES.filter((ligne) => estDeNature(ligne, DESCRIPTEUR.nature));
+    const { unites } = unitesDinum(LIGNES, DESCRIPTEUR);
+
+    assert.equal(sanctions.length, 2);
+    assert.equal(unites.length, 2);
+    assert.ok(
+      LIGNES.filter((ligne) => !estDeNature(ligne, DESCRIPTEUR.nature)).every(
+        (ligne) => !unites.some((unite) => unite.document === ligne.doc_id),
+      ),
+    );
+  });
+
+  it("mappe une ligne sanction en unité citable", () => {
+    const { unites } = unitesDinum(LIGNES, DESCRIPTEUR);
+    const [premier] = unites;
+
+    assert.ok(premier);
+    assert.equal(premier.ref, "CNILTEXT000043470685#f0");
+    assert.equal(premier.document, "CNILTEXT000043470685");
+    assert.equal(premier.corpus, "cnil");
+    assert.equal(premier.niveau, "fragment");
+    assert.equal(premier.numero, "SAN-2021-004");
+    assert.equal(premier.chemin, "CNIL > Sanctions > Délibération SAN-2021-004");
+    assert.equal(premier.date_acte, "2021-04-30");
+    assert.equal(premier.date_debut, "2021-04-30");
+    assert.equal(premier.date_fin, null);
+    assert.equal(premier.statut, "VIGUEUR");
+    assert.equal(premier.origine, "dinum");
+    assert.equal(premier.url, "https://www.legifrance.gouv.fr/cnil/id/CNILTEXT000043470685");
+  });
+
+  it("rejette une ligne sans texte en la nommant", () => {
+    const vide: LigneDinum = { ...LIGNES[0]!, chunk_index: 2, text: "   " };
+    const { unites, erreurs } = unitesDinum([...LIGNES, vide], DESCRIPTEUR);
+
+    assert.equal(unites.length, 2);
+    assert.deepEqual(erreurs, ["CNILTEXT000043470685#f2 : texte vide"]);
+  });
+
+  it("refuse une référence dupliquée", () => {
+    const { unites } = unitesDinum(LIGNES, DESCRIPTEUR);
+
+    assert.throws(
+      () => validerUnites([...unites, unites[0]!], { documents: 1, fragments: 3 }),
+      /référence dupliquée : CNILTEXT000043470685#f0/,
+    );
+  });
+
+  it("refuse un texte vide et une date non ISO", () => {
+    const { unites } = unitesDinum(LIGNES, DESCRIPTEUR);
+    const casse: Unite = { ...unites[1]!, texte: "", date_acte: "30 avril 2021" };
+
+    assert.throws(
+      () => validerUnites([unites[0]!, casse], { documents: 1, fragments: 2 }),
+      /texte vide : CNILTEXT000043470685#f1.*date non ISO : CNILTEXT000043470685#f1/,
+    );
+  });
+});
+
+describe("le manifeste CNIL", () => {
+  it("compte les documents, les fragments et les deux origines", () => {
+    const { unites } = unitesDinum(LIGNES, DESCRIPTEUR);
+    const manifeste = manifesteCnil(descriptorReduit({ documents: 1, fragments: 2 }), unites, FICHIERS);
+
+    assert.equal(manifeste.corpus, "cnil");
+    assert.equal(manifeste.nature, "Sanction");
+    assert.equal(manifeste.documents, 1);
+    assert.equal(manifeste.unites, 2);
+    assert.deepEqual(manifeste.origines, { dinum: 2, dila: 0 });
+    assert.equal(manifeste.decoupage, "dinum");
+    assert.equal(manifeste.url_texte_verifiee, false);
+    assert.deepEqual(
+      manifeste.sources.map((source) => source.origine),
+      ["dinum", "dila"],
+    );
+    assert.deepEqual(manifeste.sources[0]?.fichiers, [
+      { url: FICHIERS[0]!.url, sha256: FICHIERS[0]!.sha256 },
+    ]);
+    assert.equal(manifeste.sources[0]?.licence?.huggingface, "etalab-2.0");
+    assert.equal(manifeste.sources[0]?.licence?.data_gouv, "lov2");
+    assert.equal(manifeste.sources[0]?.licence?.incoherence, true);
+  });
+
+  it("refuse des comptes qui ne correspondent pas au contenu", () => {
+    const { unites } = unitesDinum(LIGNES, DESCRIPTEUR);
+
+    assert.throws(
+      () => validerUnites(unites, { documents: 249, fragments: 6342 }),
+      /1 documents au lieu de 249 attendus ; 2 fragments au lieu de 6342 attendus/,
+    );
+  });
+
+  it("le corpus commité porte les comptes de son manifeste", () => {
+    const manifeste = JSON.parse(
+      readFileSync(new URL("../data/corpus/cnil/manifest.json", import.meta.url), "utf8"),
+    ) as Record<string, unknown>;
+    const unites = lireCorpus(
+      new URL("../data/corpus/cnil/unites.jsonl", import.meta.url).pathname,
+    );
+
+    assert.equal(unites.length, manifeste.unites);
+    assert.equal(new Set(unites.map((unite) => unite.document)).size, manifeste.documents);
+    assert.deepEqual(compterOrigines(unites), manifeste.origines);
+    assert.ok(unites.every((unite) => unite.corpus === "cnil"));
+    assert.ok(unites.every((unite) => unite.niveau === "fragment"));
+  });
+});
+
+describe("la synchronisation DINUM", () => {
+  const ATTENDUS = { documents: 1, fragments: 2 };
+
+  it("écrit le corpus après validation et ne le réécrit pas au second passage", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-cnil-"));
+    try {
+      const premier = await syncHistorique({ rootDir: root, lignes: LIGNES, attendus: ATTENDUS });
+      const cheminUnites = join(root, "data", "corpus", "cnil", "unites.jsonl");
+      const avant = statSync(cheminUnites).mtimeMs;
+
+      assert.equal(premier.documents, 1);
+      assert.equal(premier.unites, 2);
+      assert.equal(premier.ecrit, true);
+      assert.equal(readFileSync(cheminUnites, "utf8").trimEnd().split("\n").length, 2);
+
+      const second = await syncHistorique({ rootDir: root, lignes: LIGNES, attendus: ATTENDUS });
+
+      assert.equal(second.ecrit, false);
+      assert.equal(statSync(cheminUnites).mtimeMs, avant);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("n'écrit rien quand une ligne est invalide", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-cnil-"));
+    const casse: LigneDinum = { ...LIGNES[0]!, chunk_index: 2, text: "" };
+    try {
+      await assert.rejects(
+        syncHistorique({ rootDir: root, lignes: [...LIGNES, casse], attendus: ATTENDUS }),
+        /CNILTEXT000043470685#f2 : texte vide/,
+      );
+      assert.equal(existsSync(join(root, "data")), false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("--dry-run ne compte sans écrire", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-cnil-"));
+    try {
+      const resultat = await syncHistorique({
+        rootDir: root,
+        lignes: LIGNES,
+        attendus: ATTENDUS,
+        dryRun: true,
+      });
+
+      assert.equal(resultat.ecrit, false);
+      assert.equal(resultat.unites, 2);
+      assert.equal(existsSync(join(root, "data")), false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 });

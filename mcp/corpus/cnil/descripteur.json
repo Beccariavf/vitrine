@@ -1,0 +1,40 @@
+{
+  "corpus": "cnil",
+  "nom": "CNIL",
+  "nature": "Sanction",
+  "documents_attendus": 249,
+  "fragments_attendus": 6342,
+  "snapshot": "2026-11-05",
+  "revision": "bbc4bf7ef4a0148359f6e3ef38734edb08ac2f06",
+  "url_texte": "https://www.legifrance.gouv.fr/cnil/id/{id}",
+  "url_texte_verifiee": false,
+  "url_texte_note": "La route Légifrance a répondu 403 à robots en session : elle est déclarée, pas vérifiée.",
+  "dinum": {
+    "nom": "Délibérations de la CNIL vectorisées",
+    "url_page": "https://huggingface.co/datasets/AgentPublic/cnil",
+    "url_data_gouv": "https://www.data.gouv.fr/datasets/les-deliberations-de-la-cnil-vectorisees/",
+    "licence_huggingface": "etalab-2.0",
+    "licence_data_gouv": "lov2",
+    "licence_incoherence": true,
+    "fichiers": [
+      "https://huggingface.co/datasets/AgentPublic/cnil/resolve/main/data/cnil-latest/cnil_part_0.parquet",
+      "https://huggingface.co/datasets/AgentPublic/cnil/resolve/main/data/cnil-latest/cnil_part_1.parquet"
+    ],
+    "colonnes_lues": [
+      "doc_id",
+      "chunk_index",
+      "text",
+      "number",
+      "date",
+      "title",
+      "status",
+      "nature_delib"
+    ],
+    "colonne_ignoree": "embeddings_bge-m3"
+  },
+  "dila": {
+    "nom": "Délibérations CNIL (DILA, OPENDATA)",
+    "url": "https://echanges.dila.gouv.fr/OPENDATA/CNIL/",
+    "format": "CNIL_YYYYMMDD-HHMMSS.tar.gz",
+    "decoupage": "local 600-1200 caracteres"  }
+}

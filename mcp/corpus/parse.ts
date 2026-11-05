@@ -32,6 +32,9 @@ export type Descripteur = {
 /** `fragment` désigne un découpage de texte long, propre à la CNIL. */
 export type Niveau = "article" | "considérant" | "fragment";
 
+/** Origine d'un fragment CNIL : l'historique DINUM ou un incrément DILA. */
+export type Origine = "dinum" | "dila";
+
 /** L'acte reste le document ; la collection est le corpus. */
 export type Unite = {
   ref: string;
@@ -47,6 +50,8 @@ export type Unite = {
   date_fin: string | null;
   statut: string;
   url: string;
+  /** Renseigné pour la CNIL seulement : d'où vient le découpage. */
+  origine?: Origine;
 };
 
 const ENTITES: Record<string, string> = {

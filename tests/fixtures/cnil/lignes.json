@@ -1,0 +1,32 @@
+[
+  {
+    "doc_id": "CNILTEXT000043470685",
+    "chunk_index": 0,
+    "text": "La Commission nationale de l'informatique et des libertés, réunie en sa formation restreinte, a prononcé une sanction pécuniaire à l'encontre de la société X.",
+    "number": "SAN-2021-004",
+    "date": "2021-04-30",
+    "title": "Délibération SAN-2021-004 du 30 avril 2021",
+    "status": "VIGUEUR",
+    "nature_delib": "Sanction"
+  },
+  {
+    "doc_id": "CNILTEXT000043470685",
+    "chunk_index": 1,
+    "text": "La formation restreinte retient un manquement à l'obligation de sécurité prévue à l'article 32 du règlement général sur la protection des données.",
+    "number": "SAN-2021-004",
+    "date": "2021-04-30",
+    "title": "Délibération SAN-2021-004 du 30 avril 2021",
+    "status": "VIGUEUR",
+    "nature_delib": "Sanction"
+  },
+  {
+    "doc_id": "CNILTEXT000043470686",
+    "chunk_index": 0,
+    "text": "Avis rendu par la Commission sur un projet de décret.",
+    "number": null,
+    "date": "2021-05-06",
+    "title": "Avis du 6 mai 2021",
+    "status": "VIGUEUR",
+    "nature_delib": "Avis"
+  }
+]

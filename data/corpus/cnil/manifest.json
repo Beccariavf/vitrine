@@ -1,0 +1,48 @@
+{
+  "corpus": "cnil",
+  "nom": "CNIL",
+  "nature": "Sanction",
+  "documents": 249,
+  "unites": 6342,
+  "origines": {
+    "dinum": 6342,
+    "dila": 0
+  },
+  "decoupage": "dinum",
+  "url_texte": "https://www.legifrance.gouv.fr/cnil/id/{id}",
+  "url_texte_verifiee": false,
+  "url_texte_note": "La route Légifrance a répondu 403 à robots en session : elle est déclarée, pas vérifiée.",
+  "snapshot": "2026-11-05",
+  "revision": "bbc4bf7ef4a0148359f6e3ef38734edb08ac2f06",
+  "sources": [
+    {
+      "origine": "dinum",
+      "nom": "Délibérations de la CNIL vectorisées",
+      "url": "https://huggingface.co/datasets/AgentPublic/cnil",
+      "decoupage": "dinum",
+      "licence": {
+        "huggingface": "etalab-2.0",
+        "data_gouv": "lov2",
+        "incoherence": true
+      },
+      "snapshot": "2026-11-05",
+      "revision": "bbc4bf7ef4a0148359f6e3ef38734edb08ac2f06",
+      "fichiers": [
+        {
+          "url": "https://huggingface.co/datasets/AgentPublic/cnil/resolve/main/data/cnil-latest/cnil_part_0.parquet",
+          "sha256": "94d5f4765428dfe50b22eb57743b65e8982099947f7a1eaa2cef8f060b0ab5b3"
+        },
+        {
+          "url": "https://huggingface.co/datasets/AgentPublic/cnil/resolve/main/data/cnil-latest/cnil_part_1.parquet",
+          "sha256": "ea03d97d66c1e575fc11ee1d1d5969cf2c23d0b204d0ccb2d0922952512d375f"
+        }
+      ]
+    },
+    {
+      "origine": "dila",
+      "nom": "Délibérations CNIL (DILA, OPENDATA)",
+      "url": "https://echanges.dila.gouv.fr/OPENDATA/CNIL/",
+      "decoupage": "local 600-1200 caracteres"
+    }
+  ]
+}
