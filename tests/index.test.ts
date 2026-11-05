@@ -14,7 +14,12 @@ import {
   requeteLexicale,
   searchIndex,
 } from "../mcp/index/search.ts";
-import { INSTRUCTION_REQUETE, createOllamaEmbedder, normaliser } from "../mcp/embed/embedder.ts";
+import {
+  INSTRUCTION_AIAct,
+  INSTRUCTION_REQUETE,
+  createOllamaEmbedder,
+  normaliser,
+} from "../mcp/embed/embedder.ts";
 import type { Embedder } from "../mcp/embed/embedder.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";
 import type { FetchLike } from "../veille/fetch.ts";
@@ -178,6 +183,46 @@ describe("l'adaptateur Ollama", () => {
     await embedder.embedPassages(["passage"]);
 
     assert.deepEqual(entrees, [[`${INSTRUCTION_REQUETE}question`], ["passage"]]);
+  });
+
+  it("choisit l'instruction du document et retombe sur le défaut", async () => {
+    const entrees: string[] = [];
+    const fetchImpl: FetchLike = async (_url, init) => {
+      entrees.push((JSON.parse(init?.body ?? "{}").input as string[])[0] ?? "");
+      return { ok: true, status: 200, text: async () => JSON.stringify({ embeddings: [[1, 0]] }) };
+    };
+    const embedder = createOllamaEmbedder({ dim: 2, fetchImpl });
+
+    await embedder.embedQuery("même question", "32024R1689");
+    await embedder.embedQuery("même question", "32016R0679");
+    await embedder.embedQuery("même question", "document-inconnu");
+    await embedder.embedQuery("même question");
+
+    assert.deepEqual(entrees, [
+      `${INSTRUCTION_AIAct}même question`,
+      `${INSTRUCTION_REQUETE}même question`,
+      `${INSTRUCTION_REQUETE}même question`,
+      `${INSTRUCTION_REQUETE}même question`,
+    ]);
+  });
+
+  it("laisse choisir les instructions et le défaut", async () => {
+    const entrees: string[] = [];
+    const fetchImpl: FetchLike = async (_url, init) => {
+      entrees.push((JSON.parse(init?.body ?? "{}").input as string[])[0] ?? "");
+      return { ok: true, status: 200, text: async () => JSON.stringify({ embeddings: [[1, 0]] }) };
+    };
+    const embedder = createOllamaEmbedder({
+      dim: 2,
+      fetchImpl,
+      instructions: { X: "Instruction X : " },
+      defaut: "Instruction par défaut : ",
+    });
+
+    await embedder.embedQuery("q", "X");
+    await embedder.embedQuery("q", "Y");
+
+    assert.deepEqual(entrees, ["Instruction X : q", "Instruction par défaut : q"]);
   });
 
   it("nomme ollama pull quand le modèle manque", async () => {

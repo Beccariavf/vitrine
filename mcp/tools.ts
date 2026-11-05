@@ -123,7 +123,7 @@ export async function search(
   const index =
     typeof deps.index === "function" ? deps.index() : deps.index ?? openIndex(cheminIndex(rootDir));
   const k = Math.max(1, Math.trunc(demande.k ?? 5));
-  const vecteur = await deps.embedder.embedQuery(demande.question);
+  const vecteur = await deps.embedder.embedQuery(demande.question, demande.document);
   const options =
     demande.document === undefined ? { k } : { k, document: demande.document };
   const resultats =

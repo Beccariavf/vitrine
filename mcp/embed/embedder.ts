@@ -5,7 +5,7 @@ export type Embedder = {
   readonly model: string;
   readonly dim: number;
   embedPassages(textes: string[]): Promise<number[][]>;
-  embedQuery(texte: string): Promise<number[]>;
+  embedQuery(texte: string, document?: string): Promise<number[]>;
 };
 
 export const MODELE_DEFAUT = "qwen3-embedding:0.6b";
@@ -13,19 +13,32 @@ export const HOTE_DEFAUT = "http://127.0.0.1:11434";
 export const DIM_DEFAUT = 1024;
 
 /**
- * Instruction de requête mesurée en phase 4 : elle porte le rapprochement de
- * « effacement et moteurs de recherche » au rang 1 et écarte les similarités de
- * près de 0,15. Les passages, eux, ne portent jamais d'instruction.
+ * Instruction de requête mesurée en phase 4 pour le RGPD : elle porte le
+ * rapprochement de « effacement et moteurs de recherche » au rang 1 et écarte
+ * les similarités de près de 0,15. Les passages, eux, ne portent jamais
+ * d'instruction.
  */
 export const INSTRUCTION_REQUETE =
   "Instruction : retrouve les passages du RGPD qui répondent à la question\nRequête : ";
+
+/** Instruction de requête propre à l'AI Act, de la même forme que celle du RGPD. */
+export const INSTRUCTION_AIAct =
+  "Instruction : retrouve les passages du règlement européen sur l'intelligence artificielle qui répondent à la question\nRequête : ";
+
+/** Instructions connues par identifiant CELEX ; le défaut couvre le reste. */
+export const INSTRUCTIONS_REQUETE: Record<string, string> = {
+  "32016R0679": INSTRUCTION_REQUETE,
+  "32024R1689": INSTRUCTION_AIAct,
+};
 
 export type OllamaEmbedderOptions = {
   host?: string;
   model?: string;
   dim?: number;
-  /** Préfixe des requêtes seules ; `""` le désactive. */
-  instructionRequete?: string;
+  /** Instructions par identifiant CELEX ; `defaut` s'applique aux autres documents. */
+  instructions?: Record<string, string>;
+  /** Instruction de repli, et du document non nommé. */
+  defaut?: string;
   fetchImpl?: FetchLike;
 };
 
@@ -60,7 +73,8 @@ export function createOllamaEmbedder(options: OllamaEmbedderOptions = {}): Embed
   const host = options.host ?? HOTE_DEFAUT;
   const model = options.model ?? MODELE_DEFAUT;
   const dim = options.dim ?? DIM_DEFAUT;
-  const instructionRequete = options.instructionRequete ?? INSTRUCTION_REQUETE;
+  const instructions = options.instructions ?? INSTRUCTIONS_REQUETE;
+  const defaut = options.defaut ?? INSTRUCTION_REQUETE;
   const fetchImpl = options.fetchImpl ?? fetch;
 
   async function embarquer(textes: string[]): Promise<number[][]> {
@@ -104,8 +118,9 @@ export function createOllamaEmbedder(options: OllamaEmbedderOptions = {}): Embed
     model,
     dim,
     embedPassages: embarquer,
-    async embedQuery(texte: string): Promise<number[]> {
-      const [vecteur] = await embarquer([`${instructionRequete}${texte}`]);
+    async embedQuery(texte: string, document?: string): Promise<number[]> {
+      const instruction = document === undefined ? defaut : (instructions[document] ?? defaut);
+      const [vecteur] = await embarquer([`${instruction}${texte}`]);
       if (vecteur === undefined) throw new Error("Ollama n'a rendu aucun embedding pour la requête");
       return vecteur;
     },

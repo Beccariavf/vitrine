@@ -14,9 +14,16 @@ import { getArticle, search } from "./tools.ts";
 export const RACINE = fileURLToPath(new URL("..", import.meta.url));
 
 const CONSIGNE_PROVENANCE =
-  "Le texte rendu vient du corpus RGPD local, jamais d'une génération. " +
-  "Citer la référence et l'URL rendues. Respecter le niveau de confiance : " +
-  "« aucun_resultat_fiable » signifie qu'il faut le dire au lecteur, pas inventer un passage.";
+  "Le texte rendu vient des corpus locaux (RGPD `32016R0679` et AI Act `32024R1689`), " +
+  "jamais d'une génération. Citer la référence et l'URL rendues. Respecter le niveau de " +
+  "confiance : « aucun_resultat_fiable » signifie qu'il faut le dire au lecteur, pas inventer " +
+  "un passage.";
+
+const CONSIGNE_SERVEUR =
+  "Serveur de lecture et de recherche sur deux corpus juridiques européens : le RGPD " +
+  "(CELEX 32016R0679) et l'AI Act (CELEX 32024R1689). Les deux outils acceptent le paramètre " +
+  "`document` ; sans lui, la recherche couvre les deux corpus. Le texte rendu vient du corpus " +
+  "local, jamais d'une génération.";
 
 export type ServerDeps = {
   rootDir: string;
@@ -34,18 +41,24 @@ export function createServer(deps: ServerDeps): McpServer {
     return indexCourant;
   };
 
-  const serveur = new McpServer({ name: "rgpd", version: "0.1.0" });
+  const serveur = new McpServer(
+    { name: "corpus-juridiques", version: "0.1.0" },
+    { instructions: CONSIGNE_SERVEUR },
+  );
 
   serveur.registerTool(
     "get_article",
     {
-      title: "Lire un article du RGPD",
+      title: "Lire un article du RGPD ou de l'AI Act",
       description:
-        "Rend le texte exact d'un article du RGPD, avec sa référence, son chemin, ses dates et son URL. " +
-        "Répondre « introuvable » quand l'article n'existe pas ; ne jamais compléter un texte absent. " +
+        "Rend le texte exact d'un article du RGPD ou de l'AI Act, avec sa référence, son chemin, " +
+        "ses dates et son URL. Répondre « introuvable » quand l'article n'existe pas ; ne jamais " +
+        "compléter un texte absent. " +
         CONSIGNE_PROVENANCE,
       inputSchema: {
-        document: z.string().describe("Identifiant CELEX du document, par exemple 32016R0679"),
+        document: z
+          .string()
+          .describe("Identifiant CELEX du document : 32016R0679 (RGPD) ou 32024R1689 (AI Act)"),
         numero: z.string().describe("Numéro d'article, par exemple 17"),
       },
     },
@@ -58,10 +71,10 @@ export function createServer(deps: ServerDeps): McpServer {
   serveur.registerTool(
     "search",
     {
-      title: "Chercher dans le RGPD",
+      title: "Chercher dans le RGPD ou l'AI Act",
       description:
-        "Cherche par le sens dans le corpus RGPD et rend les passages les plus proches avec leur provenance " +
-        "et un niveau de confiance (confiant, incertain, aucun_resultat_fiable). " +
+        "Cherche par le sens dans le RGPD ou l'AI Act et rend les passages les plus proches avec leur " +
+        "provenance et un niveau de confiance (confiant, incertain, aucun_resultat_fiable). " +
         "L'article pose la règle et le considérant l'éclaire : à pertinence comparable, l'article passe " +
         "devant, mais aucun considérant n'est retiré du résultat. " +
         "Une question qui cite un article rend cet article exact, sans recherche vectorielle. " +
@@ -72,7 +85,10 @@ export function createServer(deps: ServerDeps): McpServer {
         document: z
           .string()
           .optional()
-          .describe("Restreint la recherche à un document, par exemple 32016R0679"),
+          .describe(
+            "Restreint la recherche à un document : 32016R0679 (RGPD) ou 32024R1689 (AI Act) ; " +
+              "absent, les deux corpus répondent",
+          ),
       },
     },
     async ({ question, k, document }) => {
@@ -98,7 +114,9 @@ async function main(): Promise<void> {
   });
 
   await serveur.connect(transport);
-  process.stderr.write("Serveur MCP RGPD prêt sur stdio (deux outils : get_article, search).\n");
+  process.stderr.write(
+    "Serveur MCP des corpus RGPD et AI Act prêt sur stdio (deux outils : get_article, search).\n",
+  );
 }
 
 const entre = process.argv[1];

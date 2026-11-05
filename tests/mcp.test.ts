@@ -185,6 +185,37 @@ describe("les outils, sans transport", () => {
       rmSync(root, { recursive: true, force: true });
     }
   });
+
+  it("transmet le document à l'embedder de requête", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-tools-"));
+    try {
+      ecrireCorpus(root);
+      const { chemin } = await buildIndex(root, embedderFactice());
+      const index = openIndex(chemin);
+      const base = embedderFactice();
+      const vus: (string | undefined)[] = [];
+      const embedder: Embedder = {
+        ...base,
+        embedQuery: async (texte, document) => {
+          vus.push(document);
+          return base.embedQuery(texte);
+        },
+      };
+      try {
+        await search(
+          root,
+          { question: "droit d'accès de la personne concernée aux données", document: DOCUMENT },
+          { embedder, index },
+        );
+
+        assert.deepEqual(vus, [DOCUMENT]);
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
 });
 
 /** Un passage synthétique à une similarité donnée, pour la bande article. */
