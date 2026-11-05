@@ -58,7 +58,7 @@ Après l'ingestion de l'AI Act, l'index porte 565 unités (272 RGPD, 293 AI Act)
 
 Sur ces 19 questions sémantiques, une surlecture jetable à 200 candidats globaux, filtrée puis classée par la même bande article, rend 138 à 200 candidats RGPD. Les chiffres `dev` sont identiques : `recall@5` brut 0,947 (18/19), top-1 brut 78,9 % (15/19), `MRR` brut 0,860, 2 `incertain` rendus et 0/4 pièges cités. Le delta mesuré sur `dev` est donc nul ; il n'est pas publié comme correction des chiffres.
 
-La mesure `test` publiée ci-dessous a été faite avec le vivier tronqué du chemin produit, pas avec cette surlecture. Le vivier `test` n'a pas été re-mesuré et peut être plus étroit que celui de `dev`. Ce choix peut sous-estimer ou déformer son top 5 ; seul un v3 mesuré sur un nouveau jeu tenu à l'écart pourrait trancher. Aucun chiffre `test` de ce rapport n'est corrigé. Ce n'est pas un défaut du produit : la recherche non filtrée ne tronque pas par document et rend bien ses cinq passages.
+La mesure `test` publiée ci-dessous a été faite avec le vivier tronqué du chemin produit, pas avec cette surlecture. Le vivier `test` n'a pas été re-mesuré et peut être plus étroit que celui de `dev`. Ce choix peut sous-estimer ou déformer son top 5 ; seul un v3 mesuré sur un nouveau jeu tenu à l'écart pourrait trancher. Aucun chiffre `test` de ce rapport n'est corrigé. La recherche non filtrée n'est pas affectée : elle ne tronque pas par document et rend bien ses cinq passages. La recherche filtrée, elle, peut l'être ; sur `dev`, la surlecture n'a toutefois montré aucun changement sur ces 19 questions.
 
 ## Mesure `test` (une seule fois)
 

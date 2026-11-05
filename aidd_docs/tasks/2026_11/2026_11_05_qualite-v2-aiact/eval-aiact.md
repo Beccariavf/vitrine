@@ -20,7 +20,7 @@ La requête porte désormais sa propre instruction, choisie par document : le do
 
 Le changement d'instruction ne sauve pas la question « évaluation ou classification des personnes selon leur comportement social » (`art_5` reste absent, `rct_31` en tête) et fait reculer le top 1 brut : `art_43` passe du rang 2 au rang 3, `art_27` du rang 1 au rang 2. Il ne rend plus aucun résultat totalement refusé : le rappel rendu passe de 1/3 à 2/3 et le MRR rendu de 0,167 à 0,278. Le MRR brut, lui, baisse de 0,500 à 0,278 ; le `recall@5` brut ne bouge pas (2/3). Le top 1 est 0/3 dans les deux lectures. Il remonte aussi `rct_48` devant `art_27` : le niveau rendu reste `incertain`, et l'article attendu, à 0,685, est sous le seuil bas.
 
-**Trois questions sémantiques ne distinguent pas les deux instructions : aucune conclusion de qualité n'est tirée.** Le changement est une correction de justesse documentaire — une requête AI Act ne demande plus des « passages du RGPD » — pas une amélioration mesurée.
+**Trois questions sémantiques ne distinguent pas les deux instructions : aucune conclusion de qualité n'est tirée.** Le changement est une correction de justesse documentaire — une requête AI Act ne demande plus des « passages du RGPD » — pas une amélioration de qualité démontrable sur trois questions.
 
 Détail des trois questions sémantiques :
 
