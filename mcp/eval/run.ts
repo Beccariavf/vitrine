@@ -1,5 +1,6 @@
-import { readFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { createHash } from "node:crypto";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { basename, dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { MARGE, SEUIL_BAS, SEUIL_HAUT, niveauConfiance } from "../confidence.ts";
 import { createOllamaEmbedder } from "../embed/embedder.ts";
@@ -34,22 +35,39 @@ export type Seuils = { bas: number; haut: number; marge: number };
 export type Classement = { attendues: string[]; rendus: string[] };
 export type ClassementPiege = { piege: boolean; refusee: boolean };
 
+/** Un jeu de questions et la présence éventuelle de la colonne `split`. */
+export type Jeu = {
+  questions: Question[];
+  /** Faux pour un jeu sans split : le rapport le dit et n'ajuste aucun seuil. */
+  avecSplit: boolean;
+};
+
 const ENTETE = "question,type,sources_attendues,piege,split";
+const ENTETE_SANS_SPLIT = "question,type,sources_attendues,piege";
 const TYPES: TypeQuestion[] = ["reference", "conceptuelle", "piege"];
 const SPLITS: Split[] = ["dev", "test"];
 
-/** Lit `questions.csv` ; lève sur une ligne mal formée. */
-export function lireQuestions(csv: string): Question[] {
+/**
+ * Lit un CSV de questions ; lève sur une ligne mal formée. Un en-tête à quatre
+ * colonnes (`question,type,sources_attendues,piege`) décrit un jeu sans split :
+ * ses lignes valent `dev` pour le filtrage, sans prétendre à une calibration.
+ */
+export function lireJeu(csv: string): Jeu {
   const lignes = csv
     .split(/\r?\n/)
     .filter((ligne) => ligne.trim() !== "");
   const entete = lignes.shift();
-  if (entete !== ENTETE) throw new Error(`En-tête inattendu : ${entete ?? "(vide)"}`);
+  const avecSplit = entete === ENTETE;
+  if (!avecSplit && entete !== ENTETE_SANS_SPLIT) {
+    throw new Error(`En-tête inattendu : ${entete ?? "(vide)"}`);
+  }
 
-  return lignes.map((ligne, index) => {
+  const questions = lignes.map((ligne, index) => {
     const champs = ligne.split(",");
-    if (champs.length !== 5) throw new Error(`Ligne ${index + 2} illisible : ${ligne}`);
-    const [question = "", type = "", sources = "", piege = "", split = ""] = champs;
+    if (champs.length !== (avecSplit ? 5 : 4)) {
+      throw new Error(`Ligne ${index + 2} illisible : ${ligne}`);
+    }
+    const [question = "", type = "", sources = "", piege = "", split = "dev"] = champs;
     if (!TYPES.includes(type as TypeQuestion)) {
       throw new Error(`Ligne ${index + 2} : type inconnu « ${type} »`);
     }
@@ -67,6 +85,39 @@ export function lireQuestions(csv: string): Question[] {
       split: split as Split,
     };
   });
+
+  return { questions, avecSplit };
+}
+
+/** Lit `questions.csv` ; lève sur une ligne mal formée. */
+export function lireQuestions(csv: string): Question[] {
+  return lireJeu(csv).questions;
+}
+
+/** Document d'une référence : le préfixe avant `#`. */
+function documentDe(ref: string): string {
+  const document = ref.split("#")[0] ?? "";
+  if (document === "") throw new Error(`Référence sans document : « ${ref} »`);
+  return document;
+}
+
+/**
+ * Un jeu ne couvre qu'un document : un rapport ne mélange jamais deux corpus.
+ * Les pièges sans référence héritent du document des autres lignes. Le préfixe
+ * des `sources_attendues` est la seule source du document.
+ */
+export function documentDuJeu(questions: Question[]): string {
+  const documents = new Set<string>();
+  for (const question of questions) {
+    for (const ref of question.attendues) documents.add(documentDe(ref));
+  }
+  if (documents.size === 0) {
+    throw new Error("Aucune référence attendue : impossible de déduire le document du jeu");
+  }
+  if (documents.size > 1) {
+    throw new Error(`Questions de plusieurs documents : ${[...documents].sort().join(", ")}`);
+  }
+  return [...documents][0] ?? "";
 }
 
 /** Garde les questions d'un split ; `all` les garde toutes. */
@@ -124,6 +175,67 @@ export function tauxCitationsInvalides(classements: ClassementPiege[]): number {
   const pieges = classements.filter((classement) => classement.piege);
   if (pieges.length === 0) return 0;
   return pieges.filter((classement) => !classement.refusee).length / pieges.length;
+}
+
+/** Intervalle de confiance à 95 % d'une proportion, méthode de Wilson. */
+export function intervalleWilson(succes: number, total: number): [number, number] {
+  if (total === 0) return [0, 0];
+  const z = 1.959963984540054;
+  const proportion = succes / total;
+  const denominateur = 1 + (z * z) / total;
+  const centre = (proportion + (z * z) / (2 * total)) / denominateur;
+  const demiLargeur =
+    (z * Math.sqrt((proportion * (1 - proportion)) / total + (z * z) / (4 * total * total))) /
+    denominateur;
+  return [Math.max(0, centre - demiLargeur), Math.min(1, centre + demiLargeur)];
+}
+
+/** Marqueur de consommation du split `test`, écrit à côté du fichier de questions. */
+export type Marqueur = {
+  date: string;
+  questions_sha256: string;
+  modele: string;
+  dimensions: number;
+  split: "test";
+  top5_semantique: number;
+  semantiques: number;
+  top1_semantique: number;
+  mrr_semantique: number;
+  top5_global: number;
+  referencees: number;
+  pieges_cites: number;
+  pieges_mesures: number;
+  incertain: number;
+};
+
+/** `questions-v2.csv` → `questions-v2.test-consomme.json`, dans le même dossier. */
+export function cheminMarqueur(cheminQuestions: string): string {
+  const nom = basename(cheminQuestions).replace(/\.csv$/i, "");
+  return join(dirname(cheminQuestions), `${nom}.test-consomme.json`);
+}
+
+/**
+ * Refuse une seconde mesure du test. Le marqueur dit la date, l'empreinte du
+ * fichier et les chiffres publiés ; le supprimer effacerait la preuve.
+ */
+export function verifierTestNonConsomme(cheminMarqueurPath: string): void {
+  if (!existsSync(cheminMarqueurPath)) return;
+  let marqueur: Partial<Marqueur> = {};
+  try {
+    marqueur = JSON.parse(readFileSync(cheminMarqueurPath, "utf8")) as Partial<Marqueur>;
+  } catch {
+    // Un marqueur illisible reste un marqueur : la mesure est consommée.
+  }
+  throw new Error(
+    `Test déjà consommé le ${marqueur.date ?? "date inconnue"} ` +
+      `(questions ${marqueur.questions_sha256 ?? "empreinte inconnue"}, ` +
+      `marqueur ${cheminMarqueurPath}). Le test ne se mesure qu'une fois.`,
+  );
+}
+
+/** Écrit le marqueur de consommation, preuve versionnée de la mesure unique. */
+export function ecrireMarqueurTest(cheminMarqueurPath: string, marqueur: Marqueur): void {
+  writeFileSync(cheminMarqueurPath, `${JSON.stringify(marqueur, null, 2)}\n`, "utf8");
 }
 
 /** Découpe en `plis` blocs contigus de `ceil(n / plis)`. */
@@ -264,12 +376,13 @@ async function mesurer(
   questions: Question[],
   embedder: Embedder,
   index: Index,
+  document: string,
 ): Promise<Mesure[]> {
   const mesures: Mesure[] = [];
   for (const question of questions) {
     const resultat = await search(
       rootDir,
-      { question: question.question, k: 5 },
+      { question: question.question, k: 5, document },
       { embedder, index, seuils: { bas: -1, haut: 2, marge: 0 } },
     );
     mesures.push({
@@ -421,6 +534,45 @@ function rapport(mesures: Mesure[], seuils: Seuils, origineSeuils: string): stri
   ];
 }
 
+/** Chiffres de tête, sans mise en forme : ils alimentent le marqueur du test. */
+export type Resume = {
+  semantiques: number;
+  top5_semantique_succes: number;
+  top1_semantique_succes: number;
+  mrr_semantique: number;
+  referencees: number;
+  top5_global_succes: number;
+  pieges_mesures: number;
+  pieges_cites: number;
+  incertain: number;
+};
+
+export function resume(mesures: Mesure[], seuils: Seuils): Resume {
+  const semantiques = mesures.filter((mesure) => !mesure.question.piege && !estExacte(mesure));
+  const referencees = mesures.filter((mesure) => !mesure.question.piege);
+  const classementsSemantiques = classer(semantiques);
+  const classementsGlobaux = classer(referencees);
+  const pieges = mesures.filter((mesure) => mesure.question.piege && !estExacte(mesure));
+
+  return {
+    semantiques: semantiques.length,
+    top5_semantique_succes: classementsSemantiques.filter((classement) =>
+      classement.rendus.slice(0, 5).some((ref) => classement.attendues.includes(ref)),
+    ).length,
+    top1_semantique_succes: classementsSemantiques.filter((classement) =>
+      classement.attendues.includes(classement.rendus[0] ?? ""),
+    ).length,
+    mrr_semantique: mrr(classementsSemantiques),
+    referencees: referencees.length,
+    top5_global_succes: classementsGlobaux.filter((classement) =>
+      classement.rendus.slice(0, 5).some((ref) => classement.attendues.includes(ref)),
+    ).length,
+    pieges_mesures: pieges.length,
+    pieges_cites: pieges.filter((mesure) => !refusee(mesure, seuils)).length,
+    incertain: semantiques.filter((mesure) => niveau(mesure, seuils) === "incertain").length,
+  };
+}
+
 function lireSplit(argv: string[]): FiltreSplit {
   const index = argv.indexOf("--split");
   const valeur = index >= 0 ? argv[index + 1] : "dev";
@@ -430,28 +582,81 @@ function lireSplit(argv: string[]): FiltreSplit {
   return valeur;
 }
 
+/** Le split `test` ne s'exécute que sur autorisation explicite. */
+export function verifierAutorisationTest(split: FiltreSplit, mesurerTest: boolean): void {
+  if ((split === "test" || split === "all") && !mesurerTest) {
+    throw new Error(
+      `Le split ${split} exige --mesurer-test : le test ne se mesure qu'une fois, ` +
+        "après la fin des corrections.",
+    );
+  }
+}
+
+/** Valeur qui suit `--nom`, ou `undefined`. */
+function valeurDe(nom: string, argv: string[]): string | undefined {
+  const index = argv.indexOf(nom);
+  return index >= 0 ? argv[index + 1] : undefined;
+}
+
+function sha256(contenu: string): string {
+  return createHash("sha256").update(contenu, "utf8").digest("hex");
+}
+
+/** Résout `--questions` : chemin absolu, puis `mcp/eval/`, puis le répertoire courant. */
+export function resoudreQuestions(chemin: string): string {
+  if (isAbsolute(chemin)) return chemin;
+  const local = join(ICI, chemin);
+  if (existsSync(local)) return local;
+  return resolve(process.cwd(), chemin);
+}
+
+function pourcentIntervalle(succes: number, total: number): string {
+  const [bas, haut] = intervalleWilson(succes, total);
+  return `${pourcentage(total === 0 ? 0 : succes / total)} ` +
+    `(IC 95 % ${pourcentage(bas)}–${pourcentage(haut)})`;
+}
+
 async function main(argv: string[]): Promise<void> {
   const split = lireSplit(argv);
-  const questions = lireQuestions(readFileSync(QUESTIONS, "utf8"));
+  verifierAutorisationTest(split, argv.includes("--mesurer-test"));
+
+  const cheminQuestions = resoudreQuestions(valeurDe("--questions", argv) ?? basename(QUESTIONS));
+  const contenu = readFileSync(cheminQuestions, "utf8");
+  const jeu = lireJeu(contenu);
+  const questions = jeu.questions;
+  const document = documentDuJeu(questions);
   const unites = lireUnites(RACINE);
   validerReferences(questions, new Set(unites.map((unite) => unite.ref)));
+
+  const consommeTest = split === "test" || split === "all";
+  const marqueurPath =
+    valeurDe("--marqueur", argv) === undefined
+      ? cheminMarqueur(cheminQuestions)
+      : resolve(process.cwd(), valeurDe("--marqueur", argv) ?? "");
+  if (consommeTest) verifierTestNonConsomme(marqueurPath);
 
   const embedder = createOllamaEmbedder();
   const index = openIndex(cheminIndex(RACINE));
   try {
     const demandees = filtrerSplit(questions, split);
-    const mesures = await mesurer(RACINE, demandees, embedder, index);
+    const mesures = await mesurer(RACINE, demandees, embedder, index, document);
 
-    const mesuresDev = split === "all" ? mesures.filter((mesure) => mesure.question.split === "dev") : mesures;
+    const mesuresDev =
+      split === "all" ? mesures.filter((mesure) => mesure.question.split === "dev") : mesures;
     const seuils =
-      split === "test"
+      !jeu.avecSplit || split === "test"
         ? { bas: SEUIL_BAS, haut: SEUIL_HAUT, marge: MARGE }
         : calibrer(mesuresDev);
-    const origine = split === "test" ? "figés avant la mesure" : "calibrés sur dev";
+    const origine = !jeu.avecSplit
+      ? "figés (jeu sans split)"
+      : split === "test"
+        ? "figés avant la mesure"
+        : "calibrés sur dev";
 
     const lignes = [
       `date : ${new Date().toISOString().slice(0, 10)}`,
       `modèle : ${embedder.model} (${embedder.dim} dimensions)`,
+      `document : ${document}`,
       `split : ${split}`,
       ...(split === "all"
         ? [
@@ -464,6 +669,44 @@ async function main(argv: string[]): Promise<void> {
           ]
         : rapport(mesures, seuils, origine)),
     ];
+
+    if (consommeTest) {
+      const mesuresTest =
+        split === "test"
+          ? mesures
+          : mesures.filter((mesure) => mesure.question.split === "test");
+      const chiffres = resume(mesuresTest, seuils);
+      lignes.push(
+        "",
+        `intervalle 95 % (Wilson) : top 5 global ` +
+          pourcentIntervalle(chiffres.top5_global_succes, chiffres.referencees) +
+          ` ; top 5 sémantique ` +
+          pourcentIntervalle(chiffres.top5_semantique_succes, chiffres.semantiques) +
+          ` ; pièges cités ` +
+          pourcentIntervalle(chiffres.pieges_cites, chiffres.pieges_mesures),
+      );
+
+      ecrireMarqueurTest(marqueurPath, {
+        date: new Date().toISOString().slice(0, 10),
+        questions_sha256: sha256(contenu),
+        modele: embedder.model,
+        dimensions: embedder.dim,
+        split: "test",
+        top5_semantique:
+          chiffres.semantiques === 0 ? 0 : chiffres.top5_semantique_succes / chiffres.semantiques,
+        semantiques: chiffres.semantiques,
+        top1_semantique:
+          chiffres.semantiques === 0 ? 0 : chiffres.top1_semantique_succes / chiffres.semantiques,
+        mrr_semantique: chiffres.mrr_semantique,
+        top5_global:
+          chiffres.referencees === 0 ? 0 : chiffres.top5_global_succes / chiffres.referencees,
+        referencees: chiffres.referencees,
+        pieges_cites: chiffres.pieges_cites,
+        pieges_mesures: chiffres.pieges_mesures,
+        incertain: chiffres.incertain,
+      });
+    }
+
     process.stdout.write(`${lignes.join("\n")}\n`);
   } finally {
     index.db.close();

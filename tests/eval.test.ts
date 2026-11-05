@@ -1,21 +1,32 @@
 import { strict as assert } from "node:assert";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, existsSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, it } from "node:test";
 import {
   calibrer,
+  cheminMarqueur,
+  documentDuJeu,
+  ecrireMarqueurTest,
   filtrerSplit,
+  intervalleWilson,
+  lireJeu,
   lireQuestions,
   mrr,
   precisionAt1,
   recallAt5,
   repartirPlis,
+  resoudreQuestions,
   tauxCitationsInvalides,
   validerCroise,
   validerReferences,
+  verifierAutorisationTest,
+  verifierTestNonConsomme,
 } from "../mcp/eval/run.ts";
-import type { Mesure, Question, Split } from "../mcp/eval/run.ts";
+import type { Marqueur, Mesure, Question, Split } from "../mcp/eval/run.ts";
 
 const QUESTIONS = readFileSync(new URL("../mcp/eval/questions.csv", import.meta.url), "utf8");
+const QUESTIONS_V2 = readFileSync(new URL("../mcp/eval/questions-v2.csv", import.meta.url), "utf8");
 const CORPUS = readFileSync(new URL("../data/corpus/rgpd/unites.jsonl", import.meta.url), "utf8")
   .trimEnd()
   .split("\n")
@@ -238,5 +249,156 @@ describe("la calibration", () => {
     assert.equal(plis.length, 4);
     assert.ok(plis.every((pli) => pli.pieges >= 1));
     assert.ok(plis.every((pli) => pli.taux === 0));
+  });
+});
+
+describe("questions-v2.csv", () => {
+  const questions = lireQuestions(QUESTIONS_V2);
+  const refs = new Set(CORPUS.map((unite) => unite.ref));
+
+  it("porte soixante lignes : douze références, trente-huit conceptuelles, dix pièges", () => {
+    assert.equal(questions.length, 60);
+    assert.equal(questions.filter((question) => question.type === "reference").length, 12);
+    assert.equal(questions.filter((question) => question.type === "conceptuelle").length, 38);
+    assert.equal(questions.filter((question) => question.piege).length, 10);
+  });
+
+  it("répartit trente questions en dev et trente en test", () => {
+    const dev = filtrerSplit(questions, "dev");
+    const test = filtrerSplit(questions, "test");
+
+    assert.equal(dev.length, 30);
+    assert.equal(test.length, 30);
+    assert.equal(dev.filter((question) => question.piege).length, 5);
+    assert.equal(test.filter((question) => question.piege).length, 5);
+  });
+
+  it("n'attend que des références présentes dans le corpus", () => {
+    validerReferences(questions, refs);
+  });
+
+  it("garde au moins un piège sur un numéro d'article plausible mais absent", () => {
+    const pieges = questions.filter((question) => question.piege);
+    const numeros = pieges
+      .map((question) => /\b(?:article|art\.?)\s*(\d+)/i.exec(question.question))
+      .filter((trouve): trouve is RegExpExecArray => trouve !== null)
+      .map((trouve) => Number(trouve[1]));
+
+    assert.ok(numeros.length >= 1);
+    assert.ok(numeros.every((numero) => !refs.has(`32016R0679#art_${numero}`)));
+  });
+
+  it("garde la paraphrase « droit de récupérer mes données » en test sur l'article 20", () => {
+    const paraphrase = questions.find(
+      (question) => question.question === "droit de récupérer mes données",
+    );
+
+    assert.equal(paraphrase?.split, "test");
+    assert.deepEqual(paraphrase?.attendues, ["32016R0679#art_20"]);
+  });
+});
+
+describe("le document du jeu", () => {
+  it("déduit le document du préfixe des références attendues", () => {
+    const questions = lireQuestions(QUESTIONS_V2);
+    assert.equal(documentDuJeu(questions), "32016R0679");
+  });
+
+  it("refuse un jeu qui mélange deux documents", () => {
+    const questions: Question[] = [
+      {
+        question: "une question RGPD",
+        type: "conceptuelle",
+        attendues: ["32016R0679#art_17"],
+        piege: false,
+        split: "dev",
+      },
+      {
+        question: "une question AI Act",
+        type: "conceptuelle",
+        attendues: ["32024R1689#art_6"],
+        piege: false,
+        split: "dev",
+      },
+    ];
+
+    assert.throws(() => documentDuJeu(questions), /plusieurs documents.*32016R0679.*32024R1689/);
+  });
+
+  it("refuse un jeu sans référence qui ne dit pas son document", () => {
+    const questions: Question[] = [
+      { question: "piège seul", type: "piege", attendues: [], piege: true, split: "dev" },
+    ];
+
+    assert.throws(() => documentDuJeu(questions), /impossible de déduire le document/);
+  });
+
+  it("lit un jeu à quatre colonnes comme un jeu sans split", () => {
+    const jeu = lireJeu("question,type,sources_attendues,piege\nune question,conceptuelle,32024R1689#art_1,non\n");
+
+    assert.equal(jeu.avecSplit, false);
+    assert.equal(jeu.questions[0]?.split, "dev");
+  });
+});
+
+describe("le verrou du test", () => {
+  it("exige --mesurer-test pour le split test et pour all", () => {
+    assert.throws(() => verifierAutorisationTest("test", false), /exige --mesurer-test/);
+    assert.throws(() => verifierAutorisationTest("all", false), /exige --mesurer-test/);
+    verifierAutorisationTest("test", true);
+    verifierAutorisationTest("dev", false);
+  });
+
+  it("refuse une seconde mesure quand le marqueur existe", () => {
+    const dossier = mkdtempSync(join(tmpdir(), "vitrine-eval-"));
+    try {
+      const marqueurPath = join(dossier, "questions-v2.test-consomme.json");
+      const marqueur: Marqueur = {
+        date: "2026-11-05",
+        questions_sha256: "abc",
+        modele: "qwen3-embedding:0.6b",
+        dimensions: 1024,
+        split: "test",
+        top5_semantique: 0.9,
+        semantiques: 19,
+        top1_semantique: 0.8,
+        mrr_semantique: 0.85,
+        top5_global: 0.9,
+        referencees: 25,
+        pieges_cites: 0,
+        pieges_mesures: 4,
+        incertain: 2,
+      };
+
+      verifierTestNonConsomme(marqueurPath);
+      ecrireMarqueurTest(marqueurPath, marqueur);
+      assert.ok(existsSync(marqueurPath));
+      assert.throws(() => verifierTestNonConsomme(marqueurPath), /Test déjà consommé le 2026-11-05/);
+    } finally {
+      rmSync(dossier, { recursive: true, force: true });
+    }
+  });
+
+  it("dérive le marqueur du nom du fichier de questions", () => {
+    assert.match(
+      cheminMarqueur("/tmp/questions-v2.csv"),
+      /\/tmp\/questions-v2\.test-consomme\.json$/,
+    );
+  });
+});
+
+describe("l'intervalle de Wilson", () => {
+  it("encadre la proportion observée et reste dans [0, 1]", () => {
+    const [bas, haut] = intervalleWilson(20, 25);
+
+    assert.ok(bas < 20 / 25 && 20 / 25 < haut);
+    assert.ok(bas >= 0 && haut <= 1);
+    assert.deepEqual(intervalleWilson(0, 0), [0, 0]);
+  });
+});
+
+describe("la résolution du fichier de questions", () => {
+  it("trouve le jeu livré dans mcp/eval", () => {
+    assert.equal(resoudreQuestions("questions-v2.csv"), new URL("../mcp/eval/questions-v2.csv", import.meta.url).pathname);
   });
 });
