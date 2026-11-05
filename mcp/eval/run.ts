@@ -1,12 +1,12 @@
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { MARGE, SEUIL_BAS, SEUIL_HAUT, niveauConfiance } from "../confidence.ts";
 import { createOllamaEmbedder } from "../embed/embedder.ts";
 import type { Embedder } from "../embed/embedder.ts";
 import { cheminIndex, lireUnites } from "../index/build.ts";
-import { BANDE_ARTICLE, openIndex } from "../index/search.ts";
+import { openIndex } from "../index/search.ts";
 import type { Index } from "../index/search.ts";
 import { referenceExacte, search } from "../tools.ts";
 
@@ -196,42 +196,20 @@ export function intervalleWilson(succes: number, total: number): [number, number
   return [Math.max(0, centre - demiLargeur), Math.min(1, centre + demiLargeur)];
 }
 
-/** Marqueur de consommation du split `test`, écrit à côté du fichier de questions. */
-export type Marqueur = {
-  date: string;
-  note: string;
-  questions_sha256: string;
+/** Une mesure du test, appendue au marqueur v3 : un modèle, ses seuils, ses chiffres. */
+export type MesureMarqueur = {
   modele: string;
   dimensions: number;
-  recherche: ModeRecherche;
-  split: "test";
-  top5_semantique_brut: number;
-  semantiques: number;
-  top1_semantique_brut: number;
-  mrr_semantique_brut: number;
-  top5_global_brut: number;
-  top5_rendu: number;
-  top1_rendu: number;
-  mrr_rendu: number;
-  top5_global_rendu: number;
-  referencees: number;
-  pieges_cites: number;
-  pieges_mesures: number;
-  niveaux: {
-    confiant: number;
-    incertain: number;
-    aucun_resultat_fiable: number;
-  };
-  pieges_confiants: number;
+  date: string;
   seuils: Seuils;
-  bande_article: number;
-  intervalles: {
-    top5_global_brut: [number, number];
-    top5_semantique_brut: [number, number];
-    pieges_cites: [number, number];
-  };
-  snapshots: Record<string, string>;
-  unites_index: number;
+  agregats: Resume;
+};
+
+/** Marqueur v3 : une empreinte de questions, et une mesure par modèle pré-déclaré. */
+export type MarqueurV3 = {
+  note: string;
+  questions_sha256: string;
+  mesures: MesureMarqueur[];
 };
 
 /** `questions-v2.csv` → `questions-v2.test-consomme.json`, dans le même dossier. */
@@ -240,41 +218,113 @@ export function cheminMarqueur(cheminQuestions: string): string {
   return join(dirname(cheminQuestions), `${nom}.test-consomme.json`);
 }
 
-/**
- * Refuse une seconde mesure du test. Le marqueur dit la date, l'empreinte du
- * fichier et les chiffres publiés ; le supprimer effacerait la trace et
- * rendrait la mesure rejouable.
- */
-export function verifierTestNonConsomme(cheminMarqueurPath: string): void {
-  if (!existsSync(cheminMarqueurPath)) return;
-  let marqueur: Partial<Marqueur> = {};
+type MarqueurLu =
+  | { format: "absent" }
+  | { format: "illisible"; date: string; hash: string }
+  | { format: "v2"; date: string; hash: string }
+  | { format: "v3"; marqueur: MarqueurV3 };
+
+/** Lit le marqueur ; un fichier à plat (v2) est reconnu comme consommé, pas comme v3. */
+function lireMarqueur(cheminMarqueurPath: string): MarqueurLu {
+  if (!existsSync(cheminMarqueurPath)) return { format: "absent" };
+  let brut: unknown;
   try {
-    marqueur = JSON.parse(readFileSync(cheminMarqueurPath, "utf8")) as Partial<Marqueur>;
+    brut = JSON.parse(readFileSync(cheminMarqueurPath, "utf8"));
   } catch {
-    // Un marqueur illisible reste un marqueur : la mesure est consommée.
+    return { format: "illisible", date: "date inconnue", hash: "empreinte inconnue" };
   }
-  throw new Error(
-    `Test déjà consommé le ${marqueur.date ?? "date inconnue"} ` +
-      `(questions ${marqueur.questions_sha256 ?? "empreinte inconnue"}, ` +
-      `marqueur ${cheminMarqueurPath}). Le test ne se mesure qu'une fois.`,
-  );
+  if (typeof brut !== "object" || brut === null) {
+    return { format: "illisible", date: "date inconnue", hash: "empreinte inconnue" };
+  }
+  const objet = brut as Record<string, unknown>;
+  const date = typeof objet.date === "string" ? objet.date : "date inconnue";
+  const hash = typeof objet.questions_sha256 === "string" ? objet.questions_sha256 : "empreinte inconnue";
+  if (!Array.isArray(objet.mesures)) return { format: "v2", date, hash };
+  return {
+    format: "v3",
+    marqueur: {
+      note: typeof objet.note === "string" ? objet.note : "",
+      questions_sha256: hash,
+      mesures: objet.mesures as MesureMarqueur[],
+    },
+  };
 }
 
 /**
- * Écrit le marqueur de consommation ; `note` dit d'où viennent les chiffres.
- * Elle est fournie par l'appelant pour qu'une future mesure ne réécrive pas la
- * date ni l'origine d'une mesure antérieure.
+ * Refuse une seconde mesure du test pour le même modèle et la même empreinte de
+ * questions. Un autre modèle pré-déclaré reste accepté. Un marqueur à plat (v2)
+ * est refusé quel que soit le modèle : ce test-là est consommé.
  */
-export function ecrireMarqueurTest(
+export function verifierTestNonConsomme(
   cheminMarqueurPath: string,
-  marqueur: Omit<Marqueur, "note">,
+  questionsSha: string,
+  modele: string,
+): void {
+  const lu = lireMarqueur(cheminMarqueurPath);
+  if (lu.format === "absent") return;
+  if (lu.format === "illisible") {
+    throw new Error(
+      `Test déjà consommé (marqueur illisible, marqueur ${cheminMarqueurPath}). ` +
+        "Le test ne se mesure qu'une fois.",
+    );
+  }
+  if (lu.format === "v2") {
+    throw new Error(
+      `Test déjà consommé le ${lu.date} (marqueur v2 à plat, questions ${lu.hash}, ` +
+        `marqueur ${cheminMarqueurPath}). Le test v2 est consommé quel que soit le modèle ; ` +
+        "un marqueur v3 est exigé.",
+    );
+  }
+  if (lu.marqueur.questions_sha256 !== questionsSha) {
+    throw new Error(
+      `Marqueur lié à une autre empreinte de questions (${lu.marqueur.questions_sha256}, ` +
+        `attendu ${questionsSha}, marqueur ${cheminMarqueurPath}). Le jeu figé ne se modifie plus.`,
+    );
+  }
+  const deja = lu.marqueur.mesures.find((mesure) => mesure.modele === modele);
+  if (deja !== undefined) {
+    throw new Error(
+      `Test déjà consommé pour le modèle « ${modele} » le ${deja.date} ` +
+        `(questions ${questionsSha}, marqueur ${cheminMarqueurPath}). ` +
+        "Chaque modèle ne se mesure qu'une fois.",
+    );
+  }
+}
+
+/**
+ * Ajoute une mesure au marqueur sans effacer les précédentes. `note` dit d'où
+ * viennent les chiffres ; elle est fournie par l'appelant.
+ */
+export function ecrireMesureTest(
+  cheminMarqueurPath: string,
+  questionsSha: string,
+  mesure: MesureMarqueur,
   note: string,
 ): void {
-  writeFileSync(
-    cheminMarqueurPath,
-    `${JSON.stringify({ ...marqueur, note }, null, 2)}\n`,
-    "utf8",
-  );
+  const lu = lireMarqueur(cheminMarqueurPath);
+  if (lu.format === "v2" || lu.format === "illisible") {
+    throw new Error(
+      `Marqueur existant non convertible (${cheminMarqueurPath}). ` +
+        "Le marqueur v2 à plat ne reçoit aucune mesure v3.",
+    );
+  }
+  const mesures = lu.format === "absent" ? [] : lu.marqueur.mesures;
+  const existant: MarqueurV3 =
+    lu.format === "absent"
+      ? { note, questions_sha256: questionsSha, mesures }
+      : lu.marqueur;
+  if (existant.questions_sha256 !== questionsSha) {
+    throw new Error(
+      `Marqueur lié à une autre empreinte de questions (${existant.questions_sha256}, ` +
+        `attendu ${questionsSha}).`,
+    );
+  }
+  const marqueur: MarqueurV3 = {
+    note,
+    questions_sha256: questionsSha,
+    mesures: [...existant.mesures, mesure],
+  };
+  writeFileSync(cheminMarqueurPath, `${JSON.stringify(marqueur, null, 2)}\n`, "utf8");
 }
 
 /** Découpe en `plis` blocs contigus de `ceil(n / plis)`. */
@@ -681,24 +731,6 @@ function sha256(contenu: string): string {
   return createHash("sha256").update(contenu, "utf8").digest("hex");
 }
 
-/** Nom du snapshot brut de chaque corpus, lu dans `data/corpus/<corpus>/manifest.json`. */
-function snapshotsCorpus(rootDir: string): Record<string, string> {
-  const dossier = join(rootDir, "data", "corpus");
-  const snapshots: Record<string, string> = {};
-  for (const nom of readdirSync(dossier).sort()) {
-    const chemin = join(dossier, nom, "manifest.json");
-    if (!existsSync(chemin)) continue;
-    const manifeste = JSON.parse(readFileSync(chemin, "utf8")) as {
-      document?: unknown;
-      snapshot?: unknown;
-    };
-    if (typeof manifeste.document === "string" && typeof manifeste.snapshot === "string") {
-      snapshots[manifeste.document] = manifeste.snapshot;
-    }
-  }
-  return snapshots;
-}
-
 /** Résout `--questions` : chemin absolu, puis `mcp/eval/`, puis le répertoire courant. */
 export function resoudreQuestions(chemin: string): string {
   if (isAbsolute(chemin)) return chemin;
@@ -713,9 +745,78 @@ function pourcentIntervalle(succes: number, total: number): string {
     `(IC 95 % ${pourcentage(bas)}–${pourcentage(haut)})`;
 }
 
+/** Une entrée JSON par question : ce qui a été rendu, où, et avec quel niveau. */
+export type EntreeQuestionJson = {
+  question: string;
+  type: TypeQuestion;
+  piege: boolean;
+  attendues: string[];
+  refs: string[];
+  rangs: number[];
+  similarites: number[];
+  niveau: ReturnType<typeof niveauConfiance>;
+};
+
+export function entreeQuestionJson(mesure: Mesure, seuils: Seuils): EntreeQuestionJson {
+  return {
+    question: mesure.question.question,
+    type: mesure.question.type,
+    piege: mesure.question.piege,
+    attendues: [...mesure.question.attendues],
+    refs: [...mesure.refs],
+    rangs: mesure.question.attendues.map((ref) => rangDe(mesure, ref)),
+    similarites: mesure.distances.map((distance) => 1 - distance),
+    niveau: niveau(mesure, seuils),
+  };
+}
+
+export type ObjetMesureJson = {
+  date: string;
+  modele: string;
+  dimensions: number;
+  split: Split;
+  document: string;
+  recherche: ModeRecherche;
+  seuils: Seuils;
+  questions: EntreeQuestionJson[];
+  agregats: Resume;
+};
+
+export function objetMesureJson(args: {
+  date: string;
+  modele: string;
+  dimensions: number;
+  split: Split;
+  document: string;
+  recherche: ModeRecherche;
+  seuils: Seuils;
+  mesures: Mesure[];
+}): ObjetMesureJson {
+  return {
+    date: args.date,
+    modele: args.modele,
+    dimensions: args.dimensions,
+    split: args.split,
+    document: args.document,
+    recherche: args.recherche,
+    seuils: args.seuils,
+    questions: args.mesures.map((mesure) => entreeQuestionJson(mesure, args.seuils)),
+    agregats: resume(args.mesures, args.seuils),
+  };
+}
+
+/** `--json` ne rend qu'un split : `all` mélangerait deux jeux dans un objet. */
+export function verifierJsonSplit(split: FiltreSplit, json: boolean): void {
+  if (json && split === "all") {
+    throw new Error("--json refuse --split all : un objet ne porte qu'un seul split.");
+  }
+}
+
 async function main(argv: string[]): Promise<void> {
   const split = lireSplit(argv);
   const recherche = lireRecherche(argv);
+  const json = argv.includes("--json");
+  verifierJsonSplit(split, json);
   verifierAutorisationTest(split, argv.includes("--mesurer-test"));
   const date = new Date().toISOString().slice(0, 10);
   // Racine alternative : permet de mesurer un autre index sans toucher le corpus
@@ -730,16 +831,19 @@ async function main(argv: string[]): Promise<void> {
   const unites = lireUnites(rootDir);
   validerReferences(questions, new Set(unites.map((unite) => unite.ref)));
 
-  const consommeTest = split === "test" || split === "all";
-  const marqueurPath = cheminMarqueur(cheminQuestions);
-  if (consommeTest) verifierTestNonConsomme(marqueurPath);
-
   const modele = valeurDe("--modele", argv);
   const dim = valeurDe("--dim", argv);
   const embedder = createOllamaEmbedder({
     ...(modele === undefined ? {} : { model: modele }),
     ...(dim === undefined ? {} : { dim: Number(dim) }),
   });
+
+  const consommeTest = split === "test" || split === "all";
+  const marqueurPath = cheminMarqueur(cheminQuestions);
+  if (consommeTest) {
+    verifierTestNonConsomme(marqueurPath, sha256(contenu), embedder.model);
+  }
+
   const index = openIndex(cheminIndex(rootDir));
   try {
     const demandees = filtrerSplit(questions, split);
@@ -781,83 +885,49 @@ async function main(argv: string[]): Promise<void> {
           ? mesures
           : mesures.filter((mesure) => mesure.question.split === "test");
       const chiffres = resume(mesuresTest, seuils);
-      lignes.push(
-        "",
-        `intervalle 95 % (Wilson) : top 5 global ` +
-          pourcentIntervalle(chiffres.top5_global_succes, chiffres.referencees) +
-          ` ; top 5 sémantique ` +
-          pourcentIntervalle(chiffres.top5_semantique_succes, chiffres.semantiques) +
-          ` ; pièges cités ` +
-          pourcentIntervalle(chiffres.pieges_cites, chiffres.pieges_mesures),
-      );
+      if (!json) {
+        lignes.push(
+          "",
+          `intervalle 95 % (Wilson) : top 5 global ` +
+            pourcentIntervalle(chiffres.top5_global_succes, chiffres.referencees) +
+            ` ; top 5 sémantique ` +
+            pourcentIntervalle(chiffres.top5_semantique_succes, chiffres.semantiques) +
+            ` ; pièges cités ` +
+            pourcentIntervalle(chiffres.pieges_cites, chiffres.pieges_mesures),
+        );
+      }
 
-      ecrireMarqueurTest(
+      ecrireMesureTest(
         marqueurPath,
+        sha256(contenu),
         {
-          date,
-          questions_sha256: sha256(contenu),
           modele: embedder.model,
           dimensions: embedder.dim,
-          recherche,
-          split: "test",
-          top5_semantique_brut:
-            chiffres.semantiques === 0
-              ? 0
-              : chiffres.top5_semantique_succes / chiffres.semantiques,
-          semantiques: chiffres.semantiques,
-          top1_semantique_brut:
-            chiffres.semantiques === 0
-              ? 0
-              : chiffres.top1_semantique_succes / chiffres.semantiques,
-          mrr_semantique_brut: chiffres.mrr_semantique,
-          top5_global_brut:
-            chiffres.referencees === 0
-              ? 0
-              : chiffres.top5_global_succes / chiffres.referencees,
-          top5_rendu:
-            chiffres.semantiques === 0
-              ? 0
-              : chiffres.top5_rendu_succes / chiffres.semantiques,
-          top1_rendu:
-            chiffres.semantiques === 0
-              ? 0
-              : chiffres.top1_rendu_succes / chiffres.semantiques,
-          mrr_rendu: chiffres.mrr_rendu,
-          top5_global_rendu:
-            chiffres.referencees === 0
-              ? 0
-              : chiffres.top5_global_rendu_succes / chiffres.referencees,
-          referencees: chiffres.referencees,
-          pieges_cites: chiffres.pieges_cites,
-          pieges_mesures: chiffres.pieges_mesures,
-          niveaux: {
-            confiant: chiffres.confiant,
-            incertain: chiffres.incertain,
-            aucun_resultat_fiable: chiffres.aucun_resultat_fiable,
-          },
-          pieges_confiants: chiffres.pieges_confiants,
+          date,
           seuils,
-          bande_article: BANDE_ARTICLE,
-          intervalles: {
-            top5_global_brut: intervalleWilson(
-              chiffres.top5_global_succes,
-              chiffres.referencees,
-            ),
-            top5_semantique_brut: intervalleWilson(
-              chiffres.top5_semantique_succes,
-              chiffres.semantiques,
-            ),
-            pieges_cites: intervalleWilson(chiffres.pieges_cites, chiffres.pieges_mesures),
-          },
-          snapshots: snapshotsCorpus(rootDir),
-          unites_index: index.unites,
+          agregats: chiffres,
         },
-        `Chiffres de la mesure du ${date}, produits par cette exécution ; ` +
+        `Mesures du ${date}, produites par cette exécution ; ` +
           "aucune valeur n'est transcrite d'un autre rapport.",
       );
     }
 
-    process.stdout.write(`${lignes.join("\n")}\n`);
+    if (json) {
+      if (split === "all") throw new Error("--json refuse --split all.");
+      const objet = objetMesureJson({
+        date,
+        modele: embedder.model,
+        dimensions: embedder.dim,
+        split,
+        document,
+        recherche,
+        seuils,
+        mesures,
+      });
+      process.stdout.write(`${JSON.stringify(objet, null, 2)}\n`);
+    } else {
+      process.stdout.write(`${lignes.join("\n")}\n`);
+    }
   } finally {
     index.db.close();
   }

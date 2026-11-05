@@ -1,7 +1,7 @@
 import { strict as assert } from "node:assert";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdtempSync, readFileSync, rmSync, existsSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
@@ -10,12 +10,14 @@ import {
   calibrer,
   cheminMarqueur,
   documentDuJeu,
-  ecrireMarqueurTest,
+  ecrireMesureTest,
+  entreeQuestionJson,
   filtrerSplit,
   intervalleWilson,
   lireJeu,
   lireQuestions,
   mrr,
+  objetMesureJson,
   precisionAt1,
   recallAt5,
   repartirPlis,
@@ -25,9 +27,10 @@ import {
   validerCroise,
   validerReferences,
   verifierAutorisationTest,
+  verifierJsonSplit,
   verifierTestNonConsomme,
 } from "../mcp/eval/run.ts";
-import type { Marqueur, Mesure, Question, Split } from "../mcp/eval/run.ts";
+import type { MarqueurV3, Mesure, Question, Split } from "../mcp/eval/run.ts";
 
 const QUESTIONS = readFileSync(new URL("../mcp/eval/questions.csv", import.meta.url), "utf8");
 const QUESTIONS_V2 = readFileSync(new URL("../mcp/eval/questions-v2.csv", import.meta.url), "utf8");
@@ -473,52 +476,179 @@ describe("le verrou du test", () => {
     verifierAutorisationTest("dev", false);
   });
 
-  it("refuse une seconde mesure quand le marqueur existe", () => {
+  it("ajoute une mesure et refuse le même modèle sans effacer la première", () => {
     const dossier = mkdtempSync(join(tmpdir(), "vitrine-eval-"));
     try {
-      const marqueurPath = join(dossier, "questions-v2.test-consomme.json");
-      const marqueur: Marqueur = {
-        date: "2026-11-05",
-        note: "marqueur de test",
-        questions_sha256: "abc",
-        modele: "qwen3-embedding:0.6b",
-        dimensions: 1024,
-        recherche: "hybride",
-        split: "test",
-        top5_semantique_brut: 0.9,
-        semantiques: 19,
-        top1_semantique_brut: 0.8,
-        mrr_semantique_brut: 0.85,
-        top5_global_brut: 0.9,
-        top5_rendu: 0.85,
-        top1_rendu: 0.75,
-        mrr_rendu: 0.8,
-        top5_global_rendu: 0.88,
-        referencees: 25,
-        pieges_cites: 0,
-        pieges_mesures: 4,
-        niveaux: { confiant: 14, incertain: 2, aucun_resultat_fiable: 1 },
-        pieges_confiants: 0,
-        seuils: { bas: 0.69, haut: 0.74, marge: 0.01 },
-        bande_article: 0.02,
-        intervalles: {
-          top5_global_brut: [0.8, 0.99],
-          top5_semantique_brut: [0.75, 0.99],
-          pieges_cites: [0.03, 0.62],
-        },
-        snapshots: { "32016R0679": "rgpd.xhtml", "32024R1689": "aiact.xhtml" },
-        unites_index: 565,
-      };
+      const marqueurPath = join(dossier, "questions-v3.test-consomme.json");
+      const seuils = { bas: 0.61, haut: 0.7, marge: 0.02 };
+      const agregats = resume([], seuils);
+      const modele06 = "qwen3-embedding:0.6b";
+      const modele4b = "qwen3-embedding:4b";
 
-      verifierTestNonConsomme(marqueurPath);
-      ecrireMarqueurTest(marqueurPath, marqueur, "note fournie par l'appelant");
-      const ecrit = JSON.parse(readFileSync(marqueurPath, "utf8")) as Marqueur;
+      verifierTestNonConsomme(marqueurPath, "abc", modele06);
+      ecrireMesureTest(
+        marqueurPath,
+        "abc",
+        { modele: modele06, dimensions: 1024, date: "2026-11-05", seuils, agregats },
+        "note fournie par l'appelant",
+      );
+
+      assert.throws(
+        () => verifierTestNonConsomme(marqueurPath, "abc", modele06),
+        /Test déjà consommé pour le modèle « qwen3-embedding:0\.6b » le 2026-11-05/,
+      );
+
+      verifierTestNonConsomme(marqueurPath, "abc", modele4b);
+      ecrireMesureTest(
+        marqueurPath,
+        "abc",
+        { modele: modele4b, dimensions: 2560, date: "2026-11-05", seuils, agregats },
+        "note fournie par l'appelant",
+      );
+
+      const ecrit = JSON.parse(readFileSync(marqueurPath, "utf8")) as MarqueurV3;
       assert.equal(ecrit.note, "note fournie par l'appelant");
-      assert.ok(existsSync(marqueurPath));
-      assert.throws(() => verifierTestNonConsomme(marqueurPath), /Test déjà consommé le 2026-11-05/);
+      assert.equal(ecrit.questions_sha256, "abc");
+      assert.deepEqual(
+        ecrit.mesures.map((mesure) => mesure.modele),
+        [modele06, modele4b],
+      );
+      assert.equal(ecrit.mesures[0]?.dimensions, 1024);
+      assert.deepEqual(ecrit.mesures[0]?.seuils, seuils);
+      assert.equal(ecrit.mesures[1]?.dimensions, 2560);
+      assert.throws(
+        () => verifierTestNonConsomme(marqueurPath, "abc", modele4b),
+        /qwen3-embedding:4b/,
+      );
     } finally {
       rmSync(dossier, { recursive: true, force: true });
     }
+  });
+
+  it("refuse un marqueur v2 à plat quel que soit le modèle", () => {
+    const dossier = mkdtempSync(join(tmpdir(), "vitrine-eval-"));
+    try {
+      const marqueurPath = join(dossier, "questions-v2.test-consomme.json");
+      writeFileSync(
+        marqueurPath,
+        JSON.stringify({
+          date: "2026-11-05",
+          questions_sha256: "v2",
+          modele: "qwen3-embedding:0.6b",
+        }),
+      );
+
+      assert.throws(
+        () => verifierTestNonConsomme(marqueurPath, "v3", "qwen3-embedding:4b"),
+        /marqueur v2 à plat/,
+      );
+      assert.throws(
+        () => verifierTestNonConsomme(marqueurPath, "v3", "qwen3-embedding:4b"),
+        /Test déjà consommé le 2026-11-05/,
+      );
+      assert.throws(
+        () =>
+          ecrireMesureTest(
+            marqueurPath,
+            "v3",
+            {
+              modele: "qwen3-embedding:4b",
+              dimensions: 2560,
+              date: "2026-11-05",
+              seuils: { bas: 0.6, haut: 0.7, marge: 0.01 },
+              agregats: resume([], { bas: 0.6, haut: 0.7, marge: 0.01 }),
+            },
+            "note",
+          ),
+        /marqueur v2 à plat ne reçoit aucune mesure v3/,
+      );
+    } finally {
+      rmSync(dossier, { recursive: true, force: true });
+    }
+  });
+
+  it("refuse un marqueur lié à une autre empreinte de questions", () => {
+    const dossier = mkdtempSync(join(tmpdir(), "vitrine-eval-"));
+    try {
+      const marqueurPath = join(dossier, "questions-v3.test-consomme.json");
+      ecrireMesureTest(
+        marqueurPath,
+        "abc",
+        {
+          modele: "qwen3-embedding:0.6b",
+          dimensions: 1024,
+          date: "2026-11-05",
+          seuils: { bas: 0.6, haut: 0.7, marge: 0.01 },
+          agregats: resume([], { bas: 0.6, haut: 0.7, marge: 0.01 }),
+        },
+        "note",
+      );
+
+      assert.throws(
+        () => verifierTestNonConsomme(marqueurPath, "def", "qwen3-embedding:4b"),
+        /autre empreinte de questions/,
+      );
+    } finally {
+      rmSync(dossier, { recursive: true, force: true });
+    }
+  });
+
+  it("rend une entrée JSON par question avec rangs et similarités alignés", () => {
+    const seuils = { bas: 0.6, haut: 0.7, marge: 0.01 };
+    const mesures: Mesure[] = [
+      {
+        question: {
+          question: "une question à référence",
+          type: "conceptuelle",
+          attendues: ["32016R0679#art_17"],
+          piege: false,
+          split: "test",
+        },
+        refs: ["32016R0679#art_5", "32016R0679#art_17"],
+        distances: [0.2, 0.3],
+      },
+      {
+        question: {
+          question: "un piège",
+          type: "piege",
+          attendues: [],
+          piege: true,
+          split: "test",
+        },
+        refs: ["32016R0679#art_7"],
+        distances: [0.4],
+      },
+    ];
+
+    const objet = objetMesureJson({
+      date: "2026-11-05",
+      modele: "qwen3-embedding:0.6b",
+      dimensions: 1024,
+      split: "test",
+      document: "32016R0679",
+      recherche: "dense",
+      seuils,
+      mesures,
+    });
+
+    assert.equal(objet.questions.length, 2);
+    assert.deepEqual(objet.questions[0]?.refs, ["32016R0679#art_5", "32016R0679#art_17"]);
+    assert.deepEqual(objet.questions[0]?.rangs, [2]);
+    assert.deepEqual(objet.questions[0]?.similarites, [0.8, 0.7]);
+    assert.equal(objet.questions[0]?.niveau, "confiant");
+    assert.deepEqual(objet.questions[1]?.attendues, []);
+    assert.deepEqual(objet.questions[1]?.rangs, []);
+    assert.equal(objet.questions[1]?.piege, true);
+    assert.equal(objet.agregats.semantiques, 1);
+    assert.equal(objet.agregats.pieges_mesures, 1);
+    assert.equal(entreeQuestionJson(mesures[0]!, seuils).rangs[0], 2);
+  });
+
+  it("refuse --json avec --split all", () => {
+    assert.throws(() => verifierJsonSplit("all", true), /--json refuse --split all/);
+    verifierJsonSplit("dev", true);
+    verifierJsonSplit("test", true);
+    verifierJsonSplit("all", false);
   });
 
   it("dérive le marqueur du nom du fichier de questions", () => {
@@ -528,13 +658,38 @@ describe("le verrou du test", () => {
     );
   });
 
-  it("le marqueur commité porte les preuves de la mesure", () => {
+  it("le marqueur v2 commité porte les preuves de la mesure", () => {
+    type MarqueurV2 = {
+      date: string;
+      note: string;
+      questions_sha256: string;
+      modele: string;
+      top5_semantique_brut: number;
+      top1_semantique_brut: number;
+      mrr_semantique_brut: number;
+      top5_global_brut: number;
+      top5_rendu: number;
+      top1_rendu: number;
+      mrr_rendu: number;
+      top5_global_rendu: number;
+      niveaux: { confiant: number; incertain: number; aucun_resultat_fiable: number };
+      pieges_confiants: number;
+      seuils: { bas: number; haut: number; marge: number };
+      bande_article: number;
+      unites_index: number;
+      snapshots: Record<string, string>;
+      intervalles: {
+        top5_global_brut: [number, number];
+        top5_semantique_brut: [number, number];
+        pieges_cites: [number, number];
+      };
+    };
     const marqueur = JSON.parse(
       readFileSync(
         new URL("../mcp/eval/questions-v2.test-consomme.json", import.meta.url),
         "utf8",
       ),
-    ) as Marqueur;
+    ) as MarqueurV2;
     const sha = createHash("sha256").update(QUESTIONS_V2, "utf8").digest("hex");
 
     assert.equal(marqueur.questions_sha256, sha);
