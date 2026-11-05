@@ -1,6 +1,6 @@
 {
   "date": "2026-11-05",
-  "note": "Chiffres de la mesure unique du 5 novembre 2026, transcrits du rapport ; ces champs ne proviennent pas d'une nouvelle mesure. Les agrégats rendus sont dérivés du tableau par question : l'unique refus (art_80, rang 1) retire 1 au top 5 sémantique (18 → 17), 1 au top 1 (17 → 16), 1 au top 5 global (24 → 23) et 1 au MRR brut (17,2 → 16,2 sur 19).",
+  "note": "Chiffres de la mesure unique du 5 novembre 2026, transcrits du rapport ; ces champs ne proviennent pas d'une nouvelle mesure. Les agrégats rendus sont dérivés du tableau par question : l'unique refus (art_80, rang 1) retire 1 au top 5 sémantique (18 → 17), 1 au top 1 (17 → 16), 1 au top 5 global (24 → 23) et 1 au MRR rendu (17,2 → 16,2 sur 19).",
   "questions_sha256": "1795dbd158d27aaf2edfe59fd7c81c7000b5dd49940014045a235a273b60fcb7",
   "modele": "qwen3-embedding:0.6b",
   "dimensions": 1024,
