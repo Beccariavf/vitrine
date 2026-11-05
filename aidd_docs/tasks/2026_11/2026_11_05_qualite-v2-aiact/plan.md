@@ -1,6 +1,6 @@
 ---
 objective: "Sur les 30 questions RGPD tenues à l'écart, mesurées une fois, le top 5 et les pièges sont rapportés avec leur intervalle ; l'AI Act s'ingère et se cherche par le même pipeline, avec un rapport séparé."
-status: pending
+status: implemented
 ---
 
 # Plan: Qualité v2 et second corpus AI Act
