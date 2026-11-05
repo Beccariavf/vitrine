@@ -29,3 +29,60 @@ Chaque modèle est mesuré **une seule fois** sur le split `test`, avec les seui
 - Si `b + c < 6`, aucune conclusion n'est tirée et `0.6b` reste le modèle du produit.
 
 Aucune question, aucun seuil, aucune bande et aucun libellé de verdict ne seront modifiés après la mesure `test`.
+
+## Calibration `dev` (avant le test)
+
+Les 40 questions `dev` ont seules servi à calibrer les seuils. Les 40 questions `test` n'ont été ni mesurées ni comparées pendant cette étape ; aucun chiffre `test` n'existe encore.
+
+| Métrique `dev` (34 sémantiques) | `0.6b` | `4b` |
+| --- | --- | --- |
+| Top 5 brut | 33/34 (97,1 %) | 33/34 (97,1 %) |
+| Top 1 brut | 26/34 (76,5 %) | 30/34 (88,2 %) |
+| `MRR` brut | 0,853 | 0,927 |
+| Top 5 rendu | 33/34 | 33/34 |
+| Top 1 rendu | 26/34 | 30/34 |
+| `MRR` rendu | 0,853 | 0,927 |
+| Niveaux | 32 confiant, 2 incertain, 0 aucun | 27 confiant, 7 incertain, 0 aucun |
+| Top 5 global hors pièges (37) | 36/37 (97,3 %) | 36/37 (97,3 %) |
+| Pièges cités par seuil (3) | 0 | 1 |
+| Pièges marqués confiant (3) | 0 | 1 |
+| Seuils calibrés sur `dev` | `0,640 / 0,690 / 0,010` | `0,720 / 0,770 / 0,010` |
+
+Les seuils `0.6b` du jeu v3 (`0,640 / 0,690 / 0,010`) ne reprennent pas ceux du jeu v2 (`0,680 / 0,730 / 0,010`) : le jeu de calibration a changé.
+
+Questions sémantiques manquées au top 5 : les deux modèles placent « transmission directe des données d'un responsable à un autre » (`art_20`) hors des cinq premiers. Aucune autre question sémantique ne manque le top 5.
+
+Questions sémantiques hors du rang 1 :
+
+- `0.6b` : `art_9` (rang 2), `art_12` (rang 4), `art_20` (absent), `art_21` (rang 2), `art_35` (rang 4), `art_46` (rang 2), `art_70` (rang 2), `art_82` (rang 2) ;
+- `4b` : `art_20` (absent), `art_25` (rang 2), `art_27` (rang 2), `art_70` (rang 2).
+
+Le piège cité par `4b` est « Quelles mentions obligatoires figurent sur une facture d'électricité ? », marqué `confiant` ; les deux autres pièges sont refusés. `0.6b` refuse les trois.
+
+### Coût mesuré
+
+| Opération | `0.6b` | `4b` |
+| --- | --- | --- |
+| Index complet de 565 unités | 48,74 s | 754,48 s |
+| Passe `dev` de 40 questions | 1,88 s | 15,88 s |
+
+L'index `4b` coûte 15,5× l'index `0.6b` sur cette machine, et la passe de requêtes 8,4×. La mesure `4b` a été faite dans `/private/var/folders/w5/r26t3rn17nxctjpckqp8jhmw0000gn/T/opencode/vitrine-v3-4b`, sans toucher `data/corpus/index/index.db`.
+
+## Commandes de mesure `test` (figées ici avant le test)
+
+Les deux commandes suivantes seront lancées une seule fois chacune. Aucun seuil, aucune question et aucun libellé de verdict ne sera modifié après leur exécution.
+
+```bash
+node mcp/eval/run.ts --questions questions-v3.csv --split test --mesurer-test --seuils 0.64,0.69,0.01 --recherche dense --json > aidd_docs/tasks/2026_11/2026_11_05_mesure-v3-modeles/mesure-test-0.6b.json
+```
+
+```bash
+ROOT=/private/var/folders/w5/r26t3rn17nxctjpckqp8jhmw0000gn/T/opencode/vitrine-v3-4b
+node mcp/eval/run.ts --questions questions-v3.csv --split test --mesurer-test --root "$ROOT" --modele qwen3-embedding:4b --dim 2560 --seuils 0.72,0.77,0.01 --recherche dense --json > aidd_docs/tasks/2026_11/2026_11_05_mesure-v3-modeles/mesure-test-4b.json
+```
+
+Comparaison :
+
+```bash
+node mcp/eval/compare.ts aidd_docs/tasks/2026_11/2026_11_05_mesure-v3-modeles/mesure-test-0.6b.json aidd_docs/tasks/2026_11/2026_11_05_mesure-v3-modeles/mesure-test-4b.json
+```

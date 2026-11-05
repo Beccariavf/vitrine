@@ -16,6 +16,7 @@ import {
   intervalleWilson,
   lireJeu,
   lireQuestions,
+  lireSeuils,
   mrr,
   objetMesureJson,
   precisionAt1,
@@ -23,6 +24,7 @@ import {
   repartirPlis,
   resoudreQuestions,
   resume,
+  seuilsDeMesure,
   tauxCitationsInvalides,
   validerCroise,
   validerReferences,
@@ -261,6 +263,107 @@ describe("la calibration", () => {
     assert.equal(plis.length, 4);
     assert.ok(plis.every((pli) => pli.pieges >= 1));
     assert.ok(plis.every((pli) => pli.taux === 0));
+  });
+});
+
+describe("les seuils figés", () => {
+  it("lit trois nombres dans [0, 1]", () => {
+    assert.deepEqual(lireSeuils("0.61,0.7,0.02"), { bas: 0.61, haut: 0.7, marge: 0.02 });
+    assert.equal(lireSeuils(undefined), null);
+    assert.deepEqual(lireSeuils("0,1,0"), { bas: 0, haut: 1, marge: 0 });
+  });
+
+  it("refuse une forme courte en nommant la valeur reçue", () => {
+    assert.throws(() => lireSeuils("0.6,0.7"), /reçu « 0\.6,0\.7 »/);
+    assert.throws(() => lireSeuils("0.6,0.7,0.01,0.2"), /reçu « 0\.6,0\.7,0\.01,0\.2 »/);
+  });
+
+  it("nomme une valeur non numérique", () => {
+    assert.throws(() => lireSeuils("0.6,abc,0.01"), /valeur non numérique « abc »/);
+    assert.throws(() => lireSeuils("0.6,,0.01"), /valeur non numérique « \(vide\) »/);
+  });
+
+  it("nomme une valeur hors de [0, 1]", () => {
+    assert.throws(() => lireSeuils("1.2,0.7,0.01"), /hors de \[0, 1\] « 1\.2 »/);
+    assert.throws(() => lireSeuils("0.6,0.7,1.5"), /hors de \[0, 1\] « 1\.5 »/);
+    assert.throws(() => lireSeuils("-0.1,0.7,0.01"), /hors de \[0, 1\] « -0\.1 »/);
+  });
+
+  it("nomme une marge négative", () => {
+    assert.throws(() => lireSeuils("0.6,0.7,-0.01"), /marge négative « -0\.01 »/);
+  });
+
+  it("refuse un bas au-dessus du haut", () => {
+    assert.throws(() => lireSeuils("0.8,0.7,0.01"), /bas \(0\.8\) dépasse haut \(0\.7\)/);
+  });
+
+  it("garde la calibration dev quand --seuils est fourni", () => {
+    const mesures: Mesure[] = [
+      ...Array.from({ length: 6 }, (_, index) =>
+        mesure(`question ${index}`, false, 0.1, ["32016R0679#art_17"]),
+      ),
+      ...Array.from({ length: 4 }, (_, index) => mesure(`piège ${index}`, true, 0.5)),
+    ];
+    const calibration = calibrer(mesures);
+    const retenus = seuilsDeMesure({
+      split: "dev",
+      avecSplit: true,
+      mesuresDev: mesures,
+      explicites: { bas: 0.5, haut: 0.6, marge: 0.01 },
+    });
+
+    assert.deepEqual(retenus.seuils, { bas: 0.5, haut: 0.6, marge: 0.01 });
+    assert.deepEqual(retenus.calibration, calibration);
+    assert.match(retenus.origine, /fournis par --seuils.*calibration dev/);
+  });
+
+  it("accepte --seuils sur le test sans calibrer", () => {
+    const retenus = seuilsDeMesure({
+      split: "test",
+      avecSplit: true,
+      mesuresDev: [],
+      explicites: { bas: 0.7, haut: 0.8, marge: 0.03 },
+    });
+
+    assert.deepEqual(retenus.seuils, { bas: 0.7, haut: 0.8, marge: 0.03 });
+    assert.equal(retenus.calibration, null);
+    assert.equal(retenus.origine, "fournis par --seuils");
+  });
+
+  it("garde les constantes figées sur le test sans --seuils", () => {
+    const retenus = seuilsDeMesure({
+      split: "test",
+      avecSplit: true,
+      mesuresDev: [],
+      explicites: null,
+    });
+
+    assert.equal(retenus.origine, "figés avant la mesure");
+    assert.equal(retenus.seuils.bas, 0.69);
+    assert.equal(retenus.seuils.haut, 0.74);
+    assert.equal(retenus.seuils.marge, 0.01);
+  });
+
+  it("refuse --seuils mal formé avant toute mesure", () => {
+    const run = fileURLToPath(new URL("../mcp/eval/run.ts", import.meta.url));
+    const racine = fileURLToPath(new URL("..", import.meta.url));
+    const resultat = spawnSync(
+      process.execPath,
+      [
+        run,
+        "--questions",
+        "questions-v3.csv",
+        "--split",
+        "dev",
+        "--seuils",
+        "1.2,0.7,0.01",
+      ],
+      { cwd: racine, encoding: "utf8", timeout: 30_000 },
+    );
+
+    assert.notEqual(resultat.status, 0);
+    assert.equal(resultat.stdout, "", "le refus précède toute mesure");
+    assert.match(resultat.stderr, /hors de \[0, 1\] « 1\.2 »/);
   });
 });
 

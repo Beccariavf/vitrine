@@ -721,6 +721,76 @@ export function verifierAutorisationTest(split: FiltreSplit, mesurerTest: boolea
   }
 }
 
+/**
+ * Lit `--seuils bas,haut,marge`. Trois nombres dans `[0, 1]`, marge non
+ * négative, `bas` au plus égal à `haut`. La valeur fautive est nommée.
+ */
+export function lireSeuils(valeur: string | undefined): Seuils | null {
+  if (valeur === undefined) return null;
+  const parties = valeur.split(",");
+  if (parties.length !== 3) {
+    throw new Error(
+      `--seuils attendu bas,haut,marge (trois nombres) ; reçu « ${valeur} »`,
+    );
+  }
+  const nombres = parties.map((partie, position) => {
+    const nombre = Number(partie);
+    if (partie.trim() === "" || !Number.isFinite(nombre)) {
+      throw new Error(
+        `--seuils : valeur non numérique « ${partie.trim() === "" ? "(vide)" : partie} »`,
+      );
+    }
+    if (position === 2 && nombre < 0) {
+      throw new Error(`--seuils : marge négative « ${partie} »`);
+    }
+    if (nombre < 0 || nombre > 1) {
+      throw new Error(`--seuils : valeur hors de [0, 1] « ${partie} »`);
+    }
+    return nombre;
+  });
+  const [bas, haut, marge] = nombres;
+  if (bas === undefined || haut === undefined || marge === undefined) {
+    throw new Error(`--seuils attendu bas,haut,marge ; reçu « ${valeur} »`);
+  }
+  if (marge < 0) {
+    throw new Error(`--seuils : marge négative « ${marge} »`);
+  }
+  if (bas > haut) {
+    throw new Error(`--seuils : bas (${bas}) dépasse haut (${haut})`);
+  }
+  return { bas, haut, marge };
+}
+
+/**
+ * Seuils d'une mesure et leur origine. Sans `--seuils`, `dev` calibre et
+ * `test` garde les constantes figées. Avec `--seuils`, la calibration `dev`
+ * est quand même calculée et rapportée, sans changer les seuils retenus.
+ */
+export function seuilsDeMesure(args: {
+  split: FiltreSplit;
+  avecSplit: boolean;
+  mesuresDev: Mesure[];
+  explicites: Seuils | null;
+}): { seuils: Seuils; origine: string; calibration: Seuils | null } {
+  const calibration =
+    !args.avecSplit || args.split === "test" ? null : calibrer(args.mesuresDev);
+  if (args.explicites !== null) {
+    const detail =
+      calibration === null
+        ? ""
+        : ` ; calibration dev bas=${calibration.bas.toFixed(3)} haut=${calibration.haut.toFixed(3)} marge=${calibration.marge.toFixed(3)}`;
+    return { seuils: args.explicites, origine: `fournis par --seuils${detail}`, calibration };
+  }
+  if (calibration !== null) {
+    return { seuils: calibration, origine: "calibrés sur dev", calibration };
+  }
+  return {
+    seuils: { bas: SEUIL_BAS, haut: SEUIL_HAUT, marge: MARGE },
+    origine: args.avecSplit ? "figés avant la mesure" : "figés (jeu sans split)",
+    calibration,
+  };
+}
+
 /** Valeur qui suit `--nom`, ou `undefined`. */
 function valeurDe(nom: string, argv: string[]): string | undefined {
   const index = argv.indexOf(nom);
@@ -818,6 +888,7 @@ async function main(argv: string[]): Promise<void> {
   const json = argv.includes("--json");
   verifierJsonSplit(split, json);
   verifierAutorisationTest(split, argv.includes("--mesurer-test"));
+  const seuilsExplicites = lireSeuils(valeurDe("--seuils", argv));
   const date = new Date().toISOString().slice(0, 10);
   // Racine alternative : permet de mesurer un autre index sans toucher le corpus
   // ni l'index du produit (expérience de modèle, par exemple).
@@ -851,15 +922,12 @@ async function main(argv: string[]): Promise<void> {
 
     const mesuresDev =
       split === "all" ? mesures.filter((mesure) => mesure.question.split === "dev") : mesures;
-    const seuils =
-      !jeu.avecSplit || split === "test"
-        ? { bas: SEUIL_BAS, haut: SEUIL_HAUT, marge: MARGE }
-        : calibrer(mesuresDev);
-    const origine = !jeu.avecSplit
-      ? "figés (jeu sans split)"
-      : split === "test"
-        ? "figés avant la mesure"
-        : "calibrés sur dev";
+    const { seuils, origine } = seuilsDeMesure({
+      split,
+      avecSplit: jeu.avecSplit,
+      mesuresDev,
+      explicites: seuilsExplicites,
+    });
 
     const lignes = [
       `date : ${date}`,
