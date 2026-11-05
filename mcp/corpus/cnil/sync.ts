@@ -330,6 +330,8 @@ export type ResultatIncrements = {
   archives_lues: number;
   documents_lus: number;
   documents_retenus: number;
+  /** Décisions écartées parce que l'archive n'est pas plus récente que le corpus. */
+  documents_ignores: number;
   unites_remplacees: number;
   documents: number;
   unites: number;
@@ -366,6 +368,7 @@ export async function syncIncrements(
   let unites = lireCorpus(cheminUnites);
   let documentsLus = 0;
   let documentsRetenus = 0;
+  let documentsIgnores = 0;
   let unitesRemplacees = 0;
   let dernier: ArchiveLue | null = null;
   const decisions: DecisionDila[] = [];
@@ -382,6 +385,7 @@ export async function syncIncrements(
     const fusion = fusionnerDecisions(unites, decisions, descripteur);
     unites = fusion.unites;
     unitesRemplacees += fusion.remplacees;
+    documentsIgnores += fusion.ignorees;
     validerUnites(unites);
   }
 
@@ -427,6 +431,7 @@ export async function syncIncrements(
     archives_lues: nouvelEtat.archives_lues,
     documents_lus: documentsLus,
     documents_retenus: documentsRetenus,
+    documents_ignores: documentsIgnores,
     unites_remplacees: unitesRemplacees,
     documents: new Set(unites.map((unite) => unite.document)).size,
     unites: unites.length,
@@ -467,7 +472,8 @@ async function main(argv: string[]): Promise<void> {
     process.stderr.write(
       `incréments : ${resultat.archives.length} archive(s) nouvelle(s) sur ` +
         `${resultat.archives_lues}, ${resultat.documents_lus} document(s) lu(s), ` +
-        `${resultat.documents_retenus} retenu(s), ${resultat.unites_remplacees} unité(s) remplacée(s) ; ` +
+        `${resultat.documents_retenus} retenu(s), ${resultat.documents_ignores} ignoré(s) ` +
+        `(archive non plus récente), ${resultat.unites_remplacees} unité(s) remplacée(s) ; ` +
         `corpus ${resultat.unites} fragments, ${resultat.documents} documents ` +
         `(${resultat.origines.dinum} dinum, ${resultat.origines.dila} dila)` +
         `${dryRun ? " — dry-run, rien n'est écrit" : resultat.ecrit ? " — corpus réécrit" : " — corpus inchangé"}\n`,

@@ -139,24 +139,33 @@ export async function lireArchiveDepuis(
 }
 
 /**
- * Remplace, par `doc_id`, toutes les unités des décisions lues. Les décisions
- * sont appliquées dans l'ordre : une archive plus récente gagne.
+ * Applique les décisions lues, par `doc_id`. Un document absent est ajouté ;
+ * un document présent n'est remplacé que si l'archive est strictement plus
+ * récente que sa date : une archive plus ancienne ne dégrade jamais le
+ * `chunk_index` publié de la DINUM. Les décisions sont appliquées dans
+ * l'ordre, une archive plus récente gagne.
  */
 export function fusionnerDecisions(
   unites: Unite[],
   decisions: DecisionDila[],
   descripteur: Pick<DescripteurCnil, "corpus" | "nom" | "url_texte">,
-): { unites: Unite[]; remplacees: number; ajoutees: number } {
+): { unites: Unite[]; remplacees: number; ajoutees: number; ignorees: number } {
   let courant = [...unites];
   let remplacees = 0;
   let ajoutees = 0;
+  let ignorees = 0;
   for (const decision of decisions) {
-    const avant = courant.filter((unite) => unite.document === decision.id).length;
+    const existantes = courant.filter((unite) => unite.document === decision.id);
+    const dateCorpus = existantes[0]?.date_acte ?? "";
+    if (existantes.length > 0 && decision.dateTexte <= dateCorpus) {
+      ignorees += 1;
+      continue;
+    }
     const nouvelles = unitesDila(decision, descripteur);
     courant = courant.filter((unite) => unite.document !== decision.id);
     courant.push(...nouvelles);
-    remplacees += avant;
+    remplacees += existantes.length;
     ajoutees += nouvelles.length;
   }
-  return { unites: courant, remplacees, ajoutees };
+  return { unites: courant, remplacees, ajoutees, ignorees };
 }

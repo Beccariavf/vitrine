@@ -637,12 +637,13 @@ describe("les archives DILA", () => {
   });
 
   it("remplace toutes les unités d'un document connu, sans doublon", () => {
-    const decision = parseTexteCnil(XML, "deliberation.xml");
+    const decision = parseTexteCnil(XML.replace("2021-04-30", "2021-05-01"), "plus-recent.xml");
     const existantes = unitesDinum(LIGNES, DESCRIPTEUR).unites;
     const fusion = fusionnerDecisions(existantes, [decision], DESCRIPTEUR);
 
     assert.equal(fusion.remplacees, 2);
     assert.equal(fusion.ajoutees, 2);
+    assert.equal(fusion.ignorees, 0);
     assert.equal(fusion.unites.length, 2);
     assert.deepEqual(
       fusion.unites.map((unite) => unite.ref),
@@ -650,6 +651,30 @@ describe("les archives DILA", () => {
     );
     assert.ok(fusion.unites.every((unite) => unite.origine === "dila"));
     assert.equal(new Set(fusion.unites.map((unite) => unite.ref)).size, 2);
+  });
+
+  it("conserve le découpage DINUM quand l'archive n'est pas plus récente", () => {
+    const decision = parseTexteCnil(XML, "deliberation.xml");
+    const existantes = unitesDinum(LIGNES, DESCRIPTEUR).unites;
+    const fusion = fusionnerDecisions(existantes, [decision], DESCRIPTEUR);
+
+    assert.equal(fusion.ignorees, 1);
+    assert.equal(fusion.remplacees, 0);
+    assert.equal(fusion.ajoutees, 0);
+    assert.deepEqual(fusion.unites, existantes);
+  });
+
+  it("ajoute un document absent même si son archive est ancienne", () => {
+    const decision = parseTexteCnil(
+      XML.replace("CNILTEXT000043470685", "CNILTEXT000099999999"),
+      "nouveau.xml",
+    );
+    const fusion = fusionnerDecisions([], [decision], DESCRIPTEUR);
+
+    assert.equal(fusion.ajoutees, 2);
+    assert.equal(fusion.ignorees, 0);
+    assert.equal(fusion.unites.length, 2);
+    assert.ok(fusion.unites.every((unite) => unite.document === "CNILTEXT000099999999"));
   });
 
   it("conserve une décision non VIGUEUR avec son statut", () => {
@@ -670,7 +695,7 @@ describe("la synchronisation DILA", () => {
       nom: NOM,
       sha256: "a".repeat(64),
       documentsLus: 3,
-      decisions: [parseTexteCnil(XML, "deliberation.xml")],
+      decisions: [parseTexteCnil(XML.replace("2021-04-30", "2021-05-01"), "plus-recent.xml")],
     });
   }
 
@@ -690,6 +715,7 @@ describe("la synchronisation DILA", () => {
       assert.deepEqual(premier.archives, [NOM]);
       assert.equal(premier.documents_lus, 3);
       assert.equal(premier.documents_retenus, 1);
+      assert.equal(premier.documents_ignores, 0);
       assert.equal(premier.unites_remplacees, 2);
       assert.equal(premier.unites, 2);
       assert.deepEqual(premier.origines, { dinum: 0, dila: 2 });
