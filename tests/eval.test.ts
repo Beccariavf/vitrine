@@ -415,8 +415,8 @@ describe("le verrou du test", () => {
         seuils: { bas: 0.69, haut: 0.74, marge: 0.01 },
         bande_article: 0.02,
         intervalles: {
-          top5_global: [0.8, 0.99],
-          top5_semantique: [0.75, 0.99],
+          top5_global_brut: [0.8, 0.99],
+          top5_semantique_brut: [0.75, 0.99],
           pieges_cites: [0.03, 0.62],
         },
         snapshots: { "32016R0679": "rgpd.xhtml", "32024R1689": "aiact.xhtml" },
@@ -470,7 +470,11 @@ describe("le verrou du test", () => {
     assert.equal(marqueur.bande_article, 0.02);
     assert.equal(marqueur.unites_index, 565);
     assert.deepEqual(Object.keys(marqueur.snapshots).sort(), ["32016R0679", "32024R1689"]);
-    assert.equal(marqueur.intervalles.top5_global.length, 2);
+    assert.equal(marqueur.intervalles.top5_global_brut.length, 2);
+    assert.equal(marqueur.intervalles.top5_semantique_brut.length, 2);
+    assert.deepEqual(marqueur.intervalles.top5_global_brut, intervalleWilson(24, 25));
+    assert.deepEqual(marqueur.intervalles.top5_semantique_brut, intervalleWilson(18, 19));
+    assert.deepEqual(marqueur.intervalles.pieges_cites, intervalleWilson(1, 5));
   });
 
   it("refuse le test consommé au niveau CLI, même avec --marqueur", () => {

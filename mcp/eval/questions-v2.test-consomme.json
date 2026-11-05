@@ -31,11 +31,11 @@
   },
   "bande_article": 0.02,
   "intervalles": {
-    "top5_global": [
+    "top5_global_brut": [
       0.8045593626380625,
       0.9929037664980127
     ],
-    "top5_semantique": [
+    "top5_semantique_brut": [
       0.753612688331012,
       0.9906480059376995
     ],

@@ -221,8 +221,8 @@ export type Marqueur = {
   seuils: Seuils;
   bande_article: number;
   intervalles: {
-    top5_global: [number, number];
-    top5_semantique: [number, number];
+    top5_global_brut: [number, number];
+    top5_semantique_brut: [number, number];
     pieges_cites: [number, number];
   };
   snapshots: Record<string, string>;
@@ -237,7 +237,8 @@ export function cheminMarqueur(cheminQuestions: string): string {
 
 /**
  * Refuse une seconde mesure du test. Le marqueur dit la date, l'empreinte du
- * fichier et les chiffres publiés ; le supprimer effacerait la preuve.
+ * fichier et les chiffres publiés ; le supprimer effacerait la trace et
+ * rendrait la mesure rejouable.
  */
 export function verifierTestNonConsomme(cheminMarqueurPath: string): void {
   if (!existsSync(cheminMarqueurPath)) return;
@@ -825,8 +826,11 @@ async function main(argv: string[]): Promise<void> {
           seuils,
           bande_article: BANDE_ARTICLE,
           intervalles: {
-            top5_global: intervalleWilson(chiffres.top5_global_succes, chiffres.referencees),
-            top5_semantique: intervalleWilson(
+            top5_global_brut: intervalleWilson(
+              chiffres.top5_global_succes,
+              chiffres.referencees,
+            ),
+            top5_semantique_brut: intervalleWilson(
               chiffres.top5_semantique_succes,
               chiffres.semantiques,
             ),
