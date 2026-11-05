@@ -200,11 +200,15 @@ export type Marqueur = {
   dimensions: number;
   recherche: ModeRecherche;
   split: "test";
-  top5_semantique: number;
+  top5_semantique_brut: number;
   semantiques: number;
-  top1_semantique: number;
-  mrr_semantique: number;
-  top5_global: number;
+  top1_semantique_brut: number;
+  mrr_semantique_brut: number;
+  top5_global_brut: number;
+  top5_rendu: number;
+  top1_rendu: number;
+  mrr_rendu: number;
+  top5_global_rendu: number;
   referencees: number;
   pieges_cites: number;
   pieges_mesures: number;
@@ -250,9 +254,21 @@ export function verifierTestNonConsomme(cheminMarqueurPath: string): void {
   );
 }
 
-/** Écrit le marqueur de consommation, preuve versionnée de la mesure unique. */
-export function ecrireMarqueurTest(cheminMarqueurPath: string, marqueur: Marqueur): void {
-  writeFileSync(cheminMarqueurPath, `${JSON.stringify(marqueur, null, 2)}\n`, "utf8");
+/**
+ * Écrit le marqueur de consommation ; `note` dit d'où viennent les chiffres.
+ * Elle est fournie par l'appelant pour qu'une future mesure ne réécrive pas la
+ * date ni l'origine d'une mesure antérieure.
+ */
+export function ecrireMarqueurTest(
+  cheminMarqueurPath: string,
+  marqueur: Omit<Marqueur, "note">,
+  note: string,
+): void {
+  writeFileSync(
+    cheminMarqueurPath,
+    `${JSON.stringify({ ...marqueur, note }, null, 2)}\n`,
+    "utf8",
+  );
 }
 
 /** Découpe en `plis` blocs contigus de `ceil(n / plis)`. */
@@ -560,6 +576,10 @@ export type Resume = {
   mrr_semantique: number;
   referencees: number;
   top5_global_succes: number;
+  top5_rendu_succes: number;
+  top1_rendu_succes: number;
+  mrr_rendu: number;
+  top5_global_rendu_succes: number;
   pieges_mesures: number;
   pieges_cites: number;
   confiant: number;
@@ -573,6 +593,14 @@ export function resume(mesures: Mesure[], seuils: Seuils): Resume {
   const referencees = mesures.filter((mesure) => !mesure.question.piege);
   const classementsSemantiques = classer(semantiques);
   const classementsGlobaux = classer(referencees);
+  const classementsRendus = semantiques.map((mesure) => ({
+    attendues: mesure.question.attendues,
+    rendus: refusee(mesure, seuils) ? [] : mesure.refs,
+  }));
+  const classementsGlobauxRendus = referencees.map((mesure) => ({
+    attendues: mesure.question.attendues,
+    rendus: refusee(mesure, seuils) ? [] : mesure.refs,
+  }));
   const pieges = mesures.filter((mesure) => mesure.question.piege && !estExacte(mesure));
 
   const niveaux = semantiques.map((mesure) => niveau(mesure, seuils));
@@ -588,6 +616,16 @@ export function resume(mesures: Mesure[], seuils: Seuils): Resume {
     mrr_semantique: mrr(classementsSemantiques),
     referencees: referencees.length,
     top5_global_succes: classementsGlobaux.filter((classement) =>
+      classement.rendus.slice(0, 5).some((ref) => classement.attendues.includes(ref)),
+    ).length,
+    top5_rendu_succes: classementsRendus.filter((classement) =>
+      classement.rendus.slice(0, 5).some((ref) => classement.attendues.includes(ref)),
+    ).length,
+    top1_rendu_succes: classementsRendus.filter((classement) =>
+      classement.attendues.includes(classement.rendus[0] ?? ""),
+    ).length,
+    mrr_rendu: mrr(classementsRendus),
+    top5_global_rendu_succes: classementsGlobauxRendus.filter((classement) =>
       classement.rendus.slice(0, 5).some((ref) => classement.attendues.includes(ref)),
     ).length,
     pieges_mesures: pieges.length,
@@ -673,6 +711,7 @@ async function main(argv: string[]): Promise<void> {
   const split = lireSplit(argv);
   const recherche = lireRecherche(argv);
   verifierAutorisationTest(split, argv.includes("--mesurer-test"));
+  const date = new Date().toISOString().slice(0, 10);
 
   const cheminQuestions = resoudreQuestions(valeurDe("--questions", argv) ?? basename(QUESTIONS));
   const contenu = readFileSync(cheminQuestions, "utf8");
@@ -705,7 +744,7 @@ async function main(argv: string[]): Promise<void> {
         : "calibrés sur dev";
 
     const lignes = [
-      `date : ${new Date().toISOString().slice(0, 10)}`,
+      `date : ${date}`,
       `modèle : ${embedder.model} (${embedder.dim} dimensions)`,
       `document : ${document}`,
       `recherche : ${recherche}`,
@@ -738,46 +777,67 @@ async function main(argv: string[]): Promise<void> {
           pourcentIntervalle(chiffres.pieges_cites, chiffres.pieges_mesures),
       );
 
-      ecrireMarqueurTest(marqueurPath, {
-        date: new Date().toISOString().slice(0, 10),
-        note:
-          "Chiffres de la mesure unique du 5 novembre 2026, transcrits du rapport ; " +
-          "ces champs ne proviennent pas d'une nouvelle mesure.",
-        questions_sha256: sha256(contenu),
-        modele: embedder.model,
-        dimensions: embedder.dim,
-        recherche,
-        split: "test",
-        top5_semantique:
-          chiffres.semantiques === 0 ? 0 : chiffres.top5_semantique_succes / chiffres.semantiques,
-        semantiques: chiffres.semantiques,
-        top1_semantique:
-          chiffres.semantiques === 0 ? 0 : chiffres.top1_semantique_succes / chiffres.semantiques,
-        mrr_semantique: chiffres.mrr_semantique,
-        top5_global:
-          chiffres.referencees === 0 ? 0 : chiffres.top5_global_succes / chiffres.referencees,
-        referencees: chiffres.referencees,
-        pieges_cites: chiffres.pieges_cites,
-        pieges_mesures: chiffres.pieges_mesures,
-        niveaux: {
-          confiant: chiffres.confiant,
-          incertain: chiffres.incertain,
-          aucun_resultat_fiable: chiffres.aucun_resultat_fiable,
+      ecrireMarqueurTest(
+        marqueurPath,
+        {
+          date,
+          questions_sha256: sha256(contenu),
+          modele: embedder.model,
+          dimensions: embedder.dim,
+          recherche,
+          split: "test",
+          top5_semantique_brut:
+            chiffres.semantiques === 0
+              ? 0
+              : chiffres.top5_semantique_succes / chiffres.semantiques,
+          semantiques: chiffres.semantiques,
+          top1_semantique_brut:
+            chiffres.semantiques === 0
+              ? 0
+              : chiffres.top1_semantique_succes / chiffres.semantiques,
+          mrr_semantique_brut: chiffres.mrr_semantique,
+          top5_global_brut:
+            chiffres.referencees === 0
+              ? 0
+              : chiffres.top5_global_succes / chiffres.referencees,
+          top5_rendu:
+            chiffres.semantiques === 0
+              ? 0
+              : chiffres.top5_rendu_succes / chiffres.semantiques,
+          top1_rendu:
+            chiffres.semantiques === 0
+              ? 0
+              : chiffres.top1_rendu_succes / chiffres.semantiques,
+          mrr_rendu: chiffres.mrr_rendu,
+          top5_global_rendu:
+            chiffres.referencees === 0
+              ? 0
+              : chiffres.top5_global_rendu_succes / chiffres.referencees,
+          referencees: chiffres.referencees,
+          pieges_cites: chiffres.pieges_cites,
+          pieges_mesures: chiffres.pieges_mesures,
+          niveaux: {
+            confiant: chiffres.confiant,
+            incertain: chiffres.incertain,
+            aucun_resultat_fiable: chiffres.aucun_resultat_fiable,
+          },
+          pieges_confiants: chiffres.pieges_confiants,
+          seuils,
+          bande_article: BANDE_ARTICLE,
+          intervalles: {
+            top5_global: intervalleWilson(chiffres.top5_global_succes, chiffres.referencees),
+            top5_semantique: intervalleWilson(
+              chiffres.top5_semantique_succes,
+              chiffres.semantiques,
+            ),
+            pieges_cites: intervalleWilson(chiffres.pieges_cites, chiffres.pieges_mesures),
+          },
+          snapshots: snapshotsCorpus(RACINE),
+          unites_index: index.unites,
         },
-        pieges_confiants: chiffres.pieges_confiants,
-        seuils,
-        bande_article: BANDE_ARTICLE,
-        intervalles: {
-          top5_global: intervalleWilson(chiffres.top5_global_succes, chiffres.referencees),
-          top5_semantique: intervalleWilson(
-            chiffres.top5_semantique_succes,
-            chiffres.semantiques,
-          ),
-          pieges_cites: intervalleWilson(chiffres.pieges_cites, chiffres.pieges_mesures),
-        },
-        snapshots: snapshotsCorpus(RACINE),
-        unites_index: index.unites,
-      });
+        `Chiffres de la mesure du ${date}, produits par cette exécution ; ` +
+          "aucune valeur n'est transcrite d'un autre rapport.",
+      );
     }
 
     process.stdout.write(`${lignes.join("\n")}\n`);

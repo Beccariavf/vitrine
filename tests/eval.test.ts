@@ -368,11 +368,15 @@ describe("le verrou du test", () => {
         dimensions: 1024,
         recherche: "hybride",
         split: "test",
-        top5_semantique: 0.9,
+        top5_semantique_brut: 0.9,
         semantiques: 19,
-        top1_semantique: 0.8,
-        mrr_semantique: 0.85,
-        top5_global: 0.9,
+        top1_semantique_brut: 0.8,
+        mrr_semantique_brut: 0.85,
+        top5_global_brut: 0.9,
+        top5_rendu: 0.85,
+        top1_rendu: 0.75,
+        mrr_rendu: 0.8,
+        top5_global_rendu: 0.88,
         referencees: 25,
         pieges_cites: 0,
         pieges_mesures: 4,
@@ -390,7 +394,7 @@ describe("le verrou du test", () => {
       };
 
       verifierTestNonConsomme(marqueurPath);
-      ecrireMarqueurTest(marqueurPath, marqueur);
+      ecrireMarqueurTest(marqueurPath, marqueur, marqueur.note);
       assert.ok(existsSync(marqueurPath));
       assert.throws(() => verifierTestNonConsomme(marqueurPath), /Test déjà consommé le 2026-11-05/);
     } finally {
@@ -416,6 +420,14 @@ describe("le verrou du test", () => {
 
     assert.equal(marqueur.questions_sha256, sha);
     assert.match(marqueur.note, /transcrit/);
+    assert.equal(marqueur.top5_semantique_brut, 18 / 19);
+    assert.equal(marqueur.top1_semantique_brut, 17 / 19);
+    assert.equal(marqueur.mrr_semantique_brut, 0.9052631578947368);
+    assert.equal(marqueur.top5_global_brut, 24 / 25);
+    assert.equal(marqueur.top5_rendu, 17 / 19);
+    assert.equal(marqueur.top1_rendu, 16 / 19);
+    assert.equal(marqueur.mrr_rendu, 16.2 / 19);
+    assert.equal(marqueur.top5_global_rendu, 23 / 25);
     assert.deepEqual(marqueur.niveaux, {
       confiant: 14,
       incertain: 4,
