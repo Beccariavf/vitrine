@@ -25,3 +25,23 @@ Système d'avant la recherche hybride : voie dense seule, seuils calibrés sur l
 | Seuils calibrés sur `dev` | `bas = 0,680`, `haut = 0,730`, `marge = 0,010` |
 
 La question sémantique manquée est « autorité de contrôle chef de file » : `art_56` est absent des cinq premiers et `art_51` passe en tête. Trois têtes de considérant précèdent l'article attendu (`art_25` derrière `rct_78`, `art_47` derrière `rct_110`, `art_89` derrière `rct_159`) ; leurs écarts de similarité dépassent la bande article.
+
+## Recherche hybride : mesure `dev` (phase 2)
+
+La table `fts_unites` partage le `rowid` de `unites` et suit le même delta (ajout, modification, suppression) dans la même transaction. `rechercheHybride` prend 50 candidats denses et 50 candidats lexicaux, applique la bande article à l'ordre dense, puis fusionne par `1 / (60 + rang)`. La distance rendue reste la distance dense brute ; un candidat purement lexical reçoit sa distance cosinus calculée contre le vecteur de la requête.
+
+| Métrique `dev` (19 questions sémantiques) | Dense seule | Hybride | Écart |
+| --- | --- | --- | --- |
+| `recall@5` | 0,947 (18/19) | 1,000 (19/19) | +1 question |
+| Top-1 | 78,9 % (15/19) | 52,6 % (10/19) | −26,3 points |
+| `MRR` | 0,860 | 0,732 | −0,128 |
+| `incertain` | 2/19 | 7/19 | +5 |
+| Pièges cités par seuil (4) | 0/4 | 0/4 | inchangé |
+| Pièges marqués confiant | 0 | 0 | inchangé |
+| Seuils calibrés sur `dev` | 0,680 / 0,730 / 0,010 | 0,640 / 0,690 / 0,010 | plus permissifs |
+
+L'hybride rattrape la seule question manquée par la voie dense (« autorité de contrôle chef de file », `art_56`, rang 1), mais il fait reculer cinq articles attendus : `art_5` du rang 1 au rang 2, `art_14` au rang 3, `art_30` au rang 3, `art_35` au rang 2, `art_39` au rang 2. Les `OR` lexicaux ramènent des articles qui partagent un mot courant et le RRF les place devant l'article dense le plus proche. Le top 5 gagne une question, le top 1 et le MRR perdent nettement, et les seuils devraient descendre à `0,640 / 0,690` pour continuer à rendre des passages — donc `confiant` deviendrait plus permissif.
+
+**Décision : l'hybride n'est pas retenu comme voie par défaut.** Le critère « top 5 ou top 1 progresse et pièges à zéro » est techniquement satisfait par le top 5, mais le système global dégrade : −26,3 points de top 1, −0,128 de MRR, cinq questions de plus en `incertain`, et des seuils plus bas. Le critère de sécurité « si l'hybride dégrade, revenir au dense » l'emporte. `search` garde la voie dense par défaut ; `rechercheHybride` et la table `fts_unites` restent dans le code et se mesurent avec `--recherche hybride`, sans être branchés sur le produit.
+
+Les seuils du produit restent donc ceux figés par l'évaluation v1, `SEUIL_BAS = 0,69`, `SEUIL_HAUT = 0,74`, `MARGE = 0,01` : aucune recalibration n'est justifiée puisque l'hybride n'est pas conservé. La calibration `dev` v2 de la voie dense (0,680 / 0,730 / 0,010) est un résultat de mesure, pas un nouveau réglage : elle n'est pas écrite dans `mcp/confidence.ts`.

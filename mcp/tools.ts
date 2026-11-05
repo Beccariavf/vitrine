@@ -1,6 +1,6 @@
 import { lireUnites } from "./index/build.ts";
 import { cheminIndex } from "./index/build.ts";
-import { openIndex, searchIndex } from "./index/search.ts";
+import { openIndex, rechercheHybride, searchIndex } from "./index/search.ts";
 import type { Index, ResultatRecherche } from "./index/search.ts";
 import type { Unite } from "./corpus/parse.ts";
 import type { Embedder } from "./embed/embedder.ts";
@@ -86,6 +86,8 @@ export type SearchDeps = {
    */
   index?: Index | (() => Index);
   seuils?: { bas?: number; haut?: number; marge?: number };
+  /** Voie de recherche ; `dense` par défaut, `hybride` sur demande mesurée. */
+  recherche?: "dense" | "hybride";
 };
 
 export type SearchDemande = {
@@ -122,11 +124,12 @@ export async function search(
     typeof deps.index === "function" ? deps.index() : deps.index ?? openIndex(cheminIndex(rootDir));
   const k = Math.max(1, Math.trunc(demande.k ?? 5));
   const vecteur = await deps.embedder.embedQuery(demande.question);
-  const resultats = searchIndex(
-    index,
-    vecteur,
-    demande.document === undefined ? { k } : { k, document: demande.document },
-  );
+  const options =
+    demande.document === undefined ? { k } : { k, document: demande.document };
+  const resultats =
+    (deps.recherche ?? "dense") === "hybride"
+      ? rechercheHybride(index, vecteur, demande.question, options)
+      : searchIndex(index, vecteur, options);
 
   const niveau = niveauConfiance(resultats, false, deps.seuils);
   return {

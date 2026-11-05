@@ -19,6 +19,7 @@ export const NB_PLIS = 4;
 
 export type Split = "dev" | "test";
 export type FiltreSplit = Split | "all";
+export type ModeRecherche = "dense" | "hybride";
 
 export type TypeQuestion = "reference" | "conceptuelle" | "piege";
 
@@ -196,6 +197,7 @@ export type Marqueur = {
   questions_sha256: string;
   modele: string;
   dimensions: number;
+  recherche: ModeRecherche;
   split: "test";
   top5_semantique: number;
   semantiques: number;
@@ -377,13 +379,14 @@ async function mesurer(
   embedder: Embedder,
   index: Index,
   document: string,
+  recherche: ModeRecherche,
 ): Promise<Mesure[]> {
   const mesures: Mesure[] = [];
   for (const question of questions) {
     const resultat = await search(
       rootDir,
       { question: question.question, k: 5, document },
-      { embedder, index, seuils: { bas: -1, haut: 2, marge: 0 } },
+      { embedder, index, seuils: { bas: -1, haut: 2, marge: 0 }, recherche },
     );
     mesures.push({
       question,
@@ -582,6 +585,15 @@ function lireSplit(argv: string[]): FiltreSplit {
   return valeur;
 }
 
+function lireRecherche(argv: string[]): ModeRecherche {
+  const index = argv.indexOf("--recherche");
+  const valeur = index >= 0 ? argv[index + 1] : "dense";
+  if (valeur !== "dense" && valeur !== "hybride") {
+    throw new Error(`--recherche attendu dense ou hybride ; reçu « ${valeur ?? "(vide)"} »`);
+  }
+  return valeur;
+}
+
 /** Le split `test` ne s'exécute que sur autorisation explicite. */
 export function verifierAutorisationTest(split: FiltreSplit, mesurerTest: boolean): void {
   if ((split === "test" || split === "all") && !mesurerTest) {
@@ -618,6 +630,7 @@ function pourcentIntervalle(succes: number, total: number): string {
 
 async function main(argv: string[]): Promise<void> {
   const split = lireSplit(argv);
+  const recherche = lireRecherche(argv);
   verifierAutorisationTest(split, argv.includes("--mesurer-test"));
 
   const cheminQuestions = resoudreQuestions(valeurDe("--questions", argv) ?? basename(QUESTIONS));
@@ -639,7 +652,7 @@ async function main(argv: string[]): Promise<void> {
   const index = openIndex(cheminIndex(RACINE));
   try {
     const demandees = filtrerSplit(questions, split);
-    const mesures = await mesurer(RACINE, demandees, embedder, index, document);
+    const mesures = await mesurer(RACINE, demandees, embedder, index, document, recherche);
 
     const mesuresDev =
       split === "all" ? mesures.filter((mesure) => mesure.question.split === "dev") : mesures;
@@ -657,6 +670,7 @@ async function main(argv: string[]): Promise<void> {
       `date : ${new Date().toISOString().slice(0, 10)}`,
       `modèle : ${embedder.model} (${embedder.dim} dimensions)`,
       `document : ${document}`,
+      `recherche : ${recherche}`,
       `split : ${split}`,
       ...(split === "all"
         ? [
@@ -691,6 +705,7 @@ async function main(argv: string[]): Promise<void> {
         questions_sha256: sha256(contenu),
         modele: embedder.model,
         dimensions: embedder.dim,
+        recherche,
         split: "test",
         top5_semantique:
           chiffres.semantiques === 0 ? 0 : chiffres.top5_semantique_succes / chiffres.semantiques,

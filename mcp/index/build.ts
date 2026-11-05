@@ -100,11 +100,22 @@ CREATE TABLE unites (
   empreinte TEXT NOT NULL
 );
 CREATE VIRTUAL TABLE vec_unites USING vec0(embedding float[${dim}] distance_metric=cosine);
+CREATE VIRTUAL TABLE fts_unites USING fts5(chemin, texte, tokenize="unicode61 remove_diacritics 2");
 `;
 
 /** Contexte d'un passage : son chemin, puis son texte intact. */
 function passage(unite: Unite): string {
   return `${unite.chemin}\n${unite.texte}`;
+}
+
+/** Vérifie que `node:sqlite` expose FTS5 avant de bâtir un index neuf. */
+function verifierFts5(db: DatabaseSync): void {
+  try {
+    db.exec("CREATE VIRTUAL TABLE temp.fts5_sonde USING fts5(x)");
+    db.exec("DROP TABLE temp.fts5_sonde");
+  } catch {
+    throw new Error("Ce Node n'expose pas FTS5 : impossible de construire la voie lexicale.");
+  }
 }
 
 /**
@@ -156,6 +167,14 @@ function ouvrirExistant(chemin: string, embedder: Embedder): Existant {
     if (!colonnes.some((colonne) => colonne.name === "empreinte")) {
       db.close();
       return { compatible: false, raison: "index sans empreinte" };
+    }
+
+    const fts = db
+      .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'fts_unites'")
+      .get();
+    if (fts === undefined) {
+      db.close();
+      return { compatible: false, raison: "index sans table lexicale" };
     }
 
     const lignes = db.prepare("SELECT ref, rowid, empreinte FROM unites").all() as {
@@ -256,6 +275,7 @@ async function construireComplet(
   let transaction = false;
   try {
     sqliteVec.load(db);
+    verifierFts5(db);
     db.exec(SCHEMA(embedder.dim));
 
     const insererUnite = db.prepare(`
@@ -263,6 +283,9 @@ async function construireComplet(
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     const insererVecteur = db.prepare("INSERT INTO vec_unites (rowid, embedding) VALUES (?, ?)");
+    const insererFts = db.prepare(
+      "INSERT INTO fts_unites (rowid, chemin, texte) VALUES (?, ?, ?)",
+    );
     const insererMeta = db.prepare("INSERT INTO meta (cle, valeur) VALUES (?, ?)");
 
     db.exec("BEGIN");
@@ -287,6 +310,7 @@ async function construireComplet(
         empreintes.get(unite.ref) ?? "",
       );
       insererVecteur.run(rowid, JSON.stringify(vecteur));
+      insererFts.run(rowid, unite.chemin, unite.texte);
     });
     insererMeta.run("model", embedder.model);
     insererMeta.run("dim", String(embedder.dim));
@@ -318,6 +342,10 @@ async function appliquerDelta(
 
   const supprimerVecteur = db.prepare("DELETE FROM vec_unites WHERE rowid = ?");
   const supprimerUnite = db.prepare("DELETE FROM unites WHERE rowid = ?");
+  const supprimerFts = db.prepare("DELETE FROM fts_unites WHERE rowid = ?");
+  const insererFts = db.prepare(
+    "INSERT INTO fts_unites (rowid, chemin, texte) VALUES (?, ?, ?)",
+  );
   const modifierUnite = db.prepare(`
     UPDATE unites
        SET document = ?, niveau = ?, numero = ?, chemin = ?, texte = ?, date_acte = ?,
@@ -352,6 +380,7 @@ async function appliquerDelta(
   try {
     for (const ligne of delta.supprimees) {
       supprimerVecteur.run(BigInt(ligne.rowid));
+      supprimerFts.run(BigInt(ligne.rowid));
       supprimerUnite.run(BigInt(ligne.rowid));
     }
 
@@ -377,6 +406,8 @@ async function appliquerDelta(
       );
       supprimerVecteur.run(BigInt(rowid));
       insererVecteur.run(BigInt(rowid), JSON.stringify(vecteur));
+      supprimerFts.run(BigInt(rowid));
+      insererFts.run(BigInt(rowid), unite.chemin, unite.texte);
     }
 
     for (const unite of delta.ajoutees) {
@@ -401,6 +432,7 @@ async function appliquerDelta(
         empreintes.get(unite.ref) ?? "",
       );
       insererVecteur.run(BigInt(rowid), JSON.stringify(vecteur));
+      insererFts.run(BigInt(rowid), unite.chemin, unite.texte);
     }
 
     ecrireMeta.run("construit_le", new Date().toISOString());

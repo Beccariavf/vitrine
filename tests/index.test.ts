@@ -6,7 +6,14 @@ import { DatabaseSync } from "node:sqlite";
 import { describe, it } from "node:test";
 import * as sqliteVec from "sqlite-vec";
 import { buildIndex, cheminIndex, empreinteUnite, formaterJournal } from "../mcp/index/build.ts";
-import { openIndex, searchIndex } from "../mcp/index/search.ts";
+import {
+  CANDIDATS_VOIE,
+  RRF_K,
+  openIndex,
+  rechercheHybride,
+  requeteLexicale,
+  searchIndex,
+} from "../mcp/index/search.ts";
 import { INSTRUCTION_REQUETE, createOllamaEmbedder, normaliser } from "../mcp/embed/embedder.ts";
 import type { Embedder } from "../mcp/embed/embedder.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";
@@ -579,5 +586,227 @@ describe("l'index réel", () => {
   it("garde le fichier hors de git", () => {
     const ignore = readFileSync(new URL("../.gitignore", import.meta.url), "utf8");
     assert.match(ignore, /data\/corpus\/index\//);
+  });
+});
+
+/** Rowids de `unites`, triés. */
+function rowidsUnites(chemin: string): number[] {
+  return [...rowids(chemin).values()].sort((gauche, droite) => gauche - droite);
+}
+
+/** Rowids rendus par FTS5 pour une requête (un seul mot), triés. */
+function rowidsLexicaux(chemin: string, mot: string): number[] {
+  const db = new DatabaseSync(chemin);
+  try {
+    const lignes = db
+      .prepare("SELECT rowid FROM fts_unites WHERE fts_unites MATCH ? ORDER BY rowid")
+      .all(`"${mot}"`) as { rowid: number | bigint }[];
+    return lignes.map((ligne) => Number(ligne.rowid));
+  } finally {
+    db.close();
+  }
+}
+
+function nombreFts(chemin: string): number {
+  const db = new DatabaseSync(chemin);
+  try {
+    return Number((db.prepare("SELECT count(*) AS n FROM fts_unites").get() as { n: number }).n);
+  } finally {
+    db.close();
+  }
+}
+
+describe("la table lexicale", () => {
+  it("crée fts_unites avec le rowid de unites et retrouve « autorite chef de file »", async () => {
+    const root = tempRoot();
+    try {
+      ecrireCorpus(root, "rgpd", [
+        ...SIX,
+        unite(7, "autorité chef de file pour les traitements transfrontaliers"),
+      ]);
+      const { chemin } = await buildIndex(root, embedderFactice());
+
+      assert.deepEqual(rowidsLexicaux(chemin, "autorité"), rowidsUnites(chemin).filter((rowid) => rowid === 7));
+      assert.equal(nombreFts(chemin), 7);
+      assert.deepEqual(
+        rowidsLexicaux(chemin, "chef"),
+        rowidsLexicaux(chemin, "autorité"),
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("suit le delta : un ajout entre, une modification remplace, une suppression sort", async () => {
+    const root = tempRoot();
+    try {
+      ecrireCorpus(root, "rgpd", SIX);
+      const { embedder } = embedderCompteur();
+      const premier = await buildIndex(root, embedder);
+      assert.equal(nombreFts(premier.chemin), 6);
+      assert.deepEqual(rowidsLexicaux(premier.chemin, "licéité"), [
+        Number(rowids(premier.chemin).get(`${DOCUMENT}#art_6`)),
+      ]);
+
+      ecrireCorpus(root, "rgpd", [...SIX, unite(7, "nouveau terme lexical")]);
+      const ajout = await buildIndex(root, embedder);
+      assert.equal(nombreFts(ajout.chemin), 7);
+      assert.deepEqual(rowidsLexicaux(ajout.chemin, "lexical"), [
+        Number(rowids(ajout.chemin).get(`${DOCUMENT}#art_7`)),
+      ]);
+
+      ecrireCorpus(
+        root,
+        "rgpd",
+        [...SIX, unite(7, "nouveau terme lexical")].map((element) =>
+          element.ref === `${DOCUMENT}#art_3`
+            ? { ...element, texte: "zirconium des données" }
+            : element,
+        ),
+      );
+      const modification = await buildIndex(root, embedder);
+      assert.equal(nombreFts(modification.chemin), 7);
+      assert.deepEqual(rowidsLexicaux(modification.chemin, "zirconium"), [
+        Number(rowids(modification.chemin).get(`${DOCUMENT}#art_3`)),
+      ]);
+      assert.deepEqual(rowidsLexicaux(modification.chemin, "accès"), []);
+
+      ecrireCorpus(root, "rgpd", [...SIX.slice(0, 5), unite(7, "nouveau terme lexical")]);
+      const suppression = await buildIndex(root, embedder);
+      assert.equal(nombreFts(suppression.chemin), 6);
+      assert.deepEqual(rowidsLexicaux(suppression.chemin, "licéité"), []);
+      assert.deepEqual(rowidsLexicaux(suppression.chemin, "lexical"), [
+        Number(rowids(suppression.chemin).get(`${DOCUMENT}#art_7`)),
+      ]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("reconstruit un index sans table lexicale plutôt que de le compléter à moitié", async () => {
+    const root = tempRoot();
+    try {
+      ecrireCorpus(root, "rgpd", SIX);
+      const premier = await buildIndex(root, embedderFactice());
+      const db = new DatabaseSync(premier.chemin);
+      try {
+        db.exec("DROP TABLE fts_unites");
+      } finally {
+        db.close();
+      }
+
+      const { embedder, compteur } = embedderCompteur();
+      const second = await buildIndex(root, embedder);
+
+      assert.equal(second.mode, "complet");
+      assert.match(second.raison ?? "", /sans table lexicale/);
+      assert.equal(compteur.passages, 6);
+      assert.equal(nombreFts(second.chemin), 6);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("la fusion hybride", () => {
+  it("construit une requête FTS5 sans mots outils ni syntaxe brute", () => {
+    assert.equal(requeteLexicale("Quel est le droit de récupérer mes données ?"), '"droit" OR "récupérer" OR "données"');
+    assert.equal(requeteLexicale("le la les de des"), null);
+    assert.equal(requeteLexicale('terme "cité"'), '"terme" OR "cité"');
+  });
+
+  it("retrouve par le lexical un terme rare absent du classement dense", async () => {
+    const root = tempRoot();
+    try {
+      const corpus = [
+        unite(1, "alpha beta"),
+        unite(2, "gamma delta"),
+        unite(3, "epsilon zirconium"),
+      ];
+      const embedder: Embedder = {
+        model: "factice",
+        dim: 4,
+        embedPassages: async (textes) =>
+          textes.map((texte) => (texte.includes("zirconium") ? [0, 1, 0, 0] : [1, 0, 0, 0])),
+        embedQuery: async () => [1, 0, 0, 0],
+      };
+      ecrireCorpus(root, "rgpd", corpus);
+      const { chemin } = await buildIndex(root, embedder);
+      const index = openIndex(chemin);
+      try {
+        const vecteur = await embedder.embedQuery("zirconium");
+        const dense = searchIndex(index, vecteur, { k: 3 });
+        assert.notEqual(dense[0]?.ref, `${DOCUMENT}#art_3`);
+        assert.equal(dense.at(-1)?.ref, `${DOCUMENT}#art_3`);
+
+        const hybride = rechercheHybride(index, vecteur, "zirconium", { k: 3 });
+        assert.equal(hybride[0]?.ref, `${DOCUMENT}#art_3`);
+        assert.ok(Math.abs((hybride[0]?.distance ?? 0) - 1) < 1e-6);
+        assert.equal(hybride.length, 3);
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("place un passage classé par les deux voies devant un passage classé par une seule", async () => {
+    const root = tempRoot();
+    try {
+      const corpus = [unite(1, "alpha"), unite(2, "beta")];
+      const embedder: Embedder = {
+        model: "factice",
+        dim: 4,
+        embedPassages: async (textes) =>
+          textes.map((texte) => (texte.includes("alpha") ? [0, 1, 0, 0] : [1, 0, 0, 0])),
+        embedQuery: async () => [1, 0, 0, 0],
+      };
+      ecrireCorpus(root, "rgpd", corpus);
+      const { chemin } = await buildIndex(root, embedder);
+      const index = openIndex(chemin);
+      try {
+        const vecteur = await embedder.embedQuery("alpha");
+        const dense = searchIndex(index, vecteur, { k: 2 });
+        assert.equal(dense[0]?.ref, `${DOCUMENT}#art_2`);
+
+        const hybride = rechercheHybride(index, vecteur, "alpha", { k: 2 });
+        assert.deepEqual(
+          hybride.map((resultat) => resultat.ref),
+          [`${DOCUMENT}#art_1`, `${DOCUMENT}#art_2`],
+        );
+        assert.ok(Math.abs((hybride[0]?.distance ?? 0) - 1) < 1e-6);
+        assert.equal(CANDIDATS_VOIE, 50);
+        assert.equal(RRF_K, 60);
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("laisse la voie dense seule décider quand aucun mot lexical ne subsiste", async () => {
+    const root = tempRoot();
+    try {
+      ecrireCorpus(root, "rgpd", SIX);
+      const { embedder } = embedderCompteur();
+      const { chemin } = await buildIndex(root, embedder);
+      const index = openIndex(chemin);
+      try {
+        const vecteur = await embedder.embedQuery("le la les de des");
+        const dense = searchIndex(index, vecteur, { k: 3 });
+        const hybride = rechercheHybride(index, vecteur, "le la les de des", { k: 3 });
+
+        assert.deepEqual(
+          hybride.map((resultat) => resultat.ref),
+          dense.map((resultat) => resultat.ref),
+        );
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 });

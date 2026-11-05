@@ -160,3 +160,210 @@ export function searchIndex(index: Index, vecteur: number[], options: SearchOpti
       : resultats.filter((resultat) => resultat.document === options.document);
   return rangerPassages(filtres, k);
 }
+
+/** Nombre de candidats pris dans chaque voie avant fusion. */
+export const CANDIDATS_VOIE = 50;
+/** Constante RRF : `1 / (RRF_K + rang)`, sans réglage fin. */
+export const RRF_K = 60;
+
+/** Mots outils français retirés de la requête lexicale : ils ne discriminent rien. */
+const MOTS_VIDES = new Set([
+  "au", "aux", "avec", "ce", "ces", "cet", "cette", "dans", "de", "des", "du", "elle",
+  "en", "est", "et", "eux", "il", "ils", "je", "la", "le", "les", "leur", "leurs",
+  "lui", "mais", "me", "mes", "moi", "mon", "ne", "nos", "notre", "nous", "on", "ou",
+  "où", "par", "pas", "pour", "qu", "que", "quel", "quelle", "quelles", "quels", "qui",
+  "quoi", "sa", "se", "ses", "son", "sont", "sur", "ta", "te", "tes", "toi", "ton",
+  "tu", "un", "une", "vos", "votre", "vous", "y", "à",
+]);
+
+/** Requête FTS5 : chaque mot utile entre guillemets, joints par `OR` ; `null` si vide. */
+export function requeteLexicale(texte: string): string | null {
+  const mots = texte.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? [];
+  const utiles = [...new Set(mots.filter((mot) => mot.length > 1 && !MOTS_VIDES.has(mot)))];
+  if (utiles.length === 0) return null;
+  return utiles.map((mot) => `"${mot.replace(/"/g, '""')}"`).join(" OR ");
+}
+
+type CandidatDense = { rowid: number; resultat: ResultatRecherche };
+
+/** Candidats vectoriels, avec leur rowid, la bande article appliquée plus tard. */
+function candidatsDenses(
+  index: Index,
+  vecteur: number[],
+  limite: number,
+  document: string | undefined,
+): CandidatDense[] {
+  const lignes = index.db
+    .prepare(
+      `SELECT v.rowid AS rowid, u.ref, u.document, u.niveau, u.numero, u.texte, u.chemin, u.url,
+              u.date_acte, u.date_debut, u.date_fin, u.statut, v.distance
+         FROM vec_unites v
+         JOIN unites u ON u.rowid = v.rowid
+        WHERE v.embedding MATCH ? AND k = ?
+        ORDER BY v.distance`,
+    )
+    .all(JSON.stringify(vecteur), limite) as Ligne[];
+  const candidats = lignes.map((ligne) => ({
+    rowid: Number(ligne.rowid),
+    resultat: ligneVersResultat(ligne),
+  }));
+  return document === undefined
+    ? candidats
+    : candidats.filter((candidat) => candidat.resultat.document === document);
+}
+
+/** Rowids rendus par FTS5, dans l'ordre du classement lexical. */
+function candidatsLexicaux(
+  index: Index,
+  texte: string,
+  limite: number,
+  document: string | undefined,
+): number[] {
+  const requete = requeteLexicale(texte);
+  if (requete === null) return [];
+
+  const filtre = document === undefined ? "" : " AND u.document = ?";
+  const parametres: (string | number)[] =
+    document === undefined ? [requete, limite] : [requete, document, limite];
+  const lignes = index.db
+    .prepare(
+      `SELECT f.rowid AS rowid
+         FROM fts_unites f
+         JOIN unites u ON u.rowid = f.rowid
+        WHERE fts_unites MATCH ?${filtre}
+        ORDER BY rank
+        LIMIT ?`,
+    )
+    .all(...parametres) as { rowid: number | bigint }[];
+  return lignes.map((ligne) => Number(ligne.rowid));
+}
+
+/** Distance cosinus d'une requête contre un vecteur stocké en float32. */
+function distanceCosinus(vecteur: number[], blob: Uint8Array): number {
+  const valeurs = new Float32Array(blob.buffer, blob.byteOffset, Math.floor(blob.byteLength / 4));
+  let produit = 0;
+  let norme = 0;
+  let normeRequete = 0;
+  const longueur = Math.min(vecteur.length, valeurs.length);
+  for (let index = 0; index < longueur; index += 1) {
+    const requete = vecteur[index] ?? 0;
+    const valeur = valeurs[index] ?? 0;
+    produit += requete * valeur;
+    norme += valeur * valeur;
+    normeRequete += requete * requete;
+  }
+  const denominateur = Math.sqrt(norme) * Math.sqrt(normeRequete);
+  return denominateur === 0 ? 1 : 1 - produit / denominateur;
+}
+
+/** Distance dense des rowids que la voie vectorielle n'a pas rendus. */
+function distancesManquantes(
+  index: Index,
+  vecteur: number[],
+  rowids: number[],
+): Map<number, number> {
+  if (rowids.length === 0) return new Map();
+  const marques = rowids.map(() => "?").join(",");
+  const lignes = index.db
+    .prepare(`SELECT rowid, embedding FROM vec_unites WHERE rowid IN (${marques})`)
+    .all(...rowids.map((rowid) => BigInt(rowid))) as {
+    rowid: number | bigint;
+    embedding: Uint8Array;
+  }[];
+  return new Map(
+    lignes.map((ligne) => [Number(ligne.rowid), distanceCosinus(vecteur, ligne.embedding)]),
+  );
+}
+
+/** Lignes complètes des rowids retenus, avec la distance dense déjà connue. */
+function resultatsParRowid(
+  index: Index,
+  rowids: number[],
+  distances: Map<number, number>,
+): Map<number, ResultatRecherche> {
+  if (rowids.length === 0) return new Map();
+  const marques = rowids.map(() => "?").join(",");
+  const lignes = index.db
+    .prepare(
+      `SELECT rowid, ref, document, niveau, numero, texte, chemin, url,
+              date_acte, date_debut, date_fin, statut
+         FROM unites
+        WHERE rowid IN (${marques})`,
+    )
+    .all(...rowids.map((rowid) => BigInt(rowid))) as Ligne[];
+
+  return new Map(
+    lignes.map((ligne) => {
+      const rowid = Number(ligne.rowid);
+      const distance = distances.get(rowid);
+      if (distance === undefined) throw new Error(`Distance dense absente pour le rowid ${rowid}`);
+      return [rowid, ligneVersResultat({ ...ligne, distance })];
+    }),
+  );
+}
+
+/**
+ * Fusionne 50 candidats denses et 50 candidats lexicaux par RRF
+ * (`1 / (60 + rang)`). L'ordre dense est d'abord rangé par la bande article ;
+ * la distance rendue reste la similarité dense brute, jamais un score fusionné.
+ */
+export function rechercheHybride(
+  index: Index,
+  vecteur: number[],
+  texte: string,
+  options: SearchOptions,
+): ResultatRecherche[] {
+  if (vecteur.length !== index.dim) {
+    throw new Error(
+      `Vecteur de ${vecteur.length} dimensions pour un index de ${index.dim} ; ` +
+        `modèle ${index.model}. Reconstruisez l'index avec « npm run corpus:index ».`,
+    );
+  }
+
+  const k = Math.max(0, Math.trunc(options.k));
+  if (k === 0) return [];
+
+  const limite = Math.max(k * 10, CANDIDATS_VOIE);
+  const denses = candidatsDenses(index, vecteur, limite, options.document);
+  const distances = new Map(denses.map((candidat) => [candidat.rowid, candidat.resultat.distance]));
+
+  const rowidParRef = new Map(denses.map((candidat) => [candidat.resultat.ref, candidat.rowid]));
+  const rangDense = new Map<number, number>();
+  rangerPassages(
+    denses.map((candidat) => candidat.resultat),
+    denses.length,
+  ).forEach((resultat, position) => {
+    const rowid = rowidParRef.get(resultat.ref);
+    if (rowid !== undefined) rangDense.set(rowid, position + 1);
+  });
+
+  const lexicaux = candidatsLexicaux(index, texte, CANDIDATS_VOIE, options.document);
+  const absents = lexicaux.filter((rowid) => !distances.has(rowid));
+  for (const [rowid, distance] of distancesManquantes(index, vecteur, absents)) {
+    distances.set(rowid, distance);
+  }
+
+  const scores = new Map<number, number>();
+  for (const [rowid, rang] of rangDense) scores.set(rowid, 1 / (RRF_K + rang));
+  lexicaux.forEach((rowid, position) => {
+    scores.set(rowid, (scores.get(rowid) ?? 0) + 1 / (RRF_K + position + 1));
+  });
+
+  const ordre = [...scores.entries()]
+    .sort(
+      (gauche, droite) =>
+        droite[1] - gauche[1] ||
+        (distances.get(gauche[0]) ?? Number.POSITIVE_INFINITY) -
+          (distances.get(droite[0]) ?? Number.POSITIVE_INFINITY) ||
+        gauche[0] - droite[0],
+    )
+    .slice(0, k)
+    .map(([rowid]) => rowid);
+
+  const resultats = resultatsParRowid(index, ordre, distances);
+  return ordre.map((rowid) => {
+    const resultat = resultats.get(rowid);
+    if (resultat === undefined) throw new Error(`Résultat absent pour le rowid ${rowid}`);
+    return resultat;
+  });
+}

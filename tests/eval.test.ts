@@ -358,6 +358,7 @@ describe("le verrou du test", () => {
         questions_sha256: "abc",
         modele: "qwen3-embedding:0.6b",
         dimensions: 1024,
+        recherche: "hybride",
         split: "test",
         top5_semantique: 0.9,
         semantiques: 19,
