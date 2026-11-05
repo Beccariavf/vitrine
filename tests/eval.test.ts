@@ -1,8 +1,10 @@
 import { strict as assert } from "node:assert";
+import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
+import { fileURLToPath } from "node:url";
 import {
   calibrer,
   cheminMarqueur,
@@ -389,6 +391,30 @@ describe("le verrou du test", () => {
       cheminMarqueur("/tmp/questions-v2.csv"),
       /\/tmp\/questions-v2\.test-consomme\.json$/,
     );
+  });
+
+  it("refuse le test consommé au niveau CLI, même avec --marqueur", () => {
+    const run = fileURLToPath(new URL("../mcp/eval/run.ts", import.meta.url));
+    const racine = fileURLToPath(new URL("..", import.meta.url));
+    const resultat = spawnSync(
+      process.execPath,
+      [
+        run,
+        "--questions",
+        "questions-v2.csv",
+        "--split",
+        "test",
+        "--mesurer-test",
+        "--marqueur",
+        join(tmpdir(), "vitrine-jamais-consomme.json"),
+      ],
+      { cwd: racine, encoding: "utf8", timeout: 30_000 },
+    );
+
+    assert.notEqual(resultat.status, 0);
+    assert.equal(resultat.stdout, "", "le refus précède toute mesure");
+    assert.match(resultat.stderr, /Test déjà consommé le 2026-11-05/);
+    assert.match(resultat.stderr, /questions-v2\.test-consomme\.json/);
   });
 });
 

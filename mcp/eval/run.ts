@@ -642,10 +642,7 @@ async function main(argv: string[]): Promise<void> {
   validerReferences(questions, new Set(unites.map((unite) => unite.ref)));
 
   const consommeTest = split === "test" || split === "all";
-  const marqueurPath =
-    valeurDe("--marqueur", argv) === undefined
-      ? cheminMarqueur(cheminQuestions)
-      : resolve(process.cwd(), valeurDe("--marqueur", argv) ?? "");
+  const marqueurPath = cheminMarqueur(cheminQuestions);
   if (consommeTest) verifierTestNonConsomme(marqueurPath);
 
   const embedder = createOllamaEmbedder();

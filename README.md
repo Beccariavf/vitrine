@@ -42,7 +42,9 @@ L'évaluation v2 porte sur 60 questions écrites contre le texte du RGPD : 12 r�
 38 conceptuelles et 10 pièges, réparties en 30 `dev` et 30 `test`. Chaque mesure est filtrée sur le
 document de ses références, pour que le second corpus ne change pas la tâche. Les 30 questions
 `test` ne règlent rien et ne se mesurent qu'une fois : `--mesurer-test` est obligatoire et un
-marqueur commité refuse la seconde exécution. Avec `qwen3-embedding:0.6b`, la paraphrase « droit de
+marqueur commité refuse la seconde exécution. Ce marqueur est un engagement, pas une preuve
+d'exécution : le supprimer ou copier le CSV sous un autre nom contourne le garde, qui n'arrête
+qu'une seconde exécution accidentelle. Avec `qwen3-embedding:0.6b`, la paraphrase « droit de
 récupérer mes données » reste hors des cinq premiers. La recherche hybride FTS5 + RRF a été mesurée
 sur `dev` mais n'est pas retenue comme voie par défaut : elle gagne une question au top 5 et perd
 26 points de top 1. Les chiffres datés vivent dans

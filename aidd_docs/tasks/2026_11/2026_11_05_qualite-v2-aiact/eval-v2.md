@@ -74,4 +74,6 @@ Un piège est cité : « Quelles sanctions prévoit la directive 95/46/CE ? » r
 
 La mesure est consommée : `mcp/eval/questions-v2.test-consomme.json` enregistre la date, l'empreinte `sha256` du fichier de questions (`1795dbd1…`), le modèle, la voie dense et les chiffres ci-dessus. Une seconde exécution de `--split test --mesurer-test` refuse avant tout appel au modèle. Le marqueur est commité : il est la preuve de la mesure unique.
 
+Le marqueur est un engagement, pas une preuve d'exécution : supprimer le fichier ou copier le CSV sous un autre nom contourne le garde. C'est délibéré. Le garde arrête une seconde exécution accidentelle ; il ne prouve pas la bonne foi de l'opérateur.
+
 Ce rapport ne fusionne jamais ses chiffres avec ceux de l'évaluation v1 : 50 questions d'un côté, 60 de l'autre, deux dates et deux jeux distincts.
