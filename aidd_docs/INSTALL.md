@@ -23,9 +23,9 @@ Le différenciateur est double : **la preuve** (un pipeline de veille qui tourne
 
 - **Runtime / langage :** Node 24 LTS, TypeScript exécuté par type stripping natif (pas de `tsx`, pas de bundler pour les scripts).
 - **Front-end :** Astro 7 (version exacte épinglée à l'initialisation), Tailwind CSS 4 via `@tailwindcss/vite` (l'intégration `@astrojs/tailwind` est dépréciée), composants `.astro` et JS vanilla uniquement.
-- **Recherche :** le MCP RGPD fait une recherche sémantique locale (`sqlite-vec` + Ollama) une fois l'index construit par `npm run corpus:index` ; le site n'en a pas encore, Pagefind reste prévu quand son corpus le justifiera.
+- **Recherche :** le MCP RGPD + AI Act fait une recherche sémantique locale (`sqlite-vec` + Ollama) une fois l'index construit par `npm run corpus:index` ; la table FTS5 `fts_unites` permet une fusion lexicale mesurée mais non retenue par défaut. Le site n'en a pas encore, Pagefind reste prévu quand son corpus le justifiera.
 - **Back-end :** scripts TypeScript dans `veille/`, un adaptateur par source, aucune dépendance de framework HTTP.
-- **Base de données :** aucune pour la veille : `data/raw/` (snapshots adressés par contenu) et `data/entries/` (une entrée par `id`) sont la vérité versionnée. Pour le MCP : `data/corpus/rgpd/` est versionné et `data/corpus/index/index.db` (SQLite + `sqlite-vec`) est un dérivé ignoré par git.
+- **Base de données :** aucune pour la veille : `data/raw/` (snapshots adressés par contenu) et `data/entries/` (une entrée par `id`) sont la vérité versionnée. Pour le MCP : `data/corpus/rgpd/` et `data/corpus/aiact/` sont versionnés et `data/corpus/index/index.db` (SQLite + `sqlite-vec` + FTS5) est un dérivé ignoré par git.
 - **Auth :** aucune.
 - **Hébergement :** Cloudflare Workers static assets (`*.workers.dev`), déploiement par `wrangler` dans le même job que le cron.
 - **CI :** GitHub Actions, cron à `:17` (les crons GitHub sont retardés au début de chaque heure), dépôt **privé** (visibilité modifiable), secrets `PISTE_CLIENT_ID` / `PISTE_CLIENT_SECRET`.
@@ -34,7 +34,7 @@ Le différenciateur est double : **la preuve** (un pipeline de veille qui tourne
 ### Mitigations retenues après audit
 
 1. **Versions figées** (Astro, Tailwind) et Dependabot désactivé les 6 premiers mois : une montée de version est une décision, pas une surprise.
-2. **SQLite seulement pour le MCP local** : `node:sqlite` + `sqlite-vec`, un fichier, aucun serveur ; l'index se met à jour par `npm run corpus:index` et n'est pas versionné. L'index est incrémental : une empreinte par unité ne réembarque que les ajouts et modifications, et un second passage sur un corpus inchangé embarque zéro unité. La veille garde JSON + hash.
+2. **SQLite seulement pour le MCP local** : `node:sqlite` + `sqlite-vec` + FTS5, un fichier, aucun serveur ; l'index se met à jour par `npm run corpus:index` et n'est pas versionné. Le même delta met à jour `unites`, `vec_unites` et `fts_unites` dans une transaction ; une empreinte par unité ne réembarque que les ajouts et modifications, et un second passage sur un corpus inchangé embarque zéro unité. La veille garde JSON + hash.
 3. **Pas de `tsx`** : type stripping natif de Node 24.
 4. **Découplage contenu / framework** : la sortie est du HTML/JSON statique ; changer de générateur ne fait perdre aucune donnée.
 5. **Déploiement dans le même workflow** : un push fait avec `GITHUB_TOKEN` ne déclenche aucun autre workflow.
@@ -117,19 +117,20 @@ vitrine/
 │   ├── write.ts                    # snapshots + entrées, écriture atomique
 │   └── types.ts
 │
-├── mcp/                            # MCP local — corpus RGPD et serveur stdio
-│   ├── corpus/                     # CELLAR → data/corpus/rgpd/
+├── mcp/                            # MCP local — corpus RGPD + AI Act et serveur stdio
+│   ├── corpus/                     # descripteurs *.json → data/corpus/<corpus>/
 │   ├── embed/                      # interface Embedder + adaptateur Ollama
-│   ├── index/                      # sqlite-vec : construction et recherche
+│   ├── index/                      # sqlite-vec + FTS5 : construction et recherche
 │   ├── tools.ts                    # get_article, search
 │   ├── confidence.ts               # seuils de confiance
 │   ├── server.ts                   # transport stdio
-│   └── eval/                       # 50 questions, split dev/test et métriques
+│   └── eval/                       # 60 questions v2 + 12 questions AI Act, split et métriques
 │
 ├── data/                           # "BASE" — git = historique
 │   ├── raw/<2 hex>/<sha256>.xml    # snapshots bruts adressés par contenu
 │   ├── corpus/
 │   │   ├── rgpd/                   # manifeste + unites.jsonl, versionnés
+│   │   ├── aiact/                  # manifeste + unites.jsonl, versionnés
 │   │   └── index/                  # index.db dérivé, ignoré par git
 │   └── entries/
 │       ├── <yyyy>/<mm>/            # JSON normalisés, 1 fichier par entrée
@@ -137,7 +138,7 @@ vitrine/
 │
 ├── tests/
 │   ├── fixtures/cnil/              # flux réel figé + flux réduit
-│   ├── fixtures/eurlex/            # capture intégrale du RGPD
+│   ├── fixtures/eurlex/            # captures intégrales du RGPD et de l'AI Act
 │   ├── cnil.test.ts
 │   ├── write.test.ts
 │   ├── entries.test.ts

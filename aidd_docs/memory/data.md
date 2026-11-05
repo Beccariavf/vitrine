@@ -26,15 +26,16 @@ flowchart LR
     P --> E["data/entries — une entrée par actualité ou arrêt"]
 ```
 
-## Corpus RGPD
+## Corpus CELLAR
 
-- `data/corpus/rgpd/` est versionné : `manifest.json` (document CELEX, titre, langue, URL, licence, les trois dates, nom du snapshot, nombre d'unités) et `unites.jsonl` (une ligne par unité : `ref`, `document`, `niveau`, `numero`, `chemin`, `texte`, `date_acte`, `date_debut`, `date_fin`, `statut`, `url`).
-- Provenance : CELLAR, `https://publications.europa.eu/resource/celex/32016R0679`, rendu XHTML en `fra` avec `Accept: application/xhtml+xml` ; réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0).
-- 272 unités : 99 articles (`art_N`) et 173 considérants (`rct_N`), découpées sur les ancres ELI ; le texte est copié, jamais reformulé.
+- Deux corpus versionnés, chacun avec `manifest.json` (document CELEX, titre, langue, URL, licence, les trois dates, nom du snapshot, nombre d'unités) et `unites.jsonl` (une ligne par unité : `ref`, `document`, `niveau`, `numero`, `chemin`, `texte`, `date_acte`, `date_debut`, `date_fin`, `statut`, `url`).
+- `data/corpus/rgpd/` : CELEX `32016R0679`, 272 unités (99 articles `art_N`, 173 considérants `rct_N`), date d'acte 2016-04-27, début 2018-05-25.
+- `data/corpus/aiact/` : CELEX `32024R1689`, 293 unités (113 articles, 180 considérants), date d'acte 2024-06-13, publication 2024-07-12, début 2024-08-01. La capture CELLAR porte 13 chapitres (`cpt_I` à `cpt_XIII`) ; seuls les comptes d'articles et de considérants sont validés.
+- Provenance : CELLAR, `https://publications.europa.eu/resource/celex/<celex>`, rendu XHTML en `fra` avec `Accept: application/xhtml+xml` ; réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0). Le parseur `parseCellar(xhtml, descripteur)` lit les comptes attendus dans `mcp/corpus/<corpus>.json` et lève en nommant le document quand ils ne correspondent pas.
 - Le snapshot brut du XHTML vit dans `data/raw/` ; le manifeste le nomme par son `sha256`.
-- `data/corpus/index/index.db` est dérivé : SQLite + `sqlite-vec`, table `unites` (avec `empreinte`) et table virtuelle `vec_unites` en cosinus. Non commité, mis à jour par `npm run corpus:index`.
-- L'index est incrémental : l'empreinte `sha256` du modèle, de la dimension et du passage contextualisé décide du delta. Seules les unités ajoutées ou modifiées sont embarquées ; les unités supprimées perdent leur ligne et leur vecteur ; les unités inchangées gardent des vecteurs identiques octet pour octet. Les `rowid` nouveaux suivent le maximum existant ; changer de modèle ou de dimension force une reconstruction complète.
-- Ajouter un corpus, c'est déposer un autre `data/corpus/<corpus>/unites.jsonl` ; la colonne `document` filtre les résultats sans changer le code.
+- `data/corpus/index/index.db` est dérivé : SQLite + `sqlite-vec` + FTS5, table `unites` (avec `empreinte`), table virtuelle `vec_unites` en cosinus et table virtuelle `fts_unites` (même `rowid`, `chemin` + `texte`). Non commité, mis à jour par `npm run corpus:index`.
+- L'index est incrémental : l'empreinte `sha256` du modèle, de la dimension et du passage contextualisé décide du delta. Seules les unités ajoutées ou modifiées sont embarquées ; les unités supprimées perdent leur ligne, leur vecteur et leur ligne FTS ; les unités inchangées gardent des vecteurs identiques octet pour octet. Les `rowid` nouveaux suivent le maximum existant ; changer de modèle ou de dimension, ou trouver un index sans `fts_unites`, force une reconstruction complète.
+- Ajouter un corpus, c'est déposer un descripteur `mcp/corpus/<corpus>.json` ; `npm run corpus:build` le construit et `lireUnites` l'indexe sans code par corpus. La colonne `document` filtre les résultats.
 
 ## Summaries
 
@@ -67,7 +68,7 @@ flowchart LR
 ## Models
 
 - Le pipeline de veille est déterministe : aucun modèle, aucune inférence.
-- Le MCP local embarque uniquement à l'indexation et à la requête : `qwen3-embedding:0.6b` (Q8_0, 1024 dimensions), servi par Ollama sur `127.0.0.1:11434`, jamais un service cloud. Les vecteurs sont normalisés dans le code ; la similarité vaut `1 - distance`. Les seuils (`bas 0,69`, `haut 0,74`, `marge 0,01`) sont calibrés sur les 35 questions `dev` du jeu de 50, jamais sur les 15 `test` ; la bande article (`0,02`) est mesurée sur `dev` et retenue pour rester minimale (`aidd_docs/tasks/2026_11/2026_11_04_qualite-mcp/eval.md`). L'expérience `qwen3-embedding:4b` (2560 dimensions, 129,6 s pour 272 unités, `art_20` au rang 2 sur la paraphrase) est documentée hors produit : le produit garde `0.6b`.
+- Le MCP local embarque uniquement à l'indexation et à la requête : `qwen3-embedding:0.6b` (Q8_0, 1024 dimensions), servi par Ollama sur `127.0.0.1:11434`, jamais un service cloud. Les vecteurs sont normalisés dans le code ; la similarité vaut `1 - distance`. Les seuils (`bas 0,69`, `haut 0,74`, `marge 0,01`) sont calibrés sur les 35 questions `dev` du jeu v1, jamais sur les 15 `test` ; la bande article (`0,02`) est mesurée sur `dev` et retenue pour rester minimale (`aidd_docs/tasks/2026_11/2026_11_04_qualite-mcp/eval.md`). Le jeu v2 de 60 questions calibre `0,680 / 0,730 / 0,010` sur `dev` en voie dense, mais ces valeurs ne sont pas écrites dans le produit : l'hybride, qui aurait exigé une recalibration, n'est pas retenu (`aidd_docs/tasks/2026_11/2026_11_05_qualite-v2-aiact/eval-v2.md`). L'expérience `qwen3-embedding:4b` (2560 dimensions, 129,6 s pour 272 unités, `art_20` au rang 2 sur la paraphrase) est documentée hors produit : le produit garde `0.6b`.
 
 ## Reproducibility
 

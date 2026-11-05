@@ -1,0 +1,17 @@
+{
+  "date": "2026-11-05",
+  "questions_sha256": "1795dbd158d27aaf2edfe59fd7c81c7000b5dd49940014045a235a273b60fcb7",
+  "modele": "qwen3-embedding:0.6b",
+  "dimensions": 1024,
+  "recherche": "dense",
+  "split": "test",
+  "top5_semantique": 0.9473684210526315,
+  "semantiques": 19,
+  "top1_semantique": 0.8947368421052632,
+  "mrr_semantique": 0.9052631578947368,
+  "top5_global": 0.96,
+  "referencees": 25,
+  "pieges_cites": 1,
+  "pieges_mesures": 5,
+  "incertain": 4
+}
