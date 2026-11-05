@@ -50,7 +50,7 @@ Les 40 questions `dev` ont seules servi à calibrer les seuils. Les 40 questions
 
 Les seuils `0.6b` du jeu v3 (`0,640 / 0,690 / 0,010`) ne reprennent pas ceux du jeu v2 (`0,680 / 0,730 / 0,010`) : le jeu de calibration a changé. L'évaluation v3 utilise les seuils calibrés sur `dev`, `0,640 / 0,690 / 0,010` pour `0.6b` et `0,720 / 0,770 / 0,010` pour `4b`, tandis que le produit continue de tourner avec `0,69 / 0,74 / 0,01` : les chiffres v3 ne sont donc pas ceux du produit, et recalculer `0.6b` avec les seuils produit donne un top 5 rendu de 28/34.
 
-Sur `dev`, `4b` devançait `0.6b` de quatre questions au rang 1 (30 contre 26, `b = 6`, `c = 2`, p ≈ 0,29) : cette avance n'était pas significative, c'était du bruit, et le test ne la reproduit pas (top 1 brut : `4b` 25 contre 26 pour `0.6b` ; top 1 rendu : 25 contre 25). Avec 34 questions sémantiques, un test tenu à l'écart ne détecte qu'un écart d'environ six questions ; un effet plus petit demanderait un test plus grand ou répété.
+Sur `dev`, `4b` devançait `0.6b` de quatre questions au rang 1 (30 contre 26, `b = 6`, `c = 2`, p ≈ 0,29) : cette avance n'était pas significative et le test ne la reproduit pas (top 1 brut : `4b` 25 contre 26 pour `0.6b` ; top 1 rendu : 25 contre 25). Avec 34 questions sémantiques, un test tenu à l'écart ne détecte qu'un écart d'environ six questions ; un effet plus petit demanderait un test plus grand ou répété.
 
 Questions sémantiques manquées au top 5 : les deux modèles placent « transmission directe des données d'un responsable à un autre » (`art_20`) hors des cinq premiers. Aucune autre question sémantique ne manque le top 5.
 

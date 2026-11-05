@@ -79,7 +79,7 @@ sur 34 (31 au brut) ; au rang 1 rendu, les deux sont à 25 (26 contre 25 au brut
 discordantes rendues (`b = 2`, `c = 2`, `b + c = 4` ; `b = 2`, `c = 3`, `b + c = 5` au brut)
 restent sous le plancher de six, donc le verdict est **non établi** et `0.6b` reste le modèle du
 produit. L'avance de `4b` sur `dev` (30 contre 26 au rang 1, `b = 6`, `c = 2`, p ≈ 0,29) n'était pas
-significative : c'était du bruit, et le test ne la reproduit pas. Avec 34 questions sémantiques, il
+significative et le test ne la reproduit pas. Avec 34 questions sémantiques, il
 ne détecte qu'un écart d'environ six questions, donc un effet plus petit demanderait un test tenu à
 l'écart plus grand ou répété. Le rapport v3 est
 `aidd_docs/tasks/2026_11/2026_11_05_mesure-v3-modeles/eval-v3.md` ; il n'est pas fusionné avec le v2.
