@@ -20,6 +20,7 @@ import {
   recallAt5,
   repartirPlis,
   resoudreQuestions,
+  resume,
   tauxCitationsInvalides,
   validerCroise,
   validerReferences,
@@ -259,6 +260,35 @@ describe("la calibration", () => {
   });
 });
 
+describe("le résumé du marqueur", () => {
+  it("déduit les agrégats rendus du refus du premier passage", () => {
+    const mesures: Mesure[] = [
+      {
+        question: question("garde", false, ["32016R0679#art_17"]),
+        refs: ["32016R0679#art_17"],
+        distances: [0.1],
+      },
+      {
+        question: question("refus", false, ["32016R0679#art_80"]),
+        refs: ["32016R0679#art_80"],
+        distances: [0.4],
+      },
+    ];
+    const chiffres = resume(mesures, { bas: 0.69, haut: 0.74, marge: 0.01 });
+
+    assert.equal(chiffres.semantiques, 2);
+    assert.equal(chiffres.top5_semantique_succes, 2);
+    assert.equal(chiffres.top5_rendu_succes, 1);
+    assert.equal(chiffres.top1_semantique_succes, 2);
+    assert.equal(chiffres.top1_rendu_succes, 1);
+    assert.equal(chiffres.mrr_semantique, 1);
+    assert.equal(chiffres.mrr_rendu, 0.5);
+    assert.equal(chiffres.top5_global_succes, 2);
+    assert.equal(chiffres.top5_global_rendu_succes, 1);
+    assert.equal(chiffres.aucun_resultat_fiable, 1);
+  });
+});
+
 describe("questions-v2.csv", () => {
   const questions = lireQuestions(QUESTIONS_V2);
   const refs = new Set(CORPUS.map((unite) => unite.ref));
@@ -394,7 +424,9 @@ describe("le verrou du test", () => {
       };
 
       verifierTestNonConsomme(marqueurPath);
-      ecrireMarqueurTest(marqueurPath, marqueur, marqueur.note);
+      ecrireMarqueurTest(marqueurPath, marqueur, "note fournie par l'appelant");
+      const ecrit = JSON.parse(readFileSync(marqueurPath, "utf8")) as Marqueur;
+      assert.equal(ecrit.note, "note fournie par l'appelant");
       assert.ok(existsSync(marqueurPath));
       assert.throws(() => verifierTestNonConsomme(marqueurPath), /Test déjà consommé le 2026-11-05/);
     } finally {
