@@ -1,12 +1,12 @@
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { basename, dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { MARGE, SEUIL_BAS, SEUIL_HAUT, niveauConfiance } from "../confidence.ts";
 import { createOllamaEmbedder } from "../embed/embedder.ts";
 import type { Embedder } from "../embed/embedder.ts";
 import { cheminIndex, lireUnites } from "../index/build.ts";
-import { openIndex } from "../index/search.ts";
+import { BANDE_ARTICLE, openIndex } from "../index/search.ts";
 import type { Index } from "../index/search.ts";
 import { referenceExacte, search } from "../tools.ts";
 
@@ -194,6 +194,7 @@ export function intervalleWilson(succes: number, total: number): [number, number
 /** Marqueur de consommation du split `test`, écrit à côté du fichier de questions. */
 export type Marqueur = {
   date: string;
+  note: string;
   questions_sha256: string;
   modele: string;
   dimensions: number;
@@ -207,7 +208,21 @@ export type Marqueur = {
   referencees: number;
   pieges_cites: number;
   pieges_mesures: number;
-  incertain: number;
+  niveaux: {
+    confiant: number;
+    incertain: number;
+    aucun_resultat_fiable: number;
+  };
+  pieges_confiants: number;
+  seuils: Seuils;
+  bande_article: number;
+  intervalles: {
+    top5_global: [number, number];
+    top5_semantique: [number, number];
+    pieges_cites: [number, number];
+  };
+  snapshots: Record<string, string>;
+  unites_index: number;
 };
 
 /** `questions-v2.csv` → `questions-v2.test-consomme.json`, dans le même dossier. */
@@ -547,7 +562,10 @@ export type Resume = {
   top5_global_succes: number;
   pieges_mesures: number;
   pieges_cites: number;
+  confiant: number;
   incertain: number;
+  aucun_resultat_fiable: number;
+  pieges_confiants: number;
 };
 
 export function resume(mesures: Mesure[], seuils: Seuils): Resume {
@@ -556,6 +574,8 @@ export function resume(mesures: Mesure[], seuils: Seuils): Resume {
   const classementsSemantiques = classer(semantiques);
   const classementsGlobaux = classer(referencees);
   const pieges = mesures.filter((mesure) => mesure.question.piege && !estExacte(mesure));
+
+  const niveaux = semantiques.map((mesure) => niveau(mesure, seuils));
 
   return {
     semantiques: semantiques.length,
@@ -572,7 +592,10 @@ export function resume(mesures: Mesure[], seuils: Seuils): Resume {
     ).length,
     pieges_mesures: pieges.length,
     pieges_cites: pieges.filter((mesure) => !refusee(mesure, seuils)).length,
-    incertain: semantiques.filter((mesure) => niveau(mesure, seuils) === "incertain").length,
+    confiant: niveaux.filter((valeur) => valeur === "confiant").length,
+    incertain: niveaux.filter((valeur) => valeur === "incertain").length,
+    aucun_resultat_fiable: niveaux.filter((valeur) => valeur === "aucun_resultat_fiable").length,
+    pieges_confiants: pieges.filter((mesure) => niveau(mesure, seuils) === "confiant").length,
   };
 }
 
@@ -612,6 +635,24 @@ function valeurDe(nom: string, argv: string[]): string | undefined {
 
 function sha256(contenu: string): string {
   return createHash("sha256").update(contenu, "utf8").digest("hex");
+}
+
+/** Nom du snapshot brut de chaque corpus, lu dans `data/corpus/<corpus>/manifest.json`. */
+function snapshotsCorpus(rootDir: string): Record<string, string> {
+  const dossier = join(rootDir, "data", "corpus");
+  const snapshots: Record<string, string> = {};
+  for (const nom of readdirSync(dossier).sort()) {
+    const chemin = join(dossier, nom, "manifest.json");
+    if (!existsSync(chemin)) continue;
+    const manifeste = JSON.parse(readFileSync(chemin, "utf8")) as {
+      document?: unknown;
+      snapshot?: unknown;
+    };
+    if (typeof manifeste.document === "string" && typeof manifeste.snapshot === "string") {
+      snapshots[manifeste.document] = manifeste.snapshot;
+    }
+  }
+  return snapshots;
 }
 
 /** Résout `--questions` : chemin absolu, puis `mcp/eval/`, puis le répertoire courant. */
@@ -699,6 +740,9 @@ async function main(argv: string[]): Promise<void> {
 
       ecrireMarqueurTest(marqueurPath, {
         date: new Date().toISOString().slice(0, 10),
+        note:
+          "Chiffres de la mesure unique du 5 novembre 2026, transcrits du rapport ; " +
+          "ces champs ne proviennent pas d'une nouvelle mesure.",
         questions_sha256: sha256(contenu),
         modele: embedder.model,
         dimensions: embedder.dim,
@@ -715,7 +759,24 @@ async function main(argv: string[]): Promise<void> {
         referencees: chiffres.referencees,
         pieges_cites: chiffres.pieges_cites,
         pieges_mesures: chiffres.pieges_mesures,
-        incertain: chiffres.incertain,
+        niveaux: {
+          confiant: chiffres.confiant,
+          incertain: chiffres.incertain,
+          aucun_resultat_fiable: chiffres.aucun_resultat_fiable,
+        },
+        pieges_confiants: chiffres.pieges_confiants,
+        seuils,
+        bande_article: BANDE_ARTICLE,
+        intervalles: {
+          top5_global: intervalleWilson(chiffres.top5_global_succes, chiffres.referencees),
+          top5_semantique: intervalleWilson(
+            chiffres.top5_semantique_succes,
+            chiffres.semantiques,
+          ),
+          pieges_cites: intervalleWilson(chiffres.pieges_cites, chiffres.pieges_mesures),
+        },
+        snapshots: snapshotsCorpus(RACINE),
+        unites_index: index.unites,
       });
     }
 

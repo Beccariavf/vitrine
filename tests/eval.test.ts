@@ -1,5 +1,6 @@
 import { strict as assert } from "node:assert";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { mkdtempSync, readFileSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -361,6 +362,7 @@ describe("le verrou du test", () => {
       const marqueurPath = join(dossier, "questions-v2.test-consomme.json");
       const marqueur: Marqueur = {
         date: "2026-11-05",
+        note: "marqueur de test",
         questions_sha256: "abc",
         modele: "qwen3-embedding:0.6b",
         dimensions: 1024,
@@ -374,7 +376,17 @@ describe("le verrou du test", () => {
         referencees: 25,
         pieges_cites: 0,
         pieges_mesures: 4,
-        incertain: 2,
+        niveaux: { confiant: 14, incertain: 2, aucun_resultat_fiable: 1 },
+        pieges_confiants: 0,
+        seuils: { bas: 0.69, haut: 0.74, marge: 0.01 },
+        bande_article: 0.02,
+        intervalles: {
+          top5_global: [0.8, 0.99],
+          top5_semantique: [0.75, 0.99],
+          pieges_cites: [0.03, 0.62],
+        },
+        snapshots: { "32016R0679": "rgpd.xhtml", "32024R1689": "aiact.xhtml" },
+        unites_index: 565,
       };
 
       verifierTestNonConsomme(marqueurPath);
@@ -391,6 +403,30 @@ describe("le verrou du test", () => {
       cheminMarqueur("/tmp/questions-v2.csv"),
       /\/tmp\/questions-v2\.test-consomme\.json$/,
     );
+  });
+
+  it("le marqueur commité porte les preuves de la mesure", () => {
+    const marqueur = JSON.parse(
+      readFileSync(
+        new URL("../mcp/eval/questions-v2.test-consomme.json", import.meta.url),
+        "utf8",
+      ),
+    ) as Marqueur;
+    const sha = createHash("sha256").update(QUESTIONS_V2, "utf8").digest("hex");
+
+    assert.equal(marqueur.questions_sha256, sha);
+    assert.match(marqueur.note, /transcrit/);
+    assert.deepEqual(marqueur.niveaux, {
+      confiant: 14,
+      incertain: 4,
+      aucun_resultat_fiable: 1,
+    });
+    assert.equal(marqueur.pieges_confiants, 0);
+    assert.deepEqual(marqueur.seuils, { bas: 0.69, haut: 0.74, marge: 0.01 });
+    assert.equal(marqueur.bande_article, 0.02);
+    assert.equal(marqueur.unites_index, 565);
+    assert.deepEqual(Object.keys(marqueur.snapshots).sort(), ["32016R0679", "32024R1689"]);
+    assert.equal(marqueur.intervalles.top5_global.length, 2);
   });
 
   it("refuse le test consommé au niveau CLI, même avec --marqueur", () => {
