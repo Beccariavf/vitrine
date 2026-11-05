@@ -1,15 +1,20 @@
 import { strict as assert } from "node:assert";
 import { existsSync, mkdtempSync, readFileSync, rmSync, statSync } from "node:fs";
+import { gzipSync } from "node:zlib";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
 import { canonicalUrl, hashId } from "../veille/normalize.ts";
 import { parseFeed, toIsoUtc } from "../veille/sources/cnil.ts";
+import { ETAT_VIDE, archivesNouvelles, extraireTar, listerArchives, lireArchiveDepuis, fusionnerDecisions } from "../mcp/corpus/cnil/increments.ts";
+import type { ArchiveLue } from "../mcp/corpus/cnil/increments.ts";
+import { MAX_FRAGMENT, MIN_FRAGMENT, decouperParagraphes, parseTexteCnil, unitesDila } from "../mcp/corpus/cnil/parse.ts";
 import {
   compterOrigines,
   lireCorpus,
   manifesteCnil,
   syncHistorique,
+  syncIncrements,
   validerUnites,
 } from "../mcp/corpus/cnil/sync.ts";
 import {
@@ -17,7 +22,7 @@ import {
   lireDescripteur,
   unitesDinum,
 } from "../mcp/corpus/cnil/historique.ts";
-import type { DescripteurCnil, FichierDinum, LigneDinum } from "../mcp/corpus/cnil/historique.ts";
+import type { DescripteurCnil, FetchBinaire, FichierDinum, LigneDinum } from "../mcp/corpus/cnil/historique.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";
 
 const FIXTURE = new URL("./fixtures/cnil/feed.xml", import.meta.url);
@@ -364,7 +369,7 @@ describe("l'historique DINUM", () => {
 describe("le manifeste CNIL", () => {
   it("compte les documents, les fragments et les deux origines", () => {
     const { unites } = unitesDinum(LIGNES, DESCRIPTEUR);
-    const manifeste = manifesteCnil(descriptorReduit({ documents: 1, fragments: 2 }), unites, FICHIERS);
+    const manifeste = manifesteCnil(descriptorReduit({ documents: 1, fragments: 2 }), unites, FICHIERS, ETAT_VIDE);
 
     assert.equal(manifeste.corpus, "cnil");
     assert.equal(manifeste.nature, "Sanction");
@@ -461,6 +466,276 @@ describe("la synchronisation DINUM", () => {
       assert.equal(resultat.ecrit, false);
       assert.equal(resultat.unites, 2);
       assert.equal(existsSync(join(root, "data")), false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
+const XML = readFileSync(new URL("./fixtures/cnil/deliberation.xml", import.meta.url), "utf8");
+
+/** Construit un tar minimal : en-têtes de 512 octets, données alignées. */
+function tarDe(fichiers: { nom: string; contenu: string }[]): Buffer {
+  const blocs: Buffer[] = [];
+  for (const fichier of fichiers) {
+    const donnees = Buffer.from(fichier.contenu, "utf8");
+    const entete = Buffer.alloc(512, 0);
+    entete.write(fichier.nom, 0, 100, "utf8");
+    entete.write("0000644\0", 100, 8, "ascii");
+    entete.write(`${donnees.length.toString(8).padStart(11, "0")}\0`, 124, 12, "ascii");
+    entete.write("0", 156, 1, "ascii");
+    blocs.push(entete, donnees);
+    const reste = (512 - (donnees.length % 512)) % 512;
+    if (reste > 0) blocs.push(Buffer.alloc(reste, 0));
+  }
+  blocs.push(Buffer.alloc(1024, 0));
+  return Buffer.concat(blocs);
+}
+
+/** Un `fetch` binaire qui rend des octets fixes. */
+function fetchOctets(octets: Buffer): FetchBinaire {
+  return async () => ({
+    ok: true,
+    status: 200,
+    arrayBuffer: async () => octets.buffer.slice(octets.byteOffset, octets.byteOffset + octets.length) as ArrayBuffer,
+  });
+}
+
+describe("le parse TEXTE_CNIL", () => {
+  const decision = parseTexteCnil(XML, "deliberation.xml");
+
+  it("lit les métadonnées et les paragraphes non vides", () => {
+    assert.equal(decision.id, "CNILTEXT000043470685");
+    assert.equal(decision.nature, "DELIBERATION");
+    assert.equal(decision.numero, "SAN-2021-004");
+    assert.equal(decision.natureDelib, "Sanction");
+    assert.equal(decision.dateTexte, "2021-04-30");
+    assert.equal(decision.datePubli, "2021-05-06");
+    assert.equal(decision.etatJuridique, "VIGUEUR");
+    assert.match(decision.titre, /SAN-2021-004/);
+    assert.equal(decision.paragraphes.length, 5);
+  });
+
+  it("retire les balises internes d'un paragraphe", () => {
+    const fort = decision.paragraphes.find((paragraphe) => paragraphe.includes("formation restreinte"));
+
+    assert.ok(fort);
+    assert.equal(fort.includes("<strong>"), false);
+  });
+
+  it("lève sans BLOC_TEXTUEL en nommant le fichier et l'identifiant", () => {
+    const ampute = XML.replace(/<BLOC_TEXTUEL>[\s\S]*<\/BLOC_TEXTUEL>/, "");
+
+    assert.throws(
+      () => parseTexteCnil(ampute, "ampute.xml"),
+      /ampute\.xml : CNILTEXT000043470685 sans BLOC_TEXTUEL\/CONTENU/,
+    );
+  });
+
+  it("lève sans date de texte", () => {
+    const ampute = XML.replace(/<DATE_TEXTE>[^<]*<\/DATE_TEXTE>/, "");
+
+    assert.throws(() => parseTexteCnil(ampute, "sans-date.xml"), /sans META_CNIL\/DATE_TEXTE/);
+  });
+});
+
+describe("le découpage local", () => {
+  const decision = parseTexteCnil(XML, "deliberation.xml");
+
+  it("borne les fragments et ne perd aucun texte", () => {
+    const fragments = decouperParagraphes(decision.paragraphes);
+
+    assert.ok(fragments.every((fragment) => fragment.length <= MAX_FRAGMENT));
+    assert.ok(fragments.slice(0, -1).every((fragment) => fragment.length >= MIN_FRAGMENT));
+    assert.equal(fragments.join(" "), decision.paragraphes.join(" "));
+  });
+
+  it("laisse seul un paragraphe plus long que la borne haute", () => {
+    const long = "x".repeat(1300);
+    const fragments = decouperParagraphes(["a".repeat(300), long, "b".repeat(300)]);
+
+    assert.deepEqual(fragments, ["a".repeat(300), long, "b".repeat(300)]);
+  });
+
+  it("marque l'origine dila et le découpage local", () => {
+    const unites = unitesDila(decision, DESCRIPTEUR);
+
+    assert.equal(unites.length, 2);
+    assert.equal(unites[0]?.ref, "CNILTEXT000043470685#f0");
+    assert.equal(unites[0]?.origine, "dila");
+    assert.equal(unites[0]?.niveau, "fragment");
+    assert.equal(unites[0]?.numero, "SAN-2021-004");
+    assert.match(unites[0]?.chemin ?? "", /Découpage local$/);
+    assert.equal(unites[0]?.statut, "VIGUEUR");
+    assert.equal(unites[0]?.date_acte, "2021-04-30");
+  });
+});
+
+describe("les archives DILA", () => {
+  it("lit un tar et rend ses fichiers", () => {
+    const tar = tarDe([
+      { nom: "2026/cnil/global/CNIL/TEXT/00/00/43/47/06/CNILTEXT000043470685.xml", contenu: XML },
+      { nom: "2026/notice.txt", contenu: "notice" },
+    ]);
+
+    const entrees = extraireTar(tar);
+
+    assert.equal(entrees.length, 2);
+    assert.match(entrees[0]?.nom ?? "", /CNILTEXT000043470685\.xml$/);
+    assert.equal(entrees[0]?.donnees.toString("utf8"), XML);
+    assert.equal(entrees[1]?.donnees.toString("utf8"), "notice");
+  });
+
+  it("liste les archives sans doublon et les trie", async () => {
+    const html = `
+      <a href="CNIL_20261028-212713.tar.gz">a</a>
+      <a href="CNIL_20250711-120000.tar.gz">b</a>
+      <a href="CNIL_20261028-212713.tar.gz">a</a>`;
+    const noms = await listerArchives("https://exemple.test/", async () => ({
+      ok: true,
+      status: 200,
+      text: async () => html,
+    }));
+
+    assert.deepEqual(noms, ["CNIL_20250711-120000.tar.gz", "CNIL_20261028-212713.tar.gz"]);
+  });
+
+  it("ne retient que les archives postérieures à l'état", () => {
+    const liste = ["CNIL_20250711-120000.tar.gz", "CNIL_20261028-212713.tar.gz"];
+
+    assert.deepEqual(archivesNouvelles(liste, ETAT_VIDE), liste);
+    assert.deepEqual(
+      archivesNouvelles(liste, {
+        ...ETAT_VIDE,
+        derniere_archive: "CNIL_20250711-120000.tar.gz",
+      }),
+      ["CNIL_20261028-212713.tar.gz"],
+    );
+    assert.deepEqual(
+      archivesNouvelles(liste, { ...ETAT_VIDE, derniere_archive: "CNIL_20261028-212713.tar.gz" }),
+      [],
+    );
+  });
+
+  it("décompresse une archive et retient la nature demandée", async () => {
+    const archive = gzipSync(
+      tarDe([
+        { nom: "a/CNILTEXT000043470685.xml", contenu: XML },
+        { nom: "a/CNILTEXT000043470686.xml", contenu: XML.replace("Sanction", "Avis") },
+      ]),
+    );
+    const lue = await lireArchiveDepuis(
+      "CNIL_20261028-212713.tar.gz",
+      DESCRIPTEUR,
+      fetchOctets(archive),
+    );
+
+    assert.equal(lue.documentsLus, 2);
+    assert.equal(lue.decisions.length, 1);
+    assert.equal(lue.decisions[0]?.id, "CNILTEXT000043470685");
+    assert.equal(lue.sha256.length, 64);
+  });
+
+  it("remplace toutes les unités d'un document connu, sans doublon", () => {
+    const decision = parseTexteCnil(XML, "deliberation.xml");
+    const existantes = unitesDinum(LIGNES, DESCRIPTEUR).unites;
+    const fusion = fusionnerDecisions(existantes, [decision], DESCRIPTEUR);
+
+    assert.equal(fusion.remplacees, 2);
+    assert.equal(fusion.ajoutees, 2);
+    assert.equal(fusion.unites.length, 2);
+    assert.deepEqual(
+      fusion.unites.map((unite) => unite.ref),
+      ["CNILTEXT000043470685#f0", "CNILTEXT000043470685#f1"],
+    );
+    assert.ok(fusion.unites.every((unite) => unite.origine === "dila"));
+    assert.equal(new Set(fusion.unites.map((unite) => unite.ref)).size, 2);
+  });
+
+  it("conserve une décision non VIGUEUR avec son statut", () => {
+    const decision = parseTexteCnil(XML.replace("VIGUEUR", "ABROGE"), "abroge.xml");
+    const unites = unitesDila(decision, DESCRIPTEUR);
+
+    assert.equal(decision.etatJuridique, "ABROGE");
+    assert.ok(unites.every((unite) => unite.statut === "ABROGE"));
+  });
+});
+
+describe("la synchronisation DILA", () => {
+  const NOM = "CNIL_20261028-212713.tar.gz";
+  const ATTENDUS = { documents: 1, fragments: 2 };
+
+  function archiveLue(): Promise<ArchiveLue> {
+    return Promise.resolve({
+      nom: NOM,
+      sha256: "a".repeat(64),
+      documentsLus: 3,
+      decisions: [parseTexteCnil(XML, "deliberation.xml")],
+    });
+  }
+
+  it("remplace le document, écrit l'état, puis ne réécrit rien", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-cnil-"));
+    try {
+      await syncHistorique({ rootDir: root, lignes: LIGNES, attendus: ATTENDUS });
+      const cheminUnites = join(root, "data", "corpus", "cnil", "unites.jsonl");
+      const cheminEtat = join(root, "data", "corpus", "cnil", "etat.json");
+
+      const premier = await syncIncrements({
+        rootDir: root,
+        lister: async () => [NOM],
+        lireArchive: archiveLue,
+      });
+
+      assert.deepEqual(premier.archives, [NOM]);
+      assert.equal(premier.documents_lus, 3);
+      assert.equal(premier.documents_retenus, 1);
+      assert.equal(premier.unites_remplacees, 2);
+      assert.equal(premier.unites, 2);
+      assert.deepEqual(premier.origines, { dinum: 0, dila: 2 });
+      assert.equal(premier.ecrit, true);
+      assert.equal(JSON.parse(readFileSync(cheminEtat, "utf8")).derniere_archive, NOM);
+
+      const lignes = readFileSync(cheminUnites, "utf8").trimEnd().split("\n");
+      assert.equal(lignes.length, 2);
+      assert.ok(lignes.every((ligne) => JSON.parse(ligne).origine === "dila"));
+      const avant = statSync(cheminUnites).mtimeMs;
+
+      const second = await syncIncrements({
+        rootDir: root,
+        lister: async () => [NOM],
+        lireArchive: archiveLue,
+      });
+
+      assert.deepEqual(second.archives, []);
+      assert.equal(second.ecrit, false);
+      assert.equal(statSync(cheminUnites).mtimeMs, avant);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("--dry-run ne télécharge ni n'écrit, mais compte", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-cnil-"));
+    try {
+      await syncHistorique({ rootDir: root, lignes: LIGNES, attendus: ATTENDUS });
+      const cheminEtat = join(root, "data", "corpus", "cnil", "etat.json");
+      let lue = 0;
+
+      const resultat = await syncIncrements({
+        rootDir: root,
+        dryRun: true,
+        lister: async () => [NOM],
+        lireArchive: async () => {
+          lue += 1;
+          return archiveLue();
+        },
+      });
+
+      assert.equal(lue, 1);
+      assert.equal(resultat.ecrit, false);
+      assert.equal(resultat.documents_retenus, 1);
+      assert.equal(existsSync(cheminEtat), false);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
