@@ -118,3 +118,28 @@ La mesure est consommée : `mcp/eval/questions-v2.test-consomme.json` en est la 
 Le marqueur est une trace de consommation, pas une preuve d'exécution : supprimer le fichier ou copier le CSV sous un autre nom contourne le garde. C'est délibéré. Le garde arrête une seconde exécution accidentelle ; il ne prouve pas la bonne foi de l'opérateur.
 
 Ce rapport ne fusionne jamais ses chiffres avec ceux de l'évaluation v1 : 50 questions d'un côté, 60 de l'autre, deux dates et deux jeux distincts.
+
+## Expérience `qwen3-embedding:4b` sur `dev` (5 novembre 2026)
+
+Mesure faite après la consommation du `test`, sur les 30 questions `dev` seulement, pour décider si le modèle est le plafond de qualité. Elle ne touche ni le corpus ni l'index du produit : l'index `4b` est construit dans une racine temporaire, avec le même harnais, le même découpage (565 unités : 272 RGPD, 293 AI Act) et le même filtrage par document.
+
+```bash
+node mcp/index/build.ts --root "$ROOT" --modele qwen3-embedding:4b --dim 2560
+node mcp/eval/run.ts --questions questions-v2.csv --split dev \
+  --root "$ROOT" --modele qwen3-embedding:4b --dim 2560
+```
+
+| Métrique `dev` (19 questions sémantiques) | `0.6b` | `4b` |
+| --- | --- | --- |
+| `recall@5`, brut | 0,947 (18/19) | **1,000 (19/19)** |
+| Top-1, brut | 78,9 % (15/19) | 78,9 % (15/19) |
+| `MRR`, brut | 0,860 | 0,877 |
+| `incertain` (rendu) | 2/19 | 4/19 |
+| Pièges cités (4, rendus) | 0/4 | 0/4 |
+| Seuils calibrés sur `dev` | 0,680 / 0,730 / 0,010 | 0,740 / 0,790 / 0,010 |
+
+Une seule question change de camp au top 5 : « autorité de contrôle chef de file » (`art_56`) est absente des cinq premiers avec `0.6b` et passe au **rang 1** avec `4b`. En contrepartie, « analyse d'impact » (`art_35`) recule du rang 1 au rang 3. Les dix-sept autres questions gardent le même rang. Le top 1 est donc identique, le `MRR` gagne 0,017, et `incertain` passe de 2 à 4 : l'échelle de similarité du `4b` est plus haute, ses seuils calibrés aussi.
+
+Coût mesuré sur la même machine : index complet de 565 unités en **5 min 40 s** contre **49 s** (6,9×), 2 560 dimensions au lieu de 1 024, et une passe d'évaluation complète de 30 questions en 3,0 s contre 1,7 s.
+
+**Conclusion : sur les questions encore visibles, `4b` n'est pas nettement meilleur.** Il répare `art_56` et casse `art_35`, sans gain de top 1. L'hypothèse « la limite est la capacité du modèle » n'est donc pas confirmée par `dev`. Le seul élément qui la soutient — la paraphrase `art_20` au rang 2 avec `4b`, mesurée en v1 — appartient à un split consommé et ne peut pas arbitrer. Le produit garde `qwen3-embedding:0.6b`. Trancher entre les deux modèles demande un nouveau jeu tenu à l'écart et plus grand, pas un réglage sur celui-ci.

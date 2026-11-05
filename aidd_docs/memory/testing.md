@@ -72,6 +72,7 @@ Comment le projet est testé : les couches, les outils et les conventions. Où v
 - `npm run mcp:eval -- --questions questions-v2.csv --split test --mesurer-test` : mesure unique du test v2, avec les seuils figés ; un marqueur commité refuse la seconde exécution. Rapport dans `aidd_docs/tasks/2026_11/2026_11_05_qualite-v2-aiact/eval-v2.md`.
 - `npm run mcp:eval -- --questions questions-aiact.csv` : 12 questions AI Act filtrées sur `32024R1689`, sans seuil propre ; rapport dans `eval-aiact.md`.
 - `npm run mcp:eval -- --questions questions.csv --split dev` : ancien jeu v1 de 35 questions, rapport dans `aidd_docs/tasks/2026_11/2026_11_04_qualite-mcp/eval.md`, jamais fusionné avec le v2.
+- `--root <racine>` mesure un autre corpus et son index sans toucher le produit ; `--modele` et `--dim` choisissent un autre modèle (`node mcp/index/build.ts --root … --modele qwen3-embedding:4b --dim 2560`). C'est ainsi que l'expérience `4b` a été mesurée sur `dev` le 5 novembre 2026.
 - `MCP_TEST_OLLAMA=1 npm test` : lance aussi le contrôle du vrai modèle (1024 dimensions, norme 1) ; sans cette variable, le test est sauté même si `OLLAMA_HOST` est défini.
 - Ouvrir `tools/parametres.html` dans Chrome, charger `veille/themes.json`, désactiver une matière, enregistrer.
 - Lancer `npm run build` : les publications de cette matière disparaissent ; réactiver et reconstruire : elles reviennent sans collecte.

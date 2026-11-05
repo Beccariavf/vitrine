@@ -65,6 +65,10 @@ sur `dev` mais n'est pas retenue comme voie par défaut : elle gagne une questio
 questions AI Act, sans classement) ; le rapport v1 reste
 `aidd_docs/tasks/2026_11/2026_11_04_qualite-mcp/eval.md`, jamais fusionné avec le v2.
 
+`qwen3-embedding:4b` a été mesuré sur les 30 questions `dev` : il répare une question au top 5
+(`art_56`), en casse une autre (`art_35`), garde le même top 1 et coûte 6,9× plus d'indexation.
+Le produit garde `0.6b` ; l'expérience est dans `eval-v2.md`.
+
 Pour le brancher dans un client MCP, déclarer un serveur stdio avec le chemin absolu du serveur et
 remplacer `/absolute/path/to/Vitrine-mcp` par la racine de votre clone :
 
