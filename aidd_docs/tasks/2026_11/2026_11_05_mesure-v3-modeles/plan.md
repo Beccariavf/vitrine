@@ -1,6 +1,6 @@
 ---
 objective: "Sur un jeu RGPD v3 de 80 questions dont 40 tenues à l'écart, les deux modèles sont mesurés une fois chacun et la règle pré-déclarée tranche : garder 0.6b ou adopter 4b, avec les comptes appariés et leur p-value."
-status: pending
+status: implemented
 ---
 
 # Plan: Jeu v3 et décision entre modèles

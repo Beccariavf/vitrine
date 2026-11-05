@@ -39,6 +39,7 @@ Le différenciateur est double : **la preuve** (un pipeline de veille qui tourne
 4. **Découplage contenu / framework** : la sortie est du HTML/JSON statique ; changer de générateur ne fait perdre aucune donnée.
 5. **Déploiement dans le même workflow** : un push fait avec `GITHUB_TOKEN` ne déclenche aucun autre workflow.
 6. **Domaine** : `*.workers.dev` en 0 € ; un domaine `.fr` (~12 €/an) reste la seule dépense envisageable, à décider plus tard.
+7. **Index alternatif hors défaut** : un autre modèle d'embedding se mesure dans une racine séparée (`node mcp/index/build.ts --root <racine> --modele qwen3-embedding:4b --dim 2560`), sans toucher `data/corpus/index/index.db`. Le jeu v3 n'établit pas de gain significatif pour `4b` ; `0.6b` reste le défaut (voir `aidd_docs/tasks/2026_11/2026_11_05_mesure-v3-modeles/eval-v3.md`).
 
 ## Architecture
 
@@ -124,7 +125,7 @@ vitrine/
 │   ├── tools.ts                    # get_article, search
 │   ├── confidence.ts               # seuils de confiance
 │   ├── server.ts                   # transport stdio
-│   └── eval/                       # 60 questions v2 + 12 questions AI Act, split et métriques
+│   └── eval/                       # jeux v1/v2/v3 (80 questions v3), 12 questions AI Act, comparaison appariée
 │
 ├── data/                           # "BASE" — git = historique
 │   ├── raw/<2 hex>/<sha256>.xml    # snapshots bruts adressés par contenu

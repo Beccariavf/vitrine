@@ -28,6 +28,7 @@ npm run mcp:smoke      # vérifie Ollama et qwen3-embedding:0.6b
 npm run mcp            # serveur MCP sur stdio
 npm run mcp:eval -- --questions questions-v2.csv --split dev    # 30 questions de développement (hors CI)
 npm run mcp:eval -- --questions questions-v2.csv --split test --mesurer-test   # 30 questions tenues à l'écart, une seule fois (hors CI)
+npm run mcp:eval -- --questions questions-v3.csv --split dev --json            # 40 questions de développement v3, sortie machine (hors CI)
 ```
 
 Le MCP lit le RGPD et l'AI Act par article exact et par recherche sémantique, avec provenance. Seule
@@ -66,8 +67,16 @@ questions AI Act, sans classement) ; le rapport v1 reste
 `aidd_docs/tasks/2026_11/2026_11_04_qualite-mcp/eval.md`, jamais fusionné avec le v2.
 
 `qwen3-embedding:4b` a été mesuré sur les 30 questions `dev` : il répare une question au top 5
-(`art_56`), en casse une autre (`art_35`), garde le même top 1 et coûte 6,9× plus d'indexation.
+(`art_56`), en casse une autre (`art_35`), garde le même top 1 et coûte 6,9× plus d'indexation selon cette mesure v2.
 Le produit garde `0.6b` ; l'expérience est dans `eval-v2.md`.
+
+Le jeu v3 porte 80 questions écrites contre les 99 articles du RGPD avant toute mesure : 40 `dev`,
+40 `test`, dont 34 sémantiques par split, 3 références exactes et 3 pièges. Chaque modèle a été
+mesuré une seule fois sur le `test` avec les seuils calibrés sur son propre `dev`. `4b` gagne une
+question au top 5 et en perd une au rang 1 ; les paires discordantes (`b = 2`, `c = 3`, `b + c = 5`)
+restent sous le plancher de six, donc le verdict est **non établi** et `0.6b` reste le modèle du
+produit. Le rapport v3 est
+`aidd_docs/tasks/2026_11/2026_11_05_mesure-v3-modeles/eval-v3.md` ; il n'est pas fusionné avec le v2.
 
 Pour le brancher dans un client MCP, déclarer un serveur stdio avec le chemin absolu du serveur et
 remplacer `/absolute/path/to/Vitrine-mcp` par la racine de votre clone :
