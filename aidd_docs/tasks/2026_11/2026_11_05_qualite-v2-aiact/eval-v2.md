@@ -28,7 +28,7 @@ La question sémantique manquée est « autorité de contrôle chef de file » :
 
 ## Recherche hybride : mesure `dev` (phase 2)
 
-La table `fts_unites` partage le `rowid` de `unites` et suit le même delta (ajout, modification, suppression) dans la même transaction. `rechercheHybride` prend 50 candidats denses et 50 candidats lexicaux, applique la bande article à l'ordre dense, puis fusionne par `1 / (60 + rang)`. La distance rendue reste la distance dense brute ; un candidat purement lexical reçoit sa distance cosinus calculée contre le vecteur de la requête.
+La table `fts_unites` partage le `rowid` de `unites` et suit le même delta (ajout, modification, suppression) dans la même transaction. `rechercheHybride` prend au moins 50 candidats denses et autant de lexicaux (davantage si `k` dépasse 50 ; l'évaluation mesure `k = 5`), applique la bande article à l'ordre dense, puis fusionne par `1 / (60 + rang)`. La distance rendue reste la distance dense brute ; un candidat purement lexical reçoit sa distance cosinus calculée contre le vecteur de la requête.
 
 | Métrique `dev` (19 questions sémantiques) | Dense seule | Hybride | Écart |
 | --- | --- | --- | --- |

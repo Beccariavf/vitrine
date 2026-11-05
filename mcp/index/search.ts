@@ -303,9 +303,10 @@ function resultatsParRowid(
 }
 
 /**
- * Fusionne 50 candidats denses et 50 candidats lexicaux par RRF
- * (`1 / (60 + rang)`). L'ordre dense est d'abord rangé par la bande article ;
- * la distance rendue reste la similarité dense brute, jamais un score fusionné.
+ * Fusionne au moins `CANDIDATS_VOIE` candidats denses et autant de lexicaux
+ * (davantage si `k` les dépasse) par RRF (`1 / (60 + rang)`). L'ordre dense est
+ * d'abord rangé par la bande article ; la distance rendue reste la similarité
+ * dense brute, jamais un score fusionné.
  */
 export function rechercheHybride(
   index: Index,
@@ -323,7 +324,7 @@ export function rechercheHybride(
   const k = Math.max(0, Math.trunc(options.k));
   if (k === 0) return [];
 
-  const limite = Math.max(k * 10, CANDIDATS_VOIE);
+  const limite = Math.max(CANDIDATS_VOIE, k);
   const denses = candidatsDenses(index, vecteur, limite, options.document);
   const distances = new Map(denses.map((candidat) => [candidat.rowid, candidat.resultat.distance]));
 
@@ -337,7 +338,7 @@ export function rechercheHybride(
     if (rowid !== undefined) rangDense.set(rowid, position + 1);
   });
 
-  const lexicaux = candidatsLexicaux(index, texte, CANDIDATS_VOIE, options.document);
+  const lexicaux = candidatsLexicaux(index, texte, limite, options.document);
   const absents = lexicaux.filter((rowid) => !distances.has(rowid));
   for (const [rowid, distance] of distancesManquantes(index, vecteur, absents)) {
     distances.set(rowid, distance);
