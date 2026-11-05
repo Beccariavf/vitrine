@@ -31,6 +31,7 @@ import type { Marqueur, Mesure, Question, Split } from "../mcp/eval/run.ts";
 
 const QUESTIONS = readFileSync(new URL("../mcp/eval/questions.csv", import.meta.url), "utf8");
 const QUESTIONS_V2 = readFileSync(new URL("../mcp/eval/questions-v2.csv", import.meta.url), "utf8");
+const QUESTIONS_V3 = readFileSync(new URL("../mcp/eval/questions-v3.csv", import.meta.url), "utf8");
 const QUESTIONS_AIAct = readFileSync(
   new URL("../mcp/eval/questions-aiact.csv", import.meta.url),
   "utf8",
@@ -332,6 +333,92 @@ describe("questions-v2.csv", () => {
 
     assert.equal(paraphrase?.split, "test");
     assert.deepEqual(paraphrase?.attendues, ["32016R0679#art_20"]);
+  });
+});
+
+describe("questions-v3.csv", () => {
+  const questions = lireQuestions(QUESTIONS_V3);
+  const dev = filtrerSplit(questions, "dev");
+  const test = filtrerSplit(questions, "test");
+  const unites = readFileSync(
+    new URL("../data/corpus/rgpd/unites.jsonl", import.meta.url),
+    "utf8",
+  )
+    .trimEnd()
+    .split("\n")
+    .map((ligne) => JSON.parse(ligne) as { ref: string; chemin: string });
+  const refs = new Set(unites.map((unite) => unite.ref));
+
+  it("porte quatre-vingts lignes : six références, soixante-huit conceptuelles, six pièges", () => {
+    assert.equal(questions.length, 80);
+    assert.equal(questions.filter((question) => question.type === "reference").length, 6);
+    assert.equal(questions.filter((question) => question.type === "conceptuelle").length, 68);
+    assert.equal(questions.filter((question) => question.piege).length, 6);
+  });
+
+  it("répartit quarante questions en dev et quarante en test", () => {
+    assert.equal(dev.length, 40);
+    assert.equal(test.length, 40);
+    for (const split of [dev, test]) {
+      assert.equal(split.filter((question) => question.type === "conceptuelle").length, 34);
+      assert.equal(split.filter((question) => question.type === "reference").length, 3);
+      assert.equal(split.filter((question) => question.piege).length, 3);
+    }
+  });
+
+  it("n'attend que des références présentes dans le corpus", () => {
+    validerReferences(questions, refs);
+  });
+
+  it("ne mélange pas deux documents", () => {
+    assert.equal(documentDuJeu(questions), "32016R0679");
+  });
+
+  it("ne donne aucune source attendue à un piège", () => {
+    for (const piege of questions.filter((question) => question.piege)) {
+      assert.deepEqual(piege.attendues, [], piege.question);
+    }
+  });
+
+  it("ne réutilise aucune question des jeux v1 et v2", () => {
+    const dejaPosees = new Set(
+      [...lireQuestions(QUESTIONS), ...lireQuestions(QUESTIONS_V2)].map(
+        (question) => question.question,
+      ),
+    );
+    for (const question of questions) {
+      assert.equal(dejaPosees.has(question.question), false, question.question);
+    }
+  });
+
+  it("couvre les onze chapitres du RGPD", () => {
+    const chapitres = new Set(
+      questions
+        .flatMap((question) => question.attendues)
+        .map((ref) => unites.find((unite) => unite.ref === ref)?.chemin ?? "")
+        .map((chemin) => /Chapitre [IVX]+/.exec(chemin)?.[0] ?? chemin),
+    );
+
+    assert.equal(chapitres.size, 11);
+  });
+
+  it("classe une question sans référence ni piège en sémantique sans lever", () => {
+    const jeu = lireJeu(
+      "question,type,sources_attendues,piege,split\nune question sans source,conceptuelle,,non,dev\n",
+    );
+
+    assert.equal(jeu.questions[0]?.attendues.length, 0);
+    assert.equal(jeu.questions[0]?.piege, false);
+  });
+
+  it("refuse un piège qui cite une source attendue", () => {
+    assert.throws(
+      () =>
+        lireJeu(
+          "question,type,sources_attendues,piege,split\nun faux piège,piege,32016R0679#art_17,oui,dev\n",
+        ),
+      /un piège ne cite pas de source attendue/,
+    );
   });
 });
 

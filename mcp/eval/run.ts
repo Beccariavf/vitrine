@@ -75,6 +75,11 @@ export function lireJeu(csv: string): Jeu {
     if (piege !== "oui" && piege !== "non") {
       throw new Error(`Ligne ${index + 2} : colonne piege attendue oui ou non`);
     }
+    if (piege === "oui" && sources !== "") {
+      throw new Error(
+        `Ligne ${index + 2} : un piège ne cite pas de source attendue (« ${sources} »)`,
+      );
+    }
     if (!SPLITS.includes(split as Split)) {
       throw new Error(`Ligne ${index + 2} : split attendu dev ou test, reçu « ${split} »`);
     }
