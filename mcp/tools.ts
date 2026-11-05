@@ -46,6 +46,43 @@ export function referenceExacte(question: string): string | null {
   return reference === null ? null : (reference[1] ?? "");
 }
 
+/** Alias qui nomment un corpus dans une question, et le CELEX qu'ils désignent. */
+const ALIAS_DOCUMENTS: readonly { alias: RegExp; document: string }[] = [
+  { alias: /\bRGPD\b/i, document: "32016R0679" },
+  {
+    alias: /r[eè]glement g[eé]n[eé]ral sur la protection des donn[eé]es/i,
+    document: "32016R0679",
+  },
+  { alias: /\bAI Act\b/i, document: "32024R1689" },
+  {
+    alias: /r[eè]glement sur l['’]intelligence artificielle/i,
+    document: "32024R1689",
+  },
+  { alias: /\br[eè]glement IA\b/i, document: "32024R1689" },
+];
+
+/** Nom lisible d'un corpus connu, pour les messages de refus. */
+const NOMS_DOCUMENTS: Record<string, string> = {
+  "32016R0679": "RGPD",
+  "32024R1689": "AI Act",
+};
+
+function libelleDocument(document: string): string {
+  const nom = NOMS_DOCUMENTS[document];
+  return nom === undefined ? document : `${nom} (${document})`;
+}
+
+/**
+ * Document nommé par la question, quand ses alias désignent un seul corpus ;
+ * `null` si aucun alias ne s'y trouve ou si deux corpus sont nommés.
+ */
+export function documentNomme(question: string): string | null {
+  const documents = new Set(
+    ALIAS_DOCUMENTS.filter(({ alias }) => alias.test(question)).map(({ document }) => document),
+  );
+  return documents.size === 1 ? ([...documents][0] ?? null) : null;
+}
+
 /**
  * Cherche les articles portant ce numéro, dans un document ou dans tout le
  * corpus. Plusieurs documents peuvent porter le même numéro : l'appelant décide
@@ -108,9 +145,12 @@ export async function search(
   demande: SearchDemande,
   deps: SearchDeps,
 ): Promise<ResultatRechercheOutil> {
+  // Le document nommé par la question vaut document demandé : une question qui
+  // cite « l'article 100 du RGPD » ne doit jamais rendre l'article 100 de l'AI Act.
+  const document = demande.document ?? documentNomme(demande.question) ?? undefined;
   const numero = referenceExacte(demande.question);
   if (numero !== null) {
-    const articles = trouverArticles(rootDir, demande.document, numero);
+    const articles = trouverArticles(rootDir, document, numero);
     if (articles.length > 0) {
       const documents = articles.map((article) => article.document);
       return {
@@ -129,17 +169,18 @@ export async function search(
       niveau_confiance: "aucun_resultat_fiable",
       passages: [],
       message:
-        `La question cite l'article ${numero}, absent du corpus` +
-        `${demande.document === undefined ? "" : ` ${demande.document}`}.`,
+        document === undefined
+          ? `La question cite l'article ${numero}, absent du corpus.`
+          : `La question cite l'article ${numero} du document ${libelleDocument(document)}, ` +
+            "absent du corpus.",
     };
   }
 
   const index =
     typeof deps.index === "function" ? deps.index() : deps.index ?? openIndex(cheminIndex(rootDir));
   const k = Math.max(1, Math.trunc(demande.k ?? 5));
-  const vecteur = await deps.embedder.embedQuery(demande.question, demande.document);
-  const options =
-    demande.document === undefined ? { k } : { k, document: demande.document };
+  const vecteur = await deps.embedder.embedQuery(demande.question, document);
+  const options = document === undefined ? { k } : { k, document };
   const resultats =
     (deps.recherche ?? "dense") === "hybride"
       ? rechercheHybride(index, vecteur, demande.question, options)

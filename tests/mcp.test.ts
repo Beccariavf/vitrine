@@ -12,7 +12,7 @@ import { buildIndex } from "../mcp/index/build.ts";
 import { BANDE_ARTICLE, openIndex, rangerPassages } from "../mcp/index/search.ts";
 import type { Index, ResultatRecherche } from "../mcp/index/search.ts";
 import { createServer } from "../mcp/server.ts";
-import { getArticle, search } from "../mcp/tools.ts";
+import { documentNomme, getArticle, search } from "../mcp/tools.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";
 
 const DOCUMENT = "32016R0679";
@@ -276,6 +276,148 @@ describe("les outils, sans transport", () => {
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
+  });
+});
+
+describe("les alias de document", () => {
+  it("reconnaît les sigles et les noms complets", () => {
+    assert.equal(documentNomme("le RGPD"), "32016R0679");
+    assert.equal(
+      documentNomme("le règlement général sur la protection des données"),
+      "32016R0679",
+    );
+    assert.equal(documentNomme("l'AI Act"), "32024R1689");
+    assert.equal(
+      documentNomme("le règlement sur l'intelligence artificielle"),
+      "32024R1689",
+    );
+    assert.equal(documentNomme("le règlement IA"), "32024R1689");
+  });
+
+  it("n'infère rien sans alias ou quand deux corpus sont nommés", () => {
+    assert.equal(documentNomme("Que prévoit l'article 5 ?"), null);
+    assert.equal(documentNomme("Que prévoit l'article 5 du RGPD et de l'AI Act ?"), null);
+  });
+});
+
+describe("le document nommé dans la question", () => {
+  let root: string;
+  let index: Index;
+
+  before(async () => {
+    root = mkdtempSync(join(tmpdir(), "vitrine-documents-"));
+    ecrireCorpus(root, [
+      unite(5, "principes relatifs au traitement des données personnelles"),
+      unite(17, "droit à l'effacement des données personnelles"),
+    ]);
+    ecrireCorpus(
+      root,
+      [
+        unite(5, "pratiques d'IA interdites", DOCUMENT_AIAct),
+        unite(100, "mesures d'appui pour l'innovation", DOCUMENT_AIAct),
+      ],
+      "aiact",
+    );
+    const construit = await buildIndex(root, embedderFactice());
+    index = openIndex(construit.chemin);
+  });
+
+  after(() => {
+    index.db.close();
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  it("refuse l'article 100 absent du RGPD nommé au lieu de rendre celui de l'AI Act", async () => {
+    const resultat = await search(
+      root,
+      { question: "Que prévoit l'article 100 du RGPD ?" },
+      { embedder: EMBEDDER_INTERDIT, index },
+    );
+
+    assert.equal(resultat.niveau_confiance, "aucun_resultat_fiable");
+    assert.deepEqual(resultat.passages, []);
+    assert.match(resultat.message ?? "", /article 100/);
+    assert.match(resultat.message ?? "", /32016R0679/);
+    assert.equal((resultat.message ?? "").includes(DOCUMENT_AIAct), false);
+  });
+
+  it("rend l'article 5 du RGPD quand la question nomme le RGPD", async () => {
+    const resultat = await search(
+      root,
+      { question: "Que prévoit l'article 5 du RGPD ?" },
+      { embedder: EMBEDDER_INTERDIT, index },
+    );
+
+    assert.equal(resultat.niveau_confiance, "confiant");
+    assert.deepEqual(
+      resultat.passages.map((passage) => passage.ref),
+      [`${DOCUMENT}#art_5`],
+    );
+  });
+
+  it("rend l'article 5 de l'AI Act quand la question nomme l'AI Act", async () => {
+    const resultat = await search(
+      root,
+      { question: "Que prévoit l'article 5 de l'AI Act ?" },
+      { embedder: EMBEDDER_INTERDIT, index },
+    );
+
+    assert.equal(resultat.niveau_confiance, "confiant");
+    assert.deepEqual(
+      resultat.passages.map((passage) => passage.ref),
+      [`${DOCUMENT_AIAct}#art_5`],
+    );
+  });
+
+  it("garde l'ambiguïté quand aucun document n'est nommé", async () => {
+    const resultat = await search(
+      root,
+      { question: "Que prévoit l'article 5 ?" },
+      { embedder: EMBEDDER_INTERDIT, index },
+    );
+
+    assert.equal(resultat.niveau_confiance, "incertain");
+    assert.deepEqual(
+      resultat.passages.map((passage) => passage.ref).sort(),
+      [`${DOCUMENT}#art_5`, `${DOCUMENT_AIAct}#art_5`].sort(),
+    );
+    assert.match(resultat.message ?? "", /plusieurs documents/);
+  });
+
+  it("n'infère rien quand la question nomme les deux documents", async () => {
+    const resultat = await search(
+      root,
+      { question: "Que prévoit l'article 5 du RGPD et de l'AI Act ?" },
+      { embedder: EMBEDDER_INTERDIT, index },
+    );
+
+    assert.equal(resultat.niveau_confiance, "incertain");
+    assert.deepEqual(
+      resultat.passages.map((passage) => passage.ref).sort(),
+      [`${DOCUMENT}#art_5`, `${DOCUMENT_AIAct}#art_5`].sort(),
+    );
+  });
+
+  it("filtre la recherche sémantique sur le document nommé", async () => {
+    const base = embedderFactice();
+    const vus: (string | undefined)[] = [];
+    const embedder: Embedder = {
+      ...base,
+      embedQuery: async (texte, document) => {
+        vus.push(document);
+        return base.embedQuery(texte);
+      },
+    };
+
+    const resultat = await search(
+      root,
+      { question: "principes relatifs au traitement des données personnelles du RGPD" },
+      { embedder, index, seuils: { bas: -1, haut: 2, marge: 0 } },
+    );
+
+    assert.deepEqual(vus, [DOCUMENT]);
+    assert.ok(resultat.passages.length > 0);
+    assert.ok(resultat.passages.every((passage) => passage.document === DOCUMENT));
   });
 });
 

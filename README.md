@@ -33,10 +33,13 @@ npm run mcp:eval -- --questions questions-v2.csv --split test --mesurer-test   #
 Le MCP lit le RGPD et l'AI Act par article exact et par recherche sémantique, avec provenance. Seule
 la recherche sémantique exige Ollama sur `127.0.0.1:11434` et le modèle `qwen3-embedding:0.6b`
 (`ollama pull qwen3-embedding:0.6b`) : une question qui cite un article (« article 17 ») est servie
-sans index ni modèle. Si le numéro cité existe dans les deux corpus et que `document` est absent,
-chaque article est rendu avec son document et le niveau est `incertain` ; préciser `document` lève
-l'ambiguïté. Sans Ollama, `corpus:index` et la recherche sémantique échouent avec un
-message qui nomme la commande. L'index est incrémental : un second passage sur un corpus inchangé
+sans index ni modèle. Un document nommé dans la question (« RGPD », « AI Act », « règlement général
+sur la protection des données », « règlement sur l'intelligence artificielle ») est honoré quand
+`document` est absent : la référence exacte et la recherche sémantique s'y restreignent, et un numéro
+absent de ce document est refusé explicitement. Si aucun document n'est nommé et que le numéro cité
+existe dans les deux corpus, chaque article est rendu avec son document et le niveau est `incertain` ;
+préciser `document` lève l'ambiguïté. Sans Ollama, `corpus:index` et la recherche sémantique échouent
+avec un message qui nomme la commande. L'index est incrémental : un second passage sur un corpus inchangé
 embarque zéro unité et laisse les vecteurs identiques. La construction suit les descripteurs
 `mcp/corpus/*.json` ; `--document <corpus>` n'en construit qu'un.
 

@@ -22,8 +22,9 @@ const CONSIGNE_PROVENANCE =
 const CONSIGNE_SERVEUR =
   "Serveur de lecture et de recherche sur deux corpus juridiques européens : le RGPD " +
   "(CELEX 32016R0679) et l'AI Act (CELEX 32024R1689). Les deux outils acceptent le paramètre " +
-  "`document` ; sans lui, la recherche couvre les deux corpus. Le texte rendu vient du corpus " +
-  "local, jamais d'une génération.";
+  "`document` ; sans lui, la recherche couvre les deux corpus. Un document nommé dans la " +
+  "question (« RGPD » ou « AI Act ») est honoré quand `document` est absent. Le texte rendu " +
+  "vient du corpus local, jamais d'une génération.";
 
 export type ServerDeps = {
   rootDir: string;
@@ -78,9 +79,13 @@ export function createServer(deps: ServerDeps): McpServer {
         "L'article pose la règle et le considérant l'éclaire : à pertinence comparable, l'article passe " +
         "devant, mais aucun considérant n'est retiré du résultat. " +
         "Une question qui cite un article rend cet article exact, sans recherche vectorielle. " +
-        "Si le numéro existe dans plusieurs documents et que `document` est absent, les articles " +
-        "de chaque document sont rendus avec leur provenance et le niveau est `incertain` ; " +
-        "préciser `document` lève l'ambiguïté. " +
+        "Un document nommé dans la question (« RGPD », « AI Act », « règlement général sur la " +
+        "protection des données », « règlement sur l'intelligence artificielle ») est honoré quand " +
+        "`document` est absent : la référence exacte et la recherche sémantique s'y restreignent, " +
+        "et un numéro absent de ce document est refusé explicitement. " +
+        "Si le numéro existe dans plusieurs documents, qu'aucun document n'est nommé dans la " +
+        "question et que `document` est absent, les articles de chaque document sont rendus avec " +
+        "leur provenance et le niveau est `incertain` ; préciser `document` lève l'ambiguïté. " +
         CONSIGNE_PROVENANCE,
       inputSchema: {
         question: z.string().describe("Question en langage naturel, par exemple « effacement et moteurs de recherche »"),
