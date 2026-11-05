@@ -58,7 +58,14 @@ export function lireUnites(rootDir: string): Unite[] {
     if (!existsSync(chemin)) continue;
     for (const ligne of readFileSync(chemin, "utf8").split("\n")) {
       if (ligne.trim() === "") continue;
-      unites.push(JSON.parse(ligne) as Unite);
+      const unite = JSON.parse(ligne) as Unite;
+      if (typeof unite.corpus !== "string" || unite.corpus === "") {
+        throw new Error(
+          `Unité sans corpus dans ${chemin} (${unite.ref}) : ` +
+            "régénérez le corpus avec « npm run corpus:build ».",
+        );
+      }
+      unites.push(unite);
     }
   }
   return unites;
@@ -88,6 +95,7 @@ CREATE TABLE unites (
   rowid INTEGER PRIMARY KEY,
   ref TEXT NOT NULL UNIQUE,
   document TEXT NOT NULL,
+  corpus TEXT NOT NULL,
   niveau TEXT NOT NULL,
   numero TEXT NOT NULL,
   chemin TEXT NOT NULL,
@@ -167,6 +175,13 @@ function ouvrirExistant(chemin: string, embedder: Embedder): Existant {
     if (!colonnes.some((colonne) => colonne.name === "empreinte")) {
       db.close();
       return { compatible: false, raison: "index sans empreinte" };
+    }
+    if (!colonnes.some((colonne) => colonne.name === "corpus")) {
+      db.close();
+      return {
+        compatible: false,
+        raison: "index sans colonne corpus (reconstruire avec « npm run corpus:index »)",
+      };
     }
 
     const fts = db
@@ -279,8 +294,8 @@ async function construireComplet(
     db.exec(SCHEMA(embedder.dim));
 
     const insererUnite = db.prepare(`
-      INSERT INTO unites (rowid, ref, document, niveau, numero, chemin, texte, date_acte, date_debut, date_fin, statut, url, empreinte)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO unites (rowid, ref, document, corpus, niveau, numero, chemin, texte, date_acte, date_debut, date_fin, statut, url, empreinte)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     const insererVecteur = db.prepare("INSERT INTO vec_unites (rowid, embedding) VALUES (?, ?)");
     const insererFts = db.prepare(
@@ -298,6 +313,7 @@ async function construireComplet(
         rowid,
         unite.ref,
         unite.document,
+        unite.corpus,
         unite.niveau,
         unite.numero,
         unite.chemin,
@@ -348,13 +364,13 @@ async function appliquerDelta(
   );
   const modifierUnite = db.prepare(`
     UPDATE unites
-       SET document = ?, niveau = ?, numero = ?, chemin = ?, texte = ?, date_acte = ?,
+       SET document = ?, corpus = ?, niveau = ?, numero = ?, chemin = ?, texte = ?, date_acte = ?,
            date_debut = ?, date_fin = ?, statut = ?, url = ?, empreinte = ?
      WHERE rowid = ?
   `);
   const insererUnite = db.prepare(`
-    INSERT INTO unites (rowid, ref, document, niveau, numero, chemin, texte, date_acte, date_debut, date_fin, statut, url, empreinte)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO unites (rowid, ref, document, corpus, niveau, numero, chemin, texte, date_acte, date_debut, date_fin, statut, url, empreinte)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
   const insererVecteur = db.prepare("INSERT INTO vec_unites (rowid, embedding) VALUES (?, ?)");
   const ecrireMeta = db.prepare(
@@ -392,6 +408,7 @@ async function appliquerDelta(
       }
       modifierUnite.run(
         unite.document,
+        unite.corpus,
         unite.niveau,
         unite.numero,
         unite.chemin,
@@ -420,6 +437,7 @@ async function appliquerDelta(
         BigInt(rowid),
         unite.ref,
         unite.document,
+        unite.corpus,
         unite.niveau,
         unite.numero,
         unite.chemin,

@@ -5,7 +5,8 @@ export type Embedder = {
   readonly model: string;
   readonly dim: number;
   embedPassages(textes: string[]): Promise<number[][]>;
-  embedQuery(texte: string, document?: string): Promise<number[]>;
+  /** `portee` est le document ou le corpus qui choisit l'instruction de requête. */
+  embedQuery(texte: string, portee?: string): Promise<number[]>;
 };
 
 export const MODELE_DEFAUT = "qwen3-embedding:0.6b";
@@ -25,10 +26,12 @@ export const INSTRUCTION_REQUETE =
 export const INSTRUCTION_AIAct =
   "Instruction : retrouve les passages du règlement européen sur l'intelligence artificielle qui répondent à la question\nRequête : ";
 
-/** Instructions connues par identifiant CELEX ; le défaut couvre le reste. */
+/** Instructions connues par identifiant CELEX et par nom de corpus. */
 export const INSTRUCTIONS_REQUETE: Record<string, string> = {
   "32016R0679": INSTRUCTION_REQUETE,
   "32024R1689": INSTRUCTION_AIAct,
+  rgpd: INSTRUCTION_REQUETE,
+  aiact: INSTRUCTION_AIAct,
 };
 
 export type OllamaEmbedderOptions = {
@@ -118,8 +121,8 @@ export function createOllamaEmbedder(options: OllamaEmbedderOptions = {}): Embed
     model,
     dim,
     embedPassages: embarquer,
-    async embedQuery(texte: string, document?: string): Promise<number[]> {
-      const instruction = document === undefined ? defaut : (instructions[document] ?? defaut);
+    async embedQuery(texte: string, portee?: string): Promise<number[]> {
+      const instruction = portee === undefined ? defaut : (instructions[portee] ?? defaut);
       const [vecteur] = await embarquer([`${instruction}${texte}`]);
       if (vecteur === undefined) throw new Error("Ollama n'a rendu aucun embedding pour la requête");
       return vecteur;

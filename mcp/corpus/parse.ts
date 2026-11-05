@@ -29,12 +29,15 @@ export type Descripteur = {
   considerants_attendus: number;
 };
 
-export type Niveau = "article" | "considérant";
+/** `fragment` désigne un découpage de texte long, propre à la CNIL. */
+export type Niveau = "article" | "considérant" | "fragment";
 
-/** Une unité de texte, une ligne de `unites.jsonl`. */
+/** L'acte reste le document ; la collection est le corpus. */
 export type Unite = {
   ref: string;
   document: string;
+  /** Nom du dossier de corpus sous `data/corpus/`, par exemple `rgpd`. */
+  corpus: string;
   niveau: Niveau;
   numero: string;
   chemin: string;
@@ -127,6 +130,7 @@ function uniteDe(
   return {
     ref: `${descripteur.document}#${prefixe}_${numero}`,
     document: descripteur.document,
+    corpus: descripteur.corpus,
     niveau,
     numero,
     chemin,

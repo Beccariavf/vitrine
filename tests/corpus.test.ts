@@ -101,6 +101,10 @@ describe("parseRgpd", () => {
     assert.equal(article.url, `${DESCRIPTEUR.url}#art_1`);
   });
 
+  it("nomme le corpus sur chaque unité", () => {
+    assert.ok(unites.every((unite) => unite.corpus === "rgpd"));
+  });
+
   it("lève en nommant l'ancre absente", () => {
     const ampute = FIXTURE.replace('id="art_17"', 'id="art_inconnu"');
 
@@ -260,6 +264,10 @@ describe("parseCellar sur l'AI Act", () => {
     assert.ok(considerant);
     assert.equal(considerant.chemin, "AI Act > Considérants");
     assert.ok(considerant.texte.startsWith("(1)"));
+  });
+
+  it("nomme le corpus sur chaque unité", () => {
+    assert.ok(unites.every((unite) => unite.corpus === "aiact"));
   });
 
   it("copie les trois dates et le statut du descripteur", () => {

@@ -26,7 +26,7 @@ function mesure(modele: string, resultats: Resultat[]): ObjetMesureJson {
     modele,
     dimensions: 1024,
     split: "test",
-    document: "32016R0679",
+    corpus: "rgpd",
     recherche: "dense",
     seuils: SEUILS,
     questions: resultats.map((resultat) => {

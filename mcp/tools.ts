@@ -131,20 +131,21 @@ export function documentNomme(question: string): string | null {
 }
 
 /**
- * Cherche les articles portant ce numéro, dans un document ou dans tout le
- * corpus. Plusieurs documents peuvent porter le même numéro : l'appelant décide
- * s'il rend le premier ou s'il expose l'ambiguïté.
+ * Cherche les articles portant ce numéro, dans un document, un corpus, ou tout
+ * le corpus. Plusieurs documents peuvent porter le même numéro : l'appelant
+ * décide s'il rend le premier ou s'il expose l'ambiguïté.
  */
 function trouverArticles(
   rootDir: string,
-  document: string | undefined,
+  filtre: { document?: string; corpus?: string },
   numero: string | number,
 ): Unite[] {
   const cherche = normaliserNumero(numero);
   if (cherche === null) return [];
   return lireUnites(rootDir).filter(
     (unite) =>
-      (document === undefined || unite.document === document) &&
+      (filtre.document === undefined || unite.document === filtre.document) &&
+      (filtre.corpus === undefined || unite.corpus === filtre.corpus) &&
       unite.niveau === "article" &&
       normaliserNumero(unite.numero) === cherche,
   );
@@ -155,7 +156,7 @@ export function getArticle(
   rootDir: string,
   demande: { document: string; numero: string | number },
 ): ResultatArticle {
-  const article = trouverArticles(rootDir, demande.document, demande.numero)[0];
+  const article = trouverArticles(rootDir, { document: demande.document }, demande.numero)[0];
   if (article !== undefined) return { ...article, trouve: true };
   return {
     trouve: false,
@@ -180,6 +181,9 @@ export type SearchDeps = {
 export type SearchDemande = {
   question: string;
   k?: number;
+  /** Restreint la recherche à une collection : `rgpd`, `aiact`, `cnil`. */
+  corpus?: string;
+  /** Restreint la recherche à un document précis. */
   document?: string;
 };
 
@@ -194,14 +198,26 @@ export async function search(
 ): Promise<ResultatRechercheOutil> {
   // Le document nommé par la question vaut document demandé : une question qui
   // cite « l'article 100 du RGPD » ne doit jamais rendre l'article 100 de l'AI Act.
+  // Un corpus demandé prime : il borne la recherche, même si la question nomme
+  // un autre corpus.
   const documentInferé =
-    demande.document === undefined ? documentNomme(demande.question) : null;
+    demande.document === undefined && demande.corpus === undefined
+      ? documentNomme(demande.question)
+      : null;
   const document = demande.document ?? documentInferé ?? undefined;
+  const corpus = demande.corpus;
   // La confiance ne peut certifier un corpus que la question ou l'appel nomme.
-  const corpusNomme = demande.document !== undefined || documentInferé !== null;
+  const corpusNomme = corpus !== undefined || document !== undefined;
   const numero = referenceExacte(demande.question);
   if (numero !== null) {
-    const articles = trouverArticles(rootDir, document, numero);
+    const articles = trouverArticles(
+      rootDir,
+      {
+        ...(document === undefined ? {} : { document }),
+        ...(corpus === undefined ? {} : { corpus }),
+      },
+      numero,
+    );
     if (articles.length > 0) {
       const documents = [...new Set(articles.map((article) => article.document))];
       if (documents.length > 1) {
@@ -239,18 +255,26 @@ export async function search(
       niveau_confiance: "aucun_resultat_fiable",
       passages: [],
       message:
-        document === undefined
-          ? `La question cite l'article ${numero}, absent du corpus.`
-          : `La question cite l'article ${numero} du document ${libelleDocument(document)}, ` +
-            "absent du corpus.",
+        document !== undefined
+          ? `La question cite l'article ${numero} du document ${libelleDocument(document)}, ` +
+            "absent du corpus."
+          : corpus !== undefined
+            ? `La question cite l'article ${numero}, absent du corpus ${corpus}.`
+            : `La question cite l'article ${numero}, absent du corpus.`,
     };
   }
 
   const index =
     typeof deps.index === "function" ? deps.index() : deps.index ?? openIndex(cheminIndex(rootDir));
   const k = Math.max(1, Math.trunc(demande.k ?? 5));
-  const vecteur = await deps.embedder.embedQuery(demande.question, document);
-  const options = document === undefined ? { k } : { k, document };
+  // L'instruction de requête suit le document, puis le corpus : un corpus CNIL
+  // ne doit pas recevoir l'instruction mesurée pour le RGPD.
+  const vecteur = await deps.embedder.embedQuery(demande.question, document ?? corpus);
+  const options = {
+    k,
+    ...(corpus === undefined ? {} : { corpus }),
+    ...(document === undefined ? {} : { document }),
+  };
   const resultats =
     (deps.recherche ?? "dense") === "hybride"
       ? rechercheHybride(index, vecteur, demande.question, options)

@@ -22,6 +22,7 @@ function unite(numero: number, texte: string, document = DOCUMENT): Unite {
   return {
     ref: `${document}#art_${numero}`,
     document,
+    corpus: document === DOCUMENT ? "rgpd" : "aiact",
     niveau: "article",
     numero: String(numero),
     chemin: "RGPD > Chapitre III > Droits de la personne concernée",
@@ -543,6 +544,7 @@ function passage(niveau: "article" | "considérant", similarite: number, numero 
   return {
     ref: `${DOCUMENT}#${niveau === "article" ? "art" : "rct"}_${numero}`,
     document: DOCUMENT,
+    corpus: "rgpd",
     niveau,
     numero,
     texte: "texte",

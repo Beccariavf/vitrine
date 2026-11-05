@@ -29,6 +29,8 @@ export type Question = {
   attendues: string[];
   piege: boolean;
   split: Split;
+  /** Corpus visé ; absent, il se déduit du préfixe des références attendues. */
+  corpus?: string;
 };
 
 export type Seuils = { bas: number; haut: number; marge: number };
@@ -45,6 +47,28 @@ export type Jeu = {
 
 const ENTETE = "question,type,sources_attendues,piege,split";
 const ENTETE_SANS_SPLIT = "question,type,sources_attendues,piege";
+/** En-têtes avec une colonne `corpus` finale : le jeu dit sa collection. */
+const ENTETE_CORPUS = "question,type,sources_attendues,piege,corpus";
+const ENTETE_SPLIT_CORPUS = "question,type,sources_attendues,piege,split,corpus";
+
+type Entete = { avecSplit: boolean; avecCorpus: boolean };
+
+/** Reconnaît les quatre en-têtes admis ; `null` sinon. */
+function lireEntete(entete: string | undefined): Entete | null {
+  switch (entete) {
+    case ENTETE:
+      return { avecSplit: true, avecCorpus: false };
+    case ENTETE_SANS_SPLIT:
+      return { avecSplit: false, avecCorpus: false };
+    case ENTETE_CORPUS:
+      return { avecSplit: false, avecCorpus: true };
+    case ENTETE_SPLIT_CORPUS:
+      return { avecSplit: true, avecCorpus: true };
+    default:
+      return null;
+  }
+}
+
 const TYPES: TypeQuestion[] = ["reference", "conceptuelle", "piege"];
 const SPLITS: Split[] = ["dev", "test"];
 
@@ -52,23 +76,28 @@ const SPLITS: Split[] = ["dev", "test"];
  * Lit un CSV de questions ; lève sur une ligne mal formée. Un en-tête à quatre
  * colonnes (`question,type,sources_attendues,piege`) décrit un jeu sans split :
  * ses lignes valent `dev` pour le filtrage, sans prétendre à une calibration.
+ * Une colonne `corpus` finale nomme la collection visée.
  */
 export function lireJeu(csv: string): Jeu {
   const lignes = csv
     .split(/\r?\n/)
     .filter((ligne) => ligne.trim() !== "");
   const entete = lignes.shift();
-  const avecSplit = entete === ENTETE;
-  if (!avecSplit && entete !== ENTETE_SANS_SPLIT) {
+  const reconnu = lireEntete(entete);
+  if (reconnu === null) {
     throw new Error(`En-tête inattendu : ${entete ?? "(vide)"}`);
   }
+  const { avecSplit, avecCorpus } = reconnu;
 
   const questions = lignes.map((ligne, index) => {
     const champs = ligne.split(",");
-    if (champs.length !== (avecSplit ? 5 : 4)) {
+    const attendu = 4 + (avecSplit ? 1 : 0) + (avecCorpus ? 1 : 0);
+    if (champs.length !== attendu) {
       throw new Error(`Ligne ${index + 2} illisible : ${ligne}`);
     }
-    const [question = "", type = "", sources = "", piege = "", split = "dev"] = champs;
+    const [question = "", type = "", sources = "", piege = ""] = champs;
+    const split = avecSplit ? (champs[4] ?? "") : "dev";
+    const corpus = avecCorpus ? (champs[avecSplit ? 5 : 4] ?? "") : "";
     if (!TYPES.includes(type as TypeQuestion)) {
       throw new Error(`Ligne ${index + 2} : type inconnu « ${type} »`);
     }
@@ -89,6 +118,7 @@ export function lireJeu(csv: string): Jeu {
       attendues: sources === "" ? [] : sources.split("|"),
       piege: piege === "oui",
       split: split as Split,
+      ...(corpus === "" ? {} : { corpus }),
     };
   });
 
@@ -131,15 +161,73 @@ export function filtrerSplit(questions: Question[], split: FiltreSplit): Questio
   return split === "all" ? questions : questions.filter((question) => question.split === split);
 }
 
-/** Échoue avant toute mesure si une référence attendue manque au corpus. */
-export function validerReferences(questions: Question[], refs: Set<string>): void {
+/** Corpus d'une référence, déduit du préfixe de son document. */
+export function corpusDeReference(ref: string): string {
+  const document = documentDe(ref);
+  if (document === "32016R0679") return "rgpd";
+  if (document === "32024R1689") return "aiact";
+  if (/^CNILTEXT/i.test(document)) return "cnil";
+  throw new Error(`Corpus inconnu pour la référence « ${ref} »`);
+}
+
+/**
+ * Un jeu ne couvre qu'un corpus : un rapport ne mélange jamais deux collections.
+ * La colonne `corpus` fait foi quand elle existe ; sinon le préfixe des
+ * références attendues la donne. Une question qui viserait deux corpus lève.
+ */
+export function corpusDuJeu(questions: Question[]): string {
+  const corpus = new Set<string>();
+  for (const question of questions) {
+    const deduits = new Set(
+      question.attendues.map((ref) => (question.corpus ?? corpusDeReference(ref))),
+    );
+    if (deduits.size > 1) {
+      throw new Error(
+        `La question « ${question.question} » vise plusieurs corpus : ` +
+          `${[...deduits].sort().join(", ")}`,
+      );
+    }
+    for (const valeur of deduits) corpus.add(valeur);
+  }
+  if (corpus.size === 0) {
+    throw new Error("Aucune référence attendue : impossible de déduire le corpus du jeu");
+  }
+  if (corpus.size > 1) {
+    throw new Error(`Questions de plusieurs corpus : ${[...corpus].sort().join(", ")}`);
+  }
+  return [...corpus][0] ?? "";
+}
+
+/**
+ * Échoue avant toute mesure si une référence attendue manque au corpus. Une
+ * référence sans `#` vise un document entier : `documents` porte alors les
+ * identifiants de document du corpus.
+ */
+export function validerReferences(
+  questions: Question[],
+  refs: Set<string>,
+  documents?: Set<string>,
+): void {
   for (const question of questions) {
     for (const ref of question.attendues) {
-      if (!refs.has(ref)) {
-        throw new Error(`Référence attendue absente du corpus : ${ref} (${question.question})`);
-      }
+      if (refs.has(ref)) continue;
+      if (documents !== undefined && !ref.includes("#") && documents.has(ref)) continue;
+      throw new Error(`Référence attendue absente du corpus : ${ref} (${question.question})`);
     }
   }
+}
+
+/**
+ * Vrai si une référence rendue satisfait une attendue : égalité exacte quand
+ * l'attendue porte un `#`, appartenance au même document sinon.
+ */
+export function refSatisfaite(rendue: string, attendue: string): boolean {
+  return attendue.includes("#") ? rendue === attendue : rendue.split("#")[0] === attendue;
+}
+
+/** Vrai si l'une des attendues est satisfaite par `rendue`. */
+function satisfait(rendue: string, attendues: string[]): boolean {
+  return attendues.some((attendue) => refSatisfaite(rendue, attendue));
 }
 
 /** Part des questions à référence dont une attendue figure dans les cinq premiers. */
@@ -147,7 +235,7 @@ export function recallAt5(classements: Classement[]): number {
   const pertinents = classements.filter((classement) => classement.attendues.length > 0);
   if (pertinents.length === 0) return 0;
   const trouves = pertinents.filter((classement) =>
-    classement.rendus.slice(0, 5).some((ref) => classement.attendues.includes(ref)),
+    classement.rendus.slice(0, 5).some((ref) => satisfait(ref, classement.attendues)),
   ).length;
   return trouves / pertinents.length;
 }
@@ -157,7 +245,7 @@ export function precisionAt1(classements: Classement[]): number {
   const pertinents = classements.filter((classement) => classement.attendues.length > 0);
   if (pertinents.length === 0) return 0;
   const justes = pertinents.filter((classement) =>
-    classement.attendues.includes(classement.rendus[0] ?? ""),
+    satisfait(classement.rendus[0] ?? "", classement.attendues),
   ).length;
   return justes / pertinents.length;
 }
@@ -167,7 +255,7 @@ export function mrr(classements: Classement[]): number {
   const pertinents = classements.filter((classement) => classement.attendues.length > 0);
   if (pertinents.length === 0) return 0;
   const somme = pertinents.reduce((total, classement) => {
-    const rang = classement.rendus.findIndex((ref) => classement.attendues.includes(ref));
+    const rang = classement.rendus.findIndex((ref) => satisfait(ref, classement.attendues));
     return total + (rang === -1 ? 0 : 1 / (rang + 1));
   }, 0);
   return somme / pertinents.length;
@@ -393,7 +481,7 @@ export function calibrer(mesures: Mesure[]): Seuils {
             if (!refusee) corrects += 1;
             if (
               niveau === "confiant" &&
-              mesure.refs.slice(0, 5).some((ref) => mesure.question.attendues.includes(ref))
+              mesure.refs.slice(0, 5).some((ref) => satisfait(ref, mesure.question.attendues))
             ) {
               confiants += 1;
             }
@@ -465,14 +553,14 @@ async function mesurer(
   questions: Question[],
   embedder: Embedder,
   index: Index,
-  document: string,
+  corpus: string,
   recherche: ModeRecherche,
 ): Promise<Mesure[]> {
   const mesures: Mesure[] = [];
   for (const question of questions) {
     const resultat = await search(
       rootDir,
-      { question: question.question, k: 5, document },
+      { question: question.question, k: 5, corpus },
       { embedder, index, seuils: { bas: -1, haut: 2, marge: 0 }, recherche },
     );
     mesures.push({
@@ -511,7 +599,7 @@ type PositionAttendue = { question: Question; rang: number; similarite: number |
 
 /** Rang et similarité de la première référence attendue, `rang = 0` si absente. */
 function positionAttendue(mesure: Mesure): PositionAttendue {
-  const index = mesure.refs.findIndex((ref) => mesure.question.attendues.includes(ref));
+  const index = mesure.refs.findIndex((ref) => satisfait(ref, mesure.question.attendues));
   return {
     question: mesure.question,
     rang: index === -1 ? 0 : index + 1,
@@ -533,7 +621,7 @@ function teteConsiderant(mesure: Mesure): boolean {
 /** Décrit un premier passage inattendu : `attendu ← rendu`, ou `null` s'il est attendu. */
 function teteInattendue(mesure: Mesure): string | null {
   const premier = mesure.refs[0];
-  if (premier === undefined || mesure.question.attendues.includes(premier)) return null;
+  if (premier === undefined || satisfait(premier, mesure.question.attendues)) return null;
   const attendues = mesure.question.attendues.map(refCourte).join("|");
   return `${attendues} ← ${refCourte(premier)}`;
 }
@@ -584,7 +672,7 @@ function rapport(mesures: Mesure[], seuils: Seuils, origineSeuils: string): stri
       `(recall@5 ${arrondi(recallAt5(classer(exactes)))}, MRR ${arrondi(mrr(classer(exactes)))})`,
     `recherche sémantique : ${semantiques.length} questions, recall@5 ` +
       `${arrondi(recallAt5(classementsSemantiques))} ` +
-      `(${classementsSemantiques.filter((classement) => classement.rendus.slice(0, 5).some((ref) => classement.attendues.includes(ref))).length}/${semantiques.length}), ` +
+      `(${classementsSemantiques.filter((classement) => classement.rendus.slice(0, 5).some((ref) => satisfait(ref, classement.attendues))).length}/${semantiques.length}), ` +
       `MRR ${arrondi(mrr(classementsSemantiques))}`,
     `top-1 sémantique : ${pourcentage(precisionAt1(classementsSemantiques))}`,
     `niveaux sémantiques : ${confiantes.length} confiant, ${incertaines.length} incertain, ${refusees.length} aucun_resultat_fiable`,
@@ -664,25 +752,25 @@ export function resume(mesures: Mesure[], seuils: Seuils): Resume {
   return {
     semantiques: semantiques.length,
     top5_semantique_succes: classementsSemantiques.filter((classement) =>
-      classement.rendus.slice(0, 5).some((ref) => classement.attendues.includes(ref)),
+      classement.rendus.slice(0, 5).some((ref) => satisfait(ref, classement.attendues)),
     ).length,
     top1_semantique_succes: classementsSemantiques.filter((classement) =>
-      classement.attendues.includes(classement.rendus[0] ?? ""),
+      satisfait(classement.rendus[0] ?? "", classement.attendues),
     ).length,
     mrr_semantique: mrr(classementsSemantiques),
     referencees: referencees.length,
     top5_global_succes: classementsGlobaux.filter((classement) =>
-      classement.rendus.slice(0, 5).some((ref) => classement.attendues.includes(ref)),
+      classement.rendus.slice(0, 5).some((ref) => satisfait(ref, classement.attendues)),
     ).length,
     top5_rendu_succes: classementsRendus.filter((classement) =>
-      classement.rendus.slice(0, 5).some((ref) => classement.attendues.includes(ref)),
+      classement.rendus.slice(0, 5).some((ref) => satisfait(ref, classement.attendues)),
     ).length,
     top1_rendu_succes: classementsRendus.filter((classement) =>
-      classement.attendues.includes(classement.rendus[0] ?? ""),
+      satisfait(classement.rendus[0] ?? "", classement.attendues),
     ).length,
     mrr_rendu: mrr(classementsRendus),
     top5_global_rendu_succes: classementsGlobauxRendus.filter((classement) =>
-      classement.rendus.slice(0, 5).some((ref) => classement.attendues.includes(ref)),
+      classement.rendus.slice(0, 5).some((ref) => satisfait(ref, classement.attendues)),
     ).length,
     pieges_mesures: pieges.length,
     pieges_cites: pieges.filter((mesure) => !refusee(mesure, seuils)).length,
@@ -845,7 +933,8 @@ export type ObjetMesureJson = {
   modele: string;
   dimensions: number;
   split: Split;
-  document: string;
+  /** Collection mesurée : `rgpd`, `aiact`, `cnil`. */
+  corpus: string;
   recherche: ModeRecherche;
   seuils: Seuils;
   questions: EntreeQuestionJson[];
@@ -857,7 +946,7 @@ export function objetMesureJson(args: {
   modele: string;
   dimensions: number;
   split: Split;
-  document: string;
+  corpus: string;
   recherche: ModeRecherche;
   seuils: Seuils;
   mesures: Mesure[];
@@ -867,7 +956,7 @@ export function objetMesureJson(args: {
     modele: args.modele,
     dimensions: args.dimensions,
     split: args.split,
-    document: args.document,
+    corpus: args.corpus,
     recherche: args.recherche,
     seuils: args.seuils,
     questions: args.mesures.map((mesure) => entreeQuestionJson(mesure, args.seuils)),
@@ -898,9 +987,13 @@ async function main(argv: string[]): Promise<void> {
   const contenu = readFileSync(cheminQuestions, "utf8");
   const jeu = lireJeu(contenu);
   const questions = jeu.questions;
-  const document = documentDuJeu(questions);
+  const corpus = corpusDuJeu(questions);
   const unites = lireUnites(rootDir);
-  validerReferences(questions, new Set(unites.map((unite) => unite.ref)));
+  validerReferences(
+    questions,
+    new Set(unites.map((unite) => unite.ref)),
+    new Set(unites.map((unite) => unite.document)),
+  );
 
   const modele = valeurDe("--modele", argv);
   const dim = valeurDe("--dim", argv);
@@ -918,7 +1011,7 @@ async function main(argv: string[]): Promise<void> {
   const index = openIndex(cheminIndex(rootDir));
   try {
     const demandees = filtrerSplit(questions, split);
-    const mesures = await mesurer(rootDir, demandees, embedder, index, document, recherche);
+    const mesures = await mesurer(rootDir, demandees, embedder, index, corpus, recherche);
 
     const mesuresDev =
       split === "all" ? mesures.filter((mesure) => mesure.question.split === "dev") : mesures;
@@ -932,7 +1025,7 @@ async function main(argv: string[]): Promise<void> {
     const lignes = [
       `date : ${date}`,
       `modèle : ${embedder.model} (${embedder.dim} dimensions)`,
-      `document : ${document}`,
+      `corpus : ${corpus}`,
       `recherche : ${recherche}`,
       `split : ${split}`,
       ...(split === "all"
@@ -987,7 +1080,7 @@ async function main(argv: string[]): Promise<void> {
         modele: embedder.model,
         dimensions: embedder.dim,
         split,
-        document,
+        corpus,
         recherche,
         seuils,
         mesures,

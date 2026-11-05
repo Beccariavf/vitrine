@@ -23,6 +23,8 @@ export const BANDE_ARTICLE = 0.02;
 export type ResultatRecherche = {
   ref: string;
   document: string;
+  /** Collection d'appartenance : `rgpd`, `aiact`, `cnil`. */
+  corpus: string;
   niveau: string;
   numero: string;
   texte: string;
@@ -38,7 +40,12 @@ export type ResultatRecherche = {
 
 export type SearchOptions = {
   k: number;
-  /** Restreint aux unités de ce document ; absent, tous les corpus répondent. */
+  /**
+   * Restreint à une collection (`rgpd`, `aiact`, `cnil`) ; absent, tous les
+   * corpus répondent.
+   */
+  corpus?: string;
+  /** Restreint aux unités de ce document ; absent, tout le corpus répond. */
   document?: string;
 };
 
@@ -54,6 +61,12 @@ export function openIndex(chemin: string): Index {
   const db = new DatabaseSync(chemin, { allowExtension: true, readOnly: true });
   try {
     sqliteVec.load(db);
+    const colonnes = db.prepare("PRAGMA table_info(unites)").all() as { name: string }[];
+    if (!colonnes.some((colonne) => colonne.name === "corpus")) {
+      throw new Error(
+        `Index sans colonne corpus : ${chemin}. Reconstruisez-le avec « npm run corpus:index ».`,
+      );
+    }
     const meta = new Map<string, string>();
     for (const ligne of db.prepare("SELECT cle, valeur FROM meta").all() as {
       cle: string;
@@ -88,6 +101,7 @@ function ligneVersResultat(ligne: Ligne): ResultatRecherche {
   return {
     ref: texte(ligne.ref),
     document: texte(ligne.document),
+    corpus: texte(ligne.corpus),
     niveau: texte(ligne.niveau),
     numero: texte(ligne.numero),
     texte: texte(ligne.texte),
@@ -125,10 +139,18 @@ export function rangerPassages(resultats: ResultatRecherche[], k: number): Resul
     .map((entree) => entree.resultat);
 }
 
+/** Vrai si le résultat passe les filtres optionnels de corpus et de document. */
+function retenu(resultat: ResultatRecherche, options: SearchOptions): boolean {
+  if (options.corpus !== undefined && resultat.corpus !== options.corpus) return false;
+  if (options.document !== undefined && resultat.document !== options.document) return false;
+  return true;
+}
+
 /**
- * Rend les `k` passages les plus proches, rangés par la bande article. Le filtre
- * `document` s'applique avant le classement : on demande plus de candidats pour
- * que l'article promu reste dans la fenêtre, puis on rend `k` passages.
+ * Rend les `k` passages les plus proches, rangés par la bande article. Les
+ * filtres `corpus` et `document` s'appliquent avant le classement : on demande
+ * plus de candidats pour que l'article promu reste dans la fenêtre, puis on rend
+ * `k` passages.
  */
 export function searchIndex(index: Index, vecteur: number[], options: SearchOptions): ResultatRecherche[] {
   if (vecteur.length !== index.dim) {
@@ -144,7 +166,7 @@ export function searchIndex(index: Index, vecteur: number[], options: SearchOpti
   const candidats = Math.max(k * 10, 50);
   const lignes = index.db
     .prepare(
-      `SELECT u.ref, u.document, u.niveau, u.numero, u.texte, u.chemin, u.url,
+      `SELECT u.ref, u.document, u.corpus, u.niveau, u.numero, u.texte, u.chemin, u.url,
               u.date_acte, u.date_debut, u.date_fin, u.statut, v.distance
          FROM vec_unites v
          JOIN unites u ON u.rowid = v.rowid
@@ -153,12 +175,8 @@ export function searchIndex(index: Index, vecteur: number[], options: SearchOpti
     )
     .all(JSON.stringify(vecteur), candidats) as Ligne[];
 
-  const resultats = lignes.map(ligneVersResultat);
-  const filtres =
-    options.document === undefined
-      ? resultats
-      : resultats.filter((resultat) => resultat.document === options.document);
-  return rangerPassages(filtres, k);
+  const resultats = lignes.map(ligneVersResultat).filter((resultat) => retenu(resultat, options));
+  return rangerPassages(resultats, k);
 }
 
 /** Nombre de candidats pris dans chaque voie avant fusion. */
@@ -191,11 +209,11 @@ function candidatsDenses(
   index: Index,
   vecteur: number[],
   limite: number,
-  document: string | undefined,
+  options: SearchOptions,
 ): CandidatDense[] {
   const lignes = index.db
     .prepare(
-      `SELECT v.rowid AS rowid, u.ref, u.document, u.niveau, u.numero, u.texte, u.chemin, u.url,
+      `SELECT v.rowid AS rowid, u.ref, u.document, u.corpus, u.niveau, u.numero, u.texte, u.chemin, u.url,
               u.date_acte, u.date_debut, u.date_fin, u.statut, v.distance
          FROM vec_unites v
          JOIN unites u ON u.rowid = v.rowid
@@ -203,13 +221,12 @@ function candidatsDenses(
         ORDER BY v.distance`,
     )
     .all(JSON.stringify(vecteur), limite) as Ligne[];
-  const candidats = lignes.map((ligne) => ({
-    rowid: Number(ligne.rowid),
-    resultat: ligneVersResultat(ligne),
-  }));
-  return document === undefined
-    ? candidats
-    : candidats.filter((candidat) => candidat.resultat.document === document);
+  return lignes
+    .map((ligne) => ({
+      rowid: Number(ligne.rowid),
+      resultat: ligneVersResultat(ligne),
+    }))
+    .filter((candidat) => retenu(candidat.resultat, options));
 }
 
 /** Rowids rendus par FTS5, dans l'ordre du classement lexical. */
@@ -217,14 +234,23 @@ function candidatsLexicaux(
   index: Index,
   texte: string,
   limite: number,
-  document: string | undefined,
+  options: SearchOptions,
 ): number[] {
   const requete = requeteLexicale(texte);
   if (requete === null) return [];
 
-  const filtre = document === undefined ? "" : " AND u.document = ?";
-  const parametres: (string | number)[] =
-    document === undefined ? [requete, limite] : [requete, document, limite];
+  const conditions: string[] = [];
+  const parametres: (string | number)[] = [requete];
+  if (options.corpus !== undefined) {
+    conditions.push("u.corpus = ?");
+    parametres.push(options.corpus);
+  }
+  if (options.document !== undefined) {
+    conditions.push("u.document = ?");
+    parametres.push(options.document);
+  }
+  const filtre = conditions.length === 0 ? "" : ` AND ${conditions.join(" AND ")}`;
+  parametres.push(limite);
   const lignes = index.db
     .prepare(
       `SELECT f.rowid AS rowid
@@ -285,7 +311,7 @@ function resultatsParRowid(
   const marques = rowids.map(() => "?").join(",");
   const lignes = index.db
     .prepare(
-      `SELECT rowid, ref, document, niveau, numero, texte, chemin, url,
+      `SELECT rowid, ref, document, corpus, niveau, numero, texte, chemin, url,
               date_acte, date_debut, date_fin, statut
          FROM unites
         WHERE rowid IN (${marques})`,
@@ -325,7 +351,7 @@ export function rechercheHybride(
   if (k === 0) return [];
 
   const limite = Math.max(CANDIDATS_VOIE, k);
-  const denses = candidatsDenses(index, vecteur, limite, options.document);
+  const denses = candidatsDenses(index, vecteur, limite, options);
   const distances = new Map(denses.map((candidat) => [candidat.rowid, candidat.resultat.distance]));
 
   const rowidParRef = new Map(denses.map((candidat) => [candidat.resultat.ref, candidat.rowid]));
@@ -338,7 +364,7 @@ export function rechercheHybride(
     if (rowid !== undefined) rangDense.set(rowid, position + 1);
   });
 
-  const lexicaux = candidatsLexicaux(index, texte, limite, options.document);
+  const lexicaux = candidatsLexicaux(index, texte, limite, options);
   const absents = lexicaux.filter((rowid) => !distances.has(rowid));
   for (const [rowid, distance] of distancesManquantes(index, vecteur, absents)) {
     distances.set(rowid, distance);

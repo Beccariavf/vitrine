@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 import {
   calibrer,
   cheminMarqueur,
+  corpusDuJeu,
   documentDuJeu,
   ecrireMesureTest,
   entreeQuestionJson,
@@ -21,6 +22,7 @@ import {
   objetMesureJson,
   precisionAt1,
   recallAt5,
+  refSatisfaite,
   repartirPlis,
   resoudreQuestions,
   resume,
@@ -528,6 +530,76 @@ describe("questions-v3.csv", () => {
   });
 });
 
+describe("le corpus du jeu", () => {
+  it("déduit le corpus du préfixe des références", () => {
+    assert.equal(corpusDuJeu(lireQuestions(QUESTIONS_V2)), "rgpd");
+    assert.equal(corpusDuJeu(lireQuestions(QUESTIONS_AIAct)), "aiact");
+    assert.equal(corpusDuJeu(lireQuestions(QUESTIONS_V3)), "rgpd");
+  });
+
+  it("refuse une question qui viserait deux corpus", () => {
+    const questions: Question[] = [
+      {
+        question: "une question qui mélange",
+        type: "conceptuelle",
+        attendues: ["32016R0679#art_17", "32024R1689#art_6"],
+        piege: false,
+        split: "dev",
+      },
+    ];
+
+    assert.throws(() => corpusDuJeu(questions), /plusieurs corpus.*aiact, rgpd/);
+  });
+
+  it("lit un jeu qui déclare sa colonne corpus", () => {
+    const jeu = lireJeu(
+      "question,type,sources_attendues,piege,corpus\n" +
+        "une sanction récente,reference,CNILTEXT000012345,non,cnil\n",
+    );
+
+    assert.equal(jeu.avecSplit, false);
+    assert.equal(jeu.questions[0]?.corpus, "cnil");
+    assert.equal(corpusDuJeu(jeu.questions), "cnil");
+  });
+
+  it("accepte une référence au document entier sans `#`", () => {
+    const refs = new Set(["CNILTEXT000012345#f0", "CNILTEXT000012345#f1"]);
+    const documents = new Set(["CNILTEXT000012345"]);
+    const questions: Question[] = [
+      {
+        question: "que reproche la CNIL à cette société",
+        type: "reference",
+        attendues: ["CNILTEXT000012345"],
+        piege: false,
+        split: "dev",
+      },
+    ];
+
+    validerReferences(questions, refs, documents);
+    assert.throws(() => validerReferences(questions, refs), /absente du corpus/);
+    assert.throws(
+      () => validerReferences(questions, refs, new Set(["CNILTEXT000099999"])),
+      /absente du corpus/,
+    );
+  });
+
+  it("juge le succès au document quand l'attendue n'a pas de `#`", () => {
+    assert.equal(refSatisfaite("CNILTEXT000012345#f7", "CNILTEXT000012345"), true);
+    assert.equal(refSatisfaite("CNILTEXT000099999#f7", "CNILTEXT000012345"), false);
+    assert.equal(refSatisfaite("32016R0679#art_17", "32016R0679#art_18"), false);
+
+    const classements = [
+      {
+        attendues: ["CNILTEXT000012345"],
+        rendus: ["CNILTEXT000099999#f0", "CNILTEXT000012345#f3"],
+      },
+    ];
+
+    assert.equal(recallAt5(classements), 1);
+    assert.equal(precisionAt1(classements), 0);
+  });
+});
+
 describe("le document du jeu", () => {
   it("déduit le document du préfixe des références attendues", () => {
     const questions = lireQuestions(QUESTIONS_V2);
@@ -728,7 +800,7 @@ describe("le verrou du test", () => {
       modele: "qwen3-embedding:0.6b",
       dimensions: 1024,
       split: "test",
-      document: "32016R0679",
+      corpus: "rgpd",
       recherche: "dense",
       seuils,
       mesures,

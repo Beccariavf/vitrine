@@ -117,6 +117,7 @@ function unite(
   return {
     ref: `${document}#${niveau === "article" ? "art" : "rct"}_${numero}`,
     document,
+    corpus: document === DOCUMENT ? "rgpd" : "dsa",
     niveau,
     numero: String(numero),
     chemin: "RGPD > Chapitre I > Dispositions générales",
@@ -269,6 +270,27 @@ describe("l'adaptateur Ollama", () => {
 });
 
 describe("buildIndex", () => {
+  it("nomme le fichier quand une unité n'a pas de corpus", async () => {
+    const root = tempRoot();
+    try {
+      ecrireCorpus(root, "rgpd", SIX);
+      const chemin = join(root, "data", "corpus", "rgpd", "unites.jsonl");
+      const lignes = readFileSync(chemin, "utf8")
+        .trimEnd()
+        .split("\n")
+        .map((ligne) => JSON.parse(ligne) as Record<string, unknown>);
+      delete lignes[0]?.corpus;
+      writeFileSync(chemin, `${lignes.map((ligne) => JSON.stringify(ligne)).join("\n")}\n`, "utf8");
+
+      await assert.rejects(
+        buildIndex(root, embedderFactice()),
+        /Unité sans corpus.*corpus:build/,
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("construit l'index, son meta et ses six unités", async () => {
     const root = tempRoot();
     try {
@@ -346,8 +368,7 @@ describe("buildIndex", () => {
     }
   });
 
-  it("indexe un second descripteur et le filtre par document", async () => {
-    const root = tempRoot();
+  it("indexe un second descripteur et le filtre par document", async () => {    const root = tempRoot();
     try {
       ecrireCorpus(root, "rgpd", SIX);
       ecrireCorpus(root, "dsa", [unite(1, "obligations des plateformes", AUTRE), unite(2, "publicité ciblée", AUTRE)]);
@@ -365,6 +386,65 @@ describe("buildIndex", () => {
       } finally {
         index.db.close();
       }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+  it("filtre par corpus et laisse tous les corpus répondre sans filtre", async () => {
+    const root = tempRoot();
+    try {
+      ecrireCorpus(root, "rgpd", SIX);
+      ecrireCorpus(root, "dsa", [
+        unite(1, "obligations des plateformes", AUTRE),
+        unite(2, "publicité ciblée", AUTRE),
+        unite(3, "publicité ciblée des plateformes", AUTRE),
+      ]);
+
+      const { chemin } = await buildIndex(root, embedderFactice());
+      const index = openIndex(chemin);
+      try {
+        const vecteur = await embedderFactice().embedQuery("publicité ciblée");
+        const rgpd = searchIndex(index, vecteur, { k: 9, corpus: "rgpd" });
+        const dsa = searchIndex(index, vecteur, { k: 9, corpus: "dsa" });
+        const tous = searchIndex(index, vecteur, { k: 9 });
+
+        assert.equal(rgpd.length, 6);
+        assert.ok(rgpd.every((resultat) => resultat.corpus === "rgpd"));
+        assert.equal(dsa.length, 3);
+        assert.ok(dsa.every((resultat) => resultat.corpus === "dsa"));
+        assert.equal(tous.length, 9);
+        assert.deepEqual(
+          searchIndex(index, vecteur, { k: 9, corpus: "inconnu" }),
+          [],
+          "un corpus inconnu rend zéro résultat, jamais une erreur SQL",
+        );
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("refuse un index sans colonne corpus en nommant la commande", async () => {
+    const root = tempRoot();
+    try {
+      ecrireCorpus(root, "rgpd", SIX);
+      const { chemin } = await buildIndex(root, embedderFactice());
+
+      const db = new DatabaseSync(chemin, { allowExtension: true });
+      db.exec("DROP TABLE unites");
+      db.exec("CREATE TABLE unites (ref TEXT, document TEXT, empreinte TEXT)");
+      db.close();
+
+      assert.throws(
+        () => openIndex(chemin),
+        /Index sans colonne corpus.*npm run corpus:index/,
+      );
+
+      const resultat = await buildIndex(root, embedderFactice());
+      assert.equal(resultat.mode, "complet");
+      assert.match(resultat.raison ?? "", /sans colonne corpus/);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
