@@ -28,6 +28,7 @@ npm run cnil:sync -- --increments --dry-run   # ce que les archives ajouteraient
 npm run corpus:index   # index incrémental Ollama + sqlite-vec → data/corpus/index/index.db
 npm run mcp:smoke      # vérifie Ollama et qwen3-embedding:0.6b
 npm run mcp            # serveur MCP sur stdio
+npm run mcp:demo       # cinq appels réels au serveur stdio (Ollama requis)
 npm run mcp:eval -- --questions questions-v2.csv --split dev    # 30 questions de développement (hors CI)
 npm run mcp:eval -- --questions questions-v2.csv --split test --mesurer-test   # 30 questions tenues à l'écart, une seule fois (hors CI)
 npm run mcp:eval -- --questions questions-v3.csv --split dev --json            # 40 questions de développement v3, sortie machine (hors CI)
@@ -132,6 +133,26 @@ significative et le test ne la reproduit pas. Avec 34 questions sémantiques, il
 ne détecte qu'un écart d'environ six questions, donc un effet plus petit demanderait un test tenu à
 l'écart plus grand ou répété. Le rapport v3 est
 `aidd_docs/tasks/2026_11/2026_11_05_mesure-v3-modeles/eval-v3.md` ; il n'est pas fusionné avec le v2.
+
+## Démonstration
+
+`npm run mcp:demo` lance `mcp/server.ts` comme le ferait un client, s'y connecte sur stdio et
+appelle les trois outils sur cinq questions : article exact, recherche RGPD, recherche AI Act,
+filtres CNIL, décision entière. Sortie réelle, Ollama requis :
+
+```
+### 4. Filtres CNIL poussés dans l'index : cookies, amendes, 2025
+→ search {"question":"Quelle sanction pour des cookies ?","corpus":"cnil","k":3,"date_min":"2025-01-01","date_max":"2025-12-31","type_sanction":"amende"}
+  confiance : incertain
+  1. 0.814 · fragment · SAN-2025-010 · 2025-11-20 · amende · 750 000 €
+     CNILTEXT000052851847#f11 · https://www.legifrance.gouv.fr/cnil/id/CNILTEXT000052851847
+     23. La formation restreinte relève que, lors du contrôle en ligne, la délégation a constaté le dépôt d’un cookie NID qui a pour finalité de faciliter la connexion de l’utilisateur et permet de stocker ses préférences lor…
+```
+
+Ce n'est pas un test : la suite couvre le protocole en mémoire et le calcul hors ligne, et
+`tests/server-stdio.test.ts` vérifie que le point d'entrée démarre et expose les trois outils sans
+Ollama. La démonstration prouve le chemin complet — entrée stdio, embeddings, index construit — et
+affiche la provenance de chaque passage.
 
 Pour le brancher dans un client MCP, déclarer un serveur stdio avec le chemin absolu du serveur et
 remplacer `/absolute/path/to/Vitrine-mcp` par la racine de votre clone :
