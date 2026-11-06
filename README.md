@@ -166,8 +166,29 @@ remplacer `/absolute/path/to/Vitrine-mcp` par la racine de votre clone :
 ```
 
 `mcp/server.ts` résout la racine du dépôt depuis `import.meta.url`, jamais depuis le répertoire
-courant : un chemin relatif échouerait hors de la racine. Si votre client exige un répertoire de
-travail explicite, ajoutez `"cwd": "/absolute/path/to/Vitrine-mcp"` à côté de `command`.
+courant : un chemin relatif n'est donc valable que si le répertoire de travail est la racine du
+dépôt. Si votre client exige un répertoire de travail explicite, ajoutez
+`"cwd": "/absolute/path/to/Vitrine-mcp"` à côté de `command`.
+
+OpenCode lit `opencode.json` à la racine, où le serveur est déjà déclaré en local :
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "vitrine": {
+        "type": "local",
+        "command": ["node", "mcp/server.ts"],
+        "cwd": "."
+      }
+    }
+  }
+}
+```
+
+Le chemin reste relatif et vaut donc pour tout clone, parce que le répertoire de travail est déclaré
+en même temps. Les outils arrivent groupés sous `tools.vitrine.*` (Code Mode) ; `"codemode": false`
+les expose comme outils directs.
 
 ## Comment ça marche
 
