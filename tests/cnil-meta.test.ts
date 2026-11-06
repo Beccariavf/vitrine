@@ -2,6 +2,7 @@ import { strict as assert } from "node:assert";
 import { describe, it } from "node:test";
 import {
   dateIndex,
+  debutDispositif,
   extraireMetaSanction,
   montantIndex,
   nombreEnMots,
@@ -113,6 +114,30 @@ describe("les métadonnées d'une sanction", () => {
         "Communiqué : la CNIL a condamné la société à 150 000 euros d'amende ;",
     );
     assert.equal(resultat.montant, 150_000);
+  });
+});
+
+describe("la borne du dispositif", () => {
+  it("part du dernier « PAR CES MOTIFS »", () => {
+    const texte = "Faits exposés. PAR CES MOTIFS la formation décide. Publication.";
+    assert.equal(texte.slice(debutDispositif(texte)), "PAR CES MOTIFS la formation décide. Publication.");
+  });
+
+  it("se replie sur la conclusion quand le marqueur manque", () => {
+    const texte = "Observations de la société. En conséquence, la Commission décide d'une amende.";
+    assert.match(texte.slice(debutDispositif(texte)), /^En conséquence/);
+  });
+
+  it("se replie sur la formule de sanction, puis sur la fin", () => {
+    const texte = "Le rapporteur relève des manquements. Une sanction pécuniaire de 15 000 euros.";
+    assert.match(texte.slice(debutDispositif(texte)), /^sanction pécuniaire/);
+    const sansRepere = "x".repeat(3000);
+    assert.equal(debutDispositif(sansRepere), 500);
+  });
+
+  it("rend une position valable dans le texte d'origine", () => {
+    const texte = "a\u00a0b. PAR CES MOTIFS décide.";
+    assert.equal(texte.slice(debutDispositif(texte)), "PAR CES MOTIFS décide.");
   });
 });
 

@@ -132,6 +132,8 @@ type Decision = {
     type_sanction?: string;
     montant?: number | null;
     injonction?: boolean;
+    fragments_total: number;
+    partie: string;
     fragments: { ref: string; texte: string }[];
   }[];
 };
@@ -166,11 +168,17 @@ function rendre(outil: Outil, donnees: unknown): boolean {
       ]
         .filter((partie) => partie !== "")
         .join(" · ");
+      // Le premier fragment rendu peut commencer avant le dispositif : on
+      // montre la partie opératoire, pas l'argumentaire qui la précède.
+      const rendu = decision.fragments.map((element) => element.texte).join(" ");
+      const marque = rendu.toUpperCase().lastIndexOf("PAR CES MOTIFS");
+      const operatoire = marque === -1 ? rendu : rendu.slice(marque);
       process.stdout.write(
         `  ✓ ${decision.numero} — ${decision.document} — ${decision.date_acte} — ${decision.statut}\n` +
           `    ${meta}\n` +
-          `    ${decision.fragments.length} fragments · ${decision.url}\n` +
-          `    ${extrait(decision.fragments[0]?.texte ?? "")}\n`,
+          `    ${decision.fragments.length}/${decision.fragments_total} fragments ` +
+          `(${decision.partie}) · ${decision.url}\n` +
+          `    ${extrait(operatoire)}\n`,
       );
     }
     return resultat.decisions.length > 0;

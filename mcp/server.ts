@@ -77,11 +77,14 @@ export function createServer(deps: ServerDeps): McpServer {
     {
       title: "Lire une délibération de sanction de la CNIL",
       description:
-        "Rend une délibération de sanction entière, par identifiant de document (`CNILTEXT…`) ou par " +
-        "numéro (`SAN-2026-015`), avec ses fragments dans l'ordre du document, sa date, son statut et " +
-        "son URL. Ne cherche pas par le sens : pour une question ouverte, utiliser `search`. Ne rend " +
-        "pas un fragment isolé et n'invente aucun fragment : une décision absente est dite, avec un " +
-        "message. Un numéro porté par deux documents rend les deux, chacun avec son identifiant. " +
+        "Rend une délibération de sanction, par identifiant de document (`CNILTEXT…`) ou par " +
+        "numéro (`SAN-2026-015`), avec sa date, son statut, son URL, son type de sanction et son " +
+        "montant. Par défaut, seule la partie opératoire est rendue (`partie: \"dispositif\"`) ; " +
+        "`partie: \"tous\"` rend tous les fragments, ce qui peut atteindre plusieurs dizaines de " +
+        "milliers de tokens. Les fragments rendus sont entiers et dans l'ordre du document. Ne " +
+        "cherche pas par le sens : pour une question ouverte, utiliser `search`. N'invente aucun " +
+        "fragment : une décision absente est dite, avec un message. Un numéro porté par deux " +
+        "documents rend les deux, chacun avec son identifiant. " +
         CONSIGNE_PROVENANCE,
       inputSchema: {
         document: z
@@ -96,13 +99,21 @@ export function createServer(deps: ServerDeps): McpServer {
           .string()
           .optional()
           .describe("Restreint à une collection : cnil, rgpd ou aiact ; absent, tous les corpus"),
+        partie: z
+          .enum(["dispositif", "tous"])
+          .optional()
+          .describe(
+            "dispositif (défaut) : la partie opératoire seule ; tous : le document entier, " +
+              "qui peut dépasser la charge acceptée par le client",
+          ),
       },
     },
-    async ({ document, numero, corpus }) => {
+    async ({ document, numero, corpus, partie }) => {
       const resultat = getDecision(rootDir, {
         ...(document === undefined ? {} : { document }),
         ...(numero === undefined ? {} : { numero }),
         ...(corpus === undefined ? {} : { corpus }),
+        ...(partie === undefined ? {} : { partie }),
       });
       return { content: [{ type: "text", text: JSON.stringify(resultat, null, 2) }] };
     },
