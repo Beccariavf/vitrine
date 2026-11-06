@@ -18,7 +18,7 @@ Trente-cinq décisions prononcent aussi une injonction.
 
 Le montant est en euros, `null` quand le dispositif le masque (`[…]`) ou ne le porte pas ; il couvre les amendes et les liquidations d'astreinte, pas les avertissements ni les rappels. Les astreintes « par jour de retard » ne sont pas comptées comme des amendes ; un total suivi de sa décomposition n'est pas additionné à ses composantes ; un montant répété entre parenthèses n'est compté qu'une fois.
 
-Les montants des observations ne sont pas comptés (`2008-028` et `2008-029` valent 15 k€, `2006-174` vaut 45 k€), et les formules `En conséquence` ou `somme totale` ferment la partie opératoire. Contrôles manuels sur les décisions connues : FNAC 7 M€ (6 + 1), Google 2025 325 M€ (200 + 125), Google 2021 150 M€ (90 + 60), Free Mobile 27 M€, Free 15 M€, Orange 50 M€, hôpital 500 k€, EXTIA 300 k€, IQVIA 5 M€, liquidation 5,2 M€, 1 € symbolique. Le seul montant absent est `CNILTEXT000046907077` (dispositif masqué).
+Les montants des observations ne sont pas comptés (`2008-028` et `2008-029` valent 15 k€, `2006-174` vaut 45 k€), et les formules `En conséquence` ou `somme totale` ferment la partie opératoire. Contrôles manuels sur les décisions connues : FNAC 7 M€ (6 + 1), Google 2025 325 M€ (200 + 125), Google 2021 150 M€ (90 + 60), Free Mobile 27 M€, Free 15 M€, Orange 50 M€, hôpital 500 k€, EXTIA 300 k€, IQVIA 5 M€, liquidation 5,2 M€, 1 € symbolique. La seule amende sans montant est `CNILTEXT000046907077` (dispositif masqué) ; les décisions qui refusent de liquider une astreinte n'ont pas de montant non plus.
 
 ## Ce que `search` accepte
 

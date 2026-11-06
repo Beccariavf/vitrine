@@ -1,5 +1,5 @@
 ---
-objective: "Les décisions CNIL portent un type de sanction, un montant d'amende et la présence d'une injonction, extraits du dispositif et validés sur les 249 documents ; `search` expose des filtres de date, type, montant et numéro, poussés dans la requête `vec0`, et un pilote mesure leur apport."
+objective: "Les décisions CNIL portent un type de sanction, un montant de sanction pécuniaire (amende ou liquidation) et la présence d'une injonction, extraits du dispositif et validés sur les 249 documents ; `search` expose des filtres de date, type, montant et numéro, poussés dans la requête `vec0`, et un pilote mesure leur apport."
 status: completed
 ---
 
