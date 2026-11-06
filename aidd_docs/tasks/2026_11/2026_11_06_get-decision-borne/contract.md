@@ -20,10 +20,12 @@ Estimations en caractères/4 sur le JSON que le serveur envoie (pas un tokenizer
 
 | Mesure | Défaut | `tous` |
 | --- | --- | --- |
-| Charge maximale | **1 705** | **56 032** |
+| Charge maximale, une décision | **1 705** | **56 032** |
 | Charge médiane | 510 | 5 036 |
 | Décisions au-dessus de 10 000 | 0 | 75 |
 | Décisions au-dessus de 25 000 | 0 | 19 |
+
+Un numéro porté par deux documents (`SAN-2026-001`) rend deux décisions : 1 661 par défaut, 68 295 en `tous`.
 
 ## Décisions prises
 

@@ -135,6 +135,13 @@ describe("la borne du dispositif", () => {
     assert.equal(debutDispositif(sansRepere), 500);
   });
 
+  it("préfère « sanction d’un montant » à une « injonction » du raisonnement", () => {
+    const texte =
+      "les injonctions formulées à son encontre n’ont pas été suivies. " +
+      "La formation restreinte estime justifié le prononcé d’une sanction d’un montant de 15 000 euros.";
+    assert.match(texte.slice(debutDispositif(texte)), /^sanction d’un montant/);
+  });
+
   it("rend une position valable dans le texte d'origine", () => {
     const texte = "a\u00a0b. PAR CES MOTIFS décide.";
     assert.equal(texte.slice(debutDispositif(texte)), "PAR CES MOTIFS décide.");

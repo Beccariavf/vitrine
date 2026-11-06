@@ -1,6 +1,6 @@
 ---
 objective: "`get_decision` rend la partie opératoire par défaut et la décision entière sur `partie: \"tous\"`, sans troncature de texte."
-status: active
+status: completed
 ---
 
 # Plan : borner `get_decision` par défaut

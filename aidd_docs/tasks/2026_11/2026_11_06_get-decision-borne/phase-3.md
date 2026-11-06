@@ -18,7 +18,7 @@ Estimations en caractères/4 sur le JSON rendu par le serveur, pas un tokenizer.
 | Décisions au-dessus de 10 000 | 75 | **0** |
 | Décisions au-dessus de 25 000 | 19 | **0** |
 
-- **249/249** réponses par défaut contiennent la formule de sanction ; aucune ne perd le montant.
+- **249/249** réponses par défaut contiennent la formule de sanction ; aucune ne perd le montant. Deux réponses commencent au milieu d'une phrase (`CNILTEXT000017652196`, `CNILTEXT000047586418`) : le découpage publié de la DINUM coupe la phrase précédente, le fragment rendu reste exact. Un numéro porté par deux documents rend deux décisions et monte à 68 295 en `tous`.
 - Sept décisions sont si courtes que le dispositif est le document entier.
 
 Deux cas méritent d'être dits :
