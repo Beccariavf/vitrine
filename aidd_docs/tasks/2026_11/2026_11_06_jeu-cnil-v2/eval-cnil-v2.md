@@ -4,7 +4,7 @@ Mesure du 6 novembre 2026 sur `data/corpus/cnil/` : 249 délibérations de sanct
 
 ## Protocole
 
-`mcp/eval/questions-cnil-v2.csv` porte 50 questions, toutes de type `reference` et toutes vers un document entier (`CNILTEXT…` sans `#`) : 25 `dev` et 25 `test`. Le jeu a été écrit contre le texte des décisions, avant toute mesure, puis figé.
+`mcp/eval/questions-cnil-v2.csv` porte 50 questions, toutes de type `reference` et toutes vers un document entier (`CNILTEXT…` sans `#`) : 25 `dev` et 25 `test`. Le jeu de 50 questions a été écrit contre le texte des décisions et figé avant la première mesure ; le split `test` retenu a ensuite été réécrit, comme dit ci-dessous.
 
 Trois formes sont interdites dans une question, et un test les refuse : l'identifiant `CNILTEXT…` de la cible, son numéro `SAN-…`, et un numéro d'article. Les deux premières donneraient une recherche lexicale déguisée ; la troisième déclencherait le court-circuit déterministe et un rang 1 par construction. Aucune question ne reprend le texte exact des jeux v1, v2, v3, AI Act ou CNIL de 20 questions. Une question du `dev` (`CNILTEXT000048967251`) reste proche de la question de 10 M€ du jeu de 20 ; le `test` n'en contient aucune. Le test automatique ne compare que le texte exact et ne détecte pas une paraphrase : cette proximité est signalée ici, pas filtrée par le garde.
 
@@ -14,7 +14,7 @@ Les seuils sont ceux du produit (`bas = 0,69`, `haut = 0,74`, `marge = 0,01`), p
 
 L'histoire du `test` est en trois temps, et le rapport la donne entière plutôt que de ne garder que le chiffre final.
 
-1. **Premier split** (empreinte `aa32d105…`) : 25 questions, mesuré 14/25. La vérification d'après mesure y a trouvé deux prémisses fausses et une formulation ambiguë : `CNILTEXT000049382214` décrit comme un détaillant de chaussures alors que la décision vise une chaîne de boutiques de matériel de télécommunication ; `CNILTEXT000051630617` décrit comme un annuaire, formulation qui n'était pas fausse mais qui a été remplacée par les faits de la décision (courriels et SMS de prospection pour environ 300 clients). Une question du `dev` (`CNILTEXT000050202759`) a été corrigée de la même façon (« secret des données de santé » → « traitement des données de santé ») ; elle ne fait pas partie du split `test`. Aucune cible n'a changé.
+1. **Premier split** (empreinte `aa32d105…`) : 25 questions, mesuré 14/25. La vérification d'après mesure y a trouvé une prémisse fausse (`CNILTEXT000049382214` décrit comme un détaillant de chaussures alors que la décision vise une chaîne de boutiques de matériel de télécommunication) et une formulation ambiguë (`CNILTEXT000051630617` décrit comme un annuaire, formulation qui n'était pas fausse mais qui a été remplacée par les faits de la décision). Une question du `dev` (`CNILTEXT000050202759`) a été corrigée de la même façon (« secret des données de santé » → « traitement des données de santé ») ; elle ne fait pas partie du split `test`. Aucune cible n'a changé.
 2. **Deuxième split** (empreinte `f09bd68a…`, commit `b442d14`) : le même jeu corrigé, mesuré 15/25. Une revue indépendante y a ensuite trouvé une cible encore fausse (`CNILTEXT000046693390` est un opérateur de télécommunication qui achète auprès de courtiers, pas un courtier), une paraphrase de la question « dix millions d'euros contre un groupe américain pour ses cookies » du jeu de 20, et une correction (Solocal) qui reprenait « environ 300 clients » du texte cible. Ce split est archivé dans `b442d14` et n'est pas utilisé.
 3. **Split retenu** (empreinte `7d9595df…`) : 25 questions neuves, visant 25 documents que le `dev` n'utilise pas et qui n'avaient jamais été mesurés. Il a été mesuré une fois, et c'est le seul chiffre repris ci-dessous.
 
@@ -58,6 +58,7 @@ Le jeu de 20 contient par ailleurs une question mal ciblée : « Quelle amende d
 - **Aucun piège.** Le comportement sur une question sans réponse reste mesuré par le jeu de 20 questions, pas par celui-ci.
 - **Confiance non calibrée.** Les seuils sont ceux du produit ; aucune question n'est refusée par le seuil bas, car les similarités CNIL restent hautes même quand le document est faux. Les 10 questions `confiant` ne sont pas toutes justes : le rapport ne prétend pas le contraire.
 - **Analyse des échecs manuelle.** Les causes ci-dessus sont lues dans les passages rendus, pas produites par une métrique.
+- **Une imprécision de forme dans le `dev`.** La question sur `CNILTEXT000053151799` dit « maisons départementales » au pluriel alors que la décision ne nomme que la MDPH du Nord. C'est une question `dev`, elle n'entre pas dans la mesure du `test` ; elle n'est pas corrigée pour ne pas changer l'empreinte du CSV et invalider le marqueur du test.
 - **Deux splits de test abandonnés.** Les deux splits antérieurs ont été mesurés puis abandonnés (14/25 et 15/25) ; le second est archivé dans `b442d14`, le premier n'a jamais été commité. Seule la mesure du split retenu est reprise ici, et le marqueur ne porte qu'elle.
 
 ## Provenance
