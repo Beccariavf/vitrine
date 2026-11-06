@@ -107,7 +107,7 @@ CREATE TABLE unites (
   url TEXT NOT NULL,
   empreinte TEXT NOT NULL
 );
-CREATE VIRTUAL TABLE vec_unites USING vec0(corpus TEXT, embedding float[${dim}] distance_metric=cosine);
+CREATE VIRTUAL TABLE vec_unites USING vec0(corpus TEXT, document TEXT, embedding float[${dim}] distance_metric=cosine);
 CREATE VIRTUAL TABLE fts_unites USING fts5(chemin, texte, tokenize="unicode61 remove_diacritics 2");
 `;
 
@@ -297,7 +297,7 @@ async function construireComplet(
       INSERT INTO unites (rowid, ref, document, corpus, niveau, numero, chemin, texte, date_acte, date_debut, date_fin, statut, url, empreinte)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
-    const insererVecteur = db.prepare("INSERT INTO vec_unites (rowid, corpus, embedding) VALUES (?, ?, ?)");
+    const insererVecteur = db.prepare("INSERT INTO vec_unites (rowid, corpus, document, embedding) VALUES (?, ?, ?, ?)");
     const insererFts = db.prepare(
       "INSERT INTO fts_unites (rowid, chemin, texte) VALUES (?, ?, ?)",
     );
@@ -325,7 +325,7 @@ async function construireComplet(
         unite.url,
         empreintes.get(unite.ref) ?? "",
       );
-      insererVecteur.run(rowid, unite.corpus, JSON.stringify(vecteur));
+      insererVecteur.run(rowid, unite.corpus, unite.document, JSON.stringify(vecteur));
       insererFts.run(rowid, unite.chemin, unite.texte);
     });
     insererMeta.run("model", embedder.model);
@@ -372,7 +372,7 @@ async function appliquerDelta(
     INSERT INTO unites (rowid, ref, document, corpus, niveau, numero, chemin, texte, date_acte, date_debut, date_fin, statut, url, empreinte)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
-  const insererVecteur = db.prepare("INSERT INTO vec_unites (rowid, corpus, embedding) VALUES (?, ?, ?)");
+  const insererVecteur = db.prepare("INSERT INTO vec_unites (rowid, corpus, document, embedding) VALUES (?, ?, ?, ?)");
   const ecrireMeta = db.prepare(
     "INSERT INTO meta (cle, valeur) VALUES (?, ?) ON CONFLICT(cle) DO UPDATE SET valeur = excluded.valeur",
   );
@@ -422,7 +422,7 @@ async function appliquerDelta(
         BigInt(rowid),
       );
       supprimerVecteur.run(BigInt(rowid));
-      insererVecteur.run(BigInt(rowid), unite.corpus, JSON.stringify(vecteur));
+      insererVecteur.run(BigInt(rowid), unite.corpus, unite.document, JSON.stringify(vecteur));
       supprimerFts.run(BigInt(rowid));
       insererFts.run(BigInt(rowid), unite.chemin, unite.texte);
     }
@@ -449,7 +449,7 @@ async function appliquerDelta(
         unite.url,
         empreintes.get(unite.ref) ?? "",
       );
-      insererVecteur.run(BigInt(rowid), unite.corpus, JSON.stringify(vecteur));
+      insererVecteur.run(BigInt(rowid), unite.corpus, unite.document, JSON.stringify(vecteur));
       insererFts.run(BigInt(rowid), unite.chemin, unite.texte);
     }
 
@@ -475,29 +475,39 @@ async function appliquerDelta(
  */
 export function migrerVecteursCorpus(db: DatabaseSync, dim: number): boolean {
   const colonnes = db.prepare("PRAGMA table_info(vec_unites)").all() as { name: string }[];
-  if (colonnes.some((colonne) => colonne.name === "corpus")) return false;
+  const noms = new Set(colonnes.map((colonne) => colonne.name));
+  if (noms.has("corpus") && noms.has("document")) return false;
 
   db.exec("BEGIN");
   try {
     // La copie passe par une table ordinaire : renommer une table virtuelle
     // laisse ses tables d'ombre sous l'ancien nom et casse l'index.
-    db.exec("CREATE TABLE vec_migration (rowid INTEGER PRIMARY KEY, corpus TEXT, embedding BLOB)");
     db.exec(
-      `INSERT INTO vec_migration (rowid, corpus, embedding)
-         SELECT v.rowid, u.corpus, v.embedding
+      "CREATE TABLE vec_migration (rowid INTEGER PRIMARY KEY, corpus TEXT, document TEXT, embedding BLOB)",
+    );
+    db.exec(
+      `INSERT INTO vec_migration (rowid, corpus, document, embedding)
+         SELECT v.rowid, u.corpus, u.document, v.embedding
            FROM vec_unites v JOIN unites u ON u.rowid = v.rowid`,
     );
     db.exec("DROP TABLE vec_unites");
     db.exec(
-      `CREATE VIRTUAL TABLE vec_unites USING vec0(corpus TEXT, embedding float[${dim}] distance_metric=cosine)`,
+      `CREATE VIRTUAL TABLE vec_unites USING vec0(corpus TEXT, document TEXT, embedding float[${dim}] distance_metric=cosine)`,
     );
     const lignes = db
-      .prepare("SELECT rowid, corpus, embedding FROM vec_migration")
-      .all() as { rowid: number | bigint; corpus: string; embedding: Uint8Array }[];
+      .prepare("SELECT rowid, corpus, document, embedding FROM vec_migration")
+      .all() as {
+      rowid: number | bigint;
+      corpus: string;
+      document: string;
+      embedding: Uint8Array;
+    }[];
     const inserer = db.prepare(
-      "INSERT INTO vec_unites (rowid, corpus, embedding) VALUES (?, ?, ?)",
+      "INSERT INTO vec_unites (rowid, corpus, document, embedding) VALUES (?, ?, ?, ?)",
     );
-    for (const ligne of lignes) inserer.run(BigInt(ligne.rowid), ligne.corpus, ligne.embedding);
+    for (const ligne of lignes) {
+      inserer.run(BigInt(ligne.rowid), ligne.corpus, ligne.document, ligne.embedding);
+    }
     db.exec("DROP TABLE vec_migration");
     db.exec("COMMIT");
   } catch (error) {

@@ -62,9 +62,15 @@ export function openIndex(chemin: string): Index {
   try {
     sqliteVec.load(db);
     const colonnes = db.prepare("PRAGMA table_info(unites)").all() as { name: string }[];
-    if (!colonnes.some((colonne) => colonne.name === "corpus")) {
+    const colonnesVecteurs = db.prepare("PRAGMA table_info(vec_unites)").all() as { name: string }[];
+    const nomsVecteurs = new Set(colonnesVecteurs.map((colonne) => colonne.name));
+    if (
+      !colonnes.some((colonne) => colonne.name === "corpus") ||
+      !nomsVecteurs.has("corpus") ||
+      !nomsVecteurs.has("document")
+    ) {
       throw new Error(
-        `Index sans colonne corpus : ${chemin}. Reconstruisez-le avec « npm run corpus:index ».`,
+        `Index sans colonnes corpus/document : ${chemin}. Reconstruisez-le avec « npm run corpus:index ».`,
       );
     }
     const meta = new Map<string, string>();
@@ -166,24 +172,41 @@ export function searchIndex(index: Index, vecteur: number[], options: SearchOpti
   const candidats = Math.max(k * 10, 50);
   // Le filtre `corpus` descend dans la requête `vec0` : sans cela, un corpus
   // majoritaire (la CNIL) remplirait la fenêtre et affamerait les autres.
-  const filtreCorpus = options.corpus === undefined ? "" : " AND v.corpus = ?";
-  const parametres: (string | number)[] =
-    options.corpus === undefined
-      ? [JSON.stringify(vecteur), candidats]
-      : [JSON.stringify(vecteur), candidats, options.corpus];
+  const { conditions, valeurs } = filtresVectoriels(options);
+  const filtre = conditions.length === 0 ? "" : ` AND ${conditions.join(" AND ")}`;
+  const parametres: (string | number)[] = [
+    JSON.stringify(vecteur),
+    candidats,
+    ...valeurs,
+  ];
   const lignes = index.db
     .prepare(
       `SELECT u.ref, u.document, u.corpus, u.niveau, u.numero, u.texte, u.chemin, u.url,
               u.date_acte, u.date_debut, u.date_fin, u.statut, v.distance
          FROM vec_unites v
          JOIN unites u ON u.rowid = v.rowid
-        WHERE v.embedding MATCH ? AND k = ?${filtreCorpus}
+        WHERE v.embedding MATCH ? AND k = ?${filtre}
         ORDER BY v.distance`,
     )
     .all(...parametres) as Ligne[];
 
   const resultats = lignes.map(ligneVersResultat).filter((resultat) => retenu(resultat, options));
   return rangerPassages(resultats, k);
+}
+
+/** Conditions poussées dans `vec0` : filtrer après le KNN affamerait un corpus minoritaire. */
+function filtresVectoriels(options: SearchOptions): { conditions: string[]; valeurs: string[] } {
+  const conditions: string[] = [];
+  const valeurs: string[] = [];
+  if (options.corpus !== undefined) {
+    conditions.push("v.corpus = ?");
+    valeurs.push(options.corpus);
+  }
+  if (options.document !== undefined) {
+    conditions.push("v.document = ?");
+    valeurs.push(options.document);
+  }
+  return { conditions, valeurs };
 }
 
 /** Nombre de candidats pris dans chaque voie avant fusion. */
@@ -218,18 +241,16 @@ function candidatsDenses(
   limite: number,
   options: SearchOptions,
 ): CandidatDense[] {
-  const filtreCorpus = options.corpus === undefined ? "" : " AND v.corpus = ?";
-  const parametres: (string | number)[] =
-    options.corpus === undefined
-      ? [JSON.stringify(vecteur), limite]
-      : [JSON.stringify(vecteur), limite, options.corpus];
+  const { conditions, valeurs } = filtresVectoriels(options);
+  const filtre = conditions.length === 0 ? "" : ` AND ${conditions.join(" AND ")}`;
+  const parametres: (string | number)[] = [JSON.stringify(vecteur), limite, ...valeurs];
   const lignes = index.db
     .prepare(
       `SELECT v.rowid AS rowid, u.ref, u.document, u.corpus, u.niveau, u.numero, u.texte, u.chemin, u.url,
               u.date_acte, u.date_debut, u.date_fin, u.statut, v.distance
          FROM vec_unites v
          JOIN unites u ON u.rowid = v.rowid
-        WHERE v.embedding MATCH ? AND k = ?${filtreCorpus}
+        WHERE v.embedding MATCH ? AND k = ?${filtre}
         ORDER BY v.distance`,
     )
     .all(...parametres) as Ligne[];

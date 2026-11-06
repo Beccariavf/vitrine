@@ -5,7 +5,13 @@ import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { describe, it } from "node:test";
 import * as sqliteVec from "sqlite-vec";
-import { buildIndex, cheminIndex, empreinteUnite, formaterJournal } from "../mcp/index/build.ts";
+import {
+  buildIndex,
+  cheminIndex,
+  empreinteUnite,
+  formaterJournal,
+  migrerVecteursCorpus,
+} from "../mcp/index/build.ts";
 import {
   CANDIDATS_VOIE,
   RRF_K,
@@ -325,11 +331,9 @@ describe("buildIndex", () => {
       const db = new DatabaseSync(chemin, { allowExtension: true });
       try {
         sqliteVec.load(db);
-        db.prepare("INSERT INTO vec_unites (rowid, corpus, embedding) VALUES (?, ?, ?)").run(
-          BigInt(1000),
-          "rgpd",
-          JSON.stringify([1, 0, 0, 0, 0, 0, 0, 0]),
-        );
+        db.prepare(
+          "INSERT INTO vec_unites (rowid, corpus, document, embedding) VALUES (?, ?, ?, ?)",
+        ).run(BigInt(1000), "rgpd", DOCUMENT, JSON.stringify([1, 0, 0, 0, 0, 0, 0, 0]));
         const nombre = db.prepare("SELECT count(*) AS n FROM vec_unites").get() as { n: number };
         assert.equal(Number(nombre.n), 7);
       } finally {
@@ -415,6 +419,81 @@ describe("buildIndex", () => {
     }
   });
 
+  it("dégrade un index puis le migre sans ré-embarquer", async () => {
+    const root = tempRoot();
+    try {
+      ecrireCorpus(root, "rgpd", SIX);
+      const { chemin } = await buildIndex(root, embedderFactice());
+      const vecteur = await embedderFactice().embedQuery("effacement des données");
+      const avant = (() => {
+        const index = openIndex(chemin);
+        try {
+          return searchIndex(index, vecteur, { k: 3 }).map((r) => r.ref);
+        } finally {
+          index.db.close();
+        }
+      })();
+
+      const db = new DatabaseSync(chemin, { allowExtension: true });
+      try {
+        sqliteVec.load(db);
+        const lignes = db
+          .prepare("SELECT rowid, embedding FROM vec_unites")
+          .all() as { rowid: number | bigint; embedding: Uint8Array }[];
+        db.exec("DROP TABLE vec_unites");
+        db.exec("CREATE VIRTUAL TABLE vec_unites USING vec0(embedding float[8] distance_metric=cosine)");
+        const inserer = db.prepare("INSERT INTO vec_unites (rowid, embedding) VALUES (?, ?)");
+        for (const ligne of lignes) inserer.run(BigInt(ligne.rowid), ligne.embedding);
+        assert.throws(() => openIndex(chemin), /colonnes corpus\/document/);
+        assert.equal(migrerVecteursCorpus(db, 8), true);
+      } finally {
+        db.close();
+      }
+
+      const index = openIndex(chemin);
+      try {
+        assert.equal(
+          (index.db.prepare("SELECT count(*) AS n FROM vec_unites").get() as { n: number }).n,
+          SIX.length,
+        );
+        assert.deepEqual(
+          searchIndex(index, vecteur, { k: 3 }).map((r) => r.ref),
+          avant,
+          "la migration doit rendre les mêmes résultats",
+        );
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("n'affame pas un document quand son corpus en porte beaucoup d'autres", async () => {
+    const root = tempRoot();
+    try {
+      ecrireCorpus(root, "rgpd", [unite(1, "sujet sans rapport", DOCUMENT)]);
+      ecrireCorpus(root, "dsa", [
+        unite(1, "question identique", AUTRE),
+        unite(2, "question identique", AUTRE),
+        unite(3, "question identique", AUTRE),
+      ]);
+
+      const { chemin } = await buildIndex(root, embedderFactice());
+      const index = openIndex(chemin);
+      try {
+        const vecteur = await embedderFactice().embedQuery("question identique");
+        const resultats = searchIndex(index, vecteur, { k: 1, document: DOCUMENT });
+        assert.equal(resultats.length, 1, "la fenêtre vectorielle doit être filtrée par document");
+        assert.equal(resultats[0]?.ref, `${DOCUMENT}#art_1`);
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("filtre par corpus et laisse tous les corpus répondre sans filtre", async () => {
     const root = tempRoot();
     try {
@@ -464,7 +543,7 @@ describe("buildIndex", () => {
 
       assert.throws(
         () => openIndex(chemin),
-        /Index sans colonne corpus.*npm run corpus:index/,
+        /Index sans colonnes corpus\/document.*npm run corpus:index/,
       );
 
       const resultat = await buildIndex(root, embedderFactice());
