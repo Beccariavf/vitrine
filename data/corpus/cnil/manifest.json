@@ -9,11 +9,11 @@
     "dila": 0
   },
   "decoupage": "dinum",
-  "arrete_le": "2026-11-05",
+  "arrete_le": "2026-10-30",
   "url_texte": "https://www.legifrance.gouv.fr/cnil/id/{id}",
   "url_texte_verifiee": false,
   "url_texte_note": "La route Légifrance a répondu 403 à robots en session : elle est déclarée, pas vérifiée.",
-  "snapshot": "2026-11-05",
+  "snapshot": "2026-10-30",
   "revision": "bbc4bf7ef4a0148359f6e3ef38734edb08ac2f06",
   "sources": [
     {
@@ -26,7 +26,7 @@
         "data_gouv": "lov2",
         "incoherence": true
       },
-      "snapshot": "2026-11-05",
+      "snapshot": "2026-10-30",
       "revision": "bbc4bf7ef4a0148359f6e3ef38734edb08ac2f06",
       "fichiers": [
         {
