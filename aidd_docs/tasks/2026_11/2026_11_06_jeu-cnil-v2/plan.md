@@ -36,5 +36,6 @@ Source: `aidd_docs/tasks/2026_11/2026_11_05_corpus-cnil/eval-cnil.md` (limite «
 | ---- | -------------- |
 | Chaque question est vérifiée contre le texte du document cible. | Une question mal ciblée mesure le jeu, pas la recherche. |
 | Le test ne se mesure qu'une fois, après vérification factuelle de chaque prémisse. | Un jeu de test retouché après mesure ne mesure plus rien ; une prémisse fausse mesure le jeu, pas la recherche. |
+| Un split de test invalidé par une prémisse fausse est remplacé, pas remesuré ; l'ancien est archivé. | Remesurer les mêmes questions après avoir vu leur score serait un ajustement ; un split neuf sur des documents disjoints reste une mesure tenue à l'écart du produit, et le rapport dit qu'il n'est pas préenregistré. |
 | Aucun seuil n'est réglé sur ce jeu. | Le but est le rappel documentaire, pas d'inventer une bande CNIL. |
 | Aucun rapport existant n'est réécrit. | Les scores de corpus et de jeux différents ne se comparent pas. |

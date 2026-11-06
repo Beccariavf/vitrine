@@ -1,51 +1,51 @@
 question,type,sources_attendues,piege,split,corpus
 Quelle sanction la CNIL a-t-elle prononcée contre les sociétés FNAC Direct et FNAC Darty Participations et Services pour les traceurs de leur application mobile ?,reference,CNILTEXT000055022778,non,dev,cnil
-Quelle amende a été prononcée contre un hôpital privé de la Loire dont l’éditeur du dossier patient pouvait accéder en permanence aux données ?,reference,CNILTEXT000054790100,non,test,cnil
 Quelle sanction a visé une société de conseil informatique qui ne répondait pas aux demandes d’effacement de ses candidats ?,reference,CNILTEXT000054810440,non,dev,cnil
-Quelle amende la CNIL a-t-elle prononcée contre une société qui constituait des entrepôts de données de santé à partir de dossiers médicaux ?,reference,CNILTEXT000054136834,non,test,cnil
 Quelle sanction a été prononcée contre France Travail après une violation de données liée à la faiblesse des mots de passe ?,reference,CNILTEXT000053408671,non,dev,cnil
-Quelle amende a visé un opérateur mobile qui conservait les données de clients résiliés depuis plus de dix ans ?,reference,CNILTEXT000053352594,non,test,cnil
 Quelle amende de 15 millions d’euros a été prononcée contre la société Free pour des manquements à la sécurité et à la notification d’une violation de données ?,reference,CNILTEXT000053352643,non,dev,cnil
-Quelle sanction a été prononcée contre une enseigne de magasins qui transmettait des données à un groupe étranger sans base légale ?,reference,CNILTEXT000053391342,non,test,cnil
 Quelle amende a visé un prestataire informatique de maisons départementales des personnes handicapées après une violation de données ?,reference,CNILTEXT000053151799,non,dev,cnil
-Quelle sanction a été prononcée contre un sous-traitant marketing dont la plateforme était à l’origine d’une violation touchant les utilisateurs de Deezer ?,reference,CNILTEXT000053048614,non,test,cnil
 Quelle amende la CNIL a-t-elle prononcée contre American Express Carte France pour l’enregistrement des appels des personnes mises en attente ?,reference,CNILTEXT000052981827,non,dev,cnil
-Quelle sanction a visé l’éditeur de Vanity Fair pour le dépôt de cookies avant le consentement des lecteurs ?,reference,CNILTEXT000052851847,non,test,cnil
 Quelle amende a été prononcée après la découverte de caméras cachées dans des détecteurs de fumée dans les réserves d’un grand magasin ?,reference,CNILTEXT000052266505,non,dev,cnil
-Quelle sanction la CNIL a-t-elle prononcée contre Google pour les courriels publicitaires insérés dans l’onglet Promotions de Gmail ?,reference,CNILTEXT000052182222,non,test,cnil
 Quelle amende a été prononcée contre l’exploitant du site shein.com pour ses cookies ?,reference,CNILTEXT000052182271,non,dev,cnil
-Quelle sanction a visé une société qui adressait des courriels et des SMS de prospection pour le compte d’environ 300 clients ?,reference,CNILTEXT000051630617,non,test,cnil
 Quelle amende a été prononcée contre un courtier en données qui revendait des prospects issus de jeux-concours ?,reference,CNILTEXT000051660380,non,dev,cnil
-Quelle sanction a visé une agence immobilière qui surveillait l’activité de ses salariés avec un logiciel de télétravail ?,reference,CNILTEXT000051120331,non,test,cnil
 Quelle amende a été prononcée contre une extension de navigateur qui collectait les coordonnées de profils LinkedIn ?,reference,CNILTEXT000050791828,non,dev,cnil
-Quelle sanction a été prononcée contre Orange pour avoir déposé des traceurs dans le service Mail Orange ?,reference,CNILTEXT000050760620,non,test,cnil
 Quelle amende a visé un éditeur de logiciels destinés aux médecins de ville pour des manquements dans le traitement des données de santé ?,reference,CNILTEXT000050202759,non,dev,cnil
-Quelle sanction a été prononcée contre une chaîne de boutiques de matériel de télécommunication qui achetait des fichiers de prospects et les appelait ?,reference,CNILTEXT000049382214,non,test,cnil
 Quelle amende a visé un site d’annonces immobilières pour sa politique de conservation des données et l’information des utilisateurs ?,reference,CNILTEXT000049128617,non,dev,cnil
-Quelle sanction a visé un émetteur de coupons de paiement en ligne pour la conservation des données et l’information des utilisateurs ?,reference,CNILTEXT000048907667,non,test,cnil
 Quelle amende de dix millions d’euros a été prononcée contre un groupe américain pour les cookies de son service de messagerie ?,reference,CNILTEXT000048967251,non,dev,cnil
-Quelle sanction a visé un éditeur de newsletters qui transmettait les données de ses prospects à des partenaires sans consentement valable ?,reference,CNILTEXT000049051422,non,test,cnil
 Quelle amende a été prononcée contre un groupe de distribution pour le suivi en temps réel de l’activité des salariés de ses entrepôts ?,reference,CNILTEXT000048989272,non,dev,cnil
-Quelle sanction a été prononcée contre une commune qui n’avait pas désigné de délégué à la protection des données ?,reference,CNILTEXT000048580096,non,test,cnil
 Quelle amende a visé une société visitée par 31 plaintes portant sur la prospection téléphonique et la transmission de données bancaires ?,reference,CNILTEXT000048222771,non,dev,cnil
-Quelle sanction a été prononcée contre une société de reciblage publicitaire qui suivait les habitudes de navigation des internautes ?,reference,CNILTEXT000047707063,non,test,cnil
 Quelle amende a visé un site de voyance par téléphone après une violation de données révélée par la presse ?,reference,CNILTEXT000047682157,non,dev,cnil
-Quelle amende a été prononcée contre un éditeur de jeux mobiles pour l’usage de l’identifiant publicitaire IDFV sans consentement ?,reference,CNILTEXT000046988935,non,test,cnil
 Quelle sanction a été prononcée contre une société dont les cookies servaient à lutter contre la fraude publicitaire sans consentement ?,reference,CNILTEXT000046768989,non,dev,cnil
-Quelle amende a visé un courtier en données qui ne répondait pas aux demandes d’accès et d’effacement de personnes concernées ?,reference,CNILTEXT000046693390,non,test,cnil
 Quelle sanction a été prononcée contre un fournisseur d’électricité pour prospection électronique et droits des personnes ?,reference,CNILTEXT000046650733,non,dev,cnil
-Quelle amende a visé un logiciel de messagerie vocale et de salons en ligne pour la conservation des données et la sécurité ?,reference,CNILTEXT000046562676,non,test,cnil
 Quelle sanction a été prononcée contre un logiciel de reconnaissance faciale qui aspirait des photos publiques sur Internet ?,reference,CNILTEXT000046444859,non,dev,cnil
-Quelle sanction a été prononcée contre les sociétés exploitant un moteur de recherche et une régie publicitaire pour un refus des cookies aussi simple que l’acceptation ?,reference,CNILTEXT000044840062,non,test,cnil
 Quelle amende a visé un réseau social pour avoir rendu le refus des traceurs plus difficile que leur acceptation ?,reference,CNILTEXT000044840532,non,dev,cnil
-Quelle sanction a été prononcée contre un site d’actualités qui déposait des cookies avant toute action du lecteur ?,reference,CNILTEXT000043867129,non,test,cnil
 Quelle amende a visé une mutuelle d’assurance pour la conservation des données et l’information des assurés ?,reference,CNILTEXT000043829617,non,dev,cnil
-Quelle amende a visé un grand groupe de distribution pour la prospection commerciale malgré opposition et la conservation des données ?,reference,CNILTEXT000042563756,non,test,cnil
 Quelle sanction a été prononcée contre un site de vente en ligne pour avoir déposé des cookies sans consentement ?,reference,CNILTEXT000042635729,non,dev,cnil
-Quelle décision a enjoint un vendeur de chaussures à distance de cesser d’enregistrer les appels non ponctuels de ses conseillers ?,reference,CNILTEXT000042203965,non,test,cnil
 Quelle sanction a été prononcée contre un promoteur immobilier dont un simple changement de numéro dans l’URL donnait accès aux pièces justificatives d’autres candidats ?,reference,CNILTEXT000038552658,non,dev,cnil
-Quelle sanction a visé un centre d’appels qui utilisait un pointage biométrique et enregistrait les appels sans informer ses salariés ?,reference,CNILTEXT000037413673,non,test,cnil
 Quelle amende a visé un opérateur télécom après qu’un défaut de sécurité a permis d’accéder aux factures de ses clients ?,reference,CNILTEXT000037856073,non,dev,cnil
-Quelle sanction a été prononcée contre un réseau social pour la combinaison des données des inscrits à des fins publicitaires sans base légale ?,reference,CNILTEXT000034728338,non,test,cnil
 Quelle sanction symbolique a été prononcée contre une association d’urbanistes qui diffusait des données personnelles sur son site ?,reference,CNILTEXT000028711033,non,dev,cnil
-Quelle sanction a été prononcée contre un syndicat de copropriétaires dont une caméra filmait le poste de sécurité ?,reference,CNILTEXT000026971936,non,test,cnil
+Quelle amende de 310 000 euros a été prononcée contre une société qui commercialisait des programmes de fidélité et prospectait par téléphone à partir de fichiers achetés ?,reference,CNILTEXT000049231950,non,test,cnil
+Quelle amende a visé un réseau de bus après une plainte syndicale sur un fichier d’évaluation des agents et une violation de données ?,reference,CNILTEXT000044286815,non,test,cnil
+Quelle sanction a été prononcée contre un annuaire professionnel qui refusait de rectifier les données d’un dirigeant issues de la base SIRENE ?,reference,CNILTEXT000044043045,non,test,cnil
+Quelle amende a visé un service de livraison de repas qui prospectait des personnes non clientes sans consentement ?,reference,CNILTEXT000042848036,non,test,cnil
+Quelle amende a visé un assureur automobile dont les données clients étaient accessibles sans authentification depuis un moteur de recherche ?,reference,CNILTEXT000038810992,non,test,cnil
+Quelle décision a enjoint une société de traduction de sécuriser une boîte de messagerie générique en individualisant les comptes et en journalisant les accès ?,reference,CNILTEXT000038629823,non,test,cnil
+Quelle sanction a visé une plateforme de VTC après l’accès aux données de 57 millions d’utilisateurs ?,reference,CNILTEXT000037830841,non,test,cnil
+Quelle amende a visé une association de cours de français dont un défaut d’URL permettait de télécharger les factures d’autres élèves ?,reference,CNILTEXT000037435170,non,test,cnil
+Quelle sanction a visé une plateforme d’hébergement de vidéos après la fuite de plus de 82 millions d’adresses et de 18 millions de mots de passe ?,reference,CNILTEXT000037273346,non,test,cnil
+Quelle amende a visé une association dont les avis d’imposition de bénéficiaires étaient accessibles depuis Google ?,reference,CNILTEXT000037110598,non,test,cnil
+Quelle sanction a visé un opticien dont le site internet présentait un défaut de sécurisation ?,reference,CNILTEXT000037013610,non,test,cnil
+Quelle amende a visé un détaillant d’électroménager après une violation de données accessible depuis une URL ?,reference,CNILTEXT000036403140,non,test,cnil
+Quelle sanction a visé un éditeur de sites de démarches administratives dont les formulaires étaient accessibles sans authentification ?,reference,CNILTEXT000036066916,non,test,cnil
+Quelle amende a visé un loueur de véhicules après une violation de données touchant plus de 40 000 clients ?,reference,CNILTEXT000035276047,non,test,cnil
+Quelle sanction a visé une entreprise d’étanchéité qui avait installé une caméra au-dessus du poste d’une salariée à son insu ?,reference,CNILTEXT000035175069,non,test,cnil
+Quelle amende a visé un cabinet dentaire qui ne répondait pas à la demande d’accès d’un ancien patient à son dossier médical ?,reference,CNILTEXT000034899556,non,test,cnil
+Quelle sanction a visé une société de transport qui conservait les coordonnées bancaires de ses clients après le paiement ?,reference,CNILTEXT000034473080,non,test,cnil
+Quelle décision a prononcé un avertissement après une fuite de données d’adhésions exposant les coordonnées et les moyens de paiement des personnes ?,reference,CNILTEXT000033373161,non,test,cnil
+Quelle sanction a visé une société qui n’avait pas respecté le droit d’opposition et n’avait pas répondu aux demandes de la CNIL ?,reference,CNILTEXT000030033727,non,test,cnil
+Quelle amende a visé une société qui ne garantissait pas le droit d’accès et ne coopérait pas avec la CNIL ?,reference,CNILTEXT000026153467,non,test,cnil
+Quelle amende de 10 000 euros a visé un site de rencontres pour avoir traité des données sensibles sans consentement ?,reference,CNILTEXT000033738124,non,test,cnil
+Quelle amende a visé un distributeur de produits optiques dont le site comptait 170 000 comptes utilisateurs ?,reference,CNILTEXT000031487367,non,test,cnil
+Quelle amende de 150 000 euros a visé une société pour le stockage d’informations dans les terminaux des utilisateurs sans consentement ?,reference,CNILTEXT000028450267,non,test,cnil
+Quelle amende a visé un site de vente en ligne de vêtements pour avoir transféré des données hors de l’Union européenne sans autorisation de la CNIL ?,reference,CNILTEXT000032909770,non,test,cnil
+Quelle décision a prononcé un avertissement après un accès litigieux au système de messagerie d’un groupe de presse ?,reference,CNILTEXT000026105420,non,test,cnil

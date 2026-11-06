@@ -14,4 +14,4 @@
 - `lireJeu` lit le fichier et `corpusDuJeu` rend `cnil`.
 - `validerReferences` passe sur les 50 documents.
 - Le test « ne nomme ni l'identifiant ni le numéro » est le garde contre une question de consultation déguisée.
-- Chaque prémisse a été relue contre le texte de sa cible. Trois questions ont été corrigées (deux dans `test`, une dans `dev`) avant la mesure retenue : « annuaire » pour `CNILTEXT000051630617`, « chaussures » pour `CNILTEXT000049382214`, « secret » pour `CNILTEXT000050202759`. Aucune cible n'a changé.
+- Chaque prémisse a été relue contre le texte de sa cible. Trois questions du premier jeu ont été corrigées (deux dans `test`, une dans `dev`) : « annuaire » pour `CNILTEXT000051630617`, « chaussures » pour `CNILTEXT000049382214`, « secret » pour `CNILTEXT000050202759`. La vérification d'après mesure a ensuite trouvé une quatrième cible erronée (`CNILTEXT000046693390`, un opérateur de télécommunication et non un courtier) et une paraphrase du jeu de 20. Le split `test` entier a été remplacé par 25 questions neuves sur 25 documents distincts du `dev` ; l'ancien split est archivé dans `b442d14`.

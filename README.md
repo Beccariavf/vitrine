@@ -79,11 +79,12 @@ ceux du produit, il n'y a pas de calibration propre.
 Le jeu CNIL v2 remplace cette mesure pour les questions documentaires : 50 questions qui visent
 chacune une décision, sans jamais citer l'identifiant, le numéro `SAN-…` ni un numéro d'article,
 réparties 25 `dev` et 25 `test`. Sur le `test`, mesuré une seule fois avec les seuils du produit
-(`0,69 / 0,74 / 0,01`), le document attendu figure dans les cinq passages pour 15 questions sur 25
-(60,0 %, IC 95 % 40,7–76,6) et au rang 1 pour 9 sur 25 (36,0 %) ; le `MRR` est de 0,449 et le `dev`
-donne 14/25. Le 75 % du jeu de 20 sur douze questions ne se reproduit donc pas sur vingt-cinq : les
-deux intervalles se recouvrent et le 75 % était une estimation fragile. Les échecs sont des
-confusions entre décisions aux faits presque identiques, pas des documents inexistants. Rapport :
+(`0,69 / 0,74 / 0,01`), le document attendu figure dans les cinq passages pour 16 questions sur 25
+(64,0 %, IC 95 % 44,5–79,8) et au rang 1 pour 12 sur 25 (48,0 %) ; le `MRR` est de 0,560 et le `dev`
+donne 14/25. Le 75 % du jeu de 20 sur douze questions n'est donc ni reproduit ni contredit : les
+deux intervalles se recouvrent. Les échecs sont des confusions entre décisions aux faits presque
+identiques, pas des documents inexistants. Un premier split `test`, mesuré puis remplacé après
+vérification de quatre prémisses, est archivé dans `b442d14` et n'est pas repris. Rapport :
 `aidd_docs/tasks/2026_11/2026_11_06_jeu-cnil-v2/eval-cnil-v2.md`.
 
 L'évaluation v2 porte sur 60 questions écrites contre le texte du RGPD : 12 références exactes,
