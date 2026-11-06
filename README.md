@@ -83,8 +83,8 @@ réparties 25 `dev` et 25 `test`. Sur le `test`, mesuré une seule fois avec les
 (64,0 %, IC 95 % 44,5–79,8) et au rang 1 pour 12 sur 25 (48,0 %) ; le `MRR` est de 0,560 et le `dev`
 donne 14/25. Le 75 % du jeu de 20 sur douze questions n'est donc ni reproduit ni contredit : les
 deux intervalles se recouvrent. Les échecs sont des confusions entre décisions aux faits presque
-identiques, pas des documents inexistants. Un premier split `test`, mesuré puis remplacé après
-vérification de quatre prémisses, est archivé dans `b442d14` et n'est pas repris. Rapport :
+identiques, pas des documents inexistants. Deux splits `test` ont été mesurés puis remplacés ; le
+second est archivé dans `b442d14` et aucun n'est repris. Rapport :
 `aidd_docs/tasks/2026_11/2026_11_06_jeu-cnil-v2/eval-cnil-v2.md`.
 
 L'évaluation v2 porte sur 60 questions écrites contre le texte du RGPD : 12 références exactes,
