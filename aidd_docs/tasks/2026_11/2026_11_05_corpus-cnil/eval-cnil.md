@@ -31,7 +31,7 @@ Par type de question, ce qui est le vrai enseignement :
 ## Ce qui échoue
 
 - **Les trois documents manqués** : l'amende de 800 000 € contre un site d'annonces immobilières (`CNILTEXT000050202759`), les 10 M€ contre un groupe américain pour ses cookies (`CNILTEXT000048967251`), les 50 M€ contre Google le 21 janvier 2019 (`CNILTEXT000038032552`). Trois sanctions très médiatisées, noyées parmi 249 décisions aux faits proches ; la première place revient souvent à une autre sanction du même secteur.
-- **Un piège est cité** : « La CNIL a-t-elle sanctionné une commune pour des caméras de vidéosurveillance installées dans une crèche municipale ? ». Vérification faite, aucun fragment du corpus ne mentionne une crèche ni cette configuration : le système rend un passage pour une décision qui n'existe pas. Le niveau est `incertain`, jamais `confiant`, mais la citation est fausse.
+- **Un piège est cité** : « La CNIL a-t-elle sanctionné une commune pour des caméras de vidéosurveillance installées dans une crèche municipale ? ». Vérification faite, aucun fragment du corpus ne mentionne une crèche ni cette configuration : le système rend un passage d'une autre décision, pour une décision qui n'existe pas. Le niveau est `incertain`, jamais `confiant`, mais la citation est fausse.
 - **Le piège déterministe est refusé** : « article 84 du RGPD » ne renvoie aucun fragment du corpus CNIL, qui ne contient pas d'articles.
 
 ## Limites
@@ -41,7 +41,7 @@ Par type de question, ce qui est le vrai enseignement :
 - **Les seuils sont ceux du produit**, calibrés sur le RGPD. Aucune calibration CNIL n'a été faite : elle demanderait un split et un jeu plus grand.
 - **Double découpage.** L'historique garde le `chunk_index` DINUM, publié ; d'éventuels incréments DILA recevraient un découpage local de 600 à 1 200 caractères, étiqueté `dila`. Aucun fragment `dila` n'est présent aujourd'hui.
 - **URL non vérifiée.** `https://www.legifrance.gouv.fr/cnil/id/<id>` répond 403 aux robots ; elle est déclarée dans le manifeste avec `url_texte_verifiee: false`.
-- **Une correction assumée.** Le premier passage mesurait les six questions conceptuelles sur un fragment précis (`CNILTEXT…#f35`). Ce critère était incohérent avec les douze autres questions et avec la citation retenue ; il a été ramené au document, puis la mesure a été rejouée. Les deux passages donnent 10/18 au top 5 ; seul le `MRR` bouge (0,458 → 0,472). La correction n'inverse aucun résultat.
+- **Une correction assumée.** Le premier passage mesurait les six questions conceptuelles sur un fragment précis (`CNILTEXT…#f35`). Ce critère était incohérent avec les douze autres questions et avec la citation retenue ; il a été ramené au document, puis la mesure a été rejouée. Le premier passage n'a pas été archivé : seul le second est reproductible. Il donnait 10/18 au top 5 et un `MRR` de 0,458, contre 0,472 après correction ; aucun résultat n'est inversé par le changement.
 
 ## Provenance
 

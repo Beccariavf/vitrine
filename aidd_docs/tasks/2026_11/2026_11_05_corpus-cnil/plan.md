@@ -40,7 +40,7 @@ Source: aidd_docs/tasks/2026_11/2026_11_05_corpus-cnil/brainstorm.md
 
 | Rule   | Why it applies |
 | ------ | -------------- |
-| Le jeu de tests par défaut ne touche pas le réseau. | Les fixtures XML et les lignes parquet injectées restent locales ; `MCP_TEST_CNIL=1` reste opt-in. |
+| Le jeu de tests par défaut ne touche pas le réseau. | Les fixtures XML et les lignes parquet injectées restent locales. |
 | `data/` n'est jamais édité à la main. | `cnil:sync` et `corpus:index` produisent les fichiers. |
 | Le parquet DINUM n'est pas commité. | 334 Mo ; le manifeste porte l'URL, la date et l'empreinte. |
 | Aucun vecteur d'un autre modèle n'entre dans l'index. | `bge-m3` et `qwen3` sont deux espaces ; on ré-embarque le texte. |

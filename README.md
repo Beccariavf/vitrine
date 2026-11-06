@@ -75,8 +75,8 @@ sans jamais être marqué `confiant`. Vingt questions ne classent pas le corpus 
 ceux du produit, il n'y a pas de calibration propre.
 
 L'évaluation v2 porte sur 60 questions écrites contre le texte du RGPD : 12 références exactes,
-38 conceptuelles et 10 pièges, réparties en 30 `dev` et 30 `test`. Chaque mesure est filtrée sur le
-document de ses références, pour que le second corpus ne change pas la tâche. Les 30 questions
+38 conceptuelles et 10 pièges, réparties en 30 `dev` et 30 `test`. Chaque mesure est filtrée par
+corpus, pour qu'un jeu ne mélange jamais deux collections. Les 30 questions
 `test` ne règlent rien et ne se mesurent qu'une fois : `--mesurer-test` est obligatoire et un
 marqueur commité refuse la seconde exécution. Ce marqueur est une trace de consommation, pas une preuve
 d'exécution : le supprimer ou copier le CSV sous un autre nom contourne le garde, qui n'arrête

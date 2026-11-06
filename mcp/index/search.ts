@@ -164,16 +164,23 @@ export function searchIndex(index: Index, vecteur: number[], options: SearchOpti
   if (k === 0) return [];
 
   const candidats = Math.max(k * 10, 50);
+  // Le filtre `corpus` descend dans la requête `vec0` : sans cela, un corpus
+  // majoritaire (la CNIL) remplirait la fenêtre et affamerait les autres.
+  const filtreCorpus = options.corpus === undefined ? "" : " AND v.corpus = ?";
+  const parametres: (string | number)[] =
+    options.corpus === undefined
+      ? [JSON.stringify(vecteur), candidats]
+      : [JSON.stringify(vecteur), candidats, options.corpus];
   const lignes = index.db
     .prepare(
       `SELECT u.ref, u.document, u.corpus, u.niveau, u.numero, u.texte, u.chemin, u.url,
               u.date_acte, u.date_debut, u.date_fin, u.statut, v.distance
          FROM vec_unites v
          JOIN unites u ON u.rowid = v.rowid
-        WHERE v.embedding MATCH ? AND k = ?
+        WHERE v.embedding MATCH ? AND k = ?${filtreCorpus}
         ORDER BY v.distance`,
     )
-    .all(JSON.stringify(vecteur), candidats) as Ligne[];
+    .all(...parametres) as Ligne[];
 
   const resultats = lignes.map(ligneVersResultat).filter((resultat) => retenu(resultat, options));
   return rangerPassages(resultats, k);
@@ -211,16 +218,21 @@ function candidatsDenses(
   limite: number,
   options: SearchOptions,
 ): CandidatDense[] {
+  const filtreCorpus = options.corpus === undefined ? "" : " AND v.corpus = ?";
+  const parametres: (string | number)[] =
+    options.corpus === undefined
+      ? [JSON.stringify(vecteur), limite]
+      : [JSON.stringify(vecteur), limite, options.corpus];
   const lignes = index.db
     .prepare(
       `SELECT v.rowid AS rowid, u.ref, u.document, u.corpus, u.niveau, u.numero, u.texte, u.chemin, u.url,
               u.date_acte, u.date_debut, u.date_fin, u.statut, v.distance
          FROM vec_unites v
          JOIN unites u ON u.rowid = v.rowid
-        WHERE v.embedding MATCH ? AND k = ?
+        WHERE v.embedding MATCH ? AND k = ?${filtreCorpus}
         ORDER BY v.distance`,
     )
-    .all(JSON.stringify(vecteur), limite) as Ligne[];
+    .all(...parametres) as Ligne[];
   return lignes
     .map((ligne) => ({
       rowid: Number(ligne.rowid),

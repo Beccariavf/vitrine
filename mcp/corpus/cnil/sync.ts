@@ -281,14 +281,23 @@ export async function syncHistorique(options: SyncOptions = {}): Promise<Resulta
 
   const cheminUnites = join(rootDir, DOSSIER_CORPUS, "unites.jsonl");
   const existantes = lireCorpus(cheminUnites).filter((unite) => unite.origine === "dila");
-  const unites = [...historiques, ...existantes];
+  // Un incrément remplace le document qu'il porte : garder aussi la version
+  // DINUM créerait deux unités de même référence.
+  const documentsDila = new Set(existantes.map((unite) => unite.document));
+  const unites = [
+    ...historiques.filter((unite) => !documentsDila.has(unite.document)),
+    ...existantes,
+  ];
 
   const attendus =
     options.attendus ??
     (nature === descripteur.nature
       ? { documents: descripteur.documents_attendus, fragments: descripteur.fragments_attendus }
       : undefined);
-  const comptes = validerUnites(unites, attendus);
+  // Les comptes du snapshot portent sur l'historique seul : y ajouter un
+  // incrément DILA ne doit pas rendre la synchronisation invalide.
+  validerUnites(historiques, attendus);
+  const comptes = validerUnites(unites);
   const manifeste = manifesteCnil(descripteur, unites, fichiers, lireEtat(cheminEtat));
 
   let ecrit = false;

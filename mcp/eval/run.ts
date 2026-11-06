@@ -137,25 +137,6 @@ function documentDe(ref: string): string {
   return document;
 }
 
-/**
- * Un jeu ne couvre qu'un document : un rapport ne mélange jamais deux corpus.
- * Les pièges sans référence héritent du document des autres lignes. Le préfixe
- * des `sources_attendues` est la seule source du document.
- */
-export function documentDuJeu(questions: Question[]): string {
-  const documents = new Set<string>();
-  for (const question of questions) {
-    for (const ref of question.attendues) documents.add(documentDe(ref));
-  }
-  if (documents.size === 0) {
-    throw new Error("Aucune référence attendue : impossible de déduire le document du jeu");
-  }
-  if (documents.size > 1) {
-    throw new Error(`Questions de plusieurs documents : ${[...documents].sort().join(", ")}`);
-  }
-  return [...documents][0] ?? "";
-}
-
 /** Garde les questions d'un split ; `all` les garde toutes. */
 export function filtrerSplit(questions: Question[], split: FiltreSplit): Question[] {
   return split === "all" ? questions : questions.filter((question) => question.split === split);

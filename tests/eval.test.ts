@@ -10,7 +10,6 @@ import {
   calibrer,
   cheminMarqueur,
   corpusDuJeu,
-  documentDuJeu,
   ecrireMesureTest,
   entreeQuestionJson,
   filtrerSplit,
@@ -479,10 +478,6 @@ describe("questions-v3.csv", () => {
     validerReferences(questions, refs);
   });
 
-  it("ne mélange pas deux documents", () => {
-    assert.equal(documentDuJeu(questions), "32016R0679");
-  });
-
   it("ne donne aucune source attendue à un piège", () => {
     for (const piege of questions.filter((question) => question.piege)) {
       assert.deepEqual(piege.attendues, [], piege.question);
@@ -601,41 +596,7 @@ describe("le corpus du jeu", () => {
   });
 });
 
-describe("le document du jeu", () => {
-  it("déduit le document du préfixe des références attendues", () => {
-    const questions = lireQuestions(QUESTIONS_V2);
-    assert.equal(documentDuJeu(questions), "32016R0679");
-  });
-
-  it("refuse un jeu qui mélange deux documents", () => {
-    const questions: Question[] = [
-      {
-        question: "une question RGPD",
-        type: "conceptuelle",
-        attendues: ["32016R0679#art_17"],
-        piege: false,
-        split: "dev",
-      },
-      {
-        question: "une question AI Act",
-        type: "conceptuelle",
-        attendues: ["32024R1689#art_6"],
-        piege: false,
-        split: "dev",
-      },
-    ];
-
-    assert.throws(() => documentDuJeu(questions), /plusieurs documents.*32016R0679.*32024R1689/);
-  });
-
-  it("refuse un jeu sans référence qui ne dit pas son document", () => {
-    const questions: Question[] = [
-      { question: "piège seul", type: "piege", attendues: [], piege: true, split: "dev" },
-    ];
-
-    assert.throws(() => documentDuJeu(questions), /impossible de déduire le document/);
-  });
-
+describe("la lecture d'un jeu", () => {
   it("lit un jeu à quatre colonnes comme un jeu sans split", () => {
     const jeu = lireJeu("question,type,sources_attendues,piege\nune question,conceptuelle,32024R1689#art_1,non\n");
 
@@ -957,10 +918,6 @@ describe("questions-aiact.csv", () => {
     assert.ok(questions.flatMap((question) => question.attendues).every((ref) => ref.startsWith("32024R1689#")));
   });
 
-  it("chercherait chaque question dans le document 32024R1689", () => {
-    assert.equal(documentDuJeu(questions), "32024R1689");
-  });
-
   it("refuse une question RGPD glissée dans le jeu AI Act", () => {
     const melange: Question[] = [
       ...questions,
@@ -973,7 +930,7 @@ describe("questions-aiact.csv", () => {
       },
     ];
 
-    assert.throws(() => documentDuJeu(melange), /plusieurs documents/);
+    assert.throws(() => corpusDuJeu(melange), /plusieurs corpus|vise plusieurs corpus/);
   });
 
   it("ne laisse aucune référence RGPD dans le rapport AI Act", () => {

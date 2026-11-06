@@ -325,8 +325,9 @@ describe("buildIndex", () => {
       const db = new DatabaseSync(chemin, { allowExtension: true });
       try {
         sqliteVec.load(db);
-        db.prepare("INSERT INTO vec_unites (rowid, embedding) VALUES (?, ?)").run(
+        db.prepare("INSERT INTO vec_unites (rowid, corpus, embedding) VALUES (?, ?, ?)").run(
           BigInt(1000),
+          "rgpd",
           JSON.stringify([1, 0, 0, 0, 0, 0, 0, 0]),
         );
         const nombre = db.prepare("SELECT count(*) AS n FROM vec_unites").get() as { n: number };
@@ -390,6 +391,30 @@ describe("buildIndex", () => {
       rmSync(root, { recursive: true, force: true });
     }
   });
+  it("n'affame pas un corpus minoritaire quand un autre le domine", async () => {
+    const root = tempRoot();
+    try {
+      ecrireCorpus(root, "rgpd", [unite(1, "sujet sans rapport", DOCUMENT)]);
+      const bruit = Array.from({ length: 100 }, (_, index) =>
+        unite(index + 1, "question identique", AUTRE),
+      );
+      ecrireCorpus(root, "dsa", bruit);
+
+      const { chemin } = await buildIndex(root, embedderFactice());
+      const index = openIndex(chemin);
+      try {
+        const vecteur = await embedderFactice().embedQuery("question identique");
+        const rgpd = searchIndex(index, vecteur, { k: 1, corpus: "rgpd" });
+        assert.equal(rgpd.length, 1, "la fenêtre vectorielle doit être filtrée par corpus");
+        assert.equal(rgpd[0]?.ref, `${DOCUMENT}#art_1`);
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("filtre par corpus et laisse tous les corpus répondre sans filtre", async () => {
     const root = tempRoot();
     try {

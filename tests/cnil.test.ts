@@ -699,6 +699,26 @@ describe("la synchronisation DILA", () => {
     });
   }
 
+  it("garde un incrément quand l'historique est rejoué", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-cnil-"));
+    try {
+      await syncHistorique({ rootDir: root, lignes: LIGNES, attendus: ATTENDUS });
+      await syncIncrements({ rootDir: root, lister: async () => [NOM], lireArchive: archiveLue });
+
+      const rejoue = await syncHistorique({ rootDir: root, lignes: LIGNES, attendus: ATTENDUS });
+      const unites = readFileSync(join(root, "data", "corpus", "cnil", "unites.jsonl"), "utf8")
+        .trimEnd()
+        .split("\n")
+        .map((ligne) => JSON.parse(ligne) as { ref: string; origine?: string });
+
+      assert.equal(rejoue.unites, 2);
+      assert.ok(unites.every((unite) => unite.origine === "dila"));
+      assert.equal(new Set(unites.map((unite) => unite.ref)).size, unites.length);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("remplace le document, écrit l'état, puis ne réécrit rien", async () => {
     const root = mkdtempSync(join(tmpdir(), "vitrine-cnil-"));
     try {
