@@ -32,6 +32,8 @@ npm run mcp:eval -- --questions questions-v2.csv --split dev    # 30 questions d
 npm run mcp:eval -- --questions questions-v2.csv --split test --mesurer-test   # 30 questions tenues à l'écart, une seule fois (hors CI)
 npm run mcp:eval -- --questions questions-v3.csv --split dev --json            # 40 questions de développement v3, sortie machine (hors CI)
 npm run mcp:eval -- --questions questions-cnil.csv                             # 20 questions CNIL (hors CI)
+npm run mcp:eval -- --questions questions-cnil-v2.csv --split dev --seuils 0.690,0.740,0.010   # 25 questions CNIL documentaires (hors CI)
+npm run mcp:eval -- --questions questions-cnil-v2.csv --split test --mesurer-test --seuils 0.690,0.740,0.010   # 25 questions tenues à l'écart, une seule fois
 ```
 
 Le MCP lit le RGPD, l'AI Act et les sanctions de la CNIL par passage exact et par recherche
@@ -73,6 +75,16 @@ attendue est rendue dans les cinq passages pour 10 des 18 questions sémantiques
 conceptuelles. Un piège sur deux est cité — une sanction de crèche qui n'existe pas dans le corpus —
 sans jamais être marqué `confiant`. Vingt questions ne classent pas le corpus : les seuils restent
 ceux du produit, il n'y a pas de calibration propre.
+
+Le jeu CNIL v2 remplace cette mesure pour les questions documentaires : 50 questions qui visent
+chacune une décision, sans jamais citer l'identifiant, le numéro `SAN-…` ni un numéro d'article,
+réparties 25 `dev` et 25 `test`. Sur le `test`, mesuré une seule fois avec les seuils du produit
+(`0,69 / 0,74 / 0,01`), le document attendu figure dans les cinq passages pour 15 questions sur 25
+(60,0 %, IC 95 % 40,7–76,6) et au rang 1 pour 9 sur 25 (36,0 %) ; le `MRR` est de 0,449 et le `dev`
+donne 14/25. Le 75 % du jeu de 20 sur douze questions ne se reproduit donc pas sur vingt-cinq : les
+deux intervalles se recouvrent et le 75 % était une estimation fragile. Les échecs sont des
+confusions entre décisions aux faits presque identiques, pas des documents inexistants. Rapport :
+`aidd_docs/tasks/2026_11/2026_11_06_jeu-cnil-v2/eval-cnil-v2.md`.
 
 L'évaluation v2 porte sur 60 questions écrites contre le texte du RGPD : 12 références exactes,
 38 conceptuelles et 10 pièges, réparties en 30 `dev` et 30 `test`. Chaque mesure est filtrée par

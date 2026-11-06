@@ -998,3 +998,75 @@ describe("questions-cnil.csv", () => {
     );
   });
 });
+
+describe("questions-cnil-v2.csv", () => {
+  const CSV = readFileSync(new URL("../mcp/eval/questions-cnil-v2.csv", import.meta.url), "utf8");
+  const jeu = lireJeu(CSV);
+  const questions = jeu.questions;
+  const unites = (
+    JSON.parse(
+      `[${readFileSync(
+        new URL("../data/corpus/cnil/unites.jsonl", import.meta.url),
+        "utf8",
+      )
+        .trimEnd()
+        .split("\n")
+        .join(",")}]`,
+    ) as { document: string; numero: string }[]
+  );
+  const documents = new Set(unites.map((unite) => unite.document));
+  const numeros = new Map(unites.map((unite) => [unite.document, unite.numero]));
+  const autres = [
+    QUESTIONS,
+    QUESTIONS_V2,
+    QUESTIONS_V3,
+    QUESTIONS_AIAct,
+    readFileSync(new URL("../mcp/eval/questions-cnil.csv", import.meta.url), "utf8"),
+  ].flatMap((csv) => lireQuestions(csv));
+
+  it("porte cinquante questions documentaires réparties en 25 dev et 25 test", () => {
+    assert.equal(questions.length, 50);
+    assert.equal(questions.filter((question) => question.type === "reference").length, 50);
+    assert.equal(questions.filter((question) => question.split === "dev").length, 25);
+    assert.equal(questions.filter((question) => question.split === "test").length, 25);
+    assert.equal(questions.filter((question) => question.piege).length, 0);
+  });
+
+  it("vise le corpus cnil sur chaque ligne et porte un split", () => {
+    assert.equal(corpusDuJeu(questions), "cnil");
+    assert.ok(questions.every((question) => question.corpus === "cnil"));
+    assert.equal(jeu.avecSplit, true);
+  });
+
+  it("n'attend que des documents présents, un seul par question", () => {
+    validerReferences(questions, new Set(), documents);
+
+    const cibles = questions.flatMap((question) => question.attendues);
+    assert.equal(cibles.length, 50);
+    assert.ok(cibles.every((ref) => !ref.includes("#") && documents.has(ref)));
+    assert.equal(new Set(cibles).size, 50);
+  });
+
+  it("ne nomme ni l'identifiant ni le numéro de la décision visée", () => {
+    for (const question of questions) {
+      const cible = question.attendues[0] ?? "";
+      const numero = (numeros.get(cible) ?? "").replace(/[–—]/g, "-");
+      assert.ok(!question.question.includes(cible), question.question);
+      assert.ok(!question.question.includes(numero), question.question);
+      assert.ok(!question.question.replace(/[–—]/g, "-").includes(numero), question.question);
+    }
+  });
+
+  it("ne contient aucune référence d'article numérotée", () => {
+    for (const question of questions) {
+      assert.equal(referenceExacte(question.question), null, question.question);
+    }
+  });
+
+  it("ne réutilise aucune question des autres jeux", () => {
+    const connues = new Set(autres.map((question) => question.question));
+    for (const question of questions) {
+      assert.ok(!connues.has(question.question), question.question);
+    }
+  });
+});

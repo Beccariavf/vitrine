@@ -1,0 +1,34 @@
+{
+  "note": "Mesures du 2026-11-06, produites par cette exécution ; aucune valeur n'est transcrite d'un autre rapport.",
+  "questions_sha256": "f09bd68a73ff39fb0129437323eb4c7c42df8b22301da1e8745f2da6b51a4281",
+  "mesures": [
+    {
+      "modele": "qwen3-embedding:0.6b",
+      "dimensions": 1024,
+      "date": "2026-11-06",
+      "seuils": {
+        "bas": 0.69,
+        "haut": 0.74,
+        "marge": 0.01
+      },
+      "agregats": {
+        "semantiques": 25,
+        "top5_semantique_succes": 15,
+        "top1_semantique_succes": 9,
+        "mrr_semantique": 0.44933333333333336,
+        "referencees": 25,
+        "top5_global_succes": 15,
+        "top5_rendu_succes": 15,
+        "top1_rendu_succes": 9,
+        "mrr_rendu": 0.44933333333333336,
+        "top5_global_rendu_succes": 15,
+        "pieges_mesures": 0,
+        "pieges_cites": 0,
+        "confiant": 10,
+        "incertain": 15,
+        "aucun_resultat_fiable": 0,
+        "pieges_confiants": 0
+      }
+    }
+  ]
+}
