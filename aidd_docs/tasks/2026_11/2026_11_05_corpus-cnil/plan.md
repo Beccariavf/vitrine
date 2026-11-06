@@ -1,6 +1,6 @@
 ---
 objective: "Le corpus CNIL des sanctions (249 documents, 6 342 fragments) est ingéré par deux voies déclarées, indexé avec le même modèle que les autres corpus, interrogeable par recherche et par identifiant, et mesuré dans un rapport séparé ; les incréments DILA se rejouent sans doubler aucune unité."
-status: pending
+status: implemented
 ---
 
 # Plan: Corpus CNIL hybride

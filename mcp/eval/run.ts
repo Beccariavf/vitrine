@@ -592,7 +592,8 @@ function premiereSimilarite(mesure: Mesure): number {
 
 /** Nom court d'une référence : `art_17` plutôt que `32016R0679#art_17`. */
 function refCourte(ref: string): string {
-  return ref.split("#")[1] ?? ref;
+  const courte = ref.split("#")[1] ?? ref;
+  return /^f\d+$/.test(courte) ? ref : courte;
 }
 
 type PositionAttendue = { question: Question; rang: number; similarite: number | null };

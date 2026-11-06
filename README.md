@@ -67,8 +67,12 @@ manifeste mais n'a pas été vérifiée : elle répond 403 aux robots.
 
 L'évaluation CNIL est séparée : 20 questions dans `mcp/eval/questions-cnil.csv` (12 visant un
 document, 6 conceptuelles, 2 pièges), mesurées avec `corpus: cnil` et rapportées dans
-`aidd_docs/tasks/2026_11/2026_11_05_corpus-cnil/eval-cnil.md`. Vingt questions ne classent pas le
-corpus : les seuils restent ceux du produit, il n'y a pas de calibration propre.
+`aidd_docs/tasks/2026_11/2026_11_05_corpus-cnil/eval-cnil.md`. Résultat mesuré : la délibération
+attendue est rendue dans les cinq passages pour 10 des 18 questions sémantiques (55,6 %, IC 95 %
+33,7–75,4), mais pour 9 des 12 questions qui visent un document précis (75,0 %) et 1 des 6 questions
+conceptuelles. Un piège sur deux est cité — une sanction de crèche qui n'existe pas dans le corpus —
+sans jamais être marqué `confiant`. Vingt questions ne classent pas le corpus : les seuils restent
+ceux du produit, il n'y a pas de calibration propre.
 
 L'évaluation v2 porte sur 60 questions écrites contre le texte du RGPD : 12 références exactes,
 38 conceptuelles et 10 pièges, réparties en 30 `dev` et 30 `test`. Chaque mesure est filtrée sur le

@@ -1016,13 +1016,13 @@ describe("questions-cnil.csv", () => {
     assert.equal(jeu.avecSplit, false);
   });
 
-  it("n'attend que des références présentes, documents entiers compris", () => {
+  it("n'attend que des références présentes, toutes au document", () => {
     validerReferences(questions, refs, documents);
 
     const documentaires = questions
       .flatMap((question) => question.attendues)
       .filter((ref) => !ref.includes("#"));
-    assert.equal(documentaires.length, 12);
+    assert.equal(documentaires.length, 18);
     assert.ok(documentaires.every((ref) => documents.has(ref)));
   });
 
