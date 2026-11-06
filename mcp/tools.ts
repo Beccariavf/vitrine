@@ -208,7 +208,7 @@ export type FragmentDecision = {
   texte: string;
 };
 
-/** Une décision entière rendue par son identifiant ou son numéro. */
+/** Une décision rendue par son identifiant ou son numéro, et la partie demandée. */
 export type DecisionTrouvee = {
   document: string;
   numero: string;
@@ -233,7 +233,7 @@ export type DecisionTrouvee = {
 /** Partie d'une décision rendue par `get_decision`. */
 export type PartieDecision = "dispositif" | "tous";
 
-/** La réponse de `get_decision` : des décisions entières, ou une absence dite. */
+/** La réponse de `get_decision` : des décisions, ou une absence dite. */
 export type ResultatDecision = {
   trouve: boolean;
   decisions: DecisionTrouvee[];
@@ -287,7 +287,9 @@ export function getDecision(rootDir: string, demande: DecisionDemande): Resultat
   const document = demande.document?.trim();
   const numero = demande.numero?.trim();
   const corpus = demande.corpus?.trim();
-  const partie: PartieDecision = demande.partie ?? "dispositif";
+  // Une valeur inconnue retombe sur le défaut : le schéma du serveur la refuse,
+  // mais l'appel direct ne doit pas rendre une partie qui n'existe pas.
+  const partie: PartieDecision = demande.partie === "tous" ? "tous" : "dispositif";
   const portee = corpus === undefined || corpus === "" ? "" : ` dans le corpus ${corpus}`;
 
   if ((document === undefined || document === "") && (numero === undefined || numero === "")) {

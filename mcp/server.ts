@@ -26,8 +26,9 @@ const CONSIGNE_SERVEUR =
   "recherche couvre les trois collections. Un document nommé dans la question (sigle ou nom " +
   "ordinaire, casse et ponctuation indifférentes) est honoré quand `document` et `corpus` sont " +
   "absents ; sans nom, une référence exacte qui n'existe que dans un corpus est `incertain` et le " +
-  "corpus est nommé. `get_decision` rend une sanction entière, par identifiant CNILTEXT ou par " +
-  "numéro SAN-…. Le texte rendu vient du corpus local, jamais d'une génération.";
+  "corpus est nommé. `get_decision` rend une sanction par identifiant CNILTEXT ou par numéro " +
+  "SAN-…, sa partie opératoire par défaut et le document entier avec `partie: \"tous\"`. " +
+  "Le texte rendu vient du corpus local, jamais d'une génération.";
 
 export type ServerDeps = {
   rootDir: string;

@@ -84,11 +84,16 @@ export function debutDispositif(texte: string): number {
   );
   if (conclusion !== -1) return conclusion;
 
+  // L'apostrophe est typographique dans les textes de la CNIL : on accepte les
+  // deux formes, sinon « sanction d’un montant » n'est jamais reconnue.
   const sanction = Math.max(
     minuscules.lastIndexOf("sanction pécuniaire"),
+    minuscules.lastIndexOf("sanction d’un montant"),
+    minuscules.lastIndexOf("sanction d'un montant"),
     minuscules.lastIndexOf("amende administrative"),
     minuscules.lastIndexOf("adresse un avertissement"),
     minuscules.lastIndexOf("adresser un avertissement"),
+    minuscules.lastIndexOf("rappel à l’ordre"),
     minuscules.lastIndexOf("rappel à l'ordre"),
     minuscules.lastIndexOf("injonction"),
   );

@@ -13,6 +13,7 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { debutDispositif } from "./corpus/cnil/meta.ts";
 
 const RACINE = fileURLToPath(new URL("..", import.meta.url));
 
@@ -63,7 +64,7 @@ export const ETAPES: Etape[] = [
     },
   },
   {
-    titre: "Décision entière par son numéro, avec ses métadonnées",
+    titre: "Décision par son numéro : dispositif et métadonnées",
     outil: "get_decision",
     arguments: { numero: "SAN-2026-015" },
   },
@@ -169,10 +170,9 @@ function rendre(outil: Outil, donnees: unknown): boolean {
         .filter((partie) => partie !== "")
         .join(" · ");
       // Le premier fragment rendu peut commencer avant le dispositif : on
-      // montre la partie opératoire, pas l'argumentaire qui la précède.
+      // montre la partie opératoire, à la même borne que le serveur.
       const rendu = decision.fragments.map((element) => element.texte).join(" ");
-      const marque = rendu.toUpperCase().lastIndexOf("PAR CES MOTIFS");
-      const operatoire = marque === -1 ? rendu : rendu.slice(marque);
+      const operatoire = rendu.slice(debutDispositif(rendu));
       process.stdout.write(
         `  ✓ ${decision.numero} — ${decision.document} — ${decision.date_acte} — ${decision.statut}\n` +
           `    ${meta}\n` +

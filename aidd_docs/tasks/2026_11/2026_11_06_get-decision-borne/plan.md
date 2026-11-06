@@ -27,7 +27,7 @@ Source: [`contract.md`](./contract.md).
 | Category   | Verdict and evidence | Handled in |
 | ---------- | -------------------- | ---------- |
 | api        | `get_decision` gagne un paramètre et deux champs ; le défaut change de comportement. | 2 |
-| measure    | Charge par défaut ≤ 3 000 tokens sur les 249 décisions (pire : 2 771). | 3 |
+| measure    | Charge par défaut ≤ 2 000 tokens estimés sur les 249 décisions (pire : 1 705) ; `tous` monte à 56 032. | 3 |
 | regression | Les tests qui attendaient tous les fragments passent `partie: "tous"`. | 2 |
 
 ## Rules

@@ -139,7 +139,7 @@ l'écart plus grand ou répété. Le rapport v3 est
 
 `npm run mcp:demo` lance `mcp/server.ts` comme le ferait un client, s'y connecte sur stdio et
 appelle les trois outils sur cinq questions : article exact, recherche RGPD, recherche AI Act,
-filtres CNIL, décision entière. Sortie réelle, Ollama requis :
+filtres CNIL, décision par son numéro. Sortie réelle, Ollama requis :
 
 ```
 ### 4. Filtres CNIL poussés dans l'index : cookies, amendes, 2025

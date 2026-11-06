@@ -1,26 +1,29 @@
 ---
 objective: "`get_decision` rend par défaut la partie opératoire d'une décision, et la décision entière sur demande explicite, pour qu'aucun client MCP ne reçoive une charge qu'il tronque."
-status: active
+status: completed
 ---
 
 # Contrat : borner `get_decision` par défaut
 
-Source : la mesure de cette session. Sur les 249 décisions CNIL, 73 dépassent 10 000 tokens (seuil d'avertissement des clients MCP) et 17 dépassent 25 000 (plafond par défaut de Claude Code) ; la plus grosse atteint 52 700 tokens. L'outil promet la décision entière et ne peut donc pas tenir sa promesse dans un client.
+Source : la mesure de cette session. Sur les 249 décisions CNIL, 75 dépassent 10 000 tokens estimés (seuil d'avertissement des clients MCP) et 19 dépassent 25 000 (plafond par défaut de Claude Code) ; la plus grosse atteint 56 032 tokens. L'outil promettait la décision entière et ne pouvait donc pas tenir sa promesse dans un client.
 
 ## Comportement observable
 
 - `get_decision({ numero })` rend la **partie opératoire** : `partie: "dispositif"`, `fragments_total` (nombre total de fragments du document) et `fragments` (ceux rendus, entiers, jamais coupés).
 - `get_decision({ numero, partie: "tous" })` rend tous les fragments, comme avant.
-- Le dernier fragment rendu contient la formule de sanction (« prononcer … amende », « adresse un avertissement », etc.).
+- La réponse contient la formule de sanction (« prononcer … amende », « adresse un avertissement », etc.), y compris quand elle tombe dans un fragment qui commence plus haut.
 - Aucun fragment n'est amputé : le serveur choisit des fragments entiers, il ne tronque pas de texte.
 
 ## Bornes vérifiables
 
-| Mesure | Valeur |
-| --- | --- |
-| Charge par défaut, pire décision des 249 | 2 771 tokens |
-| Charge « tous », pire décision | 47 562 tokens |
-| Décisions sans « PAR CES MOTIFS » | 85, servies par la même borne de repli |
+Estimations en caractères/4 sur le JSON que le serveur envoie (pas un tokenizer : seul l'ordre de grandeur compte).
+
+| Mesure | Défaut | `tous` |
+| --- | --- | --- |
+| Charge maximale | **1 705** | **56 032** |
+| Charge médiane | 510 | 5 036 |
+| Décisions au-dessus de 10 000 | 0 | 75 |
+| Décisions au-dessus de 25 000 | 0 | 19 |
 
 ## Décisions prises
 

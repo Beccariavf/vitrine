@@ -85,7 +85,7 @@ Comment le projet est testé : les couches, les outils et les conventions. Où v
 - `npm run corpus:build` : lit tous les descripteurs et écrit `data/corpus/{rgpd,aiact}/` (réseau) ; `--document <corpus>` n'en construit qu'un.
 - `npm run corpus:index` : construit ou met à jour `data/corpus/index/index.db` (Ollama et `qwen3-embedding:0.6b`) ; un second passage sur un corpus inchangé embarque zéro unité et laisse les vecteurs identiques.
 - `npm run mcp:smoke` : vérifie 1024 dimensions et la norme 1 auprès du vrai Ollama.
-- `npm run mcp:demo` : lance `mcp/server.ts` par stdio et appelle les trois outils sur cinq questions (article exact, RGPD, AI Act, filtres CNIL, décision entière) ; Ollama requis, sortie lisible avec provenance.
+- `npm run mcp:demo` : lance `mcp/server.ts` par stdio et appelle les trois outils sur cinq questions (article exact, RGPD, AI Act, filtres CNIL, décision par son numéro) ; Ollama requis, sortie lisible avec provenance.
 - `npm run mcp:eval -- --questions questions-v2.csv --split dev` : mesure les 30 questions de développement du jeu v2 sur l'index réel, hors CI ; `--recherche dense|hybride` choisit la voie (dense par défaut).
 - `npm run mcp:eval -- --questions questions-v2.csv --split test --mesurer-test` : mesure unique du test v2, avec les seuils figés ; un marqueur commité refuse la seconde exécution. Rapport dans `aidd_docs/tasks/2026_11/2026_11_05_qualite-v2-aiact/eval-v2.md`.
 - `npm run mcp:eval -- --questions questions-aiact.csv` : 12 questions AI Act filtrées sur `32024R1689`, sans seuil propre ; rapport dans `eval-aiact.md`.
