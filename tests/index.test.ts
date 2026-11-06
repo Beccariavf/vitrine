@@ -473,11 +473,10 @@ describe("buildIndex", () => {
     const root = tempRoot();
     try {
       ecrireCorpus(root, "rgpd", [unite(1, "sujet sans rapport", DOCUMENT)]);
-      ecrireCorpus(root, "dsa", [
-        unite(1, "question identique", AUTRE),
-        unite(2, "question identique", AUTRE),
-        unite(3, "question identique", AUTRE),
-      ]);
+      const bruit = Array.from({ length: 100 }, (_, index) =>
+        unite(index + 1, "question identique", AUTRE),
+      );
+      ecrireCorpus(root, "dsa", bruit);
 
       const { chemin } = await buildIndex(root, embedderFactice());
       const index = openIndex(chemin);

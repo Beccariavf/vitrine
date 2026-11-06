@@ -463,15 +463,9 @@ async function appliquerDelta(
 }
 
 /**
- * Construit `data/corpus/index/index.db` : incrémental quand l'index est
- * réutilisable, complet sinon. Un index complet s'écrit dans `index.db.tmp`
- * puis se renomme ; un delta s'écrit dans une transaction et s'annule en cas
- * d'erreur.
- */
-/**
- * Ajoute la colonne `corpus` à un index construit avant elle, en recopiant les
- * vecteurs existants : aucune unité n'est ré-embarquée. Rend `true` si la table
- * a été reconstruite.
+ * Ajoute `corpus` et `document` à un index construit avant elles, en recopiant
+ * les vecteurs existants : aucune unité n'est ré-embarquée. Rend `true` si la
+ * table a été reconstruite.
  */
 export function migrerVecteursCorpus(db: DatabaseSync, dim: number): boolean {
   const colonnes = db.prepare("PRAGMA table_info(vec_unites)").all() as { name: string }[];
@@ -517,6 +511,12 @@ export function migrerVecteursCorpus(db: DatabaseSync, dim: number): boolean {
   return true;
 }
 
+/**
+ * Construit `data/corpus/index/index.db` : incrémental quand l'index est
+ * réutilisable, complet sinon. Un index complet s'écrit dans `index.db.tmp`
+ * puis se renomme ; un delta s'écrit dans une transaction et s'annule en cas
+ * d'erreur.
+ */
 export async function buildIndex(rootDir: string, embedder: Embedder): Promise<ResultatBuild> {
   const unites = lireUnites(rootDir);
   if (unites.length === 0) {
