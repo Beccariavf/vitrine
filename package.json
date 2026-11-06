@@ -14,10 +14,22 @@
     "preview": "astro preview",
     "typecheck": "tsc --noEmit",
     "veille": "node veille/main.ts",
-    "backfill": "node veille/backfill.ts"
+    "backfill": "node veille/backfill.ts",
+    "corpus:build": "node mcp/corpus/build.ts",
+    "corpus:index": "node mcp/index/build.ts",
+    "cnil:sync": "node mcp/corpus/cnil/sync.ts",
+    "mcp:smoke": "node mcp/embed/smoke.ts",
+    "mcp": "node mcp/server.ts",
+    "mcp:eval": "node mcp/eval/run.ts",
+    "mcp:eval:filtres": "node mcp/eval/filtres.ts"
   },
   "dependencies": {
-    "fast-xml-parser": "5.11.2"
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "fast-xml-parser": "5.11.2",
+    "hyparquet": "1.32.0",
+    "hyparquet-compressors": "1.1.3",
+    "sqlite-vec": "0.1.9",
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@tailwindcss/vite": "4.3.3",

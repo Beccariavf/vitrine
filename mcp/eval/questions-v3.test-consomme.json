@@ -1,0 +1,62 @@
+{
+  "note": "Mesures du 2026-11-05, produites par cette exécution ; aucune valeur n'est transcrite d'un autre rapport.",
+  "questions_sha256": "08f05185516683d89cb2704eec0bf7829cc2fc68aaa3ce6ff8c0970b194db413",
+  "mesures": [
+    {
+      "modele": "qwen3-embedding:0.6b",
+      "dimensions": 1024,
+      "date": "2026-11-05",
+      "seuils": {
+        "bas": 0.64,
+        "haut": 0.69,
+        "marge": 0.01
+      },
+      "agregats": {
+        "semantiques": 34,
+        "top5_semantique_succes": 30,
+        "top1_semantique_succes": 26,
+        "mrr_semantique": 0.8161764705882353,
+        "referencees": 37,
+        "top5_global_succes": 33,
+        "top5_rendu_succes": 29,
+        "top1_rendu_succes": 25,
+        "mrr_rendu": 0.7867647058823529,
+        "top5_global_rendu_succes": 32,
+        "pieges_mesures": 3,
+        "pieges_cites": 1,
+        "confiant": 23,
+        "incertain": 10,
+        "aucun_resultat_fiable": 1,
+        "pieges_confiants": 0
+      }
+    },
+    {
+      "modele": "qwen3-embedding:4b",
+      "dimensions": 2560,
+      "date": "2026-11-05",
+      "seuils": {
+        "bas": 0.72,
+        "haut": 0.77,
+        "marge": 0.01
+      },
+      "agregats": {
+        "semantiques": 34,
+        "top5_semantique_succes": 31,
+        "top1_semantique_succes": 25,
+        "mrr_semantique": 0.8137254901960783,
+        "referencees": 37,
+        "top5_global_succes": 34,
+        "top5_rendu_succes": 31,
+        "top1_rendu_succes": 25,
+        "mrr_rendu": 0.8137254901960783,
+        "top5_global_rendu_succes": 34,
+        "pieges_mesures": 3,
+        "pieges_cites": 0,
+        "confiant": 25,
+        "incertain": 9,
+        "aucun_resultat_fiable": 0,
+        "pieges_confiants": 0
+      }
+    }
+  ]
+}

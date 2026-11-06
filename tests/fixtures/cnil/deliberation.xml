@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEXTE_CNIL>
+<META>
+<META_COMMUN>
+<ID>CNILTEXT000043470685</ID>
+<ANCIEN_ID/>
+<ORIGINE>CNIL</ORIGINE>
+<URL>texte/cnil/CNIL/TEXT/00/00/43/47/06/CNILTEXT000043470685.xml</URL>
+<NATURE>DELIBERATION</NATURE>
+</META_COMMUN>
+<META_SPEC>
+<META_CNIL>
+<TITRE>Délibération SAN-2021-004 du 30 avril 2021</TITRE>
+<TITREFULL>Délibération de la formation restreinte n° SAN-2021-004 du 30 avril 2021 prononçant une sanction pécuniaire à l'encontre de la société X</TITREFULL>
+<NUMERO>SAN-2021-004</NUMERO>
+<NOR/>
+<NATURE_DELIB>Sanction</NATURE_DELIB>
+<DATE_TEXTE>2021-04-30</DATE_TEXTE>
+<ORIGINE_PUBLI/>
+<PAGE_DEB_PUBLI/>
+<PAGE_FIN_PUBLI/>
+<NUM_SEQUENCE/>
+<DATE_PUBLI>2021-05-06</DATE_PUBLI>
+<ETAT_JURIDIQUE>VIGUEUR</ETAT_JURIDIQUE>
+</META_CNIL>
+</META_SPEC>
+</META>
+<BLOC_TEXTUEL>
+<CONTENU>
+<p align="justify">La Commission nationale de l'informatique et des libertés, réunie en sa formation restreinte composée de M. le président et de plusieurs membres, a examiné les pratiques de la société X au regard du règlement général sur la protection des données et de la loi informatique et libertés.</p>
+<p align="justify"> </p>
+<p align="justify">La formation restreinte constate que la société X n'a pas respecté l'obligation de sécurité prévue à l'article 32 du règlement, faute d'avoir chiffré les données stockées sur ses serveurs et d'avoir limité les accès aux seules personnes habilitées.</p>
+<p align="justify">Elle relève également un défaut d'information des personnes concernées, qui n'ont pas été informées de la violation de données dans le délai de soixante-douze heures prévu à l'article 33 du même règlement.</p>
+<p align="justify">La <strong>formation restreinte</strong> retient donc un manquement aux articles 32 et 33 et prononce à l'encontre de la société X une sanction pécuniaire dont le montant est fixé dans la délibération, tenant compte de la gravité des manquements et de la coopération de la société.</p>
+<p align="justify">Cette décision peut faire l'objet d'un recours devant le Conseil d'Etat dans un délai de deux mois à compter de sa notification.</p>
+</CONTENU>
+</BLOC_TEXTUEL>
+<LIENS/>
+</TEXTE_CNIL>

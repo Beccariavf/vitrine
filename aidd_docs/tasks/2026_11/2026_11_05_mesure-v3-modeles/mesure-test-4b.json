@@ -1,0 +1,1037 @@
+{
+  "date": "2026-11-05",
+  "modele": "qwen3-embedding:4b",
+  "dimensions": 2560,
+  "split": "test",
+  "document": "32016R0679",
+  "recherche": "dense",
+  "seuils": {
+    "bas": 0.72,
+    "haut": 0.77,
+    "marge": 0.01
+  },
+  "questions": [
+    {
+      "question": "libre circulation des données personnelles au sein de l'Union",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_1"
+      ],
+      "refs": [
+        "32016R0679#rct_12",
+        "32016R0679#rct_5",
+        "32016R0679#art_45",
+        "32016R0679#rct_10",
+        "32016R0679#art_49"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7516307830810547,
+        0.743535727262497,
+        0.7214857935905457,
+        0.7409941852092743,
+        0.7184503674507141
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "identifiant en ligne permettant d'identifier une personne",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_4"
+      ],
+      "refs": [
+        "32016R0679#rct_30",
+        "32016R0679#art_11",
+        "32016R0679#rct_57",
+        "32016R0679#art_87",
+        "32016R0679#rct_26"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.8190870732069016,
+        0.7821573466062546,
+        0.7913770973682404,
+        0.767644926905632,
+        0.7783768624067307
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "intérêt légitime comme base de licéité d'un traitement",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_6"
+      ],
+      "refs": [
+        "32016R0679#rct_47",
+        "32016R0679#art_6",
+        "32016R0679#rct_40",
+        "32016R0679#rct_69",
+        "32016R0679#rct_45"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.9041018858551979,
+        0.8479983508586884,
+        0.8069558590650558,
+        0.7965520471334457,
+        0.7914802879095078
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "retrait du consentement aussi simple que de le donner",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_7"
+      ],
+      "refs": [
+        "32016R0679#art_7",
+        "32016R0679#rct_32",
+        "32016R0679#rct_42",
+        "32016R0679#art_17",
+        "32016R0679#art_12"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8690522164106369,
+        0.796403706073761,
+        0.771052360534668,
+        0.7498442232608795,
+        0.7273426055908203
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "traitement des condamnations pénales sous contrôle de l'autorité publique",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_10"
+      ],
+      "refs": [
+        "32016R0679#art_10",
+        "32016R0679#rct_19",
+        "32016R0679#art_9",
+        "32016R0679#art_23",
+        "32016R0679#art_4"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.9083871617913246,
+        0.7627715617418289,
+        0.7073197960853577,
+        0.691119909286499,
+        0.68539759516716
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "informations à communiquer au moment de la collecte",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_13"
+      ],
+      "refs": [
+        "32016R0679#art_13",
+        "32016R0679#art_14",
+        "32016R0679#rct_61",
+        "32016R0679#art_12",
+        "32016R0679#art_7"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8471091985702515,
+        0.8251733034849167,
+        0.8186456710100174,
+        0.7514376640319824,
+        0.7284250259399414
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "obtention d'une copie des données faisant l'objet d'un traitement",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_15"
+      ],
+      "refs": [
+        "32016R0679#art_15",
+        "32016R0679#art_12",
+        "32016R0679#art_13",
+        "32016R0679#rct_68",
+        "32016R0679#rct_63"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8582702130079269,
+        0.7925975173711777,
+        0.7686581909656525,
+        0.7871414124965668,
+        0.7748591750860214
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "restriction législative à l'exercice des droits",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_23"
+      ],
+      "refs": [
+        "32016R0679#art_23",
+        "32016R0679#art_18",
+        "32016R0679#rct_73",
+        "32016R0679#art_12",
+        "32016R0679#art_85"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8167008310556412,
+        0.8066937029361725,
+        0.7409457862377167,
+        0.7166674733161926,
+        0.7135997712612152
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "compléter des données incomplètes par une déclaration",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_16"
+      ],
+      "refs": [
+        "32016R0679#art_14",
+        "32016R0679#art_13",
+        "32016R0679#art_16",
+        "32016R0679#art_12",
+        "32016R0679#art_7"
+      ],
+      "rangs": [
+        3
+      ],
+      "similarites": [
+        0.8045223653316498,
+        0.7921250462532043,
+        0.7757503837347031,
+        0.7516178041696548,
+        0.730925977230072
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "responsables conjoints et répartition de leurs obligations",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_26"
+      ],
+      "refs": [
+        "32016R0679#art_26",
+        "32016R0679#rct_79",
+        "32016R0679#art_62",
+        "32016R0679#art_39",
+        "32016R0679#art_24"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8606703132390976,
+        0.779289722442627,
+        0.7209608852863312,
+        0.7163251638412476,
+        0.7107605040073395
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "personnel du sous-traitant agissant sur instruction",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_29"
+      ],
+      "refs": [
+        "32016R0679#art_28",
+        "32016R0679#art_29",
+        "32016R0679#rct_81",
+        "32016R0679#art_40",
+        "32016R0679#art_24"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.8754699900746346,
+        0.8687799572944641,
+        0.8449510186910629,
+        0.7922539860010147,
+        0.7893419861793518
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "ressources mises à disposition du délégué à la protection des données",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_38"
+      ],
+      "refs": [
+        "32016R0679#art_38",
+        "32016R0679#art_37",
+        "32016R0679#art_39",
+        "32016R0679#rct_97",
+        "32016R0679#rct_166"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8154043108224869,
+        0.8086172789335251,
+        0.7909136265516281,
+        0.7271029353141785,
+        0.703669935464859
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "organisme qui délivre et renouvelle les certifications",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_43"
+      ],
+      "refs": [
+        "32016R0679#art_43",
+        "32016R0679#art_42",
+        "32016R0679#rct_100",
+        "32016R0679#art_57",
+        "32016R0679#art_41"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8720656484365463,
+        0.8337125480175018,
+        0.703374445438385,
+        0.6785552203655243,
+        0.6695105731487274
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "autorisation écrite avant de recruter un sous-traitant ultérieur",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_28"
+      ],
+      "refs": [
+        "32016R0679#art_28",
+        "32016R0679#rct_81",
+        "32016R0679#art_29",
+        "32016R0679#art_27",
+        "32016R0679#art_30"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8868643566966057,
+        0.8366189897060394,
+        0.7805865406990051,
+        0.7440585196018219,
+        0.7414234280586243
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "notification d'une violation dans les 72 heures",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_33"
+      ],
+      "refs": [
+        "32016R0679#art_33",
+        "32016R0679#rct_85",
+        "32016R0679#art_34",
+        "32016R0679#rct_86",
+        "32016R0679#rct_87"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8899397030472755,
+        0.86833256483078,
+        0.8165883719921112,
+        0.8052437007427216,
+        0.8017739355564117
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "désignation obligatoire d'un délégué pour une autorité publique",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_37"
+      ],
+      "refs": [
+        "32016R0679#art_37",
+        "32016R0679#art_38",
+        "32016R0679#art_39",
+        "32016R0679#art_92",
+        "32016R0679#rct_97"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8288591802120209,
+        0.7706127613782883,
+        0.7399069368839264,
+        0.7388478517532349,
+        0.7443305253982544
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "consentement explicite comme dérogation à un transfert",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_49"
+      ],
+      "refs": [
+        "32016R0679#art_49",
+        "32016R0679#rct_111",
+        "32016R0679#art_7",
+        "32016R0679#art_46",
+        "32016R0679#art_45"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8595385104417801,
+        0.8246772587299347,
+        0.7878663539886475,
+        0.7793752253055573,
+        0.7586627304553986
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "réexamen périodique d'une décision d'adéquation",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_45"
+      ],
+      "refs": [
+        "32016R0679#rct_106",
+        "32016R0679#art_45",
+        "32016R0679#art_97",
+        "32016R0679#art_64",
+        "32016R0679#rct_104"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.8318301290273666,
+        0.7254723906517029,
+        0.7195426523685455,
+        0.6883420348167419,
+        0.6870118081569672
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "durée minimale du mandat des membres de l'autorité",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_54"
+      ],
+      "refs": [
+        "32016R0679#art_54",
+        "32016R0679#art_53",
+        "32016R0679#rct_121",
+        "32016R0679#art_73",
+        "32016R0679#art_51"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8176157772541046,
+        0.7632408738136292,
+        0.7388641238212585,
+        0.7134685814380646,
+        0.684981495141983
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "sensibilisation du public aux risques par l'autorité de contrôle",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_57"
+      ],
+      "refs": [
+        "32016R0679#art_57",
+        "32016R0679#rct_132",
+        "32016R0679#art_58",
+        "32016R0679#art_51",
+        "32016R0679#art_55"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8198941946029663,
+        0.8201995939016342,
+        0.7555186897516251,
+        0.7531848400831223,
+        0.7240265309810638
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "interdiction de recevoir des instructions pour les membres de l'autorité",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_52"
+      ],
+      "refs": [
+        "32016R0679#art_23",
+        "32016R0679#art_54",
+        "32016R0679#rct_31",
+        "32016R0679#art_53",
+        "32016R0679#art_9"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7211775481700897,
+        0.7101694345474243,
+        0.7268814146518707,
+        0.6966602206230164,
+        0.694505512714386
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "enquêtes conjointes de plusieurs autorités de contrôle",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_62"
+      ],
+      "refs": [
+        "32016R0679#art_62",
+        "32016R0679#art_60",
+        "32016R0679#art_51",
+        "32016R0679#art_58",
+        "32016R0679#art_57"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8875367343425751,
+        0.8323868811130524,
+        0.8117473870515823,
+        0.8073543608188629,
+        0.8060817867517471
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "avis du comité sur un projet de décision",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_64"
+      ],
+      "refs": [
+        "32016R0679#art_64",
+        "32016R0679#art_70",
+        "32016R0679#art_65",
+        "32016R0679#art_68",
+        "32016R0679#rct_139"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8454387784004211,
+        0.7889959067106247,
+        0.7625553756952286,
+        0.739873468875885,
+        0.750399261713028
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "mesures provisoires en cas d'urgence",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_66"
+      ],
+      "refs": [
+        "32016R0679#art_66",
+        "32016R0679#rct_137",
+        "32016R0679#rct_169",
+        "32016R0679#art_23",
+        "32016R0679#rct_78"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8787625655531883,
+        0.8492029160261154,
+        0.7639870196580887,
+        0.7076843678951263,
+        0.7260838747024536
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "indépendance du comité européen de la protection des données",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_69"
+      ],
+      "refs": [
+        "32016R0679#art_68",
+        "32016R0679#rct_139",
+        "32016R0679#art_69",
+        "32016R0679#art_70",
+        "32016R0679#art_75"
+      ],
+      "rangs": [
+        3
+      ],
+      "similarites": [
+        0.8206189870834351,
+        0.8176744133234024,
+        0.7591373771429062,
+        0.7435815036296844,
+        0.714407354593277
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "élection du président du comité pour cinq ans",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_73"
+      ],
+      "refs": [
+        "32016R0679#art_73",
+        "32016R0679#art_68",
+        "32016R0679#art_70",
+        "32016R0679#rct_139",
+        "32016R0679#art_64"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.85011787712574,
+        0.734641432762146,
+        0.7295624613761902,
+        0.7393626272678375,
+        0.7193528413772583
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "mandat donné à une association pour agir au nom d'une personne",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_80"
+      ],
+      "refs": [
+        "32016R0679#art_80",
+        "32016R0679#rct_142",
+        "32016R0679#art_27",
+        "32016R0679#art_4",
+        "32016R0679#art_12"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.787146732211113,
+        0.7552174925804138,
+        0.7176210582256317,
+        0.714640200138092,
+        0.711021900177002
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "juridiction compétente du lieu de résidence de la personne concernée",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_79"
+      ],
+      "refs": [
+        "32016R0679#art_79",
+        "32016R0679#rct_145",
+        "32016R0679#art_78",
+        "32016R0679#rct_147",
+        "32016R0679#art_77"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7918380051851273,
+        0.790651798248291,
+        0.7248744070529938,
+        0.7316344976425171,
+        0.7022619545459747
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "amendes proportionnées au chiffre d'affaires de l'entreprise",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_83"
+      ],
+      "refs": [
+        "32016R0679#art_83",
+        "32016R0679#rct_150",
+        "32016R0679#rct_148",
+        "32016R0679#art_84",
+        "32016R0679#rct_149"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8844117596745491,
+        0.8317586332559586,
+        0.8204628676176071,
+        0.7512438297271729,
+        0.7306778728961945
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "exemptions pour le traitement à des fins journalistiques",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_85"
+      ],
+      "refs": [
+        "32016R0679#art_85",
+        "32016R0679#rct_153",
+        "32016R0679#art_9",
+        "32016R0679#art_89",
+        "32016R0679#art_6"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8764247596263885,
+        0.85003562271595,
+        0.7230563461780548,
+        0.7132979929447174,
+        0.7075805366039276
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "utilisation du numéro d'identification national sous garanties",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_87"
+      ],
+      "refs": [
+        "32016R0679#art_87",
+        "32016R0679#art_11",
+        "32016R0679#rct_57",
+        "32016R0679#art_9",
+        "32016R0679#art_13"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.9155996888875961,
+        0.7802113890647888,
+        0.7774806916713715,
+        0.7375134527683258,
+        0.7283883392810822
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "pseudonymisation pour la recherche scientifique",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_89"
+      ],
+      "refs": [
+        "32016R0679#art_89",
+        "32016R0679#rct_159",
+        "32016R0679#rct_29",
+        "32016R0679#rct_156",
+        "32016R0679#rct_28"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8098014742136002,
+        0.8061334937810898,
+        0.7787546366453171,
+        0.7707714736461639,
+        0.7698885351419449
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "articulation avec la directive ePrivacy",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_95"
+      ],
+      "refs": [
+        "32016R0679#art_2",
+        "32016R0679#art_95",
+        "32016R0679#art_5",
+        "32016R0679#rct_171",
+        "32016R0679#art_1"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.7257573008537292,
+        0.7229039967060089,
+        0.7197861969470978,
+        0.727930337190628,
+        0.7064277827739716
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "réexamen des autres actes de l'Union sur la protection des données",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_98"
+      ],
+      "refs": [
+        "32016R0679#art_98",
+        "32016R0679#art_97",
+        "32016R0679#rct_106",
+        "32016R0679#art_70",
+        "32016R0679#art_45"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8566478192806244,
+        0.7594001144170761,
+        0.7601690739393234,
+        0.7193463742733002,
+        0.7163380086421967
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelles conditions l'article 18 pose-t-il pour limiter un traitement ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_18"
+      ],
+      "refs": [
+        "32016R0679#art_18"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        1
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quel principe l'article 44 pose-t-il pour les transferts hors Union ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_44"
+      ],
+      "refs": [
+        "32016R0679#art_44"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        1
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quel rôle l'article 93 donne-t-il au comité institué auprès de la Commission ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_93"
+      ],
+      "refs": [
+        "32016R0679#art_93"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        1
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelles formalités faut-il accomplir pour immatriculer un véhicule importé ?",
+      "type": "piege",
+      "piege": true,
+      "attendues": [],
+      "refs": [
+        "32016R0679#art_49",
+        "32016R0679#art_30",
+        "32016R0679#art_45",
+        "32016R0679#art_46",
+        "32016R0679#art_13"
+      ],
+      "rangs": [],
+      "similarites": [
+        0.5947793424129486,
+        0.5856084823608398,
+        0.5734623968601227,
+        0.5687240064144135,
+        0.56758913397789
+      ],
+      "niveau": "aucun_resultat_fiable"
+    },
+    {
+      "question": "Quel est le délai de carence applicable en cas d'arrêt de travail ?",
+      "type": "piege",
+      "piege": true,
+      "attendues": [],
+      "refs": [
+        "32016R0679#art_88",
+        "32016R0679#art_18",
+        "32016R0679#art_82",
+        "32016R0679#art_12",
+        "32016R0679#rct_52"
+      ],
+      "rangs": [],
+      "similarites": [
+        0.6904149651527405,
+        0.6591763496398926,
+        0.656584233045578,
+        0.6546566486358643,
+        0.6735631227493286
+      ],
+      "niveau": "aucun_resultat_fiable"
+    },
+    {
+      "question": "Quelles règles encadrent l'ouverture d'un débit de boissons ?",
+      "type": "piege",
+      "piege": true,
+      "attendues": [],
+      "refs": [
+        "32016R0679#art_23",
+        "32016R0679#art_6",
+        "32016R0679#art_47",
+        "32016R0679#art_9",
+        "32016R0679#art_40"
+      ],
+      "rangs": [],
+      "similarites": [
+        0.6127209365367889,
+        0.6113962233066559,
+        0.611032098531723,
+        0.6079072058200836,
+        0.6076854765415192
+      ],
+      "niveau": "aucun_resultat_fiable"
+    }
+  ],
+  "agregats": {
+    "semantiques": 34,
+    "top5_semantique_succes": 31,
+    "top1_semantique_succes": 25,
+    "mrr_semantique": 0.8137254901960783,
+    "referencees": 37,
+    "top5_global_succes": 34,
+    "top5_rendu_succes": 31,
+    "top1_rendu_succes": 25,
+    "mrr_rendu": 0.8137254901960783,
+    "top5_global_rendu_succes": 34,
+    "pieges_mesures": 3,
+    "pieges_cites": 0,
+    "confiant": 25,
+    "incertain": 9,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  }
+}

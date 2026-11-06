@@ -19,3 +19,9 @@ dist/
 
 # OS
 .DS_Store
+
+# Index vectoriel dérivé, reconstruit par npm run corpus:index
+data/corpus/index/
+
+# Corpus CNIL : parquet DINUM non commité (334 Mo), récupéré par npm run cnil:sync
+data/raw/cnil/

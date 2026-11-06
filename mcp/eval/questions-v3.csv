@@ -1,0 +1,81 @@
+question,type,sources_attendues,piege,split
+un fichier papier contenant des données personnelles relève-t-il du règlement,conceptuelle,32016R0679#art_2,non,dev
+minimisation des données collectées,conceptuelle,32016R0679#art_5,non,dev
+données génétiques et biométriques utilisées pour identifier une personne,conceptuelle,32016R0679#art_9,non,dev
+traitement de données sans identification des personnes concernées,conceptuelle,32016R0679#art_11,non,dev
+délai d'un mois pour répondre à une demande d'exercice des droits,conceptuelle,32016R0679#art_12,non,dev
+information des destinataires après une rectification ou un effacement,conceptuelle,32016R0679#art_19,non,dev
+transmission directe des données d'un responsable à un autre,conceptuelle,32016R0679#art_20,non,dev
+opposition au profilage utilisé pour de la publicité ciblée,conceptuelle,32016R0679#art_21,non,dev
+pouvoir démontrer la conformité des traitements,conceptuelle,32016R0679#art_24,non,dev
+représentant désigné dans l'Union par un responsable établi hors Union,conceptuelle,32016R0679#art_27,non,dev
+coopération du responsable avec l'autorité de contrôle,conceptuelle,32016R0679#art_31,non,dev
+organisme agréé pour contrôler le respect d'un code de conduite,conceptuelle,32016R0679#art_41,non,dev
+paramétrage par défaut limité au minimum nécessaire,conceptuelle,32016R0679#art_25,non,dev
+registre des activités tenu sous forme électronique,conceptuelle,32016R0679#art_30,non,dev
+consultation du délégué à la protection des données lors d'une analyse d'impact,conceptuelle,32016R0679#art_35,non,dev
+décision d'une juridiction étrangère ordonnant la divulgation de données,conceptuelle,32016R0679#art_48,non,dev
+mécanismes de coopération internationale entre autorités,conceptuelle,32016R0679#art_50,non,dev
+clauses contractuelles types pour encadrer un transfert,conceptuelle,32016R0679#art_46,non,dev
+procédure de nomination des membres de l'autorité de contrôle,conceptuelle,32016R0679#art_53,non,dev
+compétence territoriale de l'autorité de contrôle,conceptuelle,32016R0679#art_55,non,dev
+rapport annuel d'activité de l'autorité de contrôle,conceptuelle,32016R0679#art_59,non,dev
+assistance mutuelle entre autorités de contrôle,conceptuelle,32016R0679#art_61,non,dev
+mécanisme de contrôle de la cohérence,conceptuelle,32016R0679#art_63,non,dev
+décision contraignante du comité pour régler un litige,conceptuelle,32016R0679#art_65,non,dev
+échange électronique d'informations entre autorités et comité,conceptuelle,32016R0679#art_67,non,dev
+missions du comité européen de la protection des données,conceptuelle,32016R0679#art_70,non,dev
+confidentialité des débats du comité,conceptuelle,32016R0679#art_76,non,dev
+suspension d'une action pendante devant une juridiction d'un autre État,conceptuelle,32016R0679#art_81,non,dev
+recours juridictionnel contre une décision de l'autorité de contrôle,conceptuelle,32016R0679#art_78,non,dev
+exonération du responsable en l'absence de responsabilité dans le dommage,conceptuelle,32016R0679#art_82,non,dev
+obligation de secret professionnel et pouvoirs de l'autorité,conceptuelle,32016R0679#art_90,non,dev
+communication de données figurant dans des documents officiels,conceptuelle,32016R0679#art_86,non,dev
+révocation d'une délégation de pouvoir de la Commission,conceptuelle,32016R0679#art_92,non,dev
+abrogation de la directive 95/46 et renvois au comité,conceptuelle,32016R0679#art_94,non,dev
+Que prévoit l'article 8 sur le consentement des enfants ?,reference,32016R0679#art_8,non,dev
+Quelles mesures de sécurité l'article 32 impose-t-il ?,reference,32016R0679#art_32,non,dev
+Quel est l'objet de l'article 77 ?,reference,32016R0679#art_77,non,dev
+Quel est le délai de préavis pour résilier un bail d'habitation meublé ?,piege,,oui,dev
+Quelles mentions obligatoires figurent sur une facture d'électricité ?,piege,,oui,dev
+Quel est le barème de la taxe foncière sur les propriétés bâties ?,piege,,oui,dev
+libre circulation des données personnelles au sein de l'Union,conceptuelle,32016R0679#art_1,non,test
+identifiant en ligne permettant d'identifier une personne,conceptuelle,32016R0679#art_4,non,test
+intérêt légitime comme base de licéité d'un traitement,conceptuelle,32016R0679#art_6,non,test
+retrait du consentement aussi simple que de le donner,conceptuelle,32016R0679#art_7,non,test
+traitement des condamnations pénales sous contrôle de l'autorité publique,conceptuelle,32016R0679#art_10,non,test
+informations à communiquer au moment de la collecte,conceptuelle,32016R0679#art_13,non,test
+obtention d'une copie des données faisant l'objet d'un traitement,conceptuelle,32016R0679#art_15,non,test
+restriction législative à l'exercice des droits,conceptuelle,32016R0679#art_23,non,test
+compléter des données incomplètes par une déclaration,conceptuelle,32016R0679#art_16,non,test
+responsables conjoints et répartition de leurs obligations,conceptuelle,32016R0679#art_26,non,test
+personnel du sous-traitant agissant sur instruction,conceptuelle,32016R0679#art_29,non,test
+ressources mises à disposition du délégué à la protection des données,conceptuelle,32016R0679#art_38,non,test
+organisme qui délivre et renouvelle les certifications,conceptuelle,32016R0679#art_43,non,test
+autorisation écrite avant de recruter un sous-traitant ultérieur,conceptuelle,32016R0679#art_28,non,test
+notification d'une violation dans les 72 heures,conceptuelle,32016R0679#art_33,non,test
+désignation obligatoire d'un délégué pour une autorité publique,conceptuelle,32016R0679#art_37,non,test
+consentement explicite comme dérogation à un transfert,conceptuelle,32016R0679#art_49,non,test
+réexamen périodique d'une décision d'adéquation,conceptuelle,32016R0679#art_45,non,test
+durée minimale du mandat des membres de l'autorité,conceptuelle,32016R0679#art_54,non,test
+sensibilisation du public aux risques par l'autorité de contrôle,conceptuelle,32016R0679#art_57,non,test
+interdiction de recevoir des instructions pour les membres de l'autorité,conceptuelle,32016R0679#art_52,non,test
+enquêtes conjointes de plusieurs autorités de contrôle,conceptuelle,32016R0679#art_62,non,test
+avis du comité sur un projet de décision,conceptuelle,32016R0679#art_64,non,test
+mesures provisoires en cas d'urgence,conceptuelle,32016R0679#art_66,non,test
+indépendance du comité européen de la protection des données,conceptuelle,32016R0679#art_69,non,test
+élection du président du comité pour cinq ans,conceptuelle,32016R0679#art_73,non,test
+mandat donné à une association pour agir au nom d'une personne,conceptuelle,32016R0679#art_80,non,test
+juridiction compétente du lieu de résidence de la personne concernée,conceptuelle,32016R0679#art_79,non,test
+amendes proportionnées au chiffre d'affaires de l'entreprise,conceptuelle,32016R0679#art_83,non,test
+exemptions pour le traitement à des fins journalistiques,conceptuelle,32016R0679#art_85,non,test
+utilisation du numéro d'identification national sous garanties,conceptuelle,32016R0679#art_87,non,test
+pseudonymisation pour la recherche scientifique,conceptuelle,32016R0679#art_89,non,test
+articulation avec la directive ePrivacy,conceptuelle,32016R0679#art_95,non,test
+réexamen des autres actes de l'Union sur la protection des données,conceptuelle,32016R0679#art_98,non,test
+Quelles conditions l'article 18 pose-t-il pour limiter un traitement ?,reference,32016R0679#art_18,non,test
+Quel principe l'article 44 pose-t-il pour les transferts hors Union ?,reference,32016R0679#art_44,non,test
+Quel rôle l'article 93 donne-t-il au comité institué auprès de la Commission ?,reference,32016R0679#art_93,non,test
+Quelles formalités faut-il accomplir pour immatriculer un véhicule importé ?,piege,,oui,test
+Quel est le délai de carence applicable en cas d'arrêt de travail ?,piege,,oui,test
+Quelles règles encadrent l'ouverture d'un débit de boissons ?,piege,,oui,test

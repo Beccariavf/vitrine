@@ -1,0 +1,61 @@
+question,type,sources_attendues,piege,split
+Que prévoit l'article 5 du RGPD ?,reference,32016R0679#art_5,non,dev
+Quel est l'objet de l'article 1 du RGPD ?,reference,32016R0679#art_1,non,dev
+Que dit l'article 17 sur l'effacement ?,reference,32016R0679#art_17,non,dev
+Quelles conditions l'article 7 pose-t-il pour le consentement ?,reference,32016R0679#art_7,non,dev
+Que prévoit l'article 32 sur la sécurité du traitement ?,reference,32016R0679#art_32,non,dev
+Quelles amendes l'article 83 permet-il ?,reference,32016R0679#art_83,non,dev
+durée de conservation des données personnelles,conceptuelle,32016R0679#art_5,non,dev
+consentement des mineurs pour les services en ligne,conceptuelle,32016R0679#art_8,non,dev
+informations à fournir quand les données ne viennent pas de la personne,conceptuelle,32016R0679#art_14,non,dev
+droit de faire corriger des informations inexactes,conceptuelle,32016R0679#art_16,non,dev
+opposition au démarchage pour des raisons personnelles,conceptuelle,32016R0679#art_21,non,dev
+décision entièrement automatisée produisant des effets juridiques,conceptuelle,32016R0679#art_22,non,dev
+protection dès la conception et protection par défaut,conceptuelle,32016R0679#art_25,non,dev
+contrat avec un prestataire qui traite des données,conceptuelle,32016R0679#art_28,non,dev
+journal des activités de traitement,conceptuelle,32016R0679#art_30,non,dev
+analyse d'impact avant un traitement à risque élevé,conceptuelle,32016R0679#art_35,non,dev
+consultation préalable de l'autorité de contrôle,conceptuelle,32016R0679#art_36,non,dev
+missions du délégué à la protection des données,conceptuelle,32016R0679#art_39,non,dev
+règles internes d'un groupe pour les transferts,conceptuelle,32016R0679#art_47,non,dev
+autorité de contrôle chef de file,conceptuelle,32016R0679#art_56,non,dev
+pouvoirs d'enquête et de sanction de l'autorité de contrôle,conceptuelle,32016R0679#art_58,non,dev
+réclamation auprès d'une autorité de contrôle,conceptuelle,32016R0679#art_77,non,dev
+recours juridictionnel contre un responsable du traitement,conceptuelle,32016R0679#art_79,non,dev
+réparation du dommage matériel ou moral,conceptuelle,32016R0679#art_82,non,dev
+données utilisées à des fins de recherche scientifique,conceptuelle,32016R0679#art_89,non,dev
+Que prévoit l'article 100 du RGPD ?,piege,,oui,dev
+Quel est le délai de prescription pour une action en licenciement ?,piege,,oui,dev
+Quel est le montant de la taxe sur les logements vacants ?,piege,,oui,dev
+Quelles règles encadrent le stationnement payant en zone bleue ?,piege,,oui,dev
+Quel est le taux de TVA applicable aux services numériques ?,piege,,oui,dev
+Quel est le champ d'application territorial de l'article 3 ?,reference,32016R0679#art_3,non,test
+Que prévoit l'article 15 sur le droit d'accès ?,reference,32016R0679#art_15,non,test
+Que dit l'article 20 sur la portabilité ?,reference,32016R0679#art_20,non,test
+Que prévoit l'article 30 sur le registre des activités ?,reference,32016R0679#art_30,non,test
+Quel est le rôle de l'article 37 sur le délégué ?,reference,32016R0679#art_37,non,test
+Que prévoit l'article 44 sur les transferts ?,reference,32016R0679#art_44,non,test
+droit de récupérer mes données,conceptuelle,32016R0679#art_20,non,test
+accès à une copie des données détenues par une entreprise,conceptuelle,32016R0679#art_15,non,test
+effacement des données et retrait des liens des moteurs de recherche,conceptuelle,32016R0679#art_17,non,test
+limitation du traitement pendant une vérification,conceptuelle,32016R0679#art_18,non,test
+notification d'une violation à l'autorité de contrôle,conceptuelle,32016R0679#art_33,non,test
+communication d'une violation aux personnes concernées,conceptuelle,32016R0679#art_34,non,test
+certification des traitements de données,conceptuelle,32016R0679#art_42,non,test
+transfert vers un pays tiers sans décision d'adéquation,conceptuelle,32016R0679#art_46,non,test
+indépendance des autorités de contrôle,conceptuelle,32016R0679#art_52,non,test
+coopération entre autorités de contrôle,conceptuelle,32016R0679#art_60,non,test
+comité européen de la protection des données,conceptuelle,32016R0679#art_68,non,test
+recours effectif devant une juridiction contre une autorité,conceptuelle,32016R0679#art_78,non,test
+représentation des personnes concernées par un organisme,conceptuelle,32016R0679#art_80,non,test
+traitement des données dans le cadre de l'emploi,conceptuelle,32016R0679#art_88,non,test
+liberté d'expression et protection des données,conceptuelle,32016R0679#art_85,non,test
+accès du public aux documents officiels,conceptuelle,32016R0679#art_86,non,test
+numéro d'identification national,conceptuelle,32016R0679#art_87,non,test
+églises et associations religieuses,conceptuelle,32016R0679#art_91,non,test
+entrée en vigueur du règlement,conceptuelle,32016R0679#art_99,non,test
+Comment contester une contravention pour excès de vitesse ?,piege,,oui,test
+Quelles sont les conditions de validité d'un bail commercial ?,piege,,oui,test
+Quel est le montant du smic horaire au 1er janvier 2026 ?,piege,,oui,test
+Quelles formalités pour créer une société à responsabilité limitée ?,piege,,oui,test
+Quelles sanctions prévoit la directive 95/46/CE ?,piege,,oui,test

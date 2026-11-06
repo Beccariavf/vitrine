@@ -1,0 +1,52 @@
+{
+  "date": "2026-11-05",
+  "note": "Chiffres de la mesure unique du 5 novembre 2026, transcrits du rapport ; ces champs ne proviennent pas d'une nouvelle mesure. Les agrégats rendus sont dérivés du tableau par question : l'unique refus (art_80, rang 1) retire 1 au top 5 sémantique (18 → 17), 1 au top 1 (17 → 16), 1 au top 5 global (24 → 23) et 1 au MRR rendu (17,2 → 16,2 sur 19).",
+  "questions_sha256": "1795dbd158d27aaf2edfe59fd7c81c7000b5dd49940014045a235a273b60fcb7",
+  "modele": "qwen3-embedding:0.6b",
+  "dimensions": 1024,
+  "recherche": "dense",
+  "split": "test",
+  "top5_semantique_brut": 0.9473684210526315,
+  "semantiques": 19,
+  "top1_semantique_brut": 0.8947368421052632,
+  "mrr_semantique_brut": 0.9052631578947368,
+  "top5_global_brut": 0.96,
+  "top5_rendu": 0.8947368421052632,
+  "top1_rendu": 0.8421052631578947,
+  "mrr_rendu": 0.8526315789473684,
+  "top5_global_rendu": 0.92,
+  "referencees": 25,
+  "pieges_cites": 1,
+  "pieges_mesures": 5,
+  "niveaux": {
+    "confiant": 14,
+    "incertain": 4,
+    "aucun_resultat_fiable": 1
+  },
+  "pieges_confiants": 0,
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "bande_article": 0.02,
+  "intervalles": {
+    "top5_global_brut": [
+      0.8045593626380625,
+      0.9929037664980127
+    ],
+    "top5_semantique_brut": [
+      0.753612688331012,
+      0.9906480059376995
+    ],
+    "pieges_cites": [
+      0.03622410863243014,
+      0.6244653702374747
+    ]
+  },
+  "snapshots": {
+    "32016R0679": "6e649590895bab390dce8cee8d5eb2b8abef60329571513dc6fbc38e9ca7a5c2.xhtml",
+    "32024R1689": "f64452fd45b3fa0a51be546bb2199bea853a30dc6a40c803b8cd48f020ea3f81.xhtml"
+  },
+  "unites_index": 565
+}
