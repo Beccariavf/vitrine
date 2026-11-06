@@ -4,6 +4,7 @@ import { openIndex, rechercheHybride, searchIndex } from "./index/search.ts";
 import type { Index, ResultatRecherche } from "./index/search.ts";
 import type { Unite } from "./corpus/parse.ts";
 import type { Embedder } from "./embed/embedder.ts";
+import { numeroIndex } from "./corpus/cnil/meta.ts";
 import { niveauConfiance } from "./confidence.ts";
 import type { NiveauConfiance } from "./confidence.ts";
 
@@ -191,9 +192,9 @@ export type SearchDemande = {
   date_max?: string;
   /** Type de sanction CNIL. */
   type_sanction?: string;
-  /** Montant minimal des amendes, en euros. */
+  /** Montant minimal de la sanction pécuniaire, en euros. */
   montant_min?: number;
-  /** Montant maximal des amendes, en euros. */
+  /** Montant maximal de la sanction pécuniaire, en euros. */
   montant_max?: number;
   /** Numéro de délibération, par exemple `SAN-2026-015`. */
   numero?: string;
@@ -218,7 +219,7 @@ export type DecisionTrouvee = {
   origine?: string;
   /** Type de sanction lu dans le dispositif. */
   type_sanction?: string;
-  /** Total des amendes en euros ; `null` si absent ou masqué. */
+  /** Montant de la sanction pécuniaire (amende ou liquidation) ; `null` si absent ou masqué. */
   montant?: number | null;
   /** Vrai si la décision prononce une injonction. */
   injonction?: boolean;
@@ -271,7 +272,7 @@ export function getDecision(rootDir: string, demande: DecisionDemande): Resultat
     (unite) =>
       (corpus === undefined || corpus === "" || unite.corpus === corpus) &&
       (document === undefined || document === "" || unite.document === document) &&
-      (numero === undefined || numero === "" || unite.numero.toLowerCase() === numero.toLowerCase()),
+      (numero === undefined || numero === "" || numeroIndex(unite.numero) === numeroIndex(numero)),
   );
 
   if (unites.length === 0) {

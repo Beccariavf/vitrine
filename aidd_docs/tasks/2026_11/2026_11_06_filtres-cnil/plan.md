@@ -17,7 +17,7 @@ Source: `aidd_docs/tasks/2026_11/2026_11_06_jeu-cnil-v2/eval-cnil-v2.md` (limite
 
 ## Contrat
 
-- Chaque décision CNIL reçoit `type_sanction` (`amende`, `avertissement`, `rappel`, `injonction`, `liquidation`, `interruption`, `autre`), `montant` (total des amendes en euros, `null` si absent ou masqué) et `injonction`.
+- Chaque décision CNIL reçoit `type_sanction` (`amende`, `avertissement`, `rappel`, `injonction`, `liquidation`, `interruption`, `autre`), `montant` (montant de la sanction pécuniaire en euros, amende ou liquidation, `null` si absent ou masqué) et `injonction`.
 - L'extraction lit le dispositif après « PAR CES MOTIFS », jamais un résumé généré. Les astreintes quotidiennes ne sont pas des amendes ; un total suivi de sa décomposition n'est pas additionné à ses composantes.
 - `search` expose `date_min`, `date_max`, `type_sanction`, `montant_min`, `montant_max` et `numero`. Les filtres descendent dans la requête `vec0` : filtrer après le KNN affamerait les décisions minoritaires.
 - L'index migre sans ré-embarquer ; les chiffres CNIL v2 `dev` et RGPD v2 `dev` doivent se reproduire.

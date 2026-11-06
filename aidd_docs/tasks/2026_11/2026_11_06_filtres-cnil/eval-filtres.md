@@ -4,7 +4,7 @@ Mesure du 6 novembre 2026 sur `data/corpus/cnil/` : 249 décisions, 6 342 fragme
 
 ## Ce qui a été extrait
 
-`mcp/corpus/cnil/meta.ts` lit le dispositif après le dernier « PAR CES MOTIFS ». Il ne résume pas : il relève le type de sanction, le total des amendes et la présence d'une injonction.
+`mcp/corpus/cnil/meta.ts` lit le dispositif après le dernier « PAR CES MOTIFS ». Il ne résume pas : il relève le type de sanction, le montant de la sanction pécuniaire (amende ou liquidation) et la présence d'une injonction.
 
 | Type | Documents |
 | --- | --- |
@@ -14,9 +14,11 @@ Mesure du 6 novembre 2026 sur `data/corpus/cnil/` : 249 décisions, 6 342 fragme
 | Rappel à l'ordre | 6 |
 | Interruption de traitement | 2 |
 
-Le montant est en euros, `null` quand le dispositif le masque (`[…]`) ou ne le porte pas. Les astreintes « par jour de retard » ne sont pas comptées comme des amendes ; un total suivi de sa décomposition n'est pas additionné à ses composantes ; un montant répété entre parenthèses n'est compté qu'une fois.
+Trente-cinq décisions prononcent aussi une injonction.
 
-Contrôles manuels sur les décisions connues : FNAC 7 M€ (6 + 1), Google 2025 325 M€ (200 + 125), Google 2021 150 M€ (90 + 60), Free Mobile 27 M€, Free 15 M€, Orange 50 M€, hôpital 500 k€, EXTIA 300 k€, IQVIA 5 M€, liquidation 5,2 M€, 1 € symbolique. Le seul montant absent est `CNILTEXT000046907077` (dispositif masqué).
+Le montant est en euros, `null` quand le dispositif le masque (`[…]`) ou ne le porte pas ; il couvre les amendes et les liquidations d'astreinte, pas les avertissements ni les rappels. Les astreintes « par jour de retard » ne sont pas comptées comme des amendes ; un total suivi de sa décomposition n'est pas additionné à ses composantes ; un montant répété entre parenthèses n'est compté qu'une fois.
+
+Les montants des observations ne sont pas comptés (`2008-028` et `2008-029` valent 15 k€, `2006-174` vaut 45 k€), et les formules `En conséquence` ou `somme totale` ferment la partie opératoire. Contrôles manuels sur les décisions connues : FNAC 7 M€ (6 + 1), Google 2025 325 M€ (200 + 125), Google 2021 150 M€ (90 + 60), Free Mobile 27 M€, Free 15 M€, Orange 50 M€, hôpital 500 k€, EXTIA 300 k€, IQVIA 5 M€, liquidation 5,2 M€, 1 € symbolique. Le seul montant absent est `CNILTEXT000046907077` (dispositif masqué).
 
 ## Ce que `search` accepte
 
@@ -50,7 +52,7 @@ Douze cas, chacun visant une décision et nommant la métadonnée qui doit la di
 
 **Top 5 : 7/12 sans filtre, 11/12 avec.** Les quatre cas réparés sont ceux où la question nommait déjà le montant ou la date : le vecteur seul ne les utilisait pas. Le filtre ne crée pas l'information ; il empêche la similarité de noyer un attribut explicite.
 
-Le cas « repas 2020 » échoue dans les deux mesures. Le filtre de date réduit à une vingtaine de décisions de 2020, mais la bonne reste au 14ᵉ rang : la question décrit une activité, pas une date, et il manque un `secteur` pour la distinguer. C'est la limite du niveau 1.
+Le cas « repas 2020 » échoue dans les deux mesures. Le filtre de date réduit à 12 décisions de 2020, mais la bonne reste au 14ᵉ rang : la question nomme l'année, mais décrit l'activité de façon trop vague pour que la similarité la distingue. Il manque un `secteur`. C'est la limite du niveau 1.
 
 ## Limites
 

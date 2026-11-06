@@ -18,4 +18,6 @@
 | Rappel à l'ordre | 6 |
 | Interruption | 2 |
 
+Trente-cinq décisions prononcent une injonction.
+
 Contrôles manuels : FNAC 7 M€, Google 325 M€ (200 + 125), Google 2021 150 M€ (90 + 60), Free Mobile 27 M€, Free 15 M€, Orange 50 M€, hôpital 500 k€, EXTIA 300 k€, IQVIA 5 M€, liquidation 5,2 M€, 1 € symbolique. Le seul montant absent est `CNILTEXT000046907077` (dispositif `[…]`).

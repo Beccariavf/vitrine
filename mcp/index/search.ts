@@ -37,7 +37,7 @@ export type ResultatRecherche = {
   statut: string;
   /** Type de sanction CNIL ; `autre` hors CNIL. */
   type_sanction?: string;
-  /** Total des amendes CNIL en euros ; `null` si absent ou masqué. */
+  /** Montant de la sanction pécuniaire CNIL (amende ou liquidation) ; `null` si absent ou masqué. */
   montant?: number | null;
   /** Vrai si la décision CNIL prononce une injonction. */
   injonction?: boolean;

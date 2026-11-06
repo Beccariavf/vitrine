@@ -166,13 +166,13 @@ export function createServer(deps: ServerDeps): McpServer {
           .int()
           .min(0)
           .optional()
-          .describe("Montant minimal des amendes CNIL, en euros"),
+          .describe("Montant minimal de la sanction pécuniaire CNIL (amende ou liquidation), en euros"),
         montant_max: z
           .number()
           .int()
           .min(0)
           .optional()
-          .describe("Montant maximal des amendes CNIL, en euros"),
+          .describe("Montant maximal de la sanction pécuniaire CNIL (amende ou liquidation), en euros"),
         numero: z
           .string()
           .optional()

@@ -2,9 +2,9 @@
  * Métadonnées de sanction d'une délibération CNIL, lues dans son dispositif.
  *
  * Le dispositif est la partie qui suit « PAR CES MOTIFS ». On n'y cherche ni
- * le sens ni un résumé : seulement le type de sanction, le montant total des
- * amendes et la présence d'une injonction. Les montants d'astreinte (« par jour
- * de retard ») ne sont jamais comptés comme des amendes.
+ * le sens ni un résumé : seulement le type de sanction, le montant de la
+ * sanction pécuniaire (amende ou liquidation) et la présence d'une injonction.
+ * Les montants d'astreinte (« par jour de retard ») ne sont jamais comptés.
  */
 
 export type TypeSanction =
@@ -18,7 +18,7 @@ export type TypeSanction =
 
 export type MetaSanction = {
   type_sanction: TypeSanction;
-  /** Total des amendes en euros, `null` si aucune ou si le montant est masqué. */
+  /** Montant de la sanction pécuniaire en euros (amende ou liquidation), `null` si absent ou masqué. */
   montant: number | null;
   injonction: boolean;
 };
@@ -65,13 +65,29 @@ const PHRASE_NOMBRE = new RegExp(
 function dispositif(texte: string): string {
   const normalise = texte.replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
   const marque = normalise.toUpperCase().lastIndexOf("PAR CES MOTIFS");
-  // Sans marqueur, la fin du texte n'est pas un dispositif : on ne la coupe pas.
-  if (marque === -1) return normalise.slice(-2500);
-  const corps = normalise.slice(marque);
-  // La publication, et parfois son communiqué, répète les montants : elle ferme
-  // la partie sanctions. « Rendre cette décision publique » en est la forme longue.
-  const publication = /\brendre\b[^.;]{0,40}\bpublique\b|\bcommuniqu[ée]\b/i.exec(corps);
-  return publication === null ? corps : corps.slice(0, publication.index);
+  const minuscules = normalise.toLowerCase();
+  const conclusion = Math.max(
+    minuscules.lastIndexOf("en conséquence"),
+    minuscules.lastIndexOf("décide de faire application"),
+  );
+  const sanction = Math.max(
+    minuscules.lastIndexOf("sanction pécuniaire"),
+    minuscules.lastIndexOf("amende administrative"),
+    minuscules.lastIndexOf("adresse un avertissement"),
+    minuscules.lastIndexOf("adresser un avertissement"),
+    minuscules.lastIndexOf("rappel à l'ordre"),
+    minuscules.lastIndexOf("injonction"),
+  );
+  // Sans « PAR CES MOTIFS », on part de la dernière conclusion, sinon de la
+  // dernière formule de sanction ; à défaut, des 2 500 derniers caractères.
+  const depart =
+    marque !== -1 ? marque : conclusion !== -1 ? conclusion : sanction !== -1 ? sanction : normalise.length - 2500;
+  const repli = normalise.slice(Math.max(0, depart));
+  // La publication ne répète les montants que dans un vrai dispositif ; sur une
+  // fin sans marqueur, « communiqué » peut précéder l'avertissement.
+  const publication =
+    marque !== -1 ? /\brendre\b[^.;]{0,40}\bpublique\b|\bcommuniqu[ée]\b/i.exec(repli) : null;
+  return publication === null ? repli : repli.slice(0, publication.index);
 }
 
 /** Retire les clauses d'astreinte : leur montant n'est pas une amende. */
@@ -172,10 +188,12 @@ function montantChiffres(texte: string): number | null {
   }
   if (trouves.length === 0) return null;
 
-  // Un montant total suivi de sa décomposition ne s'additionne pas à ses composantes.
+  // Un montant total suivi de sa décomposition, ou annoncé comme somme totale,
+  // ne s'additionne pas à ses composantes.
   for (const trouve of trouves) {
+    const avant = texte.slice(Math.max(0, trouve.index - 80), trouve.index);
     const suite = texte.slice(trouve.fin, trouve.fin + 180);
-    if (/ensemble des manquements|se d[ée]compose/i.test(suite)) {
+    if (/ensemble des manquements|se d[ée]compose/i.test(suite) || /somme totale/i.test(avant)) {
       return Math.round(trouve.valeur);
     }
   }
@@ -227,7 +245,7 @@ function typeSanction(texte: string): TypeSanction {
 export function extraireMetaSanction(texte: string): MetaSanction {
   const corps = dispositif(texte);
   const type_sanction = typeSanction(corps);
-  const injonction = /\binjonction\b/i.test(corps);
+  const injonction = /\binjonction\b|\benjoi(?:nt|ndre|gne|gn)/i.test(corps);
   const utile = sansAstreinte(corps);
   const montant =
     type_sanction === "amende" || type_sanction === "liquidation"

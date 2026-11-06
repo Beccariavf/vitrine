@@ -76,6 +76,28 @@ describe("les métadonnées d'une sanction", () => {
     assert.deepEqual(resultat, { type_sanction: "amende", montant: 15_000, injonction: false });
   });
 
+  it("ne compte pas les montants des observations quand le dispositif n'a pas de marqueur", () => {
+    const resultat = extraireMetaSanction(
+      "La société propose 30 000 euros puis 5 000 euros. " +
+        "En conséquence, la Commission décide de prononcer une sanction pécuniaire de " +
+        "15.000 euros (quinze mille euros), qui sera rendue publique.",
+    );
+    assert.equal(resultat.montant, 15_000);
+  });
+
+  it("lit une somme totale annoncée avant le montant", () => {
+    const resultat = meta(
+      "prononcer une sanction pécuniaire de 30 000 euros ; ajouter 5 000 euros par saisine ; " +
+        "soit la somme totale de 45 000 euros ;",
+    );
+    assert.equal(resultat.montant, 45_000);
+  });
+
+  it("reconnaît une injonction ordonnée par « enjoint »", () => {
+    const resultat = meta("enjoint à la société de mettre en conformité le traitement ;");
+    assert.equal(resultat.injonction, true);
+  });
+
   it("distingue avertissement, rappel, injonction, liquidation et interruption", () => {
     assert.equal(meta("prononcer un avertissement à l'encontre de la société X ;").type_sanction, "avertissement");
     assert.equal(meta("prononcer un rappel à l'ordre à l'encontre de X ;").type_sanction, "rappel");

@@ -857,6 +857,27 @@ describe("get_decision", () => {
     }
   });
 
+  it("trouve un numéro au tiret différent et rend les métadonnées", () => {
+    const unite: Unite = {
+      ...fragment("CNILTEXT000053408671", 0, "sanction", "SAN–2026-003", "2026-01-22"),
+      type_sanction: "amende",
+      montant: 5_000_000,
+      injonction: true,
+    };
+    const root = racine([unite]);
+    try {
+      const resultat = getDecision(root, { numero: "SAN-2026-003" });
+      const decision = resultat.decisions[0];
+      assert.equal(resultat.trouve, true);
+      assert.equal(decision?.numero, "SAN–2026-003");
+      assert.equal(decision?.type_sanction, "amende");
+      assert.equal(decision?.montant, 5_000_000);
+      assert.equal(decision?.injonction, true);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("trouve une décision par son numéro", () => {
     const root = racine([
       fragment("CNILTEXT000055022778", 0, "premier"),

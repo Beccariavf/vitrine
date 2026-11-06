@@ -741,6 +741,45 @@ describe("buildIndex incrémental", () => {
     }
   });
 
+  it("garde NULL pour un montant absent dans une unité ajoutée", async () => {
+    const root = tempRoot();
+    const decision = (id: string): Unite => ({
+      ...unite(1, "sanction sans montant", id),
+      ref: `${id}#f1`,
+      document: id,
+      corpus: "cnil",
+      niveau: "fragment",
+      numero: "SAN-2026-001",
+      chemin: "CNIL > Sanctions > Délibération SAN-2026-001",
+      type_sanction: "amende",
+      montant: null,
+      injonction: false,
+    });
+    try {
+      ecrireCorpus(root, "cnil", [decision("CNILTEXT000000001")]);
+      await buildIndex(root, embedderFactice());
+      ecrireCorpus(root, "cnil", [decision("CNILTEXT000000001"), decision("CNILTEXT000000002")]);
+      const { chemin } = await buildIndex(root, embedderFactice());
+
+      const db = new DatabaseSync(chemin, { allowExtension: true });
+      try {
+        sqliteVec.load(db);
+        const ligne = db
+          .prepare("SELECT montant FROM unites WHERE ref = ?")
+          .get("CNILTEXT000000002#f1") as { montant: number | null };
+        assert.equal(ligne.montant, null);
+        const vecteur = db
+          .prepare("SELECT montant FROM vec_unites WHERE rowid = (SELECT rowid FROM unites WHERE ref = ?)")
+          .get("CNILTEXT000000002#f1") as { montant: number };
+        assert.equal(Number(vecteur.montant), -1);
+      } finally {
+        db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("n'embarque qu'une unité modifiée et garde les autres vecteurs identiques", async () => {
     const root = tempRoot();
     try {

@@ -535,7 +535,7 @@ async function appliquerDelta(
         unite.url,
         empreintes.get(unite.ref) ?? "",
         meta.type_sanction,
-        montantVecteur(meta.montant),
+        meta.montant,
         BigInt(meta.injonction),
         BigInt(meta.date_num),
         meta.numero_index,
