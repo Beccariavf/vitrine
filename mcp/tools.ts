@@ -185,6 +185,18 @@ export type SearchDemande = {
   corpus?: string;
   /** Restreint la recherche à un document précis. */
   document?: string;
+  /** Date ISO minimale de la décision. */
+  date_min?: string;
+  /** Date ISO maximale de la décision. */
+  date_max?: string;
+  /** Type de sanction CNIL. */
+  type_sanction?: string;
+  /** Montant minimal des amendes, en euros. */
+  montant_min?: number;
+  /** Montant maximal des amendes, en euros. */
+  montant_max?: number;
+  /** Numéro de délibération, par exemple `SAN-2026-015`. */
+  numero?: string;
 };
 
 /** Un fragment d'une décision, dans l'ordre du document. */
@@ -204,6 +216,12 @@ export type DecisionTrouvee = {
   url: string;
   /** `dinum` ou `dila` : d'où vient le découpage des fragments. */
   origine?: string;
+  /** Type de sanction lu dans le dispositif. */
+  type_sanction?: string;
+  /** Total des amendes en euros ; `null` si absent ou masqué. */
+  montant?: number | null;
+  /** Vrai si la décision prononce une injonction. */
+  injonction?: boolean;
   fragments: FragmentDecision[];
 };
 
@@ -292,6 +310,9 @@ export function getDecision(rootDir: string, demande: DecisionDemande): Resultat
         statut: premier.statut,
         url: premier.url,
         ...(premier.origine === undefined ? {} : { origine: premier.origine }),
+        ...(premier.type_sanction === undefined ? {} : { type_sanction: premier.type_sanction }),
+        ...(premier.montant === undefined ? {} : { montant: premier.montant }),
+        ...(premier.injonction === undefined ? {} : { injonction: premier.injonction }),
         fragments: premiers.map((unite) => ({
           ref: unite.ref,
           numero: unite.numero,
@@ -391,6 +412,12 @@ export async function search(
     k,
     ...(corpus === undefined ? {} : { corpus }),
     ...(document === undefined ? {} : { document }),
+    ...(demande.date_min === undefined ? {} : { date_min: demande.date_min }),
+    ...(demande.date_max === undefined ? {} : { date_max: demande.date_max }),
+    ...(demande.type_sanction === undefined ? {} : { type_sanction: demande.type_sanction }),
+    ...(demande.montant_min === undefined ? {} : { montant_min: demande.montant_min }),
+    ...(demande.montant_max === undefined ? {} : { montant_max: demande.montant_max }),
+    ...(demande.numero === undefined ? {} : { numero: demande.numero }),
   };
   const resultats =
     (deps.recherche ?? "dense") === "hybride"

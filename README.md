@@ -34,6 +34,7 @@ npm run mcp:eval -- --questions questions-v3.csv --split dev --json            #
 npm run mcp:eval -- --questions questions-cnil.csv                             # 20 questions CNIL (hors CI)
 npm run mcp:eval -- --questions questions-cnil-v2.csv --split dev --seuils 0.690,0.740,0.010   # 25 questions CNIL documentaires (hors CI)
 npm run mcp:eval -- --questions questions-cnil-v2.csv --split test --mesurer-test --seuils 0.690,0.740,0.010   # 25 questions tenues à l'écart, une seule fois
+npm run mcp:eval:filtres                                                        # 12 cas de filtrage CNIL (hors CI)
 ```
 
 Le MCP lit le RGPD, l'AI Act et les sanctions de la CNIL par passage exact et par recherche
@@ -86,6 +87,15 @@ deux intervalles se recouvrent. Les échecs sont des confusions entre décisions
 identiques, pas des documents inexistants. Deux splits `test` ont été mesurés puis remplacés ; le
 second est archivé dans `b442d14` et aucun n'est repris. Rapport :
 `aidd_docs/tasks/2026_11/2026_11_06_jeu-cnil-v2/eval-cnil-v2.md`.
+
+Le filtrage par métadonnées répond à la limite précédente. Chaque décision CNIL porte désormais un
+`type_sanction`, un `montant` d'amende et la présence d'une `injonction`, lus dans le dispositif :
+134 amendes (133 avec montant, une masquée), 95 avertissements, 12 liquidations, 6 rappels et
+2 interruptions. `search` accepte `date_min`, `date_max`, `type_sanction`, `montant_min`,
+`montant_max` et `numero` ; les filtres descendent dans `vec0` et chaque passage rend ces champs.
+Sur un pilote de 12 cas, le top 5 passe de 7/12 sans filtre à 11/12 avec. Le cas restant est une
+question qui décrit une activité sans nommer la métadonnée : il faudrait un `secteur`. Rapport :
+`aidd_docs/tasks/2026_11/2026_11_06_filtres-cnil/eval-filtres.md`.
 
 L'évaluation v2 porte sur 60 questions écrites contre le texte du RGPD : 12 références exactes,
 38 conceptuelles et 10 pièges, réparties en 30 `dev` et 30 `test`. Chaque mesure est filtrée par

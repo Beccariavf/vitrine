@@ -149,14 +149,48 @@ export function createServer(deps: ServerDeps): McpServer {
             "Restreint la recherche à un document : 32016R0679 (RGPD), 32024R1689 (AI Act) " +
               "ou un identifiant CNILTEXT ; absent, tous les corpus répondent",
           ),
+        date_min: z
+          .string()
+          .optional()
+          .describe("Date ISO minimale de la décision CNIL, par exemple 2024-01-01"),
+        date_max: z
+          .string()
+          .optional()
+          .describe("Date ISO maximale de la décision CNIL, par exemple 2024-12-31"),
+        type_sanction: z
+          .enum(["amende", "avertissement", "rappel", "injonction", "liquidation", "interruption", "autre"])
+          .optional()
+          .describe("Type de sanction CNIL ; absent, tous les types répondent"),
+        montant_min: z
+          .number()
+          .int()
+          .min(0)
+          .optional()
+          .describe("Montant minimal des amendes CNIL, en euros"),
+        montant_max: z
+          .number()
+          .int()
+          .min(0)
+          .optional()
+          .describe("Montant maximal des amendes CNIL, en euros"),
+        numero: z
+          .string()
+          .optional()
+          .describe("Numéro de délibération CNIL, par exemple SAN-2026-015"),
       },
     },
-    async ({ question, k, corpus, document }) => {
+    async ({ question, k, corpus, document, date_min, date_max, type_sanction, montant_min, montant_max, numero }) => {
       const demande = {
         question,
         ...(k === undefined ? {} : { k }),
         ...(corpus === undefined ? {} : { corpus }),
         ...(document === undefined ? {} : { document }),
+        ...(date_min === undefined ? {} : { date_min }),
+        ...(date_max === undefined ? {} : { date_max }),
+        ...(type_sanction === undefined ? {} : { type_sanction }),
+        ...(montant_min === undefined ? {} : { montant_min }),
+        ...(montant_max === undefined ? {} : { montant_max }),
+        ...(numero === undefined ? {} : { numero }),
       };
       const resultat = await search(rootDir, demande, { embedder, index });
       return { content: [{ type: "text", text: JSON.stringify(resultat, null, 2) }] };

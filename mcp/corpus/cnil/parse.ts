@@ -11,6 +11,7 @@
 import { texteVisible } from "../parse.ts";
 import type { Unite } from "../parse.ts";
 import type { DescripteurCnil } from "./historique.ts";
+import { extraireMetaSanction } from "./meta.ts";
 
 /** Métadonnées d'une délibération, telles que la DILA les publie. */
 export type DecisionDila = {
@@ -140,6 +141,7 @@ export function unitesDila(
   decision: DecisionDila,
   descripteur: Pick<DescripteurCnil, "corpus" | "nom" | "url_texte">,
 ): Unite[] {
+  const meta = extraireMetaSanction(decision.paragraphes.join("\n"));
   return decouperParagraphes(decision.paragraphes).map((texte, index) => ({
     ref: `${decision.id}#f${index}`,
     document: decision.id,
@@ -155,5 +157,6 @@ export function unitesDila(
     statut: decision.etatJuridique,
     url: descripteur.url_texte.replace("{id}", decision.id),
     origine: "dila",
+    ...meta,
   }));
 }

@@ -13,6 +13,7 @@ import { basename, join } from "node:path";
 import { asyncBufferFromFile, parquetReadObjects } from "hyparquet";
 import { compressors } from "hyparquet-compressors";
 import type { Unite } from "../parse.ts";
+import { extraireMetaSanction } from "./meta.ts";
 
 /** Une ligne du parquet, réduite aux colonnes lues. */
 export type LigneDinum = {
@@ -192,5 +193,19 @@ export function unitesDinum(
     }
     unites.push(uniteDinum(ligne, descripteur));
   }
+
+  // Le dispositif est commun à tous les fragments d'une décision : on le lit
+  // une fois, puis on pose le même type et le même montant sur chaque unité.
+  const parDocument = new Map<string, Unite[]>();
+  for (const unite of unites) {
+    const groupe = parDocument.get(unite.document) ?? [];
+    groupe.push(unite);
+    parDocument.set(unite.document, groupe);
+  }
+  for (const groupe of parDocument.values()) {
+    const meta = extraireMetaSanction(groupe.map((unite) => unite.texte).join("\n"));
+    for (const unite of groupe) Object.assign(unite, meta);
+  }
+
   return { unites, erreurs };
 }

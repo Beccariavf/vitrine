@@ -5,6 +5,7 @@ import { DatabaseSync } from "node:sqlite";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import * as sqliteVec from "sqlite-vec";
 import type { Unite } from "../corpus/parse.ts";
+import { dateIndex, montantIndex, numeroIndex } from "../corpus/cnil/meta.ts";
 import { createOllamaEmbedder } from "../embed/embedder.ts";
 import type { Embedder } from "../embed/embedder.ts";
 
@@ -105,11 +106,57 @@ CREATE TABLE unites (
   date_fin TEXT,
   statut TEXT NOT NULL,
   url TEXT NOT NULL,
-  empreinte TEXT NOT NULL
+  empreinte TEXT NOT NULL,
+  type_sanction TEXT NOT NULL DEFAULT 'autre',
+  montant INTEGER,
+  injonction INTEGER NOT NULL DEFAULT 0,
+  date_num INTEGER NOT NULL DEFAULT 0,
+  numero_index TEXT NOT NULL DEFAULT ''
 );
-CREATE VIRTUAL TABLE vec_unites USING vec0(corpus TEXT, document TEXT, embedding float[${dim}] distance_metric=cosine);
+CREATE VIRTUAL TABLE vec_unites USING vec0(
+  corpus TEXT,
+  document TEXT,
+  date_num INTEGER,
+  type_sanction TEXT,
+  montant INTEGER,
+  numero TEXT,
+  injonction INTEGER,
+  embedding float[${dim}] distance_metric=cosine
+);
 CREATE VIRTUAL TABLE fts_unites USING fts5(chemin, texte, tokenize="unicode61 remove_diacritics 2");
 `;
+
+/** Métadonnées d'index d'une unité ; `-1` marque un montant inconnu. */
+export type ChampsMeta = {
+  type_sanction: string;
+  /** `null` pour un montant absent ou masqué ; `-1` est réservé à `vec0`. */
+  montant: number | null;
+  injonction: number;
+  date_num: number;
+  numero_index: string;
+};
+
+export function champsMeta(unite: Unite): ChampsMeta {
+  return {
+    type_sanction: unite.type_sanction ?? "autre",
+    montant: unite.montant === undefined || unite.montant === null ? null : Math.trunc(unite.montant),
+    injonction: unite.injonction === true ? 1 : 0,
+    date_num: dateIndex(unite.date_acte),
+    numero_index: numeroIndex(unite.numero),
+  };
+}
+
+/** Valeur `vec0` d'un montant : `-1` quand il est inconnu. */
+export function montantVecteur(montant: number | null): bigint {
+  return BigInt(montantIndex(montant));
+}
+
+/** Empreinte des seules métadonnées : elle décide d'une recopie de `vec0`. */
+export function empreinteMeta(unites: Unite[]): string {
+  return createHash("sha256")
+    .update(unites.map((unite) => JSON.stringify([unite.ref, champsMeta(unite)])).join("\n"))
+    .digest("hex");
+}
 
 /** Contexte d'un passage : son chemin, puis son texte intact. */
 function passage(unite: Unite): string {
@@ -294,10 +341,12 @@ async function construireComplet(
     db.exec(SCHEMA(embedder.dim));
 
     const insererUnite = db.prepare(`
-      INSERT INTO unites (rowid, ref, document, corpus, niveau, numero, chemin, texte, date_acte, date_debut, date_fin, statut, url, empreinte)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO unites (rowid, ref, document, corpus, niveau, numero, chemin, texte, date_acte, date_debut, date_fin, statut, url, empreinte, type_sanction, montant, injonction, date_num, numero_index)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
-    const insererVecteur = db.prepare("INSERT INTO vec_unites (rowid, corpus, document, embedding) VALUES (?, ?, ?, ?)");
+    const insererVecteur = db.prepare(
+      "INSERT INTO vec_unites (rowid, corpus, document, date_num, type_sanction, montant, numero, injonction, embedding) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    );
     const insererFts = db.prepare(
       "INSERT INTO fts_unites (rowid, chemin, texte) VALUES (?, ?, ?)",
     );
@@ -309,6 +358,7 @@ async function construireComplet(
       const rowid = BigInt(index + 1);
       const vecteur = vecteurs.get(unite.ref);
       if (vecteur === undefined) throw new Error(`Vecteur manquant pour ${unite.ref}`);
+      const meta = champsMeta(unite);
       insererUnite.run(
         rowid,
         unite.ref,
@@ -324,14 +374,30 @@ async function construireComplet(
         unite.statut,
         unite.url,
         empreintes.get(unite.ref) ?? "",
+        meta.type_sanction,
+        meta.montant,
+        BigInt(meta.injonction),
+        BigInt(meta.date_num),
+        meta.numero_index,
       );
-      insererVecteur.run(rowid, unite.corpus, unite.document, JSON.stringify(vecteur));
+      insererVecteur.run(
+        rowid,
+        unite.corpus,
+        unite.document,
+        BigInt(meta.date_num),
+        meta.type_sanction,
+        montantVecteur(meta.montant),
+        meta.numero_index,
+        BigInt(meta.injonction),
+        JSON.stringify(vecteur),
+      );
       insererFts.run(rowid, unite.chemin, unite.texte);
     });
     insererMeta.run("model", embedder.model);
     insererMeta.run("dim", String(embedder.dim));
     insererMeta.run("construit_le", new Date().toISOString());
     insererMeta.run("unites", String(unites.length));
+    insererMeta.run("meta_sha", empreinteMeta(unites));
     db.exec("COMMIT");
   } catch (error) {
     if (transaction) db.exec("ROLLBACK");
@@ -365,14 +431,17 @@ async function appliquerDelta(
   const modifierUnite = db.prepare(`
     UPDATE unites
        SET document = ?, corpus = ?, niveau = ?, numero = ?, chemin = ?, texte = ?, date_acte = ?,
-           date_debut = ?, date_fin = ?, statut = ?, url = ?, empreinte = ?
+           date_debut = ?, date_fin = ?, statut = ?, url = ?, empreinte = ?,
+           type_sanction = ?, montant = ?, injonction = ?, date_num = ?, numero_index = ?
      WHERE rowid = ?
   `);
   const insererUnite = db.prepare(`
-    INSERT INTO unites (rowid, ref, document, corpus, niveau, numero, chemin, texte, date_acte, date_debut, date_fin, statut, url, empreinte)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO unites (rowid, ref, document, corpus, niveau, numero, chemin, texte, date_acte, date_debut, date_fin, statut, url, empreinte, type_sanction, montant, injonction, date_num, numero_index)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
-  const insererVecteur = db.prepare("INSERT INTO vec_unites (rowid, corpus, document, embedding) VALUES (?, ?, ?, ?)");
+  const insererVecteur = db.prepare(
+    "INSERT INTO vec_unites (rowid, corpus, document, date_num, type_sanction, montant, numero, injonction, embedding) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+  );
   const ecrireMeta = db.prepare(
     "INSERT INTO meta (cle, valeur) VALUES (?, ?) ON CONFLICT(cle) DO UPDATE SET valeur = excluded.valeur",
   );
@@ -406,6 +475,7 @@ async function appliquerDelta(
       if (rowid === undefined || vecteur === undefined) {
         throw new Error(`Delta incohérent pour ${unite.ref}`);
       }
+      const meta = champsMeta(unite);
       modifierUnite.run(
         unite.document,
         unite.corpus,
@@ -419,10 +489,25 @@ async function appliquerDelta(
         unite.statut,
         unite.url,
         empreintes.get(unite.ref) ?? "",
+        meta.type_sanction,
+        meta.montant,
+        BigInt(meta.injonction),
+        BigInt(meta.date_num),
+        meta.numero_index,
         BigInt(rowid),
       );
       supprimerVecteur.run(BigInt(rowid));
-      insererVecteur.run(BigInt(rowid), unite.corpus, unite.document, JSON.stringify(vecteur));
+      insererVecteur.run(
+        BigInt(rowid),
+        unite.corpus,
+        unite.document,
+        BigInt(meta.date_num),
+        meta.type_sanction,
+        montantVecteur(meta.montant),
+        meta.numero_index,
+        BigInt(meta.injonction),
+        JSON.stringify(vecteur),
+      );
       supprimerFts.run(BigInt(rowid));
       insererFts.run(BigInt(rowid), unite.chemin, unite.texte);
     }
@@ -433,6 +518,7 @@ async function appliquerDelta(
       if (rowid === undefined || vecteur === undefined) {
         throw new Error(`Delta incohérent pour ${unite.ref}`);
       }
+      const meta = champsMeta(unite);
       insererUnite.run(
         BigInt(rowid),
         unite.ref,
@@ -448,8 +534,23 @@ async function appliquerDelta(
         unite.statut,
         unite.url,
         empreintes.get(unite.ref) ?? "",
+        meta.type_sanction,
+        montantVecteur(meta.montant),
+        BigInt(meta.injonction),
+        BigInt(meta.date_num),
+        meta.numero_index,
       );
-      insererVecteur.run(BigInt(rowid), unite.corpus, unite.document, JSON.stringify(vecteur));
+      insererVecteur.run(
+        BigInt(rowid),
+        unite.corpus,
+        unite.document,
+        BigInt(meta.date_num),
+        meta.type_sanction,
+        montantVecteur(meta.montant),
+        meta.numero_index,
+        BigInt(meta.injonction),
+        JSON.stringify(vecteur),
+      );
       insererFts.run(BigInt(rowid), unite.chemin, unite.texte);
     }
 
@@ -463,46 +564,123 @@ async function appliquerDelta(
 }
 
 /**
- * Ajoute `corpus` et `document` à un index construit avant elles, en recopiant
- * les vecteurs existants : aucune unité n'est ré-embarquée. Rend `true` si la
- * table a été reconstruite.
+ * Met à jour les métadonnées d'un index construit avant elles. Les vecteurs
+ * existants sont recopiés, jamais ré-embarqués : seule la table `vec0` est
+ * reconstruite quand ses colonnes ou l'empreinte des métadonnées changent.
  */
-export function migrerVecteursCorpus(db: DatabaseSync, dim: number): boolean {
-  const colonnes = db.prepare("PRAGMA table_info(vec_unites)").all() as { name: string }[];
-  const noms = new Set(colonnes.map((colonne) => colonne.name));
-  if (noms.has("corpus") && noms.has("document")) return false;
+export function migrerVecteurs(db: DatabaseSync, dim: number, unites: Unite[]): boolean {
+  const colonnesUnites = db.prepare("PRAGMA table_info(unites)").all() as { name: string }[];
+  const nomsUnites = new Set(colonnesUnites.map((colonne) => colonne.name));
+  const ajouts: [string, string][] = [
+    ["type_sanction", "TEXT NOT NULL DEFAULT 'autre'"],
+    ["montant", "INTEGER"],
+    ["injonction", "INTEGER NOT NULL DEFAULT 0"],
+    ["date_num", "INTEGER NOT NULL DEFAULT 0"],
+    ["numero_index", "TEXT NOT NULL DEFAULT ''"],
+  ];
+  for (const [nom, type] of ajouts) {
+    if (!nomsUnites.has(nom)) db.exec(`ALTER TABLE unites ADD COLUMN ${nom} ${type}`);
+  }
 
   db.exec("BEGIN");
   try {
+    const maj = db.prepare(`
+      UPDATE unites
+         SET type_sanction = ?, montant = ?, injonction = ?, date_num = ?, numero_index = ?
+       WHERE ref = ?
+    `);
+    for (const unite of unites) {
+      const meta = champsMeta(unite);
+      maj.run(
+        meta.type_sanction,
+        meta.montant,
+        BigInt(meta.injonction),
+        BigInt(meta.date_num),
+        meta.numero_index,
+        unite.ref,
+      );
+    }
+
+    const colonnesVecteurs = db.prepare("PRAGMA table_info(vec_unites)").all() as { name: string }[];
+    const nomsVecteurs = new Set(colonnesVecteurs.map((colonne) => colonne.name));
+    const attendues = ["corpus", "document", "date_num", "type_sanction", "montant", "numero", "injonction"];
+    const complete = attendues.every((nom) => nomsVecteurs.has(nom));
+    const sha = empreinteMeta(unites);
+    const ancienSha = (() => {
+      try {
+        const ligne = db.prepare("SELECT valeur FROM meta WHERE cle = 'meta_sha'").get() as
+          | { valeur: string }
+          | undefined;
+        return ligne?.valeur ?? "";
+      } catch {
+        return "";
+      }
+    })();
+    if (complete && ancienSha === sha) {
+      db.exec("COMMIT");
+      return false;
+    }
+
     // La copie passe par une table ordinaire : renommer une table virtuelle
     // laisse ses tables d'ombre sous l'ancien nom et casse l'index.
     db.exec(
-      "CREATE TABLE vec_migration (rowid INTEGER PRIMARY KEY, corpus TEXT, document TEXT, embedding BLOB)",
+      "CREATE TABLE vec_migration (rowid INTEGER PRIMARY KEY, corpus TEXT, document TEXT, " +
+        "date_num INTEGER, type_sanction TEXT, montant INTEGER, numero TEXT, injonction INTEGER, embedding BLOB)",
     );
     db.exec(
-      `INSERT INTO vec_migration (rowid, corpus, document, embedding)
-         SELECT v.rowid, u.corpus, u.document, v.embedding
+      `INSERT INTO vec_migration (rowid, corpus, document, date_num, type_sanction, montant, numero, injonction, embedding)
+         SELECT v.rowid, u.corpus, u.document, u.date_num, u.type_sanction, u.montant, u.numero_index,
+                u.injonction, v.embedding
            FROM vec_unites v JOIN unites u ON u.rowid = v.rowid`,
     );
     db.exec("DROP TABLE vec_unites");
     db.exec(
-      `CREATE VIRTUAL TABLE vec_unites USING vec0(corpus TEXT, document TEXT, embedding float[${dim}] distance_metric=cosine)`,
+      `CREATE VIRTUAL TABLE vec_unites USING vec0(
+         corpus TEXT,
+         document TEXT,
+         date_num INTEGER,
+         type_sanction TEXT,
+         montant INTEGER,
+         numero TEXT,
+         injonction INTEGER,
+         embedding float[${dim}] distance_metric=cosine
+       )`,
     );
     const lignes = db
-      .prepare("SELECT rowid, corpus, document, embedding FROM vec_migration")
+      .prepare(
+        "SELECT rowid, corpus, document, date_num, type_sanction, montant, numero, injonction, embedding FROM vec_migration",
+      )
       .all() as {
       rowid: number | bigint;
       corpus: string;
       document: string;
+      date_num: number | bigint;
+      type_sanction: string;
+      montant: number | bigint;
+      numero: string;
+      injonction: number | bigint;
       embedding: Uint8Array;
     }[];
     const inserer = db.prepare(
-      "INSERT INTO vec_unites (rowid, corpus, document, embedding) VALUES (?, ?, ?, ?)",
+      "INSERT INTO vec_unites (rowid, corpus, document, date_num, type_sanction, montant, numero, injonction, embedding) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
     );
     for (const ligne of lignes) {
-      inserer.run(BigInt(ligne.rowid), ligne.corpus, ligne.document, ligne.embedding);
+      inserer.run(
+        BigInt(ligne.rowid),
+        ligne.corpus,
+        ligne.document,
+        BigInt(ligne.date_num),
+        ligne.type_sanction,
+        BigInt(ligne.montant === null ? -1 : ligne.montant),
+        ligne.numero,
+        BigInt(ligne.injonction),
+        ligne.embedding,
+      );
     }
     db.exec("DROP TABLE vec_migration");
+    db.prepare(
+      "INSERT INTO meta (cle, valeur) VALUES ('meta_sha', ?) ON CONFLICT(cle) DO UPDATE SET valeur = excluded.valeur",
+    ).run(sha);
     db.exec("COMMIT");
   } catch (error) {
     db.exec("ROLLBACK");
@@ -544,7 +722,7 @@ export async function buildIndex(rootDir: string, embedder: Embedder): Promise<R
   }
 
   try {
-    migrerVecteursCorpus(existant.db, embedder.dim);
+    migrerVecteurs(existant.db, embedder.dim, unites);
     const delta = calculerDelta(existant.lignes, unites, empreintes);
     await appliquerDelta(
       existant.db,
@@ -554,6 +732,11 @@ export async function buildIndex(rootDir: string, embedder: Embedder): Promise<R
       existant.maxRowid,
       unites.length,
     );
+    existant.db
+      .prepare(
+        "INSERT INTO meta (cle, valeur) VALUES ('meta_sha', ?) ON CONFLICT(cle) DO UPDATE SET valeur = excluded.valeur",
+      )
+      .run(empreinteMeta(unites));
     return {
       chemin,
       unites: unites.length,

@@ -10,8 +10,9 @@ import {
   cheminIndex,
   empreinteUnite,
   formaterJournal,
-  migrerVecteursCorpus,
+  migrerVecteurs,
 } from "../mcp/index/build.ts";
+import { search } from "../mcp/tools.ts";
 import {
   CANDIDATS_VOIE,
   RRF_K,
@@ -332,8 +333,18 @@ describe("buildIndex", () => {
       try {
         sqliteVec.load(db);
         db.prepare(
-          "INSERT INTO vec_unites (rowid, corpus, document, embedding) VALUES (?, ?, ?, ?)",
-        ).run(BigInt(1000), "rgpd", DOCUMENT, JSON.stringify([1, 0, 0, 0, 0, 0, 0, 0]));
+          "INSERT INTO vec_unites (rowid, corpus, document, date_num, type_sanction, montant, numero, injonction, embedding) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        ).run(
+          BigInt(1000),
+          "rgpd",
+          DOCUMENT,
+          0n,
+          "autre",
+          -1n,
+          "1",
+          0n,
+          JSON.stringify([1, 0, 0, 0, 0, 0, 0, 0]),
+        );
         const nombre = db.prepare("SELECT count(*) AS n FROM vec_unites").get() as { n: number };
         assert.equal(Number(nombre.n), 7);
       } finally {
@@ -444,8 +455,8 @@ describe("buildIndex", () => {
         db.exec("CREATE VIRTUAL TABLE vec_unites USING vec0(embedding float[8] distance_metric=cosine)");
         const inserer = db.prepare("INSERT INTO vec_unites (rowid, embedding) VALUES (?, ?)");
         for (const ligne of lignes) inserer.run(BigInt(ligne.rowid), ligne.embedding);
-        assert.throws(() => openIndex(chemin), /colonnes corpus\/document/);
-        assert.equal(migrerVecteursCorpus(db, 8), true);
+        assert.throws(() => openIndex(chemin), /colonnes corpus\/métadonnées/);
+        assert.equal(migrerVecteurs(db, 8, SIX.map((u) => ({ ...u, corpus: "rgpd" }))), true);
       } finally {
         db.close();
       }
@@ -485,6 +496,126 @@ describe("buildIndex", () => {
         const resultats = searchIndex(index, vecteur, { k: 1, document: DOCUMENT });
         assert.equal(resultats.length, 1, "la fenêtre vectorielle doit être filtrée par document");
         assert.equal(resultats[0]?.ref, `${DOCUMENT}#art_1`);
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("filtre une décision CNIL par date, type, montant et numéro", async () => {
+    const root = tempRoot();
+    try {
+      const decision = (
+        id: string,
+        texte: string,
+        date: string,
+        type_sanction: string,
+        montant: number | null,
+        numero: string,
+      ): Unite => ({
+        ref: `${id}#f1`,
+        document: id,
+        corpus: "cnil",
+        niveau: "fragment",
+        numero,
+        chemin: `CNIL > Sanctions > Délibération ${numero}`,
+        texte,
+        date_acte: date,
+        date_debut: date,
+        date_fin: null,
+        statut: "VIGUEUR",
+        url: `https://example.test/${id}`,
+        type_sanction,
+        montant,
+        injonction: false,
+      });
+      ecrireCorpus(root, "cnil", [
+        decision("CNILTEXT000000001", "sanction cookies 2024", "2024-01-01", "amende", 100_000, "SAN-2024-001"),
+        decision("CNILTEXT000000002", "avertissement 2025", "2025-01-01", "avertissement", null, "SAN-2025-001"),
+        decision("CNILTEXT000000003", "amende 27 millions 2026", "2026-01-01", "amende", 27_000_000, "SAN-2026-001"),
+      ]);
+
+      const { chemin } = await buildIndex(root, embedderFactice());
+      const index = openIndex(chemin);
+      try {
+        const vecteur = await embedderFactice().embedQuery("sanction cookies amende");
+        const parDate = searchIndex(index, vecteur, {
+          k: 5,
+          corpus: "cnil",
+          date_min: "2025-01-01",
+          date_max: "2025-12-31",
+        });
+        assert.deepEqual(parDate.map((r) => r.document), ["CNILTEXT000000002"]);
+
+        const parType = searchIndex(index, vecteur, { k: 5, corpus: "cnil", type_sanction: "amende" });
+        assert.deepEqual(parType.map((r) => r.document).sort(), ["CNILTEXT000000001", "CNILTEXT000000003"]);
+
+        const parMontant = searchIndex(index, vecteur, { k: 5, corpus: "cnil", montant_min: 1_000_000 });
+        assert.deepEqual(parMontant.map((r) => r.document), ["CNILTEXT000000003"]);
+        assert.equal(parMontant[0]?.montant, 27_000_000);
+
+        const parNumero = searchIndex(index, vecteur, { k: 5, corpus: "cnil", numero: "SAN-2026-001" });
+        assert.deepEqual(parNumero.map((r) => r.document), ["CNILTEXT000000003"]);
+
+        assert.throws(
+          () => searchIndex(index, vecteur, { k: 5, corpus: "cnil", date_min: "2025-13-40" }),
+          /date_min attendu AAAA-MM-JJ/,
+        );
+
+        const outil = await search(
+          root,
+          { question: "sanction", k: 5, corpus: "cnil", type_sanction: "amende" },
+          { embedder: embedderFactice(), index, seuils: { bas: -1, haut: 2, marge: 0 } },
+        );
+        assert.ok(outil.passages.length > 0);
+        assert.ok(outil.passages.every((passage) => passage.type_sanction === "amende"));
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("n'affame pas un type minoritaire quand un autre le domine", async () => {
+    const root = tempRoot();
+    try {
+      const cible: Unite = {
+        ref: "CNILTEXT000000001#f1",
+        document: "CNILTEXT000000001",
+        corpus: "cnil",
+        niveau: "fragment",
+        numero: "SAN-2026-001",
+        chemin: "CNIL > Sanctions > Délibération SAN-2026-001",
+        texte: "sujet sans rapport",
+        date_acte: "2026-01-01",
+        date_debut: "2026-01-01",
+        date_fin: null,
+        statut: "VIGUEUR",
+        url: "https://example.test/1",
+        type_sanction: "amende",
+        montant: 27_000_000,
+        injonction: false,
+      };
+      const bruit: Unite[] = Array.from({ length: 100 }, (_, index) => ({
+        ...cible,
+        ref: `CNILTEXT0000001${String(index).padStart(2, "0")}#f1`,
+        document: `CNILTEXT0000001${String(index).padStart(2, "0")}`,
+        texte: "question identique",
+        type_sanction: "avertissement",
+        montant: null,
+      }));
+      ecrireCorpus(root, "cnil", [cible, ...bruit]);
+
+      const { chemin } = await buildIndex(root, embedderFactice());
+      const index = openIndex(chemin);
+      try {
+        const vecteur = await embedderFactice().embedQuery("question identique");
+        const resultats = searchIndex(index, vecteur, { k: 1, corpus: "cnil", type_sanction: "amende" });
+        assert.equal(resultats.length, 1, "la fenêtre vectorielle doit être filtrée par type");
+        assert.equal(resultats[0]?.document, "CNILTEXT000000001");
       } finally {
         index.db.close();
       }
@@ -542,7 +673,7 @@ describe("buildIndex", () => {
 
       assert.throws(
         () => openIndex(chemin),
-        /Index sans colonnes corpus\/document.*npm run corpus:index/,
+        /Index sans colonnes corpus\/métadonnées.*npm run corpus:index/,
       );
 
       const resultat = await buildIndex(root, embedderFactice());

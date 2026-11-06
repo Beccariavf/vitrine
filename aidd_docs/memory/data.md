@@ -28,7 +28,7 @@ flowchart LR
 
 ## Corpus CELLAR
 
-- Trois corpus versionnés, chacun avec un manifeste et `unites.jsonl` (une ligne par unité : `ref`, `document`, `corpus`, `niveau`, `numero`, `chemin`, `texte`, `date_acte`, `date_debut`, `date_fin`, `statut`, `url`, et `origine` pour la CNIL). `document` est l'acte (CELEX ou `CNILTEXT…`) ; `corpus` la collection (`rgpd`, `aiact`, `cnil`).
+- Trois corpus versionnés, chacun avec un manifeste et `unites.jsonl` (une ligne par unité : `ref`, `document`, `corpus`, `niveau`, `numero`, `chemin`, `texte`, `date_acte`, `date_debut`, `date_fin`, `statut`, `url`, et `origine` pour la CNIL ; la CNIL ajoute `type_sanction`, `montant` et `injonction`). `document` est l'acte (CELEX ou `CNILTEXT…`) ; `corpus` la collection (`rgpd`, `aiact`, `cnil`).
 - `data/corpus/rgpd/` : CELEX `32016R0679`, 272 unités (99 articles `art_N`, 173 considérants `rct_N`), date d'acte 2016-04-27, début 2018-05-25.
 - `data/corpus/aiact/` : CELEX `32024R1689`, 293 unités (113 articles, 180 considérants), date d'acte 2024-06-13, publication 2024-07-12, début 2024-08-01. La capture CELLAR porte 13 chapitres (`cpt_I` à `cpt_XIII`) ; seuls les comptes d'articles et de considérants sont validés.
 - `date_debut` suit la sémantique de l'acte : date d'application pour le RGPD (2018-05-25), date d'entrée en vigueur pour l'AI Act (2024-08-01), dont l'application générale est fixée au 2026-08-02.
@@ -40,7 +40,7 @@ flowchart LR
 
 ## Corpus CNIL
 
-- `data/corpus/cnil/` : 249 documents et 6 342 fragments, filtrés sur `nature_delib = "Sanction"` ; `niveau` = `fragment`, `ref` = `<doc_id>#f<chunk_index>` pour l'historique DINUM (index publié), `<id>#f<n>` numéroté par nous pour les incréments DILA.
+- `data/corpus/cnil/` : 249 documents et 6 342 fragments, filtrés sur `nature_delib = "Sanction"` ; `niveau` = `fragment`, `ref` = `<doc_id>#f<chunk_index>` pour l'historique DINUM (index publié), `<id>#f<n>` numéroté par nous pour les incréments DILA. Chaque fragment porte `type_sanction` (134 amendes, 95 avertissements, 12 liquidations, 6 rappels, 2 interruptions), `montant` (total des amendes en euros, `null` si absent ou masqué ; une seule amende masquée) et `injonction`, extraits du dispositif par `mcp/corpus/cnil/meta.ts`.
 - Sources : `https://huggingface.co/datasets/AgentPublic/cnil` (deux parquet, lus avec `hyparquet` 1.32.0 + `hyparquet-compressors` 1.1.3, colonnes `doc_id`, `chunk_index`, `text`, `number`, `date`, `title`, `status`, `nature_delib` ; la colonne `embeddings_bge-m3` n'est jamais lue) et `https://echanges.dila.gouv.fr/OPENDATA/CNIL/` (archives `CNIL_YYYYMMDD-HHMMSS.tar.gz`, 146 au 2026-11-05, XML `TEXTE_CNIL`). Le snapshot DINUM est daté 2026-10-30 (dernière modification Hugging Face), révision `bbc4bf7ef4a0148359f6e3ef38734edb08ac2f06` ; les deux fichiers sont adressés par leur `sha256` dans `manifest.json`.
 - Licence : `etalab-2.0` sur Hugging Face, `lov2` sur data.gouv ; l'écart est consigné dans le manifeste, pas résolu. URL de texte `https://www.legifrance.gouv.fr/cnil/id/<id>` déclarée et marquée `url_texte_verifiee: false` (403 aux robots, non vérifiée).
 - Découpage : `dinum` conserve le `chunk_index` publié ; `dila` découpe localement les paragraphes en fragments de 600 à 1 200 caractères (un paragraphe plus long reste seul), sans perdre de texte ; le `chemin` porte `Découpage local`.

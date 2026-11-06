@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 import * as sqliteVec from "sqlite-vec";
+import { dateIndex, numeroIndex } from "../corpus/cnil/meta.ts";
 
 /** Un index ouvert, avec son modèle et sa dimension lus dans `meta`. */
 export type Index = {
@@ -34,6 +35,12 @@ export type ResultatRecherche = {
   date_debut: string;
   date_fin: string | null;
   statut: string;
+  /** Type de sanction CNIL ; `autre` hors CNIL. */
+  type_sanction?: string;
+  /** Total des amendes CNIL en euros ; `null` si absent ou masqué. */
+  montant?: number | null;
+  /** Vrai si la décision CNIL prononce une injonction. */
+  injonction?: boolean;
   /** Distance cosinus rendue par sqlite-vec : `similarité = 1 - distance`. */
   distance: number;
 };
@@ -47,6 +54,18 @@ export type SearchOptions = {
   corpus?: string;
   /** Restreint aux unités de ce document ; absent, tout le corpus répond. */
   document?: string;
+  /** Date ISO minimale (`AAAA-MM-JJ`) sur la date de la décision. */
+  date_min?: string;
+  /** Date ISO maximale (`AAAA-MM-JJ`) sur la date de la décision. */
+  date_max?: string;
+  /** Type de sanction CNIL : amende, avertissement, rappel, injonction, liquidation, interruption, autre. */
+  type_sanction?: string;
+  /** Montant minimal des amendes, en euros ; exclut les montants inconnus. */
+  montant_min?: number;
+  /** Montant maximal des amendes, en euros ; exclut les montants inconnus. */
+  montant_max?: number;
+  /** Numéro de délibération, par exemple `SAN-2026-015`. */
+  numero?: string;
 };
 
 type Valeur = null | number | bigint | string | Uint8Array;
@@ -64,13 +83,21 @@ export function openIndex(chemin: string): Index {
     const colonnes = db.prepare("PRAGMA table_info(unites)").all() as { name: string }[];
     const colonnesVecteurs = db.prepare("PRAGMA table_info(vec_unites)").all() as { name: string }[];
     const nomsVecteurs = new Set(colonnesVecteurs.map((colonne) => colonne.name));
+    const attendues = [
+      "corpus",
+      "document",
+      "date_num",
+      "type_sanction",
+      "montant",
+      "numero",
+      "injonction",
+    ];
     if (
       !colonnes.some((colonne) => colonne.name === "corpus") ||
-      !nomsVecteurs.has("corpus") ||
-      !nomsVecteurs.has("document")
+      !attendues.every((nom) => nomsVecteurs.has(nom))
     ) {
       throw new Error(
-        `Index sans colonnes corpus/document : ${chemin}. Reconstruisez-le avec « npm run corpus:index ».`,
+        `Index sans colonnes corpus/métadonnées : ${chemin}. Reconstruisez-le avec « npm run corpus:index ».`,
       );
     }
     const meta = new Map<string, string>();
@@ -117,6 +144,9 @@ function ligneVersResultat(ligne: Ligne): ResultatRecherche {
     date_debut: texte(ligne.date_debut),
     date_fin: nullable(ligne.date_fin),
     statut: texte(ligne.statut),
+    type_sanction: texte(ligne.type_sanction),
+    montant: ligne.montant === null || ligne.montant === undefined ? null : Number(ligne.montant),
+    injonction: Number(ligne.injonction) === 1,
     distance: Number(ligne.distance),
   };
 }
@@ -174,7 +204,7 @@ export function searchIndex(index: Index, vecteur: number[], options: SearchOpti
   // majoritaire (la CNIL) remplirait la fenêtre et affamerait les autres.
   const { conditions, valeurs } = filtresVectoriels(options);
   const filtre = conditions.length === 0 ? "" : ` AND ${conditions.join(" AND ")}`;
-  const parametres: (string | number)[] = [
+  const parametres: (string | number | bigint)[] = [
     JSON.stringify(vecteur),
     candidats,
     ...valeurs,
@@ -182,7 +212,8 @@ export function searchIndex(index: Index, vecteur: number[], options: SearchOpti
   const lignes = index.db
     .prepare(
       `SELECT u.ref, u.document, u.corpus, u.niveau, u.numero, u.texte, u.chemin, u.url,
-              u.date_acte, u.date_debut, u.date_fin, u.statut, v.distance
+              u.date_acte, u.date_debut, u.date_fin, u.statut, u.type_sanction, u.montant,
+              u.injonction, v.distance
          FROM vec_unites v
          JOIN unites u ON u.rowid = v.rowid
         WHERE v.embedding MATCH ? AND k = ?${filtre}
@@ -195,9 +226,12 @@ export function searchIndex(index: Index, vecteur: number[], options: SearchOpti
 }
 
 /** Conditions poussées dans `vec0` : filtrer après le KNN affamerait un corpus minoritaire. */
-function filtresVectoriels(options: SearchOptions): { conditions: string[]; valeurs: string[] } {
+function filtresVectoriels(options: SearchOptions): {
+  conditions: string[];
+  valeurs: (string | number | bigint)[];
+} {
   const conditions: string[] = [];
-  const valeurs: string[] = [];
+  const valeurs: (string | number | bigint)[] = [];
   if (options.corpus !== undefined) {
     conditions.push("v.corpus = ?");
     valeurs.push(options.corpus);
@@ -206,7 +240,40 @@ function filtresVectoriels(options: SearchOptions): { conditions: string[]; vale
     conditions.push("v.document = ?");
     valeurs.push(options.document);
   }
+  if (options.date_min !== undefined) {
+    conditions.push("v.date_num >= ?");
+    valeurs.push(BigInt(dateIndexStrict(options.date_min, "date_min")));
+  }
+  if (options.date_max !== undefined) {
+    conditions.push("v.date_num <= ?");
+    valeurs.push(BigInt(dateIndexStrict(options.date_max, "date_max")));
+  }
+  if (options.type_sanction !== undefined) {
+    conditions.push("v.type_sanction = ?");
+    valeurs.push(options.type_sanction);
+  }
+  if (options.montant_min !== undefined) {
+    conditions.push("v.montant >= 0");
+    conditions.push("v.montant >= ?");
+    valeurs.push(BigInt(Math.trunc(options.montant_min)));
+  }
+  if (options.montant_max !== undefined) {
+    conditions.push("v.montant >= 0");
+    conditions.push("v.montant <= ?");
+    valeurs.push(BigInt(Math.trunc(options.montant_max)));
+  }
+  if (options.numero !== undefined) {
+    conditions.push("v.numero = ?");
+    valeurs.push(numeroIndex(options.numero));
+  }
   return { conditions, valeurs };
+}
+
+/** Date ISO stricte ; lève en nommant le filtre fautif. */
+function dateIndexStrict(date: string, nom: string): number {
+  const valeur = dateIndex(date);
+  if (valeur === 0) throw new Error(`${nom} attendu AAAA-MM-JJ ; reçu « ${date} »`);
+  return valeur;
 }
 
 /** Nombre de candidats pris dans chaque voie avant fusion. */
@@ -243,11 +310,12 @@ function candidatsDenses(
 ): CandidatDense[] {
   const { conditions, valeurs } = filtresVectoriels(options);
   const filtre = conditions.length === 0 ? "" : ` AND ${conditions.join(" AND ")}`;
-  const parametres: (string | number)[] = [JSON.stringify(vecteur), limite, ...valeurs];
+  const parametres: (string | number | bigint)[] = [JSON.stringify(vecteur), limite, ...valeurs];
   const lignes = index.db
     .prepare(
       `SELECT v.rowid AS rowid, u.ref, u.document, u.corpus, u.niveau, u.numero, u.texte, u.chemin, u.url,
-              u.date_acte, u.date_debut, u.date_fin, u.statut, v.distance
+              u.date_acte, u.date_debut, u.date_fin, u.statut, u.type_sanction, u.montant,
+              u.injonction, v.distance
          FROM vec_unites v
          JOIN unites u ON u.rowid = v.rowid
         WHERE v.embedding MATCH ? AND k = ?${filtre}
@@ -281,6 +349,32 @@ function candidatsLexicaux(
   if (options.document !== undefined) {
     conditions.push("u.document = ?");
     parametres.push(options.document);
+  }
+  if (options.date_min !== undefined) {
+    conditions.push("u.date_num >= ?");
+    parametres.push(dateIndexStrict(options.date_min, "date_min"));
+  }
+  if (options.date_max !== undefined) {
+    conditions.push("u.date_num <= ?");
+    parametres.push(dateIndexStrict(options.date_max, "date_max"));
+  }
+  if (options.type_sanction !== undefined) {
+    conditions.push("u.type_sanction = ?");
+    parametres.push(options.type_sanction);
+  }
+  if (options.montant_min !== undefined) {
+    conditions.push("u.montant >= 0");
+    conditions.push("u.montant >= ?");
+    parametres.push(Math.trunc(options.montant_min));
+  }
+  if (options.montant_max !== undefined) {
+    conditions.push("u.montant >= 0");
+    conditions.push("u.montant <= ?");
+    parametres.push(Math.trunc(options.montant_max));
+  }
+  if (options.numero !== undefined) {
+    conditions.push("u.numero_index = ?");
+    parametres.push(numeroIndex(options.numero));
   }
   const filtre = conditions.length === 0 ? "" : ` AND ${conditions.join(" AND ")}`;
   parametres.push(limite);
@@ -345,7 +439,7 @@ function resultatsParRowid(
   const lignes = index.db
     .prepare(
       `SELECT rowid, ref, document, corpus, niveau, numero, texte, chemin, url,
-              date_acte, date_debut, date_fin, statut
+              date_acte, date_debut, date_fin, statut, type_sanction, montant, injonction
          FROM unites
         WHERE rowid IN (${marques})`,
     )
