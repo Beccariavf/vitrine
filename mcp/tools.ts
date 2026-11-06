@@ -4,7 +4,7 @@ import { openIndex, rechercheHybride, searchIndex } from "./index/search.ts";
 import type { Index, ResultatRecherche } from "./index/search.ts";
 import type { Unite } from "./corpus/parse.ts";
 import type { Embedder } from "./embed/embedder.ts";
-import { numeroIndex } from "./corpus/cnil/meta.ts";
+import { debutDispositif, numeroIndex } from "./corpus/cnil/meta.ts";
 import { niveauConfiance } from "./confidence.ts";
 import type { NiveauConfiance } from "./confidence.ts";
 
@@ -208,7 +208,7 @@ export type FragmentDecision = {
   texte: string;
 };
 
-/** Une décision entière rendue par son identifiant ou son numéro. */
+/** Une décision rendue par son identifiant ou son numéro, et la partie demandée. */
 export type DecisionTrouvee = {
   document: string;
   numero: string;
@@ -223,10 +223,17 @@ export type DecisionTrouvee = {
   montant?: number | null;
   /** Vrai si la décision prononce une injonction. */
   injonction?: boolean;
+  /** Nombre total de fragments du document, avant sélection. */
+  fragments_total: number;
+  /** Partie rendue : la partie opératoire, ou le document entier. */
+  partie: PartieDecision;
   fragments: FragmentDecision[];
 };
 
-/** La réponse de `get_decision` : des décisions entières, ou une absence dite. */
+/** Partie d'une décision rendue par `get_decision`. */
+export type PartieDecision = "dispositif" | "tous";
+
+/** La réponse de `get_decision` : des décisions, ou une absence dite. */
 export type ResultatDecision = {
   trouve: boolean;
   decisions: DecisionTrouvee[];
@@ -240,6 +247,11 @@ export type DecisionDemande = {
   numero?: string;
   /** Restreint à une collection ; absent, tous les corpus répondent. */
   corpus?: string;
+  /**
+   * `dispositif` (défaut) rend la partie opératoire ; `tous` rend le document
+   * entier, qui peut dépasser la charge acceptée par un client MCP.
+   */
+  partie?: PartieDecision;
 };
 
 /** Rang d'un fragment dans son document : le nombre final de la référence. */
@@ -249,14 +261,35 @@ function rangDeRef(ref: string): [number, string] {
 }
 
 /**
- * Lit une décision entière, par identifiant de document ou par numéro, dans un
- * corpus ou dans tous. Plusieurs documents peuvent porter le même numéro :
+ * Index du premier fragment de la partie opératoire.
+ *
+ * La borne est calculée sur le texte recollé, puis reportée sur les fragments :
+ * le premier dont la fin dépasse la borne est le premier rendu. Les fragments
+ * restent entiers, aucun texte n'est coupé.
+ */
+function premierFragmentDuDispositif(fragments: Unite[]): number {
+  const borne = debutDispositif(fragments.map((unite) => unite.texte).join("\n"));
+  let cumul = 0;
+  for (let index = 0; index < fragments.length; index += 1) {
+    cumul += (fragments[index]?.texte.length ?? 0) + 1;
+    if (cumul > borne) return index;
+  }
+  return Math.max(0, fragments.length - 1);
+}
+
+/**
+ * Lit une décision, par identifiant de document ou par numéro, dans un corpus
+ * ou dans tous. La partie opératoire est rendue par défaut ; `partie: "tous"`
+ * rend le document entier. Plusieurs documents peuvent porter le même numéro :
  * chacun est rendu avec son identifiant. Une absence est dite, jamais comblée.
  */
 export function getDecision(rootDir: string, demande: DecisionDemande): ResultatDecision {
   const document = demande.document?.trim();
   const numero = demande.numero?.trim();
   const corpus = demande.corpus?.trim();
+  // Une valeur inconnue retombe sur le défaut : le schéma du serveur la refuse,
+  // mais l'appel direct ne doit pas rendre une partie qui n'existe pas.
+  const partie: PartieDecision = demande.partie === "tous" ? "tous" : "dispositif";
   const portee = corpus === undefined || corpus === "" ? "" : ` dans le corpus ${corpus}`;
 
   if ((document === undefined || document === "") && (numero === undefined || numero === "")) {
@@ -304,6 +337,8 @@ export function getDecision(rootDir: string, demande: DecisionDemande): Resultat
       });
       const premier = premiers[0];
       if (premier === undefined) throw new Error(`Décision vide pour ${identifiant}`);
+      const debut = partie === "tous" ? 0 : premierFragmentDuDispositif(premiers);
+      const rendus = premiers.slice(debut);
       return {
         document: identifiant,
         numero: premier.numero,
@@ -314,7 +349,9 @@ export function getDecision(rootDir: string, demande: DecisionDemande): Resultat
         ...(premier.type_sanction === undefined ? {} : { type_sanction: premier.type_sanction }),
         ...(premier.montant === undefined ? {} : { montant: premier.montant }),
         ...(premier.injonction === undefined ? {} : { injonction: premier.injonction }),
-        fragments: premiers.map((unite) => ({
+        fragments_total: premiers.length,
+        partie,
+        fragments: rendus.map((unite) => ({
           ref: unite.ref,
           numero: unite.numero,
           chemin: unite.chemin,
