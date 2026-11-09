@@ -26,9 +26,9 @@ flowchart LR
     P --> E["data/entries — une entrée par actualité ou arrêt"]
 ```
 
-## Corpus CELLAR
+## Corpus
 
-- Trois corpus versionnés, chacun avec un manifeste et `unites.jsonl` (une ligne par unité : `ref`, `document`, `corpus`, `niveau`, `numero`, `chemin`, `texte`, `date_acte`, `date_debut`, `date_fin`, `statut`, `url`, et `origine` pour la CNIL ; la CNIL ajoute `type_sanction`, `montant` et `injonction`). `document` est l'acte (CELEX ou `CNILTEXT…`) ; `corpus` la collection (`rgpd`, `aiact`, `cnil`).
+- Six corpus versionnés, chacun avec un manifeste, un bloc `couverture` et `unites.jsonl` (une ligne par unité : `ref`, `document`, `corpus`, `niveau`, `numero`, `chemin`, `texte`, `date_acte`, `date_debut`, `date_fin`, `statut`, `url`, et `origine` pour la CNIL ; la CNIL ajoute `type_sanction`, `montant` et `injonction`). `document` est l'acte ou la décision (CELEX, `CNILTEXT…`, `LEGIARTI…`, `CETATEXT…`, slug CEPD) ; `corpus` la collection (`rgpd`, `aiact`, `cnil`, `lil`, `ce`, `cepd`). Le tableau à jour est `aidd_docs/tasks/2026_11/2026_11_09_mcp-donnees-personnelles/coverage.md` ; les comptes viennent des manifestes, jamais d'une recopie.
 - `data/corpus/rgpd/` : CELEX `32016R0679`, 272 unités (99 articles `art_N`, 173 considérants `rct_N`), date d'acte 2016-04-27, début 2018-05-25.
 - `data/corpus/aiact/` : CELEX `32024R1689`, 293 unités (113 articles, 180 considérants), date d'acte 2024-06-13, publication 2024-07-12, début 2024-08-01. La capture CELLAR porte 13 chapitres (`cpt_I` à `cpt_XIII`) ; seuls les comptes d'articles et de considérants sont validés.
 - `date_debut` suit la sémantique de l'acte : date d'application pour le RGPD (2018-05-25), date d'entrée en vigueur pour l'AI Act (2024-08-01), dont l'application générale est fixée au 2026-08-02.
@@ -40,12 +40,32 @@ flowchart LR
 
 ## Corpus CNIL
 
-- `data/corpus/cnil/` : 249 documents et 6 342 fragments, filtrés sur `nature_delib = "Sanction"` ; `niveau` = `fragment`, `ref` = `<doc_id>#f<chunk_index>` pour l'historique DINUM (index publié), `<id>#f<n>` numéroté par nous pour les incréments DILA. Sur les 249 documents, `type_sanction` compte 134 amendes, 95 avertissements, 12 liquidations, 6 rappels et 2 interruptions, et 35 décisions prononcent une injonction ; chaque fragment porte `montant` (sanction pécuniaire en euros, amende ou liquidation, `null` si absent ou masqué ; une seule amende masquée) et `injonction`, extraits du dispositif par `mcp/corpus/cnil/meta.ts`.
+- `data/corpus/cnil/` : 3 245 documents et 29 299 fragments, filtrés sur les trois natures `Sanction`, `Avis` et `Recommandation/Lignes directrices` ; comptes `Sanction` 249 / 6 342, `Avis` 2 896 / 21 914, `Recommandation` 100 / 1 043. `niveau` = `fragment`, `ref` = `<doc_id>#f<chunk_index>` pour l'historique DINUM (index publié), `<id>#f<n>` numéroté par nous pour les incréments DILA. Sur les 249 sanctions, `type_sanction` compte 134 amendes, 95 avertissements, 12 liquidations, 6 rappels et 2 interruptions, et 35 décisions prononcent une injonction ; chaque fragment de sanction porte `montant` (sanction pécuniaire en euros, amende ou liquidation, `null` si absent ou masqué ; une seule amende masquée) et `injonction`, extraits du dispositif par `mcp/corpus/cnil/meta.ts`. Les avis et recommandations ne portent aucune métadonnée de sanction.
 - Sources : `https://huggingface.co/datasets/AgentPublic/cnil` (deux parquet, lus avec `hyparquet` 1.32.0 + `hyparquet-compressors` 1.1.3, colonnes `doc_id`, `chunk_index`, `text`, `number`, `date`, `title`, `status`, `nature_delib` ; la colonne `embeddings_bge-m3` n'est jamais lue) et `https://echanges.dila.gouv.fr/OPENDATA/CNIL/` (archives `CNIL_YYYYMMDD-HHMMSS.tar.gz`, 146 au 2026-11-05, XML `TEXTE_CNIL`). Le snapshot DINUM est daté 2026-10-30 (dernière modification Hugging Face), révision `bbc4bf7ef4a0148359f6e3ef38734edb08ac2f06` ; les deux fichiers sont adressés par leur `sha256` dans `manifest.json`.
 - Licence : `etalab-2.0` sur Hugging Face, `lov2` sur data.gouv ; l'écart est consigné dans le manifeste, pas résolu. URL de texte `https://www.legifrance.gouv.fr/cnil/id/<id>` déclarée et marquée `url_texte_verifiee: false` (403 aux robots, non vérifiée).
 - Découpage : `dinum` conserve le `chunk_index` publié ; `dila` découpe localement les paragraphes en fragments de 600 à 1 200 caractères (un paragraphe plus long reste seul), sans perdre de texte ; le `chemin` porte `Découpage local`.
 - `etat.json` porte `derniere_archive`, son `sha256`, la date de lecture et le nombre d'archives lues. `npm run cnil:sync` liste les archives, ne lit que les nouvelles, et n'écrit qu'après validation de tout le corpus. Un document déjà présent n'est remplacé que si l'archive est plus récente que sa `date_acte`.
 - Le parquet (334 Mo) reste sous `data/raw/cnil/`, ignoré par git ; seul `data/raw/` des captures CELLAR est commité.
+
+## Corpus LIL
+
+- `data/corpus/lil/` : la loi n° 78-17 dans sa version consolidée, 1 document et 133 articles en vigueur ; 54 articles abrogés sont écartés et 50 sections parcourues. `ref` = `LEGIARTI…`, `niveau` = `article`, `document` = `LEGITEXT000006068624`.
+- Source : PISTE — Légifrance `/consult/legiPart` avec `{ textId, date }` ; `npm run lil:sync -- --date AAAA-MM-JJ` lit la version à cette date, laisse un snapshot `legi-part-<date>.json` sous `data/raw/lil/` (non commité) et écrit `data/corpus/lil/`. Le manifeste porte `text_id`, `version`, `date_consultation`, `date_debut_version`, `articles_en_vigueur`, `articles_abroges_ecartes` et `snapshot_sha256`.
+- Licence : Licence Ouverte 2.0 (Etalab). Le texte est copié, jamais reformulé ; les balises HTML de `content` sont ramenées à leur texte visible.
+
+## Corpus Conseil d'État
+
+- `data/corpus/ce/` : 1 312 décisions et 17 703 fragments, depuis 2014, sur les données personnelles. Fonds `publie` : 181 décisions / 3 080 fragments ; fonds `inedit` : 1 131 / 14 623 ; 62 doublons d'identifiant entre les deux fonds. `ref` = `<CETATEXT…>#f<n>`, `niveau` = `fragment`, URL `https://www.legifrance.gouv.fr/ceta/id/<id>`.
+- Source : archive globale JADE de la DILA, `https://echanges.dila.gouv.fr/OPENDATA/JADE/`, fichier `Freemium_jade_global_*.tar.gz` (1,32 Go, 8 novembre 2026). `npm run ce:sync` la télécharge sous `data/raw/ce/` (non commité), la lit en flux (`Readable.fromWeb` → `createGunzip` → tar incrémental) et écrit `data/corpus/ce/`. Les deux fonds `jade/global/publie` et `jade/global/inedit` sont lus.
+- Filtres déclarés : `JURIDICTION` normalisée exactement « Conseil d'État » (les cours administratives d'appel et tribunaux administratifs sont écartés et comptés), `DATE_DEC >= 2014-01-01`, au moins un mot-clé du descripteur. Exclusions : autre juridiction 399 198, avant 2014 138 074, sans mot-clé 34 878, texte vide 1, date invalide 0. Le manifeste porte `couverture.fonds`, `couverture.exclusions` et `ecartes`.
+- Licence : Licence Ouverte 2.0 (Etalab). `etat.json` porte l'archive, son `sha256`, la date de lecture et une empreinte du filtre ; une même archive et un même filtre ne sont pas relus.
+
+## Corpus CEPD
+
+- `data/corpus/cepd/` : 36 lignes directrices et 5 443 fragments, période 2018-04-11 → 2025-06-05. `ref` = `<slug>#f<n>`, `niveau` = `fragment`, `chemin` = `CEPD > Lignes directrices > <titre>`, URL de la page française du document.
+- Source : sitemap du CEPD (`https://www.edpb.europa.eu/sitemap.xml`, pages `?page=1` à `?page=5`), filtre `/documents/guideline/..._fr` (42 URL), puis page de document et PDF. Le PDF `_fr.pdf` courant est préféré ; les PDF de consultation sont écartés. Le Wayback Machine ne sert que de repli si le sitemap est injoignable. `npm run cepd:sync -- --dry-run|--limite <n>|--depuis <date>` écrit les PDF sous `data/raw/cepd/` (non commité) et le corpus après extraction `unpdf`.
+- Qualité : un PDF sans texte, de moins de 2 000 caractères ou dont la part de lettres est inférieure à 50 % est refusé en nommant son URL. Les 36 PDF retenus sont français (`fr: 36`, `en: 0`, `autre: 0`). 6 URL `_fr` sont écartées faute de PDF : 5 pages WP29 sans PDF et le doublon court `transparency_fr`, la même ligne étant retenue sous son URL longue. Le manifeste porte `couverture.via: "sitemap"`, `sitemap_pages`, `langues_pdf`, `documents_sans_texte_ecartes` et `versions_ecartees`.
+- Licence : à vérifier ; le site CEPD ne déclare pas de licence explicite. Les documents sont des publications officielles de l'Union européenne.
 
 ## Summaries
 

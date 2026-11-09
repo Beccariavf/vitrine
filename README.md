@@ -27,6 +27,7 @@ npm run ce:sync                            # archive JADE globale → data/corpu
 npm run ce:sync -- --dry-run               # ce que l'archive produirait, sans écrire
 npm run cepd:sync                          # lignes directrices du CEPD → data/corpus/cepd/
 npm run cepd:sync -- --dry-run             # ce que la liste produirait, sans écrire
+npm run lil:sync -- --date 2026-11-09      # loi Informatique et Libertés → data/corpus/lil/
 npm run cnil:sync -- --tout                # historique DINUM + incréments DILA → data/corpus/cnil/
 npm run cnil:sync -- --increments --dry-run   # ce que les archives ajouteraient, sans écrire
 npm run corpus:index   # index incrémental Ollama + sqlite-vec → data/corpus/index/index.db
@@ -62,18 +63,27 @@ avec un message qui nomme la commande. L'index est incrémental : un second pass
 embarque zéro unité et laisse les vecteurs identiques. La construction suit les descripteurs
 `mcp/corpus/*.json` ; `--document <corpus>` n'en construit qu'un.
 
-Le troisième corpus, `cnil`, porte les délibérations de sanction : 249 documents et 6 342 fragments,
-filtrés sur la nature `Sanction`. Deux origines de fragments cohabitent et sont déclarées dans
-`data/corpus/cnil/manifest.json` : `dinum` pour l'historique publié (le parquet vectorisé, dont on
-ré-embed le texte et dont on garde le `chunk_index` publié comme base de citation) et `dila` pour les
-incréments (découpage local de 600 à 1 200 caractères, dit dans le `chemin`). `npm run cnil:sync`
-télécharge le parquet une fois sous `data/raw/cnil/` — non commité, 334 Mo — puis les archives
-`CNIL_YYYYMMDD-HHMMSS.tar.gz` de la DILA ; un document déjà présent n'est remplacé que si l'archive
-est plus récente que sa date, sinon il garde sa numérotation publiée. `get_decision` rend une
-décision entière par identifiant `CNILTEXT…` ou par numéro `SAN-…`, et `search` accepte un
-paramètre `corpus` (`rgpd`, `aiact`, `cnil`). Le filtre est d'abord un choix de corpus, pas de
-document. La route Légifrance `https://www.legifrance.gouv.fr/cnil/id/<id>` est déclarée dans le
-manifeste mais n'a pas été vérifiée : elle répond 403 aux robots.
+Le corpus `cnil` porte 3 245 délibérations et 29 299 fragments, filtrés sur trois natures :
+`Sanction` (249 documents / 6 342 fragments), `Avis` (2 896 / 21 914) et
+`Recommandation/Lignes directrices` (100 / 1 043). Deux origines de fragments cohabitent et sont
+déclarées dans `data/corpus/cnil/manifest.json` : `dinum` pour l'historique publié (le parquet
+vectorisé, dont on ré-embed le texte et dont on garde le `chunk_index` publié comme base de
+citation) et `dila` pour les incréments (découpage local de 600 à 1 200 caractères, dit dans le
+`chemin`). `npm run cnil:sync` télécharge le parquet une fois sous `data/raw/cnil/` — non commité,
+334 Mo — puis les archives `CNIL_YYYYMMDD-HHMMSS.tar.gz` de la DILA ; un document déjà présent n'est
+remplacé que si l'archive est plus récente que sa date, sinon il garde sa numérotation publiée.
+`get_decision` rend une décision entière par identifiant `CNILTEXT…` ou par numéro `SAN-…`, et
+`search` accepte un paramètre `corpus` (`rgpd`, `aiact`, `cnil`, `lil`, `ce`, `cepd`) et un filtre
+`nature` pour les trois natures CNIL. Le filtre est d'abord un choix de corpus, pas de document. La
+route Légifrance `https://www.legifrance.gouv.fr/cnil/id/<id>` est déclarée dans le manifeste mais
+n'a pas été vérifiée : elle répond 403 aux robots.
+
+Le corpus `lil` porte la loi n° 78-17 dans sa version consolidée : 1 document, 133 articles en
+vigueur, 54 articles abrogés écartés et 50 sections parcourues. `npm run lil:sync -- --date
+AAAA-MM-JJ` lit PISTE `/consult/legiPart` avec `{ textId, date }`, écrit le snapshot sous
+`data/raw/lil/` — non commité — et le corpus sous `data/corpus/lil/`. Chaque article devient une
+unité `LEGIARTI…`, avec sa section, sa date de début, son état et l'URL Légifrance. Licence
+Ouverte 2.0 (Etalab).
 
 L'évaluation CNIL est séparée : 20 questions dans `mcp/eval/questions-cnil.csv` (12 visant un
 document, 6 conceptuelles, 2 pièges), mesurées avec `corpus: cnil` et rapportées dans
@@ -139,6 +149,12 @@ Mesure du 9 novembre 2026 : 42 URL `_fr` dans le sitemap, 5 pages lues, 36 ligne
 2025-06-05. Les 36 PDF retenus sont français (`fr: 36`, `en: 0`, `autre: 0`). Les 10 questions `dev`
 de `mcp/eval/questions-cepd.csv` rendent le document attendu au rang 1 pour les 10 (MRR 1,000,
 top 1 100,0 %).
+
+Chaque `manifest.json` porte un bloc `couverture` émis par sa synchronisation : source, date ou
+archive, bornes, types ou natures retenus, exclusions et comptes. Le tableau des six corpus
+(documents, fragments, période, source, licence) est
+`aidd_docs/tasks/2026_11/2026_11_09_mcp-donnees-personnelles/coverage.md` ; il reprend les comptes
+des manifestes, jamais une recopie approximative.
 
 L'évaluation v2 porte sur 60 questions écrites contre le texte du RGPD : 12 références exactes,
 38 conceptuelles et 10 pièges, réparties en 30 `dev` et 30 `test`. Chaque mesure est filtrée par
