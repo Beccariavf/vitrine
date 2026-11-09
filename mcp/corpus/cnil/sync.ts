@@ -26,6 +26,7 @@ import {
   listerArchives,
 } from "./increments.ts";
 import type { ArchiveLue, EtatCnil, FetchTexte } from "./increments.ts";
+import { natureComparable } from "./nature.ts";
 import type { DecisionDila } from "./parse.ts";
 
 const ICI = dirname(fileURLToPath(import.meta.url));
@@ -53,12 +54,18 @@ export type SourceManifeste = {
   fichiers?: { url: string; sha256: string }[];
 };
 
+/** Comptes d'une nature : documents distincts et fragments. */
+export type CompteNature = { documents: number; unites: number };
+
 export type ManifesteCnil = {
   corpus: string;
   nom: string;
-  nature: string;
+  /** Natures demandées à la synchronisation. */
+  natures: string[];
   documents: number;
   unites: number;
+  /** Comptes par nature présente : documents distincts et fragments. */
+  par_nature: Record<string, CompteNature>;
   origines: Origines;
   decoupage: string;
   /** Date de la source la plus récente intégrée : l'arrêté de la synchronisation. */
@@ -77,6 +84,48 @@ export function compterOrigines(unites: Unite[]): Origines {
     dinum: unites.filter((unite) => unite.origine === "dinum").length,
     dila: unites.filter((unite) => unite.origine === "dila").length,
   };
+}
+
+/** Compte documents et fragments par nature, dans l'ordre des natures rencontrées. */
+export function compterNatures(unites: Unite[]): Record<string, CompteNature> {
+  const parNature = new Map<string, { documents: Set<string>; unites: number }>();
+  for (const unite of unites) {
+    const nature = unite.nature?.trim() ?? "";
+    if (nature === "") continue;
+    const compte = parNature.get(nature) ?? { documents: new Set<string>(), unites: 0 };
+    compte.documents.add(unite.document);
+    compte.unites += 1;
+    parNature.set(nature, compte);
+  }
+  return Object.fromEntries(
+    [...parNature.entries()]
+      .sort(([gauche], [droite]) => gauche.localeCompare(droite, "fr"))
+      .map(([nature, compte]) => [
+        nature,
+        { documents: compte.documents.size, unites: compte.unites },
+      ]),
+  );
+}
+
+/**
+ * Natures demandées : `natures` prime, puis une `nature` unique, puis celles du
+ * descripteur.
+ */
+export function naturesDemandees(
+  options: { nature?: string; natures?: readonly string[] },
+  descripteur: Pick<DescripteurCnil, "natures">,
+): string[] {
+  if (options.natures !== undefined && options.natures.length > 0) return [...options.natures];
+  if (options.nature !== undefined && options.nature.trim() !== "") return [options.nature];
+  return descripteur.natures;
+}
+
+/** Vrai si les deux ensembles de natures sont les mêmes, à la casse près. */
+function memesNatures(gauche: readonly string[], droite: readonly string[]): boolean {
+  if (gauche.length !== droite.length) return false;
+  return gauche.every((nature) =>
+    droite.some((autre) => natureComparable(autre) === natureComparable(nature)),
+  );
 }
 
 const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
@@ -189,9 +238,10 @@ export function manifesteCnil(
   return {
     corpus: descripteur.corpus,
     nom: descripteur.nom,
-    nature: descripteur.nature,
+    natures: descripteur.natures,
     documents,
     unites: unites.length,
+    par_nature: compterNatures(unites),
     origines,
     decoupage: origines.dila > 0 ? `dinum + ${descripteur.dila.decoupage}` : "dinum",
     arrete_le: arrete,
@@ -234,7 +284,10 @@ export function manifesteCnil(
 export type SyncOptions = {
   rootDir?: string;
   descripteurPath?: string;
+  /** Une seule nature, forme historique du filtre. */
   nature?: string;
+  /** Plusieurs natures ; prime sur `nature`. */
+  natures?: string[];
   dryRun?: boolean;
   fetchImpl?: FetchBinaire;
   /** Lignes DINUM déjà lues : les tests remplacent le parquet, jamais le réseau. */
@@ -262,7 +315,7 @@ export type ResultatHistorique = {
 export async function syncHistorique(options: SyncOptions = {}): Promise<ResultatHistorique> {
   const rootDir = options.rootDir ?? RACINE;
   const descripteur = lireDescripteur(options.descripteurPath ?? join(ICI, "descripteur.json"));
-  const nature = options.nature ?? descripteur.nature;
+  const natures = naturesDemandees(options, descripteur);
   const cheminEtat = join(rootDir, DOSSIER_CORPUS, "etat.json");
 
   const fichiers =
@@ -271,7 +324,7 @@ export async function syncHistorique(options: SyncOptions = {}): Promise<Resulta
       : [];
   const lignes =
     options.lignes ?? (await lireLignes(fichiers.map((fichier) => fichier.chemin)));
-  const { unites: historiques, erreurs } = unitesDinum(lignes, descripteur, nature);
+  const { unites: historiques, erreurs } = unitesDinum(lignes, descripteur, natures);
   if (erreurs.length > 0) {
     throw new Error(
       `Corpus CNIL invalide, rien n'est écrit : ${erreurs.slice(0, 10).join(" ; ")}` +
@@ -291,7 +344,7 @@ export async function syncHistorique(options: SyncOptions = {}): Promise<Resulta
 
   const attendus =
     options.attendus ??
-    (nature === descripteur.nature
+    (memesNatures(natures, descripteur.natures)
       ? { documents: descripteur.documents_attendus, fragments: descripteur.fragments_attendus }
       : undefined);
   // Les comptes du snapshot portent sur l'historique seul : y ajouter un
@@ -358,7 +411,7 @@ export async function syncIncrements(
 ): Promise<ResultatIncrements> {
   const rootDir = options.rootDir ?? RACINE;
   const descripteur = lireDescripteur(options.descripteurPath ?? join(ICI, "descripteur.json"));
-  const nature = options.nature ?? descripteur.nature;
+  const natures = naturesDemandees(options, descripteur);
   const cheminEtat = options.etatPath ?? join(rootDir, DOSSIER_CORPUS, "etat.json");
   const cheminUnites = join(rootDir, DOSSIER_CORPUS, "unites.jsonl");
   const cheminManifeste = join(rootDir, DOSSIER_CORPUS, "manifest.json");
@@ -369,7 +422,7 @@ export async function syncIncrements(
     ((url: string) => listerArchives(url, options.fetchTexte ?? (fetch as unknown as FetchTexte)));
   const lire =
     options.lireArchive ??
-    ((nom: string) => lireArchiveDepuis(nom, descripteur, options.fetchImpl, nature));
+    ((nom: string) => lireArchiveDepuis(nom, descripteur, options.fetchImpl, natures));
 
   const liste = await lister(descripteur.dila.url);
   const recentes = archivesNouvelles(liste, etat);
@@ -391,7 +444,7 @@ export async function syncIncrements(
   }
 
   if (decisions.length > 0) {
-    const fusion = fusionnerDecisions(unites, decisions, descripteur);
+    const fusion = fusionnerDecisions(unites, decisions, descripteur, natures);
     unites = fusion.unites;
     unitesRemplacees += fusion.remplacees;
     documentsIgnores += fusion.ignorees;
@@ -449,10 +502,21 @@ export async function syncIncrements(
   };
 }
 
-/** Valeur qui suit `--nom`, ou `undefined`. */
-function valeurDe(nom: string, argv: string[]): string | undefined {
-  const index = argv.indexOf(nom);
-  return index >= 0 ? argv[index + 1] : undefined;
+/** Toutes les valeurs qui suivent `--nom`, chaque valeur admettant des virgules. */
+function valeursDe(nom: string, argv: string[]): string[] {
+  const valeurs: string[] = [];
+  for (let index = 0; index < argv.length; index += 1) {
+    if (argv[index] !== nom) continue;
+    const valeur = argv[index + 1];
+    if (valeur === undefined || valeur.startsWith("--")) continue;
+    valeurs.push(
+      ...valeur
+        .split(",")
+        .map((element) => element.trim())
+        .filter((element) => element !== ""),
+    );
+  }
+  return valeurs;
 }
 
 const MODES = ["--historique", "--increments", "--tout"] as const;
@@ -463,8 +527,8 @@ async function main(argv: string[]): Promise<void> {
     throw new Error(`Précisez ${MODES.join(", ")}.`);
   }
   const dryRun = argv.includes("--dry-run");
-  const nature = valeurDe("--nature", argv);
-  const options = { ...(nature === undefined ? {} : { nature }), dryRun };
+  const natures = valeursDe("--nature", argv);
+  const options = { ...(natures.length === 0 ? {} : { natures }), dryRun };
 
   if (argv.includes("--historique") || argv.includes("--tout")) {
     const resultat = await syncHistorique(options);

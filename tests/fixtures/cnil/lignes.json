@@ -28,5 +28,25 @@
     "title": "Avis du 6 mai 2021",
     "status": "VIGUEUR",
     "nature_delib": "Avis"
+  },
+  {
+    "doc_id": "CNILTEXT000043470687",
+    "chunk_index": 0,
+    "text": "AVIS de la Commission nationale de l'informatique et des libertés sur un traitement de données de santé.",
+    "number": "AVIS-2021-002",
+    "date": "2021-06-10",
+    "title": "Avis du 10 juin 2021",
+    "status": "VIGUEUR",
+    "nature_delib": "AVIS"
+  },
+  {
+    "doc_id": "CNILTEXT000043470688",
+    "chunk_index": 0,
+    "text": "Recommandation relative à la sécurité des données personnelles : les mots de passe doivent être robustes.",
+    "number": null,
+    "date": "2021-07-15",
+    "title": "Recommandation du 15 juillet 2021",
+    "status": "VIGUEUR",
+    "nature_delib": "Recommandation/Lignes directrices"
   }
 ]

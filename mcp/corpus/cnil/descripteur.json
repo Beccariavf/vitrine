@@ -1,7 +1,7 @@
 {
   "corpus": "cnil",
   "nom": "CNIL",
-  "nature": "Sanction",
+  "natures": ["Sanction", "Avis", "Recommandation/Lignes directrices"],
   "documents_attendus": 249,
   "fragments_attendus": 6342,
   "snapshot": "2026-10-30",

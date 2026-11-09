@@ -52,6 +52,8 @@ export type Unite = {
   url: string;
   /** Renseigné pour la CNIL seulement : d'où vient le découpage. */
   origine?: Origine;
+  /** Renseigné pour la CNIL seulement : nature de la délibération (sanction, avis, recommandation). */
+  nature?: string;
   /** Renseigné pour la CNIL seulement : type de sanction du dispositif. */
   type_sanction?: string;
   /** Total des amendes en euros ; `null` si aucune ou si le montant est masqué. */

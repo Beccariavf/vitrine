@@ -12,6 +12,7 @@ import { texteVisible } from "../parse.ts";
 import type { Unite } from "../parse.ts";
 import type { DescripteurCnil } from "./historique.ts";
 import { extraireMetaSanction } from "./meta.ts";
+import { estSanction, libelleNature } from "./nature.ts";
 
 /** Métadonnées d'une délibération, telles que la DILA les publie. */
 export type DecisionDila = {
@@ -135,21 +136,25 @@ export function decouperParagraphes(paragraphes: string[]): string[] {
 /**
  * Mappe une délibération en unités. La numérotation des fragments vient de
  * nous : elle est dite dans `chemin` et dans le manifeste, pour qu'une citation
- * ne la confonde pas avec le `chunk_index` publié de la DINUM.
+ * ne la confonde pas avec le `chunk_index` publié de la DINUM. Le chemin nomme
+ * la nature, et seules les sanctions portent les métadonnées du dispositif.
  */
 export function unitesDila(
   decision: DecisionDila,
-  descripteur: Pick<DescripteurCnil, "corpus" | "nom" | "url_texte">,
+  descripteur: Pick<DescripteurCnil, "corpus" | "nom" | "natures" | "url_texte">,
 ): Unite[] {
-  const meta = extraireMetaSanction(decision.paragraphes.join("\n"));
+  const nature = libelleNature(decision.natureDelib, descripteur.natures);
+  const libelle = nature === "" ? "Délibération" : nature;
+  const meta = estSanction(nature)
+    ? extraireMetaSanction(decision.paragraphes.join("\n"))
+    : {};
   return decouperParagraphes(decision.paragraphes).map((texte, index) => ({
     ref: `${decision.id}#f${index}`,
     document: decision.id,
     corpus: descripteur.corpus,
     niveau: "fragment",
     numero: decision.numero,
-    chemin:
-      `${descripteur.nom} > Sanctions > Délibération ${decision.numero} > Découpage local`,
+    chemin: `${descripteur.nom} > ${libelle} > Délibération ${decision.numero} > Découpage local`,
     texte,
     date_acte: decision.dateTexte,
     date_debut: decision.dateTexte,
@@ -157,6 +162,7 @@ export function unitesDila(
     statut: decision.etatJuridique,
     url: descripteur.url_texte.replace("{id}", decision.id),
     origine: "dila",
+    ...(nature === "" ? {} : { nature }),
     ...meta,
   }));
 }

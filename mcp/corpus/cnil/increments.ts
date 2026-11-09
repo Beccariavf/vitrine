@@ -12,6 +12,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { gunzipSync } from "node:zlib";
 import type { Unite } from "../parse.ts";
 import type { DescripteurCnil, FetchBinaire } from "./historique.ts";
+import { natureDemandee } from "./nature.ts";
 import { parseTexteCnil, unitesDila } from "./parse.ts";
 import type { DecisionDila } from "./parse.ts";
 
@@ -108,12 +109,12 @@ export type ArchiveLue = {
   decisions: DecisionDila[];
 };
 
-/** Télécharge, décompresse et parse une archive ; retient la nature demandée. */
+/** Télécharge, décompresse et parse une archive ; retient les natures demandées. */
 export async function lireArchiveDepuis(
   nom: string,
   descripteur: DescripteurCnil,
   fetchImpl: FetchBinaire = fetch,
-  nature = descripteur.nature,
+  natures: readonly string[] = descripteur.natures,
 ): Promise<ArchiveLue> {
   const url = new URL(nom, descripteur.dila.url).href;
   const reponse = await fetchImpl(url);
@@ -129,9 +130,9 @@ export async function lireArchiveDepuis(
     if (!/CNILTEXT\d+\.xml$/i.test(entree.nom)) continue;
     documentsLus += 1;
     const decision = parseTexteCnil(entree.donnees.toString("utf8"), entree.nom);
-    if (decision.natureDelib !== nature) continue;
+    if (!natureDemandee(decision.natureDelib, natures)) continue;
     if (decision.paragraphes.length === 0) {
-      throw new Error(`${entree.nom} : ${decision.id} sans texte, nature ${nature} attendue`);
+      throw new Error(`${entree.nom} : ${decision.id} sans texte, nature ${decision.natureDelib} attendue`);
     }
     decisions.push(decision);
   }
@@ -143,18 +144,21 @@ export async function lireArchiveDepuis(
  * un document présent n'est remplacé que si l'archive est strictement plus
  * récente que sa date : une archive plus ancienne ne dégrade jamais le
  * `chunk_index` publié de la DINUM. Les décisions sont appliquées dans
- * l'ordre, une archive plus récente gagne.
+ * l'ordre, une archive plus récente gagne. Une décision hors des natures
+ * demandées est écartée.
  */
 export function fusionnerDecisions(
   unites: Unite[],
   decisions: DecisionDila[],
-  descripteur: Pick<DescripteurCnil, "corpus" | "nom" | "url_texte">,
+  descripteur: Pick<DescripteurCnil, "corpus" | "nom" | "natures" | "url_texte">,
+  natures: readonly string[] = descripteur.natures,
 ): { unites: Unite[]; remplacees: number; ajoutees: number; ignorees: number } {
   let courant = [...unites];
   let remplacees = 0;
   let ajoutees = 0;
   let ignorees = 0;
   for (const decision of decisions) {
+    if (!natureDemandee(decision.natureDelib, natures)) continue;
     const existantes = courant.filter((unite) => unite.document === decision.id);
     const dateCorpus = existantes[0]?.date_acte ?? "";
     if (existantes.length > 0 && decision.dateTexte <= dateCorpus) {
