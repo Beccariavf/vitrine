@@ -18,6 +18,7 @@
     "corpus:build": "node mcp/corpus/build.ts",
     "corpus:index": "node mcp/index/build.ts",
     "cnil:sync": "node mcp/corpus/cnil/sync.ts",
+    "lil:sync": "node mcp/corpus/lil/sync.ts",
     "mcp:smoke": "node mcp/embed/smoke.ts",
     "mcp": "node mcp/server.ts",
     "mcp:eval": "node mcp/eval/run.ts",

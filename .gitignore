@@ -25,3 +25,6 @@ data/corpus/index/
 
 # Corpus CNIL : parquet DINUM non commité (334 Mo), récupéré par npm run cnil:sync
 data/raw/cnil/
+
+# Corpus LIL : snapshot legiPart non commité, récupéré par npm run lil:sync
+data/raw/lil/

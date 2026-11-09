@@ -1,0 +1,22 @@
+{
+  "corpus": "lil",
+  "nom": "LIL",
+  "text_id": "LEGITEXT000006068624",
+  "version": "LEGITEXT000006068624_01-10-2026",
+  "titre": "Loi n° 78-17 du 6 janvier 1978 relative à l'informatique, aux fichiers et aux libertés",
+  "url": "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000006068624",
+  "licence": "Licence Ouverte 2.0 (Etalab)",
+  "date_consultation": "2026-11-09",
+  "date_debut_version": "2026-10-01",
+  "documents": 1,
+  "unites": 133,
+  "couverture": {
+    "source": "PISTE — Légifrance /consult/legiPart",
+    "date": "2026-11-09",
+    "sections": 50,
+    "articles_en_vigueur": 133,
+    "articles_abroges_ecartes": 54
+  },
+  "snapshot": "legi-part-2026-11-09.json",
+  "snapshot_sha256": "000d9ed69ded934147158301c59840e3b26ec6f959d544180e0f6d063eaadc2d"
+}
