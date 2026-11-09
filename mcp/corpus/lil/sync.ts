@@ -108,9 +108,24 @@ export function configPiste(rootDir: string): PisteConfig | null {
   return readPisteConfig();
 }
 
+/**
+ * Retire le temps d'exécution que la DILA pose sur chaque objet : il change à
+ * chaque appel et rendrait le snapshot différent pour la même version. Tout le
+ * reste de la réponse est conservé tel quel.
+ */
+export function sansTempsExecution(valeur: unknown): unknown {
+  if (Array.isArray(valeur)) return valeur.map((element) => sansTempsExecution(element));
+  if (typeof valeur !== "object" || valeur === null) return valeur;
+  const canonique: Record<string, unknown> = {};
+  for (const [cle, contenu] of Object.entries(valeur)) {
+    if (cle === "executionTime") continue;
+    canonique[cle] = sansTempsExecution(contenu);
+  }
+  return canonique;
+}
+
 /** Écrit un fichier UTF-8 s'il n'a pas déjà exactement ce contenu. */
-function ecrireSiChange(chemin: string, contenu: string): boolean {
-  try {
+function ecrireSiChange(chemin: string, contenu: string): boolean {  try {
     if (readFileSync(chemin, "utf8") === contenu) return false;
   } catch {
     // Absent : on l'écrit plus bas.
@@ -196,7 +211,7 @@ export async function syncLil(options: SyncLilOptions = {}): Promise<ResultatLil
     },
   );
 
-  const snapshot = JSON.stringify(reponse, null, 2);
+  const snapshot = JSON.stringify(sansTempsExecution(reponse), null, 2);
   const corpsSnapshot = snapshot.endsWith("\n") ? snapshot : `${snapshot}\n`;
   const snapshotSha256 = createHash("sha256").update(corpsSnapshot, "utf8").digest("hex");
   const snapshotPath = join(rootDir, DOSSIER_BRUT, `legi-part-${date}.json`);

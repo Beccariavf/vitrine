@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { describe, it } from "node:test";
 import { lireLegiPart, unitesLil, validerCapture } from "../mcp/corpus/lil/parse.ts";
 import type { DescripteurLil, LegiPart } from "../mcp/corpus/lil/parse.ts";
-import { syncLil } from "../mcp/corpus/lil/sync.ts";
+import { sansTempsExecution, syncLil } from "../mcp/corpus/lil/sync.ts";
 import type { ManifesteLil } from "../mcp/corpus/lil/sync.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";
 
@@ -140,6 +140,21 @@ describe("les unités LIL", () => {
   });
 });
 
+describe("le snapshot", () => {
+  it("retire le temps d'exécution et garde tout le reste", () => {
+    const canonique = sansTempsExecution({
+      id: "LEGITEXT000006068624_01-10-2026",
+      executionTime: 70,
+      sections: [{ title: "Titre Ier", executionTime: 0, articles: [{ id: "LEGIARTI1", executionTime: 3 }] }],
+    });
+
+    assert.deepEqual(canonique, {
+      id: "LEGITEXT000006068624_01-10-2026",
+      sections: [{ title: "Titre Ier", articles: [{ id: "LEGIARTI1" }] }],
+    });
+  });
+});
+
 describe("la synchronisation LIL", () => {
   const fixture = BRUT;
 
@@ -184,9 +199,14 @@ describe("la synchronisation LIL", () => {
 
       const avant = statSync(cheminUnites).mtimeMs;
       const avantSnapshot = statSync(cheminSnapshot).mtimeMs;
+      // La DILA horodate chaque objet : seul le temps d'exécution change d'un
+      // appel à l'autre, et il ne doit pas réécrire le snapshot.
+      const rejoue = structuredClone(fixture) as { sections: { executionTime?: number }[] };
+      const section = rejoue.sections[0];
+      if (section !== undefined) section.executionTime = 987_654;
       const second = await syncLil({
         rootDir: root,
-        reponse: fixture,
+        reponse: rejoue,
         date: DATE,
         attendus: ATTENDUS,
       });
