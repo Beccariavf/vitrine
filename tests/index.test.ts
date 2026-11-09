@@ -372,6 +372,7 @@ describe("buildIndex", () => {
         modifiees: 0,
         supprimees: 0,
         inchangees: 0,
+        metaModifiees: 0,
       });
       assert.equal(compteur.passages, 6);
       const index = openIndex(resultat.chemin);
@@ -838,6 +839,7 @@ describe("buildIndex incrémental", () => {
         modifiees: 0,
         supprimees: 0,
         inchangees: 6,
+        metaModifiees: 0,
       });
       assert.equal(compteur.passages, 6);
       assert.deepEqual(vecteurs(second.chemin), avant);
@@ -874,6 +876,7 @@ describe("buildIndex incrémental", () => {
         modifiees: 0,
         supprimees: 0,
         inchangees: 6,
+        metaModifiees: 1,
       });
       assert.equal(compteur.passages, 6, "aucun passage ré-embarqué");
       assert.deepEqual(vecteurs(chemin), vecteursAvant, "les vecteurs restent identiques");
@@ -896,6 +899,7 @@ describe("buildIndex incrémental", () => {
         modifiees: 0,
         supprimees: 0,
         inchangees: 6,
+        metaModifiees: 0,
       });
       assert.equal(compteur.passages, 6);
     } finally {
@@ -920,6 +924,7 @@ describe("buildIndex incrémental", () => {
         modifiees: 0,
         supprimees: 0,
         inchangees: 6,
+        metaModifiees: 0,
       });
       assert.equal(compteur.passages, 7);
       const apres = rowids(chemin);
@@ -994,6 +999,7 @@ describe("buildIndex incrémental", () => {
         modifiees: 1,
         supprimees: 0,
         inchangees: 5,
+        metaModifiees: 0,
       });
       assert.equal(compteur.passages, 7);
       const vecteursApres = vecteurs(chemin);
@@ -1021,6 +1027,7 @@ describe("buildIndex incrémental", () => {
         modifiees: 0,
         supprimees: 1,
         inchangees: 5,
+        metaModifiees: 0,
       });
       assert.equal(compteur.passages, 6);
       assert.equal(rowids(chemin).has(`${DOCUMENT}#art_6`), false);
@@ -1107,7 +1114,7 @@ describe("buildIndex incrémental", () => {
         chemin: "/tmp/index.db",
         unites: 7,
         mode: "incremental",
-        delta: { ajoutees: 1, modifiees: 2, supprimees: 3, inchangees: 4 },
+        delta: { ajoutees: 1, modifiees: 2, supprimees: 3, inchangees: 4, metaModifiees: 5 },
       },
       embedderFactice(),
     );
@@ -1116,6 +1123,7 @@ describe("buildIndex incrémental", () => {
     assert.match(journal, /2 modifiées/);
     assert.match(journal, /3 supprimées/);
     assert.match(journal, /4 inchangées/);
+    assert.match(journal, /5 métadonnées rafraîchies/);
   });
 });
 

@@ -30,6 +30,8 @@ export type DeltaIndex = {
   modifiees: number;
   supprimees: number;
   inchangees: number;
+  /** Unités dont seule une colonne d'affichage a changé. */
+  metaModifiees: number;
 };
 
 export type ResultatBuild = {
@@ -193,6 +195,7 @@ type LigneIndex = {
   ref: string;
   rowid: number;
   empreinte: string;
+  numero: string;
   niveau: string;
   date_acte: string;
   date_debut: string;
@@ -256,12 +259,13 @@ function ouvrirExistant(chemin: string, embedder: Embedder): Existant {
 
     const lignes = db
       .prepare(
-        "SELECT ref, rowid, empreinte, niveau, date_acte, date_debut, date_fin, statut, url FROM unites",
+        "SELECT ref, rowid, empreinte, numero, niveau, date_acte, date_debut, date_fin, statut, url FROM unites",
       )
       .all() as {
       ref: string;
       rowid: number | bigint;
       empreinte: string;
+      numero: string;
       niveau: string;
       date_acte: string;
       date_debut: string;
@@ -279,6 +283,7 @@ function ouvrirExistant(chemin: string, embedder: Embedder): Existant {
         ref: ligne.ref,
         rowid: Number(ligne.rowid),
         empreinte: ligne.empreinte,
+        numero: ligne.numero,
         niveau: ligne.niveau,
         date_acte: ligne.date_acte,
         date_debut: ligne.date_debut,
@@ -310,6 +315,7 @@ type Delta = {
 /** Vrai si une colonne d'affichage a changé sans toucher au passage embarqué. */
 function metaChangee(existante: LigneIndex, unite: Unite): boolean {
   return (
+    existante.numero !== unite.numero ||
     existante.niveau !== unite.niveau ||
     existante.date_acte !== unite.date_acte ||
     existante.date_debut !== unite.date_debut ||
@@ -491,7 +497,8 @@ async function appliquerDelta(
   `);
   const modifierMeta = db.prepare(`
     UPDATE unites
-       SET niveau = ?, date_acte = ?, date_debut = ?, date_fin = ?, statut = ?, url = ?
+       SET numero = ?, numero_index = ?, niveau = ?, date_acte = ?, date_debut = ?, date_fin = ?,
+           statut = ?, url = ?
      WHERE rowid = ?
   `);
   const insererUnite = db.prepare(`
@@ -530,6 +537,8 @@ async function appliquerDelta(
 
     for (const { unite, rowid } of delta.metaModifiees) {
       modifierMeta.run(
+        unite.numero,
+        numeroIndex(unite.numero),
         unite.niveau,
         unite.date_acte,
         unite.date_debut,
@@ -795,6 +804,7 @@ export async function buildIndex(rootDir: string, embedder: Embedder): Promise<R
         modifiees: 0,
         supprimees: 0,
         inchangees: 0,
+        metaModifiees: 0,
       },
       mode: "complet",
       raison: existant.raison,
@@ -825,6 +835,7 @@ export async function buildIndex(rootDir: string, embedder: Embedder): Promise<R
         modifiees: delta.modifiees.length,
         supprimees: delta.supprimees.length,
         inchangees: delta.inchangees.length,
+        metaModifiees: delta.metaModifiees.length,
       },
       mode: "incremental",
     };
@@ -846,7 +857,8 @@ export function formaterJournal(resultat: ResultatBuild, embedder: Embedder): st
     `${resultat.unites} unités indexées dans ${resultat.chemin} ` +
     `(${embedder.model}, ${embedder.dim} dimensions, ${resultat.mode}${raison}) : ` +
     `${resultat.delta.ajoutees} ajoutées, ${resultat.delta.modifiees} modifiées, ` +
-    `${resultat.delta.supprimees} supprimées, ${resultat.delta.inchangees} inchangées\n`
+    `${resultat.delta.supprimees} supprimées, ${resultat.delta.inchangees} inchangées, ` +
+    `${resultat.delta.metaModifiees} métadonnées rafraîchies\n`
   );
 }
 
