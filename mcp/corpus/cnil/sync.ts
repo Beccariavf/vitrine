@@ -17,7 +17,13 @@ import {
   telechargerHistorique,
   unitesDinum,
 } from "./historique.ts";
-import type { DescripteurCnil, FetchBinaire, FichierDinum, LigneDinum } from "./historique.ts";
+import type {
+  DescripteurCnil,
+  ExclusionNature,
+  FetchBinaire,
+  FichierDinum,
+  LigneDinum,
+} from "./historique.ts";
 import {
   archivesNouvelles,
   fusionnerDecisions,
@@ -84,7 +90,10 @@ export type ManifesteCnil = {
     natures: string[];
     par_nature: Record<string, CompteNature>;
     origines: Origines;
-    exclusions: string[];
+    /** Lignes écartées par `nature_delib`, `(vide)` pour null. */
+    exclusions: ExclusionNature[];
+    /** Lignes DINUM lues : unités retenues + exclusions. */
+    lignes_lues: number;
     comptes: { documents: number; unites: number };
   };
 };
@@ -235,18 +244,33 @@ function fichiersDuManifeste(cheminManifeste: string): FichierDinum[] {
   }
 }
 
+/** Exclusions DINUM déjà consignées, pour ne pas les perdre en mode incréments. */
+function exclusionsDuManifeste(cheminManifeste: string): ExclusionNature[] {
+  if (!existsSync(cheminManifeste)) return [];
+  try {
+    const manifeste = JSON.parse(readFileSync(cheminManifeste, "utf8")) as ManifesteCnil;
+    return Array.isArray(manifeste.couverture?.exclusions)
+      ? manifeste.couverture.exclusions
+      : [];
+  } catch {
+    return [];
+  }
+}
+
 /** Manifeste du corpus : deux sources déclarées, comptes, découpage et arrêté. */
 export function manifesteCnil(
   descripteur: DescripteurCnil,
   unites: Unite[],
   fichiers: FichierDinum[],
   etat: EtatCnil,
+  exclusions: ExclusionNature[] = [],
 ): ManifesteCnil {
   const origines = compterOrigines(unites);
   const documents = new Set(unites.map((unite) => unite.document)).size;
   const archive = dateArchive(etat.derniere_archive);
   const arrete = archive !== null && archive > descripteur.snapshot ? archive : descripteur.snapshot;
   const parNature = compterNatures(unites);
+  const exclues = exclusions.reduce((total, exclusion) => total + exclusion.lignes, 0);
   return {
     corpus: descripteur.corpus,
     nom: descripteur.nom,
@@ -264,7 +288,8 @@ export function manifesteCnil(
       natures: descripteur.natures,
       par_nature: parNature,
       origines,
-      exclusions: [],
+      exclusions,
+      lignes_lues: origines.dinum + exclues,
       comptes: { documents, unites: unites.length },
     },
     url_texte: descripteur.url_texte,
@@ -346,7 +371,7 @@ export async function syncHistorique(options: SyncOptions = {}): Promise<Resulta
       : [];
   const lignes =
     options.lignes ?? (await lireLignes(fichiers.map((fichier) => fichier.chemin)));
-  const { unites: historiques, erreurs } = unitesDinum(lignes, descripteur, natures);
+  const { unites: historiques, erreurs, exclusions } = unitesDinum(lignes, descripteur, natures);
   if (erreurs.length > 0) {
     throw new Error(
       `Corpus CNIL invalide, rien n'est écrit : ${erreurs.slice(0, 10).join(" ; ")}` +
@@ -373,7 +398,13 @@ export async function syncHistorique(options: SyncOptions = {}): Promise<Resulta
   // incrément DILA ne doit pas rendre la synchronisation invalide.
   validerUnites(historiques, attendus);
   const comptes = validerUnites(unites);
-  const manifeste = manifesteCnil(descripteur, unites, fichiers, lireEtat(cheminEtat));
+  const manifeste = manifesteCnil(
+    descripteur,
+    unites,
+    fichiers,
+    lireEtat(cheminEtat),
+    exclusions,
+  );
 
   let ecrit = false;
   if (options.dryRun !== true) {
@@ -487,6 +518,7 @@ export async function syncIncrements(
     unites,
     fichiersDuManifeste(cheminManifeste),
     nouvelEtat,
+    exclusionsDuManifeste(cheminManifeste),
   );
 
   let ecrit = false;

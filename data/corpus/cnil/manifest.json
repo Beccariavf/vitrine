@@ -58,7 +58,53 @@
       "dinum": 29299,
       "dila": 0
     },
-    "exclusions": [],
+    "exclusions": [
+      {
+        "nature": "Autre autorisation",
+        "lignes": 23517
+      },
+      {
+        "nature": "Référentiel/Règlement type/Norme",
+        "lignes": 3738
+      },
+      {
+        "nature": "Autorisation de recherche",
+        "lignes": 2565
+      },
+      {
+        "nature": "Autorisation de transfert",
+        "lignes": 2020
+      },
+      {
+        "nature": "Mise en demeure",
+        "lignes": 1145
+      },
+      {
+        "nature": "Disposition interne CNIL",
+        "lignes": 951
+      },
+      {
+        "nature": "Certification/Label",
+        "lignes": 651
+      },
+      {
+        "nature": "(vide)",
+        "lignes": 298
+      },
+      {
+        "nature": "Autorisation d'évaluation",
+        "lignes": 138
+      },
+      {
+        "nature": "Clôture",
+        "lignes": 118
+      },
+      {
+        "nature": "Autre décision",
+        "lignes": 26
+      }
+    ],
+    "lignes_lues": 64466,
     "comptes": {
       "documents": 3245,
       "unites": 29299

@@ -191,11 +191,32 @@ export function uniteDinum(
  * Rend les unités des lignes des natures demandées. Une ligne vide ou sans
  * identifiant est comptée en erreur : l'appelant n'écrit alors aucun fichier.
  */
+export type ExclusionNature = { nature: string; lignes: number };
+
+/** Lignes écartées par nature : la valeur brute, `(vide)` pour null ou vide. */
+export function compterExclusionsNature(
+  lignes: readonly LigneDinum[],
+  natures: readonly string[],
+): ExclusionNature[] {
+  const comptes = new Map<string, number>();
+  for (const ligne of lignes) {
+    if (estDeNature(ligne, natures)) continue;
+    const nature = String(ligne.nature_delib ?? "").trim() || "(vide)";
+    comptes.set(nature, (comptes.get(nature) ?? 0) + 1);
+  }
+  return [...comptes.entries()]
+    .map(([nature, lignes]) => ({ nature, lignes }))
+    .sort(
+      (gauche, droite) =>
+        droite.lignes - gauche.lignes || gauche.nature.localeCompare(droite.nature, "fr"),
+    );
+}
+
 export function unitesDinum(
   lignes: LigneDinum[],
   descripteur: DescripteurCnil,
   natures: readonly string[] = descripteur.natures,
-): { unites: Unite[]; erreurs: string[] } {
+): { unites: Unite[]; erreurs: string[]; exclusions: ExclusionNature[] } {
   const unites: Unite[] = [];
   const erreurs: string[] = [];
   for (const ligne of lignes) {
@@ -232,5 +253,5 @@ export function unitesDinum(
     for (const unite of groupe) Object.assign(unite, meta);
   }
 
-  return { unites, erreurs };
+  return { unites, erreurs, exclusions: compterExclusionsNature(lignes, natures) };
 }

@@ -323,6 +323,25 @@ describe("l'historique DINUM", () => {
     );
   });
 
+  it("compte les lignes écartées par nature, (vide) compris", () => {
+    const exclues: LigneDinum[] = [
+      { ...LIGNES[0]!, doc_id: "CNILTEXT_EXCLU_1", chunk_index: 0, nature_delib: "Plainte" },
+      { ...LIGNES[0]!, doc_id: "CNILTEXT_EXCLU_2", chunk_index: 0, nature_delib: null },
+      { ...LIGNES[0]!, doc_id: "CNILTEXT_EXCLU_3", chunk_index: 0, nature_delib: null },
+    ];
+    const { unites, exclusions } = unitesDinum([...LIGNES, ...exclues], DESCRIPTEUR);
+
+    assert.equal(unites.length, 5, "les lignes écartées ne deviennent pas des unités");
+    assert.deepEqual(exclusions, [
+      { nature: "(vide)", lignes: 2 },
+      { nature: "Plainte", lignes: 1 },
+    ]);
+    assert.equal(
+      exclusions.reduce((total, exclusion) => total + exclusion.lignes, 0),
+      3,
+    );
+  });
+
   it("ne retient que la nature explicitement demandée", () => {
     const { unites } = unitesDinum(LIGNES, DESCRIPTEUR, ["Sanction"]);
 
@@ -396,9 +415,19 @@ describe("l'historique DINUM", () => {
 });
 
 describe("le manifeste CNIL", () => {
-  it("compte les documents, les fragments, les natures et les deux origines", () => {
+  it("compte les documents, les fragments, les natures, les exclusions et les deux origines", () => {
     const { unites } = unitesDinum(LIGNES, DESCRIPTEUR);
-    const manifeste = manifesteCnil(descriptorReduit({ documents: 4, fragments: 5 }), unites, FICHIERS, ETAT_VIDE);
+    const exclusions = [
+      { nature: "(vide)", lignes: 2 },
+      { nature: "Plainte", lignes: 1 },
+    ];
+    const manifeste = manifesteCnil(
+      descriptorReduit({ documents: 4, fragments: 5 }),
+      unites,
+      FICHIERS,
+      ETAT_VIDE,
+      exclusions,
+    );
 
     assert.equal(manifeste.corpus, "cnil");
     assert.deepEqual(manifeste.natures, [
@@ -429,7 +458,8 @@ describe("le manifeste CNIL", () => {
     assert.equal(manifeste.couverture.source, "CNIL — historique DINUM et incréments DILA");
     assert.deepEqual(manifeste.couverture.natures, manifeste.natures);
     assert.deepEqual(manifeste.couverture.comptes, { documents: 4, unites: 5 });
-    assert.deepEqual(manifeste.couverture.exclusions, []);
+    assert.deepEqual(manifeste.couverture.exclusions, exclusions);
+    assert.equal(manifeste.couverture.lignes_lues, 8);
   });
 
   it("refuse des comptes qui ne correspondent pas au contenu", () => {
