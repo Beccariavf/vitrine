@@ -270,6 +270,26 @@ describe("la synchronisation du corpus CE", () => {
     }
   });
 
+  it("le corpus commité porte les comptes de son manifeste", () => {
+    const racine = fileURLToPath(new URL("..", import.meta.url));
+    const manifeste = JSON.parse(
+      readFileSync(join(racine, "data", "corpus", "ce", "manifest.json"), "utf8"),
+    ) as ManifesteCe;
+    const unites = readFileSync(join(racine, "data", "corpus", "ce", "unites.jsonl"), "utf8")
+      .split("\n")
+      .filter((ligne) => ligne !== "")
+      .map((ligne) => JSON.parse(ligne) as Unite);
+
+    assert.equal(unites.length, manifeste.fragments);
+    assert.equal(new Set(unites.map((unite) => unite.document)).size, manifeste.documents);
+    assert.equal(
+      Object.values(manifeste.ecartes).reduce((total, compte) => total + compte, 0) +
+        manifeste.documents,
+      manifeste.documents_lus,
+    );
+    assert.doesNotThrow(() => validerUnites(unites));
+  });
+
   it("refuse une référence dupliquée, une date non ISO ou un texte vide", () => {
     const base: Unite = {
       ref: "CETATEXT000000000001#f0",
