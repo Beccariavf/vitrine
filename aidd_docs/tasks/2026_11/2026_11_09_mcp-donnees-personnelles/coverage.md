@@ -29,7 +29,7 @@ Mesures du 2026-11-09, hors split `test`. Le harnais mesure un corpus ; il n'exe
 | RGPD v2, 30 questions | 6/6 références au rang 1 ; sémantique 18/19 au top 5, MRR 0,860, top 1 78,9 % ; pièges cités 0/4 |
 | AI Act, 12 questions | 7/7 références au rang 1 ; sémantique 2/3, MRR 0,278, top 1 0 % ; pièges cités 0/1 |
 | CNIL v2, 25 questions | 14/25 au top 5, MRR 0,406, top 1 32,0 % |
-| CNIL doctrine, 10 questions | **3/10 au top 5, MRR 0,225, top 1 20,0 %**, 8 `confiant` et 2 `incertain`, au moins 6 confiants faux |
+| CNIL doctrine, 10 questions | **3/10 au top 5, MRR 0,225, top 1 20,0 %**, 8 `confiant` dont 3 corrects et 5 faux, 2 `incertain` faux |
 | LIL, 10 questions | **10/10 au top 5, MRR 0,750, top 1 60,0 %** |
 | Conseil d'État, 12 questions | 8/12 au top 5, MRR 0,486, top 1 33,3 % |
 | CEPD, 10 questions | 10/10 au top 5, MRR 1,000, top 1 100,0 % |

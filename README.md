@@ -109,7 +109,7 @@ remplacés ; le second est archivé dans `b442d14` et aucun n'est repris. Rappor
 
 Le jeu CNIL doctrine (10 questions `dev`) mesure le corpus CNIL, pas le filtre `nature` : le harnais
 filtre par corpus et n'exerce pas `search.nature`. Résultat assumé : **3/10 au top 5, MRR 0,225,
-top 1 20,0 %**, avec 8 résultats `confiant` et 2 `incertain`, donc au moins 6 confiants faux. Ce
+top 1 20,0 %**, avec 8 `confiant` dont 3 corrects et 5 faux, et 2 `incertain` faux. Ce
 chiffre est corpus-level et ne doit pas être lu comme une mesure du filtre de nature. Le jeu LIL
 donne **10/10 au top 5, MRR 0,750, top 1 60,0 %**.
 

@@ -102,7 +102,7 @@ flowchart LR
 
 ## Évaluations dev
 
-- Mesures du 2026-11-09, hors split `test` : RGPD v2 18/19 sémantique au top 5 (MRR 0,860) ; AI Act 2/3 (0,278) ; CNIL v2 14/25 (0,406) ; **CNIL doctrine 3/10 (MRR 0,225, top 1 20,0 %, 8 confiant et 2 incertain, au moins 6 confiants faux)** ; **LIL 10/10 (MRR 0,750)** ; Conseil d'État 8/12 (0,486) ; CEPD 10/10 (1,000).
+- Mesures du 2026-11-09, hors split `test` : RGPD v2 18/19 sémantique au top 5 (MRR 0,860) ; AI Act 2/3 (0,278) ; CNIL v2 14/25 (0,406) ; **CNIL doctrine 3/10 (MRR 0,225, top 1 20,0 %, 8 confiant dont 3 corrects et 5 faux ; 2 incertain faux)** ; **LIL 10/10 (MRR 0,750)** ; Conseil d'État 8/12 (0,486) ; CEPD 10/10 (1,000).
 - Le harnais mesure un corpus, pas le filtre `nature` : le 3/10 de CNIL doctrine est corpus-level et ne prouve rien sur `search.nature`.
 - Le `test` CNIL v2 à 16/25 date du 2026-11-06 et du corpus de sanctions seules ; son marqueur est consommé, il n'est pas rejouable et ne décrit pas le corpus élargi. L'évidence courante est le `dev` 14/25.
 
