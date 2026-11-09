@@ -21,7 +21,7 @@ Source: aidd_docs/tasks/2026_11/2026_11_09_mcp-donnees-personnelles/brainstorm.m
 
 | URL   | What it settled   |
 | ----- | ----------------- |
-| https://echanges.dila.gouv.fr/OPENDATA/JADE/ | Une archive globale `Freemium_jade_global_<horodatage>.tar.gz` (1,32 Go, 8 novembre 2026) porte les décisions JADE ; structure `TEXTE_JURI_ADMIN` avec `DATE_DEC`, `JURIDICTION`, `NUMERO` et `CONTENU`. |
+| https://echanges.dila.gouv.fr/OPENDATA/JADE/ | Une archive globale `Freemium_jade_global_<horodatage>.tar.gz` (1,32 Go, 8 novembre 2026) porte les décisions JADE ; elle contient 73 332 fichiers `jade/global/publie/` et 536 197 fichiers `jade/global/inedit/`, avec la structure `TEXTE_JURI_ADMIN` (`DATE_DEC`, `JURIDICTION`, `NUMERO`, `CONTENU`). |
 | https://www.data.gouv.fr/datasets/jade | Licence ouverte 2.0, contenu JADE (Conseil d'État, cours administratives d'appel, tribunal des conflits), pseudonymisation. |
 | https://api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/legiPart | Un POST `{ textId, date }` rend la version consolidée de la LIL (`LEGITEXT000006068624`) ; `{ textId }` seul répond 500. |
 | https://www.legifrance.gouv.fr/contenu/pied-de-page/foire-aux-questions-api | Authentification Bearer, environnements sandbox et production, quotas consultables dans PISTE et 429 en cas de dépassement. |
@@ -53,7 +53,7 @@ Source: aidd_docs/tasks/2026_11/2026_11_09_mcp-donnees-personnelles/brainstorm.m
 | Decision   | Why   |
 | ---------- | ----- |
 | Le Conseil d'État vient de l'archive JADE de la DILA, pas de PISTE. | 1 296 décisions pour une seule requête PISTE et un appel par texte intégral, contre une archive sans quota ; le périmètre JADE (décisions publiées ou sélectionnées) et les mots-clés sont déclarés dans le manifeste. |
-| Le corpus Conseil d'État est un sous-ensemble déclaré de JADE. | JADE ne porte pas toutes les décisions inédites ; le filtre de date, de juridiction et de mots-clés est une réduction assumée, comptée dans le manifeste. |
+| Le corpus Conseil d'État est un sous-ensemble déclaré de JADE. | JADE ne porte pas toutes les décisions inédites ; le filtre de date, de juridiction et de mots-clés est une réduction assumée, comptée dans le manifeste, et les fonds `publie` et `inedit` sont tous deux lus. |
 | Un seul corpus `cnil`, la nature devient une métadonnée filtrante. | Évite trois corpus CNIL et garde `search` lisible ; `get_decision` continue de rendre une délibération entière. |
 | La LIL est datée à la synchronisation et n'entre que si le texte est en vigueur. | Une version consolidée change avec le temps ; le manifeste porte la date et le `textId` exact. |
 | Les lignes directrices CEPD sont extraites de leurs PDF. | Le site ne publie pas le texte intégral en HTML ; le PDF est la source officielle. |

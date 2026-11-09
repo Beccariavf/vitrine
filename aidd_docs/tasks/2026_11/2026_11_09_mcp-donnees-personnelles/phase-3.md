@@ -60,7 +60,7 @@ status: pending
 > Le fichier de 1,32 Go n'entre jamais entier en mémoire.
 
 1. Créer `mcp/corpus/ce/archive.ts` : `fetch` → `Readable.fromWeb` → `createGunzip` → lecteur tar incrémental (en-têtes de 512 octets, données ignorées ou lues selon le nom).
-2. Ne rendre que les entrées `jade/global/publie/**/*.xml` ; ignorer les répertoires et les autres fonds.
+2. Ne rendre que les entrées `jade/global/publie/**/*.xml` et `jade/global/inedit/**/*.xml` ; ignorer les répertoires et les autres fonds. L'archive réelle porte 73 332 fichiers `publie` et 536 197 fichiers `inedit` : les seconds contiennent les décisions inédites au recueil, dont celles de la veille.
 3. Refuser une entrée dont la taille dépasse un plafond (par exemple 5 Mo) et une archive dont le gzip est corrompu, en nommant l'entrée.
 
 ### `3)` Filtrer et parser les décisions
@@ -78,7 +78,7 @@ status: pending
 
 1. Créer `mcp/corpus/ce/sync.ts` avec `npm run ce:sync`, `--archive <chemin>`, `--dry-run` et `--date-min`.
 2. Écrire `data/corpus/ce/etat.json` (nom d'archive, sha256, lu_le) et ne rien relire si l'archive et l'empreinte sont identiques.
-3. Écrire `data/corpus/ce/unites.jsonl` et `manifest.json` : archive, sha256, date d'extraction, `date_min`, mots-clés, documents, fragments, écartés par motif, licence, bloc `couverture` (source, archive, période, juridiction, mots-clés, exclusions).
+3. Écrire `data/corpus/ce/unites.jsonl` et `manifest.json` : archive, sha256, date d'extraction, `date_min`, mots-clés, documents, fragments, écartés par motif, licence, bloc `couverture` (source, archive, période, juridiction, fonds `publie` et `inedit`, mots-clés, exclusions).
 4. Ajouter `data/raw/ce/` à `.gitignore` : l'archive de 1,32 Go n'est jamais commitée.
 5. Refuser une référence dupliquée, une date non ISO ou un texte vide sans toucher aux fichiers existants.
 
@@ -86,7 +86,7 @@ status: pending
 
 > L'archive de test est petite et ne sort pas du disque.
 
-1. Créer `tests/fixtures/ce/jade.tar.gz` : trois décisions XML (Conseil d'État données personnelles, Conseil d'État hors sujet, cour administrative d'appel données personnelles).
+1. Créer `tests/fixtures/ce/jade.tar.gz` : six décisions XML, dont une dans `publie` et une dans `inedit`, plus une cour administrative d'appel, une décision antérieure à 2014, une sans mot-clé et un texte vide.
 2. Créer `tests/ce-corpus.test.ts` : lecture en flux, filtre de juridiction, borne 2014, mot-clé, découpage, comptes d'écartés, manifeste, rejeu sans réécriture.
 3. Vérifier qu'aucun test n'ouvre l'archive réelle ni le réseau.
 
@@ -103,7 +103,7 @@ status: pending
 | Task | Acceptance criteria              |
 | ---- | -------------------------------- |
 | 1 | Le descripteur nomme JADE, la borne 2014 et les mots-clés ; l'archive la plus récente est choisie et téléchargée par fichier temporaire. |
-| 2 | L'archive est lue en flux ; seules les entrées XML de `jade/global/publie` sont rendues ; une entrée trop grosse est refusée en la nommant. |
+| 2 | L'archive est lue en flux ; seules les entrées XML de `jade/global/publie` et `jade/global/inedit` sont rendues ; une entrée trop grosse est refusée en la nommant. |
 | 3 | Seules les décisions du Conseil d'État, depuis 2014 et portant un mot-clé, produisent des unités ; une décision de CAA ou de tribunal administratif est écartée et comptée. |
 | 4 | `npm run ce:sync` écrit l'état, le corpus et le manifeste ; l'état identique empêche toute relecture ; `--dry-run` n'écrit rien. |
 | 5 | Les tests passent hors ligne avec la petite archive. |
