@@ -1,0 +1,34 @@
+{
+  "corpus": "cepd",
+  "nom": "CEPD",
+  "titre": "Lignes directrices et recommandations du Comité européen de la protection des données",
+  "url_liste": "https://www.edpb.europa.eu/our-work-tools/our-documents/publication-type/guidelines_fr",
+  "date_liste": "2026-11-09",
+  "depuis": null,
+  "limite": null,
+  "via": "wayback",
+  "documents": 35,
+  "fragments": 4725,
+  "versions_ecartees": 0,
+  "documents_sans_texte_ecartes": 0,
+  "types_retenus": [
+    "guideline"
+  ],
+  "licence": "À vérifier : le site du CEPD ne déclare pas de licence explicite dans la reconnaissance ; les documents sont des publications officielles de l'Union européenne.",
+  "couverture": {
+    "source": "CEPD — pages de lignes directrices et recommandations (PDF)",
+    "date_liste": "2026-11-09",
+    "limite": null,
+    "via": "wayback",
+    "pages_lues": 7,
+    "periode": {
+      "date_min": "2018-05-25",
+      "date_max": "2025-06-05"
+    },
+    "types_retenus": [
+      "guideline"
+    ],
+    "documents_sans_texte_ecartes": 0,
+    "versions_ecartees": 0
+  }
+}

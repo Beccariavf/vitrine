@@ -25,6 +25,8 @@ npm run corpus:build   # CELLAR → data/corpus/{rgpd,aiact}/
 npm run corpus:build -- --document aiact   # un seul descripteur
 npm run ce:sync                            # archive JADE globale → data/corpus/ce/ (1,32 Go, long)
 npm run ce:sync -- --dry-run               # ce que l'archive produirait, sans écrire
+npm run cepd:sync                          # lignes directrices du CEPD → data/corpus/cepd/
+npm run cepd:sync -- --dry-run             # ce que la liste produirait, sans écrire
 npm run cnil:sync -- --tout                # historique DINUM + incréments DILA → data/corpus/cnil/
 npm run cnil:sync -- --increments --dry-run   # ce que les archives ajouteraient, sans écrire
 npm run corpus:index   # index incrémental Ollama + sqlite-vec → data/corpus/index/index.db
@@ -36,6 +38,7 @@ npm run mcp:eval -- --questions questions-v2.csv --split test --mesurer-test   #
 npm run mcp:eval -- --questions questions-v3.csv --split dev --json            # 40 questions de développement v3, sortie machine (hors CI)
 npm run mcp:eval -- --questions questions-cnil.csv                             # 20 questions CNIL (hors CI)
 npm run mcp:eval -- --questions questions-ce.csv --split dev                   # 12 questions Conseil d'État (hors CI)
+npm run mcp:eval -- --questions questions-cepd.csv --split dev                 # 10 questions CEPD (hors CI)
 npm run mcp:eval -- --questions questions-cnil-v2.csv --split dev --seuils 0.690,0.740,0.010   # 25 questions CNIL documentaires (hors CI)
 npm run mcp:eval -- --questions questions-cnil-v2.csv --split test --mesurer-test --seuils 0.690,0.740,0.010   # 25 questions tenues à l'écart, une seule fois
 npm run mcp:eval:filtres                                                        # 12 cas de filtrage CNIL (hors CI)
@@ -120,6 +123,20 @@ Conseil d'État depuis 2014, 1 312 retenues après mots-clés et 17 703 fragment
 doublons entre les deux fonds ; exclusions 399 198 autres juridictions, 138 074 antérieures à 2014,
 34 878 sans mot-clé, 1 texte vide. Les 12 questions `dev` de `mcp/eval/questions-ce.csv` rendent le
 document attendu au top 5 pour 8 d'entre elles (MRR 0,486, top 1 33,3 %).
+
+Le corpus `cepd` porte les lignes directrices du Comité européen de la protection des données,
+extraites de leurs PDF. `npm run cepd:sync` parcourt la liste paginée, retient les liens
+`/documents/guideline(s)/…` et `/documents/recommendation(s)/…` portant un numéro, puis télécharge
+chaque PDF sous `data/raw/cepd/` — non commité — et l'extrait avec `unpdf`. Un PDF sans texte, de
+moins de 2 000 caractères ou dont la part de lettres est inférieure à 50 % est refusé en nommant son
+URL. Les versions finales remplacent les projets portant le même numéro ; les PDF identiques ne sont
+pas retéléchargés. `--limite` et `--depuis` réduisent le jeu avant téléchargement, `--dry-run` n'écrit
+rien. Le site direct a répondu 404 pendant la mesure du 9 novembre 2026 : la liste et les PDF ont été
+lus par le Wayback Machine (`via: "wayback"` dans le manifeste), sur sept pages. Résultat : 35 lignes
+directrices, 4 725 fragments, 0 version écartée, 0 document sans PDF ; période 2018-05-25 à
+2025-06-05. La liste archivée ne portait que le type `guideline`, pas de recommandation. Les 10
+questions `dev` de `mcp/eval/questions-cepd.csv` rendent le document attendu au rang 1 pour les 10
+(MRR 1,000, top 1 100,0 %).
 
 L'évaluation v2 porte sur 60 questions écrites contre le texte du RGPD : 12 références exactes,
 38 conceptuelles et 10 pièges, réparties en 30 `dev` et 30 `test`. Chaque mesure est filtrée par
@@ -217,11 +234,12 @@ les expose comme outils directs.
 
 - `veille/` — le pipeline : dix adaptateurs (neuf autorités, la Commission a deux flux) → normalisation → rattachement aux matières → `data/`.
 - `src/` — les pages Astro, qui lisent `data/` au build et filtrent les matières actives.
-- `mcp/` — les corpus RGPD, AI Act, LIL, CNIL et Conseil d'État, l'index vectoriel et lexical, le
-  serveur MCP stdio (`get_article`, `get_decision`, `search`), séparés du pipeline et du site.
+- `mcp/` — les corpus RGPD, AI Act, LIL, CNIL, Conseil d'État et CEPD, l'index vectoriel et lexical,
+  le serveur MCP stdio (`get_article`, `get_decision`, `search`), séparés du pipeline et du site.
 - `data/` — snapshots bruts adressés par leur contenu, entrées JSON, journal d'appels PISTE et
-  corpus RGPD/AI Act/LIL/CNIL/CE, versionnés dans git ; l'index `data/corpus/index/` est un dérivé
-  ignoré, et les sources brutes sous `data/raw/cnil/`, `data/raw/lil/` et `data/raw/ce/` aussi.
+  corpus RGPD/AI Act/LIL/CNIL/CE/CEPD, versionnés dans git ; l'index `data/corpus/index/` est un
+  dérivé ignoré, et les sources brutes sous `data/raw/cnil/`, `data/raw/lil/`, `data/raw/ce/` et
+  `data/raw/cepd/` aussi.
 - `veille/themes.json` — les cinq matières, leurs textes, leurs sources et leur état.
 - `tools/parametres.html` — l'outil local qui active ou désactive une matière.
 - `aidd_docs/INSTALL.md` — les décisions d'architecture et les étapes d'installation.

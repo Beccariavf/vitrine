@@ -1,0 +1,101 @@
+Adopted 1
+Guidelines 01/2023 on Article 37 Law Enforcement Directive
+Version 2.1
+Adopted on 19 June 2024
+
+Adopted 2
+Version history
+Version 1.0 27 September 2023 Adoption of the Guidelines for public consultation
+Version 2.0 19 June 2024 Adoption of the Guidelines after public consultation
+Version 2.1 30 September 2024 Minor corrections in footnotes 10 and 57
+
+Adopted 3
+Executive summary
+These guidelines provide guidance on the application of Article 37 LED, in particular on the legal
+standard for appropriate safeguards to be applied by competent authorities pursuant to Article
+37(1)(a) and (b) LED and, accordingly, on the relevant factors for the assessment of whether such
+safeguards exist. These guidelines therefore include an indication as to the EDPB’s expectations of
+Member States, as negotiating parties, when envisaging concluding or amending a legally binding
+instrument between the concerned Member State(s) and a third country or international organisation
+pursuant to Article 37(1)(a) LED.
+The EDPB notes that Article 35(3) LED applies to transfers carried out under Article 37 LED. Article 37
+LED should therefore be applied in light of the principle that the level of data protection applicable in
+the European Union must not be undermined by the transfer of personal data to another jurisdiction.
+The EDPB concludes that Article 37 LED requires an essentially equivalent level of data protection in
+the recipient third country or international organisation. However, this requirement relates to the
+specific data transfer or category of transfers at hand. Pursuant to Article 37 LED, essential equivalence
+to the protection guaranteed under the LED should be ensured for that particular case and not
+necessarily with regard to the entire existing legislation in the third country or international
+organisation.
+The EDPB has already adopted Recommendations on the adequacy referential under the LED,
+addressing which data protection principles have to be present to ensure essential equivalence with
+the EU framework within the scope of the LED. The EDPB considers that the principles and safeguards
+outlined in these Recommendations apply in substance in the context of Article 37 LED, i.e. with regard
+to the specific transfer or category of transfers.
+A legally binding instrument in the meaning of Article 37(1)(a) LED has to be concluded by the entity
+empowered to enter into obligations with respect to the safeguards provided in the instrument. The
+international agreement should thus have the force of law. Such legally binding instrument can be
+enforced by the Parties and by data subjects whose personal data processing is governed by the
+agreement. The legally binding instrument should contain all relevant rules to allow overcoming any
+shortcomings or limitations of the legislation of the third country or international organisation in terms
+of data protection by setting a framework of appropriate safeguards that afford an essentially
+equivalent level of data protection.
+The EDPB considers that the use of a legally binding instrument regulating personal data transfers
+between the Parties should, in the absence of an adequacy decision, in principle, take precedence,
+over an assessment by the controller according to Article 37(1)(b) LED as it provides more legal
+certainty, transparency, foreseeability, stability, consistency and guarantees on the effective
+application of data protection safeguards.
+In this context, the EDPB recalls its Statement on international agreements including transfers,
+adopted on 13 April 2021, inviting Member States to assess and, where necessary, review their
+international agreements that involve international transfers of personal data. The EDPB emphasizes
+that consideration should be given to the aim of bringing those agreements in line with the LED
+requirements for data transfers, where this is not yet the case, to ensure that the level of protection
+of natural persons guaranteed by the LED is not undermined when personal data is transferred outside
+the Union.
+With respect to Article 37(1)(b) LED and in light of the above-mentioned greater guarantees offered
+by legally binding instruments, competent authorities may rely on such an assessment only when this
+
+DRAFT
+Adopted 4
+is based on a careful analysis of the relevant legal framework and practices showing that the transfers
+in question are subject to appropriate safeguards. In assessing the risks surrounding the transfers for
+the purpose of Article 37(1)(b) LED, competent authorities should examine the protection of the
+personal data to be transferred in view of the risks their sharing with third countries raises for the
+fundamental rights and freedoms of the data subjects, their legitimate interests and those of other
+persons concerned. Knowing in detail the circumstances surrounding the data transfers conducted or
+to be conducted is necessary to be able to identify these risks to the rights and freedoms of natural
+persons, and in particular to the right to data protection, and any safeguards that are appropriate to
+mitigate them.
+As for any other processing operation, a competent authority must be aware of and consider in a
+granular manner the nature, scope, context and purposes of the transfer. More specifically, competent
+authorities may analyse and categorise their transfers considering characteristics relevant to assess
+the risks posed to fundamental rights of the data subjects such as the specific purposes of the transfer,
+the quantity of data transferred or the seriousness of a criminal offence.
+There may be cases where appropriate safeguards already follow from the third country’s international
+commitments, its legislation and practices. In other cases, competent authorities may need to provide,
+to the extent they are legally competent, for additional safeguards in light of the features of the specific
+transfer mentioned above, to ensure an essentially equivalent level of protection to that guaranteed
+under the LED and national law. The commitment of the receiving authority in the third country to
+respect and comply with such additional safeguards is necessary so that they are effective.
+The fact that the transfer mechanisms provided in Articles 36 to 38 LED operate in cascade in general
+also affects the accountability obligations of the controller. The accountability obligations on the
+controller when relying on Article 37(1)(b) LED are enhanced pursuant to Article 37(2) and 37(3) LED
+because it is the controller alone who determines, based on its own assessment, whether appropriate
+safeguards exist. This involves higher risks of inconsistencies, less transparency, and less legal certainty
+for data subjects in comparison with transfers legally framed by adequacy decisions or legally binding
+instruments.
+With regard to the obligation imposed by Article 37(2) LED and taking into account the justifying reason
+for adopting this provision, competent authorities should inform their data protection authorities in
+regular intervals about the categories of transfers that were carried out under 37(1)(b) LED. The
+information submitted should include the receiving competent authorities as well as the number of
+transfers. This would allow supervisory authorities to have a general overview and to focus their action
+with regard to possible ‘ex post’ lawfulness control on specific categories of transfers.
+
+DRAFT
+Adopted 5
+Table of contents
+1 INTRODUCTION ................................................................................................................... 6
+2 ESSENTIAL ELEMENTS OF APPROPRIATE SAFEGUARDS ...................................................... 7
+2.1 The notion of transfer .............................................................................................................. 7
+2.2 The notion of appropriate safeguards in the law enforcement context .................................. 8
+2.3 Requirements for appropriate safeguards ensuring an essentially equiva
