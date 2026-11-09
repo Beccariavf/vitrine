@@ -846,6 +846,63 @@ describe("buildIndex incrémental", () => {
     }
   });
 
+  it("rafraîchit statut et url sans ré-embarquer ni toucher au vecteur", async () => {
+    const root = tempRoot();
+    try {
+      ecrireCorpus(root, "rgpd", SIX);
+      const { embedder, compteur } = embedderCompteur();
+      const { chemin } = await buildIndex(root, embedder);
+      const vecteursAvant = vecteurs(chemin);
+
+      ecrireCorpus(
+        root,
+        "rgpd",
+        SIX.map((element, index) =>
+          index === 0
+            ? {
+                ...element,
+                statut: "Statut corrigé",
+                url: "https://example.test/url-corrigee",
+              }
+            : element,
+        ),
+      );
+      const resultat = await buildIndex(root, embedder);
+
+      assert.deepEqual(resultat.delta, {
+        ajoutees: 0,
+        modifiees: 0,
+        supprimees: 0,
+        inchangees: 6,
+      });
+      assert.equal(compteur.passages, 6, "aucun passage ré-embarqué");
+      assert.deepEqual(vecteurs(chemin), vecteursAvant, "les vecteurs restent identiques");
+
+      const db = new DatabaseSync(chemin, { allowExtension: true });
+      try {
+        sqliteVec.load(db);
+        const ligne = db
+          .prepare("SELECT statut, url FROM unites WHERE ref = ?")
+          .get(`${DOCUMENT}#art_1`) as { statut: string; url: string };
+        assert.equal(ligne.statut, "Statut corrigé");
+        assert.equal(ligne.url, "https://example.test/url-corrigee");
+      } finally {
+        db.close();
+      }
+
+      const second = await buildIndex(root, embedder);
+      assert.deepEqual(second.delta, {
+        ajoutees: 0,
+        modifiees: 0,
+        supprimees: 0,
+        inchangees: 6,
+      });
+      assert.equal(compteur.passages, 6);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("n'embarque que l'unité ajoutée et lui donne un rowid après le maximum", async () => {
     const root = tempRoot();
     try {

@@ -189,7 +189,17 @@ export function empreinteUnite(unite: Unite, embedder: Embedder): string {
     .digest("hex");
 }
 
-type LigneIndex = { ref: string; rowid: number; empreinte: string };
+type LigneIndex = {
+  ref: string;
+  rowid: number;
+  empreinte: string;
+  niveau: string;
+  date_acte: string;
+  date_debut: string;
+  date_fin: string | null;
+  statut: string;
+  url: string;
+};
 
 type Existant =
   | { compatible: true; db: DatabaseSync; lignes: LigneIndex[]; maxRowid: number }
@@ -244,10 +254,20 @@ function ouvrirExistant(chemin: string, embedder: Embedder): Existant {
       return { compatible: false, raison: "index sans table lexicale" };
     }
 
-    const lignes = db.prepare("SELECT ref, rowid, empreinte FROM unites").all() as {
+    const lignes = db
+      .prepare(
+        "SELECT ref, rowid, empreinte, niveau, date_acte, date_debut, date_fin, statut, url FROM unites",
+      )
+      .all() as {
       ref: string;
       rowid: number | bigint;
       empreinte: string;
+      niveau: string;
+      date_acte: string;
+      date_debut: string;
+      date_fin: string | null;
+      statut: string;
+      url: string;
     }[];
     const maximum = db.prepare("SELECT max(rowid) AS maximum FROM unites").get() as {
       maximum: number | bigint | null;
@@ -259,6 +279,12 @@ function ouvrirExistant(chemin: string, embedder: Embedder): Existant {
         ref: ligne.ref,
         rowid: Number(ligne.rowid),
         empreinte: ligne.empreinte,
+        niveau: ligne.niveau,
+        date_acte: ligne.date_acte,
+        date_debut: ligne.date_debut,
+        date_fin: ligne.date_fin,
+        statut: ligne.statut,
+        url: ligne.url,
       })),
       maxRowid: maximum.maximum === null ? 0 : Number(maximum.maximum),
     };
@@ -277,7 +303,21 @@ type Delta = {
   modifiees: Unite[];
   supprimees: LigneIndex[];
   inchangees: Unite[];
+  /** Unités inchangées pour le vecteur, mais dont l'affichage a changé. */
+  metaModifiees: { unite: Unite; rowid: number }[];
 };
+
+/** Vrai si une colonne d'affichage a changé sans toucher au passage embarqué. */
+function metaChangee(existante: LigneIndex, unite: Unite): boolean {
+  return (
+    existante.niveau !== unite.niveau ||
+    existante.date_acte !== unite.date_acte ||
+    existante.date_debut !== unite.date_debut ||
+    existante.date_fin !== unite.date_fin ||
+    existante.statut !== unite.statut ||
+    existante.url !== unite.url
+  );
+}
 
 function calculerDelta(
   lignes: LigneIndex[],
@@ -290,17 +330,24 @@ function calculerDelta(
   const ajoutees: Unite[] = [];
   const modifiees: Unite[] = [];
   const inchangees: Unite[] = [];
+  const metaModifiees: { unite: Unite; rowid: number }[] = [];
   for (const unite of unites) {
     const existante = parRef.get(unite.ref);
     if (existante === undefined) ajoutees.push(unite);
     else if (existante.empreinte !== empreintes.get(unite.ref)) modifiees.push(unite);
-    else inchangees.push(unite);
+    else {
+      inchangees.push(unite);
+      if (metaChangee(existante, unite)) {
+        metaModifiees.push({ unite, rowid: existante.rowid });
+      }
+    }
   }
   return {
     ajoutees,
     modifiees,
     supprimees: lignes.filter((ligne) => !refsCorpus.has(ligne.ref)),
     inchangees,
+    metaModifiees,
   };
 }
 
@@ -442,6 +489,11 @@ async function appliquerDelta(
            nature = ?, type_sanction = ?, montant = ?, injonction = ?, date_num = ?, numero_index = ?
      WHERE rowid = ?
   `);
+  const modifierMeta = db.prepare(`
+    UPDATE unites
+       SET niveau = ?, date_acte = ?, date_debut = ?, date_fin = ?, statut = ?, url = ?
+     WHERE rowid = ?
+  `);
   const insererUnite = db.prepare(`
     INSERT INTO unites (rowid, ref, document, corpus, niveau, numero, chemin, texte, date_acte, date_debut, date_fin, statut, url, empreinte, nature, type_sanction, montant, injonction, date_num, numero_index)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -474,6 +526,18 @@ async function appliquerDelta(
       supprimerVecteur.run(BigInt(ligne.rowid));
       supprimerFts.run(BigInt(ligne.rowid));
       supprimerUnite.run(BigInt(ligne.rowid));
+    }
+
+    for (const { unite, rowid } of delta.metaModifiees) {
+      modifierMeta.run(
+        unite.niveau,
+        unite.date_acte,
+        unite.date_debut,
+        unite.date_fin,
+        unite.statut,
+        unite.url,
+        BigInt(rowid),
+      );
     }
 
     for (const unite of delta.modifiees) {
