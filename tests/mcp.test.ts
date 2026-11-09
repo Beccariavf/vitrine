@@ -12,7 +12,7 @@ import { buildIndex } from "../mcp/index/build.ts";
 import { BANDE_ARTICLE, openIndex, rangerPassages } from "../mcp/index/search.ts";
 import type { Index, ResultatRecherche } from "../mcp/index/search.ts";
 import { createServer } from "../mcp/server.ts";
-import { documentNomme, getArticle, getDecision, search } from "../mcp/tools.ts";
+import { documentNomme, documentsNommes, getArticle, getDecision, search } from "../mcp/tools.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";
 
 const DOCUMENT = "32016R0679";
@@ -46,6 +46,26 @@ const SIX: Unite[] = [
 
 /** Corpus réduit portant l'article 17, pour le serveur sans index. */
 const SIX_ET_17: Unite[] = [...SIX, unite(17, "droit à l'effacement des données personnelles")];
+
+const ECHELLE = "LEGITEXT000006068624";
+
+/** Un article de la LIL, réduit au strict nécessaire pour les outils. */
+function unitLil(numero: number, texte: string): Unite {
+  return {
+    ref: `LEGIARTI0000000${String(numero).padStart(2, "0")}`,
+    document: ECHELLE,
+    corpus: "lil",
+    niveau: "article",
+    numero: String(numero),
+    chemin: "LIL > Titre Ier > Chapitre Ier : Principes et définitions",
+    texte,
+    date_acte: "2019-06-01",
+    date_debut: "2019-06-01",
+    date_fin: null,
+    statut: "VIGUEUR",
+    url: `https://www.legifrance.gouv.fr/loda/id/LEGIARTI0000000${String(numero).padStart(2, "0")}`,
+  };
+}
 
 /** Embedder déterministe : sac de mots hachés, 8 dimensions, aucun réseau. */
 function embedderFactice(): Embedder {
@@ -103,7 +123,44 @@ function contenu(resultat: unknown): Record<string, unknown> {
 }
 
 describe("les outils, sans transport", () => {
-  it("lit un article exact", () => {
+  it("lit un article exact de la LIL", () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-tools-"));
+    try {
+      ecrireCorpus(root, [unitLil(1, "les fichiers doivent être créés dans l'intérêt des personnes")], "lil");
+      const article = getArticle(root, { document: ECHELLE, numero: "1" });
+
+      assert.equal(article.trouve, true);
+      assert.equal(article.corpus, "lil");
+      assert.equal(article.document, ECHELLE);
+      assert.match(article.texte, /intérêt des personnes/);
+      assert.equal(article.statut, "VIGUEUR");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("rend l'article de la LIL quand la question la nomme", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-tools-"));
+    try {
+      ecrireCorpus(root, [unitLil(1, "les fichiers doivent être créés dans l'intérêt des personnes")], "lil");
+      ecrireCorpus(root);
+      const resultat = await search(
+        root,
+        { question: "Que prévoit l'article 1 de la LIL ?" },
+        { embedder: EMBEDDER_INTERDIT },
+      );
+
+      assert.equal(resultat.niveau_confiance, "confiant");
+      assert.equal(resultat.passages.length, 1);
+      assert.equal(resultat.passages[0]?.corpus, "lil");
+      assert.equal(resultat.passages[0]?.document, ECHELLE);
+      assert.equal(resultat.passages[0]?.numero, "1");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("rend un article exact", () => {
     const root = mkdtempSync(join(tmpdir(), "vitrine-tools-"));
     try {
       ecrireCorpus(root);
@@ -308,6 +365,23 @@ describe("les alias de document", () => {
     ]) {
       assert.equal(documentNomme(question), "32024R1689", question);
     }
+  });
+
+  it("reconnaît les alias de la LIL", () => {
+    for (const question of [
+      "la LIL",
+      "la loi informatique et libertés",
+      "la loi 78-17",
+      "la loi n° 78-17",
+      "la loi n°78-17",
+    ]) {
+      assert.equal(documentNomme(question), "LEGITEXT000006068624", question);
+    }
+  });
+
+  it("n'infère rien quand la LIL et un autre corpus sont nommés", () => {
+    assert.equal(documentNomme("l'article 5 de la LIL et du RGPD"), null);
+    assert.equal(documentsNommes("l'article 5 de la LIL et du RGPD").length, 2);
   });
 
   it("n'infère rien sans alias ou quand deux corpus sont nommés", () => {

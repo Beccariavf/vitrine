@@ -14,18 +14,20 @@ import { getArticle, getDecision, search } from "./tools.ts";
 export const RACINE = fileURLToPath(new URL("..", import.meta.url));
 
 const CONSIGNE_PROVENANCE =
-  "Le texte rendu vient des corpus locaux (RGPD `32016R0679`, AI Act `32024R1689` et " +
-  "délibérations CNIL `cnil` : sanctions, avis, recommandations et lignes directrices), jamais " +
+  "Le texte rendu vient des corpus locaux (RGPD `32016R0679`, AI Act `32024R1689`, LIL " +
+  "`LEGITEXT000006068624` et délibérations CNIL `cnil` : sanctions, avis, recommandations et " +
+  "lignes directrices), jamais " +
   "d'une génération. Citer la référence et l'URL rendues. " +
   "Respecter le niveau de confiance : « aucun_resultat_fiable » signifie qu'il faut le dire au " +
   "lecteur, pas inventer un passage.";
 
 const CONSIGNE_SERVEUR =
-  "Serveur de lecture et de recherche sur trois corpus juridiques : le RGPD " +
-  "(CELEX 32016R0679), l'AI Act (CELEX 32024R1689) et les délibérations de la CNIL " +
+  "Serveur de lecture et de recherche sur quatre corpus juridiques : le RGPD " +
+  "(CELEX 32016R0679), l'AI Act (CELEX 32024R1689), la loi Informatique et Libertés " +
+  "(LIL, LEGITEXT000006068624) et les délibérations de la CNIL " +
   "(corpus `cnil`, natures Sanction, Avis et Recommandation/Lignes directrices). Les outils de " +
   "recherche acceptent les paramètres `corpus` et `nature` ; sans eux, la recherche couvre les " +
-  "trois collections et toutes les natures. Un document nommé dans la question (sigle ou nom " +
+  "quatre collections et toutes les natures. Un document nommé dans la question (sigle ou nom " +
   "ordinaire, casse et ponctuation indifférentes) est honoré quand `document` et `corpus` sont " +
   "absents ; sans nom, une référence exacte qui n'existe que dans un corpus est `incertain` et le " +
   "corpus est nommé. `get_decision` rend une sanction entière, par identifiant CNILTEXT ou par " +
@@ -56,16 +58,19 @@ export function createServer(deps: ServerDeps): McpServer {
   serveur.registerTool(
     "get_article",
     {
-      title: "Lire un article du RGPD ou de l'AI Act",
+      title: "Lire un article du RGPD, de l'AI Act ou de la LIL",
       description:
-        "Rend le texte exact d'un article du RGPD ou de l'AI Act, avec sa référence, son chemin, " +
-        "ses dates et son URL. Répondre « introuvable » quand l'article n'existe pas ; ne jamais " +
-        "compléter un texte absent. " +
+        "Rend le texte exact d'un article du RGPD, de l'AI Act ou de la LIL, avec sa référence, " +
+        "son chemin, ses dates et son URL. Répondre « introuvable » quand l'article n'existe pas ; " +
+        "ne jamais compléter un texte absent. " +
         CONSIGNE_PROVENANCE,
       inputSchema: {
         document: z
           .string()
-          .describe("Identifiant CELEX du document : 32016R0679 (RGPD) ou 32024R1689 (AI Act)"),
+          .describe(
+            "Identifiant du document : 32016R0679 (RGPD), 32024R1689 (AI Act) ou " +
+              "LEGITEXT000006068624 (LIL)",
+          ),
         numero: z.string().describe("Numéro d'article, par exemple 17"),
       },
     },
@@ -100,7 +105,7 @@ export function createServer(deps: ServerDeps): McpServer {
         corpus: z
           .string()
           .optional()
-          .describe("Restreint à une collection : cnil, rgpd ou aiact ; absent, tous les corpus"),
+          .describe("Restreint à une collection : cnil, rgpd, aiact ou lil ; absent, tous les corpus"),
       },
     },
     async ({ document, numero, corpus }) => {
@@ -116,15 +121,16 @@ export function createServer(deps: ServerDeps): McpServer {
   serveur.registerTool(
     "search",
     {
-      title: "Chercher dans le RGPD, l'AI Act ou les délibérations CNIL",
+      title: "Chercher dans le RGPD, l'AI Act, la LIL ou les délibérations CNIL",
       description:
-        "Cherche par le sens dans le RGPD, l'AI Act ou les délibérations de la CNIL (sanctions, avis, " +
-        "recommandations et lignes directrices) et rend les passages les plus proches avec leur " +
+        "Cherche par le sens dans le RGPD, l'AI Act, la LIL ou les délibérations de la CNIL " +
+        "(sanctions, avis, recommandations et lignes directrices) et rend les passages les plus " +
+        "proches avec leur " +
         "provenance et un niveau de confiance (confiant, incertain, aucun_resultat_fiable). " +
         "L'article pose la règle et le considérant l'éclaire : à pertinence comparable, l'article passe " +
         "devant, mais aucun considérant n'est retiré du résultat. " +
         "Une question qui cite un article rend cet article exact, sans recherche vectorielle. " +
-        "`corpus` borne la recherche à une collection (`rgpd`, `aiact`, `cnil`) et prime sur tout nom " +
+        "`corpus` borne la recherche à une collection (`rgpd`, `aiact`, `cnil`, `lil`) et prime sur tout nom " +
         "de document présent dans la question. " +
         "`nature` borne une recherche CNIL à une nature (`Sanction`, `Avis`, " +
         "`Recommandation/Lignes directrices`) ; sans lui, toutes les natures répondent. " +
@@ -132,7 +138,8 @@ export function createServer(deps: ServerDeps): McpServer {
         "sigles et noms ordinaires sont reconnus après normalisation de la casse, des diacritiques et " +
         "de la ponctuation (« RGPD », « R.G.P.D. », « règlement général sur la protection des données », " +
         "« règlement général », « règlement (UE) 2016/679 », « AI Act », « IA Act », « règlement IA », " +
-        "« règlement européen sur l'intelligence artificielle », « règlement (UE) 2024/1689 ») ; la " +
+        "« règlement européen sur l'intelligence artificielle », « règlement (UE) 2024/1689 », « LIL », " +
+        "« loi informatique et libertés », « loi 78-17 », « loi n° 78-17 ») ; la " +
         "référence exacte et la recherche sémantique s'y restreignent, et un numéro absent de ce " +
         "document est refusé explicitement. Deux corpus nommés n'infèrent rien. " +
         "Si aucun document n'est nommé et que le numéro cité n'existe que dans un corpus, l'article " +
@@ -147,15 +154,15 @@ export function createServer(deps: ServerDeps): McpServer {
           .string()
           .optional()
           .describe(
-            "Restreint la recherche à une collection : rgpd, aiact ou cnil ; cnil couvre les " +
+            "Restreint la recherche à une collection : rgpd, aiact, cnil ou lil ; cnil couvre les " +
               "sanctions, avis, recommandations et lignes directrices ; absent, toutes répondent",
           ),
         document: z
           .string()
           .optional()
           .describe(
-            "Restreint la recherche à un document : 32016R0679 (RGPD), 32024R1689 (AI Act) " +
-              "ou un identifiant CNILTEXT ; absent, tous les corpus répondent",
+            "Restreint la recherche à un document : 32016R0679 (RGPD), 32024R1689 (AI Act), " +
+              "LEGITEXT000006068624 (LIL) ou un identifiant CNILTEXT ; absent, tous les corpus répondent",
           ),
         nature: z
           .string()
@@ -226,7 +233,7 @@ async function main(): Promise<void> {
 
   await serveur.connect(transport);
   process.stderr.write(
-    "Serveur MCP des corpus RGPD, AI Act et CNIL prêt sur stdio " +
+    "Serveur MCP des corpus RGPD, AI Act, LIL et CNIL prêt sur stdio " +
       "(trois outils : get_article, get_decision, search).\n",
   );
 }

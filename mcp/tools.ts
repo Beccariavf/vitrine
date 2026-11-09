@@ -87,11 +87,17 @@ const ALIAS_AIA_TEXTE: readonly RegExp[] = [
   /\b2024 1689\b/,
 ];
 const ALIAS_AIA_COMPACT: readonly RegExp[] = [/32024r1689/];
+const ALIAS_LIL_TEXTE: readonly RegExp[] = [
+  /\blil\b/,
+  /\bloi informatique et libertes\b/,
+  /\bloi (?:n )?78 17\b/,
+];
 
 /** Nom lisible d'un corpus connu, pour les messages de refus. */
 const NOMS_DOCUMENTS: Record<string, string> = {
   "32016R0679": "RGPD",
   "32024R1689": "AI Act",
+  LEGITEXT000006068624: "LIL",
 };
 
 function libelleDocument(document: string): string {
@@ -100,9 +106,9 @@ function libelleDocument(document: string): string {
 }
 
 /**
- * Tous les corpus nommés par la question. Zéro, un ou deux : « le RGPD et l'AI
- * Act » en nomme deux, et l'appelant doit alors distinguer « aucun nom » de
- * « deux noms » dans ses messages.
+ * Tous les corpus nommés par la question. Zéro, un ou plusieurs : « le RGPD et
+ * l'AI Act » en nomme deux, et l'appelant doit alors distinguer « aucun nom » de
+ * « plusieurs noms » dans ses messages.
  */
 export function documentsNommes(question: string): string[] {
   const texte = normaliserTexte(question);
@@ -119,6 +125,9 @@ export function documentsNommes(question: string): string[] {
     ALIAS_AIA_COMPACT.some((alias) => alias.test(compact))
   ) {
     documents.add("32024R1689");
+  }
+  if (ALIAS_LIL_TEXTE.some((alias) => alias.test(texte))) {
+    documents.add("LEGITEXT000006068624");
   }
   return [...documents];
 }
