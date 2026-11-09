@@ -333,11 +333,12 @@ describe("buildIndex", () => {
       try {
         sqliteVec.load(db);
         db.prepare(
-          "INSERT INTO vec_unites (rowid, corpus, document, date_num, type_sanction, montant, numero, injonction, embedding) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+          "INSERT INTO vec_unites (rowid, corpus, document, nature, date_num, type_sanction, montant, numero, injonction, embedding) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         ).run(
           BigInt(1000),
           "rgpd",
           DOCUMENT,
+          "",
           0n,
           "autre",
           -1n,
@@ -616,6 +617,124 @@ describe("buildIndex", () => {
         const resultats = searchIndex(index, vecteur, { k: 1, corpus: "cnil", type_sanction: "amende" });
         assert.equal(resultats.length, 1, "la fenêtre vectorielle doit être filtrée par type");
         assert.equal(resultats[0]?.document, "CNILTEXT000000001");
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("filtre une nature CNIL dans la fenêtre vectorielle", async () => {
+    const root = tempRoot();
+    try {
+      const cnil = (id: string, texte: string, nature: string, numero: string): Unite => ({
+        ref: `${id}#f1`,
+        document: id,
+        corpus: "cnil",
+        niveau: "fragment",
+        numero,
+        chemin: `CNIL > ${nature} > Délibération ${numero}`,
+        texte,
+        date_acte: "2026-01-01",
+        date_debut: "2026-01-01",
+        date_fin: null,
+        statut: "VIGUEUR",
+        url: `https://example.test/${id}`,
+        nature,
+      });
+      const sanction = cnil("CNILTEXT000000001", "sujet sans rapport", "Sanction", "SAN-2026-001");
+      const bruit = Array.from({ length: 100 }, (_, index) =>
+        cnil(
+          `CNILTEXT0000001${String(index).padStart(2, "0")}`,
+          "question identique",
+          "Avis",
+          `AVIS-2026-${String(index).padStart(3, "0")}`,
+        ),
+      );
+      ecrireCorpus(root, "cnil", [sanction, ...bruit]);
+
+      const { chemin } = await buildIndex(root, embedderFactice());
+      const index = openIndex(chemin);
+      try {
+        const vecteur = await embedderFactice().embedQuery("question identique");
+        const resultats = searchIndex(index, vecteur, { k: 1, corpus: "cnil", nature: "Sanction" });
+        assert.equal(resultats.length, 1, "la fenêtre vectorielle doit être filtrée par nature");
+        assert.equal(resultats[0]?.document, "CNILTEXT000000001");
+        assert.equal(resultats[0]?.nature, "Sanction");
+
+        const avis = searchIndex(index, vecteur, { k: 3, corpus: "cnil", nature: "Avis" });
+        assert.equal(avis.length, 3);
+        assert.ok(avis.every((resultat) => resultat.nature === "Avis"));
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("migre un index sans colonne nature en recopiant les vecteurs", async () => {
+    const root = tempRoot();
+    try {
+      const unites: Unite[] = [
+        {
+          ...unite(1, "sanction cookies"),
+          ref: "CNILTEXT000000001#f1",
+          document: "CNILTEXT000000001",
+          corpus: "cnil",
+          niveau: "fragment",
+          numero: "SAN-2026-001",
+          chemin: "CNIL > Sanction > Délibération SAN-2026-001",
+          nature: "Sanction",
+        },
+        {
+          ...unite(2, "avis cookies"),
+          ref: "CNILTEXT000000002#f1",
+          document: "CNILTEXT000000002",
+          corpus: "cnil",
+          niveau: "fragment",
+          numero: "AVIS-2026-001",
+          chemin: "CNIL > Avis > Délibération AVIS-2026-001",
+          nature: "Avis",
+        },
+      ];
+      ecrireCorpus(root, "cnil", unites);
+      const { chemin } = await buildIndex(root, embedderFactice());
+      const avant = vecteurs(chemin);
+
+      const db = new DatabaseSync(chemin, { allowExtension: true });
+      try {
+        sqliteVec.load(db);
+        const lignes = db
+          .prepare("SELECT rowid, embedding FROM vec_unites")
+          .all() as { rowid: number | bigint; embedding: Uint8Array }[];
+        db.exec("DROP TABLE vec_unites");
+        db.exec(
+          "CREATE VIRTUAL TABLE vec_unites USING vec0(corpus TEXT, document TEXT, date_num INTEGER, " +
+            "type_sanction TEXT, montant INTEGER, numero TEXT, injonction INTEGER, " +
+            "embedding float[8] distance_metric=cosine)",
+        );
+        const inserer = db.prepare(
+          "INSERT INTO vec_unites (rowid, corpus, document, date_num, type_sanction, montant, numero, injonction, embedding) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        );
+        for (const ligne of lignes) {
+          inserer.run(BigInt(ligne.rowid), "cnil", "", 0n, "autre", -1n, "", 0n, ligne.embedding);
+        }
+        db.exec("ALTER TABLE unites DROP COLUMN nature");
+
+        assert.throws(() => openIndex(chemin), /colonnes corpus\/métadonnées/);
+        assert.equal(migrerVecteurs(db, 8, unites), true);
+      } finally {
+        db.close();
+      }
+
+      assert.deepEqual(vecteurs(chemin), avant, "la migration ne ré-embarque aucun vecteur");
+      const index = openIndex(chemin);
+      try {
+        const vecteur = await embedderFactice().embedQuery("avis cookies");
+        const avis = searchIndex(index, vecteur, { k: 5, corpus: "cnil", nature: "Avis" });
+        assert.deepEqual(avis.map((resultat) => resultat.document), ["CNILTEXT000000002"]);
       } finally {
         index.db.close();
       }

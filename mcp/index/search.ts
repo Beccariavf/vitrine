@@ -35,6 +35,8 @@ export type ResultatRecherche = {
   date_debut: string;
   date_fin: string | null;
   statut: string;
+  /** Nature CNIL : Sanction, Avis ou Recommandation/Lignes directrices ; absent hors CNIL. */
+  nature?: string;
   /** Type de sanction CNIL ; `autre` hors CNIL. */
   type_sanction?: string;
   /** Montant de la sanction pécuniaire CNIL (amende ou liquidation) ; `null` si absent ou masqué. */
@@ -54,6 +56,8 @@ export type SearchOptions = {
   corpus?: string;
   /** Restreint aux unités de ce document ; absent, tout le corpus répond. */
   document?: string;
+  /** Restreint à une nature CNIL (Sanction, Avis, Recommandation/Lignes directrices). */
+  nature?: string;
   /** Date ISO minimale (`AAAA-MM-JJ`) sur la date de la décision. */
   date_min?: string;
   /** Date ISO maximale (`AAAA-MM-JJ`) sur la date de la décision. */
@@ -86,6 +90,7 @@ export function openIndex(chemin: string): Index {
     const attendues = [
       "corpus",
       "document",
+      "nature",
       "date_num",
       "type_sanction",
       "montant",
@@ -94,6 +99,7 @@ export function openIndex(chemin: string): Index {
     ];
     if (
       !colonnes.some((colonne) => colonne.name === "corpus") ||
+      !colonnes.some((colonne) => colonne.name === "nature") ||
       !attendues.every((nom) => nomsVecteurs.has(nom))
     ) {
       throw new Error(
@@ -130,6 +136,7 @@ function ligneVersResultat(ligne: Ligne): ResultatRecherche {
     typeof valeur === "string" ? valeur : String(valeur ?? "");
   const nullable = (valeur: Valeur | undefined): string | null =>
     valeur === null || valeur === undefined ? null : texte(valeur);
+  const nature = texte(ligne.nature);
 
   return {
     ref: texte(ligne.ref),
@@ -144,6 +151,7 @@ function ligneVersResultat(ligne: Ligne): ResultatRecherche {
     date_debut: texte(ligne.date_debut),
     date_fin: nullable(ligne.date_fin),
     statut: texte(ligne.statut),
+    ...(nature === "" ? {} : { nature }),
     type_sanction: texte(ligne.type_sanction),
     montant: ligne.montant === null || ligne.montant === undefined ? null : Number(ligne.montant),
     injonction: Number(ligne.injonction) === 1,
@@ -175,10 +183,11 @@ export function rangerPassages(resultats: ResultatRecherche[], k: number): Resul
     .map((entree) => entree.resultat);
 }
 
-/** Vrai si le résultat passe les filtres optionnels de corpus et de document. */
+/** Vrai si le résultat passe les filtres optionnels de corpus, document et nature. */
 function retenu(resultat: ResultatRecherche, options: SearchOptions): boolean {
   if (options.corpus !== undefined && resultat.corpus !== options.corpus) return false;
   if (options.document !== undefined && resultat.document !== options.document) return false;
+  if (options.nature !== undefined && resultat.nature !== options.nature) return false;
   return true;
 }
 
@@ -212,7 +221,7 @@ export function searchIndex(index: Index, vecteur: number[], options: SearchOpti
   const lignes = index.db
     .prepare(
       `SELECT u.ref, u.document, u.corpus, u.niveau, u.numero, u.texte, u.chemin, u.url,
-              u.date_acte, u.date_debut, u.date_fin, u.statut, u.type_sanction, u.montant,
+              u.date_acte, u.date_debut, u.date_fin, u.statut, u.nature, u.type_sanction, u.montant,
               u.injonction, v.distance
          FROM vec_unites v
          JOIN unites u ON u.rowid = v.rowid
@@ -239,6 +248,10 @@ function filtresVectoriels(options: SearchOptions): {
   if (options.document !== undefined) {
     conditions.push("v.document = ?");
     valeurs.push(options.document);
+  }
+  if (options.nature !== undefined) {
+    conditions.push("v.nature = ?");
+    valeurs.push(options.nature);
   }
   if (options.date_min !== undefined) {
     conditions.push("v.date_num >= ?");
@@ -314,7 +327,7 @@ function candidatsDenses(
   const lignes = index.db
     .prepare(
       `SELECT v.rowid AS rowid, u.ref, u.document, u.corpus, u.niveau, u.numero, u.texte, u.chemin, u.url,
-              u.date_acte, u.date_debut, u.date_fin, u.statut, u.type_sanction, u.montant,
+              u.date_acte, u.date_debut, u.date_fin, u.statut, u.nature, u.type_sanction, u.montant,
               u.injonction, v.distance
          FROM vec_unites v
          JOIN unites u ON u.rowid = v.rowid
@@ -349,6 +362,10 @@ function candidatsLexicaux(
   if (options.document !== undefined) {
     conditions.push("u.document = ?");
     parametres.push(options.document);
+  }
+  if (options.nature !== undefined) {
+    conditions.push("u.nature = ?");
+    parametres.push(options.nature);
   }
   if (options.date_min !== undefined) {
     conditions.push("u.date_num >= ?");
@@ -439,7 +456,7 @@ function resultatsParRowid(
   const lignes = index.db
     .prepare(
       `SELECT rowid, ref, document, corpus, niveau, numero, texte, chemin, url,
-              date_acte, date_debut, date_fin, statut, type_sanction, montant, injonction
+              date_acte, date_debut, date_fin, statut, nature, type_sanction, montant, injonction
          FROM unites
         WHERE rowid IN (${marques})`,
     )
