@@ -28,3 +28,6 @@ data/raw/cnil/
 
 # Corpus LIL : snapshot legiPart non commité, récupéré par npm run lil:sync
 data/raw/lil/
+
+# Corpus CE : archive JADE globale (1,32 Go) non commitée, récupérée par npm run ce:sync
+data/raw/ce/

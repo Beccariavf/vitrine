@@ -1,0 +1,66 @@
+{
+  "corpus": "ce",
+  "nom": "Conseil d'État",
+  "titre": "Décisions du Conseil d'État publiées au recueil Lebon (JADE)",
+  "archive": "Freemium_jade_global_20261108-140000.tar.gz",
+  "archive_sha256": "87ab671358a374b4380e203d51418450e46935ea11f16439445b52b2f9c25297",
+  "archive_url": "https://echanges.dila.gouv.fr/OPENDATA/JADE/Freemium_jade_global_20261108-140000.tar.gz",
+  "date_extraction": "2026-11-09",
+  "date_min": "2014-01-01",
+  "mots_cles": [
+    "données personnelles",
+    "données à caractère personnel",
+    "informatique et libertés",
+    "protection des données",
+    "RGPD",
+    "règlement général sur la protection des données",
+    "commission nationale de l'informatique et des libertés",
+    "CNIL"
+  ],
+  "juridiction": "Conseil d'État",
+  "licence": "Licence Ouverte 2.0 (Etalab)",
+  "documents_lus": 61200,
+  "decisions_ce_depuis_2014": 8010,
+  "documents": 181,
+  "fragments": 3080,
+  "ecartes": {
+    "autre_juridiction": 9468,
+    "avant_borne": 43722,
+    "date_invalide": 0,
+    "sans_mot_cle": 7828,
+    "texte_vide": 1
+  },
+  "couverture": {
+    "source": "DILA — JADE (OPENDATA)",
+    "archive": "Freemium_jade_global_20261108-140000.tar.gz",
+    "periode": {
+      "date_min": "2014-01-01",
+      "date_max": "2026-10-16"
+    },
+    "juridiction": "Conseil d'État",
+    "mots_cles": [
+      "données personnelles",
+      "données à caractère personnel",
+      "informatique et libertés",
+      "protection des données",
+      "RGPD",
+      "règlement général sur la protection des données",
+      "commission nationale de l'informatique et des libertés",
+      "CNIL"
+    ],
+    "exclusions": {
+      "juridictions": [
+        "cour administrative d'appel",
+        "CAA",
+        "tribunal administratif"
+      ],
+      "motifs": {
+        "autre_juridiction": 9468,
+        "avant_borne": 43722,
+        "date_invalide": 0,
+        "sans_mot_cle": 7828,
+        "texte_vide": 1
+      }
+    }
+  }
+}

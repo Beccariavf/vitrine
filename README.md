@@ -23,6 +23,8 @@ npm run build          # génère dist/
 
 npm run corpus:build   # CELLAR → data/corpus/{rgpd,aiact}/
 npm run corpus:build -- --document aiact   # un seul descripteur
+npm run ce:sync                            # archive JADE globale → data/corpus/ce/ (1,32 Go, long)
+npm run ce:sync -- --dry-run               # ce que l'archive produirait, sans écrire
 npm run cnil:sync -- --tout                # historique DINUM + incréments DILA → data/corpus/cnil/
 npm run cnil:sync -- --increments --dry-run   # ce que les archives ajouteraient, sans écrire
 npm run corpus:index   # index incrémental Ollama + sqlite-vec → data/corpus/index/index.db
@@ -33,13 +35,14 @@ npm run mcp:eval -- --questions questions-v2.csv --split dev    # 30 questions d
 npm run mcp:eval -- --questions questions-v2.csv --split test --mesurer-test   # 30 questions tenues à l'écart, une seule fois (hors CI)
 npm run mcp:eval -- --questions questions-v3.csv --split dev --json            # 40 questions de développement v3, sortie machine (hors CI)
 npm run mcp:eval -- --questions questions-cnil.csv                             # 20 questions CNIL (hors CI)
+npm run mcp:eval -- --questions questions-ce.csv --split dev                   # 12 questions Conseil d'État (hors CI)
 npm run mcp:eval -- --questions questions-cnil-v2.csv --split dev --seuils 0.690,0.740,0.010   # 25 questions CNIL documentaires (hors CI)
 npm run mcp:eval -- --questions questions-cnil-v2.csv --split test --mesurer-test --seuils 0.690,0.740,0.010   # 25 questions tenues à l'écart, une seule fois
 npm run mcp:eval:filtres                                                        # 12 cas de filtrage CNIL (hors CI)
 ```
 
-Le MCP lit le RGPD, l'AI Act et les sanctions de la CNIL par passage exact et par recherche
-sémantique, avec provenance. Seule
+Le MCP lit le RGPD, l'AI Act, la LIL, les délibérations de la CNIL et les décisions du Conseil
+d'État par passage exact et par recherche sémantique, avec provenance. Seule
 la recherche sémantique exige Ollama sur `127.0.0.1:11434` et le modèle `qwen3-embedding:0.6b`
 (`ollama pull qwen3-embedding:0.6b`) : une question qui cite un article (« article 17 ») est servie
 sans index ni modèle. Un document nommé dans la question est honoré quand `document` est absent : les
@@ -97,6 +100,23 @@ Le filtrage par métadonnées répond à la limite précédente. Chaque décisio
 Sur un pilote de 12 cas, le top 5 passe de 7/12 sans filtre à 11/12 avec. Le cas restant nomme l'année mais
 décrit l'activité de façon trop vague : il faudrait un `secteur`. Rapport :
 `aidd_docs/tasks/2026_11/2026_11_06_filtres-cnil/eval-filtres.md`.
+
+Le corpus `ce` porte les décisions du Conseil d'État depuis 2014 qui traitent des données
+personnelles. `npm run ce:sync` liste `https://echanges.dila.gouv.fr/OPENDATA/JADE/`, télécharge
+l'archive globale `Freemium_jade_global_*.tar.gz` sous `data/raw/ce/` — non commitée, 1,32 Go — puis
+la lit en flux : `fetch` → `Readable.fromWeb` → `createGunzip` → lecteur tar incrémental, sans jamais
+charger l'archive ni son contenu décompressé en mémoire. JADE mêle le Conseil d'État, les cours
+administratives d'appel et les tribunaux administratifs : seules les décisions dont la `JURIDICTION`
+normalisée vaut exactement « Conseil d'État » sont retenues, les autres sont écartées et comptées.
+Le filtre porte aussi sur la date (`--date-min`, `2014-01-01` par défaut) et sur les mots-clés du
+descripteur (données personnelles, données à caractère personnel, informatique et libertés,
+protection des données, RGPD, CNIL). Le manifeste `data/corpus/ce/manifest.json` publie les comptes
+réels et les exclusions par motif ; `--dry-run` n'écrit rien et une seconde passe sur la même archive
+et la même empreinte ne relit rien. Mesure du 9 novembre 2026 : 61 200 entrées lues, 8 010 décisions
+du Conseil d'État depuis 2014, 181 retenues après mots-clés et 3 080 fragments ; exclusions
+9 468 autres juridictions, 43 722 antérieures à 2014, 7 828 sans mot-clé, 1 texte vide. Les 12
+questions `dev` de `mcp/eval/questions-ce.csv` rendent le document attendu au top 5 pour 8 d'entre
+elles (MRR 0,583, top 1 50,0 %).
 
 L'évaluation v2 porte sur 60 questions écrites contre le texte du RGPD : 12 références exactes,
 38 conceptuelles et 10 pièges, réparties en 30 `dev` et 30 `test`. Chaque mesure est filtrée par
@@ -194,11 +214,11 @@ les expose comme outils directs.
 
 - `veille/` — le pipeline : dix adaptateurs (neuf autorités, la Commission a deux flux) → normalisation → rattachement aux matières → `data/`.
 - `src/` — les pages Astro, qui lisent `data/` au build et filtrent les matières actives.
-- `mcp/` — les corpus RGPD, AI Act et CNIL, l'index vectoriel et lexical, le serveur MCP stdio
-  (`get_article`, `get_decision`, `search`), séparés du pipeline et du site.
+- `mcp/` — les corpus RGPD, AI Act, LIL, CNIL et Conseil d'État, l'index vectoriel et lexical, le
+  serveur MCP stdio (`get_article`, `get_decision`, `search`), séparés du pipeline et du site.
 - `data/` — snapshots bruts adressés par leur contenu, entrées JSON, journal d'appels PISTE et
-  corpus RGPD/AI Act/CNIL, versionnés dans git ; l'index `data/corpus/index/` est un dérivé ignoré,
-  et le parquet DINUM sous `data/raw/cnil/` aussi.
+  corpus RGPD/AI Act/LIL/CNIL/CE, versionnés dans git ; l'index `data/corpus/index/` est un dérivé
+  ignoré, et les sources brutes sous `data/raw/cnil/`, `data/raw/lil/` et `data/raw/ce/` aussi.
 - `veille/themes.json` — les cinq matières, leurs textes, leurs sources et leur état.
 - `tools/parametres.html` — l'outil local qui active ou désactive une matière.
 - `aidd_docs/INSTALL.md` — les décisions d'architecture et les étapes d'installation.
