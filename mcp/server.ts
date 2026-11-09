@@ -15,19 +15,22 @@ export const RACINE = fileURLToPath(new URL("..", import.meta.url));
 
 const CONSIGNE_PROVENANCE =
   "Le texte rendu vient des corpus locaux (RGPD `32016R0679`, AI Act `32024R1689` et " +
-  "sanctions CNIL `cnil`), jamais d'une génération. Citer la référence et l'URL rendues. " +
+  "délibérations CNIL `cnil` : sanctions, avis, recommandations et lignes directrices), jamais " +
+  "d'une génération. Citer la référence et l'URL rendues. " +
   "Respecter le niveau de confiance : « aucun_resultat_fiable » signifie qu'il faut le dire au " +
   "lecteur, pas inventer un passage.";
 
 const CONSIGNE_SERVEUR =
   "Serveur de lecture et de recherche sur trois corpus juridiques : le RGPD " +
-  "(CELEX 32016R0679), l'AI Act (CELEX 32024R1689) et les délibérations de sanction de la CNIL " +
-  "(corpus `cnil`). Les outils de recherche acceptent le paramètre `corpus` ; sans lui, la " +
-  "recherche couvre les trois collections. Un document nommé dans la question (sigle ou nom " +
+  "(CELEX 32016R0679), l'AI Act (CELEX 32024R1689) et les délibérations de la CNIL " +
+  "(corpus `cnil`, natures Sanction, Avis et Recommandation/Lignes directrices). Les outils de " +
+  "recherche acceptent les paramètres `corpus` et `nature` ; sans eux, la recherche couvre les " +
+  "trois collections et toutes les natures. Un document nommé dans la question (sigle ou nom " +
   "ordinaire, casse et ponctuation indifférentes) est honoré quand `document` et `corpus` sont " +
   "absents ; sans nom, une référence exacte qui n'existe que dans un corpus est `incertain` et le " +
   "corpus est nommé. `get_decision` rend une sanction entière, par identifiant CNILTEXT ou par " +
-  "numéro SAN-…. Le texte rendu vient du corpus local, jamais d'une génération.";
+  "numéro SAN-… ; un avis ou une recommandation se lit par `search` avec `nature`. Le texte rendu " +
+  "vient du corpus local, jamais d'une génération.";
 
 export type ServerDeps = {
   rootDir: string;
@@ -78,8 +81,10 @@ export function createServer(deps: ServerDeps): McpServer {
       title: "Lire une délibération de sanction de la CNIL",
       description:
         "Rend une délibération de sanction entière, par identifiant de document (`CNILTEXT…`) ou par " +
-        "numéro (`SAN-2026-015`), avec ses fragments dans l'ordre du document, sa date, son statut et " +
-        "son URL. Ne cherche pas par le sens : pour une question ouverte, utiliser `search`. Ne rend " +
+        "numéro (`SAN-2026-015`), avec ses fragments dans l'ordre du document, sa date, sa nature, son " +
+        "statut et son URL. Ne cherche pas par le sens : pour une question ouverte, utiliser `search`. " +
+        "Un avis ou une recommandation n'est pas rendu ici : l'outil répond `trouve: false` et renvoie " +
+        "à `search` avec son filtre `nature`. Ne rend " +
         "pas un fragment isolé et n'invente aucun fragment : une décision absente est dite, avec un " +
         "message. Un numéro porté par deux documents rend les deux, chacun avec son identifiant. " +
         CONSIGNE_PROVENANCE,
@@ -111,16 +116,18 @@ export function createServer(deps: ServerDeps): McpServer {
   serveur.registerTool(
     "search",
     {
-      title: "Chercher dans le RGPD, l'AI Act ou les sanctions CNIL",
+      title: "Chercher dans le RGPD, l'AI Act ou les délibérations CNIL",
       description:
-        "Cherche par le sens dans le RGPD, l'AI Act ou les délibérations de sanction de la CNIL et " +
-        "rend les passages les plus proches avec leur " +
+        "Cherche par le sens dans le RGPD, l'AI Act ou les délibérations de la CNIL (sanctions, avis, " +
+        "recommandations et lignes directrices) et rend les passages les plus proches avec leur " +
         "provenance et un niveau de confiance (confiant, incertain, aucun_resultat_fiable). " +
         "L'article pose la règle et le considérant l'éclaire : à pertinence comparable, l'article passe " +
         "devant, mais aucun considérant n'est retiré du résultat. " +
         "Une question qui cite un article rend cet article exact, sans recherche vectorielle. " +
         "`corpus` borne la recherche à une collection (`rgpd`, `aiact`, `cnil`) et prime sur tout nom " +
         "de document présent dans la question. " +
+        "`nature` borne une recherche CNIL à une nature (`Sanction`, `Avis`, " +
+        "`Recommandation/Lignes directrices`) ; sans lui, toutes les natures répondent. " +
         "Un document nommé dans la question est honoré quand `document` et `corpus` sont absents : les " +
         "sigles et noms ordinaires sont reconnus après normalisation de la casse, des diacritiques et " +
         "de la ponctuation (« RGPD », « R.G.P.D. », « règlement général sur la protection des données », " +
@@ -140,7 +147,8 @@ export function createServer(deps: ServerDeps): McpServer {
           .string()
           .optional()
           .describe(
-            "Restreint la recherche à une collection : rgpd, aiact ou cnil ; absent, toutes répondent",
+            "Restreint la recherche à une collection : rgpd, aiact ou cnil ; cnil couvre les " +
+              "sanctions, avis, recommandations et lignes directrices ; absent, toutes répondent",
           ),
         document: z
           .string()
@@ -148,6 +156,13 @@ export function createServer(deps: ServerDeps): McpServer {
           .describe(
             "Restreint la recherche à un document : 32016R0679 (RGPD), 32024R1689 (AI Act) " +
               "ou un identifiant CNILTEXT ; absent, tous les corpus répondent",
+          ),
+        nature: z
+          .string()
+          .optional()
+          .describe(
+            "Restreint une recherche CNIL à une nature : Sanction, Avis ou " +
+              "Recommandation/Lignes directrices ; absent, toutes les natures répondent",
           ),
         date_min: z
           .string()
@@ -179,12 +194,13 @@ export function createServer(deps: ServerDeps): McpServer {
           .describe("Numéro de délibération CNIL, par exemple SAN-2026-015"),
       },
     },
-    async ({ question, k, corpus, document, date_min, date_max, type_sanction, montant_min, montant_max, numero }) => {
+    async ({ question, k, corpus, document, nature, date_min, date_max, type_sanction, montant_min, montant_max, numero }) => {
       const demande = {
         question,
         ...(k === undefined ? {} : { k }),
         ...(corpus === undefined ? {} : { corpus }),
         ...(document === undefined ? {} : { document }),
+        ...(nature === undefined ? {} : { nature }),
         ...(date_min === undefined ? {} : { date_min }),
         ...(date_max === undefined ? {} : { date_max }),
         ...(type_sanction === undefined ? {} : { type_sanction }),

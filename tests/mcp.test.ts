@@ -823,6 +823,7 @@ function fragment(
     statut: "VIGUEUR",
     url: `https://www.legifrance.gouv.fr/cnil/id/${document}`,
     origine: "dinum",
+    nature: "Sanction",
   };
 }
 
@@ -848,6 +849,7 @@ describe("get_decision", () => {
       assert.equal(decision?.date_acte, "2026-10-22");
       assert.equal(decision?.statut, "VIGUEUR");
       assert.equal(decision?.origine, "dinum");
+      assert.equal(decision?.nature, "Sanction");
       assert.deepEqual(
         decision?.fragments.map((element) => element.ref),
         Array.from({ length: 11 }, (_, index) => `CNILTEXT000055022778#f${index}`),
@@ -914,6 +916,26 @@ describe("get_decision", () => {
     }
   });
 
+  it("refuse un avis et renvoie à search avec nature", () => {
+    const avis: Unite = {
+      ...fragment("CNILTEXT000053000001", 0, "avis sur un projet de décret", "AVIS-2026-001"),
+      nature: "Avis",
+    };
+    const root = racine([avis]);
+    try {
+      const resultat = getDecision(root, { document: "CNILTEXT000053000001" });
+
+      assert.equal(resultat.trouve, false);
+      assert.deepEqual(resultat.decisions, []);
+      assert.match(resultat.message ?? "", /Aucune sanction/);
+      assert.match(resultat.message ?? "", /Avis/);
+      assert.match(resultat.message ?? "", /« search »/);
+      assert.match(resultat.message ?? "", /« nature »/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("dit l'absence sans inventer de fragment", () => {
     const root = racine([fragment("CNILTEXT000055022778", 0, "texte")]);
     try {
@@ -926,6 +948,62 @@ describe("get_decision", () => {
       assert.match(absent.message ?? "", /Aucune décision pour le document CNILTEXT000000000000/);
       assert.match(sansIdentifiant.message ?? "", /Précisez « document »/);
       assert.match(autreCorpus.message ?? "", /dans le corpus rgpd/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("la recherche restreinte à une nature", () => {
+  it("ne rend que la nature demandée, même quand elle est minoritaire", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-nature-filtre-"));
+    try {
+      const sanction: Unite = {
+        ...fragment("CNILTEXT000055000001", 0, "sanction pécuniaire pour le dépôt de cookies", "SAN-2026-901"),
+        type_sanction: "amende",
+        montant: 100_000,
+        injonction: true,
+      };
+      const avisCible: Unite = {
+        ...fragment("CNILTEXT000055000002", 0, "avis sur la publicité ciblée et les cookies", "AVIS-2026-001"),
+        nature: "Avis",
+      };
+      const bruit: Unite[] = Array.from({ length: 60 }, (_, index) => ({
+        ...fragment(
+          `CNILTEXT0000551${String(index).padStart(5, "0")}`,
+          0,
+          "question identique sur les cookies",
+          `AVIS-2026-${String(index + 2).padStart(3, "0")}`,
+        ),
+        nature: "Avis",
+      }));
+      ecrireCorpus(root, [sanction, avisCible, ...bruit], "cnil");
+      const { chemin } = await buildIndex(root, embedderFactice());
+      const index = openIndex(chemin);
+      try {
+        const avis = await search(
+          root,
+          { question: "avis publicité ciblée cookies", corpus: "cnil", nature: "Avis", k: 5 },
+          { embedder: embedderFactice(), index, seuils: { bas: -1, haut: 2, marge: 0 } },
+        );
+
+        assert.ok(avis.passages.length > 0);
+        assert.ok(avis.passages.every((passage) => passage.nature === "Avis"));
+        assert.equal(avis.passages[0]?.document, "CNILTEXT000055000002");
+        assert.equal(avis.passages[0]?.montant, null, "un avis ne porte aucun montant de sanction");
+
+        const sanctions = await search(
+          root,
+          { question: "question identique sur les cookies", corpus: "cnil", nature: "Sanction", k: 1 },
+          { embedder: embedderFactice(), index, seuils: { bas: -1, haut: 2, marge: 0 } },
+        );
+
+        assert.equal(sanctions.passages.length, 1, "la fenêtre vectorielle doit être filtrée par nature");
+        assert.equal(sanctions.passages[0]?.document, "CNILTEXT000055000001");
+        assert.equal(sanctions.passages[0]?.montant, 100_000);
+      } finally {
+        index.db.close();
+      }
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

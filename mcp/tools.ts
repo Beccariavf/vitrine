@@ -5,6 +5,7 @@ import type { Index, ResultatRecherche } from "./index/search.ts";
 import type { Unite } from "./corpus/parse.ts";
 import type { Embedder } from "./embed/embedder.ts";
 import { numeroIndex } from "./corpus/cnil/meta.ts";
+import { estSanction } from "./corpus/cnil/nature.ts";
 import { niveauConfiance } from "./confidence.ts";
 import type { NiveauConfiance } from "./confidence.ts";
 
@@ -186,6 +187,8 @@ export type SearchDemande = {
   corpus?: string;
   /** Restreint la recherche à un document précis. */
   document?: string;
+  /** Restreint à une nature CNIL : Sanction, Avis ou Recommandation/Lignes directrices. */
+  nature?: string;
   /** Date ISO minimale de la décision. */
   date_min?: string;
   /** Date ISO maximale de la décision. */
@@ -217,6 +220,8 @@ export type DecisionTrouvee = {
   url: string;
   /** `dinum` ou `dila` : d'où vient le découpage des fragments. */
   origine?: string;
+  /** Nature de la délibération : toujours une sanction ici. */
+  nature?: string;
   /** Type de sanction lu dans le dispositif. */
   type_sanction?: string;
   /** Montant de la sanction pécuniaire (amende ou liquidation) ; `null` si absent ou masqué. */
@@ -268,22 +273,47 @@ export function getDecision(rootDir: string, demande: DecisionDemande): Resultat
     };
   }
 
-  const unites = lireUnites(rootDir).filter(
+  const trouvees = lireUnites(rootDir).filter(
     (unite) =>
       (corpus === undefined || corpus === "" || unite.corpus === corpus) &&
       (document === undefined || document === "" || unite.document === document) &&
       (numero === undefined || numero === "" || numeroIndex(unite.numero) === numeroIndex(numero)),
   );
 
-  if (unites.length === 0) {
-    const quoi =
-      document !== undefined && document !== ""
-        ? `le document ${document}`
-        : `le numéro ${numero ?? ""}`;
+  const quoi =
+    document !== undefined && document !== ""
+      ? `le document ${document}`
+      : `le numéro ${numero ?? ""}`;
+
+  if (trouvees.length === 0) {
     return {
       trouve: false,
       decisions: [],
       message: `Aucune décision pour ${quoi}${portee}.`,
+    };
+  }
+
+  // `get_decision` reste réservé aux sanctions : un avis ou une recommandation
+  // se lit par `search`, qui porte le filtre `nature`.
+  const unites = trouvees.filter((unite) => estSanction(unite.nature));
+  if (unites.length === 0) {
+    const natures = [
+      ...new Set(
+        trouvees
+          .map((unite) => unite.nature?.trim() ?? "")
+          .filter((nature) => nature !== ""),
+      ),
+    ];
+    const comme =
+      natures.length === 0
+        ? "ce document n'est pas une délibération de sanction"
+        : `la délibération existe comme ${natures.join(", ")}`;
+    return {
+      trouve: false,
+      decisions: [],
+      message:
+        `Aucune sanction pour ${quoi}${portee} : ${comme}. ` +
+        "Utilisez « search » avec le filtre « nature » pour la lire.",
     };
   }
 
@@ -311,6 +341,7 @@ export function getDecision(rootDir: string, demande: DecisionDemande): Resultat
         statut: premier.statut,
         url: premier.url,
         ...(premier.origine === undefined ? {} : { origine: premier.origine }),
+        ...(premier.nature === undefined ? {} : { nature: premier.nature }),
         ...(premier.type_sanction === undefined ? {} : { type_sanction: premier.type_sanction }),
         ...(premier.montant === undefined ? {} : { montant: premier.montant }),
         ...(premier.injonction === undefined ? {} : { injonction: premier.injonction }),
@@ -413,6 +444,7 @@ export async function search(
     k,
     ...(corpus === undefined ? {} : { corpus }),
     ...(document === undefined ? {} : { document }),
+    ...(demande.nature === undefined ? {} : { nature: demande.nature }),
     ...(demande.date_min === undefined ? {} : { date_min: demande.date_min }),
     ...(demande.date_max === undefined ? {} : { date_max: demande.date_max }),
     ...(demande.type_sanction === undefined ? {} : { type_sanction: demande.type_sanction }),

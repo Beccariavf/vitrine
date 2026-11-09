@@ -41,6 +41,7 @@ describe("le serveur MCP sur stdio", () => {
         "k",
         "montant_max",
         "montant_min",
+        "nature",
         "numero",
         "question",
         "type_sanction",
