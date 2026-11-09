@@ -10,7 +10,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, statSync, writ
 import { dirname } from "node:path";
 import { extractText } from "unpdf";
 import { MAX_FRAGMENT } from "../cnil/parse.ts";
-import { ErreurHttp } from "./liste.ts";
+import { ErreurHttp, normaliserUrlWayback } from "./liste.ts";
 import type { OptionsHttp } from "./liste.ts";
 
 /** Réponse binaire minimale d'un `fetch`, injectable en test. */
@@ -43,6 +43,66 @@ export class ErreurPdf extends Error {
     this.name = "ErreurPdf";
     this.url = url;
   }
+}
+
+/** Langue d'un PDF, lue sur son nom de fichier. */
+export type LanguePdf = "fr" | "en" | "autre";
+
+/** Langue d'un PDF : `fr`, `en` ou `autre`. */
+export function languePdf(url: string): LanguePdf {
+  let chemin: string;
+  try {
+    chemin = new URL(url).pathname.toLowerCase();
+  } catch {
+    return "autre";
+  }
+  const nom = chemin.split("/").at(-1) ?? "";
+  if (/[_-]fr(?:[_-]|\.pdf$)/i.test(nom)) return "fr";
+  if (/[_-]en(?:[_-]|\.pdf$)/i.test(nom)) return "en";
+  return "autre";
+}
+
+/**
+ * Choisit le PDF d'une page de document : le français `_fr.pdf` quand il existe,
+ * sinon le premier PDF de la version courante. Les PDF de consultation
+ * publique sont écartés dès qu'un PDF courant existe, pour ne pas retenir une
+ * version antérieure.
+ */
+export function trouverPdfDocument(
+  html: string,
+  pageUrl: string,
+): { url: string; langue: LanguePdf } | null {
+  const bruts: string[] = [];
+  const motifs = [
+    /<meta\b[^>]*name=["']citation_pdf_url["'][^>]*content=["']([^"']+)["']/gi,
+    /href=["']([^"']+\.pdf(?:\?[^"']*)?)["']/gi,
+    /data-url=["']([^"']+\.pdf(?:\?[^"']*)?)["']/gi,
+  ];
+  for (const motif of motifs) {
+    for (const trouve of html.matchAll(motif)) {
+      if (trouve[1] !== undefined) bruts.push(trouve[1]);
+    }
+  }
+
+  const urls: string[] = [];
+  for (const brut of bruts) {
+    try {
+      const url = new URL(normaliserUrlWayback(brut), pageUrl);
+      if (url.protocol !== "https:" && url.protocol !== "http:") continue;
+      if (!url.pathname.toLowerCase().endsWith(".pdf")) continue;
+      urls.push(url.href);
+    } catch {
+      // Lien illisible : on essaie le suivant.
+    }
+  }
+  const uniques = [...new Set(urls)];
+  const courants = uniques.filter(
+    (url) => !new URL(url).pathname.toLowerCase().includes("/consultation/"),
+  );
+  const candidats = courants.length > 0 ? courants : uniques;
+  const francais = candidats.find((url) => languePdf(url) === "fr");
+  const choisi = francais ?? candidats[0];
+  return choisi === undefined ? null : { url: choisi, langue: languePdf(choisi) };
 }
 
 /** Vrai si l'hôte appartient à l'un des domaines admis. */

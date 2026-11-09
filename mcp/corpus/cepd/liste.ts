@@ -23,6 +23,8 @@ export type DocumentListe = {
   date: string | null;
   /** URL du PDF, quand la liste ou la page la donne directement. */
   pdfUrl: string | null;
+  /** Version explicite lue sur la page, quand elle en porte une. */
+  version?: string | null;
 };
 
 /** Une tentative HTTP, consignée pour le rapport de blocage. */
@@ -53,6 +55,12 @@ export type DescripteurCePd = {
   nom: string;
   titre: string;
   url_liste: string;
+  /** Index des sitemaps ; source primaire des pages `_fr`. */
+  url_sitemap: string;
+  /** Nombre de pages de sitemap essayées si l'index est illisible. */
+  pages_sitemap: number;
+  /** Langue des pages retenues, `fr` pour le corpus français. */
+  langue: string;
   motif_document: string;
   types: TypeDocument[];
   page_debut: number;
@@ -80,6 +88,10 @@ export type OptionsHttp = {
 export type ResultatListe = {
   documents: DocumentListe[];
   pages: number;
+  /** Source de la liste : sitemap primaire, liste directe ou Wayback. */
+  via: "sitemap" | "direct" | "wayback";
+  /** URLs des pages de sitemap lues, vide hors sitemap. */
+  sitemapPages: string[];
   tentatives: Tentative[];
 };
 
@@ -455,7 +467,13 @@ export async function listerDocuments(
   if (documents.size === 0) {
     throw new ErreurHttp(descripteur.url_liste, "aucun document", 0);
   }
-  return { documents: [...documents.values()], pages, tentatives: journal };
+  return {
+    documents: [...documents.values()],
+    pages,
+    via: "direct",
+    sitemapPages: [],
+    tentatives: journal,
+  };
 }
 
 /**
@@ -517,5 +535,82 @@ export async function listerDocumentsWayback(
   if (documents.size === 0) {
     throw new ErreurHttp(descripteur.url_liste, "aucun document Wayback", 0);
   }
-  return { documents: [...documents.values()], pages, tentatives: journal };
+  return {
+    documents: [...documents.values()],
+    pages,
+    via: "wayback",
+    sitemapPages: [],
+    tentatives: journal,
+  };
+}
+
+function locs(xml: string): string[] {
+  return [...xml.matchAll(/<loc>([^<]+)<\/loc>/gi)].map((trouve) => (trouve[1] ?? "").trim());
+}
+
+/**
+ * Source primaire : l'index de sitemaps, puis ses pages 1 à 5. Seules les URL
+ * `/documents/guideline/..._fr` sont retenues ; les traductions `_en`, `_de`,
+ * etc. et les autres types sont écartés. Les pages n'ont ni titre ni date : le
+ * document est enrichi ensuite depuis sa page.
+ */
+export async function listerDocumentsSitemap(
+  descripteur: DescripteurCePd,
+  options: OptionsHttp = {},
+): Promise<ResultatListe> {
+  const journal = options.journal ?? [];
+  let pagesSitemap: string[] = [];
+
+  try {
+    const index = await chargerTexte(descripteur.url_sitemap, {
+      ...options,
+      journal,
+      via: "direct",
+    });
+    pagesSitemap = locs(index).filter((url) => /[?&]page=\d+/.test(url));
+  } catch (error) {
+    if (!(error instanceof ErreurHttp)) throw error;
+  }
+
+  if (pagesSitemap.length === 0) {
+    pagesSitemap = Array.from(
+      { length: descripteur.pages_sitemap },
+      (_, index) => `${descripteur.url_sitemap}?page=${index + 1}`,
+    );
+  }
+
+  const documents = new Map<string, DocumentListe>();
+  for (const pageUrl of pagesSitemap) {
+    const xml = await chargerTexte(pageUrl, { ...options, journal, via: "direct" });
+    for (const loc of locs(xml)) {
+      let url: URL;
+      try {
+        url = new URL(loc);
+      } catch {
+        continue;
+      }
+      if (!/\/documents\/guidelines?\//i.test(url.pathname)) continue;
+      if (!url.pathname.toLowerCase().endsWith("_fr")) continue;
+      url.hash = "";
+      if (documents.has(url.href)) continue;
+      documents.set(url.href, {
+        type: "guideline",
+        url: url.href,
+        titre: "",
+        date: null,
+        pdfUrl: null,
+      });
+    }
+  }
+
+  if (documents.size === 0) {
+    throw new ErreurHttp(descripteur.url_sitemap, "aucun document _fr", 0);
+  }
+  return {
+    documents: [...documents.values()],
+    pages: pagesSitemap.length,
+    via: "sitemap",
+    sitemapPages: pagesSitemap,
+    tentatives: journal,
+  };
 }

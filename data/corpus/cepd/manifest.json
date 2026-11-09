@@ -6,29 +6,53 @@
   "date_liste": "2026-11-09",
   "depuis": null,
   "limite": null,
-  "via": "wayback",
-  "documents": 35,
-  "fragments": 4725,
+  "via": "sitemap",
+  "sitemap_pages": [
+    "https://www.edpb.europa.eu/sitemap.xml?page=1",
+    "https://www.edpb.europa.eu/sitemap.xml?page=2",
+    "https://www.edpb.europa.eu/sitemap.xml?page=3",
+    "https://www.edpb.europa.eu/sitemap.xml?page=4",
+    "https://www.edpb.europa.eu/sitemap.xml?page=5"
+  ],
+  "documents": 36,
+  "fragments": 5443,
   "versions_ecartees": 0,
-  "documents_sans_texte_ecartes": 0,
+  "documents_sans_texte_ecartes": 6,
   "types_retenus": [
     "guideline"
   ],
+  "langues_pdf": {
+    "fr": 36,
+    "en": 0,
+    "autre": 0
+  },
   "licence": "À vérifier : le site du CEPD ne déclare pas de licence explicite dans la reconnaissance ; les documents sont des publications officielles de l'Union européenne.",
   "couverture": {
     "source": "CEPD — pages de lignes directrices et recommandations (PDF)",
     "date_liste": "2026-11-09",
     "limite": null,
-    "via": "wayback",
-    "pages_lues": 7,
+    "via": "sitemap",
+    "sitemap_pages": [
+      "https://www.edpb.europa.eu/sitemap.xml?page=1",
+      "https://www.edpb.europa.eu/sitemap.xml?page=2",
+      "https://www.edpb.europa.eu/sitemap.xml?page=3",
+      "https://www.edpb.europa.eu/sitemap.xml?page=4",
+      "https://www.edpb.europa.eu/sitemap.xml?page=5"
+    ],
+    "pages_lues": 5,
     "periode": {
-      "date_min": "2018-05-25",
+      "date_min": "2018-04-11",
       "date_max": "2025-06-05"
     },
     "types_retenus": [
       "guideline"
     ],
-    "documents_sans_texte_ecartes": 0,
+    "langues_pdf": {
+      "fr": 36,
+      "en": 0,
+      "autre": 0
+    },
+    "documents_sans_texte_ecartes": 6,
     "versions_ecartees": 0
   }
 }

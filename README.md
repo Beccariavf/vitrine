@@ -125,18 +125,20 @@ doublons entre les deux fonds ; exclusions 399 198 autres juridictions, 138 074 
 document attendu au top 5 pour 8 d'entre elles (MRR 0,486, top 1 33,3 %).
 
 Le corpus `cepd` porte les lignes directrices du Comité européen de la protection des données,
-extraites de leurs PDF. `npm run cepd:sync` parcourt la liste paginée, retient les liens
-`/documents/guideline(s)/…` et `/documents/recommendation(s)/…` portant un numéro, puis télécharge
-chaque PDF sous `data/raw/cepd/` — non commité — et l'extrait avec `unpdf`. Un PDF sans texte, de
+extraites de leurs PDF. `npm run cepd:sync` lit d'abord l'index de sitemaps puis ses cinq pages,
+retient les URL `/documents/guideline/…_fr` et écarte les traductions `_en`, `_de`, etc. ; le
+Wayback Machine ne sert plus que de repli si le sitemap est injoignable. Chaque page de document est
+ensuite lue pour son titre, sa date, sa version et son PDF : le PDF français `_fr.pdf` est préféré,
+sinon le premier PDF de la version courante, les PDF de consultation étant écartés. Les PDF sont
+téléchargés sous `data/raw/cepd/` — non commité — et extraits avec `unpdf`. Un PDF sans texte, de
 moins de 2 000 caractères ou dont la part de lettres est inférieure à 50 % est refusé en nommant son
-URL. Les versions finales remplacent les projets portant le même numéro ; les PDF identiques ne sont
-pas retéléchargés. `--limite` et `--depuis` réduisent le jeu avant téléchargement, `--dry-run` n'écrit
-rien. Le site direct a répondu 404 pendant la mesure du 9 novembre 2026 : la liste et les PDF ont été
-lus par le Wayback Machine (`via: "wayback"` dans le manifeste), sur sept pages. Résultat : 35 lignes
-directrices, 4 725 fragments, 0 version écartée, 0 document sans PDF ; période 2018-05-25 à
-2025-06-05. La liste archivée ne portait que le type `guideline`, pas de recommandation. Les 10
-questions `dev` de `mcp/eval/questions-cepd.csv` rendent le document attendu au rang 1 pour les 10
-(MRR 1,000, top 1 100,0 %).
+URL. `--limite` et `--depuis` réduisent le jeu avant téléchargement, `--dry-run` n'écrit rien.
+Mesure du 9 novembre 2026 : 42 URL `_fr` dans le sitemap, 5 pages lues, 36 lignes directrices,
+5 443 fragments, 0 version écartée, 6 URL sans PDF (5 pages WP29 sans PDF et le doublon court
+`transparency_fr`, la même ligne étant retenue sous son URL longue) ; période 2018-04-11 à
+2025-06-05. Les 36 PDF retenus sont français (`fr: 36`, `en: 0`, `autre: 0`). Les 10 questions `dev`
+de `mcp/eval/questions-cepd.csv` rendent le document attendu au rang 1 pour les 10 (MRR 1,000,
+top 1 100,0 %).
 
 L'évaluation v2 porte sur 60 questions écrites contre le texte du RGPD : 12 références exactes,
 38 conceptuelles et 10 pièges, réparties en 30 `dev` et 30 `test`. Chaque mesure est filtrée par

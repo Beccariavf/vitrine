@@ -1,11 +1,11 @@
 question,type,sources_attendues,piege,split,corpus
-Comment le CEPD calcule-t-il le montant des amendes administratives au titre du RGPD ?,conceptuelle,guidelines-042022-calculation-administrative-fines-under,non,dev,cepd
-Quelles garanties encadrent l'utilisation de la reconnaissance faciale par les autorités répressives ?,conceptuelle,guidelines-052022-use-facial-recognition-technology-area,non,dev,cepd
-Quelles informations le responsable du traitement doit-il fournir à la personne qui exerce son droit d'accès ?,conceptuelle,guidelines-012022-data-subject-rights-right-access,non,dev,cepd
-Quels critères permettent de reconnaître un modèle de conception trompeur sur les plateformes de médias sociaux ?,conceptuelle,guidelines-032022-deceptive-design-patterns-social-media,non,dev,cepd
-Quelles obligations s'appliquent aux assistants vocaux virtuels qui traitent des données personnelles ?,conceptuelle,guidelines-022021-virtual-voice-assistants,non,dev,cepd
-Comment distinguer un responsable du traitement d'un sous-traitant au sens du RGPD ?,conceptuelle,guidelines-072020-concepts-controller-and-processor-gdpr,non,dev,cepd
-Que signifie l'obligation de protection des données dès la conception et par défaut ?,conceptuelle,guidelines-42019-article-25-data-protection-design-and,non,dev,cepd
-Quels critères le CEPD retient-il pour le droit à l'oubli dans les moteurs de recherche ?,conceptuelle,guidelines-52019-criteria-right-be-forgotten-search-engines,non,dev,cepd
-Quelles règles encadrent le traitement de données de santé à des fins de recherche pendant la pandémie de COVID-19 ?,conceptuelle,guidelines-032020-processing-data-concerning-health-purpose,non,dev,cepd
-Quelles conditions encadrent l'utilisation de données de localisation et d'outils de recherche de contacts pendant la pandémie ?,conceptuelle,guidelines-042020-use-location-data-and-contact-tracing,non,dev,cepd
+Comment le CEPD calcule-t-il le montant des amendes administratives au titre du RGPD ?,conceptuelle,guidelines-042022-on-the-calculation-of-administrative-fines-under-the-gdpr,non,dev,cepd
+Quelles garanties encadrent l'utilisation de la reconnaissance faciale par les autorités répressives ?,conceptuelle,guidelines-052022-on-the-use-of-facial-recognition-technology-in-the-area-of,non,dev,cepd
+Quelles informations le responsable du traitement doit-il fournir à la personne qui exerce son droit d'accès ?,conceptuelle,guidelines-012022-on-data-subject-rights-right-of-access,non,dev,cepd
+Quels critères permettent de reconnaître un modèle de conception trompeur sur les plateformes de médias sociaux ?,conceptuelle,guidelines-032022-on-deceptive-design-patterns-in-social-media-platform,non,dev,cepd
+Quelles obligations s'appliquent aux assistants vocaux virtuels qui traitent des données personnelles ?,conceptuelle,guidelines-022021-on-virtual-voice-assistants,non,dev,cepd
+Comment distinguer un responsable du traitement d'un sous-traitant au sens du RGPD ?,conceptuelle,guidelines-072020-on-the-concepts-of-controller-and-processor-in-the-gdpr,non,dev,cepd
+Que signifie l'obligation de protection des données dès la conception et par défaut ?,conceptuelle,guidelines-42019-on-article-25-data-protection-by-design-and-by-default,non,dev,cepd
+Quels critères le CEPD retient-il pour le droit à l'oubli dans les moteurs de recherche ?,conceptuelle,guidelines-52019-on-the-criteria-of-the-right-to-be-forgotten-in-the-search,non,dev,cepd
+Quelles règles encadrent le traitement de données de santé à des fins de recherche pendant la pandémie de COVID-19 ?,conceptuelle,guidelines-032020-on-the-processing-of-data-concerning-health-for-the-purpose,non,dev,cepd
+Quelles conditions encadrent l'utilisation de données de localisation et d'outils de recherche de contacts pendant la pandémie ?,conceptuelle,guidelines-042020-on-the-use-of-location-data-and-contact-tracing-tools-in-the,non,dev,cepd

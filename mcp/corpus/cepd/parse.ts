@@ -7,10 +7,11 @@
  */
 
 import { decouperParagraphes } from "../cnil/parse.ts";
+import { texteVisible } from "../parse.ts";
 import type { Unite } from "../parse.ts";
 import { dateDansTexte } from "./liste.ts";
 import type { DescripteurCePd, DocumentListe, TypeDocument } from "./liste.ts";
-import { paragraphesDepuisTexte } from "./pdf.ts";
+import { paragraphesDepuisTexte, trouverPdfDocument } from "./pdf.ts";
 
 const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -42,17 +43,24 @@ export function slugDe(url: string): string {
   return slug;
 }
 
-/** Numéro canonique, par exemple `Guidelines 05/2022` ou `Recommendation 01/2022`. */
-export function numeroDepuisTitre(titre: string, type: TypeDocument): string {
+/**
+ * Numéro canonique, par exemple `Guidelines 05/2022`, `Recommendation 01/2022`
+ * ou `WP260` pour une ligne directrice du groupe Article 29 qui n'a pas de
+ * numéro EDPB. Le numéro WP vient du nom du PDF quand le titre est muet.
+ */
+export function numeroDepuisTitre(titre: string, type: TypeDocument, url?: string): string {
   const trouve =
     /\b(?:guidelines?|lignes?\s+directrices?|recommendations?|recommandations?)\s+(?:n[°o]\s*)?(\d{1,2})\s*\/\s*(\d{4})\b/i.exec(
       titre,
     );
-  if (trouve === null) {
-    throw new Error(`Titre sans numéro de ligne directrice : « ${titre} »`);
+  if (trouve !== null) {
+    const prefixe = type === "recommendation" ? "Recommendation" : "Guidelines";
+    return `${prefixe} ${String(Number(trouve[1])).padStart(2, "0")}/${trouve[2]}`;
   }
-  const prefixe = type === "recommendation" ? "Recommendation" : "Guidelines";
-  return `${prefixe} ${String(Number(trouve[1])).padStart(2, "0")}/${trouve[2]}`;
+  const wp = /\bwp[-_ ]?(\d{2,4})/i.exec(`${titre} ${url ?? ""}`);
+  if (wp?.[1] !== undefined) return `WP${String(Number(wp[1]))}`;
+  const slug = slugDe(url ?? titre);
+  return slug.replace(/-/g, " ").replace(/\b\w/g, (caractere) => caractere.toUpperCase());
 }
 
 /** Date de la ligne directrice : celle de la liste, sinon celle du titre. */
@@ -64,10 +72,50 @@ export function dateDocument(document: DocumentListe): string {
   return date;
 }
 
-/** Version explicite du titre, par exemple `2.0`, ou `null`. */
-export function versionDepuisTitre(titre: string): string | null {
-  const trouve = /\bversion\s+(\d+(?:\.\d+)?)/i.exec(titre) ?? /\bv(\d+(?:\.\d+)?)\b/i.exec(titre);
-  return trouve?.[1] ?? null;
+/** Titre lisible d'une page de document : `h1`, `og:title`, puis `<title>`. */
+export function titreDepuisPage(html: string): string {
+  const h1 = /<h1\b[^>]*>([\s\S]*?)<\/h1>/i.exec(html);
+  if (h1 !== null) {
+    const titre = texteVisible(h1[1] ?? "");
+    if (titre !== "") return titre;
+  }
+  const og = /<meta\b[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i.exec(html);
+  if (og !== null) {
+    const titre = texteVisible(og[1] ?? "");
+    if (titre !== "") return titre;
+  }
+  const title = /<title\b[^>]*>([\s\S]*?)<\/title>/i.exec(html);
+  if (title !== null) {
+    return texteVisible(title[1] ?? "")
+      .replace(/\s*\|\s*European Data Protection Board\s*$/i, "")
+      .trim();
+  }
+  return "";
+}
+
+/**
+ * Enrichit une entrée de sitemap avec le titre, la date, le PDF courant et la
+ * version lus sur sa page. Le PDF français est préféré ; les PDF de
+ * consultation sont écartés dès qu'un PDF courant existe.
+ */
+export function enrichirDocument(document: DocumentListe, html: string): DocumentListe {
+  const titre = titreDepuisPage(html) || document.titre;
+  const date = dateDansTexte(html) ?? document.date;
+  const pdf = trouverPdfDocument(html, document.url);
+  const pdfUrl = pdf?.url ?? document.pdfUrl;
+  const version = versionDepuisTitre(titre, pdfUrl ?? document.url) ?? document.version ?? null;
+  return { ...document, titre, date, pdfUrl, version };
+}
+
+/** Version explicite du titre ou du nom de PDF, par exemple `2.0` ou `rev01`. */
+export function versionDepuisTitre(titre: string, url?: string): string | null {
+  const texte = `${titre} ${url ?? ""}`;
+  const version = /\bversion\s+(\d+(?:\.\d+)?)/i.exec(titre);
+  if (version?.[1] !== undefined) return version[1];
+  const v = /\bv(\d+(?:\.\d+)?)\b/i.exec(texte);
+  if (v?.[1] !== undefined) return v[1];
+  const rev = /rev[-_.]?(\d+)/i.exec(texte);
+  return rev?.[1] === undefined ? null : `rev${rev[1]}`;
 }
 
 /** Une version finale est retenue ; un projet ou une consultation est signalé. */
@@ -82,13 +130,14 @@ export function statutDepuisTitre(titre: string): "finale" | "projet" {
 
 /** Complète une entrée de liste avec les métadonnées nécessaires au corpus. */
 export function preparerDocument(document: DocumentListe): DocumentPrepare {
+  const source = document.pdfUrl ?? document.url;
   return {
     ...document,
     slug: slugDe(document.url),
-    numero: numeroDepuisTitre(document.titre, document.type),
+    numero: numeroDepuisTitre(document.titre, document.type, source),
     date: dateDocument(document),
     statut: statutDepuisTitre(document.titre),
-    version: versionDepuisTitre(document.titre),
+    version: document.version ?? versionDepuisTitre(document.titre, source),
   };
 }
 

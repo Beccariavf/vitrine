@@ -11,7 +11,14 @@ import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync 
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import type { Unite } from "../parse.ts";
-import { ErreurHttp, chargerTexte, listerDocuments, listerDocumentsWayback, snapshotWayback, trouverLienPdf } from "./liste.ts";
+import {
+  ErreurHttp,
+  chargerTexte,
+  listerDocumentsSitemap,
+  listerDocumentsWayback,
+  snapshotWayback,
+  trouverLienPdf,
+} from "./liste.ts";
 import type {
   DescripteurCePd,
   DocumentListe,
@@ -21,9 +28,15 @@ import type {
   Tentative,
   TypeDocument,
 } from "./liste.ts";
-import { extraireTextePdf, telechargerPdf } from "./pdf.ts";
-import type { FetchPdf } from "./pdf.ts";
-import { choisirVersions, preparerDocument, unitesCePd, validerUnites } from "./parse.ts";
+import { extraireTextePdf, languePdf, telechargerPdf } from "./pdf.ts";
+import type { FetchPdf, LanguePdf } from "./pdf.ts";
+import {
+  choisirVersions,
+  enrichirDocument,
+  preparerDocument,
+  unitesCePd,
+  validerUnites,
+} from "./parse.ts";
 import type { DocumentPrepare } from "./parse.ts";
 
 const ICI = dirname(fileURLToPath(import.meta.url));
@@ -47,22 +60,28 @@ export type ManifesteCePd = {
   depuis: string | null;
   /** Limite demandée, ou `null` quand la liste entière est traitée. */
   limite: number | null;
-  /** Voie qui a fourni les pages : directe ou Wayback Machine. */
-  via: "direct" | "wayback";
+  /** Voie qui a fourni la liste : sitemap, directe ou Wayback Machine. */
+  via: "sitemap" | "direct" | "wayback";
+  /** Pages de sitemap lues, vide hors sitemap. */
+  sitemap_pages: string[];
   documents: number;
   fragments: number;
   versions_ecartees: number;
   documents_sans_texte_ecartes: number;
   types_retenus: TypeDocument[];
+  /** Langue des PDF retenus, par document. */
+  langues_pdf: Record<LanguePdf, number>;
   licence: string;
   couverture: {
     source: string;
     date_liste: string;
     limite: number | null;
-    via: "direct" | "wayback";
+    via: "sitemap" | "direct" | "wayback";
+    sitemap_pages: string[];
     pages_lues: number;
     periode: { date_min: string | null; date_max: string | null };
     types_retenus: TypeDocument[];
+    langues_pdf: Record<LanguePdf, number>;
     documents_sans_texte_ecartes: number;
     versions_ecartees: number;
   };
@@ -136,7 +155,8 @@ export function manifesteCePd(
   dateListe: string,
   depuis: string | null,
   limite: number | null,
-  via: "direct" | "wayback",
+  via: "sitemap" | "direct" | "wayback",
+  sitemapPages: string[],
   comptes: {
     pages: number;
     documents: number;
@@ -144,6 +164,7 @@ export function manifesteCePd(
     versionsEcartees: number;
     documentsSansTexte: number;
     typesRetenus: TypeDocument[];
+    languesPdf: Record<LanguePdf, number>;
     dateMin: string | null;
     dateMax: string | null;
   },
@@ -157,20 +178,24 @@ export function manifesteCePd(
     depuis,
     limite,
     via,
+    sitemap_pages: sitemapPages,
     documents: comptes.documents,
     fragments: comptes.fragments,
     versions_ecartees: comptes.versionsEcartees,
     documents_sans_texte_ecartes: comptes.documentsSansTexte,
     types_retenus: comptes.typesRetenus,
+    langues_pdf: comptes.languesPdf,
     licence: descripteur.licence,
     couverture: {
       source: "CEPD — pages de lignes directrices et recommandations (PDF)",
       date_liste: dateListe,
       limite,
       via,
+      sitemap_pages: sitemapPages,
       pages_lues: comptes.pages,
       periode: { date_min: comptes.dateMin, date_max: comptes.dateMax },
       types_retenus: comptes.typesRetenus,
+      langues_pdf: comptes.languesPdf,
       documents_sans_texte_ecartes: comptes.documentsSansTexte,
       versions_ecartees: comptes.versionsEcartees,
     },
@@ -196,15 +221,15 @@ async function listerAvecRepli(
     journal,
   };
   try {
-    return await listerDocuments(descripteur, http);
-  } catch (direct) {
-    if (!(direct instanceof ErreurHttp)) throw direct;
+    return await listerDocumentsSitemap(descripteur, http);
+  } catch (sitemap) {
+    if (!(sitemap instanceof ErreurHttp)) throw sitemap;
     try {
       return await listerDocumentsWayback(descripteur, http);
     } catch (repli) {
       const cause = repli instanceof Error ? repli.message : String(repli);
       throw new Error(
-        `Liste CEPD indisponible. Direct : ${direct.message}. Wayback : ${cause}`,
+        `Liste CEPD indisponible. Sitemap : ${sitemap.message}. Wayback : ${cause}`,
       );
     }
   }
@@ -293,7 +318,16 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
 
   const journal: Tentative[] = options.journal ?? [];
   const liste = await listerAvecRepli(descripteur, options, journal);
-  const prepares = liste.documents.map((document) => {
+  let documentsListe = liste.documents;
+  if (liste.via === "sitemap") {
+    const enrichis: DocumentListe[] = [];
+    for (const document of liste.documents) {
+      const html = await chargerPageDocument(document.url, descripteur, options, journal);
+      enrichis.push(enrichirDocument(document, html));
+    }
+    documentsListe = enrichis;
+  }
+  const prepares = documentsListe.map((document) => {
     try {
       return preparerDocument(document);
     } catch (error) {
@@ -323,10 +357,11 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
   const unites: Unite[] = [];
   const documentsAvecTexte: DocumentPrepare[] = [];
   const sansTexte: string[] = [];
+  const languesPdf: Record<LanguePdf, number> = { fr: 0, en: 0, autre: 0 };
 
   for (const document of choix) {
     let pdfUrl = document.pdfUrl;
-    if (pdfUrl === null) {
+    if (pdfUrl === null && liste.via !== "sitemap") {
       const html = await chargerPageDocument(document.url, descripteur, options, journal);
       pdfUrl = trouverLienPdf(html, document.url);
     }
@@ -334,6 +369,7 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
       sansTexte.push(document.url);
       continue;
     }
+    languesPdf[languePdf(pdfUrl)] += 1;
     const chemin = join(rootDir, DOSSIER_BRUT, `${document.slug}.pdf`);
     const octets = await octetsPdf(pdfUrl, chemin, descripteur, options, journal);
     const texte = await extraireTexte(octets, pdfUrl);
@@ -352,13 +388,14 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
   const documents = new Set(unites.map((unite) => unite.document)).size;
   const dates = unites.map((unite) => unite.date_acte).sort();
   const typesRetenus = [...new Set(documentsAvecTexte.map((document) => document.type))].sort();
-  const via = journal.some((tentative) => tentative.via === "wayback") ? "wayback" : "direct";
+  const via = liste.via;
   const manifeste = manifesteCePd(
     descripteur,
     dateListe,
     options.depuis ?? null,
     options.limite ?? null,
     via,
+    liste.sitemapPages,
     {
       pages: liste.pages,
       documents,
@@ -366,6 +403,7 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
       versionsEcartees: ecartes.length,
       documentsSansTexte: sansTexte.length,
       typesRetenus,
+      languesPdf,
       dateMin: dates[0] ?? null,
       dateMax: dates.at(-1) ?? null,
     },
