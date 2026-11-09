@@ -76,6 +76,17 @@ export type ManifesteCnil = {
   snapshot: string;
   revision: string;
   sources: SourceManifeste[];
+  /** Couverture déclarée : sources, natures, comptes et exclusions. */
+  couverture: {
+    source: string;
+    date: string;
+    bornes: { debut: string | null; fin: string };
+    natures: string[];
+    par_nature: Record<string, CompteNature>;
+    origines: Origines;
+    exclusions: string[];
+    comptes: { documents: number; unites: number };
+  };
 };
 
 /** Compte les origines d'un ensemble d'unités. */
@@ -235,16 +246,27 @@ export function manifesteCnil(
   const documents = new Set(unites.map((unite) => unite.document)).size;
   const archive = dateArchive(etat.derniere_archive);
   const arrete = archive !== null && archive > descripteur.snapshot ? archive : descripteur.snapshot;
+  const parNature = compterNatures(unites);
   return {
     corpus: descripteur.corpus,
     nom: descripteur.nom,
     natures: descripteur.natures,
     documents,
     unites: unites.length,
-    par_nature: compterNatures(unites),
+    par_nature: parNature,
     origines,
     decoupage: origines.dila > 0 ? `dinum + ${descripteur.dila.decoupage}` : "dinum",
     arrete_le: arrete,
+    couverture: {
+      source: "CNIL — historique DINUM et incréments DILA",
+      date: arrete,
+      bornes: { debut: null, fin: arrete },
+      natures: descripteur.natures,
+      par_nature: parNature,
+      origines,
+      exclusions: [],
+      comptes: { documents, unites: unites.length },
+    },
     url_texte: descripteur.url_texte,
     url_texte_verifiee: descripteur.url_texte_verifiee,
     url_texte_note: descripteur.url_texte_note,

@@ -153,6 +153,14 @@ describe("buildCorpus", () => {
       const hash = createHash("sha256").update(readFileSync(resultat.snapshotPath)).digest("hex");
       assert.equal(basename(resultat.snapshotPath), `${hash}.xhtml`);
       assert.equal(manifeste.snapshot, `${hash}.xhtml`);
+      assert.equal(manifeste.date_fin, null);
+      assert.equal(manifeste.statut, "en_vigueur");
+      const couverture = manifeste.couverture as Record<string, unknown>;
+      assert.equal(couverture.source, "CELLAR — publications.europa.eu/resource/celex/32016R0679");
+      assert.deepEqual(couverture.bornes, { debut: "2018-05-25", fin: null });
+      assert.deepEqual(couverture.types_retenus, ["article", "considérant"]);
+      assert.deepEqual(couverture.comptes, { articles: 99, considerants: 173 });
+      assert.deepEqual(couverture.exclusions, []);
       assert.ok(resultat.snapshotPath.startsWith(join(root, "data", "raw")));
     } finally {
       rmSync(root, { recursive: true, force: true });

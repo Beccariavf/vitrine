@@ -7,6 +7,26 @@
   "date_acte": "2024-06-13",
   "date_publication": "2024-07-12",
   "date_debut": "2024-08-01",
+  "date_fin": null,
+  "statut": "en_vigueur",
   "snapshot": "f64452fd45b3fa0a51be546bb2199bea853a30dc6a40c803b8cd48f020ea3f81.xhtml",
-  "unites": 293
+  "unites": 293,
+  "couverture": {
+    "source": "CELLAR — publications.europa.eu/resource/celex/32024R1689",
+    "date_publication": "2024-07-12",
+    "bornes": {
+      "debut": "2024-08-01",
+      "fin": null
+    },
+    "statut": "en_vigueur",
+    "types_retenus": [
+      "article",
+      "considérant"
+    ],
+    "exclusions": [],
+    "comptes": {
+      "articles": 113,
+      "considerants": 180
+    }
+  }
 }

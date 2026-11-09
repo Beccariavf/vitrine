@@ -426,6 +426,10 @@ describe("le manifeste CNIL", () => {
     assert.equal(manifeste.sources[0]?.licence?.huggingface, "etalab-2.0");
     assert.equal(manifeste.sources[0]?.licence?.data_gouv, "lov2");
     assert.equal(manifeste.sources[0]?.licence?.incoherence, true);
+    assert.equal(manifeste.couverture.source, "CNIL — historique DINUM et incréments DILA");
+    assert.deepEqual(manifeste.couverture.natures, manifeste.natures);
+    assert.deepEqual(manifeste.couverture.comptes, { documents: 4, unites: 5 });
+    assert.deepEqual(manifeste.couverture.exclusions, []);
   });
 
   it("refuse des comptes qui ne correspondent pas au contenu", () => {

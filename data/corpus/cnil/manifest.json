@@ -28,6 +28,42 @@
   },
   "decoupage": "dinum",
   "arrete_le": "2026-10-30",
+  "couverture": {
+    "source": "CNIL — historique DINUM et incréments DILA",
+    "date": "2026-10-30",
+    "bornes": {
+      "debut": null,
+      "fin": "2026-10-30"
+    },
+    "natures": [
+      "Sanction",
+      "Avis",
+      "Recommandation/Lignes directrices"
+    ],
+    "par_nature": {
+      "Avis": {
+        "documents": 2896,
+        "unites": 21914
+      },
+      "Recommandation/Lignes directrices": {
+        "documents": 100,
+        "unites": 1043
+      },
+      "Sanction": {
+        "documents": 249,
+        "unites": 6342
+      }
+    },
+    "origines": {
+      "dinum": 29299,
+      "dila": 0
+    },
+    "exclusions": [],
+    "comptes": {
+      "documents": 3245,
+      "unites": 29299
+    }
+  },
   "url_texte": "https://www.legifrance.gouv.fr/cnil/id/{id}",
   "url_texte_verifiee": false,
   "url_texte_note": "La route Légifrance a répondu 403 à robots en session : elle est déclarée, pas vérifiée.",

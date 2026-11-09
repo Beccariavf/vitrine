@@ -2,6 +2,17 @@ import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync 
 import { basename, dirname, join } from "node:path";
 import type { Descripteur, Unite } from "./parse.ts";
 
+/** Couverture déclarée d'un acte : ce qu'il contient et ce qu'il exclut. */
+export type CouvertureActe = {
+  source: string;
+  date_publication: string;
+  bornes: { debut: string; fin: string | null };
+  statut: string;
+  types_retenus: string[];
+  exclusions: string[];
+  comptes: { articles: number; considerants: number };
+};
+
 /** Métadonnées du corpus, écrites une fois par document. */
 export type Manifeste = {
   document: string;
@@ -12,9 +23,12 @@ export type Manifeste = {
   date_acte: string;
   date_publication: string;
   date_debut: string;
+  date_fin: string | null;
+  statut: string;
   /** Nom du fichier rendu par `writeRaw`, adressé par son `sha256`. */
   snapshot: string;
   unites: number;
+  couverture: CouvertureActe;
 };
 
 /** Écrit un fichier UTF-8 s'il n'a pas déjà exactement ce contenu. */
@@ -45,6 +59,12 @@ export function writeCorpus(
   snapshotPath: string,
 ): { manifestPath: string; unitesPath: string } {
   const dossier = join(rootDir, "data", "corpus", descripteur.corpus);
+  const articles = unites.filter((unite) => unite.niveau === "article").length;
+  const considerants = unites.filter((unite) => unite.niveau === "considérant").length;
+  const types = [
+    ...(articles > 0 ? ["article"] : []),
+    ...(considerants > 0 ? ["considérant"] : []),
+  ];
   const manifeste: Manifeste = {
     document: descripteur.document,
     titre: descripteur.titre,
@@ -54,8 +74,19 @@ export function writeCorpus(
     date_acte: descripteur.date_acte,
     date_publication: descripteur.date_publication,
     date_debut: descripteur.date_debut,
+    date_fin: descripteur.date_fin,
+    statut: descripteur.statut,
     snapshot: basename(snapshotPath),
     unites: unites.length,
+    couverture: {
+      source: `CELLAR — publications.europa.eu/resource/celex/${descripteur.document}`,
+      date_publication: descripteur.date_publication,
+      bornes: { debut: descripteur.date_debut, fin: descripteur.date_fin },
+      statut: descripteur.statut,
+      types_retenus: types,
+      exclusions: [],
+      comptes: { articles, considerants },
+    },
   };
 
   const manifestPath = join(dossier, "manifest.json");
