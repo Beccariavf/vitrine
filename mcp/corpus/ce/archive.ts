@@ -22,10 +22,15 @@ export type ReponseFlux = {
 /** Un `fetch` qui rend un corps lisible en flux, jamais un `arrayBuffer`. */
 export type FetchFlux = (url: string) => Promise<ReponseFlux>;
 
+/** Fonds JADE : une décision publiée au recueil ou inédite. */
+export type Fonds = "publie" | "inedit";
+
 /** Une entrée XML retenue de l'archive. */
 export type EntreeJade = {
   /** Nom complet dans le tar, par exemple `jade/global/publie/CETA/TEXT/…/CETATEXT….xml`. */
   nom: string;
+  /** Fonds d'origine, `publie` ou `inedit`. */
+  fonds: Fonds;
   /** Taille déclarée par l'en-tête tar, en octets. */
   taille: number;
   donnees: Buffer;
@@ -43,8 +48,15 @@ export type OptionsArchive = {
 /** Plafond par défaut d'une décision JADE : 5 Mo. */
 export const MAX_ENTREE_OCTETS = 5 * 1024 * 1024;
 
-/** Motif par défaut : les fichiers XML publiés sous `jade/global/publie`. */
-export const MOTIF_XML_JADE = /^jade\/global\/publie\/(?:.+\/)?[^/]+\.xml$/i;
+/** Motif par défaut : les XML publiés et inédits de `jade/global`. */
+export const MOTIF_XML_JADE = /^jade\/global\/(?:publie|inedit)\/(?:.+\/)?[^/]+\.xml$/i;
+
+/** Fonds d'une entrée, ou `null` hors des deux fonds admis. */
+function fondsDe(nom: string): Fonds | null {
+  if (nom.startsWith("jade/global/publie/")) return "publie";
+  if (nom.startsWith("jade/global/inedit/")) return "inedit";
+  return null;
+}
 
 const TAILLE_BLOC = 512;
 
@@ -206,7 +218,8 @@ export async function* lireEntreesJade(
     }
     nomLong = "";
 
-    if (!motif.test(complet)) {
+    const fonds = fondsDe(complet);
+    if (!motif.test(complet) || fonds === null) {
       await lecteur.sauter(taille + remplissage(taille));
       continue;
     }
@@ -224,7 +237,7 @@ export async function* lireEntreesJade(
     const donnees = await lecteur.lire(taille);
     const padding = remplissage(taille);
     if (padding > 0) await lecteur.sauter(padding);
-    yield { nom: complet, taille, donnees };
+    yield { nom: complet, fonds, taille, donnees };
   }
 }
 

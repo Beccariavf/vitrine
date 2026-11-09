@@ -105,18 +105,21 @@ Le corpus `ce` porte les décisions du Conseil d'État depuis 2014 qui traitent 
 personnelles. `npm run ce:sync` liste `https://echanges.dila.gouv.fr/OPENDATA/JADE/`, télécharge
 l'archive globale `Freemium_jade_global_*.tar.gz` sous `data/raw/ce/` — non commitée, 1,32 Go — puis
 la lit en flux : `fetch` → `Readable.fromWeb` → `createGunzip` → lecteur tar incrémental, sans jamais
-charger l'archive ni son contenu décompressé en mémoire. JADE mêle le Conseil d'État, les cours
-administratives d'appel et les tribunaux administratifs : seules les décisions dont la `JURIDICTION`
-normalisée vaut exactement « Conseil d'État » sont retenues, les autres sont écartées et comptées.
-Le filtre porte aussi sur la date (`--date-min`, `2014-01-01` par défaut) et sur les mots-clés du
-descripteur (données personnelles, données à caractère personnel, informatique et libertés,
-protection des données, RGPD, CNIL). Le manifeste `data/corpus/ce/manifest.json` publie les comptes
-réels et les exclusions par motif ; `--dry-run` n'écrit rien et une seconde passe sur la même archive
-et la même empreinte ne relit rien. Mesure du 9 novembre 2026 : 61 200 entrées lues, 8 010 décisions
-du Conseil d'État depuis 2014, 181 retenues après mots-clés et 3 080 fragments ; exclusions
-9 468 autres juridictions, 43 722 antérieures à 2014, 7 828 sans mot-clé, 1 texte vide. Les 12
-questions `dev` de `mcp/eval/questions-ce.csv` rendent le document attendu au top 5 pour 8 d'entre
-elles (MRR 0,583, top 1 50,0 %).
+charger l'archive ni son contenu décompressé en mémoire. Les deux fonds `jade/global/publie` et
+`jade/global/inedit` sont lus : une décision inédite au recueil est une décision du Conseil d'État
+comme une autre. JADE mêle le Conseil d'État, les cours administratives d'appel et les tribunaux
+administratifs : seules les décisions dont la `JURIDICTION` normalisée vaut exactement « Conseil
+d'État » sont retenues, les autres sont écartées et comptées. Le filtre porte aussi sur la date
+(`--date-min`, `2014-01-01` par défaut) et sur les mots-clés du descripteur (données personnelles,
+données à caractère personnel, informatique et libertés, protection des données, RGPD, CNIL). Le
+manifeste `data/corpus/ce/manifest.json` publie les comptes réels, les exclusions par motif et les
+comptes par fonds ; `--dry-run` n'écrit rien et une seconde passe sur la même archive et la même
+empreinte ne relit rien. Mesure du 9 novembre 2026 : 573 525 entrées lues, 36 191 décisions du
+Conseil d'État depuis 2014, 1 312 retenues après mots-clés et 17 703 fragments (fonds `publie` :
+181 décisions et 3 080 fragments ; fonds `inedit` : 1 131 décisions et 14 623 fragments) ; 62
+doublons entre les deux fonds ; exclusions 399 198 autres juridictions, 138 074 antérieures à 2014,
+34 878 sans mot-clé, 1 texte vide. Les 12 questions `dev` de `mcp/eval/questions-ce.csv` rendent le
+document attendu au top 5 pour 8 d'entre elles (MRR 0,486, top 1 33,3 %).
 
 L'évaluation v2 porte sur 60 questions écrites contre le texte du RGPD : 12 références exactes,
 38 conceptuelles et 10 pièges, réparties en 30 `dev` et 30 `test`. Chaque mesure est filtrée par

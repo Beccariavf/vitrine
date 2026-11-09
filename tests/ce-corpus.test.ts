@@ -50,19 +50,38 @@ function racineTemporaire(): string {
 }
 
 describe("la lecture de l'archive JADE", () => {
-  it("rend les seuls XML de jade/global/publie, dans l'ordre du tar", async () => {
+  it("rend les XML des fonds publie et inedit, dans l'ordre du tar", async () => {
     const lues = await entrees();
 
-    assert.equal(lues.length, 6);
+    assert.equal(lues.length, 7);
     for (const entree of lues) {
-      assert.match(entree.nom, /^jade\/global\/publie\/.+\.xml$/);
+      assert.match(entree.nom, /^jade\/global\/(?:publie|inedit)\/.+\.xml$/);
       assert.equal(entree.donnees.subarray(0, 5).toString("utf8"), "<?xml");
     }
+    assert.deepEqual(
+      lues.reduce<Record<string, number>>((comptes, entree) => {
+        comptes[entree.fonds] = (comptes[entree.fonds] ?? 0) + 1;
+        return comptes;
+      }, {}),
+      { publie: 6, inedit: 1 },
+    );
     assert.equal(
       lues.some((entree) => entree.nom.includes("autre")),
       false,
       "un autre fonds ne doit pas être lu",
     );
+  });
+
+  it("lit une décision inédite au recueil et la retient", async () => {
+    const lues = await entrees();
+    const inedit = lues.find((entree) => entree.fonds === "inedit");
+
+    assert.ok(inedit);
+    assert.match(inedit.nom, /^jade\/global\/inedit\/.+CETATEXT000000000007\.xml$/);
+    const decision = decisionParId(lues, "CETATEXT000000000007");
+    assert.equal(decision.juridiction, "Conseil d'État");
+    assert.equal(decision.date, "2016-07-01");
+    assert.equal(classerDecision(decision, DESCRIPTEUR).retenue, true);
   });
 
   it("refuse une entrée plus grosse que le plafond en la nommant", async () => {
@@ -75,7 +94,7 @@ describe("la lecture de l'archive JADE", () => {
           // La première entrée XML dépasse déjà 100 octets.
         }
       },
-      /Entrée jade\/global\/publie\/.*\.xml refusée.*plafond de 100 octets/,
+      /Entrée jade\/global\/(?:publie|inedit)\/.*\.xml refusée.*plafond de 100 octets/,
     );
   });
 
@@ -178,10 +197,11 @@ describe("la synchronisation du corpus CE", () => {
 
       assert.equal(resultat.ignore, false);
       assert.equal(resultat.ecrit, true);
-      assert.equal(resultat.documentsLus, 6);
-      assert.equal(resultat.decisionsCeDepuis2014, 3);
-      assert.equal(resultat.documents, 1);
-      assert.equal(resultat.fragments, 2);
+      assert.equal(resultat.documentsLus, 7);
+      assert.equal(resultat.decisionsCeDepuis2014, 4);
+      assert.equal(resultat.documents, 2);
+      assert.equal(resultat.fragments, 3);
+      assert.equal(resultat.doublons, 0);
       assert.deepEqual(resultat.ecartes, {
         autre_juridiction: 1,
         avant_borne: 1,
@@ -194,8 +214,11 @@ describe("la synchronisation du corpus CE", () => {
         .split("\n")
         .filter((ligne) => ligne !== "")
         .map((ligne) => JSON.parse(ligne) as Unite);
-      assert.equal(unites.length, 2);
-      assert.equal(unites[0]?.document, "CETATEXT000007422412");
+      assert.equal(unites.length, 3);
+      assert.deepEqual(
+        [...new Set(unites.map((unite) => unite.document))].sort(),
+        ["CETATEXT000000000007", "CETATEXT000007422412"],
+      );
 
       const manifeste = JSON.parse(
         readFileSync(join(racine, "data", "corpus", "ce", "manifest.json"), "utf8"),
@@ -203,14 +226,23 @@ describe("la synchronisation du corpus CE", () => {
       assert.equal(manifeste.archive, "jade.tar.gz");
       assert.equal(manifeste.date_extraction, DATE);
       assert.equal(manifeste.date_min, "2014-01-01");
-      assert.equal(manifeste.documents_lus, 6);
-      assert.equal(manifeste.decisions_ce_depuis_2014, 3);
-      assert.equal(manifeste.documents, 1);
-      assert.equal(manifeste.fragments, 2);
+      assert.equal(manifeste.documents_lus, 7);
+      assert.equal(manifeste.decisions_ce_depuis_2014, 4);
+      assert.equal(manifeste.documents, 2);
+      assert.equal(manifeste.fragments, 3);
+      assert.equal(manifeste.doublons, 0);
       assert.deepEqual(manifeste.ecartes, resultat.ecartes);
-      assert.equal(manifeste.couverture.source, "DILA — JADE (OPENDATA)");
-      assert.equal(manifeste.couverture.periode.date_max, "2016-03-10");
+      assert.equal(manifeste.couverture.source, "DILA — JADE (OPENDATA), fonds publie et inedit");
+      assert.equal(manifeste.couverture.periode.date_max, "2016-07-01");
       assert.deepEqual(manifeste.couverture.exclusions.juridictions, DESCRIPTEUR.juridictions_exclues);
+      assert.equal(manifeste.couverture.fonds.publie.documents_lus, 6);
+      assert.equal(manifeste.couverture.fonds.publie.documents, 1);
+      assert.equal(manifeste.couverture.fonds.publie.fragments, 2);
+      assert.equal(manifeste.couverture.fonds.publie.doublons, 0);
+      assert.equal(manifeste.couverture.fonds.inedit.documents_lus, 1);
+      assert.equal(manifeste.couverture.fonds.inedit.documents, 1);
+      assert.equal(manifeste.couverture.fonds.inedit.fragments, 1);
+      assert.equal(manifeste.couverture.fonds.inedit.doublons, 0);
       assert.equal(manifeste.licence, "Licence Ouverte 2.0 (Etalab)");
 
       const etat = JSON.parse(
@@ -240,8 +272,8 @@ describe("la synchronisation du corpus CE", () => {
 
       assert.equal(second.ignore, true);
       assert.equal(second.ecrit, false);
-      assert.equal(second.documents, 1);
-      assert.equal(second.fragments, 2);
+      assert.equal(second.documents, 2);
+      assert.equal(second.fragments, 3);
       assert.deepEqual(
         chemins.map((chemin) => statSync(chemin).mtimeMs),
         avant,
@@ -263,7 +295,7 @@ describe("la synchronisation du corpus CE", () => {
       });
 
       assert.equal(resultat.ecrit, false);
-      assert.equal(resultat.documents, 1);
+      assert.equal(resultat.documents, 2);
       assert.equal(existsSync(join(racine, "data")), false);
     } finally {
       rmSync(racine, { recursive: true, force: true });
@@ -284,9 +316,19 @@ describe("la synchronisation du corpus CE", () => {
     assert.equal(new Set(unites.map((unite) => unite.document)).size, manifeste.documents);
     assert.equal(
       Object.values(manifeste.ecartes).reduce((total, compte) => total + compte, 0) +
-        manifeste.documents,
+        manifeste.documents +
+        manifeste.doublons,
       manifeste.documents_lus,
     );
+    for (const [fonds, compte] of Object.entries(manifeste.couverture.fonds)) {
+      assert.equal(
+        Object.values(compte.ecartes).reduce((total, nombre) => total + nombre, 0) +
+          compte.documents +
+          compte.doublons,
+        compte.documents_lus,
+        fonds,
+      );
+    }
     assert.doesNotThrow(() => validerUnites(unites));
   });
 

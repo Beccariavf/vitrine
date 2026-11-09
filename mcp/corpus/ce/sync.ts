@@ -15,7 +15,7 @@ import { Readable } from "node:stream";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import type { Unite } from "../parse.ts";
 import { lireEntreesJade } from "./archive.ts";
-import type { EntreeJade, FetchFlux } from "./archive.ts";
+import type { EntreeJade, FetchFlux, Fonds } from "./archive.ts";
 import {
   ECARTES_VIDES,
   classerDecision,
@@ -68,6 +68,17 @@ export type Exclusions = {
   motifs: Ecartes;
 };
 
+/** Comptes d'un fonds JADE : publié au recueil ou inédit. */
+export type CompteFonds = {
+  documents_lus: number;
+  decisions_ce_depuis_2014: number;
+  documents: number;
+  fragments: number;
+  /** Entrées dont l'identifiant avait déjà été lu dans l'autre fonds. */
+  doublons: number;
+  ecartes: Ecartes;
+};
+
 /** Manifeste du corpus : identité, comptes, écarts et couverture déclarée. */
 export type ManifesteCe = {
   corpus: string;
@@ -88,6 +99,8 @@ export type ManifesteCe = {
   /** Décisions retenues après filtrage. */
   documents: number;
   fragments: number;
+  /** Entrées ignorées parce que leur identifiant avait déjà été lu. */
+  doublons: number;
   ecartes: Ecartes;
   couverture: {
     source: string;
@@ -95,6 +108,8 @@ export type ManifesteCe = {
     periode: { date_min: string; date_max: string | null };
     juridiction: string;
     mots_cles: string[];
+    /** Comptes par fonds : `publie` et `inedit`. */
+    fonds: Record<Fonds, CompteFonds>;
     exclusions: Exclusions;
   };
 };
@@ -125,7 +140,9 @@ export type ResultatCe = {
   decisionsCeDepuis2014: number;
   documents: number;
   fragments: number;
+  doublons: number;
   ecartes: Ecartes;
+  parFonds: Record<Fonds, CompteFonds>;
 };
 
 /** Lit le descripteur CE. */
@@ -226,11 +243,14 @@ export function dateDuJour(instant = new Date()): string {
   return instant.toISOString().slice(0, 10);
 }
 
-/** Empreinte du filtre : changer un mot-clé ou la borne force une relecture. */
+/** Empreinte de la configuration : changer un fonds, un titre, un mot-clé ou la borne force une relecture. */
 export function empreinteFiltre(descripteur: DescripteurCe, dateMin: string): string {
   return createHash("sha256")
     .update(
       JSON.stringify({
+        version: 2,
+        fonds: ["publie", "inedit"],
+        titre: descripteur.titre,
         date_min: dateMin,
         juridiction: descripteur.juridiction,
         juridictions_exclues: descripteur.juridictions_exclues,
@@ -239,6 +259,18 @@ export function empreinteFiltre(descripteur: DescripteurCe, dateMin: string): st
       "utf8",
     )
     .digest("hex");
+}
+
+/** Comptes vides d'un fonds. */
+export function compteFondsVide(): CompteFonds {
+  return {
+    documents_lus: 0,
+    decisions_ce_depuis_2014: 0,
+    documents: 0,
+    fragments: 0,
+    doublons: 0,
+    ecartes: { ...ECARTES_VIDES },
+  };
 }
 
 /** Manifeste du corpus, à partir des comptes mesurés. */
@@ -254,7 +286,9 @@ export function manifesteCe(
     decisionsCeDepuis2014: number;
     documents: number;
     fragments: number;
+    doublons: number;
     ecartes: Ecartes;
+    parFonds: Record<Fonds, CompteFonds>;
     dateMax: string | null;
   },
 ): ManifesteCe {
@@ -274,13 +308,15 @@ export function manifesteCe(
     decisions_ce_depuis_2014: comptes.decisionsCeDepuis2014,
     documents: comptes.documents,
     fragments: comptes.fragments,
+    doublons: comptes.doublons,
     ecartes: comptes.ecartes,
     couverture: {
-      source: "DILA — JADE (OPENDATA)",
+      source: "DILA — JADE (OPENDATA), fonds publie et inedit",
       archive,
       periode: { date_min: dateMin, date_max: comptes.dateMax },
       juridiction: descripteur.juridiction,
       mots_cles: descripteur.mots_cles,
+      fonds: comptes.parFonds,
       exclusions: {
         juridictions: descripteur.juridictions_exclues,
         motifs: comptes.ecartes,
@@ -381,22 +417,42 @@ export async function syncCe(options: SyncCeOptions = {}): Promise<ResultatCe> {
       decisionsCeDepuis2014: manifesteExistant.decisions_ce_depuis_2014,
       documents: manifesteExistant.documents,
       fragments: manifesteExistant.fragments,
+      doublons: manifesteExistant.doublons,
       ecartes: manifesteExistant.ecartes,
+      parFonds: manifesteExistant.couverture.fonds,
     };
   }
 
   const ecartes: Ecartes = { ...ECARTES_VIDES };
+  const parFonds: Record<Fonds, CompteFonds> = {
+    publie: compteFondsVide(),
+    inedit: compteFondsVide(),
+  };
   const unites: Unite[] = [];
+  const identifiantsVus = new Set<string>();
   let documentsLus = 0;
   let decisionsCeDepuis2014 = 0;
+  let doublons = 0;
   let dateMax: string | null = null;
 
   for await (const entree of lireEntreesJade(createReadStream(cheminArchive), {
     nomArchive: archive,
     ...(options.maxOctets === undefined ? {} : { maxOctets: options.maxOctets }),
   })) {
+    const compte = parFonds[entree.fonds];
     documentsLus += 1;
+    compte.documents_lus += 1;
     const decision = parseDecisionJade(entree.donnees.toString("utf8"), entree.nom);
+
+    // Une même décision peut figurer dans les deux fonds ; le fonds publié est
+    // lu en premier et gagne, l'autre occurrence est comptée comme doublon.
+    if (identifiantsVus.has(decision.id)) {
+      doublons += 1;
+      compte.doublons += 1;
+      continue;
+    }
+    identifiantsVus.add(decision.id);
+
     if (
       estConseilEtat(decision.juridiction, descripteur) &&
       DATE_ISO.test(decision.date) &&
@@ -404,14 +460,18 @@ export async function syncCe(options: SyncCeOptions = {}): Promise<ResultatCe> {
       decision.date >= dateMin
     ) {
       decisionsCeDepuis2014 += 1;
+      compte.decisions_ce_depuis_2014 += 1;
     }
 
     const verdict = classerDecision(decision, descripteur, dateMin);
     if (!verdict.retenue) {
       ecartes[verdict.motif] += 1;
+      compte.ecartes[verdict.motif] += 1;
       continue;
     }
     const nouvelles = unitesJade(verdict.decision, descripteur);
+    compte.documents += 1;
+    compte.fragments += nouvelles.length;
     for (const unite of nouvelles) {
       unites.push(unite);
       if (dateMax === null || unite.date_acte > dateMax) dateMax = unite.date_acte;
@@ -433,7 +493,9 @@ export async function syncCe(options: SyncCeOptions = {}): Promise<ResultatCe> {
       decisionsCeDepuis2014,
       documents,
       fragments: unites.length,
+      doublons,
       ecartes,
+      parFonds,
       dateMax,
     },
   );
@@ -469,7 +531,9 @@ export async function syncCe(options: SyncCeOptions = {}): Promise<ResultatCe> {
     decisionsCeDepuis2014,
     documents,
     fragments: unites.length,
+    doublons,
     ecartes,
+    parFonds,
   };
 }
 
@@ -502,6 +566,10 @@ async function main(argv: string[]): Promise<void> {
     : `${resultat.documentsLus} entrées lues, ` +
       `${resultat.decisionsCeDepuis2014} décisions CE depuis la borne, ` +
       `${resultat.documents} retenues, ${resultat.fragments} fragments ; ` +
+      `fonds ${Object.entries(resultat.parFonds)
+        .map(([fonds, compte]) => `${fonds}=${compte.documents}/${compte.fragments}`)
+        .join(", ")} ; ` +
+      `doublons ${resultat.doublons} ; ` +
       `écartées ${Object.entries(resultat.ecartes)
         .map(([motif, compte]) => `${motif}=${compte}`)
         .join(", ")}`;
