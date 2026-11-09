@@ -8,6 +8,8 @@ export const MAX_CALLS_PER_RUN = 16;
 const OAUTH_URL = "https://oauth.piste.gouv.fr/api/oauth/token";
 const LEGIFRANCE_SEARCH = "https://api.piste.gouv.fr/dila/legifrance/lf-engine-app/search";
 const LEGIFRANCE_CONSULT = "https://api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/juri";
+const LEGIFRANCE_LEGI_PART =
+  "https://api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/legiPart";
 const JUDILIBRE_SEARCH = "https://api.piste.gouv.fr/cassation/judilibre/v1.0/search";
 const JUDILIBRE_DECISION = "https://api.piste.gouv.fr/cassation/judilibre/v1.0/decision";
 
@@ -153,6 +155,23 @@ export class PisteSession {
    */
   async consultJuri(fetchImpl: FetchLike, id: string, floor = 0): Promise<unknown> {
     return this.postLegifrance(fetchImpl, LEGIFRANCE_CONSULT, "consult", { textId: id }, "Légifrance consult", floor);
+  }
+
+  /**
+   * Version consolidée d'un texte à une date. La date est obligatoire : la même
+   * route sans `date` répond 500, donc un appel daté est vérifié avant l'envoi.
+   */
+  async consultLegiPart(fetchImpl: FetchLike, textId: string, date: string): Promise<unknown> {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      throw new Error(`Légifrance legiPart: date AAAA-MM-JJ attendue, reçu « ${date} »`);
+    }
+    return this.postLegifrance(
+      fetchImpl,
+      LEGIFRANCE_LEGI_PART,
+      "legiPart",
+      { textId, date },
+      "Légifrance legiPart",
+    );
   }
 
   /**

@@ -121,6 +121,67 @@ describe("la session PISTE", () => {
     }
   });
 
+  it("lit une version consolidée par legiPart avec textId et date", async () => {
+    resetUsage();
+    const root = mkdtempSync(join(tmpdir(), "vitrine-usage-"));
+    let seenUrl = "";
+    let seenBody = "";
+    const fetchImpl: FetchLike = async (url, init) => {
+      if (url.includes("oauth")) {
+        return response(200, JSON.stringify({ access_token: "t", expires_in: 3600 }));
+      }
+      seenUrl = url;
+      seenBody = init?.body ?? "";
+      return response(200, JSON.stringify({ text: { id: "LEGITEXT000006068624" }, sections: [] }));
+    };
+
+    try {
+      const session = new PisteSession(CONFIG);
+      const body = await session.consultLegiPart(fetchImpl, "LEGITEXT000006068624", "2026-11-09");
+
+      assert.deepEqual(body, { text: { id: "LEGITEXT000006068624" }, sections: [] });
+      assert.equal(
+        seenUrl,
+        "https://api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/legiPart",
+      );
+      assert.deepEqual(JSON.parse(seenBody), {
+        textId: "LEGITEXT000006068624",
+        date: "2026-11-09",
+      });
+      assert.equal(session.remainingCalls(), MAX_CALLS_PER_RUN - 2);
+
+      flushUsage(root);
+      const date = new Date().toISOString().slice(0, 10);
+      const usage = JSON.parse(readFileSync(join(root, "data", "usage", `${date}.json`), "utf8")) as {
+        calls: Array<{ source: string; endpoint: string; status: number }>;
+      };
+      assert.deepEqual(
+        usage.calls.map((call) => `${call.source}/${call.endpoint}/${call.status}`),
+        ["piste/oauth/200", "legifrance/legiPart/200"],
+      );
+    } finally {
+      resetUsage();
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("refuse un legiPart sans date plutôt que de l'envoyer", async () => {
+    resetUsage();
+    let appels = 0;
+    const fetchImpl: FetchLike = async () => {
+      appels += 1;
+      return response(200, "{}");
+    };
+
+    const session = new PisteSession(CONFIG);
+    await assert.rejects(
+      () => session.consultLegiPart(fetchImpl, "LEGITEXT000006068624", ""),
+      /date AAAA-MM-JJ attendue/,
+    );
+    assert.equal(appels, 0);
+    resetUsage();
+  });
+
   it("lit une décision avec le KeyId et la journalise", async () => {
     resetUsage();
     const root = mkdtempSync(join(tmpdir(), "vitrine-usage-"));
