@@ -1,0 +1,11 @@
+question,type,sources_attendues,piege,split,corpus
+Quel principe la loi pose-t-elle sur l'informatique au service de chaque citoyen ?,conceptuelle,LEGIARTI000037822962,non,dev,lil
+Quels principes encadrent le traitement des données à caractère personnel ?,conceptuelle,LEGIARTI000037822953,non,dev,lil
+Quelles données sensibles la loi interdit-elle de traiter ?,conceptuelle,LEGIARTI000037822942,non,dev,lil
+Quel est le statut juridique de la Commission nationale de l'informatique et des libertés ?,conceptuelle,LEGIARTI000054142440,non,dev,lil
+De combien de membres la Commission nationale de l'informatique et des libertés est-elle composée ?,conceptuelle,LEGIARTI000038923323,non,dev,lil
+Quelles sanctions la Commission peut-elle prononcer en cas de manquement au règlement général sur la protection des données ?,conceptuelle,LEGIARTI000054138897,non,dev,lil
+Quels traitements doivent être autorisés par arrêté après avis motivé de la Commission ?,conceptuelle,LEGIARTI000037822860,non,dev,lil
+À quel âge un mineur peut-il consentir seul à un traitement de données en ligne ?,conceptuelle,LEGIARTI000037823135,non,dev,lil
+Quelles règles encadrent le traitement des données relatives aux condamnations pénales ?,conceptuelle,LEGIARTI000037823133,non,dev,lil
+Quelles obligations de sécurité pèsent sur le responsable du traitement ?,conceptuelle,LEGIARTI000037823101,non,dev,lil
