@@ -41,12 +41,13 @@ npm run mcp:eval -- --questions questions-cnil.csv                             #
 npm run mcp:eval -- --questions questions-ce.csv --split dev                   # 12 questions Conseil d'État (hors CI)
 npm run mcp:eval -- --questions questions-cepd.csv --split dev                 # 10 questions CEPD (hors CI)
 npm run mcp:eval -- --questions questions-cnil-v2.csv --split dev --seuils 0.690,0.740,0.010   # 25 questions CNIL documentaires (hors CI)
-npm run mcp:eval -- --questions questions-cnil-v2.csv --split test --mesurer-test --seuils 0.690,0.740,0.010   # 25 questions tenues à l'écart, une seule fois
+npm run mcp:eval -- --questions questions-cnil-v2.csv --split test --mesurer-test --seuils 0.690,0.740,0.010   # déjà consommé le 2026-11-06 ; ne pas relancer
 npm run mcp:eval:filtres                                                        # 12 cas de filtrage CNIL (hors CI)
 ```
 
-Le MCP lit le RGPD, l'AI Act, la LIL, les délibérations de la CNIL et les décisions du Conseil
-d'État par passage exact et par recherche sémantique, avec provenance. Seule
+Le MCP lit le RGPD, l'AI Act, la LIL, les délibérations de la CNIL, les décisions du Conseil
+d'État et les lignes directrices du CEPD par passage exact et par recherche sémantique, avec
+provenance. Seule
 la recherche sémantique exige Ollama sur `127.0.0.1:11434` et le modèle `qwen3-embedding:0.6b`
 (`ollama pull qwen3-embedding:0.6b`) : une question qui cite un article (« article 17 ») est servie
 sans index ni modèle. Un document nommé dans la question est honoré quand `document` est absent : les
@@ -96,14 +97,21 @@ ceux du produit, il n'y a pas de calibration propre.
 
 Le jeu CNIL v2 remplace cette mesure pour les questions documentaires : 50 questions qui visent
 chacune une décision, sans jamais citer l'identifiant, le numéro `SAN-…` ni un numéro d'article,
-réparties 25 `dev` et 25 `test`. Sur le `test`, mesuré une seule fois avec les seuils du produit
-(`0,69 / 0,74 / 0,01`), le document attendu figure dans les cinq passages pour 16 questions sur 25
-(64,0 %, IC 95 % 44,5–79,8) et au rang 1 pour 12 sur 25 (48,0 %) ; le `MRR` est de 0,560 et le `dev`
-donne 14/25. Le 75 % du jeu de 20 sur douze questions n'est donc ni reproduit ni contredit : les
-deux intervalles se recouvrent. Les échecs sont des confusions entre décisions aux faits presque
-identiques, pas des documents inexistants. Deux splits `test` ont été mesurés puis remplacés ; le
-second est archivé dans `b442d14` et aucun n'est repris. Rapport :
+réparties 25 `dev` et 25 `test`. Sur le `test`, mesuré le 2026-11-06 avec les seuils du produit
+(`0,69 / 0,74 / 0,01`) sur le corpus de sanctions seules — avant l'extension du 2026-11-09 —, le
+document attendu figure dans les cinq passages pour 16 questions sur 25 (64,0 %, IC 95 %
+44,5–79,8) et au rang 1 pour 12 sur 25 (48,0 %) ; le `MRR` est de 0,560. Ce `test` n'est pas
+rejouable : son marqueur est consommé, et il ne mesure pas le corpus actuel. L'évidence courante est
+le `dev` **14/25** sur le corpus élargi. Les échecs sont des confusions entre décisions aux faits
+presque identiques, pas des documents inexistants. Deux splits `test` ont été mesurés puis
+remplacés ; le second est archivé dans `b442d14` et aucun n'est repris. Rapport :
 `aidd_docs/tasks/2026_11/2026_11_06_jeu-cnil-v2/eval-cnil-v2.md`.
+
+Le jeu CNIL doctrine (10 questions `dev`) mesure le corpus CNIL, pas le filtre `nature` : le harnais
+filtre par corpus et n'exerce pas `search.nature`. Résultat assumé : **3/10 au top 5, MRR 0,225,
+top 1 20,0 %**, avec 8 résultats `confiant` et 2 `incertain`, donc au moins 6 confiants faux. Ce
+chiffre est corpus-level et ne doit pas être lu comme une mesure du filtre de nature. Le jeu LIL
+donne **10/10 au top 5, MRR 0,750, top 1 60,0 %**.
 
 Le filtrage par métadonnées répond à la limite précédente. Chaque décision CNIL porte désormais un
 `type_sanction`, un `montant` de sanction pécuniaire (amende ou liquidation) et la présence d'une `injonction`, lus dans le dispositif :

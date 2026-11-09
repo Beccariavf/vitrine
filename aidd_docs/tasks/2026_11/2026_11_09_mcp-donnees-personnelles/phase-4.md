@@ -49,7 +49,7 @@ status: pending
 > La liste officielle est paginée et le site peut répondre 503.
 
 1. Créer `mcp/corpus/cepd/descripteur.json` : corpus `cepd`, nom `CEPD`, URL de la liste française, motif de document, licence à vérifier, page maximale.
-2. Créer `mcp/corpus/cepd/liste.ts` : parcourir les pages `?page=N`, extraire les liens `documents/guideline/*` et `documents/recommendation/*` avec titre et date.
+2. Créer `mcp/corpus/cepd/liste.ts` : parcourir les pages `?page=N`, extraire les liens `documents/guideline/*` avec titre et date ; les recommandations sont un incrément ultérieur, hors de ce corpus.
 3. Réessayer trois fois avec un délai court sur 429 et 503 ; si le site reste indisponible, lever en nommant l'URL et le statut.
 4. Ne jamais lire une page de consultation publique ni un document d'un autre type.
 
@@ -75,7 +75,7 @@ status: pending
 > Le corpus n'est écrit qu'après validation complète.
 
 1. Créer `mcp/corpus/cepd/sync.ts` avec `npm run cepd:sync`, `--dry-run`, `--limite <n>` et `--depuis <date>`.
-2. Écrire les PDF sous `data/raw/cepd/`, puis `data/corpus/cepd/unites.jsonl` et `manifest.json` (source, date de liste, documents, fragments, versions écartées, licence, bloc `couverture` : types retenus, période, documents sans texte écartés).
+2. Écrire les PDF sous `data/raw/cepd/`, puis `data/corpus/cepd/unites.jsonl` et `manifest.json` (source, date de liste, documents, fragments, versions écartées, licence, bloc `couverture` : types retenus — lignes directrices seulement —, période, `documents_ecartes` avec `{url, slug, raison}`).
 3. Ajouter `data/raw/cepd/` à `.gitignore` : les PDF téléchargés ne sont pas commités.
 4. Refuser une référence dupliquée, un texte vide ou un document attendu absent, sans toucher aux fichiers existants.
 
@@ -99,7 +99,7 @@ status: pending
 
 | Task | Acceptance criteria              |
 | ---- | -------------------------------- |
-| 1 | Seuls les liens de type ligne directrice ou recommandation sont retenus ; un 503 répété lève en nommant l'URL. |
+| 1 | Seuls les liens de type ligne directrice sont retenus ; une recommandation est écartée ; un 503 répété lève en nommant l'URL. |
 | 2 | Un PDF réel rend un texte non vide ; un PDF sans texte, trop court ou majoritairement non alphabétique est refusé en nommant l'URL ; `unpdf` est épinglé. |
 | 3 | Chaque ligne directrice porte un numéro, une date et un slug stable ; la version obsolète est écartée. |
 | 4 | `npm run cepd:sync` écrit les PDF, le corpus et le manifeste ; `--dry-run` n'écrit rien. |
