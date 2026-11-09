@@ -1,11 +1,29 @@
 {
   "corpus": "cnil",
   "nom": "CNIL",
-  "nature": "Sanction",
-  "documents": 249,
-  "unites": 6342,
+  "natures": [
+    "Sanction",
+    "Avis",
+    "Recommandation/Lignes directrices"
+  ],
+  "documents": 3245,
+  "unites": 29299,
+  "par_nature": {
+    "Avis": {
+      "documents": 2896,
+      "unites": 21914
+    },
+    "Recommandation/Lignes directrices": {
+      "documents": 100,
+      "unites": 1043
+    },
+    "Sanction": {
+      "documents": 249,
+      "unites": 6342
+    }
+  },
   "origines": {
-    "dinum": 6342,
+    "dinum": 29299,
     "dila": 0
   },
   "decoupage": "dinum",
