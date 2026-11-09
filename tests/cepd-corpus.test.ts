@@ -188,6 +188,16 @@ describe("la liste CEPD", () => {
     assert.equal(premier.date, "2023-09-15");
   });
 
+  it("ne revendique pas les recommandations", () => {
+    assert.deepEqual(DESCRIPTEUR.types, ["guideline"]);
+    assert.match(DESCRIPTEUR.titre, /^Lignes directrices/);
+    assert.doesNotMatch(DESCRIPTEUR.titre, /recommandation/i);
+    const html =
+      `<a href="${BASE}/documents/recommendation/recommendation-012024_fr">` +
+      "Recommendation 01/2024</a>";
+    assert.equal(extraireDocuments(html, URL_LISTE).length, 0);
+  });
+
   it("ne garde du sitemap que les URL _fr de documents/guideline", async () => {
     const pages = new Map<string, string>([
       [DESCRIPTEUR.url_sitemap, SITEMAP_INDEX],
@@ -619,6 +629,13 @@ describe("la synchronisation CEPD", () => {
       assert.equal(manifeste.fragments, parDocument * 3);
       assert.equal(manifeste.versions_ecartees, 0);
       assert.equal(manifeste.documents_sans_texte_ecartes, 1);
+      assert.deepEqual(manifeste.couverture.documents_ecartes, [
+        {
+          url: SITEMAP_DOC_04,
+          slug: "guidelines-042025-pseudonymisation",
+          raison: "PDF absent",
+        },
+      ]);
       assert.deepEqual(manifeste.types_retenus, ["guideline"]);
       assert.equal(manifeste.langues_pdf.fr, 3);
       assert.equal(manifeste.langues_pdf.en, 0);

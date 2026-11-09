@@ -1,11 +1,11 @@
 /**
- * Liste paginée des lignes directrices et recommandations du CEPD.
+ * Liste paginée des lignes directrices du CEPD.
  *
  * Le site répond parfois 429 ou 503 : chaque requête est retentée trois fois
  * avec un délai croissant. Si la liste directe reste indisponible, l'appelant
- * peut demander la même liste par le Wayback Machine. Seuls les documents des
- * types `guideline` et `recommendation` sont retenus ; une page de consultation
- * publique est ignorée.
+ * peut demander la même liste par le Wayback Machine. Seul le type `guideline`
+ * est retenu par le descripteur ; une page de consultation publique est
+ * ignorée. Les recommandations sont un incrément ultérieur, hors de ce corpus.
  */
 
 import { texteVisible } from "../parse.ts";
@@ -13,7 +13,7 @@ import { texteVisible } from "../parse.ts";
 /** Type de document retenu. */
 export type TypeDocument = "guideline" | "recommendation";
 
-/** Une ligne directrice ou une recommandation listée. */
+/** Une ligne directrice listée ; le type reste ouvert pour un incrément futur. */
 export type DocumentListe = {
   type: TypeDocument;
   /** URL de la page du document, sur `edpb.europa.eu`. */
@@ -272,13 +272,28 @@ export function trouverLienPdf(html: string, pageUrl: string): string | null {
   return null;
 }
 
+export type OptionsExtraction = {
+  /** Motif de chemin déclaré par le descripteur. */
+  motifDocument?: string;
+  /** Types retenus ; `guideline` seul pour le corpus actuel. */
+  types?: readonly TypeDocument[];
+};
+
 /**
- * Extrait les documents d'une page de liste. Seuls les liens
- * `/documents/guideline/` et `/documents/recommendation/` sont retenus ; une
- * page de consultation publique est ignorée.
+ * Extrait les documents d'une page de liste. Le motif et les types viennent du
+ * descripteur ; une page de consultation publique est ignorée.
  */
-export function extraireDocuments(html: string, pageUrl: string): DocumentListe[] {
+export function extraireDocuments(
+  html: string,
+  pageUrl: string,
+  options: OptionsExtraction = {},
+): DocumentListe[] {
   const documents = new Map<string, DocumentListe>();
+  const types = new Set(options.types ?? ["guideline"]);
+  const motifDocument = new RegExp(
+    options.motifDocument ?? "/(?:our-)?documents/guidelines?/",
+    "i",
+  );
   const motif = /<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a\s*>/gi;
   for (let trouve = motif.exec(html); trouve !== null; trouve = motif.exec(html)) {
     const href = normaliserUrlWayback(trouve[1] ?? "");
@@ -290,7 +305,13 @@ export function extraireDocuments(html: string, pageUrl: string): DocumentListe[
       continue;
     }
     const type = /\/(?:our-)?documents\/(guideline|recommendation)s?\//i.exec(url.pathname)?.[1];
-    if (type !== "guideline" && type !== "recommendation") continue;
+    if (
+      (type !== "guideline" && type !== "recommendation") ||
+      !types.has(type) ||
+      !motifDocument.test(url.pathname)
+    ) {
+      continue;
+    }
     const segment = url.pathname.split("/").filter(Boolean).at(-1) ?? "";
     const slug = decodeURIComponent(segment).replace(/_(en|fr)$/i, "");
     if (
@@ -445,6 +466,7 @@ export async function listerDocuments(
   const journal = options.journal ?? [];
   const documents = new Map<string, DocumentListe>();
   const pageMax = options.pageMax ?? descripteur.page_max;
+  const extraction = { motifDocument: descripteur.motif_document, types: descripteur.types };
   let pages = 0;
 
   for (let page = descripteur.page_debut; page <= pageMax; page += 1) {
@@ -459,7 +481,7 @@ export async function listerDocuments(
       throw error;
     }
     pages += 1;
-    const trouves = extraireDocuments(html, url);
+    const trouves = extraireDocuments(html, url, extraction);
     if (trouves.length === 0) break;
     if (fusionner(documents, trouves) === 0) break;
   }
@@ -488,6 +510,7 @@ export async function listerDocumentsWayback(
   const journal = options.journal ?? [];
   const documents = new Map<string, DocumentListe>();
   const pageMax = options.pageMax ?? descripteur.page_max;
+  const extraction = { motifDocument: descripteur.motif_document, types: descripteur.types };
   let pages = 0;
 
   for (let page = descripteur.page_debut; page <= pageMax; page += 1) {
@@ -506,7 +529,7 @@ export async function listerDocumentsWayback(
           journal,
           via: "wayback",
         });
-        if (extraireDocuments(contenu, original).length > 0) {
+        if (extraireDocuments(contenu, original, extraction).length > 0) {
           html = contenu;
           break;
         }
@@ -528,7 +551,7 @@ export async function listerDocumentsWayback(
       break;
     }
     pages += 1;
-    const trouves = extraireDocuments(html, original);
+    const trouves = extraireDocuments(html, original, extraction);
     if (fusionner(documents, trouves) === 0) break;
   }
 
@@ -580,6 +603,9 @@ export async function listerDocumentsSitemap(
   }
 
   const documents = new Map<string, DocumentListe>();
+  const motif = new RegExp(descripteur.motif_document, "i");
+  const types = new Set(descripteur.types);
+  const suffixe = `_${descripteur.langue.toLowerCase()}`;
   for (const pageUrl of pagesSitemap) {
     const xml = await chargerTexte(pageUrl, { ...options, journal, via: "direct" });
     for (const loc of locs(xml)) {
@@ -589,12 +615,21 @@ export async function listerDocumentsSitemap(
       } catch {
         continue;
       }
-      if (!/\/documents\/guidelines?\//i.test(url.pathname)) continue;
-      if (!url.pathname.toLowerCase().endsWith("_fr")) continue;
+      const type = /\/(?:our-)?documents\/(guideline|recommendation)s?\//i.exec(
+        url.pathname,
+      )?.[1];
+      if (
+        type === undefined ||
+        !types.has(type as TypeDocument) ||
+        !motif.test(url.pathname) ||
+        !url.pathname.toLowerCase().endsWith(suffixe)
+      ) {
+        continue;
+      }
       url.hash = "";
       if (documents.has(url.href)) continue;
       documents.set(url.href, {
-        type: "guideline",
+        type: type as TypeDocument,
         url: url.href,
         titre: "",
         date: null,
@@ -604,7 +639,7 @@ export async function listerDocumentsSitemap(
   }
 
   if (documents.size === 0) {
-    throw new ErreurHttp(descripteur.url_sitemap, "aucun document _fr", 0);
+    throw new ErreurHttp(descripteur.url_sitemap, `aucun document ${suffixe}`, 0);
   }
   return {
     documents: [...documents.values()],

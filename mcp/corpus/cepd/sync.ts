@@ -51,6 +51,8 @@ export const DOSSIER_BRUT = join("data", "raw", "cepd");
 
 const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
 
+export type DocumentEcart = { url: string; slug: string; raison: string };
+
 export type ManifesteCePd = {
   corpus: string;
   nom: string;
@@ -84,6 +86,8 @@ export type ManifesteCePd = {
     langues_pdf: Record<LanguePdf, number>;
     documents_sans_texte_ecartes: number;
     versions_ecartees: number;
+    /** Documents écartés, avec leur URL, leur slug et le motif. */
+    documents_ecartes: DocumentEcart[];
   };
 };
 
@@ -165,6 +169,7 @@ export function manifesteCePd(
     documentsSansTexte: number;
     typesRetenus: TypeDocument[];
     languesPdf: Record<LanguePdf, number>;
+    documentsEcartes: DocumentEcart[];
     dateMin: string | null;
     dateMax: string | null;
   },
@@ -187,7 +192,7 @@ export function manifesteCePd(
     langues_pdf: comptes.languesPdf,
     licence: descripteur.licence,
     couverture: {
-      source: "CEPD — pages de lignes directrices et recommandations (PDF)",
+      source: "CEPD — pages de lignes directrices (PDF)",
       date_liste: dateListe,
       limite,
       via,
@@ -198,6 +203,7 @@ export function manifesteCePd(
       langues_pdf: comptes.languesPdf,
       documents_sans_texte_ecartes: comptes.documentsSansTexte,
       versions_ecartees: comptes.versionsEcartees,
+      documents_ecartes: comptes.documentsEcartes,
     },
   };
 }
@@ -356,7 +362,12 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
   const extraireTexte = options.extraireTexte ?? extraireTextePdf;
   const unites: Unite[] = [];
   const documentsAvecTexte: DocumentPrepare[] = [];
-  const sansTexte: string[] = [];
+  const sansTexte: DocumentPrepare[] = [];
+  const documentsEcartes: DocumentEcart[] = ecartes.map((document) => ({
+    url: document.url,
+    slug: document.slug,
+    raison: "version obsolète",
+  }));
   const languesPdf: Record<LanguePdf, number> = { fr: 0, en: 0, autre: 0 };
 
   for (const document of choix) {
@@ -366,7 +377,12 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
       pdfUrl = trouverLienPdf(html, document.url);
     }
     if (pdfUrl === null) {
-      sansTexte.push(document.url);
+      sansTexte.push(document);
+      documentsEcartes.push({
+        url: document.url,
+        slug: document.slug,
+        raison: "PDF absent",
+      });
       continue;
     }
     languesPdf[languePdf(pdfUrl)] += 1;
@@ -380,7 +396,7 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
   if (unites.length === 0) {
     throw new Error(
       `Aucun fragment CEPD produit : ${sansTexte.length} document(s) sans PDF` +
-        `${sansTexte.length === 0 ? "" : ` (${sansTexte.slice(0, 3).join(", ")})`}`,
+        `${sansTexte.length === 0 ? "" : ` (${sansTexte.slice(0, 3).map((document) => document.url).join(", ")})`}`,
     );
   }
   validerUnites(unites);
@@ -404,6 +420,7 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
       documentsSansTexte: sansTexte.length,
       typesRetenus,
       languesPdf,
+      documentsEcartes,
       dateMin: dates[0] ?? null,
       dateMax: dates.at(-1) ?? null,
     },

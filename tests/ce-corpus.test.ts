@@ -182,10 +182,24 @@ describe("le filtrage des décisions JADE", () => {
       assert.equal(unite.niveau, "fragment");
       assert.equal(unite.numero, "387654");
       assert.equal(unite.date_acte, "2016-03-10");
+      assert.equal(unite.statut, "Publié au recueil · Rejet");
       assert.equal(unite.url, "https://www.legifrance.gouv.fr/ceta/id/CETATEXT000007422412");
       assert.ok(unite.texte.length >= 600 && unite.texte.length <= 1200, unite.ref);
       assert.equal(unite.texte.includes("<"), false);
     }
+  });
+
+  it("nomme un inédit sans solution comme inédit, jamais comme publié", async () => {
+    const decision = decisionParId(await entrees(), "CETATEXT000000000007");
+    const unites = unitesJade(decision, DESCRIPTEUR, "inedit");
+
+    assert.equal(decision.solution, "");
+    assert.ok(unites.length > 0);
+    assert.ok(unites.every((unite) => unite.statut === "Inédit au recueil"));
+    assert.equal(
+      unites.some((unite) => unite.statut.includes("Publié")),
+      false,
+    );
   });
 });
 

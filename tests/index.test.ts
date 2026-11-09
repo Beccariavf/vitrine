@@ -666,6 +666,22 @@ describe("buildIndex", () => {
         const avis = searchIndex(index, vecteur, { k: 3, corpus: "cnil", nature: "Avis" });
         assert.equal(avis.length, 3);
         assert.ok(avis.every((resultat) => resultat.nature === "Avis"));
+
+        const avisMinuscule = searchIndex(index, vecteur, {
+          k: 3,
+          corpus: "cnil",
+          nature: "avis",
+        });
+        assert.equal(avisMinuscule.length, 3, "la nature demandée est insensible à la casse");
+        assert.ok(avisMinuscule.every((resultat) => resultat.nature === "Avis"));
+
+        const hybrides = rechercheHybride(index, vecteur, "question identique", {
+          k: 3,
+          corpus: "cnil",
+          nature: "avis",
+        });
+        assert.equal(hybrides.length, 3);
+        assert.ok(hybrides.every((resultat) => resultat.nature === "Avis"));
       } finally {
         index.db.close();
       }

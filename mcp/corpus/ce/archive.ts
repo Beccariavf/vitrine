@@ -4,8 +4,9 @@
  * Le fichier `Freemium_jade_global_*.tar.gz` pèse plus d'un gigaoctet et son
  * contenu décompressé davantage : rien n'est chargé entier. `fetch` rend un
  * flux Web, ramené à un `Readable`, puis `createGunzip` alimente un lecteur tar
- * incrémental. Seules les entrées `jade/global/publie/**\/*.xml` sont rendues ;
- * les autres sont sautées sans être matérialisées.
+ * incrémental. Seules les entrées `jade/global/publie/**\/*.xml` et
+ * `jade/global/inedit/**\/*.xml` sont rendues ; les autres sont sautées sans
+ * être matérialisées.
  */
 
 import { Readable } from "node:stream";

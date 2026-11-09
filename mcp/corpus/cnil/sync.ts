@@ -66,8 +66,12 @@ export type CompteNature = { documents: number; unites: number };
 export type ManifesteCnil = {
   corpus: string;
   nom: string;
-  /** Natures demandées à la synchronisation. */
+  /** Natures effectivement demandées à cette synchronisation. */
   natures: string[];
+  /** Même liste, nommée explicitement pour la couverture. */
+  natures_demandees: string[];
+  /** Natures déclarées par le descripteur mais non demandées. */
+  natures_exclues: string[];
   documents: number;
   unites: number;
   /** Comptes par nature présente : documents distincts et fragments. */
@@ -88,6 +92,8 @@ export type ManifesteCnil = {
     date: string;
     bornes: { debut: string | null; fin: string };
     natures: string[];
+    natures_demandees: string[];
+    natures_exclues: string[];
     par_nature: Record<string, CompteNature>;
     origines: Origines;
     /** Lignes écartées par `nature_delib`, `(vide)` pour null. */
@@ -263,6 +269,7 @@ export function manifesteCnil(
   unites: Unite[],
   fichiers: FichierDinum[],
   etat: EtatCnil,
+  natures: readonly string[] = descripteur.natures,
   exclusions: ExclusionNature[] = [],
 ): ManifesteCnil {
   const origines = compterOrigines(unites);
@@ -271,10 +278,15 @@ export function manifesteCnil(
   const arrete = archive !== null && archive > descripteur.snapshot ? archive : descripteur.snapshot;
   const parNature = compterNatures(unites);
   const exclues = exclusions.reduce((total, exclusion) => total + exclusion.lignes, 0);
+  const naturesExclues = descripteur.natures.filter(
+    (nature) => !natures.some((demandee) => natureComparable(demandee) === natureComparable(nature)),
+  );
   return {
     corpus: descripteur.corpus,
     nom: descripteur.nom,
-    natures: descripteur.natures,
+    natures: [...natures],
+    natures_demandees: [...natures],
+    natures_exclues: naturesExclues,
     documents,
     unites: unites.length,
     par_nature: parNature,
@@ -285,7 +297,9 @@ export function manifesteCnil(
       source: "CNIL — historique DINUM et incréments DILA",
       date: arrete,
       bornes: { debut: null, fin: arrete },
-      natures: descripteur.natures,
+      natures: [...natures],
+      natures_demandees: [...natures],
+      natures_exclues: naturesExclues,
       par_nature: parNature,
       origines,
       exclusions,
@@ -403,6 +417,7 @@ export async function syncHistorique(options: SyncOptions = {}): Promise<Resulta
     unites,
     fichiers,
     lireEtat(cheminEtat),
+    natures,
     exclusions,
   );
 
@@ -518,6 +533,7 @@ export async function syncIncrements(
     unites,
     fichiersDuManifeste(cheminManifeste),
     nouvelEtat,
+    natures,
     exclusionsDuManifeste(cheminManifeste),
   );
 

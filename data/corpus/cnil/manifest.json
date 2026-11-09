@@ -6,6 +6,12 @@
     "Avis",
     "Recommandation/Lignes directrices"
   ],
+  "natures_demandees": [
+    "Sanction",
+    "Avis",
+    "Recommandation/Lignes directrices"
+  ],
+  "natures_exclues": [],
   "documents": 3245,
   "unites": 29299,
   "par_nature": {
@@ -40,6 +46,12 @@
       "Avis",
       "Recommandation/Lignes directrices"
     ],
+    "natures_demandees": [
+      "Sanction",
+      "Avis",
+      "Recommandation/Lignes directrices"
+    ],
+    "natures_exclues": [],
     "par_nature": {
       "Avis": {
         "documents": 2896,

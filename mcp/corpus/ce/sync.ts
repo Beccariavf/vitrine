@@ -248,7 +248,7 @@ export function empreinteFiltre(descripteur: DescripteurCe, dateMin: string): st
   return createHash("sha256")
     .update(
       JSON.stringify({
-        version: 2,
+        version: 3,
         fonds: ["publie", "inedit"],
         titre: descripteur.titre,
         date_min: dateMin,
@@ -469,7 +469,7 @@ export async function syncCe(options: SyncCeOptions = {}): Promise<ResultatCe> {
       compte.ecartes[verdict.motif] += 1;
       continue;
     }
-    const nouvelles = unitesJade(verdict.decision, descripteur);
+    const nouvelles = unitesJade(verdict.decision, descripteur, entree.fonds);
     compte.documents += 1;
     compte.fragments += nouvelles.length;
     for (const unite of nouvelles) {

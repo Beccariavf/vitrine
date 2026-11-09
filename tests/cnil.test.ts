@@ -426,6 +426,7 @@ describe("le manifeste CNIL", () => {
       unites,
       FICHIERS,
       ETAT_VIDE,
+      DESCRIPTEUR.natures,
       exclusions,
     );
 
@@ -460,6 +461,53 @@ describe("le manifeste CNIL", () => {
     assert.deepEqual(manifeste.couverture.comptes, { documents: 4, unites: 5 });
     assert.deepEqual(manifeste.couverture.exclusions, exclusions);
     assert.equal(manifeste.couverture.lignes_lues, 8);
+    assert.deepEqual(manifeste.natures_demandees, DESCRIPTEUR.natures);
+    assert.deepEqual(manifeste.natures_exclues, []);
+    assert.deepEqual(manifeste.couverture.natures_exclues, []);
+  });
+
+  it("déclare les natures demandées et exclues d'une synchronisation partielle", () => {
+    const { unites, exclusions } = unitesDinum(LIGNES, DESCRIPTEUR, ["Sanction"]);
+    const manifeste = manifesteCnil(
+      descriptorReduit({ documents: 1, fragments: 2 }),
+      unites,
+      FICHIERS,
+      ETAT_VIDE,
+      ["Sanction"],
+      exclusions,
+    );
+
+    assert.deepEqual(manifeste.natures, ["Sanction"]);
+    assert.deepEqual(manifeste.natures_demandees, ["Sanction"]);
+    assert.deepEqual(manifeste.natures_exclues, [
+      "Avis",
+      "Recommandation/Lignes directrices",
+    ]);
+    assert.deepEqual(manifeste.couverture.natures, ["Sanction"]);
+    assert.deepEqual(manifeste.couverture.natures_exclues, manifeste.natures_exclues);
+    assert.deepEqual(manifeste.par_nature, { Sanction: { documents: 1, unites: 2 } });
+    assert.equal(
+      manifeste.couverture.exclusions.reduce((total, exclusion) => total + exclusion.lignes, 0),
+      3,
+    );
+  });
+
+  it("un dry-run partiel ne prétend pas aux trois natures", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-cnil-"));
+    try {
+      const resultat = await syncHistorique({
+        rootDir: root,
+        lignes: LIGNES,
+        nature: "Sanction",
+        dryRun: true,
+      });
+
+      assert.equal(resultat.unites, 2);
+      assert.equal(resultat.ecrit, false);
+      assert.equal(existsSync(join(root, "data", "corpus", "cnil", "manifest.json")), false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 
   it("refuse des comptes qui ne correspondent pas au contenu", () => {

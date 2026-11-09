@@ -12,6 +12,7 @@ import { XMLParser } from "fast-xml-parser";
 import { texteVisible } from "../parse.ts";
 import type { Unite } from "../parse.ts";
 import { decouperParagraphes } from "../cnil/parse.ts";
+import type { Fonds } from "./archive.ts";
 
 /** Métadonnées du corpus CE, lues depuis `mcp/corpus/ce/descripteur.json`. */
 export type DescripteurCe = {
@@ -210,9 +211,29 @@ export function classerDecision(
  * (600 à 1 200 caractères) ; la référence porte l'identifiant JADE et le rang
  * du fragment, et l'URL est celle de Légifrance.
  */
-export function unitesJade(decision: DecisionJade, descripteur: DescripteurCe): Unite[] {
+/** Statut de publication : le fonds prime, puis `PUBLI_RECUEIL`, puis la solution. */
+export function statutJade(decision: DecisionJade, fonds?: Fonds): string {
+  let publie: boolean | null = null;
+  if (fonds === "publie") publie = true;
+  else if (fonds === "inedit") publie = false;
+  else {
+    const valeur = normaliserComparaison(decision.publiRecueil);
+    if (valeur === "oui" || valeur.includes("recueil") || valeur.includes("publi")) publie = true;
+    else if (valeur === "non" || valeur === "inedit") publie = false;
+  }
+  if (publie === null) return decision.solution === "" ? "Publication non précisée" : decision.solution;
+  const base = publie ? "Publié au recueil" : "Inédit au recueil";
+  return decision.solution === "" ? base : `${base} · ${decision.solution}`;
+}
+
+export function unitesJade(
+  decision: DecisionJade,
+  descripteur: DescripteurCe,
+  fonds?: Fonds,
+): Unite[] {
   const numero = decision.numero === "" ? decision.id : decision.numero;
   const chemin = `${descripteur.nom} > Décision ${numero}`;
+  const statut = statutJade(decision, fonds);
   return decouperParagraphes(decision.paragraphes).map((texte, index) => ({
     ref: `${decision.id}#f${index}`,
     document: decision.id,
@@ -224,7 +245,7 @@ export function unitesJade(decision: DecisionJade, descripteur: DescripteurCe): 
     date_acte: decision.date,
     date_debut: decision.date,
     date_fin: null,
-    statut: decision.solution === "" ? "Publié" : decision.solution,
+    statut,
     url: descripteur.url_texte.replace("{id}", decision.id),
   }));
 }
