@@ -609,9 +609,9 @@ function teteInattendue(mesure: Mesure): string | null {
 }
 
 /** Rang de `ref` dans les passages rendus, `0` si absent. */
-function rangDe(mesure: Mesure | undefined, ref: string): number {
+function rangDe(mesure: Mesure | undefined, attendue: string): number {
   if (mesure === undefined) return 0;
-  return mesure.refs.indexOf(ref) + 1;
+  return mesure.refs.findIndex((ref) => refSatisfaite(ref, attendue)) + 1;
 }
 
 function niveau(mesure: Mesure, seuils: Seuils) {

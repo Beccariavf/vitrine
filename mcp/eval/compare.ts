@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { refSatisfaite } from "./run.ts";
 import type { ObjetMesureJson } from "./run.ts";
 
 /** Une paire alignée : ce que chaque modèle réussit sur la même question, brut et rendu. */
@@ -48,12 +49,12 @@ export function passagesRendus(entree: ObjetMesureJson["questions"][number]): st
 
 /** Succès au top 5 : une référence attendue figure parmi les cinq premiers passages fournis. */
 function succesTop5(refs: string[], attendues: string[]): boolean {
-  return refs.slice(0, 5).some((ref) => attendues.includes(ref));
+  return refs.slice(0, 5).some((ref) => attendues.some((attendue) => refSatisfaite(ref, attendue)));
 }
 
 /** Succès au rang 1 : le premier passage fourni est une référence attendue. */
 function succesTop1(refs: string[], attendues: string[]): boolean {
-  return attendues.includes(refs[0] ?? "");
+  return attendues.some((attendue) => refSatisfaite(refs[0] ?? "", attendue));
 }
 
 /**

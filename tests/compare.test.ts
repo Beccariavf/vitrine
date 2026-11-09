@@ -84,6 +84,25 @@ describe("le test exact de McNemar", () => {
 });
 
 describe("la comparaison appariée", () => {
+  it("juge une référence documentaire satisfaite par un fragment", () => {
+    const base = mesure("base", [{ question: "document", top1: true }]);
+    const document: ObjetMesureJson = {
+      ...base,
+      questions: [
+        {
+          ...base.questions[0]!,
+          attendues: ["CNILTEXT000000001"],
+          refs: ["CNILTEXT000000001#f18"],
+          rangs: [1],
+        },
+      ],
+    };
+    const paires = aligner(document, document);
+
+    assert.equal(paires[0]?.baseTop5Brut, true);
+    assert.equal(paires[0]?.baseTop1Brut, true);
+  });
+
   it("aligne deux jeux de six questions", () => {
     const { base, candidat } = paireDiscordante(5, 1);
     const paires = aligner(base, candidat);

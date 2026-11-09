@@ -781,6 +781,23 @@ describe("le verrou du test", () => {
     assert.equal(entreeQuestionJson(mesures[0]!, seuils).rangs[0], 2);
   });
 
+  it("compte une référence documentaire satisfaite par un fragment", () => {
+    const mesure: Mesure = {
+      question: {
+        question: "quelle décision vise ce document ?",
+        type: "conceptuelle",
+        attendues: ["CNILTEXT000000001"],
+        piege: false,
+        split: "test",
+      },
+      refs: ["CNILTEXT000000001#f18"],
+      distances: [0.2],
+    };
+    const entree = entreeQuestionJson(mesure, { bas: 0.6, haut: 0.7, marge: 0.01 });
+
+    assert.deepEqual(entree.rangs, [1]);
+  });
+
   it("refuse --json avec --split all", () => {
     assert.throws(() => verifierJsonSplit("all", true), /--json refuse --split all/);
     verifierJsonSplit("dev", true);
