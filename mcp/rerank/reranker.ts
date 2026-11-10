@@ -24,8 +24,9 @@ function messageErreur(error: unknown): string {
 }
 
 /**
- * Remet les scores dans l'ordre d'entrée par `results[].index` : llama.cpp
- * rend ses résultats triés et tronqués par `top_n`, jamais dans l'ordre reçu.
+ * Remet les scores dans l'ordre d'entrée par `results[].index` : l'ordre de la
+ * réponse n'est pas contractuel (`top_n` peut en omettre), mesuré le 2026-11-10
+ * sur `llama-server`, qui les a rendus dans l'ordre d'envoi.
  */
 function replacerScores(
   results: unknown[],

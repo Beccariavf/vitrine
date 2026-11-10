@@ -1177,6 +1177,23 @@ describe("le second étage de rerank", () => {
       /serveur de rerank en panne/,
     );
   });
+
+  it("refuse un reranker qui rend trop peu de scores", async () => {
+    const incomplet: Reranker = {
+      model: "factice-rerank",
+      score: async (_question, passages) => passages.slice(1).map(() => 0.5),
+    };
+
+    await assert.rejects(
+      () =>
+        search(
+          root,
+          { question: QUESTION, k: 5 },
+          { embedder: embedderFactice(), index, seuils: SEUILS, rerank: incomplet },
+        ),
+      /a rendu \d+ scores pour \d+ passages/,
+    );
+  });
 });
 
 describe("la recherche restreinte à un corpus", () => {

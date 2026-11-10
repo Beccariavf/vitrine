@@ -490,7 +490,16 @@ export async function search(
     // La distance dense de chaque passage est conservée : le rerank ne change
     // que l'ordre, jamais l'échelle de confiance.
     ordre = resultats
-      .map((resultat, position) => ({ resultat, score: scores[position] ?? 0, position }))
+      .map((resultat, position) => {
+        const score = scores[position];
+        if (score === undefined) {
+          throw new Error(
+            `Le reranker ${deps.rerank?.model ?? ""} a rendu ${scores.length} scores ` +
+              `pour ${resultats.length} passages.`,
+          );
+        }
+        return { resultat, score, position };
+      })
       .sort((gauche, droite) => droite.score - gauche.score || gauche.position - droite.position)
       .slice(0, k)
       .map((entree) => entree.resultat);
