@@ -1318,4 +1318,32 @@ describe("questions-cnil-etendu.csv", () => {
       );
     }
   });
+
+  it("mixe les avis et les recommandations à l'identique dans les deux splits", () => {
+    const attendu = {
+      dev: { avis: 20, recommandations: 7 },
+      test: { avis: 21, recommandations: 6 },
+    } as const;
+
+    for (const split of ["dev", "test"] as const) {
+      const duSplit = filtrerSplit(questions, split).filter((question) => !question.piege);
+      const compter = (nature: string) =>
+        duSplit.filter((question) => natureDe(question) === nature).length;
+
+      assert.equal(compter("Avis"), attendu[split].avis, split);
+      assert.equal(
+        compter("Recommandation/Lignes directrices"),
+        attendu[split].recommandations,
+        split,
+      );
+      assert.equal(compter("Sanction"), 27, split);
+    }
+    assert.equal(questions.filter((question) => natureDe(question) === "Avis").length, 41, "Avis");
+    assert.equal(
+      questions.filter((question) => natureDe(question) === "Recommandation/Lignes directrices")
+        .length,
+      13,
+      "Recommandation",
+    );
+  });
 });

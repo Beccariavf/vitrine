@@ -2,23 +2,18 @@ date : 2026-11-10
 modèle : qwen3-embedding:0.6b (1024 dimensions)
 corpus : cnil
 recherche : dense
+instruction : actuelle
 split : dev
 jeu : 60 questions (0 références, 54 conceptuelles, 6 pièges)
 seuils : bas=0.620 haut=0.670 marge=0.010 (calibrés sur dev)
 références exactes : 0 questions, rang 1 par construction (recall@5 0.000, MRR 0.000)
-recherche sémantique : 54 questions, recall@5 0.704 (38/54), MRR 0.616
+recherche sémantique : 54 questions, recall@5 0.722 (39/54), MRR 0.625
 top-1 sémantique : 53.7 %
-niveaux sémantiques : 31 confiant, 23 incertain, 0 aucun_resultat_fiable
+niveaux sémantiques : 30 confiant, 24 incertain, 0 aucun_resultat_fiable
 pièges : 6 par seuil, 0 déterministe (aucun)
 pièges cités : 6/6 (Quelle sanction la CNIL a-t-elle prononcée contre une compagnie aérienne pour la reconnaissance faciale des passagers à l'embarquement ? · Quel avis la CNIL a-t-elle rendu sur l'installation de caméras dans les piscines municipales ? · Que recommande la CNIL pour les données de santé des animaux de compagnie dans les cliniques vétérinaires ? · Quel avis la CNIL a-t-elle rendu sur un projet de recherche utilisant des implants cérébraux chez des patients paralysés ? · Quelle sanction la CNIL a-t-elle prononcée contre un loueur de vélos en libre-service pour la géolocalisation des trajets de ses utilisateurs ? · Quel avis la CNIL a-t-elle rendu sur les puces électroniques implantées sous la peau des salariés pour contrôler l'accès aux locaux ?)
 pièges confiants : 4 (Quelle sanction la CNIL a-t-elle prononcée contre une compagnie aérienne pour la reconnaissance faciale des passagers à l'embarquement ? · Que recommande la CNIL pour les données de santé des animaux de compagnie dans les cliniques vétérinaires ? · Quelle sanction la CNIL a-t-elle prononcée contre un loueur de vélos en libre-service pour la géolocalisation des trajets de ses utilisateurs ? · Quel avis la CNIL a-t-elle rendu sur les puces électroniques implantées sous la peau des salariés pour contrôler l'accès aux locaux ?)
 référence attendue, rang et similarité :
-  Quelles exigences la CNIL pose-t-elle pour l'authentification multifacteur des comptes en ligne ? → CNILTEXT000051390242 : rang 1 (0.849)
-  Que recommande la CNIL aux employeurs qui veulent filtrer la navigation web de leurs salariés avec un serveur mandataire ? → CNILTEXT000053668553 : rang 1 (0.859)
-  Quelles règles la CNIL fixe-t-elle pour les pixels de suivi glissés dans les courriels ? → CNILTEXT000053885080 : rang 1 (0.818)
-  Quelles garanties la CNIL recommande-t-elle pour le vote par correspondance électronique ? → CNILTEXT000053950614 : rang 2 (0.856)
-  Que recommande la CNIL aux prêteurs qui évaluent le risque de défaillance de leurs clients ? → CNILTEXT000054047151 : rang absent
-  Quel encadrement la CNIL recommande-t-elle pour les données de localisation des véhicules connectés ? → CNILTEXT000054353331 : rang 1 (0.813)
   Comment les entreprises peuvent-elles mesurer la diversité au travail sans collecter trop de données personnelles ? → CNILTEXT000051709275 : rang 1 (0.747)
   Que recommande la CNIL aux organismes qui publient des données personnelles en open data ? → CNILTEXT000049694593 : rang 1 (0.860)
   Que recommande la CNIL pour sécuriser le partage de données entre organismes au moyen d'interfaces de programmation ? → CNILTEXT000047748672 : rang 2 (0.756)
@@ -67,6 +62,12 @@ référence attendue, rang et similarité :
   Quelle amende a visé un opérateur de téléphonie mobile pour la prospection commerciale et le droit d'opposition ? → CNILTEXT000044810599 : rang 1 (0.762)
   Quelle amende a visé le fichier de police qui recense les empreintes digitales des personnes mises en cause ? → CNILTEXT000044115170 : rang absent
   Quelle sanction a visé une société américaine qui avait fait constituer des fichiers sur des personnalités politiques et des journalistes ? → CNILTEXT000043860997 : rang 2 (0.710)
-premiers passages inattendus : CNILTEXT000053950614 ← CNILTEXT000049826271#f10 · CNILTEXT000054047151 ← CNILTEXT000025972614#f5 · CNILTEXT000047748672 ← CNILTEXT000055022641#f13 · CNILTEXT000043708485 ← CNILTEXT000044840062#f36 · CNILTEXT000047110877 ← CNILTEXT000017653561#f13 · CNILTEXT000054252707 ← CNILTEXT000017652959#f5 · CNILTEXT000054019761 ← CNILTEXT000054142873#f19 · CNILTEXT000053574128 ← CNILTEXT000049512612#f2 · CNILTEXT000053391342 ← CNILTEXT000046988935#f31 · CNILTEXT000053048614 ← CNILTEXT000034728338#f54 · CNILTEXT000052851847 ← CNILTEXT000043867129#f43 · CNILTEXT000051630617 ← CNILTEXT000025165758#f13 · CNILTEXT000051120331 ← CNILTEXT000028450684#f3 · CNILTEXT000049382214 ← CNILTEXT000025165758#f13 · CNILTEXT000048110233 ← CNILTEXT000034473080#f3 · CNILTEXT000047707063 ← CNILTEXT000046768989#f60 · CNILTEXT000047552103 ← CNILTEXT000050202759#f60 · CNILTEXT000046693390 ← CNILTEXT000017653887#f3 · CNILTEXT000046562676 ← CNILTEXT000046988935#f31 · CNILTEXT000046280956 ← CNILTEXT000052851847#f35 · CNILTEXT000046070924 ← CNILTEXT000046988935#f31 · CNILTEXT000045614368 ← CNILTEXT000052851847#f35 · CNILTEXT000044609709 ← CNILTEXT000036066916#f17 · CNILTEXT000044115170 ← CNILTEXT000017652231#f19 · CNILTEXT000043860997 ← CNILTEXT000028450267#f67
+  Quel avis la CNIL a-t-elle rendu sur la mise à jour des changements d'état civil dans les fichiers des organismes ? → CNILTEXT000053308330 : rang 1 (0.751)
+  Quel est l'avis de la CNIL sur l'extension des sources collectées pour détecter les ingérences numériques étrangères ? → CNILTEXT000053461680 : rang 2 (0.744)
+  Que pense la CNIL de l'échange de données entre la médecine du travail et l'assurance maladie sur les salariés menacés de désinsertion ? → CNILTEXT000054019591 : rang 1 (0.826)
+  Quel avis la CNIL a-t-elle rendu sur l'extension du traitement des titres sécurisés à la fraude à l'identité ? → CNILTEXT000053308064 : rang 2 (0.743)
+  Quelles obligations la CNIL voit-elle pour les hébergeurs de données de santé au nom de la souveraineté ? → CNILTEXT000053722050 : rang 1 (0.833)
+  Que pense la CNIL du dépôt de plainte par visioconférence ? → CNILTEXT000053308551 : rang 1 (0.762)
+premiers passages inattendus : CNILTEXT000047748672 ← CNILTEXT000055022641#f13 · CNILTEXT000043708485 ← CNILTEXT000044840062#f36 · CNILTEXT000047110877 ← CNILTEXT000017653561#f13 · CNILTEXT000054252707 ← CNILTEXT000017652959#f5 · CNILTEXT000054019761 ← CNILTEXT000054142873#f19 · CNILTEXT000053574128 ← CNILTEXT000049512612#f2 · CNILTEXT000053391342 ← CNILTEXT000046988935#f31 · CNILTEXT000053048614 ← CNILTEXT000034728338#f54 · CNILTEXT000052851847 ← CNILTEXT000043867129#f43 · CNILTEXT000051630617 ← CNILTEXT000025165758#f13 · CNILTEXT000051120331 ← CNILTEXT000028450684#f3 · CNILTEXT000049382214 ← CNILTEXT000025165758#f13 · CNILTEXT000048110233 ← CNILTEXT000034473080#f3 · CNILTEXT000047707063 ← CNILTEXT000046768989#f60 · CNILTEXT000047552103 ← CNILTEXT000050202759#f60 · CNILTEXT000046693390 ← CNILTEXT000017653887#f3 · CNILTEXT000046562676 ← CNILTEXT000046988935#f31 · CNILTEXT000046280956 ← CNILTEXT000052851847#f35 · CNILTEXT000046070924 ← CNILTEXT000046988935#f31 · CNILTEXT000045614368 ← CNILTEXT000052851847#f35 · CNILTEXT000044609709 ← CNILTEXT000036066916#f17 · CNILTEXT000044115170 ← CNILTEXT000017652231#f19 · CNILTEXT000043860997 ← CNILTEXT000028450267#f67 · CNILTEXT000053461680 ← CNILTEXT000053781864#f12 · CNILTEXT000053308064 ← CNILTEXT000050959650#f1
 têtes considérant pour un article attendu : 0/54
 paraphrase « droit de récupérer mes données » → art_20 : question absente de ce split

@@ -1,10 +1,10 @@
 question,type,sources_attendues,piege,split,corpus
-Quelles exigences la CNIL pose-t-elle pour l'authentification multifacteur des comptes en ligne ?,conceptuelle,CNILTEXT000051390242,non,dev,cnil
-Que recommande la CNIL aux employeurs qui veulent filtrer la navigation web de leurs salariés avec un serveur mandataire ?,conceptuelle,CNILTEXT000053668553,non,dev,cnil
-Quelles règles la CNIL fixe-t-elle pour les pixels de suivi glissés dans les courriels ?,conceptuelle,CNILTEXT000053885080,non,dev,cnil
-Quelles garanties la CNIL recommande-t-elle pour le vote par correspondance électronique ?,conceptuelle,CNILTEXT000053950614,non,dev,cnil
-Que recommande la CNIL aux prêteurs qui évaluent le risque de défaillance de leurs clients ?,conceptuelle,CNILTEXT000054047151,non,dev,cnil
-Quel encadrement la CNIL recommande-t-elle pour les données de localisation des véhicules connectés ?,conceptuelle,CNILTEXT000054353331,non,dev,cnil
+Quelles exigences la CNIL pose-t-elle pour l'authentification multifacteur des comptes en ligne ?,conceptuelle,CNILTEXT000051390242,non,test,cnil
+Que recommande la CNIL aux employeurs qui veulent filtrer la navigation web de leurs salariés avec un serveur mandataire ?,conceptuelle,CNILTEXT000053668553,non,test,cnil
+Quelles règles la CNIL fixe-t-elle pour les pixels de suivi glissés dans les courriels ?,conceptuelle,CNILTEXT000053885080,non,test,cnil
+Quelles garanties la CNIL recommande-t-elle pour le vote par correspondance électronique ?,conceptuelle,CNILTEXT000053950614,non,test,cnil
+Que recommande la CNIL aux prêteurs qui évaluent le risque de défaillance de leurs clients ?,conceptuelle,CNILTEXT000054047151,non,test,cnil
+Quel encadrement la CNIL recommande-t-elle pour les données de localisation des véhicules connectés ?,conceptuelle,CNILTEXT000054353331,non,test,cnil
 Comment les entreprises peuvent-elles mesurer la diversité au travail sans collecter trop de données personnelles ?,conceptuelle,CNILTEXT000051709275,non,dev,cnil
 Que recommande la CNIL aux organismes qui publient des données personnelles en open data ?,conceptuelle,CNILTEXT000049694593,non,dev,cnil
 Que recommande la CNIL pour sécuriser le partage de données entre organismes au moyen d'interfaces de programmation ?,conceptuelle,CNILTEXT000047748672,non,dev,cnil
@@ -59,12 +59,12 @@ Que recommande la CNIL pour les données de santé des animaux de compagnie dans
 Quel avis la CNIL a-t-elle rendu sur un projet de recherche utilisant des implants cérébraux chez des patients paralysés ?,piege,,oui,dev,cnil
 Quelle sanction la CNIL a-t-elle prononcée contre un loueur de vélos en libre-service pour la géolocalisation des trajets de ses utilisateurs ?,piege,,oui,dev,cnil
 Quel avis la CNIL a-t-elle rendu sur les puces électroniques implantées sous la peau des salariés pour contrôler l'accès aux locaux ?,piege,,oui,dev,cnil
-Quel avis la CNIL a-t-elle rendu sur la mise à jour des changements d'état civil dans les fichiers des organismes ?,conceptuelle,CNILTEXT000053308330,non,test,cnil
-Quel est l'avis de la CNIL sur l'extension des sources collectées pour détecter les ingérences numériques étrangères ?,conceptuelle,CNILTEXT000053461680,non,test,cnil
-Que pense la CNIL de l'échange de données entre la médecine du travail et l'assurance maladie sur les salariés menacés de désinsertion ?,conceptuelle,CNILTEXT000054019591,non,test,cnil
-Quel avis la CNIL a-t-elle rendu sur l'extension du traitement des titres sécurisés à la fraude à l'identité ?,conceptuelle,CNILTEXT000053308064,non,test,cnil
-Quelles obligations la CNIL voit-elle pour les hébergeurs de données de santé au nom de la souveraineté ?,conceptuelle,CNILTEXT000053722050,non,test,cnil
-Que pense la CNIL du dépôt de plainte par visioconférence ?,conceptuelle,CNILTEXT000053308551,non,test,cnil
+Quel avis la CNIL a-t-elle rendu sur la mise à jour des changements d'état civil dans les fichiers des organismes ?,conceptuelle,CNILTEXT000053308330,non,dev,cnil
+Quel est l'avis de la CNIL sur l'extension des sources collectées pour détecter les ingérences numériques étrangères ?,conceptuelle,CNILTEXT000053461680,non,dev,cnil
+Que pense la CNIL de l'échange de données entre la médecine du travail et l'assurance maladie sur les salariés menacés de désinsertion ?,conceptuelle,CNILTEXT000054019591,non,dev,cnil
+Quel avis la CNIL a-t-elle rendu sur l'extension du traitement des titres sécurisés à la fraude à l'identité ?,conceptuelle,CNILTEXT000053308064,non,dev,cnil
+Quelles obligations la CNIL voit-elle pour les hébergeurs de données de santé au nom de la souveraineté ?,conceptuelle,CNILTEXT000053722050,non,dev,cnil
+Que pense la CNIL du dépôt de plainte par visioconférence ?,conceptuelle,CNILTEXT000053308551,non,dev,cnil
 Quel avis la CNIL a-t-elle rendu sur l'expérimentation de caméras frontales embarquées dans les tramways ?,conceptuelle,CNILTEXT000053309613,non,test,cnil
 Quelles conditions la CNIL pose-t-elle à l'utilisation pérenne des caméras individuelles par les agents des opérateurs de transport ?,conceptuelle,CNILTEXT000053049970,non,test,cnil
 Quel avis la CNIL a-t-elle rendu sur la base nationale des agréments en vue d'adoption ?,conceptuelle,CNILTEXT000053056915,non,test,cnil
