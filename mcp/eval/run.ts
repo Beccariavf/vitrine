@@ -3,7 +3,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { MARGE, SEUIL_BAS, SEUIL_HAUT, niveauConfiance } from "../confidence.ts";
-import { createOllamaEmbedder } from "../embed/embedder.ts";
+import { INSTRUCTIONS_REQUETE, INSTRUCTION_CNIL, createOllamaEmbedder } from "../embed/embedder.ts";
 import type { Embedder } from "../embed/embedder.ts";
 import { cheminIndex, lireUnites } from "../index/build.ts";
 import { openIndex } from "../index/search.ts";
@@ -25,6 +25,18 @@ export const NB_PLIS = 4;
 export type Split = "dev" | "test";
 export type FiltreSplit = Split | "all";
 export type ModeRecherche = "dense" | "hybride";
+
+/** Instruction de requête CNIL mesurée : celle du produit, ou une variante de même forme. */
+export type VarianteInstruction = "actuelle" | "neutre";
+
+/**
+ * Variante d'instruction propre au harnais : même forme que `INSTRUCTION_CNIL`,
+ * sans nommer la sanction. Le produit garde `INSTRUCTION_CNIL` ; cette variante
+ * ne sert qu'à mesurer ce que coûte la mention « délibération de sanction » sur
+ * un jeu qui mêle doctrine et sanctions.
+ */
+export const INSTRUCTION_CNIL_NEUTRE =
+  "Instruction : retrouve les passages d'une délibération de la CNIL qui répondent à la question\nRequête : ";
 
 export type TypeQuestion = "reference" | "conceptuelle" | "piege";
 
@@ -795,6 +807,32 @@ function lireRecherche(argv: string[]): ModeRecherche {
   return valeur;
 }
 
+/** `--instruction` : `actuelle` par défaut ; toute autre valeur est nommée et refusée. */
+export function lireInstruction(valeur: string | undefined): VarianteInstruction {
+  if (valeur === undefined) return "actuelle";
+  if (valeur !== "actuelle" && valeur !== "neutre") {
+    throw new Error(
+      `--instruction attendu actuelle ou neutre ; reçu « ${valeur === "" ? "(vide)" : valeur} »`,
+    );
+  }
+  return valeur;
+}
+
+/** Instruction de requête du corpus CNIL pour la variante demandée. */
+export function instructionCnil(variante: VarianteInstruction): string {
+  return variante === "neutre" ? INSTRUCTION_CNIL_NEUTRE : INSTRUCTION_CNIL;
+}
+
+/**
+ * Instructions de requête de l'embedder : celles du produit, sauf le corpus
+ * CNIL, qui suit la variante mesurée. Aucune autre collection ne change.
+ */
+export function instructionsDeMesure(
+  variante: VarianteInstruction,
+): Record<string, string> {
+  return { ...INSTRUCTIONS_REQUETE, cnil: instructionCnil(variante) };
+}
+
 /** Le split `test` ne s'exécute que sur autorisation explicite. */
 export function verifierAutorisationTest(split: FiltreSplit, mesurerTest: boolean): void {
   if ((split === "test" || split === "all") && !mesurerTest) {
@@ -939,6 +977,8 @@ export type ObjetMesureJson = {
   /** Collection mesurée : `rgpd`, `aiact`, `cnil`, `lil`, `ce`, `cepd`. */
   corpus: string;
   recherche: ModeRecherche;
+  /** Variante d'instruction de requête choisie explicitement ; absente, celle du produit. */
+  instruction?: VarianteInstruction;
   /** L'index réellement interrogé : un JSON ne dit pas seulement quel modèle. */
   index: { chemin: string; unites: number };
   seuils: Seuils;
@@ -964,6 +1004,7 @@ export function objetMesureJson(args: {
   index: { chemin: string; unites: number };
   seuils: Seuils;
   mesures: Mesure[];
+  instruction?: VarianteInstruction;
   rerank?: BlocRerankJson;
 }): ObjetMesureJson {
   return {
@@ -973,6 +1014,7 @@ export function objetMesureJson(args: {
     split: args.split,
     corpus: args.corpus,
     recherche: args.recherche,
+    ...(args.instruction === undefined ? {} : { instruction: args.instruction }),
     index: args.index,
     seuils: args.seuils,
     questions: args.mesures.map((mesure) => entreeQuestionJson(mesure, args.seuils)),
@@ -995,6 +1037,8 @@ async function main(argv: string[]): Promise<void> {
   verifierJsonSplit(split, json);
   verifierAutorisationTest(split, argv.includes("--mesurer-test"));
   const seuilsExplicites = lireSeuils(valeurDe("--seuils", argv));
+  const optionInstruction = valeurDe("--instruction", argv);
+  const variante = lireInstruction(optionInstruction);
   const date = new Date().toISOString().slice(0, 10);
   // Racine alternative : permet de mesurer un autre index sans toucher le corpus
   // ni l'index du produit (expérience de modèle, par exemple).
@@ -1017,6 +1061,7 @@ async function main(argv: string[]): Promise<void> {
   const embedder = createOllamaEmbedder({
     ...(modele === undefined ? {} : { model: modele }),
     ...(dim === undefined ? {} : { dim: Number(dim) }),
+    instructions: instructionsDeMesure(variante),
   });
 
   const modeleRerank = valeurDe("--rerank", argv);
@@ -1059,6 +1104,7 @@ async function main(argv: string[]): Promise<void> {
       `modèle : ${embedder.model} (${embedder.dim} dimensions)`,
       `corpus : ${corpus}`,
       `recherche : ${recherche}`,
+      `instruction : ${variante}`,
       `split : ${split}`,
       ...(split === "all"
         ? [
@@ -1117,6 +1163,7 @@ async function main(argv: string[]): Promise<void> {
         index: { chemin: index.chemin, unites: index.unites },
         seuils,
         mesures,
+        ...(optionInstruction === undefined ? {} : { instruction: variante }),
         ...(rerank === undefined
           ? {}
           : {

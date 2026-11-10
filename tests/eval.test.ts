@@ -13,7 +13,11 @@ import {
   ecrireMesureTest,
   entreeQuestionJson,
   filtrerSplit,
+  INSTRUCTION_CNIL_NEUTRE,
+  instructionCnil,
+  instructionsDeMesure,
   intervalleWilson,
+  lireInstruction,
   lireJeu,
   lireQuestions,
   lireSeuils,
@@ -35,6 +39,11 @@ import {
   verifierTestNonConsomme,
 } from "../mcp/eval/run.ts";
 import type { MarqueurV3, Mesure, Question, Split } from "../mcp/eval/run.ts";
+import {
+  INSTRUCTION_AIAct,
+  INSTRUCTION_CNIL,
+  INSTRUCTION_REQUETE,
+} from "../mcp/embed/embedder.ts";
 import { referenceExacte } from "../mcp/tools.ts";
 
 const QUESTIONS = readFileSync(new URL("../mcp/eval/questions.csv", import.meta.url), "utf8");
@@ -367,6 +376,66 @@ describe("les seuils figés", () => {
     assert.notEqual(resultat.status, 0);
     assert.equal(resultat.stdout, "", "le refus précède toute mesure");
     assert.match(resultat.stderr, /hors de \[0, 1\] « 1\.2 »/);
+  });
+});
+
+describe("l'instruction de requête mesurée", () => {
+  it("choisit l'instruction du produit quand --instruction est absent", () => {
+    assert.equal(lireInstruction(undefined), "actuelle");
+    assert.equal(instructionCnil(lireInstruction(undefined)), INSTRUCTION_CNIL);
+  });
+
+  it("rend la variante neutre sur --instruction neutre", () => {
+    assert.equal(lireInstruction("neutre"), "neutre");
+    assert.equal(instructionCnil("neutre"), INSTRUCTION_CNIL_NEUTRE);
+  });
+
+  it("garde la forme de l'instruction CNIL sans nommer la sanction", () => {
+    assert.equal(
+      INSTRUCTION_CNIL_NEUTRE,
+      "Instruction : retrouve les passages d'une délibération de la CNIL qui répondent à la question\nRequête : ",
+    );
+    assert.match(INSTRUCTION_CNIL_NEUTRE, /^Instruction : .*CNIL.*\nRequête : $/);
+    assert.doesNotMatch(INSTRUCTION_CNIL_NEUTRE, /sanction/i);
+    assert.match(INSTRUCTION_CNIL, /sanction/i, "l'instruction du produit, elle, nomme la sanction");
+    assert.notEqual(INSTRUCTION_CNIL_NEUTRE, INSTRUCTION_CNIL);
+  });
+
+  it("ne change que l'instruction CNIL, jamais celles du RGPD ni de l'AI Act", () => {
+    const neutre = instructionsDeMesure("neutre");
+    const actuelle = instructionsDeMesure("actuelle");
+
+    assert.equal(neutre.cnil, INSTRUCTION_CNIL_NEUTRE);
+    assert.equal(actuelle.cnil, INSTRUCTION_CNIL);
+    assert.equal(neutre.rgpd, INSTRUCTION_REQUETE);
+    assert.equal(neutre.aiact, INSTRUCTION_AIAct);
+    assert.equal(neutre["32016R0679"], INSTRUCTION_REQUETE);
+    assert.equal(neutre["32024R1689"], INSTRUCTION_AIAct);
+  });
+
+  it("refuse une valeur inconnue en la nommant", () => {
+    assert.throws(
+      () => lireInstruction("moderee"),
+      /--instruction attendu actuelle ou neutre ; reçu « moderee »/,
+    );
+    assert.throws(
+      () => lireInstruction(""),
+      /--instruction attendu actuelle ou neutre ; reçu « \(vide\) »/,
+    );
+  });
+
+  it("refuse --instruction inconnu au niveau CLI, avant toute mesure", () => {
+    const run = fileURLToPath(new URL("../mcp/eval/run.ts", import.meta.url));
+    const racine = fileURLToPath(new URL("..", import.meta.url));
+    const resultat = spawnSync(
+      process.execPath,
+      [run, "--questions", "questions-v3.csv", "--split", "dev", "--instruction", "moderee"],
+      { cwd: racine, encoding: "utf8", timeout: 30_000 },
+    );
+
+    assert.notEqual(resultat.status, 0);
+    assert.equal(resultat.stdout, "", "le refus précède toute mesure");
+    assert.match(resultat.stderr, /--instruction attendu actuelle ou neutre ; reçu « moderee »/);
   });
 });
 
