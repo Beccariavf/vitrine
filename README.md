@@ -109,7 +109,9 @@ remplacés ; le second est archivé dans `b442d14` et aucun n'est repris. Rappor
 
 Le jeu CNIL doctrine (10 questions `dev`) mesure le corpus CNIL, pas le filtre `nature` : le harnais
 filtre par corpus et n'exerce pas `search.nature`. Résultat assumé : **3/10 au top 5, MRR 0,225,
-top 1 20,0 %**, avec 8 `confiant` dont 3 corrects et 5 faux, et 2 `incertain` faux. Ce
+top 1 20,0 %**, avec, aux seuils alors calibrés sur ce jeu (0,71 / 0,76 / 0,01), 8 `confiant` dont 3 corrects et
+5 faux, et 2 `incertain` faux. À la règle livrée, les mêmes 10 questions donnent 6 `confiant` dont
+4 faux. Ce
 chiffre est corpus-level et ne doit pas être lu comme une mesure du filtre de nature. Le jeu LIL
 donne **10/10 au top 5, MRR 0,750, top 1 60,0 %**.
 
@@ -224,6 +226,9 @@ pour le RGPD, le Conseil d'État, la LIL, le CEPD et l'AI Act). Une recherche **
 qui **ne nomme qu'un document**, suit le repli et sort de la promesse : l'instruction de requête et
 le bassin de candidats y changent. Le plancher de refus CNIL passe de 0,69 à 0,67 : les quatre
 questions muettes d'avant sont rendues, dont deux qui avaient le bon document au top 5.
+Une recherche **filtrée** (`nature`, dates, type ou montant de sanction, numéro) et un `k` inférieur
+à 5 sortent aussi de la promesse : le bassin de candidats change, et le harnais n'exerce pas ces
+filtres.
 
 La borne décrit les 54 questions sémantiques, **pièges exclus**. Sur les 6 pièges du jeu, un est
 pourtant rendu `confiant` et faux (« loueur de vélos en libre-service », similarité 0,7978, mauvais

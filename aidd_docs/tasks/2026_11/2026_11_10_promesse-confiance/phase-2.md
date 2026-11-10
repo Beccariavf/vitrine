@@ -27,7 +27,7 @@ status: completed
 
 > Sans population figée, la borne mesure autre chose que ce qu'elle prétend.
 
-1. Figer la population de la promesse : les questions sémantiques de `questions-cnil-etendu.csv` mesurées **avec `corpus` imposé**, c'est-à-dire le mode que le serveur recommande ; `questions-cnil-doctrine.csv` est rapporté à part et n'entre jamais dans le dénominateur, faute de quoi son sous-ensemble adverse dicterait le plafond. Une recherche sans `corpus`, ou qui ne nomme qu'un document, n'est pas couverte : elle change l'instruction de requête et le bassin de candidats, donc la similarité ; elle suit le repli global.
+1. Figer la population de la promesse : les questions sémantiques de `questions-cnil-etendu.csv` mesurées **avec `corpus` imposé**, c'est-à-dire le mode filtré ; `questions-cnil-doctrine.csv` est rapporté à part et n'entre jamais dans le dénominateur, faute de quoi son sous-ensemble adverse dicterait le plafond. Une recherche sans `corpus`, ou qui ne nomme qu'un document, n'est pas couverte : elle change l'instruction de requête et le bassin de candidats, donc la similarité ; elle suit le repli global.
 2. Poser 10 % comme cible de risque et 20 réponses sur 54 comme couverture utile : ce plancher vaut pour la CNIL, seul jeu assez fourni pour arbitrer ; les autres corpus n'ont pas la puissance nécessaire et prennent le repli.
 3. Appliquer cette règle de choix, dans cet ordre : maximiser la couverture sous borne ≤ 10 % ; si aucun couple n'y arrive, minimiser la borne sans descendre sous la couverture utile ; si même cela échoue, prendre la borne minimale atteignable et l'écrire comme un constat.
 4. Écrire la borne et la couverture retenues : c'est le plafond publié, pas 10 % par principe.

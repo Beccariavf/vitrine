@@ -164,6 +164,13 @@ confiantes, sur les 54 questions sémantiques, pièges exclus).
   borne ; l'une est pourtant rendue `confiante` et fausse (voir §1) ;
 - **la recherche sans `corpus` ou à document unique** : elle suit le repli et
   n'est pas mesurée ;
+- **une recherche CNIL filtrée** (`nature`, `date_min`, `date_max`,
+  `type_sanction`, `montant_min`, `montant_max`, `numero`) : le bassin change et
+  le harnais n'exerce pas ces filtres ; le sous-ensemble doctrinal, qui est une
+  CNIL restreinte, trompe 4 fois sur 6 ;
+- **un `k` inférieur à 5** : la promesse est mesurée sur les cinq premiers
+  passages ; en dessous, le test de satisfaction ne décrit plus ce que le
+  lecteur reçoit ;
 - **la justesse rédactionnelle** : le style, l'exhaustivité ou l'à-propos de la
   réponse ne sont pas mesurés ;
 - **les autres corpus** : aucune promesse chiffrée (voir §2).

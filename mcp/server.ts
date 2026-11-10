@@ -26,7 +26,8 @@ const CONSIGNE_PROMESSE =
   "pièges, la borne haute à 95 % est de 33,3 % (3 erreurs sur 22 réponses confiantes, 13,6 %, à " +
   "40,7 % de couverture) ; aucun réglage mesuré ne descend sous 25,9 %, et 10 % demanderait au " +
   "moins 35 confiantes sans une seule erreur. Le sous-ensemble doctrinal " +
-  "`questions-cnil-doctrine.csv` est mesuré à part, hors promesse ; les autres corpus, une " +
+  "`questions-cnil-doctrine.csv` est mesuré à part, hors promesse, comme une recherche filtrée " +
+  "(nature, dates, type ou montant) et un k < 5 ; les autres corpus, une " +
   "recherche sans `corpus` et une recherche qui ne nomme qu'un document suivent le repli " +
   "0,69 / 0,74 / 0,01 et ne portent aucune promesse chiffrée.";
 

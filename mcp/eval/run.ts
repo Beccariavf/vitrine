@@ -948,7 +948,7 @@ export function verifierRegleSeuils(regle: Regle, seuils: Seuils | null): void {
 /** Origine lisible de la table : le corpus nommé, ou le repli qu'il a suivi. */
 function origineProduit(corpus: string | undefined): string {
   if (corpus === undefined || corpus === "") return "table (repli, aucun corpus)";
-  return SEUILS_PAR_CORPUS[corpus] === undefined ? `table (repli, ${corpus})` : `table (${corpus})`;
+  return Object.hasOwn(SEUILS_PAR_CORPUS, corpus) ? `table (${corpus})` : `table (repli, ${corpus})`;
 }
 
 /**
