@@ -97,5 +97,6 @@ et sa table CNIL, dont la promesse vient d'être confirmée.
 - Les six questions passées de `dev` à `test` au rééquilibrage avaient été
   mesurées en `dev` le même jour : la calibration de la règle livrée n'en contient
   aucune, donc aucun réglage n'a été fait sur des questions devenues `test`.
-- Deux des six pièges sont `confiant` sur le test, comme sur `dev` : ils restent
-  hors de la population de la promesse.
+- Deux des six pièges sont `confiant` sur le test, dans les deux passes ; sur `dev`,
+  la règle CNIL livrée n'en compte qu'un, le repli deux. Ils restent hors de la
+  population de la promesse.
