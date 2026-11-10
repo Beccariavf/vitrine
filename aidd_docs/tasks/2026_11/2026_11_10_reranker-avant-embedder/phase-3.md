@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 ---
 
 # Instruction: Runtime du reranker prouvé

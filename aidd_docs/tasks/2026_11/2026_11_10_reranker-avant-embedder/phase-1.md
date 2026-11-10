@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 ---
 
 # Instruction: Jeu CNIL élargi à 120 questions

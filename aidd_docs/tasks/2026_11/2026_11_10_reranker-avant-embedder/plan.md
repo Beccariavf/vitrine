@@ -1,6 +1,6 @@
 ---
 objective: "Un reranker est mesuré en apparié sur un jeu CNIL élargi, et le produit ne change d'étage ou de modèle qu'après un verdict établi sur le split dev."
-status: pending
+status: completed
 ---
 
 # Plan: Évaluer un reranker avant tout changement d'embedder
