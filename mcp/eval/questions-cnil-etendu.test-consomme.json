@@ -1,0 +1,62 @@
+{
+  "note": "Mesures du 2026-11-10, produites par cette exécution ; aucune valeur n'est transcrite d'un autre rapport.",
+  "questions_sha256": "85317ef84ba5de41e02073d7f52618b739abf17325335db03bfd017dc261618b",
+  "mesures": [
+    {
+      "modele": "qwen3-embedding:0.6b",
+      "dimensions": 1024,
+      "date": "2026-11-10",
+      "seuils": {
+        "bas": 0.67,
+        "haut": 0.67,
+        "marge": 0.02
+      },
+      "agregats": {
+        "semantiques": 54,
+        "top5_semantique_succes": 42,
+        "top1_semantique_succes": 32,
+        "mrr_semantique": 0.667283950617284,
+        "referencees": 54,
+        "top5_global_succes": 42,
+        "top5_rendu_succes": 42,
+        "top1_rendu_succes": 32,
+        "mrr_rendu": 0.667283950617284,
+        "top5_global_rendu_succes": 42,
+        "pieges_mesures": 6,
+        "pieges_cites": 6,
+        "confiant": 26,
+        "incertain": 26,
+        "aucun_resultat_fiable": 2,
+        "pieges_confiants": 2
+      }
+    },
+    {
+      "modele": "mradermacher/harrier-oss-v1-0.6b-GGUF",
+      "dimensions": 1024,
+      "date": "2026-11-10",
+      "seuils": {
+        "bas": 0.69,
+        "haut": 0.74,
+        "marge": 0.01
+      },
+      "agregats": {
+        "semantiques": 54,
+        "top5_semantique_succes": 50,
+        "top1_semantique_succes": 41,
+        "mrr_semantique": 0.8253086419753086,
+        "referencees": 54,
+        "top5_global_succes": 50,
+        "top5_rendu_succes": 50,
+        "top1_rendu_succes": 41,
+        "mrr_rendu": 0.8253086419753086,
+        "top5_global_rendu_succes": 50,
+        "pieges_mesures": 6,
+        "pieges_cites": 6,
+        "confiant": 34,
+        "incertain": 20,
+        "aucun_resultat_fiable": 0,
+        "pieges_confiants": 2
+      }
+    }
+  ]
+}

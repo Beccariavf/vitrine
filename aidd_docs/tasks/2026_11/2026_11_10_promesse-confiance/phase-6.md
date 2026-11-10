@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 ---
 
 # Instruction: Confirmer la promesse sur le split tenu à l'écart

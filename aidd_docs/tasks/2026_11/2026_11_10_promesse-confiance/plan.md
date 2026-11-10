@@ -1,6 +1,6 @@
 ---
 objective: "L'étiquette « confiant » porte un taux d'erreur plafonné et mesuré par corpus sur les jeux dev, avec son intervalle, sans retirer de bonne réponse au rendu."
-status: implemented
+status: completed
 ---
 
 # Plan: Donner à « confiant » une promesse mesurée
