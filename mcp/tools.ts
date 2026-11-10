@@ -506,7 +506,12 @@ export async function search(
     blocRerank = { modele: deps.rerank.model, duree_ms };
   }
 
-  const niveau = niveauConfiance(ordre, false, deps.seuils);
+  // La table suit le corpus demandé, jamais les passages rendus : sans
+  // `demande.corpus`, la recherche suit le repli et ne porte aucune promesse.
+  const niveau = niveauConfiance(ordre, false, {
+    ...deps.seuils,
+    ...(demande.corpus === undefined ? {} : { corpus: demande.corpus }),
+  });
   return {
     niveau_confiance: niveau,
     passages:

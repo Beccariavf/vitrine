@@ -92,13 +92,13 @@ document, 6 conceptuelles, 2 pièges), mesurées avec `corpus: cnil` et rapport�
 attendue est rendue dans les cinq passages pour 10 des 18 questions sémantiques (55,6 %, IC 95 %
 33,7–75,4), mais pour 9 des 12 questions qui visent un document précis (75,0 %) et 1 des 6 questions
 conceptuelles. Un piège sur deux est cité — une sanction de crèche qui n'existe pas dans le corpus —
-sans jamais être marqué `confiant`. Vingt questions ne classent pas le corpus : les seuils restent
-ceux du produit, il n'y a pas de calibration propre.
+sans jamais être marqué `confiant`. Vingt questions ne classent pas le corpus : cette mesure ne
+calibre aucun seuil, la table CNIL est celle de la promesse ci-dessous.
 
 Le jeu CNIL v2 remplace cette mesure pour les questions documentaires : 50 questions qui visent
 chacune une décision, sans jamais citer l'identifiant, le numéro `SAN-…` ni un numéro d'article,
-réparties 25 `dev` et 25 `test`. Sur le `test`, mesuré le 2026-11-06 avec les seuils du produit
-(`0,69 / 0,74 / 0,01`) sur le corpus de sanctions seules — avant l'extension du 2026-11-09 —, le
+réparties 25 `dev` et 25 `test`. Sur le `test`, mesuré le 2026-11-06 avec les seuils alors globaux du
+produit (`0,69 / 0,74 / 0,01`) sur le corpus de sanctions seules — avant l'extension du 2026-11-09 —, le
 document attendu figure dans les cinq passages pour 16 questions sur 25 (64,0 %, IC 95 %
 44,5–79,8) et au rang 1 pour 12 sur 25 (48,0 %) ; le `MRR` est de 0,560. Ce `test` n'est pas
 rejouable : son marqueur est consommé, et il ne mesure pas le corpus actuel. L'évidence courante est
@@ -199,6 +199,33 @@ significative et le test ne la reproduit pas. Avec 34 questions sémantiques, il
 ne détecte qu'un écart d'environ six questions, donc un effet plus petit demanderait un test tenu à
 l'écart plus grand ou répété. Le rapport v3 est
 `aidd_docs/tasks/2026_11/2026_11_05_mesure-v3-modeles/eval-v3.md` ; il n'est pas fusionné avec le v2.
+
+## Niveaux de confiance
+
+`search` rend trois niveaux : `confiant`, `incertain`, et `aucun_resultat_fiable` qui vide les
+passages. « Confiant » est **statistique, jamais par réponse** : c'est un taux d'erreur mesuré au
+niveau du **document**, satisfait par un passage du top 5 brut — ni au fragment, ni au rang 1 —, et
+il porte sur les seules réponses étiquetées. Aucun signal par passage ne prouve que le premier
+résultat est le bon article.
+
+| Corpus demandé | Seuils (`bas / haut / marge`) | Promesse chiffrée |
+| --- | --- | --- |
+| `cnil` (`questions-cnil-etendu.csv`, 54 questions sémantiques `dev`) | `0,67 / 0,67 / 0,02` | **33,3 % au plus**, à 40,7 % de couverture |
+| Autres corpus, recherche sans `corpus`, recherche à document unique | `0,69 / 0,74 / 0,01` | aucune |
+
+Sur le corpus CNIL, 22 des 54 questions sont `confiant` (40,7 % de couverture), 3 se trompent
+(13,6 %), et la borne haute à 95 % est de **33,3 %** (Wilson). La cible de 10 % n'est pas atteinte :
+aucun réglage mesuré ne descend sous **25,9 %**, et 10 % demanderait au moins **35 réponses
+confiantes sans une seule erreur**. Le sous-ensemble doctrinal (`questions-cnil-doctrine.csv`, corpus
+`cnil`) est mesuré à part et hors promesse : 6 confiantes, 4 fausses, borne 90,3 %. Les autres corpus
+suivent le repli et ne portent aucune promesse chiffrée (19, 12, 10, 10 et 3 questions sémantiques
+pour le RGPD, le Conseil d'État, la LIL, le CEPD et l'AI Act). Une recherche **sans `corpus`**, ou
+qui **ne nomme qu'un document**, suit le repli et sort de la promesse : l'instruction de requête et
+le bassin de candidats y changent. Le plancher de refus CNIL passe de 0,69 à 0,67 : les quatre
+questions muettes d'avant sont rendues, dont deux qui avaient le bon document au top 5.
+
+La règle de choix, les mesures et ce qui invaliderait la promesse sont dans
+`aidd_docs/tasks/2026_11/2026_11_10_promesse-confiance/promesse.md`.
 
 ## Démonstration
 

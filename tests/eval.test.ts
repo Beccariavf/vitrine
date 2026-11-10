@@ -20,6 +20,7 @@ import {
   lireInstruction,
   lireJeu,
   lireQuestions,
+  lireRegle,
   lireSeuils,
   mrr,
   moyenne,
@@ -36,6 +37,7 @@ import {
   validerReferences,
   verifierAutorisationTest,
   verifierJsonSplit,
+  verifierRegleSeuils,
   verifierTestNonConsomme,
 } from "../mcp/eval/run.ts";
 import type { MarqueurV3, Mesure, Question, Split } from "../mcp/eval/run.ts";
@@ -376,6 +378,115 @@ describe("les seuils figés", () => {
     assert.notEqual(resultat.status, 0);
     assert.equal(resultat.stdout, "", "le refus précède toute mesure");
     assert.match(resultat.stderr, /hors de \[0, 1\] « 1\.2 »/);
+  });
+});
+
+describe("la règle du produit", () => {
+  it("rend la table du corpus CNIL avec l'origine table", () => {
+    const retenus = seuilsDeMesure({
+      split: "dev",
+      avecSplit: true,
+      mesuresDev: [],
+      explicites: null,
+      regle: "produit",
+      corpus: "cnil",
+    });
+
+    assert.deepEqual(retenus.seuils, { bas: 0.67, haut: 0.67, marge: 0.02 });
+    assert.equal(retenus.calibration, null, "aucune grille ne tourne sous la règle du produit");
+    assert.match(retenus.origine, /table \(cnil\)/);
+  });
+
+  it("suit le repli pour un corpus sans promesse, en le nommant", () => {
+    const retenus = seuilsDeMesure({
+      split: "dev",
+      avecSplit: true,
+      mesuresDev: [],
+      explicites: null,
+      regle: "produit",
+      corpus: "rgpd",
+    });
+
+    assert.deepEqual(retenus.seuils, { bas: 0.69, haut: 0.74, marge: 0.01 });
+    assert.equal(retenus.calibration, null);
+    assert.match(retenus.origine, /table \(repli, rgpd\)/);
+  });
+
+  it("refuse --seuils en même temps, en nommant le conflit", () => {
+    assert.throws(
+      () => verifierRegleSeuils("produit", { bas: 0.6, haut: 0.7, marge: 0.01 }),
+      /--regle produit refuse --seuils/,
+    );
+    verifierRegleSeuils("calibree", { bas: 0.6, haut: 0.7, marge: 0.01 });
+    verifierRegleSeuils("produit", null);
+  });
+
+  it("refuse le conflit au niveau CLI, avant toute mesure", () => {
+    const run = fileURLToPath(new URL("../mcp/eval/run.ts", import.meta.url));
+    const racine = fileURLToPath(new URL("..", import.meta.url));
+    const resultat = spawnSync(
+      process.execPath,
+      [run, "--regle", "produit", "--seuils", "0.6,0.7,0.01"],
+      { cwd: racine, encoding: "utf8", timeout: 30_000 },
+    );
+
+    assert.notEqual(resultat.status, 0);
+    assert.equal(resultat.stdout, "", "le refus précède toute mesure");
+    assert.match(resultat.stderr, /--regle produit refuse --seuils/);
+  });
+
+  it("refuse une règle inconnue en la nommant", () => {
+    assert.equal(lireRegle(undefined), "calibree");
+    assert.equal(lireRegle("calibree"), "calibree");
+    assert.equal(lireRegle("produit"), "produit");
+    assert.throws(() => lireRegle("grille"), /--regle attendu calibree ou produit ; reçu « grille »/);
+    assert.throws(() => lireRegle(""), /--regle attendu calibree ou produit ; reçu « \(vide\) »/);
+  });
+
+  it("garde les refs d'une mesure dev quand seule la règle change", () => {
+    const mesures: Mesure[] = [
+      {
+        question: {
+          question: "une sanction récente sur les cookies",
+          type: "conceptuelle",
+          attendues: ["CNILTEXT000055000001"],
+          piege: false,
+          split: "dev",
+        },
+        refs: ["CNILTEXT000055000002#f0", "CNILTEXT000055000001#f1"],
+        distances: [0.3, 0.5],
+      },
+    ];
+    const commun = {
+      date: "2026-11-10",
+      modele: "qwen3-embedding:0.6b",
+      dimensions: 1024,
+      split: "dev" as const,
+      corpus: "cnil",
+      recherche: "dense" as const,
+      index: { chemin: "/tmp/corpus/index/index.db", unites: 53_143 },
+      mesures,
+    };
+    const calibree = objetMesureJson({
+      ...commun,
+      seuils: { bas: 0.69, haut: 0.74, marge: 0.01 },
+    });
+    const produit = objetMesureJson({
+      ...commun,
+      seuils: { bas: 0.67, haut: 0.67, marge: 0.02 },
+    });
+
+    assert.deepEqual(
+      produit.questions.map((entree) => entree.refs),
+      calibree.questions.map((entree) => entree.refs),
+      "la règle ne touche pas ce que la recherche a rendu",
+    );
+    assert.deepEqual(
+      produit.questions.map((entree) => entree.similarites),
+      calibree.questions.map((entree) => entree.similarites),
+    );
+    assert.equal(calibree.questions[0]?.niveau, "incertain");
+    assert.equal(produit.questions[0]?.niveau, "confiant");
   });
 });
 

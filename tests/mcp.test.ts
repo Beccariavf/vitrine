@@ -5,7 +5,13 @@ import { join } from "node:path";
 import { after, before, describe, it } from "node:test";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
-import { SEUIL_BAS, SEUIL_HAUT, niveauConfiance } from "../mcp/confidence.ts";
+import {
+  MARGE,
+  SEUILS_PAR_CORPUS,
+  SEUIL_BAS,
+  SEUIL_HAUT,
+  niveauConfiance,
+} from "../mcp/confidence.ts";
 import { normaliser } from "../mcp/embed/embedder.ts";
 import type { Embedder } from "../mcp/embed/embedder.ts";
 import { buildIndex } from "../mcp/index/build.ts";
@@ -723,6 +729,186 @@ describe("niveauConfiance", () => {
       niveauConfiance([{ distance: 1 - (SEUIL_HAUT + 0.1) }], false, { bas: 0.9 }),
       "aucun_resultat_fiable",
     );
+  });
+});
+
+/** Triplet `0,67 / 0,67 / 0,02` lu dans une ligne de `promesse.md`. */
+function tripletMarkdown(ligne: string): [number, number, number] | null {
+  const trouve = /(\d+),(\d+)\s*\/\s*(\d+),(\d+)\s*\/\s*(\d+),(\d+)/.exec(ligne);
+  if (trouve === null) return null;
+  const valeur = (entier: string | undefined, decimal: string | undefined): number =>
+    Number(`${entier ?? ""}.${decimal ?? ""}`);
+  return [
+    valeur(trouve[1], trouve[2]),
+    valeur(trouve[3], trouve[4]),
+    valeur(trouve[5], trouve[6]),
+  ];
+}
+
+describe("la table de confiance par corpus", () => {
+  it("ne porte que la CNIL et laisse le repli à tout le reste", () => {
+    assert.deepEqual(Object.keys(SEUILS_PAR_CORPUS), ["cnil"]);
+    assert.deepEqual(SEUILS_PAR_CORPUS.cnil, { bas: 0.67, haut: 0.67, marge: 0.02 });
+    for (const corpus of ["rgpd", "aiact", "lil", "ce", "cepd", "inconnu"]) {
+      assert.equal(SEUILS_PAR_CORPUS[corpus], undefined, corpus);
+    }
+    assert.deepEqual(
+      { bas: SEUIL_BAS, haut: SEUIL_HAUT, marge: MARGE },
+      { bas: 0.69, haut: 0.74, marge: 0.01 },
+    );
+  });
+
+  it("applique la table CNIL quand le corpus est demandé", () => {
+    // 0,70 : au-dessus du haut CNIL (0,67), sous le haut du repli (0,74).
+    const resultats = [{ distance: 1 - 0.7 }, { distance: 1 - 0.5 }];
+
+    assert.equal(niveauConfiance(resultats, false, { corpus: "cnil" }), "confiant");
+    assert.equal(niveauConfiance(resultats, false), "incertain");
+  });
+
+  it("suit le repli sans corpus et sur un corpus inconnu", () => {
+    // 0,68 : confiant à la table CNIL, sous le plancher de refus du repli (0,69).
+    const resultats = [{ distance: 1 - 0.68 }, { distance: 1 - 0.5 }];
+
+    assert.equal(niveauConfiance(resultats, false, { corpus: "cnil" }), "confiant");
+    assert.equal(niveauConfiance(resultats, false, { corpus: "rgpd" }), "aucun_resultat_fiable");
+    assert.equal(niveauConfiance(resultats, false), "aucun_resultat_fiable");
+  });
+
+  it("fait primer les seuils fournis par l'appelant sur la table", () => {
+    const resultats = [{ distance: 1 - 0.7 }, { distance: 1 - 0.5 }];
+
+    assert.equal(niveauConfiance(resultats, false, { haut: 0.75, corpus: "cnil" }), "incertain");
+    assert.equal(
+      niveauConfiance(resultats, false, { bas: 0.71, corpus: "cnil" }),
+      "aucun_resultat_fiable",
+    );
+    assert.equal(niveauConfiance(resultats, false, { marge: 0.3, corpus: "cnil" }), "incertain");
+  });
+
+  it("place les frontières bas et haut de la CNIL à 0,67", () => {
+    assert.equal(
+      niveauConfiance([{ distance: 1 - 0.669 }, { distance: 1 - 0.5 }], false, { corpus: "cnil" }),
+      "aucun_resultat_fiable",
+    );
+    assert.equal(
+      niveauConfiance([{ distance: 1 - 0.67 }, { distance: 1 - 0.5 }], false, { corpus: "cnil" }),
+      "confiant",
+    );
+  });
+
+  it("exige la marge de 0,02 de la CNIL", () => {
+    assert.equal(
+      niveauConfiance([{ distance: 1 - 0.67 }, { distance: 1 - 0.655 }], false, { corpus: "cnil" }),
+      "incertain",
+    );
+    assert.equal(
+      niveauConfiance([{ distance: 1 - 0.67 }, { distance: 1 - 0.64 }], false, { corpus: "cnil" }),
+      "confiant",
+    );
+  });
+
+  it("garde « exact » confiant sans lire la table", () => {
+    assert.equal(niveauConfiance([], true), "confiant");
+    assert.equal(niveauConfiance([], true, { corpus: "cnil" }), "confiant");
+    assert.equal(niveauConfiance([{ distance: 1 }], true, { corpus: "cnil" }), "confiant");
+  });
+
+  it("code exactement les valeurs écrites dans promesse.md", () => {
+    const promesse = readFileSync(
+      new URL(
+        "../aidd_docs/tasks/2026_11/2026_11_10_promesse-confiance/promesse.md",
+        import.meta.url,
+      ),
+      "utf8",
+    ).split("\n");
+    const ligneSeuils = promesse.find((ligne) => ligne.includes("Seuils retenus"));
+    const ligneRepli = promesse.find((ligne) => ligne.includes("Repli des autres corpus"));
+
+    assert.ok(ligneSeuils !== undefined, "promesse.md doit porter la ligne « Seuils retenus »");
+    assert.ok(
+      ligneRepli !== undefined,
+      "promesse.md doit porter la ligne « Repli des autres corpus »",
+    );
+
+    const triplet = ligneSeuils === undefined ? null : tripletMarkdown(ligneSeuils);
+    const repli = ligneRepli === undefined ? null : tripletMarkdown(ligneRepli);
+    assert.ok(triplet !== null, "la ligne « Seuils retenus » doit porter un triplet");
+    assert.ok(repli !== null, "la ligne « Repli des autres corpus » doit porter un triplet");
+
+    assert.deepEqual(
+      triplet,
+      [SEUILS_PAR_CORPUS.cnil?.bas, SEUILS_PAR_CORPUS.cnil?.haut, SEUILS_PAR_CORPUS.cnil?.marge],
+      "le triplet CNIL du code doit être celui de promesse.md",
+    );
+    assert.deepEqual(
+      repli,
+      [SEUIL_BAS, SEUIL_HAUT, MARGE],
+      "le repli du code doit être celui de promesse.md",
+    );
+  });
+});
+
+/** Vecteur unitaire dont la similarité cosinus avec `(1, 0, …)` vaut `similarite`. */
+function vecteurSimilarite(similarite: number): number[] {
+  const valeurs = new Array<number>(8).fill(0);
+  valeurs[0] = similarite;
+  valeurs[1] = Math.sqrt(1 - similarite * similarite);
+  return valeurs;
+}
+
+/** Embedder à similarités imposées : le marqueur présent dans le passage choisit la valeur. */
+function embedderAvecSimilarites(parMarqueur: [string, number][]): Embedder {
+  return {
+    model: "factice-similarite",
+    dim: 8,
+    embedPassages: async (textes) =>
+      textes.map((texte) => {
+        const trouve = parMarqueur.find(([marqueur]) => texte.includes(marqueur));
+        if (trouve === undefined) throw new Error(`Texte sans similarité prévue : ${texte}`);
+        return vecteurSimilarite(trouve[1]);
+      }),
+    embedQuery: async () => vecteurSimilarite(1),
+  };
+}
+
+describe("la table appliquée par search", () => {
+  it("suit le corpus demandé et laisse le repli sans corpus", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-confiance-"));
+    try {
+      ecrireCorpus(
+        root,
+        [
+          fragment("CNILTEXT000055000001", 0, "le passage proche de la question"),
+          fragment("CNILTEXT000055000002", 0, "le passage voisin de la question"),
+        ],
+        "cnil",
+      );
+      const embedder = embedderAvecSimilarites([
+        ["proche", 0.7],
+        ["voisin", 0.5],
+      ]);
+      const construit = await buildIndex(root, embedder);
+      const index = openIndex(construit.chemin);
+      try {
+        const question = "sanction relative au dépôt de cookies";
+        const avecCorpus = await search(root, { question, corpus: "cnil" }, { embedder, index });
+        const sansCorpus = await search(root, { question }, { embedder, index });
+
+        assert.equal(avecCorpus.niveau_confiance, "confiant");
+        assert.equal(sansCorpus.niveau_confiance, "incertain");
+        assert.deepEqual(
+          avecCorpus.passages.map((passage) => passage.ref),
+          sansCorpus.passages.map((passage) => passage.ref),
+          "le niveau change, jamais les passages rendus",
+        );
+        assert.ok(Math.abs((avecCorpus.passages[0]?.similarite ?? 0) - 0.7) < 1e-6);
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 });
 

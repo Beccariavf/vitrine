@@ -2,7 +2,15 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { MARGE, SEUIL_BAS, SEUIL_HAUT, niveauConfiance } from "../confidence.ts";
+import {
+  MARGE,
+  SEUILS_PAR_CORPUS,
+  SEUIL_BAS,
+  SEUIL_HAUT,
+  niveauConfiance,
+  seuilsDuCorpus,
+} from "../confidence.ts";
+import type { OptionsConfiance, SeuilsCorpus } from "../confidence.ts";
 import { INSTRUCTIONS_REQUETE, INSTRUCTION_CNIL } from "../embed/embedder.ts";
 import type { Embedder } from "../embed/embedder.ts";
 import { cheminIndex, creerEmbedder, lireFournisseur, lireUnites } from "../index/build.ts";
@@ -51,6 +59,17 @@ export type Question = {
 };
 
 export type Seuils = { bas: number; haut: number; marge: number };
+
+/**
+ * D'où viennent les seuils d'une mesure : la grille expérimentale du harnais
+ * (`calibree`), ou la table du produit (`produit`).
+ */
+export type Regle = "calibree" | "produit";
+
+/** Les seuils retenus, avec le corpus demandé quand il est connu. */
+function optionsConfiance(seuils: Seuils, corpus: string | undefined): OptionsConfiance {
+  return corpus === undefined ? seuils : { ...seuils, corpus };
+}
 
 export type Classement = { attendues: string[]; rendus: string[] };
 export type ClassementPiege = { piege: boolean; refusee: boolean };
@@ -438,9 +457,14 @@ function grille(debut: number, fin: number, pas: number): number[] {
   return valeurs;
 }
 
-function refusee(mesure: Mesure, seuils: Seuils): boolean {
-  return niveauConfiance(mesure.distances.map((distance) => ({ distance })), false, seuils) ===
-    "aucun_resultat_fiable";
+function refusee(mesure: Mesure, seuils: Seuils, corpus?: string): boolean {
+  return (
+    niveauConfiance(
+      mesure.distances.map((distance) => ({ distance })),
+      false,
+      optionsConfiance(seuils, corpus),
+    ) === "aucun_resultat_fiable"
+  );
 }
 
 /**
@@ -450,7 +474,7 @@ function refusee(mesure: Mesure, seuils: Seuils): boolean {
  * seuils les plus prudents. Une question `test` fait lever : le split tenu à
  * l'écart ne règle aucun seuil.
  */
-export function calibrer(mesures: Mesure[]): Seuils {
+export function calibrer(mesures: Mesure[], corpus?: string): Seuils {
   const fuite = mesures.find((mesure) => mesure.question.split === "test");
   if (fuite !== undefined) {
     throw new Error(`Calibration interdite sur une question test : « ${fuite.question.question} »`);
@@ -466,10 +490,12 @@ export function calibrer(mesures: Mesure[]): Seuils {
         let invalides = 0;
         let confiants = 0;
         for (const mesure of mesures) {
+          // La grille fixe les trois seuils : la table ne peut pas les déplacer,
+          // et le corpus est propagé pour que le calcul soit le même partout.
           const niveau = niveauConfiance(
             mesure.distances.map((distance) => ({ distance })),
             false,
-            seuils,
+            optionsConfiance(seuils, corpus),
           );
           const refusee = niveau === "aucun_resultat_fiable";
           if (mesure.question.piege) {
@@ -640,16 +666,21 @@ function rangDe(mesure: Mesure | undefined, attendue: string): number {
   return mesure.refs.findIndex((ref) => refSatisfaite(ref, attendue)) + 1;
 }
 
-function niveau(mesure: Mesure, seuils: Seuils) {
+function niveau(mesure: Mesure, seuils: Seuils, corpus?: string) {
   return niveauConfiance(
     mesure.distances.map((distance) => ({ distance })),
     false,
-    seuils,
+    optionsConfiance(seuils, corpus),
   );
 }
 
 /** Le rapport d'un split : `dev` règle, `test` constate avec les seuils figés. */
-function rapport(mesures: Mesure[], seuils: Seuils, origineSeuils: string): string[] {
+function rapport(
+  mesures: Mesure[],
+  seuils: Seuils,
+  origineSeuils: string,
+  corpus?: string,
+): string[] {
   const exactes = mesures.filter((mesure) => !mesure.question.piege && estExacte(mesure));
   const semantiques = mesures.filter((mesure) => !mesure.question.piege && !estExacte(mesure));
   const classementsSemantiques = classer(semantiques);
@@ -661,11 +692,13 @@ function rapport(mesures: Mesure[], seuils: Seuils, origineSeuils: string): stri
 
   const piegesSeuil = mesures.filter((mesure) => mesure.question.piege && !estExacte(mesure));
   const piegesDeterministes = mesures.filter((mesure) => mesure.question.piege && estExacte(mesure));
-  const piegesCites = piegesSeuil.filter((mesure) => !refusee(mesure, seuils));
-  const piegesConfiants = piegesSeuil.filter((mesure) => niveau(mesure, seuils) === "confiant");
-  const incertaines = semantiques.filter((mesure) => niveau(mesure, seuils) === "incertain");
-  const confiantes = semantiques.filter((mesure) => niveau(mesure, seuils) === "confiant");
-  const refusees = semantiques.filter((mesure) => refusee(mesure, seuils));
+  const piegesCites = piegesSeuil.filter((mesure) => !refusee(mesure, seuils, corpus));
+  const piegesConfiants = piegesSeuil.filter(
+    (mesure) => niveau(mesure, seuils, corpus) === "confiant",
+  );
+  const incertaines = semantiques.filter((mesure) => niveau(mesure, seuils, corpus) === "incertain");
+  const confiantes = semantiques.filter((mesure) => niveau(mesure, seuils, corpus) === "confiant");
+  const refusees = semantiques.filter((mesure) => refusee(mesure, seuils, corpus));
 
   const paraphrase = mesures.find(
     (mesure) => mesure.question.question === "droit de récupérer mes données",
@@ -740,22 +773,22 @@ export type Resume = {
   pieges_confiants: number;
 };
 
-export function resume(mesures: Mesure[], seuils: Seuils): Resume {
+export function resume(mesures: Mesure[], seuils: Seuils, corpus?: string): Resume {
   const semantiques = mesures.filter((mesure) => !mesure.question.piege && !estExacte(mesure));
   const referencees = mesures.filter((mesure) => !mesure.question.piege);
   const classementsSemantiques = classer(semantiques);
   const classementsGlobaux = classer(referencees);
   const classementsRendus = semantiques.map((mesure) => ({
     attendues: mesure.question.attendues,
-    rendus: refusee(mesure, seuils) ? [] : mesure.refs,
+    rendus: refusee(mesure, seuils, corpus) ? [] : mesure.refs,
   }));
   const classementsGlobauxRendus = referencees.map((mesure) => ({
     attendues: mesure.question.attendues,
-    rendus: refusee(mesure, seuils) ? [] : mesure.refs,
+    rendus: refusee(mesure, seuils, corpus) ? [] : mesure.refs,
   }));
   const pieges = mesures.filter((mesure) => mesure.question.piege && !estExacte(mesure));
 
-  const niveaux = semantiques.map((mesure) => niveau(mesure, seuils));
+  const niveaux = semantiques.map((mesure) => niveau(mesure, seuils, corpus));
 
   return {
     semantiques: semantiques.length,
@@ -781,11 +814,13 @@ export function resume(mesures: Mesure[], seuils: Seuils): Resume {
       classement.rendus.slice(0, 5).some((ref) => satisfait(ref, classement.attendues)),
     ).length,
     pieges_mesures: pieges.length,
-    pieges_cites: pieges.filter((mesure) => !refusee(mesure, seuils)).length,
+    pieges_cites: pieges.filter((mesure) => !refusee(mesure, seuils, corpus)).length,
     confiant: niveaux.filter((valeur) => valeur === "confiant").length,
     incertain: niveaux.filter((valeur) => valeur === "incertain").length,
     aucun_resultat_fiable: niveaux.filter((valeur) => valeur === "aucun_resultat_fiable").length,
-    pieges_confiants: pieges.filter((mesure) => niveau(mesure, seuils) === "confiant").length,
+    pieges_confiants: pieges.filter(
+      (mesure) => niveau(mesure, seuils, corpus) === "confiant",
+    ).length,
   };
 }
 
@@ -884,18 +919,59 @@ export function lireSeuils(valeur: string | undefined): Seuils | null {
 }
 
 /**
- * Seuils d'une mesure et leur origine. Sans `--seuils`, `dev` calibre et
- * `test` garde les constantes figées. Avec `--seuils`, la calibration `dev`
- * est quand même calculée et rapportée, sans changer les seuils retenus.
+ * Lit `--regle` : `calibree` par défaut (la grille du harnais), `produit` pour
+ * appliquer la table du produit. Toute autre valeur est nommée et refusée.
+ */
+export function lireRegle(valeur: string | undefined): Regle {
+  if (valeur === undefined) return "calibree";
+  if (valeur !== "calibree" && valeur !== "produit") {
+    throw new Error(
+      `--regle attendu calibree ou produit ; reçu « ${valeur === "" ? "(vide)" : valeur} »`,
+    );
+  }
+  return valeur;
+}
+
+/**
+ * `--regle produit` fixe les seuils par la table : `--seuils` en fournirait
+ * d'autres, le conflit est refusé avant toute mesure.
+ */
+export function verifierRegleSeuils(regle: Regle, seuils: Seuils | null): void {
+  if (regle === "produit" && seuils !== null) {
+    throw new Error(
+      "--regle produit refuse --seuils : la table du produit fixe les seuils, " +
+        "--seuils en fournirait d'autres.",
+    );
+  }
+}
+
+/** Origine lisible de la table : le corpus nommé, ou le repli qu'il a suivi. */
+function origineProduit(corpus: string | undefined): string {
+  if (corpus === undefined || corpus === "") return "table (repli, aucun corpus)";
+  return SEUILS_PAR_CORPUS[corpus] === undefined ? `table (repli, ${corpus})` : `table (${corpus})`;
+}
+
+/**
+ * Seuils d'une mesure et leur origine. `--regle produit` rend la table du corpus
+ * demandé au lieu de calibrer ou de lire `--seuils`. Sinon, sans `--seuils`,
+ * `dev` calibre et `test` garde les constantes figées ; avec `--seuils`, la
+ * calibration `dev` est quand même calculée et rapportée, sans changer les
+ * seuils retenus.
  */
 export function seuilsDeMesure(args: {
   split: FiltreSplit;
   avecSplit: boolean;
   mesuresDev: Mesure[];
   explicites: Seuils | null;
+  regle?: Regle;
+  corpus?: string;
 }): { seuils: Seuils; origine: string; calibration: Seuils | null } {
+  if (args.regle === "produit") {
+    const seuils: SeuilsCorpus = seuilsDuCorpus(args.corpus);
+    return { seuils, origine: origineProduit(args.corpus), calibration: null };
+  }
   const calibration =
-    !args.avecSplit || args.split === "test" ? null : calibrer(args.mesuresDev);
+    !args.avecSplit || args.split === "test" ? null : calibrer(args.mesuresDev, args.corpus);
   if (args.explicites !== null) {
     const detail =
       calibration === null
@@ -949,7 +1025,11 @@ export type EntreeQuestionJson = {
   niveau: ReturnType<typeof niveauConfiance>;
 };
 
-export function entreeQuestionJson(mesure: Mesure, seuils: Seuils): EntreeQuestionJson {
+export function entreeQuestionJson(
+  mesure: Mesure,
+  seuils: Seuils,
+  corpus?: string,
+): EntreeQuestionJson {
   return {
     question: mesure.question.question,
     type: mesure.question.type,
@@ -958,7 +1038,7 @@ export function entreeQuestionJson(mesure: Mesure, seuils: Seuils): EntreeQuesti
     refs: [...mesure.refs],
     rangs: mesure.question.attendues.map((ref) => rangDe(mesure, ref)),
     similarites: mesure.distances.map((distance) => 1 - distance),
-    niveau: niveau(mesure, seuils),
+    niveau: niveau(mesure, seuils, corpus),
   };
 }
 
@@ -1017,8 +1097,8 @@ export function objetMesureJson(args: {
     ...(args.instruction === undefined ? {} : { instruction: args.instruction }),
     index: args.index,
     seuils: args.seuils,
-    questions: args.mesures.map((mesure) => entreeQuestionJson(mesure, args.seuils)),
-    agregats: resume(args.mesures, args.seuils),
+    questions: args.mesures.map((mesure) => entreeQuestionJson(mesure, args.seuils, args.corpus)),
+    agregats: resume(args.mesures, args.seuils, args.corpus),
     ...(args.rerank === undefined ? {} : { rerank: args.rerank }),
   };
 }
@@ -1036,7 +1116,9 @@ async function main(argv: string[]): Promise<void> {
   const json = argv.includes("--json");
   verifierJsonSplit(split, json);
   verifierAutorisationTest(split, argv.includes("--mesurer-test"));
+  const regle = lireRegle(valeurDe("--regle", argv));
   const seuilsExplicites = lireSeuils(valeurDe("--seuils", argv));
+  verifierRegleSeuils(regle, seuilsExplicites);
   const optionInstruction = valeurDe("--instruction", argv);
   const variante = lireInstruction(optionInstruction);
   const date = new Date().toISOString().slice(0, 10);
@@ -1100,6 +1182,8 @@ async function main(argv: string[]): Promise<void> {
       avecSplit: jeu.avecSplit,
       mesuresDev,
       explicites: seuilsExplicites,
+      regle,
+      corpus,
     });
 
     const lignes = [
@@ -1113,12 +1197,22 @@ async function main(argv: string[]): Promise<void> {
         ? [
             "",
             "== dev ==",
-            ...rapport(mesures.filter((mesure) => mesure.question.split === "dev"), seuils, origine),
+            ...rapport(
+              mesures.filter((mesure) => mesure.question.split === "dev"),
+              seuils,
+              origine,
+              corpus,
+            ),
             "",
             "== test ==",
-            ...rapport(mesures.filter((mesure) => mesure.question.split === "test"), seuils, origine),
+            ...rapport(
+              mesures.filter((mesure) => mesure.question.split === "test"),
+              seuils,
+              origine,
+              corpus,
+            ),
           ]
-        : rapport(mesures, seuils, origine)),
+        : rapport(mesures, seuils, origine, corpus)),
     ];
 
     if (consommeTest) {
@@ -1126,7 +1220,7 @@ async function main(argv: string[]): Promise<void> {
         split === "test"
           ? mesures
           : mesures.filter((mesure) => mesure.question.split === "test");
-      const chiffres = resume(mesuresTest, seuils);
+      const chiffres = resume(mesuresTest, seuils, corpus);
       if (!json) {
         lignes.push(
           "",

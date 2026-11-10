@@ -1,0 +1,737 @@
+{
+  "date": "2026-11-10",
+  "modele": "qwen3-embedding:0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "rgpd",
+  "recherche": "dense",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine-mcp/data/corpus/index/index.db",
+    "unites": 53143
+  },
+  "seuils": {
+    "bas": 0.68,
+    "haut": 0.73,
+    "marge": 0.01
+  },
+  "questions": [
+    {
+      "question": "Que prévoit l'article 5 du RGPD ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_5"
+      ],
+      "refs": [
+        "32016R0679#art_5"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        1
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quel est l'objet de l'article 1 du RGPD ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_1"
+      ],
+      "refs": [
+        "32016R0679#art_1"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        1
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Que dit l'article 17 sur l'effacement ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_17"
+      ],
+      "refs": [
+        "32016R0679#art_17"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        1
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelles conditions l'article 7 pose-t-il pour le consentement ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_7"
+      ],
+      "refs": [
+        "32016R0679#art_7"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        1
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Que prévoit l'article 32 sur la sécurité du traitement ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_32"
+      ],
+      "refs": [
+        "32016R0679#art_32"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        1
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelles amendes l'article 83 permet-il ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_83"
+      ],
+      "refs": [
+        "32016R0679#art_83"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        1
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "durée de conservation des données personnelles",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_5"
+      ],
+      "refs": [
+        "32016R0679#art_5",
+        "32016R0679#rct_65",
+        "32016R0679#rct_39",
+        "32016R0679#rct_85",
+        "32016R0679#art_15"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7401643693447113,
+        0.7131570279598236,
+        0.6944771409034729,
+        0.68973109126091,
+        0.6693173050880432
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "consentement des mineurs pour les services en ligne",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_8"
+      ],
+      "refs": [
+        "32016R0679#art_8",
+        "32016R0679#rct_38",
+        "32016R0679#rct_32",
+        "32016R0679#art_7",
+        "32016R0679#art_36"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.783024400472641,
+        0.6608553528785706,
+        0.6319749057292938,
+        0.6029238700866699,
+        0.5592243075370789
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "informations à fournir quand les données ne viennent pas de la personne",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_14"
+      ],
+      "refs": [
+        "32016R0679#art_14",
+        "32016R0679#art_13",
+        "32016R0679#art_34",
+        "32016R0679#rct_61",
+        "32016R0679#art_15"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7799831628799438,
+        0.7384493947029114,
+        0.7223995625972748,
+        0.730156272649765,
+        0.7100742161273956
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "droit de faire corriger des informations inexactes",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_16"
+      ],
+      "refs": [
+        "32016R0679#art_16",
+        "32016R0679#rct_65",
+        "32016R0679#art_82",
+        "32016R0679#art_19",
+        "32016R0679#art_34"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7758073508739471,
+        0.6955752968788147,
+        0.6592434346675873,
+        0.6487831175327301,
+        0.6419830024242401
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "opposition au démarchage pour des raisons personnelles",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_21"
+      ],
+      "refs": [
+        "32016R0679#art_21",
+        "32016R0679#rct_70",
+        "32016R0679#art_34",
+        "32016R0679#rct_69",
+        "32016R0679#rct_18"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7349784970283508,
+        0.720501035451889,
+        0.6454152166843414,
+        0.6248829066753387,
+        0.618074357509613
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "décision entièrement automatisée produisant des effets juridiques",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_22"
+      ],
+      "refs": [
+        "32016R0679#art_22",
+        "32016R0679#rct_71",
+        "32016R0679#art_2",
+        "32016R0679#art_35",
+        "32016R0679#art_6"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7849659621715546,
+        0.7131562232971191,
+        0.6403472721576691,
+        0.6346164047718048,
+        0.6164112091064453
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "protection dès la conception et protection par défaut",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_25"
+      ],
+      "refs": [
+        "32016R0679#rct_78",
+        "32016R0679#art_25",
+        "32016R0679#art_36",
+        "32016R0679#art_32",
+        "32016R0679#rct_38"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.7582978308200836,
+        0.7379549741744995,
+        0.6290199756622314,
+        0.626627653837204,
+        0.6446762681007385
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "contrat avec un prestataire qui traite des données",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_28"
+      ],
+      "refs": [
+        "32016R0679#art_28",
+        "32016R0679#rct_109",
+        "32016R0679#rct_81",
+        "32016R0679#art_5",
+        "32016R0679#art_6"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7198730111122131,
+        0.7181848287582397,
+        0.7054535746574402,
+        0.6839354634284973,
+        0.6782654225826263
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "journal des activités de traitement",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_30"
+      ],
+      "refs": [
+        "32016R0679#art_30",
+        "32016R0679#art_24",
+        "32016R0679#art_6",
+        "32016R0679#rct_18",
+        "32016R0679#art_32"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7478620111942291,
+        0.7088645398616791,
+        0.6813674569129944,
+        0.6993643939495087,
+        0.6725026369094849
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "analyse d'impact avant un traitement à risque élevé",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_35"
+      ],
+      "refs": [
+        "32016R0679#art_35",
+        "32016R0679#rct_84",
+        "32016R0679#rct_90",
+        "32016R0679#rct_94",
+        "32016R0679#rct_91"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.756542980670929,
+        0.741767406463623,
+        0.735696017742157,
+        0.7201176583766937,
+        0.7177322506904602
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "consultation préalable de l'autorité de contrôle",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_36"
+      ],
+      "refs": [
+        "32016R0679#art_36",
+        "32016R0679#art_57",
+        "32016R0679#art_58",
+        "32016R0679#art_51",
+        "32016R0679#art_54"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8133845776319504,
+        0.7729852348566055,
+        0.7688792198896408,
+        0.7611857950687408,
+        0.753704383969307
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "missions du délégué à la protection des données",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_39"
+      ],
+      "refs": [
+        "32016R0679#art_39",
+        "32016R0679#art_38",
+        "32016R0679#art_37",
+        "32016R0679#art_24",
+        "32016R0679#art_25"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.9124918654561043,
+        0.8546812236309052,
+        0.8120238184928894,
+        0.6778906881809235,
+        0.6673004329204559
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "règles internes d'un groupe pour les transferts",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_47"
+      ],
+      "refs": [
+        "32016R0679#rct_110",
+        "32016R0679#art_47",
+        "32016R0679#art_44",
+        "32016R0679#rct_48",
+        "32016R0679#rct_102"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.7416172027587891,
+        0.7088921070098877,
+        0.7083587348461151,
+        0.7190978229045868,
+        0.7121317684650421
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "autorité de contrôle chef de file",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_56"
+      ],
+      "refs": [
+        "32016R0679#art_51",
+        "32016R0679#art_57",
+        "32016R0679#art_58",
+        "32016R0679#art_54",
+        "32016R0679#art_60"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7928632944822311,
+        0.7831372916698456,
+        0.7741252928972244,
+        0.7707489579916,
+        0.764496922492981
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "pouvoirs d'enquête et de sanction de l'autorité de contrôle",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_58"
+      ],
+      "refs": [
+        "32016R0679#art_58",
+        "32016R0679#rct_129",
+        "32016R0679#art_57",
+        "32016R0679#art_54",
+        "32016R0679#art_78"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.81156025826931,
+        0.7909474670886993,
+        0.7491504549980164,
+        0.7337807416915894,
+        0.7333009541034698
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "réclamation auprès d'une autorité de contrôle",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_77"
+      ],
+      "refs": [
+        "32016R0679#art_77",
+        "32016R0679#art_78",
+        "32016R0679#rct_141",
+        "32016R0679#art_57",
+        "32016R0679#art_80"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8462868183851242,
+        0.8164851516485214,
+        0.8320716470479965,
+        0.778626337647438,
+        0.7654597610235214
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "recours juridictionnel contre un responsable du traitement",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_79"
+      ],
+      "refs": [
+        "32016R0679#art_79",
+        "32016R0679#art_82",
+        "32016R0679#art_24",
+        "32016R0679#rct_146",
+        "32016R0679#art_27"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8682806491851807,
+        0.787822812795639,
+        0.7863751649856567,
+        0.7866778075695038,
+        0.7608387172222137
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "réparation du dommage matériel ou moral",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_82"
+      ],
+      "refs": [
+        "32016R0679#art_82",
+        "32016R0679#rct_146",
+        "32016R0679#art_16",
+        "32016R0679#rct_85",
+        "32016R0679#art_83"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8057159632444382,
+        0.7627092003822327,
+        0.6601244807243347,
+        0.6796881556510925,
+        0.6526597142219543
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "données utilisées à des fins de recherche scientifique",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_89"
+      ],
+      "refs": [
+        "32016R0679#rct_159",
+        "32016R0679#rct_33",
+        "32016R0679#art_89",
+        "32016R0679#rct_156",
+        "32016R0679#rct_160"
+      ],
+      "rangs": [
+        3
+      ],
+      "similarites": [
+        0.8671695739030838,
+        0.7804396897554398,
+        0.7464146614074707,
+        0.7509251981973648,
+        0.7068983614444733
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Que prévoit l'article 100 du RGPD ?",
+      "type": "piege",
+      "piege": true,
+      "attendues": [],
+      "refs": [],
+      "rangs": [],
+      "similarites": [],
+      "niveau": "aucun_resultat_fiable"
+    },
+    {
+      "question": "Quel est le délai de prescription pour une action en licenciement ?",
+      "type": "piege",
+      "piege": true,
+      "attendues": [],
+      "refs": [
+        "32016R0679#art_84",
+        "32016R0679#art_54",
+        "32016R0679#art_81",
+        "32016R0679#art_99",
+        "32016R0679#rct_85"
+      ],
+      "rangs": [],
+      "similarites": [
+        0.6002388000488281,
+        0.593114823102951,
+        0.586894303560257,
+        0.5791889429092407,
+        0.5982010960578918
+      ],
+      "niveau": "aucun_resultat_fiable"
+    },
+    {
+      "question": "Quel est le montant de la taxe sur les logements vacants ?",
+      "type": "piege",
+      "piege": true,
+      "attendues": [],
+      "refs": [
+        "32016R0679#art_83",
+        "32016R0679#art_17",
+        "32016R0679#art_99",
+        "32016R0679#art_89",
+        "32016R0679#art_84"
+      ],
+      "rangs": [],
+      "similarites": [
+        0.4342060685157776,
+        0.4174758195877075,
+        0.415688157081604,
+        0.41425657272338867,
+        0.41365861892700195
+      ],
+      "niveau": "aucun_resultat_fiable"
+    },
+    {
+      "question": "Quelles règles encadrent le stationnement payant en zone bleue ?",
+      "type": "piege",
+      "piege": true,
+      "attendues": [],
+      "refs": [
+        "32016R0679#art_83",
+        "32016R0679#art_40",
+        "32016R0679#rct_150",
+        "32016R0679#art_23",
+        "32016R0679#art_6"
+      ],
+      "rangs": [],
+      "similarites": [
+        0.4680396318435669,
+        0.4651308059692383,
+        0.48067718744277954,
+        0.4580748677253723,
+        0.4514077305793762
+      ],
+      "niveau": "aucun_resultat_fiable"
+    },
+    {
+      "question": "Quel est le taux de TVA applicable aux services numériques ?",
+      "type": "piege",
+      "piege": true,
+      "attendues": [],
+      "refs": [
+        "32016R0679#art_95",
+        "32016R0679#art_83",
+        "32016R0679#art_35",
+        "32016R0679#rct_21",
+        "32016R0679#art_87"
+      ],
+      "rangs": [],
+      "similarites": [
+        0.5201332271099091,
+        0.504940003156662,
+        0.4799633026123047,
+        0.49458998441696167,
+        0.47366392612457275
+      ],
+      "niveau": "aucun_resultat_fiable"
+    }
+  ],
+  "agregats": {
+    "semantiques": 19,
+    "top5_semantique_succes": 18,
+    "top1_semantique_succes": 15,
+    "mrr_semantique": 0.8596491228070174,
+    "referencees": 25,
+    "top5_global_succes": 24,
+    "top5_rendu_succes": 18,
+    "top1_rendu_succes": 15,
+    "mrr_rendu": 0.8596491228070174,
+    "top5_global_rendu_succes": 24,
+    "pieges_mesures": 4,
+    "pieges_cites": 0,
+    "confiant": 17,
+    "incertain": 2,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  }
+}
