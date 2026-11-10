@@ -154,10 +154,17 @@ rerank, pas une conclusion sur le produit.
 
 ## Avec les seuils du produit (0,69 / 0,74 / 0,01)
 
-Mesure complémentaire, `mesures/base-dev-seuils-produit.json` : le même jeu
-`dev`, le même index, mais les seuils constants de `mcp/confidence.ts` au lieu
-de la calibration `dev` (0,62 / 0,67 / 0,01). C'est la seule vue qui dise ce que
-le lecteur reçoit aujourd'hui.
+Mesure complémentaire, `mesures/base-dev-seuils-produit.json`
+(`sha256 20b61f0d…`), produite par :
+
+```sh
+node mcp/eval/run.ts --questions questions-cnil-etendu.csv --split dev --json \
+  --seuils 0.69,0.74,0.01 > mesures/base-dev-seuils-produit.json
+```
+
+Même jeu `dev`, même index, mais les seuils constants de `mcp/confidence.ts` au
+lieu de la calibration `dev` (0,62 / 0,67 / 0,01). C'est la seule vue qui dise ce
+que le lecteur reçoit aujourd'hui.
 
 | Niveau | Questions | Dont document attendu au top 5 |
 | --- | --- | --- |
@@ -169,7 +176,7 @@ Le classement brut ne change pas (top 5 39/54, MRR 0,6250, top 1 29/54) : ce
 sont les étiquettes qui changent. Mais la vue **rendue** recule, parce que
 `search` ne rend aucun passage sous `aucun_resultat_fiable` : top 5 rendu 37/54,
 top 1 rendu 27/54, MRR rendu 0,588. Quatre questions ne reçoivent donc rien,
-dont deux dont le bon document était dans le top 5 brun — les seuils hauts
+dont deux dont le bon document était dans le top 5 brut — les seuils hauts
 suppriment aussi des réponses justes.
 
 Les cinq fausses confiantes se répartissent en 4 sanctions sur 9 réponses
