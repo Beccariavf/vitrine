@@ -14,6 +14,7 @@ Toutes les valeurs viennent de `mesures/` (phase 1) ou de la réexécution de
 | Couverture | **40,7 %** (22 questions sémantiques sur 54) |
 | Risque ponctuel | **13,6 %** (3 erreurs sur 22 confiantes) |
 | Plafond publié (borne haute à 95 %) | **33,3 %** |
+| Population de la borne | les 54 questions sémantiques, **pièges exclus** (6 pièges hors population ; l'un est `confiant` et faux, voir §1) |
 | Cible visée | 10 % — **non atteinte, écart de 23,3 points** |
 | Repli des autres corpus | 0,69 / 0,74 / 0,01, sans promesse chiffrée |
 | Split | dev ; le split `test` n'a pas été touché |
@@ -25,8 +26,16 @@ phase 3 : elle les code, elle ne les recalcule pas.
 ## 1. Population et règle de choix
 
 **Population.** Les questions sémantiques de `questions-cnil-etendu.csv`,
-c'est-à-dire ni piège ni référence exacte d'article, mesurées **avec `corpus`
-imposé**, le mode que le serveur recommande. Ce sont 54 questions.
+c'est-à-dire ni piège ni référence exacte d'article, mesurées **dans le mode
+filtré** (`corpus` imposé). Ce sont 54 questions ; le mode non filtré n'est pas
+mesuré ici et ne porte aucune promesse.
+
+**Les 6 pièges sont hors population, l'un pourtant confiant.** La borne de
+33,3 % décrit les 54 questions sémantiques, pas les 6 pièges du jeu. L'un d'eux,
+« loueur de vélos en libre-service » (similarité 0,7978), est néanmoins rendu
+`confiant` et faux : l'inclure donnerait 4 erreurs sur 23 confiantes (17,4 %,
+borne 37,1 %). Le chiffre publié reste celui de la population sémantique, et
+c'est elle qu'il décrit.
 
 **Hors dénominateur.** `questions-cnil-doctrine.csv` vise le même corpus mais
 reste rapporté à part : c'est un sous-ensemble adverse (une seule délibération
@@ -67,6 +76,14 @@ erreur demande **35 réponses confiantes** (borne de Wilson à 0 sur 35 = 9,9 %,
 contre 10,15 % sur 34), et le jeu n'en produit 22 qu'au prix de 3 erreurs. Aucun
 plafond à 10 % ne peut être écrit sans mentir sur ce que 54 questions peuvent
 démontrer.
+
+**Ce que l'étiquette sépare, et ce qu'élargir ne donnerait pas.** Hors pièges,
+`incertain` se trompe à 37,5 % (12 sur 32) : l'étiquette sépare donc 13,6 % de
+37,5 %, elle ordonne deux risques, elle ne tranche pas la justesse. Élargir
+le jeu ne changerait pas la cible : à taux d'erreur constant de 13,6 %, la borne
+ne se resserre vers cette valeur qu'avec le nombre de confiantes — environ 150
+confiantes pour publier 20 % — et aucune quantité de questions ne fait descendre
+13,6 % sous 10 %. Sans meilleure règle, la borne tend vers 13,6 %, pas vers 10 %.
 
 **La phrase que la documentation devra porter.**
 
@@ -128,7 +145,7 @@ au-dessus des deux planchers. Un piège déjà cité le reste, aucun ne s'ajoute
 dont les passages rendus satisfont le document attendu **dans les cinq premiers
 du top 5 brut**, dans au plus **33,3 %** des cas sur les réponses étiquetées
 `confiant` (borne haute à 95 % ; mesuré à 13,6 %, soit 3 erreurs sur 22
-confiantes).
+confiantes, sur les 54 questions sémantiques, pièges exclus).
 
 **Elle exclut** :
 
@@ -143,6 +160,8 @@ confiantes).
   (9 confiantes, 6 erreurs, 66,7 %, borne 87,9 % aux seuils du produit ;
   6 confiantes, 4 erreurs, 66,7 %, borne 90,3 % à la règle retenue), mais hors
   plafond ;
+- **les pièges** : 6 questions sans réponse attendue, hors population et hors
+  borne ; l'une est pourtant rendue `confiante` et fausse (voir §1) ;
 - **la recherche sans `corpus` ou à document unique** : elle suit le repli et
   n'est pas mesurée ;
 - **la justesse rédactionnelle** : le style, l'exhaustivité ou l'à-propos de la

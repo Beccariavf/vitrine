@@ -1062,6 +1062,8 @@ export type ObjetMesureJson = {
   /** L'index réellement interrogé : un JSON ne dit pas seulement quel modèle. */
   index: { chemin: string; unites: number };
   seuils: Seuils;
+  /** D'où viennent `seuils` : `table (cnil)`, `table (repli, rgpd)`, `calibrés sur dev`, `fournis par --seuils`. */
+  seuils_origine: string;
   questions: EntreeQuestionJson[];
   agregats: Resume;
   /** Absent quand aucun étage de rerank n'a tourné. */
@@ -1083,6 +1085,7 @@ export function objetMesureJson(args: {
   recherche: ModeRecherche;
   index: { chemin: string; unites: number };
   seuils: Seuils;
+  seuilsOrigine: string;
   mesures: Mesure[];
   instruction?: VarianteInstruction;
   rerank?: BlocRerankJson;
@@ -1097,6 +1100,7 @@ export function objetMesureJson(args: {
     ...(args.instruction === undefined ? {} : { instruction: args.instruction }),
     index: args.index,
     seuils: args.seuils,
+    seuils_origine: args.seuilsOrigine,
     questions: args.mesures.map((mesure) => entreeQuestionJson(mesure, args.seuils, args.corpus)),
     agregats: resume(args.mesures, args.seuils, args.corpus),
     ...(args.rerank === undefined ? {} : { rerank: args.rerank }),
@@ -1259,6 +1263,7 @@ async function main(argv: string[]): Promise<void> {
         recherche,
         index: { chemin: index.chemin, unites: index.unites },
         seuils,
+        seuilsOrigine: origine,
         mesures,
         ...(optionInstruction === undefined ? {} : { instruction: variante }),
         ...(rerank === undefined

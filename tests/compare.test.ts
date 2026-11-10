@@ -30,6 +30,7 @@ function mesure(modele: string, resultats: Resultat[]): ObjetMesureJson {
     recherche: "dense",
     index: { chemin: "/tmp/corpus/index/index.db", unites: 0 },
     seuils: SEUILS,
+    seuils_origine: "fournis par --seuils",
     questions: resultats.map((resultat) => {
       const top5 = resultat.top5 ?? resultat.top1;
       const refs = top5 ? (resultat.top1 ? [REF, AUTRE] : [AUTRE, REF]) : [AUTRE];

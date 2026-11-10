@@ -348,6 +348,7 @@ describe("la ligne de commande", () => {
         recherche: "dense",
         index: { chemin: "index.db", unites: 1 },
         seuils: PRODUIT,
+        seuils_origine: "table (cnil)",
         questions: jeuSimple(),
         agregats: {
           semantiques: 4,

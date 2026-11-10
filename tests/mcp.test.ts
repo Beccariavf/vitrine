@@ -8,9 +8,11 @@ import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import {
   MARGE,
   SEUILS_PAR_CORPUS,
+  SEUILS_REPLI,
   SEUIL_BAS,
   SEUIL_HAUT,
   niveauConfiance,
+  seuilsDuCorpus,
 } from "../mcp/confidence.ts";
 import { normaliser } from "../mcp/embed/embedder.ts";
 import type { Embedder } from "../mcp/embed/embedder.ts";
@@ -812,6 +814,14 @@ describe("la table de confiance par corpus", () => {
     assert.equal(niveauConfiance([], true), "confiant");
     assert.equal(niveauConfiance([], true, { corpus: "cnil" }), "confiant");
     assert.equal(niveauConfiance([{ distance: 1 }], true, { corpus: "cnil" }), "confiant");
+  });
+
+  it("ne lit pas une propriété héritée du prototype", () => {
+    assert.deepEqual(seuilsDuCorpus("constructor"), SEUILS_REPLI);
+    assert.deepEqual(seuilsDuCorpus("toString"), SEUILS_REPLI);
+    // 0,70 : confiant à la table CNIL, incertain au repli — `constructor` ne doit pas la rendre.
+    const resultats = [{ distance: 1 - 0.7 }, { distance: 1 - 0.5 }];
+    assert.equal(niveauConfiance(resultats, false, { corpus: "constructor" }), "incertain");
   });
 
   it("code exactement les valeurs écrites dans promesse.md", () => {

@@ -14,6 +14,7 @@
     "haut": 0.74,
     "marge": 0.01
   },
+  "seuils_origine": "table (repli, ce)",
   "questions": [
     {
       "question": "Quelles conditions la CNIL pose-t-elle pour l'utilisation de traceurs et de cookies nécessitant le consentement ?",

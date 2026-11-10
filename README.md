@@ -210,11 +210,12 @@ résultat est le bon article.
 
 | Corpus demandé | Seuils (`bas / haut / marge`) | Promesse chiffrée |
 | --- | --- | --- |
-| `cnil` (`questions-cnil-etendu.csv`, 54 questions sémantiques `dev`) | `0,67 / 0,67 / 0,02` | **33,3 % au plus**, à 40,7 % de couverture |
+| `cnil` (`questions-cnil-etendu.csv`, 54 questions sémantiques `dev`, pièges exclus) | `0,67 / 0,67 / 0,02` | **33,3 % au plus**, à 40,7 % de couverture |
 | Autres corpus, recherche sans `corpus`, recherche à document unique | `0,69 / 0,74 / 0,01` | aucune |
 
-Sur le corpus CNIL, 22 des 54 questions sont `confiant` (40,7 % de couverture), 3 se trompent
-(13,6 %), et la borne haute à 95 % est de **33,3 %** (Wilson). La cible de 10 % n'est pas atteinte :
+Sur le corpus CNIL, 22 des 54 questions sémantiques sont `confiant` (40,7 % de couverture), 3 se
+trompent (13,6 %), et la borne haute à 95 % est de **33,3 %** (Wilson). La cible de 10 % n'est pas
+atteinte :
 aucun réglage mesuré ne descend sous **25,9 %**, et 10 % demanderait au moins **35 réponses
 confiantes sans une seule erreur**. Le sous-ensemble doctrinal (`questions-cnil-doctrine.csv`, corpus
 `cnil`) est mesuré à part et hors promesse : 6 confiantes, 4 fausses, borne 90,3 %. Les autres corpus
@@ -223,6 +224,10 @@ pour le RGPD, le Conseil d'État, la LIL, le CEPD et l'AI Act). Une recherche **
 qui **ne nomme qu'un document**, suit le repli et sort de la promesse : l'instruction de requête et
 le bassin de candidats y changent. Le plancher de refus CNIL passe de 0,69 à 0,67 : les quatre
 questions muettes d'avant sont rendues, dont deux qui avaient le bon document au top 5.
+
+La borne décrit les 54 questions sémantiques, **pièges exclus**. Sur les 6 pièges du jeu, un est
+pourtant rendu `confiant` et faux (« loueur de vélos en libre-service », similarité 0,7978, mauvais
+document) : le compter donnerait 4 erreurs sur 23 confiantes (17,4 %, borne 37,1 %).
 
 La règle de choix, les mesures et ce qui invaliderait la promesse sont dans
 `aidd_docs/tasks/2026_11/2026_11_10_promesse-confiance/promesse.md`.

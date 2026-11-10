@@ -34,7 +34,9 @@ node mcp/eval/risque.ts mesures/apres-<autre>.json     --seuils 0.69,0.74,0.01
 
 Sur les 144 questions des sept jeux, `refs`, `similarites`, `rangs`, `attendues`, `type`
 et `piege` sont **identiques** aux JSON de la phase 1, question par question. Seuls
-`seuils`, `niveau` et `agregats` bougent : la réexécution n'a déplacé aucun vecteur ni
+`seuils`, `niveau` et `agregats` bougent, et les `apres-*.json` portent en plus `seuils_origine`
+(la valeur que `seuilsDeMesure` nomme : `table (cnil)`, `table (repli, <corpus>)`,
+`calibrés sur dev`, `fournis par --seuils`) : la réexécution n'a déplacé aucun vecteur ni
 aucun classement.
 
 Les `niveau` de la phase 1 avaient été calculés aux seuils **calibrés** de chaque jeu ;
@@ -93,7 +95,7 @@ au repli, ni l'un ni l'autre ne change.
 - **2 fausses confiantes tues par la marge de 0,02** : « établissement de paiement »
   (0,7563, écart 0,0139) et « fichier de police des empreintes » (0,7438, écart 0,0117) ;
   c'est ce qui fait passer les erreurs de 5 à 3 ;
-- **7 sémantiques `confiant → incertain`** gardent leurs passages : la marge de 0,02 les
+- **5 autres sémantiques `confiant → incertain`** gardent leurs passages : la marge de 0,02 les
   sépare, pas le seuil. Le lecteur perd l'étiquette, pas la réponse ;
 - **3 sémantiques `incertain → confiant`** : coupons de paiement (0,7186), messagerie
   vocale (0,7174), groupe hôtelier (0,7280), les trois justes ;
@@ -131,17 +133,9 @@ candidats y changent, donc les similarités et les niveaux. Ce mode n'est **pas 
 ici et ne porte aucun chiffre. De même, la réponse prise une à une, le rang 1, le fragment
 exact, les autres corpus et la justesse rédactionnelle restent hors promesse.
 
-## 6. Deux écarts relevés, non corrigés ici
+## 6. Un écart relevé, non corrigé ici
 
-1. **`promesse.md` §5 n'est pas la règle qui s'applique.** Sa commande passe le triplet
-   CNIL `0,67 / 0,67 / 0,02` aux sept jeux ; le code livré applique le repli à cinq d'entre
-   eux. Les lignes non-CNIL de son tableau en diffèrent : RGPD v2 15 confiantes / 78,9 % /
-   borne 20,4 % (contre 16 / 84,2 % / 19,4 % ici), AI Act 2 confiantes dont 1 fausse
-   (contre 0), LIL 6 / 60,0 % / 39,0 % (contre 4 / 40,0 % / 49,0 %), Conseil d'État
-   3 / 25,0 % / 56,1 % (contre 6 / 50,0 % / 56,4 %), CEPD 0 confiante (contre 2 / 65,8 %).
-   Ces lignes documentent une expérience, pas le produit : la phase 5 ne doit pas les
-   recopier comme contrat. Le tableau de §2 ci-dessus est celui du code livré.
-2. **La doctrine suit la table CNIL, pas le repli.** La consigne de mesure donnait le
+1. **La doctrine suit la table CNIL, pas le repli.** La consigne de mesure donnait le
    repli à tout jeu autre que `cnil-etendu` ; le code choisit la table sur le corpus
    demandé, et `questions-cnil-doctrine.csv` déclare `cnil`. La doctrine est donc mesurée
    ici à `0,67 / 0,67 / 0,02` (6 confiantes, 4 erreurs, borne 90,3 %), ce que le produit

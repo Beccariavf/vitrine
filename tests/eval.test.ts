@@ -470,11 +470,16 @@ describe("la règle du produit", () => {
     const calibree = objetMesureJson({
       ...commun,
       seuils: { bas: 0.69, haut: 0.74, marge: 0.01 },
+      seuilsOrigine: "calibrés sur dev",
     });
     const produit = objetMesureJson({
       ...commun,
       seuils: { bas: 0.67, haut: 0.67, marge: 0.02 },
+      seuilsOrigine: "table (cnil)",
     });
+
+    assert.equal(calibree.seuils_origine, "calibrés sur dev");
+    assert.equal(produit.seuils_origine, "table (cnil)");
 
     assert.deepEqual(
       produit.questions.map((entree) => entree.refs),
@@ -947,6 +952,7 @@ describe("le verrou du test", () => {
       recherche: "dense",
       index: { chemin: "/tmp/corpus/index/index.db", unites: 12 },
       seuils,
+      seuilsOrigine: "fournis par --seuils",
       mesures,
     });
 
@@ -975,6 +981,7 @@ describe("le verrou du test", () => {
       recherche: "dense" as const,
       index: { chemin: "/tmp/corpus/index/index.db", unites: 29_299 },
       seuils: { bas: 0.6, haut: 0.7, marge: 0.01 },
+      seuilsOrigine: "figés avant la mesure",
       mesures: [],
     };
 

@@ -66,10 +66,12 @@ export type OptionsConfiance = {
 /**
  * Seuils d'un corpus : sa ligne de table quand elle existe, le repli global
  * sinon. La résolution ne lit que le corpus demandé, jamais les passages rendus.
+ * `Object.hasOwn` interdit de lire une propriété héritée : un corpus nommé
+ * `constructor` ou `toString` ne doit pas recevoir la ligne d'un prototype.
  */
 export function seuilsDuCorpus(corpus?: string): SeuilsCorpus {
-  const ligne = corpus === undefined ? undefined : SEUILS_PAR_CORPUS[corpus];
-  return ligne ?? SEUILS_REPLI;
+  if (corpus === undefined || !Object.hasOwn(SEUILS_PAR_CORPUS, corpus)) return SEUILS_REPLI;
+  return SEUILS_PAR_CORPUS[corpus] ?? SEUILS_REPLI;
 }
 
 function similarite(resultat: ResultatAvecDistance | undefined): number {
