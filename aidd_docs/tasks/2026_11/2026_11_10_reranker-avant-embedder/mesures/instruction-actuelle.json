@@ -17,162 +17,6 @@
   },
   "questions": [
     {
-      "question": "Quelles exigences la CNIL pose-t-elle pour l'authentification multifacteur des comptes en ligne ?",
-      "type": "conceptuelle",
-      "piege": false,
-      "attendues": [
-        "CNILTEXT000051390242"
-      ],
-      "refs": [
-        "CNILTEXT000051390242#f2",
-        "CNILTEXT000053408671#f35",
-        "CNILTEXT000054252707#f9",
-        "CNILTEXT000054019761#f12",
-        "CNILTEXT000053488958#f11"
-      ],
-      "rangs": [
-        1
-      ],
-      "similarites": [
-        0.8493313789367676,
-        0.8112982511520386,
-        0.7946313321590424,
-        0.7879074811935425,
-        0.7819609194993973
-      ],
-      "niveau": "confiant"
-    },
-    {
-      "question": "Que recommande la CNIL aux employeurs qui veulent filtrer la navigation web de leurs salariés avec un serveur mandataire ?",
-      "type": "conceptuelle",
-      "piege": false,
-      "attendues": [
-        "CNILTEXT000053668553"
-      ],
-      "refs": [
-        "CNILTEXT000053668553#f2",
-        "CNILTEXT000047551574#f9",
-        "CNILTEXT000047551574#f10",
-        "CNILTEXT000047551574#f12",
-        "CNILTEXT000047852640#f4"
-      ],
-      "rangs": [
-        1
-      ],
-      "similarites": [
-        0.8589419275522232,
-        0.7358709275722504,
-        0.7064215838909149,
-        0.7038924396038055,
-        0.7013740241527557
-      ],
-      "niveau": "confiant"
-    },
-    {
-      "question": "Quelles règles la CNIL fixe-t-elle pour les pixels de suivi glissés dans les courriels ?",
-      "type": "conceptuelle",
-      "piege": false,
-      "attendues": [
-        "CNILTEXT000053885080"
-      ],
-      "refs": [
-        "CNILTEXT000053885080#f1",
-        "CNILTEXT000053885080#f2",
-        "CNILTEXT000042635706#f57",
-        "CNILTEXT000052182222#f35",
-        "CNILTEXT000042635729#f55"
-      ],
-      "rangs": [
-        1
-      ],
-      "similarites": [
-        0.8184835314750671,
-        0.7402072250843048,
-        0.7080279290676117,
-        0.7045376598834991,
-        0.6920111179351807
-      ],
-      "niveau": "confiant"
-    },
-    {
-      "question": "Quelles garanties la CNIL recommande-t-elle pour le vote par correspondance électronique ?",
-      "type": "conceptuelle",
-      "piege": false,
-      "attendues": [
-        "CNILTEXT000053950614"
-      ],
-      "refs": [
-        "CNILTEXT000049826271#f10",
-        "CNILTEXT000053950614#f2",
-        "CNILTEXT000049826271#f9",
-        "CNILTEXT000038663650#f3",
-        "CNILTEXT000053950614#f1"
-      ],
-      "rangs": [
-        2
-      ],
-      "similarites": [
-        0.8703911155462265,
-        0.8559064120054245,
-        0.8368942439556122,
-        0.8337090313434601,
-        0.8200982511043549
-      ],
-      "niveau": "confiant"
-    },
-    {
-      "question": "Que recommande la CNIL aux prêteurs qui évaluent le risque de défaillance de leurs clients ?",
-      "type": "conceptuelle",
-      "piege": false,
-      "attendues": [
-        "CNILTEXT000054047151"
-      ],
-      "refs": [
-        "CNILTEXT000025972614#f5",
-        "CNILTEXT000021123156#f6",
-        "CNILTEXT000017653146#f2",
-        "CNILTEXT000053973732#f14",
-        "CNILTEXT000017654171#f2"
-      ],
-      "rangs": [
-        0
-      ],
-      "similarites": [
-        0.6748519539833069,
-        0.6714760065078735,
-        0.6525313258171082,
-        0.6521738767623901,
-        0.6434206068515778
-      ],
-      "niveau": "incertain"
-    },
-    {
-      "question": "Quel encadrement la CNIL recommande-t-elle pour les données de localisation des véhicules connectés ?",
-      "type": "conceptuelle",
-      "piege": false,
-      "attendues": [
-        "CNILTEXT000054353331"
-      ],
-      "refs": [
-        "CNILTEXT000054353331#f1",
-        "CNILTEXT000047346903#f11",
-        "CNILTEXT000046070924#f13",
-        "CNILTEXT000022205712#f14",
-        "CNILTEXT000054353331#f2"
-      ],
-      "rangs": [
-        1
-      ],
-      "similarites": [
-        0.8133065551519394,
-        0.8132663816213608,
-        0.8098960816860199,
-        0.7636800408363342,
-        0.7623655945062637
-      ],
-      "niveau": "incertain"
-    },
-    {
       "question": "Comment les entreprises peuvent-elles mesurer la diversité au travail sans collecter trop de données personnelles ?",
       "type": "conceptuelle",
       "piege": false,
@@ -1551,23 +1395,179 @@
         0.7295593023300171
       ],
       "niveau": "confiant"
+    },
+    {
+      "question": "Quel avis la CNIL a-t-elle rendu sur la mise à jour des changements d'état civil dans les fichiers des organismes ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000053308330"
+      ],
+      "refs": [
+        "CNILTEXT000053308330#f5",
+        "CNILTEXT000053308330#f6",
+        "CNILTEXT000049109931#f4",
+        "CNILTEXT000053308330#f1",
+        "CNILTEXT000017654617#f3"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7512927949428558,
+        0.7500995099544525,
+        0.7346352636814117,
+        0.7265208065509796,
+        0.7234295904636383
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quel est l'avis de la CNIL sur l'extension des sources collectées pour détecter les ingérences numériques étrangères ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000053461680"
+      ],
+      "refs": [
+        "CNILTEXT000053781864#f12",
+        "CNILTEXT000053461680#f1",
+        "CNILTEXT000050959675#f6",
+        "CNILTEXT000044457481#f2",
+        "CNILTEXT000017653785#f26"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.7739069014787674,
+        0.7435156404972076,
+        0.7411468029022217,
+        0.7374997735023499,
+        0.7274261116981506
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Que pense la CNIL de l'échange de données entre la médecine du travail et l'assurance maladie sur les salariés menacés de désinsertion ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000054019591"
+      ],
+      "refs": [
+        "CNILTEXT000054019591#f1",
+        "CNILTEXT000054019591#f3",
+        "CNILTEXT000054019591#f2",
+        "CNILTEXT000054019591#f4",
+        "CNILTEXT000030466678#f10"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8260735422372818,
+        0.8097119331359863,
+        0.7705860286951065,
+        0.7392489612102509,
+        0.6976934373378754
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quel avis la CNIL a-t-elle rendu sur l'extension du traitement des titres sécurisés à la fraude à l'identité ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000053308064"
+      ],
+      "refs": [
+        "CNILTEXT000050959650#f1",
+        "CNILTEXT000053308064#f5",
+        "CNILTEXT000048289165#f9",
+        "CNILTEXT000053308064#f1",
+        "CNILTEXT000045804764#f6"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.7485442757606506,
+        0.7431210577487946,
+        0.7420203983783722,
+        0.7233285009860992,
+        0.7128993272781372
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles obligations la CNIL voit-elle pour les hébergeurs de données de santé au nom de la souveraineté ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000053722050"
+      ],
+      "refs": [
+        "CNILTEXT000053722050#f1",
+        "CNILTEXT000051390526#f5",
+        "CNILTEXT000017653155#f2",
+        "CNILTEXT000053722050#f5",
+        "CNILTEXT000028112009#f7"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8332549929618835,
+        0.7969855517148972,
+        0.7779980003833771,
+        0.7768729478120804,
+        0.775504857301712
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Que pense la CNIL du dépôt de plainte par visioconférence ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000053308551"
+      ],
+      "refs": [
+        "CNILTEXT000053308551#f1",
+        "CNILTEXT000053308551#f8",
+        "CNILTEXT000037413673#f3",
+        "CNILTEXT000042635729#f7",
+        "CNILTEXT000053308551#f3"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7622181922197342,
+        0.7540267556905746,
+        0.7276065647602081,
+        0.7219580411911011,
+        0.7150043547153473
+      ],
+      "niveau": "incertain"
     }
   ],
   "agregats": {
     "semantiques": 54,
-    "top5_semantique_succes": 38,
+    "top5_semantique_succes": 39,
     "top1_semantique_succes": 29,
-    "mrr_semantique": 0.6157407407407407,
+    "mrr_semantique": 0.625,
     "referencees": 54,
-    "top5_global_succes": 38,
-    "top5_rendu_succes": 38,
+    "top5_global_succes": 39,
+    "top5_rendu_succes": 39,
     "top1_rendu_succes": 29,
-    "mrr_rendu": 0.6157407407407407,
-    "top5_global_rendu_succes": 38,
+    "mrr_rendu": 0.625,
+    "top5_global_rendu_succes": 39,
     "pieges_mesures": 6,
     "pieges_cites": 6,
-    "confiant": 31,
-    "incertain": 23,
+    "confiant": 30,
+    "incertain": 24,
     "aucun_resultat_fiable": 0,
     "pieges_confiants": 4
   }
