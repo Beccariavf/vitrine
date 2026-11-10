@@ -338,15 +338,11 @@ c'est un contrôle de non-régression, pas une preuve de gain.
    Reconstruire l'index complet et recalibrer les seuils n'est **pas justifié
    par cette mesure seule** : ce serait payer ce coût pour un écart qui tient à
    une paire discordante.
-3. **Si un lot suivant est ouvert, il commence par consommer le `test`.** Une
-   seule mesure du split `test`, seuils figés, dirait si le gain `dev` tient ;
-   c'est la seule preuve qui manque. Sans cette mesure, Harrier reste une
-   capacité de harnais mesurée, pas un candidat au produit.
-4. **Aucune mesure du `test` n'a été consommée** : `--split test` et
-   `--mesurer-test` n'ont pas été passés, et aucun marqueur
-   `questions-cnil-etendu.test-consomme.json` n'existe pas à cette date ; le tir
-   unique a été dépensé ensuite, voir
-   `aidd_docs/tasks/2026_11/2026_11_10_promesse-confiance/mesures/confirmation.md`.
+3. **Le `test` a été consommé depuis.** Une mesure unique du split `test`, sur
+   deux modèles pré-déclarés, a tranché : Harrier rend 50/54 au top 5 contre
+   42/54 (`b = 10`, `c = 1`, `p = 0,0117`), verdict `adopter`. Le gain `dev` tenait.
+4. **Le marqueur existe donc**, avec une entrée par modèle ; aucun des deux ne se
+   remesure. Détail : `aidd_docs/tasks/2026_11/2026_11_10_promesse-confiance/mesures/confirmation.md`.
 
 ## 11. Intégrité du produit
 
@@ -356,7 +352,7 @@ c'est un contrôle de non-régression, pas une preuve de gain.
 | idem, vérifié après toutes les passes, constructions et tranches | `07583570cfc2640a66e132ef1c414bda10fb02c97bb1dfcd39dc17a44944605c` |
 | idem, après le contrôle `npm run corpus:index` postérieur (`15:41:25Z`) | `a6e3fd01…` — seul `meta.construit_le` a changé, zéro unité réembarquée |
 | `git status --short` | les JSON de mesure de cette phase, `mesures/noncnil/` et `mesures/doctrine-harrier.json` ; aucun fichier du produit |
-| Marqueur de test `questions-cnil-etendu` | absent |
+| Marqueur de test `questions-cnil-etendu` | absent à cette date ; créé depuis par le tir unique (deux modèles) |
 
 ## 12. Provenance
 

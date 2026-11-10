@@ -215,10 +215,9 @@ La capacité du harnais reste : `--instruction actuelle|neutre`, `--rerank` et
 2. **Aucun recalibrage de seuils** : le produit garde `0,69 / 0,74 / 0,01` ; la
    calibration CNIL de `dev` (`0,62 / 0,67 / 0,01`) reste une mesure, pas une
    valeur écrite.
-3. **Aucune mesure du split `test`** : `--split test` et `--mesurer-test` n'ont
-   pas été passés à cette étape ; le tir unique a été dépensé ensuite, voir
-   `aidd_docs/tasks/2026_11/2026_11_10_promesse-confiance/mesures/confirmation.md`.
-   n'existe.
-4. **Le `test` du jeu était non consommé à cette date** (il l'est depuis, une
-   fois, pour Harrier et qwen3) : les 60 questions `test` de
-   `questions-cnil-etendu.csv` restent disponibles pour une configuration future.
+3. **Le split `test` n'a pas été mesuré à cette étape.** Le tir unique a été
+   dépensé plus tard, une fois, pour deux modèles pré-déclarés — qwen3 et
+   Harrier : `aidd_docs/tasks/2026_11/2026_11_10_promesse-confiance/mesures/confirmation.md`.
+4. **Le `test` était intact le 2026-11-10 au matin.** Il ne l'est plus pour ces
+   deux modèles : le marqueur les refuse désormais, et aucun des deux ne se
+   remesure. Un autre nom de modèle serait encore accepté par le garde.

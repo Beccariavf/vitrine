@@ -14,10 +14,13 @@ Le split `test` de `questions-cnil-etendu.csv` (60 questions : 54 sémantiques,
 
 Le marqueur `mcp/eval/questions-cnil-etendu.test-consomme.json` porte une entrée
 par modèle, comme le veut la convention du harnais (`mesure-v3` a fait de même
-pour `0.6b` et `4b`). Deux réserves à écrire plutôt qu'à taire : le garde est
+pour `0.6b` et `4b`). Trois réserves à écrire plutôt qu'à taire : le garde est
 **par nom de modèle**, pas par collection — un troisième modèle serait encore
-accepté et consommerait un nouveau tir ; et il ne peut pas vérifier qu'un modèle
-a été pré-déclaré. **Aucun tir ne se rejoue pour ces deux modèles.**
+accepté et consommerait un nouveau tir ; il ne peut pas vérifier qu'un modèle a
+été pré-déclaré ; et cette déclaration-ci est consignée dans ce rapport, daté du
+jour de la mesure, sans artefact antérieur qui prouve qu'elle la précède. L'ordre
+d'exécution a été qwen3 puis Harrier, mais l'antériorité de la déclaration reste
+une affirmation, pas une preuve. **Aucun tir ne se rejoue pour ces deux modèles.**
 
 ## 1. Verdict de modèle
 
