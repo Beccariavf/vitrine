@@ -162,8 +162,8 @@ le lecteur reçoit aujourd'hui.
 | Niveau | Questions | Dont document attendu au top 5 |
 | --- | --- | --- |
 | `confiant` | 24 | 19 justes, **5 fausses** |
-| `incertain` | 26 | 20 justes, 6 fausses |
-| `aucun_resultat_fiable` | 4 | 0 |
+| `incertain` | 26 | 18 justes, 8 fausses |
+| `aucun_resultat_fiable` | 4 | 0 rendu — dont 2 dont le bon document était dans le top 5 brut |
 
 Le classement brut ne change pas (top 5 39/54, MRR 0,6250, top 1 29/54) : ce
 sont les étiquettes qui changent. Mais la vue **rendue** recule, parce que
