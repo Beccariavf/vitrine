@@ -8,11 +8,16 @@ import type { Embedder } from "../embed/embedder.ts";
 import { cheminIndex, lireUnites } from "../index/build.ts";
 import { openIndex } from "../index/search.ts";
 import type { Index } from "../index/search.ts";
+import { createLlamaReranker } from "../rerank/reranker.ts";
+import type { Reranker } from "../rerank/reranker.ts";
 import { referenceExacte, search } from "../tools.ts";
 
 const ICI = dirname(fileURLToPath(import.meta.url));
 const QUESTIONS = join(ICI, "questions.csv");
 const RACINE = fileURLToPath(new URL("../..", import.meta.url));
+
+/** URL par défaut du serveur `llama-server --reranking` mesuré en phase 3. */
+export const URL_RERANK_DEFAUT = "http://127.0.0.1:8080";
 
 /** Un pli de validation croisée : blocs contigus de `ceil(n / 4)`. */
 export const NB_PLIS = 4;
@@ -536,21 +541,30 @@ async function mesurer(
   index: Index,
   corpus: string,
   recherche: ModeRecherche,
-): Promise<Mesure[]> {
+  rerank?: Reranker,
+): Promise<{ mesures: Mesure[]; durees: number[] }> {
   const mesures: Mesure[] = [];
+  const durees: number[] = [];
   for (const question of questions) {
     const resultat = await search(
       rootDir,
       { question: question.question, k: 5, corpus },
-      { embedder, index, seuils: { bas: -1, haut: 2, marge: 0 }, recherche },
+      {
+        embedder,
+        index,
+        seuils: { bas: -1, haut: 2, marge: 0 },
+        recherche,
+        ...(rerank === undefined ? {} : { rerank }),
+      },
     );
+    if (resultat.rerank !== undefined) durees.push(resultat.rerank.duree_ms);
     mesures.push({
       question,
       refs: resultat.passages.map((passage) => passage.ref),
       distances: resultat.passages.map((passage) => passage.distance),
     });
   }
-  return mesures;
+  return { mesures, durees };
 }
 
 function compter(mesures: Mesure[], type: TypeQuestion): number {
@@ -910,6 +924,13 @@ export function entreeQuestionJson(mesure: Mesure, seuils: Seuils): EntreeQuesti
   };
 }
 
+/** Le bloc de rerank : ce qui a été appelé, où, et ce qu'il a coûté en moyenne. */
+export type BlocRerankJson = {
+  modele: string;
+  url: string;
+  latence_ms_moyenne: number;
+};
+
 export type ObjetMesureJson = {
   date: string;
   modele: string;
@@ -918,10 +939,20 @@ export type ObjetMesureJson = {
   /** Collection mesurée : `rgpd`, `aiact`, `cnil`, `lil`, `ce`, `cepd`. */
   corpus: string;
   recherche: ModeRecherche;
+  /** L'index réellement interrogé : un JSON ne dit pas seulement quel modèle. */
+  index: { chemin: string; unites: number };
   seuils: Seuils;
   questions: EntreeQuestionJson[];
   agregats: Resume;
+  /** Absent quand aucun étage de rerank n'a tourné. */
+  rerank?: BlocRerankJson;
 };
+
+/** Moyenne d'une série de durées ; zéro sans mesure. */
+export function moyenne(valeurs: number[]): number {
+  if (valeurs.length === 0) return 0;
+  return valeurs.reduce((total, valeur) => total + valeur, 0) / valeurs.length;
+}
 
 export function objetMesureJson(args: {
   date: string;
@@ -930,8 +961,10 @@ export function objetMesureJson(args: {
   split: Split;
   corpus: string;
   recherche: ModeRecherche;
+  index: { chemin: string; unites: number };
   seuils: Seuils;
   mesures: Mesure[];
+  rerank?: BlocRerankJson;
 }): ObjetMesureJson {
   return {
     date: args.date,
@@ -940,9 +973,11 @@ export function objetMesureJson(args: {
     split: args.split,
     corpus: args.corpus,
     recherche: args.recherche,
+    index: args.index,
     seuils: args.seuils,
     questions: args.mesures.map((mesure) => entreeQuestionJson(mesure, args.seuils)),
     agregats: resume(args.mesures, args.seuils),
+    ...(args.rerank === undefined ? {} : { rerank: args.rerank }),
   };
 }
 
@@ -984,6 +1019,13 @@ async function main(argv: string[]): Promise<void> {
     ...(dim === undefined ? {} : { dim: Number(dim) }),
   });
 
+  const modeleRerank = valeurDe("--rerank", argv);
+  const urlRerank = valeurDe("--rerank-url", argv) ?? URL_RERANK_DEFAUT;
+  const rerank =
+    modeleRerank === undefined
+      ? undefined
+      : createLlamaReranker({ url: urlRerank, model: modeleRerank });
+
   const consommeTest = split === "test" || split === "all";
   const marqueurPath = cheminMarqueur(cheminQuestions);
   if (consommeTest) {
@@ -993,7 +1035,15 @@ async function main(argv: string[]): Promise<void> {
   const index = openIndex(cheminIndex(rootDir));
   try {
     const demandees = filtrerSplit(questions, split);
-    const mesures = await mesurer(rootDir, demandees, embedder, index, corpus, recherche);
+    const { mesures, durees } = await mesurer(
+      rootDir,
+      demandees,
+      embedder,
+      index,
+      corpus,
+      recherche,
+      rerank,
+    );
 
     const mesuresDev =
       split === "all" ? mesures.filter((mesure) => mesure.question.split === "dev") : mesures;
@@ -1064,8 +1114,18 @@ async function main(argv: string[]): Promise<void> {
         split,
         corpus,
         recherche,
+        index: { chemin: index.chemin, unites: index.unites },
         seuils,
         mesures,
+        ...(rerank === undefined
+          ? {}
+          : {
+              rerank: {
+                modele: rerank.model,
+                url: urlRerank,
+                latence_ms_moyenne: moyenne(durees),
+              },
+            }),
       });
       process.stdout.write(`${JSON.stringify(objet, null, 2)}\n`);
     } else {

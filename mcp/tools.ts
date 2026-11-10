@@ -4,6 +4,8 @@ import { openIndex, rechercheHybride, searchIndex } from "./index/search.ts";
 import type { Index, ResultatRecherche } from "./index/search.ts";
 import type { Unite } from "./corpus/parse.ts";
 import type { Embedder } from "./embed/embedder.ts";
+import { CANDIDATS_RERANK } from "./rerank/reranker.ts";
+import type { Reranker } from "./rerank/reranker.ts";
 import { numeroIndex } from "./corpus/cnil/meta.ts";
 import { estSanction } from "./corpus/cnil/nature.ts";
 import { niveauConfiance } from "./confidence.ts";
@@ -30,6 +32,8 @@ export type ResultatRechercheOutil = {
   passages: Passage[];
   /** Présent quand une référence exacte est introuvable ou existe dans plusieurs documents. */
   message?: string;
+  /** Présent quand le second étage a tourné : la seule latence imputable au rerank. */
+  rerank?: { modele: string; duree_ms: number };
 };
 
 /** `Article 17`, `art. 17`, `17` : ne garde que le nombre, sans zéro de tête. */
@@ -187,6 +191,11 @@ export type SearchDeps = {
   seuils?: { bas?: number; haut?: number; marge?: number };
   /** Voie de recherche ; `dense` par défaut, `hybride` sur demande mesurée. */
   recherche?: "dense" | "hybride";
+  /**
+   * Second étage : il réordonne la fenêtre dense, il ne remplace pas l'index.
+   * Absent, la voie dense reste strictement celle d'avant.
+   */
+  rerank?: Reranker;
 };
 
 export type SearchDemande = {
@@ -446,11 +455,14 @@ export async function search(
   const index =
     typeof deps.index === "function" ? deps.index() : deps.index ?? openIndex(cheminIndex(rootDir));
   const k = Math.max(1, Math.trunc(demande.k ?? 5));
+  // Le reranker réordonne une fenêtre plus large que `k` : il ne peut pas
+  // promouvoir un passage que la recherche dense n'a pas ramené.
+  const fenetre = deps.rerank === undefined ? k : Math.max(k, CANDIDATS_RERANK);
   // L'instruction de requête suit le document, puis le corpus : un corpus CNIL
   // ne doit pas recevoir l'instruction mesurée pour le RGPD.
   const vecteur = await deps.embedder.embedQuery(demande.question, document ?? corpus);
   const options = {
-    k,
+    k: fenetre,
     ...(corpus === undefined ? {} : { corpus }),
     ...(document === undefined ? {} : { document }),
     ...(demande.nature === undefined ? {} : { nature: demande.nature }),
@@ -466,12 +478,32 @@ export async function search(
       ? rechercheHybride(index, vecteur, demande.question, options)
       : searchIndex(index, vecteur, options);
 
-  const niveau = niveauConfiance(resultats, false, deps.seuils);
+  let ordre = resultats;
+  let blocRerank: { modele: string; duree_ms: number } | undefined;
+  if (deps.rerank !== undefined) {
+    const debut = performance.now();
+    const scores = await deps.rerank.score(
+      demande.question,
+      resultats.map((resultat) => resultat.texte),
+    );
+    const duree_ms = performance.now() - debut;
+    // La distance dense de chaque passage est conservée : le rerank ne change
+    // que l'ordre, jamais l'échelle de confiance.
+    ordre = resultats
+      .map((resultat, position) => ({ resultat, score: scores[position] ?? 0, position }))
+      .sort((gauche, droite) => droite.score - gauche.score || gauche.position - droite.position)
+      .slice(0, k)
+      .map((entree) => entree.resultat);
+    blocRerank = { modele: deps.rerank.model, duree_ms };
+  }
+
+  const niveau = niveauConfiance(ordre, false, deps.seuils);
   return {
     niveau_confiance: niveau,
     passages:
       niveau === "aucun_resultat_fiable"
         ? []
-        : resultats.map((resultat) => ({ ...resultat, similarite: 1 - resultat.distance })),
+        : ordre.map((resultat) => ({ ...resultat, similarite: 1 - resultat.distance })),
+    ...(blocRerank === undefined ? {} : { rerank: blocRerank }),
   };
 }

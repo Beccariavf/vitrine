@@ -4,6 +4,16 @@ import { pathToFileURL } from "node:url";
 import { refSatisfaite } from "./run.ts";
 import type { ObjetMesureJson } from "./run.ts";
 
+/** Vue qui tranche : les passages rendus au lecteur, ou les rangs bruts de la recherche. */
+export type Vue = "rendue" | "brute";
+
+/** Nom de la configuration mesurée : l'embedder, plus le reranker quand il a tourné. */
+export function libelle(objet: ObjetMesureJson): string {
+  return objet.rerank === undefined
+    ? objet.modele
+    : `${objet.modele} + rerank ${objet.rerank.modele}`;
+}
+
 /** Une paire alignée : ce que chaque modèle réussit sur la même question, brut et rendu. */
 export type Paire = {
   question: string;
@@ -130,20 +140,21 @@ export function pValueMcNemar(b: number, c: number): number {
 }
 
 /**
- * Applique la règle figée sur la vue rendue : adopter le candidat si `b > c`,
- * `p < 0,05`, `b + c ≥ 6`, et si son top 5 rendu n'est pas inférieur de plus
- * d'une question. Le plancher de six paires discordantes interdit de conclure
- * sur un petit désaccord, même si une p-value calculée hors du test le
- * paraissait petit.
+ * Applique la règle figée sur la vue demandée : adopter le candidat si `b > c`,
+ * `p < 0,05`, `b + c ≥ 6`, et si son top 5 n'est pas inférieur de plus d'une
+ * question. Le plancher de six paires discordantes interdit de conclure sur un
+ * petit désaccord, même si une p-value calculée hors du test le paraissait petit.
  */
 export function decider(args: {
   b: number;
   c: number;
   p: number;
-  baseTop5Rendu: number;
-  candidatTop5Rendu: number;
+  baseTop5: number;
+  candidatTop5: number;
+  vue?: Vue;
 }): { verdict: Verdict; raisons: string[] } {
-  const { b, c, p, baseTop5Rendu, candidatTop5Rendu } = args;
+  const { b, c, p, baseTop5, candidatTop5, vue = "rendue" } = args;
+  const nomVue = vue === "brute" ? "top 5 brut" : "top 5 rendu";
   const discordantes = b + c;
   if (discordantes === 0) {
     return { verdict: "non_etabli", raisons: ["aucun désaccord entre les deux modèles"] };
@@ -166,12 +177,12 @@ export function decider(args: {
       raisons: [`p = ${p.toFixed(4)} ≥ 0,05 : le gain n'est pas significatif`],
     };
   }
-  if (candidatTop5Rendu < baseTop5Rendu - 1) {
+  if (candidatTop5 < baseTop5 - 1) {
     return {
       verdict: "conserver",
       raisons: [
-        `top 5 rendu dégradé de ${baseTop5Rendu - candidatTop5Rendu} questions ` +
-          `(${baseTop5Rendu} → ${candidatTop5Rendu}) : le gain au rang 1 ne compense pas`,
+        `${nomVue} dégradé de ${baseTop5 - candidatTop5} questions ` +
+          `(${baseTop5} → ${candidatTop5}) : le gain au rang 1 ne compense pas`,
       ],
     };
   }
@@ -179,25 +190,43 @@ export function decider(args: {
     verdict: "adopter",
     raisons: [
       `b=${b} > c=${c}, p = ${p.toFixed(4)} < 0,05, ${discordantes} paires discordantes, ` +
-        `top 5 rendu non dégradé (${baseTop5Rendu} → ${candidatTop5Rendu})`,
+        `${nomVue} non dégradé (${baseTop5} → ${candidatTop5})`,
     ],
   };
 }
 
+/** Succès au rang 1 de chaque mesure, dans la vue demandée. */
+function rang1(paire: Paire, vue: Vue): { base: boolean; candidat: boolean } {
+  return vue === "brute"
+    ? { base: paire.baseTop1Brut, candidat: paire.candidatTop1Brut }
+    : { base: paire.baseTop1Rendu, candidat: paire.candidatTop1Rendu };
+}
+
 /**
- * Compare deux mesures JSON. Le rang 1 rendu porte le test de McNemar ; le
- * top 5 rendu en est le garde-fou. Les vues brutes restent calculées et
- * imprimées pour la lecture, mais ne décident pas : la règle parle du rendu.
- * Les pièges et les références exactes ne tranchent pas : les premiers n'ont
- * pas de référence attendue, les secondes sont déterministes. Ils restent
- * alignés mais sortent du domaine de décision.
+ * Compare deux mesures JSON. Par défaut, le rang 1 rendu porte le test de
+ * McNemar et le top 5 rendu en est le garde-fou ; `--vue brute` fait décider les
+ * vues brutes, seules valides quand l'échelle de similarité change. Les pièges
+ * et les références exactes ne tranchent pas : les premiers n'ont pas de
+ * référence attendue, les secondes sont déterministes. Ils restent alignés mais
+ * sortent du domaine de décision.
  */
-export function analyser(base: ObjetMesureJson, candidat: ObjetMesureJson): Decision {
+export function analyser(
+  base: ObjetMesureJson,
+  candidat: ObjetMesureJson,
+  vue: Vue = "rendue",
+): Decision {
   const paires = aligner(base, candidat);
   const decision = paires.filter((paire) => paire.type === "conceptuelle" && !paire.piege);
-  const b = decision.filter((paire) => paire.candidatTop1Rendu && !paire.baseTop1Rendu).length;
-  const c = decision.filter((paire) => paire.baseTop1Rendu && !paire.candidatTop1Rendu).length;
+  const rangs = decision.map((paire) => rang1(paire, vue));
+  const b = rangs.filter((rang) => rang.candidat && !rang.base).length;
+  const c = rangs.filter((rang) => rang.base && !rang.candidat).length;
   const p = pValueMcNemar(b, c);
+  const baseTop5 = decision.filter((paire) =>
+    vue === "brute" ? paire.baseTop5Brut : paire.baseTop5Rendu,
+  ).length;
+  const candidatTop5 = decision.filter((paire) =>
+    vue === "brute" ? paire.candidatTop5Brut : paire.candidatTop5Rendu,
+  ).length;
   const baseTop5Rendu = decision.filter((paire) => paire.baseTop5Rendu).length;
   const candidatTop5Rendu = decision.filter((paire) => paire.candidatTop5Rendu).length;
   const baseTop1Rendu = decision.filter((paire) => paire.baseTop1Rendu).length;
@@ -206,7 +235,7 @@ export function analyser(base: ObjetMesureJson, candidat: ObjetMesureJson): Deci
   const candidatTop5Brut = decision.filter((paire) => paire.candidatTop5Brut).length;
   const baseTop1Brut = decision.filter((paire) => paire.baseTop1Brut).length;
   const candidatTop1Brut = decision.filter((paire) => paire.candidatTop1Brut).length;
-  const { verdict, raisons } = decider({ b, c, p, baseTop5Rendu, candidatTop5Rendu });
+  const { verdict, raisons } = decider({ b, c, p, baseTop5, candidatTop5, vue });
 
   return {
     b,
@@ -232,7 +261,7 @@ function pourcentage(numerateur: number, denominateur: number): string {
 }
 
 function ligneMetrique(
-  libelle: string,
+  libelleMetrique: string,
   base: ObjetMesureJson,
   candidat: ObjetMesureJson,
   baseValeur: number,
@@ -240,27 +269,33 @@ function ligneMetrique(
   total: number,
 ): string {
   return (
-    `${libelle} : « ${base.modele} » ${baseValeur}/${total} ` +
-    `(${pourcentage(baseValeur, total)}) ; « ${candidat.modele} » ${candidatValeur}/${total} ` +
+    `${libelleMetrique} : « ${libelle(base)} » ${baseValeur}/${total} ` +
+    `(${pourcentage(baseValeur, total)}) ; « ${libelle(candidat)} » ${candidatValeur}/${total} ` +
     `(${pourcentage(candidatValeur, total)})`
   );
 }
 
-/** Rapport lisible : les deux vues, puis le verdict qui suit la vue rendue. */
-export function formater(base: ObjetMesureJson, candidat: ObjetMesureJson, decision: Decision): string {
+/** Rapport lisible : les deux vues, puis le verdict qui suit la vue demandée. */
+export function formater(
+  base: ObjetMesureJson,
+  candidat: ObjetMesureJson,
+  decision: Decision,
+  vue: Vue = "rendue",
+): string {
   const total = decision.questions;
+  const nomVue = vue === "brute" ? "brut" : "rendu";
   return [
-    `comparaison appariée : « ${base.modele} » (référence) contre « ${candidat.modele} » (candidat)`,
+    `comparaison appariée : « ${libelle(base)} » (référence) contre « ${libelle(candidat)} » (candidat)`,
     `questions alignées : ${base.questions.length}`,
     `domaine de décision : ${total} questions sémantiques`,
     ligneMetrique("top 5 brut", base, candidat, decision.baseTop5Brut, decision.candidatTop5Brut, total),
     ligneMetrique("top 5 rendu", base, candidat, decision.baseTop5Rendu, decision.candidatTop5Rendu, total),
     ligneMetrique("top 1 brut", base, candidat, decision.baseTop1Brut, decision.candidatTop1Brut, total),
     ligneMetrique("top 1 rendu", base, candidat, decision.baseTop1Rendu, decision.candidatTop1Rendu, total),
-    `paires discordantes au rang 1 rendu : b = ${decision.b} (candidat seul), ` +
+    `paires discordantes au rang 1 ${nomVue} : b = ${decision.b} (candidat seul), ` +
       `c = ${decision.c} (référence seule)`,
     `McNemar exact : p = ${decision.p}`,
-    `verdict (rendu) : ${decision.verdict} — ${decision.raisons.join(" ; ")}`,
+    `verdict (${nomVue}) : ${decision.verdict} — ${decision.raisons.join(" ; ")}`,
   ].join("\n");
 }
 
@@ -282,17 +317,36 @@ function lireMesure(chemin: string): ObjetMesureJson {
   return objet as ObjetMesureJson;
 }
 
+/** Vue demandée : `rendue` par défaut, `brute` sur `--vue brute`. */
+export function lireVue(argv: string[]): Vue {
+  const position = argv.indexOf("--vue");
+  const valeur = position >= 0 ? argv[position + 1] : "rendue";
+  if (valeur !== "rendue" && valeur !== "brute") {
+    throw new Error(`--vue attendu rendue ou brute ; reçu « ${valeur ?? "(vide)"} »`);
+  }
+  return valeur;
+}
+
+/** Les deux chemins de mesure, options `--vue` retirées. */
+function cheminsDeMesure(argv: string[]): [string | undefined, string | undefined] {
+  const position = argv.indexOf("--vue");
+  const sansOptions =
+    position < 0 ? argv : [...argv.slice(0, position), ...argv.slice(position + 2)];
+  return [sansOptions[0], sansOptions[1]];
+}
+
 function main(argv: string[]): void {
-  const [cheminBase, cheminCandidat] = argv;
+  const vue = lireVue(argv);
+  const [cheminBase, cheminCandidat] = cheminsDeMesure(argv);
   if (cheminBase === undefined || cheminCandidat === undefined) {
     throw new Error(
-      "Usage : node mcp/eval/compare.ts <mesure-reference.json> <mesure-candidat.json>",
+      "Usage : node mcp/eval/compare.ts <mesure-reference.json> <mesure-candidat.json> [--vue brute]",
     );
   }
   const base = lireMesure(resolve(cheminBase));
   const candidat = lireMesure(resolve(cheminCandidat));
-  const decision = analyser(base, candidat);
-  process.stdout.write(`${formater(base, candidat, decision)}\n`);
+  const decision = analyser(base, candidat, vue);
+  process.stdout.write(`${formater(base, candidat, decision, vue)}\n`);
   if (decision.verdict === "non_etabli") process.exitCode = 2;
 }
 

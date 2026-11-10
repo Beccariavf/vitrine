@@ -18,6 +18,7 @@ import {
   lireQuestions,
   lireSeuils,
   mrr,
+  moyenne,
   objetMesureJson,
   precisionAt1,
   recallAt5,
@@ -764,6 +765,7 @@ describe("le verrou du test", () => {
       split: "test",
       corpus: "rgpd",
       recherche: "dense",
+      index: { chemin: "/tmp/corpus/index/index.db", unites: 12 },
       seuils,
       mesures,
     });
@@ -778,7 +780,42 @@ describe("le verrou du test", () => {
     assert.equal(objet.questions[1]?.piege, true);
     assert.equal(objet.agregats.semantiques, 1);
     assert.equal(objet.agregats.pieges_mesures, 1);
+    assert.deepEqual(objet.index, { chemin: "/tmp/corpus/index/index.db", unites: 12 });
+    assert.equal("rerank" in objet, false);
     assert.equal(entreeQuestionJson(mesures[0]!, seuils).rangs[0], 2);
+  });
+
+  it("porte le bloc rerank seulement quand l'étage a tourné", () => {
+    const commun = {
+      date: "2026-11-05",
+      modele: "qwen3-embedding:0.6b",
+      dimensions: 1024,
+      split: "test" as const,
+      corpus: "cnil",
+      recherche: "dense" as const,
+      index: { chemin: "/tmp/corpus/index/index.db", unites: 29_299 },
+      seuils: { bas: 0.6, haut: 0.7, marge: 0.01 },
+      mesures: [],
+    };
+
+    assert.equal("rerank" in objetMesureJson(commun), false);
+
+    const objet = objetMesureJson({
+      ...commun,
+      rerank: {
+        modele: "qwen3-reranker-0.6b",
+        url: "http://127.0.0.1:8080",
+        latence_ms_moyenne: moyenne([3600, 3692]),
+      },
+    });
+
+    assert.deepEqual(objet.rerank, {
+      modele: "qwen3-reranker-0.6b",
+      url: "http://127.0.0.1:8080",
+      latence_ms_moyenne: 3646,
+    });
+    assert.equal(objet.index.unites, 29_299);
+    assert.equal(moyenne([]), 0);
   });
 
   it("compte une référence documentaire satisfaite par un fragment", () => {
@@ -1084,6 +1121,132 @@ describe("questions-cnil-v2.csv", () => {
     const connues = new Set(autres.map((question) => question.question));
     for (const question of questions) {
       assert.ok(!connues.has(question.question), question.question);
+    }
+  });
+});
+
+describe("questions-cnil-etendu.csv", () => {
+  const CSV = readFileSync(new URL("../mcp/eval/questions-cnil-etendu.csv", import.meta.url), "utf8");
+  const jeu = lireJeu(CSV);
+  const questions = jeu.questions;
+  const lignes = CSV.trimEnd().split(/\r?\n/);
+  const unites = (
+    JSON.parse(
+      `[${readFileSync(
+        new URL("../data/corpus/cnil/unites.jsonl", import.meta.url),
+        "utf8",
+      )
+        .trimEnd()
+        .split("\n")
+        .join(",")}]`,
+    ) as { document: string; numero: string; nature: string }[]
+  );
+  const documents = new Set(unites.map((unite) => unite.document));
+  const natures = new Map(unites.map((unite) => [unite.document, unite.nature]));
+  const numeros = new Map(unites.map((unite) => [unite.document, unite.numero]));
+  const autres = [
+    QUESTIONS,
+    QUESTIONS_V2,
+    QUESTIONS_V3,
+    QUESTIONS_AIAct,
+    readFileSync(new URL("../mcp/eval/questions-cnil.csv", import.meta.url), "utf8"),
+    readFileSync(new URL("../mcp/eval/questions-cnil-v2.csv", import.meta.url), "utf8"),
+    readFileSync(new URL("../mcp/eval/questions-cnil-doctrine.csv", import.meta.url), "utf8"),
+  ].flatMap((csv) => lireQuestions(csv));
+  const natureDe = (question: Question) => natures.get(question.attendues[0] ?? "");
+
+  it("garde l'en-tête à six colonnes", () => {
+    assert.equal(lignes[0], "question,type,sources_attendues,piege,split,corpus");
+    assert.equal(jeu.avecSplit, true);
+    for (const ligne of lignes.slice(1)) {
+      assert.equal(ligne.split(",").length, 6, ligne);
+    }
+  });
+
+  it("vise le corpus cnil sur chaque ligne et porte un split", () => {
+    assert.equal(corpusDuJeu(questions), "cnil");
+    assert.ok(questions.every((question) => question.corpus === "cnil"));
+    assert.ok(questions.every((question) => question.split === "dev" || question.split === "test"));
+  });
+
+  it("n'attend que des documents présents, un seul par question et tous distincts", () => {
+    validerReferences(questions, new Set(), documents);
+
+    const cibles = questions.flatMap((question) => question.attendues);
+    assert.equal(cibles.length, 108);
+    assert.ok(cibles.every((ref) => !ref.includes("#") && documents.has(ref)));
+    assert.equal(new Set(cibles).size, 108);
+  });
+
+  it("ne donne aucune source attendue à un piège", () => {
+    const pieges = questions.filter((question) => question.piege);
+
+    assert.equal(pieges.length, 12);
+    for (const piege of pieges) {
+      assert.deepEqual(piege.attendues, [], piege.question);
+    }
+  });
+
+  it("ne nomme ni l'identifiant ni le numéro de la décision visée", () => {
+    for (const question of questions) {
+      const cible = question.attendues[0] ?? "";
+      if (cible === "") continue;
+      const numero = (numeros.get(cible) ?? "").replace(/[–—]/g, "-");
+      assert.ok(!question.question.includes(cible), question.question);
+      assert.ok(
+        !question.question.replace(/[–—]/g, "-").includes(numero),
+        `${question.question} nomme ${numero}`,
+      );
+    }
+  });
+
+  it("ne contient aucune référence d'article numérotée", () => {
+    for (const question of questions) {
+      assert.equal(referenceExacte(question.question), null, question.question);
+    }
+  });
+
+  it("ne réutilise aucune question des autres jeux", () => {
+    const connues = new Set(autres.map((question) => question.question));
+    for (const question of questions) {
+      assert.ok(!connues.has(question.question), question.question);
+    }
+  });
+
+  it("compte au moins 27 avis ou recommandations et 27 sanctions parmi les documents visés", () => {
+    const doctrinaires = questions.filter(
+      (question) =>
+        natureDe(question) === "Avis" ||
+        natureDe(question) === "Recommandation/Lignes directrices",
+    );
+    const sanctions = questions.filter((question) => natureDe(question) === "Sanction");
+
+    assert.equal(doctrinaires.length, 54);
+    assert.equal(sanctions.length, 54);
+  });
+
+  it("porte cent vingt questions : 27 doctrine, 27 sanctions et 6 pièges par split", () => {
+    assert.equal(questions.length, 120);
+    for (const split of ["dev", "test"] as const) {
+      const duSplit = filtrerSplit(questions, split);
+
+      assert.equal(duSplit.length, 60, split);
+      assert.equal(duSplit.filter((question) => question.piege).length, 6, split);
+      assert.equal(
+        duSplit.filter(
+          (question) =>
+            !question.piege &&
+            (natureDe(question) === "Avis" ||
+              natureDe(question) === "Recommandation/Lignes directrices"),
+        ).length,
+        27,
+        split,
+      );
+      assert.equal(
+        duSplit.filter((question) => !question.piege && natureDe(question) === "Sanction").length,
+        27,
+        split,
+      );
     }
   });
 });

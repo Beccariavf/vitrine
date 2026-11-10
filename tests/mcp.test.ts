@@ -12,6 +12,8 @@ import { buildIndex } from "../mcp/index/build.ts";
 import { BANDE_ARTICLE, openIndex, rangerPassages } from "../mcp/index/search.ts";
 import type { Index, ResultatRecherche } from "../mcp/index/search.ts";
 import { createServer } from "../mcp/server.ts";
+import { CANDIDATS_RERANK } from "../mcp/rerank/reranker.ts";
+import type { Reranker } from "../mcp/rerank/reranker.ts";
 import { documentNomme, documentsNommes, getArticle, getDecision, search } from "../mcp/tools.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";
 
@@ -1081,6 +1083,99 @@ describe("la recherche restreinte à une nature", () => {
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
+  });
+});
+
+describe("le second étage de rerank", () => {
+  let root: string;
+  let index: Index;
+
+  const SEUILS = { bas: -1, haut: 2, marge: 0 };
+  const QUESTION = "droit d'accès de la personne concernée aux données";
+
+  before(async () => {
+    root = mkdtempSync(join(tmpdir(), "vitrine-rerank-"));
+    ecrireCorpus(root);
+    const construit = await buildIndex(root, embedderFactice());
+    index = openIndex(construit.chemin);
+  });
+
+  after(() => {
+    index.db.close();
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  /** Reranker factice : inverse l'ordre reçu et retient la fenêtre offerte. */
+  function rerankerInverse(vus: string[][] = []): Reranker {
+    return {
+      model: "factice-rerank",
+      score: async (_question, passages) => {
+        vus.push([...passages]);
+        return passages.map((_, position) => position);
+      },
+    };
+  }
+
+  it("rend l'ordre du reranker, garde la distance dense et sa durée", async () => {
+    const vus: string[][] = [];
+    const dense = await search(
+      root,
+      { question: QUESTION, k: 5 },
+      { embedder: embedderFactice(), index, seuils: SEUILS },
+    );
+    const tous = await search(
+      root,
+      { question: QUESTION, k: CANDIDATS_RERANK },
+      { embedder: embedderFactice(), index, seuils: SEUILS },
+    );
+    const reranke = await search(
+      root,
+      { question: QUESTION, k: 5 },
+      { embedder: embedderFactice(), index, seuils: SEUILS, rerank: rerankerInverse(vus) },
+    );
+
+    assert.equal("rerank" in dense, false, "sans reranker, aucun bloc rerank");
+    assert.ok(tous.passages.length > dense.passages.length, "le second étage voit plus de k passages");
+    assert.deepEqual(
+      dense.passages.map((passage) => passage.ref),
+      tous.passages.slice(0, 5).map((passage) => passage.ref),
+      "la voie sans reranker rend le même ordre dense qu'avant",
+    );
+    assert.equal(vus[0]?.length, tous.passages.length);
+    assert.deepEqual(
+      reranke.passages.map((passage) => passage.ref),
+      [...tous.passages].reverse().slice(0, 5).map((passage) => passage.ref),
+      "les passages sortent dans l'ordre du reranker",
+    );
+
+    const distances = new Map(tous.passages.map((passage) => [passage.ref, passage.distance]));
+    assert.deepEqual(
+      reranke.passages.map((passage) => passage.distance),
+      reranke.passages.map((passage) => distances.get(passage.ref)),
+      "chaque passage garde sa distance dense",
+    );
+    assert.equal(reranke.rerank?.modele, "factice-rerank");
+    assert.equal(typeof reranke.rerank?.duree_ms, "number");
+    assert.ok((reranke.rerank?.duree_ms ?? -1) >= 0);
+  });
+
+  it("propage une erreur de rerank au lieu de servir le dense", async () => {
+    const enPanne: Reranker = {
+      model: "factice-rerank",
+      score: async () => {
+        throw new Error("serveur de rerank en panne");
+      },
+    };
+
+    await assert.rejects(
+      () =>
+        search(
+          root,
+          { question: QUESTION, k: 5 },
+          { embedder: embedderFactice(), index, seuils: SEUILS, rerank: enPanne },
+        ),
+      /serveur de rerank en panne/,
+    );
   });
 });
 

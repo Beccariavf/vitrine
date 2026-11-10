@@ -28,6 +28,7 @@ function mesure(modele: string, resultats: Resultat[]): ObjetMesureJson {
     split: "test",
     corpus: "rgpd",
     recherche: "dense",
+    index: { chemin: "/tmp/corpus/index/index.db", unites: 0 },
     seuils: SEUILS,
     questions: resultats.map((resultat) => {
       const top5 = resultat.top5 ?? resultat.top1;
@@ -65,6 +66,26 @@ function paireDiscordante(gagnant: number, perdant: number, communes = 0) {
     base: mesure("qwen3-embedding:0.6b", resultatsBase),
     candidat: mesure("qwen3-embedding:4b", resultatsCandidat),
   };
+}
+
+/** Dix questions dont les vues rendue et brute ne disent pas la même chose. */
+function vuesDivergentes(): { base: ObjetMesureJson; candidat: ObjetMesureJson } {
+  const questions = Array.from({ length: 10 }, (_, index) => `question ${index + 1}`);
+  const base = mesure(
+    "qwen3-embedding:0.6b",
+    questions.map((question, index): Resultat => ({ question, top1: index === 9 })),
+  );
+  const candidat = mesure(
+    "qwen3-embedding:0.6b",
+    questions.map(
+      (question, index): Resultat => ({
+        question,
+        top1: index < 9,
+        niveau: index < 9 ? "aucun_resultat_fiable" : "confiant",
+      }),
+    ),
+  );
+  return { base, candidat };
 }
 
 describe("le test exact de McNemar", () => {
@@ -239,8 +260,8 @@ describe("la règle de décision", () => {
       b: 5,
       c: 0,
       p: 0.001,
-      baseTop5Rendu: 10,
-      candidatTop5Rendu: 10,
+      baseTop5: 10,
+      candidatTop5: 10,
     });
 
     assert.equal(decision.verdict, "non_etabli");
@@ -252,8 +273,8 @@ describe("la règle de décision", () => {
       b: 9,
       c: 1,
       p: 0.02,
-      baseTop5Rendu: 20,
-      candidatTop5Rendu: 18,
+      baseTop5: 20,
+      candidatTop5: 18,
     });
 
     assert.equal(decision.verdict, "conserver");
@@ -265,8 +286,8 @@ describe("la règle de décision", () => {
       b: 2,
       c: 5,
       p: 0.45,
-      baseTop5Rendu: 20,
-      candidatTop5Rendu: 20,
+      baseTop5: 20,
+      candidatTop5: 20,
     });
 
     assert.equal(decision.verdict, "conserver");
@@ -277,12 +298,54 @@ describe("la règle de décision", () => {
       b: 6,
       c: 1,
       p: 0.06,
-      baseTop5Rendu: 20,
-      candidatTop5Rendu: 20,
+      baseTop5: 20,
+      candidatTop5: 20,
     });
 
     assert.equal(decision.verdict, "non_etabli");
     assert.match(decision.raisons.join(" "), /p = 0\.0600 ≥ 0,05/);
+  });
+});
+
+describe("la configuration comparée", () => {
+  it("nomme le reranker du candidat et rien quand le bloc est absent", () => {
+    const base = mesure("qwen3-embedding:0.6b", [{ question: "q1", top1: true }]);
+    const candidat: ObjetMesureJson = {
+      ...mesure("qwen3-embedding:0.6b", [{ question: "q1", top1: true }]),
+      rerank: {
+        modele: "qwen3-reranker-0.6b",
+        url: "http://127.0.0.1:8080",
+        latence_ms_moyenne: 3646,
+      },
+    };
+
+    const texte = formater(base, candidat, analyser(base, candidat));
+
+    assert.equal("rerank" in base, false);
+    assert.match(texte, /« qwen3-embedding:0\.6b » \(référence\)/);
+    assert.match(texte, /« qwen3-embedding:0\.6b \+ rerank qwen3-reranker-0\.6b » \(candidat\)/);
+    assert.match(
+      texte,
+      /top 5 rendu : « qwen3-embedding:0\.6b » 1\/1 \(100\.0 %\) ; « qwen3-embedding:0\.6b \+ rerank qwen3-reranker-0\.6b »/,
+    );
+  });
+
+  it("décide sur la vue rendue sans le drapeau, sur la vue brute avec", () => {
+    const { base, candidat } = vuesDivergentes();
+
+    const rendue = analyser(base, candidat);
+    assert.equal(rendue.b, 0);
+    assert.equal(rendue.c, 1);
+    assert.equal(rendue.verdict, "non_etabli");
+
+    const brute = analyser(base, candidat, "brute");
+    assert.equal(brute.b, 9);
+    assert.equal(brute.c, 1);
+    assert.equal(brute.verdict, "adopter");
+    assert.match(brute.raisons.join(" "), /top 5 brut non dégradé/);
+
+    assert.match(formater(base, candidat, rendue), /verdict \(rendu\) : non_etabli/);
+    assert.match(formater(base, candidat, brute, "brute"), /verdict \(brut\) : adopter/);
   });
 });
 
@@ -316,6 +379,36 @@ describe("la commande compare.ts", () => {
 
       const texte = formater(base, candidat, analyser(base, candidat));
       assert.match(texte, /questions alignées : 10/);
+    } finally {
+      rmSync(dossier, { recursive: true, force: true });
+    }
+  });
+
+  it("bascule sur les vues brutes quand --vue brute est passé", () => {
+    const dossier = mkdtempSync(join(tmpdir(), "vitrine-compare-vue-"));
+    try {
+      const { base, candidat } = vuesDivergentes();
+      const cheminBase = join(dossier, "base.json");
+      const cheminCandidat = join(dossier, "candidat.json");
+      writeFileSync(cheminBase, JSON.stringify(base));
+      writeFileSync(cheminCandidat, JSON.stringify(candidat));
+      const script = fileURLToPath(new URL("../mcp/eval/compare.ts", import.meta.url));
+
+      const rendue = spawnSync(process.execPath, [script, cheminBase, cheminCandidat], {
+        encoding: "utf8",
+        timeout: 30_000,
+      });
+      const brute = spawnSync(
+        process.execPath,
+        [script, cheminBase, cheminCandidat, "--vue", "brute"],
+        { encoding: "utf8", timeout: 30_000 },
+      );
+
+      assert.equal(rendue.status, 2, "sans le drapeau, la vue rendue ne conclut pas");
+      assert.match(rendue.stdout, /verdict \(rendu\) : non_etabli/);
+      assert.equal(brute.status, 0);
+      assert.match(brute.stdout, /paires discordantes au rang 1 brut : b = 9/);
+      assert.match(brute.stdout, /verdict \(brut\) : adopter/);
     } finally {
       rmSync(dossier, { recursive: true, force: true });
     }
