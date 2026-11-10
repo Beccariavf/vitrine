@@ -198,6 +198,15 @@ export type SearchDeps = {
   rerank?: Reranker;
 };
 
+/**
+ * Corpus dont la table de seuils s'applique : celui demandé, sauf si un document
+ * borne la recherche à un acte. Un document fixé réduit le bassin, change
+ * l'instruction de requête, et suit donc le repli, sans promesse.
+ */
+export function corpusDeNiveau(demande: { corpus?: string; document?: string }): string | undefined {
+  return demande.document === undefined ? demande.corpus : undefined;
+}
+
 export type SearchDemande = {
   question: string;
   k?: number;
@@ -506,11 +515,10 @@ export async function search(
     blocRerank = { modele: deps.rerank.model, duree_ms };
   }
 
-  // La table suit le corpus demandé, jamais les passages rendus : sans
-  // `demande.corpus`, la recherche suit le repli et ne porte aucune promesse.
+  const corpusDuNiveau = corpusDeNiveau(demande);
   const niveau = niveauConfiance(ordre, false, {
     ...deps.seuils,
-    ...(demande.corpus === undefined ? {} : { corpus: demande.corpus }),
+    ...(corpusDuNiveau === undefined ? {} : { corpus: corpusDuNiveau }),
   });
   return {
     niveau_confiance: niveau,

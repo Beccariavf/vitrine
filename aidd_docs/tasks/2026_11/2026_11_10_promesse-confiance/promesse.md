@@ -27,7 +27,7 @@ phase 3 : elle les code, elle ne les recalcule pas.
 
 **Population.** Les questions sémantiques de `questions-cnil-etendu.csv`,
 c'est-à-dire ni piège ni référence exacte d'article, mesurées **dans le mode
-filtré** (`corpus` imposé). Ce sont 54 questions ; le mode non filtré n'est pas
+borné au corpus** (`corpus` imposé). Ce sont 54 questions ; le mode non filtré n'est pas
 mesuré ici et ne porte aucune promesse.
 
 **Les 6 pièges sont hors population, l'un pourtant confiant.** La borne de
@@ -157,7 +157,7 @@ confiantes, sur les 54 questions sémantiques, pièges exclus).
 - **le rang 1** : le top 5 suffit à satisfaire la référence. La promesse ne dit
   rien du classement interne ;
 - **le sous-ensemble doctrinal** `questions-cnil-doctrine.csv` : mesuré et publié
-  (9 confiantes, 6 erreurs, 66,7 %, borne 87,9 % aux seuils du produit ;
+  (9 confiantes, 6 erreurs, 66,7 %, borne 87,9 % aux seuils globaux d'alors, 0,69 / 0,74 / 0,01 ;
   6 confiantes, 4 erreurs, 66,7 %, borne 90,3 % à la règle retenue), mais hors
   plafond ;
 - **les pièges** : 6 questions sans réponse attendue, hors population et hors

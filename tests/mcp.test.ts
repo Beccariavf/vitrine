@@ -22,7 +22,7 @@ import type { Index, ResultatRecherche } from "../mcp/index/search.ts";
 import { createServer } from "../mcp/server.ts";
 import { CANDIDATS_RERANK } from "../mcp/rerank/reranker.ts";
 import type { Reranker } from "../mcp/rerank/reranker.ts";
-import { documentNomme, documentsNommes, getArticle, getDecision, search } from "../mcp/tools.ts";
+import { corpusDeNiveau, documentNomme, documentsNommes, getArticle, getDecision, search } from "../mcp/tools.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";
 
 const DOCUMENT = "32016R0679";
@@ -1388,6 +1388,18 @@ describe("le second étage de rerank", () => {
           { embedder: embedderFactice(), index, seuils: SEUILS, rerank: incomplet },
         ),
       /a rendu \d+ scores pour \d+ passages/,
+    );
+  });
+});
+
+describe("le corpus dont la table de confiance s'applique", () => {
+  it("suit le corpus demandé, jamais un document fixé", () => {
+    assert.equal(corpusDeNiveau({ corpus: "cnil" }), "cnil");
+    assert.equal(corpusDeNiveau({}), undefined);
+    assert.equal(corpusDeNiveau({ document: "CNILTEXT000055022778" }), undefined);
+    assert.equal(
+      corpusDeNiveau({ corpus: "cnil", document: "CNILTEXT000055022778" }),
+      undefined,
     );
   });
 });
