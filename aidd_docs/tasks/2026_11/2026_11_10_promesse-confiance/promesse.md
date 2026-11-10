@@ -27,8 +27,8 @@ phase 3 : elle les code, elle ne les recalcule pas.
 
 **Population.** Les questions sémantiques de `questions-cnil-etendu.csv`,
 c'est-à-dire ni piège ni référence exacte d'article, mesurées **dans le mode
-borné au corpus** (`corpus` imposé). Ce sont 54 questions ; le mode non filtré n'est pas
-mesuré ici et ne porte aucune promesse.
+borné au corpus** (`corpus` imposé). Ce sont 54 questions ; une recherche sans `corpus`, ou qui fixe un document, n'est pas
+mesurée ici et ne porte aucune promesse.
 
 **Les 6 pièges sont hors population, l'un pourtant confiant.** La borne de
 33,3 % décrit les 54 questions sémantiques, pas les 6 pièges du jeu. L'un d'eux,
@@ -39,8 +39,8 @@ c'est elle qu'il décrit.
 
 **Hors dénominateur.** `questions-cnil-doctrine.csv` vise le même corpus mais
 reste rapporté à part : c'est un sous-ensemble adverse (une seule délibération
-attendue parmi ses voisines) où 6 confiantes sur 9 se trompent aux seuils du
-produit. Le compter avec l'autre jeu laisserait son sous-ensemble dicter le
+attendue parmi ses voisines) où 6 confiantes sur 9 se trompent aux seuils globaux
+d'alors, et 4 sur 6 à la règle livrée. Le compter avec l'autre jeu laisserait son sous-ensemble dicter le
 plafond de tous.
 
 **Hors promesse par construction.** Une recherche **sans `corpus`**, ou qui ne
@@ -122,7 +122,7 @@ risque.
 
 | `bas` | Questions refusées (CNIL, sémantiques) | Dont la bonne référence était au top 5 |
 | ----- | ------------------------------------: | -------------------------------------: |
-| 0,69 (produit) | 4 | 2 |
+| 0,69 (repli) | 4 | 2 |
 | **0,67 (retenu)** | **0** | **0** |
 
 Les deux bonnes réponses tues aujourd'hui sont à **0,677** et **0,6812** ; toutes
