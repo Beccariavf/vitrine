@@ -216,7 +216,9 @@ La capacité du harnais reste : `--instruction actuelle|neutre`, `--rerank` et
    calibration CNIL de `dev` (`0,62 / 0,67 / 0,01`) reste une mesure, pas une
    valeur écrite.
 3. **Aucune mesure du split `test`** : `--split test` et `--mesurer-test` n'ont
-   pas été passés ; aucun marqueur `questions-cnil-etendu.test-consomme.json`
+   pas été passés à cette étape ; le tir unique a été dépensé ensuite, voir
+   `aidd_docs/tasks/2026_11/2026_11_10_promesse-confiance/mesures/confirmation.md`.
    n'existe.
-4. **Le `test` du jeu reste non consommé** : les 60 questions `test` de
+4. **Le `test` du jeu était non consommé à cette date** (il l'est depuis, une
+   fois, pour Harrier et qwen3) : les 60 questions `test` de
    `questions-cnil-etendu.csv` restent disponibles pour une configuration future.

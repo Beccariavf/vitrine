@@ -41,7 +41,7 @@ ramenée ; un embedder de même taille change l'espace entier et peut la ramener
 | Élément figé | Valeur | Pourquoi |
 | --- | --- | --- |
 | Jeu | `questions-cnil-etendu.csv`, split `dev` re-gelé | 54 questions sémantiques, 6 pièges. Six recommandations ont quitté `dev`, six avis y sont entrés. |
-| Split | `dev` uniquement | Le `test` ne se mesure qu'une fois. Aucun `--mesurer-test` n'a été passé ; `mcp/eval/questions-cnil-etendu.test-consomme.json` n'existe pas. |
+| Split | `dev` uniquement à cette étape | Le `test` ne se mesure qu'une fois. Aucun `--mesurer-test` n'a été passé ici ; il l'a été plus tard, une fois, pour Harrier et qwen3, voir `aidd_docs/tasks/2026_11/2026_11_10_promesse-confiance/mesures/confirmation.md`. |
 | Vue du verdict | `--vue brute` | L'échelle de similarité change avec l'embedder : les seuils produit n'ont aucun sens sur Harrier. |
 | Seuils | calibrage `dev` propre à chaque passe (0,73 / 0,78 / 0,01) | Sans `--seuils` : chaque modèle règle les siens, aucun n'hérite de ceux du témoin. |
 | Index | `~/.cache/vitrine-harrier/root/data/corpus/index/index.db`, 29 299 unités | Hors du dépôt, donc l'index produit ne peut pas être mesuré par erreur : `harrier-dev-*.json` porte `index.chemin` sous la racine d'expérience. |
@@ -344,7 +344,9 @@ c'est un contrôle de non-régression, pas une preuve de gain.
    capacité de harnais mesurée, pas un candidat au produit.
 4. **Aucune mesure du `test` n'a été consommée** : `--split test` et
    `--mesurer-test` n'ont pas été passés, et aucun marqueur
-   `questions-cnil-etendu.test-consomme.json` n'existe.
+   `questions-cnil-etendu.test-consomme.json` n'existe pas à cette date ; le tir
+   unique a été dépensé ensuite, voir
+   `aidd_docs/tasks/2026_11/2026_11_10_promesse-confiance/mesures/confirmation.md`.
 
 ## 11. Intégrité du produit
 

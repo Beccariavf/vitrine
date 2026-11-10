@@ -36,7 +36,7 @@ status: completed
 
 > `--mesurer-test` n'a qu'un coup, et il ne porte que sur la CNIL.
 
-1. Lancer la mesure du split `test` de `questions-cnil-etendu.csv`, seule collection dont le `test` n'est pas consommé, avec `--regle produit` : le JSON doit porter le triplet appliqué et son origine.
+1. Lancer la mesure du split `test` de `questions-cnil-etendu.csv`, seule collection dont le `test` n'est pas consommé, avec `--regle produit` : le JSON doit porter le triplet appliqué et son origine. Le harnais accepte une mesure par modèle pré-déclaré (`mesure-v3` a mesuré `0.6b` et `4b`) : deux modèles peuvent donc être mesurés, dans l'ordre déclaré, et le rapport le dit.
 2. Ne pas relancer : le marqueur refuse le même modèle, et c'est voulu.
 3. Conserver le JSON sous `mesures/`.
 
@@ -53,5 +53,5 @@ status: completed
 | Task | Acceptance criteria              |
 | ---- | -------------------------------- |
 | 1 | la configuration confirmée est écrite avant la mesure, modèle et table compris |
-| 2 | un seul marqueur est créé, pour un seul modèle, et une seconde tentative est refusée en le nommant ; le JSON porte le triplet appliqué |
+| 2 | un seul marqueur est créé, une entrée par modèle pré-déclaré, et une seconde tentative pour le même modèle est refusée en le nommant ; le JSON porte le triplet appliqué |
 | 3 | `confirmation.md` donne risque, intervalle et couverture du `test`, applique la règle de borne haute écrite d'avance, et dit que seule la CNIL est confirmée |
