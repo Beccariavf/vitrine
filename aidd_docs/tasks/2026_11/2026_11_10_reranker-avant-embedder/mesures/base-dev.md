@@ -150,3 +150,22 @@ rerank, pas une conclusion sur le produit.
 - Les 6 pièges de `dev` sont tous cités, dont 4 avec l'assurance « confiant » :
   la base ne refusait déjà rien, un réordonnancement ne peut donc pas améliorer
   ce point par les seuls seuils.
+
+
+## Avec les seuils du produit (0,69 / 0,74 / 0,01)
+
+Mesure complémentaire, `mesures/base-dev-seuils-produit.json` : le même jeu
+`dev`, le même index, mais les seuils constants de `mcp/confidence.ts` au lieu
+de la calibration `dev` (0,62 / 0,67 / 0,01). C'est la seule vue qui dise ce que
+le lecteur reçoit aujourd'hui.
+
+| Niveau | Questions | Dont document attendu au top 5 |
+| --- | --- | --- |
+| `confiant` | 24 | 19 justes, **5 fausses** |
+| `incertain` | 26 | 20 justes, 6 fausses |
+| `aucun_resultat_fiable` | 4 | 0 |
+
+Top 5 39/54, MRR 0,6250, top 1 29/54 (le classement ne change pas : seules les
+étiquettes changent). Les cinq fausses confiantes se répartissent en 4 sanctions
+et 1 recommandation, sur 9 et 3 réponses confiantes : c'est là que le produit
+trompe le lecteur, et non dans la doctrine majoritaire (12 confiantes, 0 fausse).

@@ -78,6 +78,27 @@ rang 1 : dix questions ne départagent rien, et la règle figée exige six paire
 discordantes. Rien ne change donc au verdict du §1, et ce n'est pas ce qui le
 renverserait.
 
+## 3 bis. Ce que le produit répond aujourd'hui sur ce jeu
+
+Le harnais calibre ses seuils sur `dev` (0,62 / 0,67 / 0,01) ; le produit tourne
+avec les constantes `0,69 / 0,74 / 0,01`. Une mesure complémentaire, mêmes
+questions, même index, seuils du produit
+(`mesures/base-dev-seuils-produit.json`) donne la seule vue qui compte pour le
+lecteur :
+
+| Niveau | Questions | Document attendu au top 5 |
+| --- | --- | --- |
+| `confiant` | 24 | 19 justes, **5 fausses** |
+| `incertain` | 26 | 20 justes, 6 fausses |
+| `aucun_resultat_fiable` | 4 | — |
+
+Le classement est identique (39/54, MRR 0,6250, top 1 29/54) : seules les
+étiquettes changent. Les cinq erreurs confiantes sont 4 sanctions sur 9 réponses
+confiantes et 1 recommandation sur 3 ; les 12 réponses confiantes visant un avis
+sont toutes justes. La prémisse de l'issue — des réponses confiantes fausses —
+est donc reproduite sur 60 questions et elle se loge dans les sanctions, pas
+dans la doctrine majoritaire.
+
 ## 4. Ce que la mesure ne prouve pas
 
 - **Le jeu fait 60 questions CNIL de `dev`**, dont 54 conceptuelles. Six pièges

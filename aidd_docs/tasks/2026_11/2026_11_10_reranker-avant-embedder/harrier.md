@@ -139,12 +139,10 @@ node mcp/eval/run.ts ... --instruction neutre > mesures/harrier-dev-neutre.json
 | `actuelle` (`INSTRUCTION_CNIL`) | **44/54 = 81,5 %** | 0,7404 | **38/54 = 70,4 %** | **44/54** | **38/54** | 16 / 38 / 0 | 5/6 |
 | `neutre` | **44/54 = 81,5 %** | 0,7515 | **38/54 = 70,4 %** | 43/54 | 37/54 | 17 / 36 / 1 | 5/6 |
 
-```text
-top 5 brut : « harrier » 44/54 (81.5 %) ; « harrier » 44/54 (81.5 %)
-paires discordantes au rang 1 brut : b = 1 (candidat seul), c = 1 (référence seule)
-McNemar exact : p = 1
-verdict (brut) : non_etabli — moins de six paires discordantes (2) : aucune conclusion
-```
+Sur ces deux passes, `compare.ts` rend un top 5 et un rang 1 identiques et ne
+tranche pas : `b = 1`, `c = 1`, `p = 1`, verdict `non_etabli` (moins de six
+paires discordantes). Le libellé complet du modèle est omis ici : la sortie
+intégrale de `compare.ts` est rejouée au §6.
 
 Aucune des deux ne gagne **une seule question** au top 5 : la règle de rétention
 n'est pas remplie. `neutre` gagne 0,0111 de MRR brut mais perd une question au
@@ -340,6 +338,7 @@ c'est un contrôle de non-régression, pas une preuve de gain.
 | --- | --- |
 | `sha256 data/corpus/index/index.db`, référence après le dernier `corpus:index` connu | `07583570cfc2640a66e132ef1c414bda10fb02c97bb1dfcd39dc17a44944605c` |
 | idem, vérifié après toutes les passes, constructions et tranches | `07583570cfc2640a66e132ef1c414bda10fb02c97bb1dfcd39dc17a44944605c` |
+| idem, après le contrôle `npm run corpus:index` postérieur (`15:41:25Z`) | `a6e3fd01…` — seul `meta.construit_le` a changé, zéro unité réembarquée |
 | `git status --short` | les JSON de mesure de cette phase, `mesures/noncnil/` et `mesures/doctrine-harrier.json` ; aucun fichier du produit |
 | Marqueur de test `questions-cnil-etendu` | absent |
 
