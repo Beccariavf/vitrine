@@ -139,10 +139,24 @@ node mcp/eval/run.ts ... --instruction neutre > mesures/harrier-dev-neutre.json
 | `actuelle` (`INSTRUCTION_CNIL`) | **44/54 = 81,5 %** | 0,7404 | **38/54 = 70,4 %** | **44/54** | **38/54** | 16 / 38 / 0 | 5/6 |
 | `neutre` | **44/54 = 81,5 %** | 0,7515 | **38/54 = 70,4 %** | 43/54 | 37/54 | 17 / 36 / 1 | 5/6 |
 
-Sur ces deux passes, `compare.ts` rend un top 5 et un rang 1 identiques et ne
-tranche pas : `b = 1`, `c = 1`, `p = 1`, verdict `non_etabli` (moins de six
-paires discordantes). Le libellé complet du modèle est omis ici : la sortie
-intégrale de `compare.ts` est rejouée au §6.
+```console
+$ node mcp/eval/compare.ts --vue brute \
+    .../mesures/harrier-dev-actuelle.json .../mesures/harrier-dev-neutre.json
+comparaison appariée : « mradermacher/harrier-oss-v1-0.6b-GGUF » (référence) contre « mradermacher/harrier-oss-v1-0.6b-GGUF » (candidat)
+questions alignées : 60
+domaine de décision : 54 questions sémantiques
+top 5 brut : « mradermacher/harrier-oss-v1-0.6b-GGUF » 44/54 (81.5 %) ; « mradermacher/harrier-oss-v1-0.6b-GGUF » 44/54 (81.5 %)
+top 5 rendu : « mradermacher/harrier-oss-v1-0.6b-GGUF » 44/54 (81.5 %) ; « mradermacher/harrier-oss-v1-0.6b-GGUF » 43/54 (79.6 %)
+top 1 brut : « mradermacher/harrier-oss-v1-0.6b-GGUF » 38/54 (70.4 %) ; « mradermacher/harrier-oss-v1-0.6b-GGUF » 38/54 (70.4 %)
+top 1 rendu : « mradermacher/harrier-oss-v1-0.6b-GGUF » 38/54 (70.4 %) ; « mradermacher/harrier-oss-v1-0.6b-GGUF » 37/54 (68.5 %)
+paires discordantes au rang 1 brut : b = 1 (candidat seul), c = 1 (référence seule)
+McNemar exact : p = 1
+verdict (brut) : non_etabli — moins de six paires discordantes (2) : aucune conclusion
+```
+
+Les deux passes sont identiques au top 5 et au rang 1 bruts ; `neutre` perd une
+question au rendu, donc `actuelle` est retenue sans changer l'instruction du
+produit.
 
 Aucune des deux ne gagne **une seule question** au top 5 : la règle de rétention
 n'est pas remplie. `neutre` gagne 0,0111 de MRR brut mais perd une question au

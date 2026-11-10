@@ -72,6 +72,11 @@ plusieurs voisines traitant le même sujet, alors que le jeu élargi choisit des
 documents au sujet distinctif. Le 3/10 décrit donc une famille de questions, pas
 « la doctrine » en général.
 
+Sous les seuils du produit (0,69 / 0,74 / 0,01) et non la calibration `dev`, le
+même jeu rend **9 réponses confiantes dont 6 fausses** sur 10 questions
+(`mesures/doctrine-qwen-seuils-produit.json`) : les étiquettes du produit sont
+donc plus affirmées, et plus fausses, que le constat de l'issue.
+
 Aucun reranker ne déplace ce résultat de plus d'une question. `+ 1/10` au top 5
 pour bge, `+ 1/10` au top 1 pour Qwen3, avec une ou deux paires discordantes au
 rang 1 : dix questions ne départagent rien, et la règle figée exige six paires
@@ -92,10 +97,12 @@ lecteur :
 | `incertain` | 26 | 20 justes, 6 fausses |
 | `aucun_resultat_fiable` | 4 | — |
 
-Le classement est identique (39/54, MRR 0,6250, top 1 29/54) : seules les
-étiquettes changent. Les cinq erreurs confiantes sont 4 sanctions sur 9 réponses
-confiantes et 1 recommandation sur 3 ; les 12 réponses confiantes visant un avis
-sont toutes justes. La prémisse de l'issue — des réponses confiantes fausses —
+Le classement brut est identique (39/54, MRR 0,6250, top 1 29/54) : seules les
+étiquettes changent. La vue rendue, elle, recule : `search` ne rend aucun passage
+sous `aucun_resultat_fiable`, donc 37/54 au top 5, 27/54 au rang 1, MRR 0,588 —
+quatre questions sans réponse, dont deux qui cachaient un bon document. Les cinq
+erreurs confiantes sont 4 sanctions sur 9 réponses confiantes et 1 recommandation
+sur 3 ; les 12 réponses confiantes visant un avis sont toutes justes. La prémisse de l'issue — des réponses confiantes fausses —
 est donc reproduite sur 60 questions et elle se loge dans les sanctions, pas
 dans la doctrine majoritaire.
 

@@ -165,7 +165,14 @@ le lecteur reçoit aujourd'hui.
 | `incertain` | 26 | 20 justes, 6 fausses |
 | `aucun_resultat_fiable` | 4 | 0 |
 
-Top 5 39/54, MRR 0,6250, top 1 29/54 (le classement ne change pas : seules les
-étiquettes changent). Les cinq fausses confiantes se répartissent en 4 sanctions
-et 1 recommandation, sur 9 et 3 réponses confiantes : c'est là que le produit
-trompe le lecteur, et non dans la doctrine majoritaire (12 confiantes, 0 fausse).
+Le classement brut ne change pas (top 5 39/54, MRR 0,6250, top 1 29/54) : ce
+sont les étiquettes qui changent. Mais la vue **rendue** recule, parce que
+`search` ne rend aucun passage sous `aucun_resultat_fiable` : top 5 rendu 37/54,
+top 1 rendu 27/54, MRR rendu 0,588. Quatre questions ne reçoivent donc rien,
+dont deux dont le bon document était dans le top 5 brun — les seuils hauts
+suppriment aussi des réponses justes.
+
+Les cinq fausses confiantes se répartissent en 4 sanctions sur 9 réponses
+confiantes et 1 recommandation sur 3 ; les 12 réponses confiantes visant un avis
+sont toutes justes. C'est dans les sanctions que le produit trompe le lecteur,
+pas dans la doctrine majoritaire.

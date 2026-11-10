@@ -75,7 +75,7 @@ status: completed
 > Un index de même dimension ne se distingue pas tout seul.
 
 1. Mesurer le dev CNIL en dense avec Harrier, `--json`, sans `--seuils`, avec `--root <racine> --fournisseur openai --embed-url <url> --modele mradermacher/harrier-oss-v1-0.6b-GGUF --dim 1024`, et rediriger vers `aidd_docs/tasks/2026_11/2026_11_10_reranker-avant-embedder/mesures/harrier-dev-actuelle.json` : l'index produit et Harrier font tous deux 1 024 dimensions, donc `searchIndex` ne détecterait pas un mauvais index et mesurerait l'espace qwen3. La vue brute de `compare.ts` a été introduite en phase 4.
-2. Vérifier que `harrier-dev.json` porte `index.chemin` sous la racine d'expérience : le champ `modele` ne prouve rien, il vient de `--modele`.
+2. Vérifier que `harrier-dev-actuelle.json` porte `index.chemin` sous la racine d'expérience : le champ `modele` ne prouve rien, il vient de `--modele`.
 3. Vérifier qu'aucun marqueur de test n'a été créé : cette phase ne consomme que `dev`.
 
 ### `7)` Mesurer et conclure
@@ -83,7 +83,7 @@ status: completed
 > Le bruit du jeu comme juge, et une décision explicite.
 
 1. Lancer `node mcp/eval/compare.ts --vue brute aidd_docs/tasks/2026_11/2026_11_10_reranker-avant-embedder/mesures/base-dev.json aidd_docs/tasks/2026_11/2026_11_10_reranker-avant-embedder/mesures/harrier-dev-actuelle.json` : la base est la référence, Harrier le candidat, et `b`, `c` se lisent du point de vue de la base.
-2. Vérifier que `harrier-dev.json` porte `index.chemin` sous la racine d'expérience : le champ `modele` ne prouve rien, il vient de `--modele`, et un index produit de même dimension passerait inaperçu.
+2. Vérifier que `harrier-dev-actuelle.json` porte `index.chemin` sous la racine d'expérience : le champ `modele` ne prouve rien, il vient de `--modele`, et un index produit de même dimension passerait inaperçu.
 3. Écrire `harrier.md` : recall@5, MRR, top 1, verdict, latence d'indexation, et la décision de garder `qwen3-embedding:0.6b` ou de proposer Harrier.
 4. Si Harrier gagne, la bascule de l'index produit n'est pas faite ici : elle exige de reconstruire l'index et de mesurer le test, et se décide dans un lot suivant.
 
@@ -96,5 +96,5 @@ status: completed
 | 3 | `--fournisseur` absent garde le comportement Ollama, et `npm test` passe sans réseau |
 | 4 | l'index Harrier vit hors du dépôt et l'empreinte de l'index produit est inchangée |
 | 5 | l'instruction retenue est consignée avec son écart au top 5 |
-| 6 | `harrier-dev.json` porte 60 questions, `index.chemin` sous la racine d'expérience, et aucun marqueur de test n'est créé |
-| 7 | `harrier-dev.json` porte 60 questions et `harrier.md` donne son verdict, avec l'adoption renvoyée à un lot suivant |
+| 6 | `harrier-dev-actuelle.json` porte 60 questions, `index.chemin` sous la racine d'expérience, et aucun marqueur de test n'est créé |
+| 7 | `harrier-dev-actuelle.json` porte 60 questions et `harrier.md` donne son verdict, avec l'adoption renvoyée à un lot suivant |
