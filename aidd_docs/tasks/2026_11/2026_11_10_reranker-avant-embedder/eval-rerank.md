@@ -230,10 +230,12 @@ utilisable. Aucun verdict ne dépend de ce chiffre.
 | idem après l'arrêt des deux serveurs (`15:24:58 UTC`) | `07583570cfc2640a66e132ef1c414bda10fb02c97bb1dfcd39dc17a44944605c` — octet pour octet, le fichier n'a pas été touché |
 | `git status --short` | aucun fichier sous `data/corpus/` |
 
-`npm run corpus:index` n'a pas été relancé cette fois : il réécrit
+`npm run corpus:index` n'a pas été relancé entre les deux mesures : il réécrit
 `meta.construit_le` à chaque passage, ce qui détruirait précisément l'empreinte
-identique relevée avant et après. Le fichier n'ayant pas changé d'un octet, il
-n'y a rien à réembarquer.
+identique relevée avant et après. Le contrôle a été fait après coup, hors de la
+fenêtre des mesures : `53143 unités indexées … 0 ajoutées, 0 modifiées,
+0 supprimées, 53143 inchangées`. Le critère de la phase 5 est donc tenu — rien à
+réembarquer — sans que l'empreinte ci-dessus serve de preuve pour autant.
 
 ## 9. Écarts au protocole
 

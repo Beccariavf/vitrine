@@ -61,4 +61,5 @@ Fautes introduites vérifiées : une question reprise de `questions-cnil-v2.csv`
 - Les questions à référence textuelle (article, `SAN-…`) : le jeu est volontairement documentaire et paraphrasé.
 - La distribution des tournures : 120 questions ne couvrent ni le français familier ni les requêtes multi‑lingues.
 - Les pièges sont peu nombreux (12) : le taux de citations invalides qu'ils produisent a un intervalle de confiance large.
+- **Une seule délibération attendue par question.** Le corpus CNIL compte des documents voisins traitant le même sujet (plusieurs lignes directrices sur les cookies, sur l'IA, sur la vidéosurveillance) : un rang 1 qui cite la délibération sœur est compté faux. C'est ce qui rend le vieux jeu `questions-cnil-doctrine.csv` difficile (3/10) alors que la tranche doctrinale du jeu élargi vaut 24/27 : les deux mesurent des familles de questions différentes, pas la même difficulté.
 - Le split `test` est à usage unique : toute mesure dessus consomme le jeu pour le modèle mesuré.

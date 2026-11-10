@@ -24,6 +24,8 @@ status: completed
 └── ✅ aidd_docs/tasks/2026_11/2026_11_10_reranker-avant-embedder/mesures/final-test.json
 ```
 
+Branche `adopter` seulement : le verdict des deux rerankers est un refus, donc `mcp/server.ts`, `mcp/confidence.ts`, `mcp/embed/embedder.ts` et les fichiers `mesures/final-*` n'ont pas été touchés, et aucun marqueur `test` n'a été créé. Ce que la phase a réellement produit est consigné dans `decision.md`.
+
 ## Test Scope
 
 | Scenario     | Action                  | Observable outcome   | Actor                           |

@@ -87,7 +87,7 @@ Passe de 100 unités réelles, rejouée après le rééquilibrage :
 ```text
 100 passages contextualisés (chemin + texte), premiers 100 unités CNIL
 116 173 caractères — médiane 1 437, maximum 1 560
-texte seul des mêmes unités : médiane 1 296, maximum 1 500
+texte seul des mêmes unités : médiane 1 396, maximum 1 500 (médiane 1 296 sur l'ensemble du corpus)
 16,48 s à la re-mesure → 6,07 unités/s
 (5,21 s à la première passe du matin → 19,2 unités/s)
 ```
@@ -156,13 +156,15 @@ est de zéro question.
 
 ```console
 $ node mcp/eval/compare.ts --vue brute \
-    .../mesures/base-dev.json .../mesures/harrier-dev-actuelle.json
+    aidd_docs/tasks/2026_11/2026_11_10_reranker-avant-embedder/mesures/base-dev.json \
+    aidd_docs/tasks/2026_11/2026_11_10_reranker-avant-embedder/mesures/harrier-dev-actuelle.json
 comparaison appariée : « qwen3-embedding:0.6b » (référence) contre « mradermacher/harrier-oss-v1-0.6b-GGUF » (candidat)
 questions alignées : 60
 domaine de décision : 54 questions sémantiques
-top 5 brut : « qwen3-embedding:0.6b » 39/54 (72.2 %) ; « harrier » 44/54 (81.5 %)
-top 5 rendu : « qwen3-embedding:0.6b » 39/54 (72.2 %) ; « harrier » 44/54 (81.5 %)
-top 1 brut : « qwen3-embedding:0.6b » 29/54 (53.7 %) ; « harrier » 38/54 (70.4 %)
+top 5 brut : « qwen3-embedding:0.6b » 39/54 (72.2 %) ; « mradermacher/harrier-oss-v1-0.6b-GGUF » 44/54 (81.5 %)
+top 5 rendu : « qwen3-embedding:0.6b » 39/54 (72.2 %) ; « mradermacher/harrier-oss-v1-0.6b-GGUF » 44/54 (81.5 %)
+top 1 brut : « qwen3-embedding:0.6b » 29/54 (53.7 %) ; « mradermacher/harrier-oss-v1-0.6b-GGUF » 38/54 (70.4 %)
+top 1 rendu : « qwen3-embedding:0.6b » 29/54 (53.7 %) ; « mradermacher/harrier-oss-v1-0.6b-GGUF » 38/54 (70.4 %)
 paires discordantes au rang 1 brut : b = 16 (candidat seul), c = 7 (référence seule)
 McNemar exact : p = 0.0931396484375
 verdict (brut) : non_etabli — p = 0.0931 ≥ 0,05 : le gain n'est pas significatif
@@ -184,18 +186,14 @@ cité (5/6 au lieu de 6/6) et aucun piège n'est cité « confiant ».
 
 ## 7. Latence par question
 
-Mesurée hors harnais, 60 questions `dev`, `search(k=5, corpus="cnil")` avec
-Harrier et son index, une passe séquentielle après chargement, re-mesurée après
-le rééquilibrage :
-
-| Moyenne | Médiane | p90 | Min | Max |
-| --- | --- | --- | --- | --- |
-| **129,1 ms** | 129,3 ms | 139,9 ms | 94,7 ms | 210,7 ms |
-
-La même passe avait donné 63,7 ms le matin, soit deux fois moins. Le coût par
-requête reste du même ordre que la recherche dense qwen3 (≈ 73 ms en phase 5,
-mesure indicative), mais la dispersion dit que le service n'offre pas une
-latence stable. C'est le coût de **construction** qui change d'ordre de
+Mesure **indicative, non conservée** : un script local hors harnais, 60 questions
+`dev`, `search(k=5, corpus="cnil")` avec Harrier et son index, une passe
+séquentielle après chargement. Sur deux rejeux elle donne 63,7 ms puis 129,1 ms
+de moyenne (médiane 129,3 ms, p90 139,9 ms, min 94,7 ms, max 210,7 ms) : aucun
+fichier ne l'archive, elle ne sert donc qu'à dire l'ordre de grandeur, pas à
+conclure. Le coût par requête reste du même ordre que la recherche dense qwen3
+(≈ 73 ms, également indicatif), mais la dispersion dit que le service n'offre pas
+une latence stable. C'est le coût de **construction** qui change d'ordre de
 grandeur : 36 min pour 29 299 unités, contre un index produit de 53 143 unités
 déjà construit.
 

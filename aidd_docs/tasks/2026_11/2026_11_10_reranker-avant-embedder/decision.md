@@ -61,13 +61,22 @@ Sur `questions-cnil-doctrine.csv` (10 questions de doctrine : 7 avis,
 | + Qwen3 | 3/10 | 0,300 | 3/10 | 2 / 2 |
 | + bge | 4/10 | 0,245 | 2/10 | 2 / 0 |
 
-La prémisse de l'issue #17 est vérifiée et non réfutée : le témoin place la bonne
-délibération dans les cinq premiers trois fois sur dix, et se trompe avec
-l'étiquette « confiant » cinq fois sur huit. Mais aucun reranker ne déplace ce
-résultat de plus d'une question. `+ 1/10` au top 5 pour bge, `+ 1/10` au top 1
-pour Qwen3, avec une ou deux paires discordantes au rang 1 : dix questions ne
-départagent rien, et la règle figée exige six paires discordantes. Rien ne change
-donc au verdict du §1, et ce n'est pas ce qui le renverserait.
+La prémisse de l'issue #17 se reproduit **sur son propre jeu** : le témoin place
+la bonne délibération dans les cinq premiers trois fois sur dix, et se trompe avec
+l'étiquette « confiant » cinq fois sur huit. Elle **ne s'étend pas** au jeu
+élargi : sa tranche doctrinale vaut 24/27 au top 5 (18/20 avis, 6/7
+recommandations), la plus forte des trois natures, les sanctions étant la plus
+faible (15/27). L'écart n'est pas une contradiction mais une différence de
+difficulté : `questions-cnil-doctrine.csv` attend une délibération précise parmi
+plusieurs voisines traitant le même sujet, alors que le jeu élargi choisit des
+documents au sujet distinctif. Le 3/10 décrit donc une famille de questions, pas
+« la doctrine » en général.
+
+Aucun reranker ne déplace ce résultat de plus d'une question. `+ 1/10` au top 5
+pour bge, `+ 1/10` au top 1 pour Qwen3, avec une ou deux paires discordantes au
+rang 1 : dix questions ne départagent rien, et la règle figée exige six paires
+discordantes. Rien ne change donc au verdict du §1, et ce n'est pas ce qui le
+renverserait.
 
 ## 4. Ce que la mesure ne prouve pas
 

@@ -14,7 +14,8 @@ status: completed
 ├── ✏️ mcp/index/build.ts
 ├── ✏️ mcp/eval/run.ts
 ├── ✏️ tests/index.test.ts
-├── ✅ aidd_docs/tasks/2026_11/2026_11_10_reranker-avant-embedder/mesures/harrier-dev.json
+├── ✅ aidd_docs/tasks/2026_11/2026_11_10_reranker-avant-embedder/mesures/harrier-dev-actuelle.json
+├── ✅ aidd_docs/tasks/2026_11/2026_11_10_reranker-avant-embedder/mesures/harrier-dev-neutre.json
 └── ✅ aidd_docs/tasks/2026_11/2026_11_10_reranker-avant-embedder/harrier.md
 ```
 
