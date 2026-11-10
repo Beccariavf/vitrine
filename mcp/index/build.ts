@@ -8,6 +8,7 @@ import type { Unite } from "../corpus/parse.ts";
 import { dateIndex, montantIndex, numeroIndex } from "../corpus/cnil/meta.ts";
 import { createOllamaEmbedder } from "../embed/embedder.ts";
 import type { Embedder } from "../embed/embedder.ts";
+import { createOpenAIEmbedder } from "../embed/openai.ts";
 
 const RACINE = fileURLToPath(new URL("../..", import.meta.url));
 
@@ -862,12 +863,59 @@ export function formaterJournal(resultat: ResultatBuild, embedder: Embedder): st
   );
 }
 
+/** `--fournisseur` : `ollama` par défaut, `openai` pour un service `/v1/embeddings`. */
+export type Fournisseur = "ollama" | "openai";
+
+export function lireFournisseur(valeur: string | undefined): Fournisseur {
+  if (valeur === undefined) return "ollama";
+  if (valeur !== "ollama" && valeur !== "openai") {
+    throw new Error(
+      `--fournisseur attendu ollama ou openai ; reçu « ${valeur === "" ? "(vide)" : valeur} »`,
+    );
+  }
+  return valeur;
+}
+
+/** L'embedder du fournisseur demandé ; un `--fournisseur` absent garde Ollama. */
+export function creerEmbedder(
+  fournisseur: Fournisseur,
+  options: {
+    modele?: string;
+    dim?: string;
+    url?: string;
+    instructions?: Record<string, string>;
+    defaut?: string;
+  },
+): Embedder {
+  if (fournisseur === "openai" && (options.modele === undefined || options.modele === "")) {
+    throw new Error(
+      "--fournisseur openai exige --modele : le service ne dit pas de lui-même quel modèle il sert.",
+    );
+  }
+  const commun = {
+    ...(options.modele === undefined ? {} : { model: options.modele }),
+    ...(options.dim === undefined ? {} : { dim: Number(options.dim) }),
+    ...(options.instructions === undefined ? {} : { instructions: options.instructions }),
+    ...(options.defaut === undefined ? {} : { defaut: options.defaut }),
+  };
+  if (fournisseur === "openai") {
+    return createOpenAIEmbedder({
+      ...commun,
+      model: options.modele ?? "",
+      ...(options.url === undefined ? {} : { url: options.url }),
+    });
+  }
+  return createOllamaEmbedder(commun);
+}
+
 async function main(argv: string[]): Promise<void> {
   const modele = valeurDe("--modele", argv);
   const dim = valeurDe("--dim", argv);
-  const embedder = createOllamaEmbedder({
-    ...(modele === undefined ? {} : { model: modele }),
-    ...(dim === undefined ? {} : { dim: Number(dim) }),
+  const url = valeurDe("--embed-url", argv);
+  const embedder = creerEmbedder(lireFournisseur(valeurDe("--fournisseur", argv)), {
+    ...(modele === undefined ? {} : { modele }),
+    ...(dim === undefined ? {} : { dim }),
+    ...(url === undefined ? {} : { url }),
   });
   const resultat = await buildIndex(valeurDe("--root", argv) ?? RACINE, embedder);
   process.stderr.write(formaterJournal(resultat, embedder));

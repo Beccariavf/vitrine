@@ -3,9 +3,10 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { MARGE, SEUIL_BAS, SEUIL_HAUT, niveauConfiance } from "../confidence.ts";
-import { INSTRUCTIONS_REQUETE, INSTRUCTION_CNIL, createOllamaEmbedder } from "../embed/embedder.ts";
+import { INSTRUCTIONS_REQUETE, INSTRUCTION_CNIL } from "../embed/embedder.ts";
 import type { Embedder } from "../embed/embedder.ts";
-import { cheminIndex, lireUnites } from "../index/build.ts";
+import { cheminIndex, creerEmbedder, lireUnites } from "../index/build.ts";
+import { lireFournisseur } from "../index/build.ts";
 import { openIndex } from "../index/search.ts";
 import type { Index } from "../index/search.ts";
 import { createLlamaReranker } from "../rerank/reranker.ts";
@@ -1058,9 +1059,12 @@ async function main(argv: string[]): Promise<void> {
 
   const modele = valeurDe("--modele", argv);
   const dim = valeurDe("--dim", argv);
-  const embedder = createOllamaEmbedder({
-    ...(modele === undefined ? {} : { model: modele }),
-    ...(dim === undefined ? {} : { dim: Number(dim) }),
+  const urlEmbed = valeurDe("--embed-url", argv);
+  const fournisseur = lireFournisseur(valeurDe("--fournisseur", argv));
+  const embedder = creerEmbedder(fournisseur, {
+    ...(modele === undefined ? {} : { modele }),
+    ...(dim === undefined ? {} : { dim }),
+    ...(urlEmbed === undefined ? {} : { url: urlEmbed }),
     instructions: instructionsDeMesure(variante),
   });
 

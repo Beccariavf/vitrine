@@ -8,8 +8,10 @@ import * as sqliteVec from "sqlite-vec";
 import {
   buildIndex,
   cheminIndex,
+  creerEmbedder,
   empreinteUnite,
   formaterJournal,
+  lireFournisseur,
   migrerVecteurs,
 } from "../mcp/index/build.ts";
 import { search } from "../mcp/tools.ts";
@@ -23,11 +25,13 @@ import {
 } from "../mcp/index/search.ts";
 import {
   INSTRUCTION_AIAct,
+  INSTRUCTION_CNIL,
   INSTRUCTION_REQUETE,
   createOllamaEmbedder,
   normaliser,
 } from "../mcp/embed/embedder.ts";
 import type { Embedder } from "../mcp/embed/embedder.ts";
+import { createOpenAIEmbedder } from "../mcp/embed/openai.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";
 import type { FetchLike } from "../veille/fetch.ts";
 
@@ -274,6 +278,133 @@ describe("l'adaptateur Ollama", () => {
       assert.ok(Math.abs(norme - 1) < 1e-5);
     },
   );
+});
+
+describe("l'adaptateur OpenAI", () => {
+  const MODELE = "mradermacher/harrier-oss-v1-0.6b-GGUF";
+
+  /** Réponse de forme OpenAI, avec le modèle et les vecteurs demandés. */
+  function reponse(model: string, vecteurs: number[][]): FetchLike {
+    return async () => ({
+      ok: true,
+      status: 200,
+      text: async () => JSON.stringify({ model, data: vecteurs.map((embedding) => ({ embedding })) }),
+    });
+  }
+
+  it("appelle /v1/embeddings, renvoie le modèle et normalise les vecteurs", async () => {
+    let url = "";
+    let corps: unknown;
+    const fetchImpl: FetchLike = async (demande, init) => {
+      url = demande;
+      corps = JSON.parse(init?.body ?? "{}");
+      return {
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({ model: MODELE, data: [{ embedding: [3, 4] }] }),
+      };
+    };
+
+    const embedder = createOpenAIEmbedder({
+      url: "http://127.0.0.1:9999",
+      model: MODELE,
+      dim: 2,
+      fetchImpl,
+    });
+    const vecteur = await embedder.embedQuery("test");
+
+    assert.equal(url, "http://127.0.0.1:9999/v1/embeddings");
+    assert.deepEqual(corps, { model: MODELE, input: [`${INSTRUCTION_REQUETE}test`] });
+    assert.equal(embedder.model, MODELE);
+    assert.equal(embedder.dim, 2);
+    assert.deepEqual(vecteur, [0.6, 0.8]);
+  });
+
+  it("préfixe la requête et laisse les passages intacts", async () => {
+    const entrees: unknown[] = [];
+    const fetchImpl: FetchLike = async (_url, init) => {
+      entrees.push(JSON.parse(init?.body ?? "{}").input);
+      return reponse(MODELE, [[1, 0]])(_url, init);
+    };
+    const embedder = createOpenAIEmbedder({ model: MODELE, dim: 2, fetchImpl });
+
+    await embedder.embedQuery("question", "cnil");
+    await embedder.embedPassages(["passage"]);
+
+    assert.deepEqual(entrees, [[`${INSTRUCTION_CNIL}question`], ["passage"]]);
+  });
+
+  it("choisit l'instruction du document et retombe sur le défaut", async () => {
+    const entrees: string[] = [];
+    const fetchImpl: FetchLike = async (_url, init) => {
+      entrees.push((JSON.parse(init?.body ?? "{}").input as string[])[0] ?? "");
+      return reponse(MODELE, [[1, 0]])(_url, init);
+    };
+    const embedder = createOpenAIEmbedder({ model: MODELE, dim: 2, fetchImpl });
+
+    await embedder.embedQuery("q", "32024R1689");
+    await embedder.embedQuery("q", "document-inconnu");
+
+    assert.deepEqual(entrees, [`${INSTRUCTION_AIAct}q`, `${INSTRUCTION_REQUETE}q`]);
+  });
+
+  it("refuse un autre modèle en nommant les deux", async () => {
+    const embedder = createOpenAIEmbedder({
+      model: MODELE,
+      dim: 2,
+      fetchImpl: reponse("unsloth/bge-small-en-v1.5", [[1, 0]]),
+    });
+
+    await assert.rejects(embedder.embedQuery("test"), (error: Error) => {
+      assert.match(error.message, /unsloth\/bge-small-en-v1\.5/);
+      assert.match(error.message, /mradermacher\/harrier-oss-v1-0\.6b-GGUF/);
+      return true;
+    });
+  });
+
+  it("refuse une autre dimension en nommant les deux", async () => {
+    const embedder = createOpenAIEmbedder({
+      model: MODELE,
+      dim: 1024,
+      fetchImpl: reponse(MODELE, [[1, 0, 0]]),
+    });
+
+    await assert.rejects(embedder.embedQuery("test"), (error: Error) => {
+      assert.match(error.message, /3 dimensions/);
+      assert.match(error.message, /1024 attendues/);
+      return true;
+    });
+  });
+});
+
+describe("le choix du fournisseur", () => {
+  it("garde Ollama quand --fournisseur est absent", () => {
+    assert.equal(lireFournisseur(undefined), "ollama");
+    const embedder = creerEmbedder(lireFournisseur(undefined), {});
+    assert.equal(embedder.model, "qwen3-embedding:0.6b");
+    assert.equal(embedder.dim, 1024);
+  });
+
+  it("nomme la valeur refusée", () => {
+    assert.throws(() => lireFournisseur("llama"), /--fournisseur attendu ollama ou openai ; reçu « llama »/);
+  });
+
+  it("rend l'adaptateur OpenAI quand le fournisseur le demande", () => {
+    const embedder = creerEmbedder("openai", {
+      modele: "mradermacher/harrier-oss-v1-0.6b-GGUF",
+      dim: "1024",
+      url: "http://127.0.0.1:9999",
+    });
+    assert.equal(embedder.model, "mradermacher/harrier-oss-v1-0.6b-GGUF");
+    assert.equal(embedder.dim, 1024);
+  });
+
+  it("exige un modèle pour un service OpenAI", () => {
+    assert.throws(
+      () => creerEmbedder("openai", {}),
+      /--fournisseur openai exige --modele/,
+    );
+  });
 });
 
 describe("buildIndex", () => {
