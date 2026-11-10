@@ -40,12 +40,12 @@ mesure `dev` antérieure à ce gel est caduque.
 | Ollama      | 0.40.14                                                            |
 
 Zéro unité embarquée : l'index était déjà à jour, la mesure porte donc sur un
-index aligné au corpus. L'empreinte `07583570…` est celle de l'indexation la
-plus récente (`npm run corpus:index`), et elle est restée identique avant et
-après les mesures des deux rerankers de ce dossier. Le mode delta réécrit
-`meta.construit_le` à chaque passage, sans toucher un vecteur : c'est l'empreinte
-d'après passage qui décrit l'index réellement interrogé, et seule une empreinte
-relevée juste avant et juste après les mesures prouve que rien n'a bougé.
+index aligné au corpus. L'empreinte `07583570…` est celle de l'index au moment
+de la mesure ; elle est restée identique avant et après les mesures des deux
+rerankers de ce dossier. Un contrôle `npm run corpus:index` postérieur a réécrit
+`meta.construit_le` et fait passer le fichier à `a6e3fd01…`, sans réembarquer un
+vecteur : c'est pourquoi seule une empreinte relevée juste avant et juste après
+les mesures prouve que rien n'a bougé, jamais l'empreinte courante.
 
 ## Chiffres de tête
 
