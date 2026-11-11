@@ -7,15 +7,15 @@
   "date_extraction": "2026-11-11",
   "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
   "langue": "fra",
-  "documents": 125,
-  "fragments": 10836,
-  "documents_lus": 226,
+  "documents": 152,
+  "fragments": 14756,
+  "documents_lus": 254,
   "exclusions": {
     "avant_borne": 0,
     "date_invalide": 0,
     "avis_avocat_general": 73,
     "autre_type": 2,
-    "version_francaise_absente": 26,
+    "version_francaise_absente": 27,
     "echec_telechargement": 0,
     "texte_vide": 0
   },
@@ -25,6 +25,15 @@
       "uri": "http://publications.europa.eu/resource/authority/subject-matter/PDON",
       "libelle": "Protection des données personnelles"
     },
+    "notion": {
+      "uri": "http://publications.europa.eu/resource/authority/fd_578/4.11.01",
+      "libelle": "Protection des données à caractère personnel"
+    },
+    "celex_complementaires": [
+      "62018CJ0746",
+      "62019CJ0511"
+    ],
+    "complementaires_ajoutes": 2,
     "langue": "fra",
     "types_retenus": {
       "CJ": "Arrêt de la Cour",
@@ -34,16 +43,16 @@
     },
     "periode": {
       "date_min": "2014-04-08",
-      "date_max": "2026-06-04"
+      "date_max": "2026-11-05"
     },
     "borne": "2014-01-01",
-    "avant_borne": 43,
+    "avant_borne": 44,
     "exclusions": {
       "avant_borne": 0,
       "date_invalide": 0,
       "avis_avocat_general": 73,
       "autre_type": 2,
-      "version_francaise_absente": 26,
+      "version_francaise_absente": 27,
       "echec_telechargement": 0,
       "texte_vide": 0
     },
@@ -378,6 +387,10 @@
       },
       {
         "celex": "62017TO0452",
+        "motif": "version_francaise_absente"
+      },
+      {
+        "celex": "62020TJ0384(01)",
         "motif": "version_francaise_absente"
       },
       {
