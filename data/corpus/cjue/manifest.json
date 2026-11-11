@@ -33,10 +33,11 @@
       "TO": "Ordonnance du Tribunal"
     },
     "periode": {
-      "date_min": "2014-01-01",
+      "date_min": "2014-04-08",
       "date_max": "2026-06-04"
     },
-    "avant_borne": 67,
+    "borne": "2014-01-01",
+    "avant_borne": 43,
     "exclusions": {
       "avant_borne": 0,
       "date_invalide": 0,

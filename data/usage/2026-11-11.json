@@ -9310,6 +9310,692 @@
       "status": 200,
       "durationMs": 106,
       "at": "2026-11-11T14:38:10.223Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 388,
+      "at": "2026-11-11T15:26:16.379Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 662,
+      "at": "2026-11-11T15:26:17.069Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 255,
+      "at": "2026-11-11T15:26:17.377Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 911,
+      "at": "2026-11-11T15:26:18.302Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 709,
+      "at": "2026-11-11T15:26:19.016Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 624,
+      "at": "2026-11-11T15:26:19.645Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 387,
+      "at": "2026-11-11T15:26:20.040Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 250,
+      "at": "2026-11-11T15:26:20.306Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 300,
+      "at": "2026-11-11T15:26:20.654Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 389,
+      "at": "2026-11-11T15:26:21.064Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 507,
+      "at": "2026-11-11T15:26:21.591Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 303,
+      "at": "2026-11-11T15:26:21.901Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 485,
+      "at": "2026-11-11T15:26:22.395Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 378,
+      "at": "2026-11-11T15:26:22.807Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 606,
+      "at": "2026-11-11T15:26:23.420Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 819,
+      "at": "2026-11-11T15:26:24.243Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 134,
+      "at": "2026-11-11T15:26:24.387Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 208,
+      "at": "2026-11-11T15:26:24.595Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 421,
+      "at": "2026-11-11T15:26:25.057Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 212,
+      "at": "2026-11-11T15:26:25.276Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 383,
+      "at": "2026-11-11T15:26:25.684Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 204,
+      "at": "2026-11-11T15:26:25.889Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 135,
+      "at": "2026-11-11T15:26:26.026Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 190,
+      "at": "2026-11-11T15:26:26.216Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 885,
+      "at": "2026-11-11T15:26:27.106Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 202,
+      "at": "2026-11-11T15:26:27.315Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 231,
+      "at": "2026-11-11T15:26:27.550Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 257,
+      "at": "2026-11-11T15:26:27.820Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 303,
+      "at": "2026-11-11T15:26:28.165Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 174,
+      "at": "2026-11-11T15:26:28.343Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 598,
+      "at": "2026-11-11T15:26:28.949Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 227,
+      "at": "2026-11-11T15:26:29.183Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 193,
+      "at": "2026-11-11T15:26:29.390Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 593,
+      "at": "2026-11-11T15:26:29.998Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 369,
+      "at": "2026-11-11T15:26:30.382Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 923,
+      "at": "2026-11-11T15:26:31.308Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 225,
+      "at": "2026-11-11T15:26:31.536Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 174,
+      "at": "2026-11-11T15:26:31.719Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 162,
+      "at": "2026-11-11T15:26:31.881Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 352,
+      "at": "2026-11-11T15:26:32.234Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 397,
+      "at": "2026-11-11T15:26:32.632Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 277,
+      "at": "2026-11-11T15:26:32.909Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 243,
+      "at": "2026-11-11T15:26:33.187Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 580,
+      "at": "2026-11-11T15:26:33.778Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 202,
+      "at": "2026-11-11T15:26:34.000Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 426,
+      "at": "2026-11-11T15:26:34.427Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 301,
+      "at": "2026-11-11T15:26:34.782Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 495,
+      "at": "2026-11-11T15:26:35.298Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 152,
+      "at": "2026-11-11T15:26:35.453Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 323,
+      "at": "2026-11-11T15:30:45.819Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 433,
+      "at": "2026-11-11T15:30:46.282Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 274,
+      "at": "2026-11-11T15:30:46.620Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 277,
+      "at": "2026-11-11T15:30:46.912Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 332,
+      "at": "2026-11-11T15:30:47.274Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 319,
+      "at": "2026-11-11T15:30:47.599Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 386,
+      "at": "2026-11-11T15:30:48.003Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 225,
+      "at": "2026-11-11T15:30:48.250Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 216,
+      "at": "2026-11-11T15:30:48.525Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 355,
+      "at": "2026-11-11T15:30:48.911Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 384,
+      "at": "2026-11-11T15:30:49.345Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 299,
+      "at": "2026-11-11T15:30:49.659Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 538,
+      "at": "2026-11-11T15:30:50.244Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 453,
+      "at": "2026-11-11T15:30:50.747Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 297,
+      "at": "2026-11-11T15:30:51.060Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 507,
+      "at": "2026-11-11T15:30:51.574Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 128,
+      "at": "2026-11-11T15:30:51.738Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 214,
+      "at": "2026-11-11T15:30:51.974Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 408,
+      "at": "2026-11-11T15:30:52.405Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 144,
+      "at": "2026-11-11T15:30:52.556Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 88,
+      "at": "2026-11-11T15:30:52.745Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 143,
+      "at": "2026-11-11T15:30:52.888Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 175,
+      "at": "2026-11-11T15:30:53.071Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 165,
+      "at": "2026-11-11T15:30:53.236Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 328,
+      "at": "2026-11-11T15:30:53.574Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 210,
+      "at": "2026-11-11T15:30:53.808Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 208,
+      "at": "2026-11-11T15:30:54.019Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 277,
+      "at": "2026-11-11T15:30:54.313Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 235,
+      "at": "2026-11-11T15:30:54.573Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 156,
+      "at": "2026-11-11T15:30:54.736Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 626,
+      "at": "2026-11-11T15:30:55.363Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 197,
+      "at": "2026-11-11T15:30:55.568Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 184,
+      "at": "2026-11-11T15:30:55.771Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 295,
+      "at": "2026-11-11T15:30:56.079Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 267,
+      "at": "2026-11-11T15:30:56.361Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 283,
+      "at": "2026-11-11T15:30:56.653Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 185,
+      "at": "2026-11-11T15:30:56.855Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 151,
+      "at": "2026-11-11T15:30:57.013Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 121,
+      "at": "2026-11-11T15:30:57.134Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 355,
+      "at": "2026-11-11T15:30:57.489Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 234,
+      "at": "2026-11-11T15:30:57.726Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 288,
+      "at": "2026-11-11T15:30:58.014Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 205,
+      "at": "2026-11-11T15:30:58.254Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 381,
+      "at": "2026-11-11T15:30:58.640Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 173,
+      "at": "2026-11-11T15:30:58.859Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 394,
+      "at": "2026-11-11T15:30:59.254Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 402,
+      "at": "2026-11-11T15:30:59.675Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 389,
+      "at": "2026-11-11T15:31:00.073Z"
+    },
+    {
+      "source": "judilibre",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 109,
+      "at": "2026-11-11T15:31:00.186Z"
     }
   ]
 }

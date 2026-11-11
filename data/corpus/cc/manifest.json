@@ -6,22 +6,23 @@
   "date_min": "2014-01-01",
   "date_extraction": "2026-11-11",
   "licence": "Licence Ouverte 2.0 (Etalab), conditions générales d'utilisation Judilibre",
-  "documents": 403,
-  "fragments": 8467,
+  "documents": 352,
+  "fragments": 7048,
   "documents_lus": 1133,
   "doublons_recherche": 641,
   "exclusions": {
     "avant_borne": 0,
     "date_invalide": 0,
-    "hors_sujet": 730,
+    "hors_sujet": 781,
     "texte_vide": 0
   },
   "couverture": {
     "source": "PISTE — Judilibre /search et /decision",
     "periode": {
-      "date_min": "2014-01-01",
+      "date_min": "2014-01-14",
       "date_max": "2026-11-10"
     },
+    "borne": "2014-01-01",
     "champs": "text",
     "requetes": [
       "données personnelles",
@@ -64,7 +65,6 @@
         "données à caractère personnel",
         "protection des données",
         "commission nationale de l'informatique et des libertés",
-        "cnil",
         "eprivacy",
         "traitement de données",
         "données de connexion"
@@ -80,7 +80,7 @@
     "exclusions": {
       "avant_borne": 0,
       "date_invalide": 0,
-      "hors_sujet": 730,
+      "hors_sujet": 781,
       "texte_vide": 0
     },
     "introuvables": [],
