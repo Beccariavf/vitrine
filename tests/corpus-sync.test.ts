@@ -11,7 +11,7 @@ import { normaliser } from "../mcp/embed/embedder.ts";
 import { cheminIndex } from "../mcp/index/build.ts";
 import { openIndex } from "../mcp/index/search.ts";
 import { etatCorpus, search } from "../mcp/tools.ts";
-import { syncCorpus } from "../mcp/corpus/sync.ts";
+import { agentsParDefaut, syncCorpus } from "../mcp/corpus/sync.ts";
 import type { AgentSync } from "../mcp/corpus/sync.ts";
 import {
   corpusDeLEntree,
@@ -423,6 +423,14 @@ describe("rapport de synchronisation", () => {
       assert.equal(etat.a_jour_au, null);
       assert.deepEqual(etat.manquants, []);
       assert.match(etat.message ?? "", /corpus:sync/);
+
+      writeFileSync(
+        join(root, "data", "corpus", "sync.json"),
+        JSON.stringify({ version: 1, documents: [null], corpus: [], sources: [], depuis: "2026-01-01" }),
+        "utf8",
+      );
+      assert.equal(lireRapport(root), null);
+      assert.deepEqual(etatCorpus(root).manquants, []);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
@@ -879,6 +887,65 @@ describe("synchronisation du corpus", () => {
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
+  });
+
+  it("reprend une panne survenue le même jour qu'un succès", async () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "cnil", [uniteCnil("CNILTEXT000000000001")]);
+      const premiere = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-11",
+        agents: agents(INERTE, INERTE, INERTE, INERTE),
+        embedder: embedderFactice(),
+      });
+      assert.equal(premiere.a_jour_au, "2026-11-11");
+
+      ecrireEntree(
+        root,
+        entreeCnil("entree-tard", "https://www.cnil.fr/fr/tard", "2026-10-15T12:00:00.000Z"),
+      );
+      ecrireSnapshot(root, "https://www.cnil.fr/fr/tard", ["CNILTEXT000000000002"]);
+      const appels = { n: 0 };
+      const panne: AgentSync = async () => {
+        appels.n += 1;
+        throw new Error("réseau");
+      };
+      const echouee = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-11",
+        depuis: "2026-10-01",
+        agents: agents(panne, INERTE, INERTE, INERTE),
+        embedder: embedderFactice(),
+      });
+      assert.equal(echouee.a_jour_au, "2026-11-11");
+      assert.equal(echouee.sources[0]?.statut, "panne");
+
+      const reprise = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-12",
+        agents: agents(panne, INERTE, INERTE, INERTE),
+        embedder: embedderFactice(),
+      });
+      assert.equal(reprise.depuis, "2026-10-01");
+      assert.equal(reprise.entrees_lues, 1);
+      assert.equal(appels.n, 2);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("signale un journal d'usage en panne sans faire échouer cc", async () => {
+    const agents = agentsParDefaut("/tmp/depot", {
+      syncCc: async () => ({ ecrit: true, documentsLus: 2, documents: 1, enAttente: 0 }),
+      flushUsage: () => {
+        throw new Error("disque plein");
+      },
+    });
+    assert.deepEqual(Object.keys(agents).sort(), ["cc", "ce", "cjue", "cnil"]);
+    const resultat = await agents.cc();
+    assert.equal(resultat.ecrit, true);
+    assert.match(resultat.message, /journal d'usage non écrit \(disque plein\)/);
   });
 
   it("écrit un rapport vide et avance quand aucune entrée n'est dans la fenêtre", async () => {

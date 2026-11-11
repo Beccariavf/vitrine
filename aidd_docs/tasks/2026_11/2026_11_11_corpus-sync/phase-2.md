@@ -64,4 +64,4 @@ status: completed
 | 1 | le test prouve lecture/écriture idempotente, inventaire des huit manifestes, date d'arrêté par corpus et texte du rapport |
 | 2 | le test prouve le choix des sources, l'ordre, la poursuite après panne, le non-avancement de `a_jour_au`, le dry-run sans écriture et la réindexation conditionnelle |
 | 2 | un test d'intégration hors ligne prouve qu'une sanction CNIL ajoutée par l'agent devient cherchable par `search` |
-| 3 | le test prouve que chaque agent transmet `rootDir` et que `flushUsage` est appelé pour `cc` |
+| 3 | le test prouve que chaque agent reçoit `rootDir` et qu'une panne de `flushUsage` après une écriture `cc` est signalée sans faire échouer la source |

@@ -74,6 +74,12 @@ export function lireRapport(rootDir: string): RapportSync | null {
     if (
       valeur.version !== 1 ||
       !Array.isArray(valeur.documents) ||
+      !valeur.documents.every(
+        (document) =>
+          typeof document === "object" &&
+          document !== null &&
+          typeof (document as { statut?: unknown }).statut === "string",
+      ) ||
       !Array.isArray(valeur.corpus) ||
       !Array.isArray(valeur.sources) ||
       typeof valeur.depuis !== "string"
@@ -196,7 +202,7 @@ export function formaterRapport(rapport: RapportSync): string {
     }
     lignes.push(
       `Non mappées : ${[...parMotif.entries()]
-        .map(([motif, compte]) => `${compte} ${motif}`)
+        .map(([motif, compte]) => `${motif} : ${compte}`)
         .join(", ")}`,
     );
   }

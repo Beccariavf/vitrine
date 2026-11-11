@@ -45,7 +45,12 @@ export function etatCorpus(rootDir: string): EtatCorpus {
     derniere_tentative: rapport?.derniere_tentative ?? null,
     depuis: rapport?.depuis ?? null,
     corpus: inventaireCorpus(rootDir),
-    manquants: documents.filter((document) => document.statut === "manquant"),
+    manquants: documents.filter(
+      (document) =>
+        typeof document === "object" &&
+        document !== null &&
+        (document as { statut?: unknown }).statut === "manquant",
+    ),
     sources: Array.isArray(rapport?.sources) ? rapport.sources : [],
     index: rapport?.index ?? null,
     ...(rapport === null

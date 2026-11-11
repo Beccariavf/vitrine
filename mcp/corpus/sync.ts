@@ -96,7 +96,25 @@ function validerDate(date: string, nom: string): void {
 }
 
 /** Les quatre synchronisations réelles, derrière la même interface que les tests. */
-export function agentsParDefaut(rootDir: string): Record<CorpusVeille, AgentSync> {
+export type AgentsParDefautDeps = {
+  /** Remplaçable en test : une passe `cc` sans réseau. */
+  syncCc?: (options: { rootDir: string }) => Promise<{
+    ecrit: boolean;
+    documentsLus: number;
+    documents: number;
+    enAttente: number;
+  }>;
+  /** Remplaçable en test : journal d'usage en panne. */
+  flushUsage?: (rootDir: string) => void;
+};
+
+/** Les quatre synchronisations réelles, derrière la même interface que les tests. */
+export function agentsParDefaut(
+  rootDir: string,
+  deps: AgentsParDefautDeps = {},
+): Record<CorpusVeille, AgentSync> {
+  const synchroniserCc = deps.syncCc ?? syncCc;
+  const journal = deps.flushUsage ?? flushUsage;
   return {
     cnil: async () => {
       const resultat = await syncIncrements({ rootDir });
@@ -117,24 +135,24 @@ export function agentsParDefaut(rootDir: string): Record<CorpusVeille, AgentSync
       };
     },
     cc: async () => {
-      let resultat;
-      let journal = "";
+      let resultat: Awaited<ReturnType<typeof synchroniserCc>>;
+      let avertissement = "";
       try {
-        resultat = await syncCc({ rootDir });
+        resultat = await synchroniserCc({ rootDir });
       } finally {
         try {
-          flushUsage(rootDir);
+          journal(rootDir);
         } catch (error) {
           // Le corpus a déjà été écrit : un journal d'usage en panne ne doit pas
           // faire passer la source en panne, il est seulement signalé.
-          journal = ` ; journal d'usage non écrit (${raison(error)})`;
+          avertissement = ` ; journal d'usage non écrit (${raison(error)})`;
         }
       }
       return {
         ecrit: resultat.ecrit,
         message:
           `${resultat.documentsLus} décision(s) lue(s), ${resultat.documents} retenue(s), ` +
-          `${resultat.enAttente} en attente${journal}`,
+          `${resultat.enAttente} en attente${avertissement}`,
       };
     },
     cjue: async () => {
@@ -300,8 +318,8 @@ export async function syncCorpus(options: SyncCorpusOptions = {}): Promise<Rappo
   // après la passe.
   const echecPrecedent =
     precedent !== null &&
-    precedent.derniere_tentative !== null &&
-    precedent.a_jour_au !== precedent.derniere_tentative;
+    (precedent.sources.some((source) => source.statut === "panne") ||
+      precedent.index.statut === "panne");
   const bornePrecedente =
     precedent === null
       ? date

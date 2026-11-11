@@ -224,8 +224,8 @@ inventaire des corpus, état des sources et de l'index. Un document manquant n'e
 reste listé tant qu'il n'entre pas au corpus ; une source ou l'index en panne laisse `a_jour_au`
 inchangé, et l'index est réessayé à la passe suivante. Un CELEX listé dans
 `couverture.documents_ecartes` est `ecarte` et ne relance pas la CJUE. `--dry-run` n'écrit rien et
-`--json` rend le rapport brut ; `--date` date la passe, `etat_corpus` expose le même état au client
-MCP, sans réseau ni index.
+`--json` rend le rapport brut ; `--date` date le rapport et la fenêtre de la passe (les sources
+consignent leur propre date), `etat_corpus` expose le même état au client MCP, sans réseau ni index.
 
 `npm run corpus:sync -- --planifier` écrit `~/Library/LaunchAgents/fr.vitrine.corpus-sync.plist`
 (`StartInterval` 259 200 s, soit trois jours) et imprime les commandes `launchctl` `bootstrap` et
