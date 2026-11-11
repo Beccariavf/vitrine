@@ -734,7 +734,7 @@ describe("niveauConfiance", () => {
   });
 });
 
-/** Triplet `0,67 / 0,67 / 0,02` lu dans une ligne de `promesse.md`. */
+/** Triplet `0,73 / 0,73 / 0,01` lu dans une ligne de `promesse.md`. */
 function tripletMarkdown(ligne: string): [number, number, number] | null {
   const trouve = /(\d+),(\d+)\s*\/\s*(\d+),(\d+)\s*\/\s*(\d+),(\d+)/.exec(ligne);
   if (trouve === null) return null;

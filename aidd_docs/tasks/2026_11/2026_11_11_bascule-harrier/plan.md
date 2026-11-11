@@ -51,5 +51,5 @@ Source: ticket GitHub #20, `Basculer l'embedding sur Harrier 0.6B servi par Olla
 | ---------- | ----- |
 | `promesse.md` est réécrit pour Harrier plutôt que doublé | Il porte le contrat de la table que le code applique, et `tests/mcp.test.ts` lit ses lignes « Seuils retenus » et « Repli » ; les chiffres qwen3 restent dans `mesures/` et `confirmation.md`. |
 | L'index produit est reconstruit avant les mesures des autres corpus | Il sert de base commune et évite une seconde indexation de 53 143 unités dans la racine d'expérience. |
-| Le service de production est Ollama | Le paquet `leoipulsar/harrier-0.6b` rend des vecteurs identiques au modèle mesuré (cosinus 1,00000000) ; Unsloth Studio est une application de bureau, pas un démon supervisé. |
+| Le service de production est Ollama | Le paquet `leoipulsar/harrier-0.6b` est équivalent au modèle mesuré (rangs et niveaux identiques sur `dev`, écart de similarité ≤ 7,0 × 10⁻⁵) ; Unsloth Studio est une application de bureau, pas un démon supervisé. |
 | L'index d'expérience vit hors du dépôt | `--root ~/.cache/vitrine-harrier-ollama/root` laisse `data/corpus/index/index.db` intact jusqu'à la bascule. |

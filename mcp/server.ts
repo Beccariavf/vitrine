@@ -25,8 +25,8 @@ const CONSIGNE_PROMESSE =
   "document, sur les passages du top 5. Sur le corpus `cnil` (seuils 0,73 / 0,73 / 0,01) et hors " +
   "pièges, la borne haute à 95 % est de 22,6 % (2 erreurs sur 28 réponses confiantes, 7,1 %, à " +
   "51,9 % de couverture) ; constatée hors échantillon à 10,2 % (0 erreur sur 34 confiantes, 63,0 % " +
-  "de couverture). Aucun réglage mesuré ne descend sous 10 %, et la borne minimale sans condition de " +
-  "couverture (19,4 %) coûterait la couverture utile. Le sous-ensemble doctrinal " +
+  "de couverture). Le meilleur réglage mesuré sur `dev` plafonne à 19,4 %, à 29,6 % de couverture. " +
+  "Le sous-ensemble doctrinal " +
   "`questions-cnil-doctrine.csv` est mesuré à part, hors promesse, comme une recherche filtrée " +
   "(nature, dates, type ou montant) et un k < 5 ; les autres corpus, une " +
   "recherche sans `corpus` et une recherche qui ne nomme qu'un document suivent le repli " +
@@ -44,7 +44,7 @@ const CONSIGNE_SERVEUR =
   "nom, une référence exacte qui n'existe que dans un corpus est `incertain` et le corpus est " +
   "nommé. `get_decision` rend une sanction entière, par identifiant CNILTEXT ou par numéro SAN-… ; " +
   "un avis ou une recommandation se lit par `search` avec `nature`. Le texte rendu vient du corpus " +
-  "local, jamais d'une génération. " +
+  "local, jamais d'une génération ; l'embedding est local (`leoipulsar/harrier-0.6b` sur Ollama). " +
   CONSIGNE_PROMESSE;
 
 export type ServerDeps = {

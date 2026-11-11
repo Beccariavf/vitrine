@@ -88,6 +88,10 @@ ici, et ne peut pas l'être sans trois choses qui changent le produit :
 Tant que ces trois points ne sont pas faits, le produit garde `qwen3-embedding:0.6b`
 et sa table CNIL, dont la promesse vient d'être confirmée.
 
+> **Obsolète depuis le 2026-11-11.** Le ticket #20 a fait l'adoption : `leoipulsar/harrier-0.6b`
+> servi par Ollama, table `0,73 / 0,73 / 0,01`, promesse `dev` 22,6 % à 51,9 % de couverture.
+> Mesures et limites : `aidd_docs/tasks/2026_11/2026_11_11_bascule-harrier/mesures/`.
+
 ## 5. Limites
 
 - Une seule collection (CNIL), 54 questions sémantiques.

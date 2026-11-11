@@ -217,7 +217,13 @@ résultat est le bon article.
 
 La table est liée au couple (modèle, corpus). Depuis le 2026-11-11, le produit embarque
 `leoipulsar/harrier-0.6b` servi par Ollama ; la table CNIL a été recalibrée sur `dev` et sa promesse
-constatée sur le `test` déjà stocké, sans nouveau tir (vecteurs identiques, cosinus 1,00000000).
+constatée sur le `test` déjà stocké, sans nouveau tir (modèle équivalent : rangs et niveaux identiques sur `dev`, écart de similarité ≤ 7,0 × 10⁻⁵).
+
+Hors CNIL, le `dev` ne tranche pas et le repli n'a pas été recalibré : le RGPD monte à 19/19 (+1
+question), l'AI Act à 3/3, le CEPD reste à 10/10, mais la LIL perd une question (9/10) et le Conseil
+d'État deux (6/12, MRR 0,347 contre 0,486). Ces écarts n'ont aucune puissance statistique (3 à 19
+questions sémantiques) et restent des constats `dev` ; le détail est dans
+`aidd_docs/tasks/2026_11/2026_11_11_bascule-harrier/mesures/autres-corpus.md`.
 
 Sur le corpus CNIL, 28 des 54 questions sémantiques sont `confiant` (51,9 % de couverture), 2 se
 trompent (7,1 %), et la borne haute à 95 % est de **22,6 %** (Wilson). Hors échantillon, le `test`
@@ -229,7 +235,7 @@ couverture utile (16 confiantes sur 54, 29,6 %) ; une borne à 10 % avec zéro e
 corpus suivent le repli et ne portent aucune promesse chiffrée (19, 12, 10, 10 et 3 questions
 sémantiques pour le RGPD, le Conseil d'État, la LIL, le CEPD et l'AI Act). Une recherche **sans
 `corpus`**, ou qui **ne nomme qu'un document**, suit le repli et sort de la promesse : l'instruction
-de requête et le bassin de candidats y changent. Le plancher de refus CNIL passe de 0,69 à 0,73 :
+de requête et le bassin de candidats y changent. Le plancher de refus CNIL passe de 0,67 (table qwen3) à 0,73 :
 la plus faible similarité d'une bonne réponse vaut 0,7304, et un plancher à 0,74 la tairait.
 Une recherche **filtrée** (`nature`, dates, type ou montant de sanction, numéro) et un `k` inférieur
 à 5 sortent aussi de la promesse : le bassin de candidats change, et le harnais n'exerce pas ces

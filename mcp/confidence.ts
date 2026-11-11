@@ -8,9 +8,8 @@
  * soit une borne haute à 95 % de **22,6 %** (Wilson), à **51,9 %** de couverture,
  * en comptant satisfait un passage qui porte le document attendu dans les cinq
  * premiers du top 5 brut. Hors échantillon, le split `test` déjà stocké rend
- * 0 erreur sur 34 confiantes (borne 10,2 %, couverture 63,0 %). Aucun réglage
- * mesuré ne descend sous 10 %, et la borne minimale sans condition de couverture
- * (19,4 %) coûterait la couverture utile.
+ * 0 erreur sur 34 confiantes (borne 10,2 %, couverture 63,0 %). Le meilleur
+ * réglage mesuré sur `dev` plafonne à 19,4 %, à 29,6 % de couverture seulement.
  * Source : `aidd_docs/tasks/2026_11/2026_11_11_bascule-harrier/mesures/calibration.md`.
  *
  * ## Ce qu'elle ne garantit pas

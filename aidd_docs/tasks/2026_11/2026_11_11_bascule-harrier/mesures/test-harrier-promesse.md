@@ -1,10 +1,13 @@
 # Promesse de Harrier constatée sur le `test` déjà stocké
 
-Date : 2026-11-11. Triplet figé en `mesures/calibration.md` **avant** lecture de ce fichier :
-`0,73 / 0,73 / 0,01`. Source : `aidd_docs/tasks/2026_11/2026_11_10_promesse-confiance/mesures/test-harrier.json`,
+Date : 2026-11-11. Triplet retenu en `mesures/calibration.md` : `0,73 / 0,73 / 0,01`. Il n'a pas été
+choisi sur ce test, mais il avait déjà été pré-publié dans `mesures/confirmation.md` le 2026-11-10
+avec ses chiffres `dev` et `test` : cette page constate, elle ne confirme pas à l'aveugle. Le résultat
+est stable sur tout le plateau `dev` (0,30–0,73) : 34 confiantes et 0 erreur. Source : `aidd_docs/tasks/2026_11/2026_11_10_promesse-confiance/mesures/test-harrier.json`,
 produit le 2026-11-10 par Unsloth Studio sur `mradermacher/harrier-oss-v1-0.6b-GGUF`. Le paquet
-Ollama `leoipulsar/harrier-0.6b` rend des vecteurs identiques (cosinus 1,00000000) : aucune mesure
-n'est rejouée, le tir unique reste dépensé.
+Ollama `leoipulsar/harrier-0.6b` est équivalent au modèle mesuré : sur le `dev`, tous les rangs et
+niveaux sont identiques et les similarités diffèrent de 7,0 × 10⁻⁵ au plus. Aucune mesure n'est
+rejouée, le tir unique reste dépensé.
 
 ## Chiffres
 

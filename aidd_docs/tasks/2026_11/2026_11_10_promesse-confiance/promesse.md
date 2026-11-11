@@ -25,7 +25,10 @@ décrivent plus le produit.
 
 Ces quatre valeurs — triplet, couverture, risque, plafond — sont le contrat que le code applique : il
 ne les recalcule pas. Le `test` confirme la borne et la resserre : 34 confiantes, 0 erreur, borne
-**10,2 %**, couverture 63,0 % (`mesures/test-harrier-promesse.md`).
+**10,2 %**, couverture 63,0 % (`mesures/test-harrier-promesse.md`). Cette constatation n'est **pas
+aveugle** : `mesures/confirmation.md` avait pré-publié le 2026-11-10 le couple `haut 0,73` /
+`marge 0,01` et ses deux chiffres. Elle reste stable sur tout le plateau `dev` (0,30–0,73), donc le
+test n'a pas choisi le triplet ; il pouvait le contredire, pas le sélectionner.
 
 ## 1. Population et règle de choix
 
@@ -61,7 +64,7 @@ donc les similarités et les niveaux. Ce mode n'est pas mesuré ici et ne porte 
 
 | Étape | Résultat |
 | ----- | -------- |
-| Couples balayés | `haut` 0,30 → 0,95 par 0,01 × `marge` 0,01 / 0,02 / 0,05, 162 couples |
+| Couples balayés | `haut` 0,30 → 0,95 par 0,01 × `marge` 0,01 / 0,02 / 0,05, 198 couples |
 | 1 — bornes ≤ 10 % | **aucune** |
 | 2 — borne minimale à couverture ≥ 20/54 | **22,6 %**, à 28 confiantes (51,9 %) et 2 erreurs, `marge` 0,01, `haut` dans 0,30–0,73 |
 | 3 — borne minimale sans condition de couverture | 19,4 %, mais à 16 confiantes (29,6 %) : sous la couverture utile |
@@ -117,9 +120,10 @@ Il est donc fixé sur la courbe du refus, pas sur celle du risque.
 | **0,73 (retenu)** | **0** | **0** |
 | 0,74 | 1 | 1 |
 
-La plus faible similarité d'une bonne réponse vaut **0,7304** ; le plancher à 0,73 la rend. À 0,74,
-une bonne réponse est tue. Aucune confiante n'est perdue par le refus : à 0,73, `bas` égale `haut`,
-donc tout refus porterait sur une similarité qui serait restée `incertain` de toute façon.
+La plus faible similarité d'une bonne réponse vaut **0,7304** ; le plancher à 0,73 la rend, avec
+4 × 10⁻⁴ de marge seulement. À 0,74, une bonne réponse est tue. Aucune confiante n'est perdue par le
+refus : à 0,73, `bas` égale `haut`, donc tout refus porterait sur une similarité qui serait restée
+`incertain` de toute façon.
 
 Les pièges cités ne montent pas : cinq sur six le sont déjà en `dev`, et le plancher ne peut pas les
 faire monter au-delà de leur tête de classement.
@@ -162,16 +166,11 @@ même corpus) et le repli `0,69 / 0,74 / 0,01` partout ailleurs. Mesures `dev` s
 | --- | --- | ---------: | ---------: | ------: | -----: | ---------: | -------: |
 | CNIL étendu | table 0,73 / 0,73 / 0,01 | 28 | 51,9 % | 2 | 7,1 % | **22,6 %** | 0 |
 | CNIL doctrine | table, hors promesse | 3 | 30,0 % | 3 | 100,0 % | 100,0 % | 0 |
-| RGPD v2 | repli | 5 | 26,3 % | 0 | 0,0 % | 43,4 % | 1, dont 1 juste |
-| AI Act | repli | 0 | 0,0 % | 0 | non mesuré | non mesuré | 0 |
-| LIL | repli | 2 | 20,0 % | 0 | 0,0 % | 65,8 % | 0 |
-| Conseil d'État | repli | 2 | 16,7 % | 0 | 0,0 % | 65,8 % | 0 |
-| CEPD | repli | 3 | 30,0 % | 0 | 0,0 % | 56,1 % | 0 |
 
-Seule la ligne CNIL étendu porte une promesse. Les autres sont documentaires : avec 19, 12, 10, 10 et
-3 questions sémantiques, aucune ne peut soutenir un plafond, et la doctrine reste un sous-ensemble
-adverse dont le risque est publié sans être couvert. Le classement brut hors CNIL est aussi dans
-`mesures/autres-corpus.md` : RGPD 19/19, AI Act 3/3, LIL 9/10, Conseil d'État 6/12, CEPD 10/10.
+Les cinq autres jeux suivent le repli : 5 confiantes sans erreur sur le RGPD, 0 sur l'AI Act, 2 sur la
+LIL, 2 sur le Conseil d'État et 3 sur le CEPD, toutes sans erreur ; 1 bonne réponse RGPD est refusée
+par le plancher. Aucune ne porte de promesse. Le détail, avec top 5, rang 1 et MRR, est dans
+`mesures/autres-corpus.md` et n'est pas recopié ici.
 
 ## 6. Ce qui invaliderait ce document
 
@@ -181,7 +180,7 @@ adverse dont le risque est publié sans être couvert. Le classement brut hors C
 - une nouvelle mesure du split `test`, qui se fait une fois et peut resserrer ou élargir la borne
   sans changer la règle. Le tir est dépensé pour `qwen3-embedding:0.6b` et
   `mradermacher/harrier-oss-v1-0.6b-GGUF` ; `leoipulsar/harrier-0.6b` n'en a pas consommé et ne doit
-  pas en consommer, puisque ses vecteurs sont identiques à ceux du modèle mesuré.
+  pas en consommer : il est équivalent au modèle mesuré (rangs et niveaux identiques sur `dev`, écart de similarité ≤ 7,0 × 10⁻⁵).
 
 Tant que ces conditions tiennent, « confiant » vaut **22,6 % au plus, à 51,9 % de couverture, sur le
 corpus CNIL** — et rien de plus. Le `test` constate 10,2 % à 63,0 %.

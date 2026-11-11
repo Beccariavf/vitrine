@@ -1,16 +1,21 @@
-# Calibration Harrier sur `dev` : triplet figé avant lecture du `test`
+# Calibration Harrier sur `dev` : triplet retenu et plancher de refus
 
 Date : 2026-11-11. Modèle : `leoipulsar/harrier-0.6b` (Ollama, Q8_0, 1 024 dimensions).
 Index : `~/.cache/vitrine-harrier-ollama/root/data/corpus/index/index.db`, 29 299 unités CNIL.
 Mesure : `mesures/dev-harrier-ollama.json`, 60 questions, 54 sémantiques, 6 pièges exclus.
-Cette page est écrite **avant** toute lecture de `test-harrier.json`.
+Cette page n'est **pas** une confirmation aveugle : `mesures/confirmation.md` du 2026-11-10 avait
+déjà publié le couple `haut 0,73` / `marge 0,01` et ses chiffres `dev` et `test`. Le choix retenu ici
+ne doit rien au test pour autant : 0,73 est le sommet du plateau `dev` 0,30–0,73, et tout `haut` de
+ce plateau rend les mêmes 28 confiantes en `dev` et 34 sans erreur en `test`. Le plancher 0,73 vient
+de la courbe du refus, pas du test.
 
 ## Reproduction du modèle mesuré
 
 Le `dev` rend 44/54 au top 5 sémantique, 38/54 au rang 1, MRR 0,7404, 5 pièges cités sur 6 et
-aucun piège confiant : identique, au chiffre près, à
+aucun piège confiant à la calibration `dev` du harnais : identique en rangs et en niveaux à
 `aidd_docs/tasks/2026_11/2026_11_10_reranker-avant-embedder/mesures/harrier-dev-actuelle.json`
-(44/54, 38/54, 0,7404, 5 pièges). Le portage Ollama est fidèle ; aucun écart à expliquer.
+(44/54, 38/54, 0,7404, 5 pièges, 0 piège confiant), les similarités différant de 7,0 × 10⁻⁵ au plus.
+Le portage Ollama est fidèle ; aucun écart à expliquer.
 
 ## Règle de choix appliquée
 
@@ -25,7 +30,7 @@ Grille : `haut` 0,30 → 0,95 par 0,01 × `marge` 0,01 / 0,02 / 0,05, sans refus
 
 | Étape | Résultat |
 | ----- | -------- |
-| Couples balayés | 162 |
+| Couples balayés | 198 (66 `haut` × 3 `marge`) |
 | 1 — bornes ≤ 10 % | **aucune** |
 | 2 — borne minimale à couverture ≥ 20/54 | **22,6 %**, à 28 confiantes (51,9 %) et 2 erreurs, `marge` 0,01, `haut` dans 0,30–0,73 |
 | 3 — borne minimale sans condition de couverture | 19,4 %, mais à 16 confiantes (29,6 %) : sous la couverture utile |
@@ -48,8 +53,10 @@ retenue.
 | **0,73 (retenu)** | **0** | **0** |
 | 0,74 | 1 | 1 |
 
-La plus faible similarité d'une bonne réponse vaut **0,7304** ; le plancher à 0,73 la rend. À 0,74,
-une bonne réponse est tue. `bas` = 0,73 égale `haut` : aucun refus ne porte sur une réponse qui
+La plus faible similarité d'une bonne réponse vaut **0,7304** ; le plancher à 0,73 la rend, avec
+4 × 10⁻⁴ de marge, soit plus que l'écart observé entre les deux services (7,0 × 10⁻⁵). La marge
+tient, mais elle est mince : un modèle qui dériverait de plus de 4 × 10⁻⁴ tairait cette réponse.
+À 0,74, une bonne réponse est tue. `bas` = 0,73 égale `haut` : aucun refus ne porte sur une réponse qui
 aurait été confiante.
 
 ## Triplet figé
