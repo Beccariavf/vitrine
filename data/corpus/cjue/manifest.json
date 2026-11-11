@@ -7,9 +7,9 @@
   "date_extraction": "2026-11-11",
   "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
   "langue": "fra",
-  "documents": 152,
-  "fragments": 14756,
-  "documents_lus": 254,
+  "documents": 151,
+  "fragments": 14700,
+  "documents_lus": 253,
   "exclusions": {
     "avant_borne": 0,
     "date_invalide": 0,
@@ -30,10 +30,9 @@
       "libelle": "Protection des données à caractère personnel"
     },
     "celex_complementaires": [
-      "62018CJ0746",
-      "62019CJ0511"
+      "62018CJ0746"
     ],
-    "complementaires_ajoutes": 2,
+    "complementaires_ajoutes": 1,
     "langue": "fra",
     "types_retenus": {
       "CJ": "Arrêt de la Cour",
