@@ -53,7 +53,7 @@ describe("la liste CELLAR de la CJUE", () => {
     assert.notEqual(empreinteListe(entrees), empreinteListe(entrees, ["62018CJ0746"]));
     assert.notEqual(
       empreinteListe(entrees, ["62018CJ0746"]),
-      empreinteListe(entrees, ["62019CJ0511"]),
+      empreinteListe(entrees, ["62018CJ0747"]),
     );
   });
 
@@ -328,6 +328,32 @@ describe("la synchronisation du corpus CJUE", () => {
       } finally {
         rmSync(entreeAvis, { recursive: true, force: true });
       }
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
+  });
+
+  it("compte un complémentaire écarté par son type dans documents_lus", async () => {
+    const racine = racineTemporaire();
+    try {
+      const resultat = await syncCjue({
+        rootDir: racine,
+        date: "2026-11-11",
+        reponseListe: { results: { bindings: [] } },
+        avantBorne: 0,
+        complementaires: ["62018CC0511"],
+        fetchImpl: async () => {
+          throw new Error("une conclusion d'avocat général ne se télécharge pas");
+        },
+      });
+      assert.equal(resultat.documents, 0);
+      assert.equal(resultat.documentsLus, 1);
+      assert.equal(resultat.ecartes.avis_avocat_general, 1);
+      const manifeste = JSON.parse(
+        readFileSync(join(racine, "data", "corpus", "cjue", "manifest.json"), "utf8"),
+      ) as ManifesteCjue;
+      assert.equal(manifeste.documents_lus, 1);
+      assert.equal(manifeste.documents + Object.values(manifeste.exclusions).reduce((a, b) => a + b, 0), 1);
     } finally {
       rmSync(racine, { recursive: true, force: true });
     }

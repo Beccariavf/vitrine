@@ -185,7 +185,7 @@ Le corpus `cjue` porte les arrêts et ordonnances de la Cour et du Tribunal sur 
 données personnelles depuis 2014. `npm run cjue:sync` interroge CELLAR en SPARQL en réunissant la
 matière `PDON` et la notion fine `4.11.01` (« Protection des données à caractère personnel »),
 puis lit le rendu XHTML **français** de chaque CELEX et le met en cache sous `data/raw/cjue/`.
-Deux CELEX que CELLAR ne classe pas dans la protection des données sont ajoutés explicitement :
+Un CELEX que CELLAR ne classe pas dans la protection des données est ajouté explicitement :
 Prokuratuur C-746/18. Les conclusions d'avocat général (`CC`) et les autres types sont
 écartés et comptés ; une version française absente (404) est consignée pour ne pas être redemandée.
 Chaque décision rend son en-tête, ses points de motivation numérotés (`#pointN`) et son dispositif.
@@ -193,8 +193,9 @@ Mesure du 11 novembre 2026 : 252 CELEX listés et 1 complémentaire, 151 décisi
 14 700 fragments, 73 conclusions d'avocat général et 2 autres types écartés, 27 versions françaises
 absentes ; 44 décisions des types retenus antérieures à 2014 sont comptées à part ; période
 2014-04-08 → 2026-11-05. Les 10 questions `dev` rendent le document attendu au top 5 pour
-8 d'entre elles (MRR 0,750, top 1 70,0 %). Le classement CELLAR reste incomplet : la liste de deux
-CELEX est déclarée et le manifeste la nomme. Réutilisation autorisée par la décision 2011/833/UE
+8 d'entre elles (MRR 0,750, top 1 70,0 %). Le classement CELLAR reste large et incomplet : la notion `4.11.01` inclut six décisions qui ne
+traitent les données personnelles que dans une partie de leur raisonnement, et la liste
+complémentaire est déclarée au manifeste. Réutilisation autorisée par la décision 2011/833/UE
 (CC BY 4.0).
 
 Chaque `manifest.json` porte un bloc `couverture` émis par sa synchronisation : source, date ou
