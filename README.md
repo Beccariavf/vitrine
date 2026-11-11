@@ -26,7 +26,7 @@ npm run corpus:build -- --document aiact   # un seul descripteur
 npm run ce:sync                            # archive JADE globale → data/corpus/ce/ (1,32 Go, long)
 npm run ce:sync -- --dry-run               # ce que l'archive produirait, sans écrire
 npm run cc:sync                            # Judilibre → data/corpus/cc/ (budget PISTE, reprise au cache)
-npm run cc:sync -- --max-appels 300        # borne les appels de la passe, reprend ensuite
+npm run cc:sync -- --max-appels 300        # borne la passe ; s'arrête sans tronquer, reprend au cache ensuite
 npm run cjue:sync                          # CELLAR → data/corpus/cjue/ (SPARQL + XHTML français)
 npm run cjue:sync -- --limite 20 --root /tmp/essai   # essai partiel, exclusions sur la liste entière
 npm run cepd:sync                          # lignes directrices du CEPD → data/corpus/cepd/
