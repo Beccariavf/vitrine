@@ -1,6 +1,6 @@
 ---
 objective: "Le MCP sert les décisions de la Cour de cassation et de la CJUE sur les données personnelles depuis 2014, avec couverture déclarée et éval dev."
-status: in-progress
+status: done
 ---
 
 # Plan: Corpus Cour de cassation et CJUE

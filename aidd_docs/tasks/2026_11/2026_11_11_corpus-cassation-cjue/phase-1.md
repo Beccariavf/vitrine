@@ -10,3 +10,7 @@
 
 - Tests unitaires du budget : un budget de 2 laisse deux appels, le troisième lève.
 - Tests du parseur : décision pertinente (visa RGPD) retenue, décision hors sujet écartée, décision avant 2014 écartée et comptée, texte vide écarté.
+
+## État
+
+Livré et couvert par `tests/cc-corpus.test.ts` et `tests/cjue-corpus.test.ts`.

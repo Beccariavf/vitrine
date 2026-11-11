@@ -10,3 +10,7 @@
 
 - Une seconde passe sur le même cache ne fait aucun appel de décision et n'écrit rien.
 - Le corpus n'est écrit qu'après validation des unités.
+
+## État
+
+Livré et couvert par `tests/cc-corpus.test.ts` et `tests/cjue-corpus.test.ts`.

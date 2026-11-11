@@ -25,6 +25,10 @@ npm run corpus:build   # CELLAR → data/corpus/{rgpd,aiact}/
 npm run corpus:build -- --document aiact   # un seul descripteur
 npm run ce:sync                            # archive JADE globale → data/corpus/ce/ (1,32 Go, long)
 npm run ce:sync -- --dry-run               # ce que l'archive produirait, sans écrire
+npm run cc:sync                            # Judilibre → data/corpus/cc/ (budget PISTE, reprise au cache)
+npm run cc:sync -- --max-appels 300        # borne les appels de la passe, reprend ensuite
+npm run cjue:sync                          # CELLAR → data/corpus/cjue/ (SPARQL + XHTML français)
+npm run cjue:sync -- --limite 20           # essai sur les 20 premières décisions
 npm run cepd:sync                          # lignes directrices du CEPD → data/corpus/cepd/
 npm run cepd:sync -- --dry-run             # ce que la liste produirait, sans écrire
 npm run lil:sync -- --date 2026-11-09      # loi Informatique et Libertés → data/corpus/lil/
@@ -40,14 +44,16 @@ npm run mcp:eval -- --questions questions-v3.csv --split dev --json            #
 npm run mcp:eval -- --questions questions-cnil.csv                             # 20 questions CNIL (hors CI)
 npm run mcp:eval -- --questions questions-ce.csv --split dev                   # 12 questions Conseil d'État (hors CI)
 npm run mcp:eval -- --questions questions-cepd.csv --split dev                 # 10 questions CEPD (hors CI)
+npm run mcp:eval -- --questions questions-cc.csv --split dev                   # 10 questions Cour de cassation (hors CI)
+npm run mcp:eval -- --questions questions-cjue.csv --split dev                 # 10 questions CJUE (hors CI)
 npm run mcp:eval -- --questions questions-cnil-v2.csv --split dev --seuils 0.690,0.740,0.010   # 25 questions CNIL documentaires (hors CI)
 npm run mcp:eval -- --questions questions-cnil-v2.csv --split test --mesurer-test --seuils 0.690,0.740,0.010   # déjà consommé le 2026-11-06 ; ne pas relancer
 npm run mcp:eval:filtres                                                        # 12 cas de filtrage CNIL (hors CI)
 ```
 
 Le MCP lit le RGPD, l'AI Act, la LIL, les délibérations de la CNIL, les décisions du Conseil
-d'État et les lignes directrices du CEPD par passage exact et par recherche sémantique, avec
-provenance. Seule
+d'État, les lignes directrices du CEPD, les décisions de la Cour de cassation et celles de la CJUE
+par passage exact et par recherche sémantique, avec provenance. Seule
 la recherche sémantique exige Ollama sur `127.0.0.1:11434` et le modèle `leoipulsar/harrier-0.6b`
 (`ollama pull leoipulsar/harrier-0.6b`) : une question qui cite un article (« article 17 ») est servie
 sans index ni modèle. Un document nommé dans la question est honoré quand `document` est absent : les
@@ -75,7 +81,7 @@ citation) et `dila` pour les incréments (découpage local de 600 à 1 200 carac
 remplacé que si l'archive est plus récente que sa date, sinon il garde sa numérotation publiée.
 `get_decision` rend une décision par identifiant `CNILTEXT…` ou par numéro `SAN-…` — sa partie
 opératoire par défaut, le document entier avec `partie: "tous"` — et `search` accepte un paramètre
-`corpus` (`rgpd`, `aiact`, `cnil`, `lil`, `ce`, `cepd`) et un filtre
+`corpus` (`rgpd`, `aiact`, `cnil`, `lil`, `ce`, `cepd`, `cc`, `cjue`) et un filtre
 `nature` pour les trois natures CNIL. Le filtre est d'abord un choix de corpus, pas de document. La
 route Légifrance `https://www.legifrance.gouv.fr/cnil/id/<id>` est déclarée dans le manifeste mais
 n'a pas été vérifiée : elle répond 403 aux robots.
@@ -161,10 +167,36 @@ Mesure du 9 novembre 2026 : 42 URL `_fr` dans le sitemap, 5 pages lues, 36 ligne
 de `mcp/eval/questions-cepd.csv` rendent le document attendu au rang 1 pour les 10 (MRR 1,000,
 top 1 100,0 %).
 
+Le corpus `cc` porte les décisions de la Cour de cassation sur les données personnelles depuis
+2014. `npm run cc:sync` interroge Judilibre (PISTE) par les phrases du descripteur
+(`field=text`, `operator=and`), puis lit chaque décision par `/decision` et la met en cache sous
+`data/raw/cc/` — non commité. Le filtre local est déclaré : visa citant un instrument de protection
+des données, ou au moins deux occurrences d'une expression centrale. Le budget d'appels
+(`--max-appels`, 1 500 par défaut) est dédié à la collecte ; quand il s'épuise, le corpus garde les
+décisions déjà lues et la passe suivante reprend au cache. Les quatre entrées Judilibre de la veille
+sont incluses d'office. Mesure du 11 novembre 2026 : 1 133 décisions lues, 403 retenues,
+8 467 fragments, 730 écartées faute de pertinence, période 2014-01-01 → 2026-11-10. Chaque décision
+rend son visa en premier fragment puis son texte découpé en 600 à 1 200 caractères. Les 10
+questions `dev` rendent le document attendu au top 5 pour 6 d'entre elles (MRR 0,470, top 1
+40,0 %). Licence Ouverte 2.0 (Etalab) et conditions générales d'utilisation Judilibre.
+
+Le corpus `cjue` porte les arrêts et ordonnances de la Cour et du Tribunal sur la protection des
+données personnelles depuis 2014. `npm run cjue:sync` interroge CELLAR en SPARQL sur la matière
+`PDON` (« protection des données personnelles »), puis lit le rendu XHTML **français** de chaque
+CELEX et le met en cache sous `data/raw/cjue/` — non commité. Les conclusions d'avocat général
+(`CC`) et les autres types sont écartés et comptés ; une version française absente (404) est
+consignée pour ne pas être redemandée. Chaque décision rend son en-tête, ses points de motivation
+numérotés (`#pointN`) et son dispositif. Mesure du 11 novembre 2026 : 226 CELEX listés, 125 décisions
+retenues, 10 836 fragments, 73 conclusions d'avocat général et 2 autres types écartés, 26 versions
+françaises absentes ; 67 décisions de la même matière antérieures à 2014 sont comptées à part ;
+période 2014-05-13 → 2026-06-04. Les 10 questions `dev` rendent le document attendu au top 5 pour
+8 d'entre elles (MRR 0,750, top 1 70,0 %). Réutilisation autorisée par la décision 2011/833/UE
+(CC BY 4.0).
+
 Chaque `manifest.json` porte un bloc `couverture` émis par sa synchronisation : source, date ou
-archive, bornes, types ou natures retenus, exclusions et comptes. Le tableau des six corpus
+archive, bornes, types ou natures retenus, exclusions et comptes. Le tableau des huit corpus
 (documents, fragments, période, source, licence) est
-`aidd_docs/tasks/2026_11/2026_11_09_mcp-donnees-personnelles/coverage.md` ; il reprend les comptes
+`aidd_docs/tasks/2026_11/2026_11_11_corpus-cassation-cjue/coverage.md` ; il reprend les comptes
 des manifestes, jamais une recopie approximative.
 
 L'évaluation v2 porte sur 60 questions écrites contre le texte du RGPD : 12 références exactes,

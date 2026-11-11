@@ -13,3 +13,7 @@
 
 - Une capture sans point de motivation retombe sur des fragments de paragraphes, jamais sur zéro unité.
 - Un CELEX absent (404) est écarté et compté, sans faire échouer les autres.
+
+## État
+
+Livré et couvert par `tests/cc-corpus.test.ts` et `tests/cjue-corpus.test.ts`.
