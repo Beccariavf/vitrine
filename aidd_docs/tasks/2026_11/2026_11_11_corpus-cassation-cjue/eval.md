@@ -23,7 +23,7 @@ niveaux sémantiques : 5 confiant, 5 incertain, 0 aucun_resultat_fiable (table p
 | Communication de documents de tiers contenant des données personnelles | `66fe33ec91b69e88a370f983` | 2 | 0,734 |
 | Géolocalisation d'un véhicule et directive ePrivacy | `65dd88c8af7bf00008e554e6` | 1 | 0,779 |
 
-Les quatre absences sont des décisions proches d'une autre décision retenue : le corpus contient 403 décisions aux visas et aux textes souvent voisins. Les rangs ne dépendent pas des seuils. Les niveaux affichés sont ceux de la table produit ; avec la grille calibrée sur ce `dev` (0,670 / 0,720 / 0,010), on obtient 6 `confiant` et 4 `incertain`.
+Les quatre absences sont des décisions proches d'une autre décision retenue : le corpus contient 352 décisions aux visas et aux textes souvent voisins. Les rangs ne dépendent pas des seuils. Les niveaux affichés sont ceux de la table produit ; avec la grille calibrée sur ce `dev` (0,670 / 0,720 / 0,010), on obtient 6 `confiant` et 4 `incertain`.
 
 ## CJUE (`questions-cjue.csv`, corpus `cjue`)
 

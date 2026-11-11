@@ -18,7 +18,7 @@ Comptes lus dans les `manifest.json` du 11 novembre 2026, jamais recopiés depui
 - 22 phrases de recherche, `field=text`, `operator=and`, borne `2014-01-01`.
 - 1 133 décisions lues : 352 retenues, 781 écartées `hors_sujet`, 0 `avant_borne` (l'API filtre la date ; le parseur compte quand même toute décision antérieure), 0 `date_invalide`, 0 `texte_vide`.
 - 641 doublons de recherche ; 4 entrées Judilibre de `data/entries/` incluses et retenues (`veille.entrees: 4`, `veille.retenues: 4`) ; une décision de la veille échappe au filtre de pertinence par construction.
-- Filtre : visa citant un instrument de protection des données, ou au moins 2 occurrences d'une expression centrale ; `CNIL` seul ne suffit plus (51 décisions retirées, dont 46 ne portaient que le sigle). 124 décisions n'ont pas de visa dans Judilibre. 1 333 fragments dépassent 1 200 caractères (un paragraphe long reste entier, maximum 28 852). Aucun identifiant introuvable.
+- Filtre : visa citant un instrument de protection des données, ou au moins 2 occurrences d'une expression centrale ; `CNIL` seul ne suffit plus (51 décisions retirées : 36 sans aucune autre expression, 15 avec une seule occurrence). 124 décisions n'ont pas de visa dans Judilibre. 1 333 fragments dépassent 1 200 caractères (un paragraphe long reste entier, maximum 28 852). Aucun identifiant introuvable.
 - `periode.date_min` est la première date observée (2014-01-14) ; `couverture.borne` porte la borne demandée (2014-01-01).
 - Le corpus n'est pas une collection exhaustive de la Cour de cassation : c'est un sous-ensemble déclaré, borné par 22 phrases et par le filtre de pertinence.
 

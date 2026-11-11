@@ -28,7 +28,7 @@ npm run ce:sync -- --dry-run               # ce que l'archive produirait, sans �
 npm run cc:sync                            # Judilibre → data/corpus/cc/ (budget PISTE, reprise au cache)
 npm run cc:sync -- --max-appels 300        # borne les appels de la passe, reprend ensuite
 npm run cjue:sync                          # CELLAR → data/corpus/cjue/ (SPARQL + XHTML français)
-npm run cjue:sync -- --limite 20 --root /tmp/essai   # essai partiel hors du corpus commité
+npm run cjue:sync -- --limite 20 --root /tmp/essai   # essai partiel, exclusions sur la liste entière
 npm run cepd:sync                          # lignes directrices du CEPD → data/corpus/cepd/
 npm run cepd:sync -- --dry-run             # ce que la liste produirait, sans écrire
 npm run lil:sync -- --date 2026-11-09      # loi Informatique et Libertés → data/corpus/lil/
@@ -172,8 +172,8 @@ Le corpus `cc` porte les décisions de la Cour de cassation sur les données per
 (`field=text`, `operator=and`), puis lit chaque décision par `/decision` et la met en cache sous
 `data/raw/cc/` — non commité. Le filtre local est déclaré : visa citant un instrument de protection
 des données, ou au moins deux occurrences d'une expression centrale. Le budget d'appels
-(`--max-appels`, 1 500 par défaut) est dédié à la collecte ; quand il s'épuise, le corpus garde les
-décisions déjà lues et la passe suivante reprend au cache. Les quatre entrées Judilibre de la veille
+(`--max-appels`, 1 500 par défaut) est dédié à la collecte ; quand il s'épuise, la passe s'arrête
+sans toucher au corpus existant et la suivante reprend au cache. Les quatre entrées Judilibre de la veille
 sont incluses d'office. Mesure du 11 novembre 2026 : 1 133 décisions lues, 352 retenues,
 7 048 fragments, 781 écartées faute de pertinence, période 2014-01-14 → 2026-11-10. Chaque décision
 indexe son visa quand Judilibre le porte (124 rejets non spécialement motivés n'en ont pas), puis
