@@ -209,27 +209,29 @@ des manifestes, jamais une recopie approximative.
 
 ## Rafraîchir le corpus depuis la veille
 
-`npm run corpus:sync` lit les entrées de `data/entries/` publiées depuis `a_jour_au` du rapport
-précédent — 7 jours avant la passe s'il n'existe pas — et fait correspondre celles qui visent un
-document : `CNILTEXT…` par l'URL canonique du snapshot HTML de `data/raw/<2 hex>/` puis ses liens
-`legifrance.gouv.fr/cnil/id/…`, `CETATEXT…` pour le Conseil d'État, l'identifiant Judilibre pour la
-Cour de cassation, le CELEX de l'URL pour la CJUE. Seules les sources concernées sont lancées
-(`cnil` incréments DILA, `ce` archive JADE, `cc` Judilibre, `cjue` CELLAR) ; un document déjà présent
-ne relance rien, et les corpus `rgpd`, `aiact`, `lil` et `cepd` ne sont pas rafraîchis.
+`npm run corpus:sync` lit les entrées de `data/entries/` publiées au plus tôt entre `a_jour_au` du
+rapport précédent et 7 jours avant la passe — une tentative échouée reprend la fenêtre qu'elle avait
+ouverte — et fait correspondre celles qui visent un document : `CNILTEXT…` par l'URL canonique du
+snapshot HTML de `data/raw/<2 hex>/` puis ses liens `legifrance.gouv.fr/cnil/id/…`, `CETATEXT…` pour
+le Conseil d'État, l'identifiant Judilibre pour la Cour de cassation, le CELEX de l'URL pour la CJUE.
+Seules les sources concernées sont lancées (`cnil` incréments DILA, `ce` archive JADE, `cc`
+Judilibre, `cjue` CELLAR) ; un document déjà présent ne relance rien, et les corpus `rgpd`, `aiact`,
+`lil` et `cepd` ne sont pas rafraîchis.
 
-La passe écrit `data/corpus/sync.json` (sauf en `--dry-run`) : `a_jour_au`, `derniere_tentative`, fenêtre `depuis`,
-comptes, une ligne par document (`present`, `manquant`, `ecarte`, `non_mappe`), inventaire des
-corpus, état des sources et de l'index. Un document manquant n'est pas un échec ; une source ou
-l'index en panne laisse `a_jour_au` inchangé et l'index est réessayé à la passe suivante. Un CELEX
-listé dans `couverture.documents_ecartes` est `ecarte` et ne relance pas la CJUE. `--dry-run`
-n'écrit rien et `--json` rend le rapport brut ; `etat_corpus` expose le même état au client MCP,
-sans réseau ni index.
+La passe écrit `data/corpus/sync.json` (sauf en `--dry-run`) : `a_jour_au`, `derniere_tentative`,
+fenêtre `depuis`, comptes, une ligne par document (`present`, `manquant`, `ecarte`, `non_mappe`),
+inventaire des corpus, état des sources et de l'index. Un document manquant n'est pas un échec et
+reste listé tant qu'il n'entre pas au corpus ; une source ou l'index en panne laisse `a_jour_au`
+inchangé, et l'index est réessayé à la passe suivante. Un CELEX listé dans
+`couverture.documents_ecartes` est `ecarte` et ne relance pas la CJUE. `--dry-run` n'écrit rien et
+`--json` rend le rapport brut ; `--date` date la passe, `etat_corpus` expose le même état au client
+MCP, sans réseau ni index.
 
 `npm run corpus:sync -- --planifier` écrit `~/Library/LaunchAgents/fr.vitrine.corpus-sync.plist`
 (`StartInterval` 259 200 s, soit trois jours) et imprime les commandes `launchctl` `bootstrap` et
 `bootout` ; elle ne charge pas l'agent. Les logs vont dans `~/Library/Logs/vitrine-corpus-sync.log`
-et `.err`. Autres options : `--depuis AAAA-MM-JJ`, `--date AAAA-MM-JJ`, `--root <racine>`,
-`--dossier <dir>`.
+et `.err`. Autres options : `--depuis AAAA-MM-JJ`, `--root <racine>`, `--dossier <dir>`,
+`--planifier --dry-run` pour voir le chemin sans écrire.
 
 L'évaluation v2 porte sur 60 questions écrites contre le texte du RGPD : 12 références exactes,
 38 conceptuelles et 10 pièges, réparties en 30 `dev` et 30 `test`. Chaque mesure est filtrée par
@@ -318,7 +320,7 @@ La règle de choix, les mesures et ce qui invaliderait la promesse sont dans
 ## Démonstration
 
 `npm run mcp:demo` lance `mcp/server.ts` comme le ferait un client, s'y connecte sur stdio et
-appelle les trois outils sur cinq questions : article exact, recherche RGPD, recherche AI Act,
+appelle trois des quatre outils sur cinq questions : article exact, recherche RGPD, recherche AI Act,
 filtres CNIL, décision par son numéro. Sortie réelle, Ollama requis :
 
 ```

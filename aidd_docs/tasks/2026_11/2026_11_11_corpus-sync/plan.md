@@ -1,6 +1,6 @@
 ---
 objective: "Le corpus se rafraîchit depuis la veille par une commande idempotente, rapporte sa fraîcheur et s'expose dans le MCP, avec un agent launchd de trois jours."
-status: pending
+status: done
 ---
 
 # Plan: Rafraîchir le corpus depuis la veille

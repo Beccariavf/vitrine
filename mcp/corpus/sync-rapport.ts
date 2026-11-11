@@ -65,12 +65,22 @@ export type RapportSync = {
   index: IndexRapport;
 };
 
-/** Lit le rapport ; `null` s'il est absent ou illisible. */
+/** Lit le rapport ; `null` s'il est absent, illisible ou d'une forme inconnue. */
 export function lireRapport(rootDir: string): RapportSync | null {
   const chemin = join(rootDir, CHEMIN_RAPPORT);
   if (!existsSync(chemin)) return null;
   try {
-    return JSON.parse(readFileSync(chemin, "utf8")) as RapportSync;
+    const valeur = JSON.parse(readFileSync(chemin, "utf8")) as Partial<RapportSync>;
+    if (
+      valeur.version !== 1 ||
+      !Array.isArray(valeur.documents) ||
+      !Array.isArray(valeur.corpus) ||
+      !Array.isArray(valeur.sources) ||
+      typeof valeur.depuis !== "string"
+    ) {
+      return null;
+    }
+    return valeur as RapportSync;
   } catch {
     return null;
   }
@@ -128,7 +138,12 @@ export function inventaireCorpus(rootDir: string): CorpusRapport[] {
         (typeof couverture.date_liste === "string" ? couverture.date_liste : null);
       corpus.push({
         corpus: dossier.name,
-        documents: nombre(manifeste.documents, 1),
+        documents:
+          typeof manifeste.documents === "number"
+            ? manifeste.documents
+            : dossier.name === "rgpd" || dossier.name === "aiact"
+              ? 1
+              : 0,
         unites: nombre(manifeste.unites, nombre(manifeste.fragments, 0)),
         arrete_le: date,
       });
@@ -169,6 +184,19 @@ export function formaterRapport(rapport: RapportSync): string {
     lignes.push(
       `Écartés : ${ecartes
         .map((document) => `${ligneManquant(document)} — ${document.motif ?? "motif inconnu"}`)
+        .join(", ")}`,
+    );
+  }
+  const nonMappes = rapport.documents.filter((document) => document.statut === "non_mappe");
+  if (nonMappes.length > 0) {
+    const parMotif = new Map<string, number>();
+    for (const document of nonMappes) {
+      const motif = document.motif ?? "motif inconnu";
+      parMotif.set(motif, (parMotif.get(motif) ?? 0) + 1);
+    }
+    lignes.push(
+      `Non mappées : ${[...parMotif.entries()]
+        .map(([motif, compte]) => `${compte} ${motif}`)
         .join(", ")}`,
     );
   }

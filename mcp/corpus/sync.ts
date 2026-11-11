@@ -41,7 +41,7 @@ import type {
   RapportSync,
   SourceRapport,
 } from "./sync-rapport.ts";
-import { installerPlanificateur } from "./sync-planificateur.ts";
+import { commandesLaunchctl, installerPlanificateur } from "./sync-planificateur.ts";
 
 /** Racine du dépôt, résolue depuis ce fichier et non depuis le répertoire courant. */
 export const RACINE = fileURLToPath(new URL("../..", import.meta.url));
@@ -84,6 +84,11 @@ export function joursAvant(date: string, jours: number): string {
   return new Date(instant - jours * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 }
 
+/** La plus ancienne des deux dates ISO. */
+export function plusTot(gauche: string, droite: string): string {
+  return gauche < droite ? gauche : droite;
+}
+
 function validerDate(date: string, nom: string): void {
   if (!DATE_ISO.test(date) || Number.isNaN(Date.parse(date))) {
     throw new Error(`${nom} attendue AAAA-MM-JJ ; reçu « ${date} »`);
@@ -112,17 +117,25 @@ export function agentsParDefaut(rootDir: string): Record<CorpusVeille, AgentSync
       };
     },
     cc: async () => {
+      let resultat;
+      let journal = "";
       try {
-        const resultat = await syncCc({ rootDir });
-        return {
-          ecrit: resultat.ecrit,
-          message:
-            `${resultat.documentsLus} décision(s) lue(s), ${resultat.documents} retenue(s), ` +
-            `${resultat.enAttente} en attente`,
-        };
+        resultat = await syncCc({ rootDir });
       } finally {
-        flushUsage(rootDir);
+        try {
+          flushUsage(rootDir);
+        } catch (error) {
+          // Le corpus a déjà été écrit : un journal d'usage en panne ne doit pas
+          // faire passer la source en panne, il est seulement signalé.
+          journal = ` ; journal d'usage non écrit (${raison(error)})`;
+        }
       }
+      return {
+        ecrit: resultat.ecrit,
+        message:
+          `${resultat.documentsLus} décision(s) lue(s), ${resultat.documents} retenue(s), ` +
+          `${resultat.enAttente} en attente${journal}`,
+      };
     },
     cjue: async () => {
       const resultat = await syncCjue({ rootDir });
@@ -187,8 +200,7 @@ function classer(
   return documents;
 }
 
-function compter(documents: DocumentRapport[]): RapportSync["comptes"] {
-  const comptes = { presents: 0, manquants: 0, ecartes: 0, non_mappes: 0 };
+function compter(documents: DocumentRapport[]): RapportSync["comptes"] {  const comptes = { presents: 0, manquants: 0, ecartes: 0, non_mappes: 0 };
   for (const document of documents) {
     switch (document.statut) {
       case "present":
@@ -243,6 +255,37 @@ function corpusPresent(rootDir: string): boolean {
 }
 
 /**
+ * Conserve les documents encore manquants d'une passe antérieure. Le rapport ne
+ * décrit que la dernière fenêtre ; sans cette fusion, un document absent
+ * disparaîtrait de `etat_corpus` dès que la fenêtre avance, alors qu'il manque
+ * toujours. Une ligne redevient courante dès que le document entre au corpus ou
+ * est déclaré écarté.
+ */
+function fusionnerManquants(
+  courants: DocumentRapport[],
+  precedent: RapportSync | null,
+  documentsCorpus: Map<string, Set<string>>,
+  ecartes: Map<string, string>,
+): DocumentRapport[] {
+  if (precedent === null) return courants;
+  const vus = new Set(
+    courants
+      .filter((document) => document.document !== null)
+      .map((document) => `${document.corpus ?? ""}:${document.document ?? ""}`),
+  );
+  const resultat = [...courants];
+  for (const ancien of precedent.documents ?? []) {
+    if (ancien.statut !== "manquant" || ancien.document === null || ancien.corpus === null) continue;
+    const cle = `${ancien.corpus}:${ancien.document}`;
+    if (vus.has(cle)) continue;
+    if (documentsCorpus.get(ancien.corpus)?.has(ancien.document) === true) continue;
+    if (ancien.corpus === "cjue" && ecartes.has(ancien.document)) continue;
+    resultat.push(ancien);
+  }
+  return resultat;
+}
+
+/**
  * Une passe de rafraîchissement. Le rapport est rendu et écrit sauf en
  * `dryRun` ; `a_jour_au` n'avance que si aucune source ni l'index n'a échoué.
  */
@@ -251,7 +294,21 @@ export async function syncCorpus(options: SyncCorpusOptions = {}): Promise<Rappo
   const date = options.date ?? dateDuJour();
   validerDate(date, "Date de passe");
   const precedent = lireRapport(rootDir);
-  const depuis = options.depuis ?? precedent?.a_jour_au ?? joursAvant(date, FENETRE_JOURS);
+  // Une tentative en échec garde sa fenêtre : sinon la borne reculerait et
+  // perdrait le jour le plus ancien. Un succès reprend au moins les 7 derniers
+  // jours, parce que la veille hebdomadaire peut écrire une entrée ancienne
+  // après la passe.
+  const echecPrecedent =
+    precedent !== null &&
+    precedent.derniere_tentative !== null &&
+    precedent.a_jour_au !== precedent.derniere_tentative;
+  const bornePrecedente =
+    precedent === null
+      ? date
+      : echecPrecedent
+        ? precedent.depuis
+        : (precedent.a_jour_au ?? date);
+  const depuis = options.depuis ?? plusTot(bornePrecedente, joursAvant(date, FENETRE_JOURS));
   validerDate(depuis, "Borne de fenêtre");
 
   const entrees = lireEntrees(rootDir, depuis);
@@ -293,6 +350,7 @@ export async function syncCorpus(options: SyncCorpusOptions = {}): Promise<Rappo
   documentsCorpus = indexerDocumentsCorpus(rootDir);
   ecartes = documentsEcartes(rootDir, "cjue");
   documents = classer(entrees, snapshots, documentsCorpus, ecartes);
+  documents = fusionnerManquants(documents, precedent, documentsCorpus, ecartes);
 
   let index: IndexRapport;
   if (options.dryRun === true) {
@@ -341,15 +399,20 @@ async function main(argv: string[]): Promise<void> {
 
   if (argv.includes("--planifier")) {
     const dossier = valeurDe("--dossier", argv);
+    const dryRun = argv.includes("--dry-run");
     const chemin = installerPlanificateur({
       rootDir,
       ...(dossier === undefined ? {} : { dossier }),
+      ...(dryRun ? { dryRun } : {}),
     });
+    const commandes = commandesLaunchctl(chemin);
     process.stdout.write(
-      `Agent launchd écrit : ${chemin}\n` +
-        `Installer : launchctl bootstrap gui/$(id -u) ${chemin}\n` +
-        `Retirer   : launchctl bootout gui/$(id -u) ${chemin}\n`,
+      dryRun
+        ? `Agent launchd serait écrit : ${chemin}\n`
+        : `Agent launchd écrit : ${chemin}\n`,
     );
+    process.stdout.write(`Installer : ${commandes.installer}\n`);
+    process.stdout.write(`Retirer   : ${commandes.retirer}\n`);
     return;
   }
 

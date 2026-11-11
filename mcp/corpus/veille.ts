@@ -23,8 +23,20 @@ const CORPUS_PAR_SOURCE: Record<string, CorpusVeille> = {
 };
 
 const ID_CETAT = /^CETATEXT\d+$/;
-const ID_JUDILIBRE = /^[a-z0-9]+$/;
+const ID_JUDILIBRE = /^[0-9a-f]{24}$/;
+const CELEX = /^6\d{4}[A-Z]{2}\d{1,4}(?:\(\d+\))?$/;
 const LIEN_CNIL = /https?:\/\/www\.legifrance\.gouv\.fr\/cnil\/id\/(CNILTEXT\d+)/g;
+
+/**
+ * Motifs d'exclusion durables : une conclusion d'avocat général, un autre type
+ * ou une version française absente ne seront pas réparés par une nouvelle
+ * passe. Un échec de téléchargement, lui, reste transitoire.
+ */
+const MOTIFS_DURABLES = new Set([
+  "avis_avocat_general",
+  "autre_type",
+  "version_francaise_absente",
+]);
 
 /** Corpus visé par une source de veille, ou `null` si elle n'alimente aucun corpus. */
 export function corpusDeLEntree(entry: Pick<Entry, "source">): CorpusVeille | null {
@@ -180,11 +192,13 @@ export function documentsDeLEntree(
     case "cjeu": {
       const celex = /CELEX:([^/?#&]+)/.exec(entry.url)?.[1];
       if (celex === undefined) return [];
+      let decode: string;
       try {
-        return [decodeURIComponent(celex)];
+        decode = decodeURIComponent(celex);
       } catch {
-        return [celex];
+        decode = celex;
       }
+      return CELEX.test(decode) ? [decode] : [];
     }
     default:
       return [];
@@ -232,7 +246,11 @@ export function documentsEcartes(rootDir: string, corpus: string): Map<string, s
       couverture?: { documents_ecartes?: { celex?: unknown; motif?: unknown }[] };
     };
     for (const document of manifeste.couverture?.documents_ecartes ?? []) {
-      if (typeof document.celex === "string" && typeof document.motif === "string") {
+      if (
+        typeof document.celex === "string" &&
+        typeof document.motif === "string" &&
+        MOTIFS_DURABLES.has(document.motif)
+      ) {
         ecartes.set(document.celex, document.motif);
       }
     }

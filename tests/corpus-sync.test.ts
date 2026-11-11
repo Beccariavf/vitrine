@@ -33,6 +33,7 @@ import type { RapportSync } from "../mcp/corpus/sync-rapport.ts";
 import {
   ETIQUETTE,
   INTERVALLE_TROIS_JOURS,
+  commandesLaunchctl,
   installerPlanificateur,
   plistCorpusSync,
 } from "../mcp/corpus/sync-planificateur.ts";
@@ -275,6 +276,21 @@ describe("correspondance veille → corpus", () => {
       ["62024CA0798"],
     );
     assert.deepEqual(documentsDeLEntree({ source: "cnil", id: "x", url: "https://autre" }, snapshots), []);
+    assert.deepEqual(
+      documentsDeLEntree({ source: "judilibre", id: "6AC6079EC27382D099F5A06E", url: "" }, snapshots),
+      [],
+    );
+    assert.deepEqual(
+      documentsDeLEntree({ source: "cetat", id: "CETAT-1", url: "" }, snapshots),
+      [],
+    );
+    assert.deepEqual(
+      documentsDeLEntree(
+        { source: "cjeu", id: "x", url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:garbage" },
+        snapshots,
+      ),
+      [],
+    );
   });
 
   it("lit les documents présents et les exclusions CJUE", () => {
@@ -286,7 +302,10 @@ describe("correspondance veille → corpus", () => {
         join(root, "data", "corpus", "cjue", "manifest.json"),
         JSON.stringify({
           couverture: {
-            documents_ecartes: [{ celex: "62013CC0127", motif: "avis_avocat_general" }],
+            documents_ecartes: [
+              { celex: "62013CC0127", motif: "avis_avocat_general" },
+              { celex: "62024CJ0001", motif: "echec_telechargement" },
+            ],
           },
         }),
         "utf8",
@@ -296,6 +315,7 @@ describe("correspondance veille → corpus", () => {
         ["CNILTEXT000000000001"],
       );
       assert.equal(documentsEcartes(root, "cjue").get("62013CC0127"), "avis_avocat_general");
+      assert.equal(documentsEcartes(root, "cjue").has("62024CJ0001"), false);
       assert.equal(documentsEcartes(root, "cnil").size, 0);
       assert.equal(normaliserUrl("https://www.cnil.fr/fr/x/?q=1#a"), "https://www.cnil.fr/fr/x");
     } finally {
@@ -310,7 +330,10 @@ describe("rapport de synchronisation", () => {
     try {
       ecrireCorpus(root, "cnil", [uniteCnil("CNILTEXT000000000001")]);
       const manifestes: Record<string, unknown> = {
+        aiact: { unites: 293, date_publication: "2024-07-12" },
+        cc: { documents: 352, fragments: 7048, date_extraction: "2026-11-11" },
         ce: { documents: 3, fragments: 30, date_extraction: "2026-11-09" },
+        cjue: { documents: 151, fragments: 14700, date_extraction: "2026-11-11" },
         lil: { documents: 1, unites: 133, couverture: { date: "2026-11-09" } },
         cepd: { documents: 36, fragments: 5443, couverture: { date_liste: "2026-11-09" } },
         rgpd: { unites: 272, date_publication: "2016-05-04" },
@@ -326,13 +349,16 @@ describe("rapport de synchronisation", () => {
       const inventaire = inventaireCorpus(root);
       assert.deepEqual(
         inventaire.map((corpus) => corpus.corpus),
-        ["ce", "cepd", "cnil", "lil", "rgpd"],
+        ["aiact", "cc", "ce", "cepd", "cjue", "cnil", "lil", "rgpd"],
       );
       assert.equal(inventaire.find((corpus) => corpus.corpus === "cnil")?.arrete_le, "2026-11-10");
       assert.equal(inventaire.find((corpus) => corpus.corpus === "ce")?.unites, 30);
+      assert.equal(inventaire.find((corpus) => corpus.corpus === "cc")?.arrete_le, "2026-11-11");
+      assert.equal(inventaire.find((corpus) => corpus.corpus === "cjue")?.arrete_le, "2026-11-11");
       assert.equal(inventaire.find((corpus) => corpus.corpus === "lil")?.arrete_le, "2026-11-09");
       assert.equal(inventaire.find((corpus) => corpus.corpus === "cepd")?.arrete_le, "2026-11-09");
       assert.equal(inventaire.find((corpus) => corpus.corpus === "rgpd")?.arrete_le, null);
+      assert.equal(inventaire.find((corpus) => corpus.corpus === "aiact")?.documents, 1);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
@@ -380,6 +406,22 @@ describe("rapport de synchronisation", () => {
       const etat = etatCorpus(root);
       assert.equal(etat.a_jour_au, null);
       assert.equal(etat.corpus.length, 1);
+      assert.match(etat.message ?? "", /corpus:sync/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("ignore un rapport de forme inconnue au lieu de lever", () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "cnil", [uniteCnil("CNILTEXT000000000001")]);
+      mkdirSync(join(root, "data", "corpus"), { recursive: true });
+      writeFileSync(join(root, "data", "corpus", "sync.json"), "{}", "utf8");
+      assert.equal(lireRapport(root), null);
+      const etat = etatCorpus(root);
+      assert.equal(etat.a_jour_au, null);
+      assert.deepEqual(etat.manquants, []);
       assert.match(etat.message ?? "", /corpus:sync/);
     } finally {
       rmSync(root, { recursive: true, force: true });
@@ -604,7 +646,7 @@ describe("synchronisation du corpus", () => {
         agents: agents(panne, INERTE, INERTE, INERTE),
         embedder: embedderFactice(),
       });
-      assert.equal(deuxieme.depuis, "2026-11-02");
+      assert.equal(deuxieme.depuis, "2026-10-28");
       assert.equal(deuxieme.a_jour_au, "2026-11-02");
       assert.equal(deuxieme.derniere_tentative, "2026-11-04");
 
@@ -614,7 +656,7 @@ describe("synchronisation du corpus", () => {
         agents: agents(INERTE, INERTE, INERTE, INERTE),
         embedder: embedderFactice(),
       });
-      assert.equal(troisieme.depuis, "2026-11-02");
+      assert.equal(troisieme.depuis, "2026-10-28");
       assert.equal(troisieme.comptes.manquants, 1);
       assert.equal(troisieme.a_jour_au, "2026-11-05");
     } finally {
@@ -647,6 +689,193 @@ describe("synchronisation du corpus", () => {
       assert.equal(seconde.index.statut, "ok");
       assert.equal(seconde.a_jour_au, "2026-11-12");
       assert.equal(existsSync(cheminIndex(root)), true);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("garde un document manquant visible quand la fenêtre avance", async () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "cnil", [uniteCnil("CNILTEXT000000000001")]);
+      ecrireEntree(
+        root,
+        entreeCnil("entree-manquante", "https://www.cnil.fr/fr/manquante", "2026-11-01T12:00:00.000Z"),
+      );
+      ecrireSnapshot(root, "https://www.cnil.fr/fr/manquante", ["CNILTEXT000000000002"]);
+
+      const premiere = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-02",
+        depuis: "2026-11-01",
+        agents: agents(INERTE, INERTE, INERTE, INERTE),
+        embedder: embedderFactice(),
+      });
+      assert.equal(premiere.comptes.manquants, 1);
+
+      const seconde = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-12",
+        agents: agents(INERTE, INERTE, INERTE, INERTE),
+        embedder: embedderFactice(),
+      });
+      assert.equal(seconde.entrees_lues, 0);
+      assert.equal(seconde.comptes.manquants, 1);
+      assert.equal(etatCorpus(root).manquants.length, 1);
+
+      ajouterUnite(root, "cnil", uniteCnil("CNILTEXT000000000002"));
+      const troisieme = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-13",
+        agents: agents(INERTE, INERTE, INERTE, INERTE),
+        embedder: embedderFactice(),
+      });
+      assert.equal(troisieme.comptes.manquants, 0);
+      assert.equal(etatCorpus(root).manquants.length, 0);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("reprend la fenêtre d'un premier échec", async () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "cnil", [uniteCnil("CNILTEXT000000000001")]);
+      ecrireEntree(
+        root,
+        entreeCnil("entree-reprise", "https://www.cnil.fr/fr/reprise", "2026-11-04T12:00:00.000Z"),
+      );
+      ecrireSnapshot(root, "https://www.cnil.fr/fr/reprise", ["CNILTEXT000000000002"]);
+
+      const appels = { n: 0 };
+      const panne: AgentSync = async () => {
+        appels.n += 1;
+        throw new Error("réseau");
+      };
+      const premiere = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-11",
+        agents: agents(panne, INERTE, INERTE, INERTE),
+        embedder: embedderFactice(),
+      });
+      assert.equal(premiere.depuis, "2026-11-04");
+      assert.equal(premiere.a_jour_au, null);
+
+      const seconde = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-12",
+        agents: agents(panne, INERTE, INERTE, INERTE),
+        embedder: embedderFactice(),
+      });
+      assert.equal(seconde.depuis, "2026-11-04");
+      assert.equal(seconde.entrees_lues, 1);
+      assert.equal(appels.n, 2);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("relit une entrée publiée avant la passe mais écrite après", async () => {
+    const root = racine();
+    try {
+      const premiere = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-11",
+        agents: agents(INERTE, INERTE, INERTE, INERTE),
+        embedder: embedderFactice(),
+      });
+      assert.equal(premiere.a_jour_au, "2026-11-11");
+
+      ecrireCorpus(root, "cnil", [uniteCnil("CNILTEXT000000000001")]);
+      ecrireEntree(
+        root,
+        entreeCnil("entree-tardive", "https://www.cnil.fr/fr/tardive", "2026-11-10T12:00:00.000Z"),
+      );
+      ecrireSnapshot(root, "https://www.cnil.fr/fr/tardive", ["CNILTEXT000000000002"]);
+
+      const seconde = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-12",
+        agents: agents(INERTE, INERTE, INERTE, INERTE),
+        embedder: embedderFactice(),
+      });
+      assert.equal(seconde.depuis, "2026-11-05");
+      assert.equal(seconde.entrees_lues, 1);
+      assert.equal(seconde.comptes.manquants, 1);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("poursuit les sources après une panne et garde l'ordre déclaré", async () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "cnil", [uniteCnil("CNILTEXT000000000001")]);
+      ecrireCorpus(root, "ce", [{ ...uniteCnil("CETATEXT000000000001"), corpus: "ce" }]);
+      ecrireEntree(root, entreeCnil("entree-cnil", "https://www.cnil.fr/fr/ordre"));
+      ecrireSnapshot(root, "https://www.cnil.fr/fr/ordre", ["CNILTEXT000000000002"]);
+      ecrireEntree(
+        root,
+        entree(
+          "cetat",
+          "CETATEXT000000000002",
+          "https://www.legifrance.gouv.fr/ceta/id/CETATEXT000000000002",
+        ),
+      );
+
+      const cnil: AgentSync = async () => {
+        throw new Error("CNIL HS");
+      };
+      const ce = agentFactice();
+      const rapport = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-11",
+        depuis: "2026-11-01",
+        agents: agents(cnil, ce.agent, INERTE, INERTE),
+        embedder: embedderFactice(),
+      });
+
+      assert.deepEqual(
+        rapport.sources.map((source) => source.source),
+        ["cnil", "ce", "cc", "cjue"],
+      );
+      assert.equal(rapport.sources[0]?.statut, "panne");
+      assert.equal(rapport.sources[1]?.statut, "ok");
+      assert.equal(ce.appels.n, 1);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("ne réextrait pas un document ajouté à la passe précédente", async () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "cnil", [uniteCnil("CNILTEXT000000000001")]);
+      ecrireEntree(root, entreeCnil("entree-suite", "https://www.cnil.fr/fr/suite"));
+      ecrireSnapshot(root, "https://www.cnil.fr/fr/suite", ["CNILTEXT000000000002"]);
+
+      const cnil = agentFactice(
+        () => ajouterUnite(root, "cnil", uniteCnil("CNILTEXT000000000002", "sanction cookies")),
+        true,
+      );
+      await syncCorpus({
+        rootDir: root,
+        date: "2026-11-11",
+        depuis: "2026-11-01",
+        agents: agents(cnil.agent, INERTE, INERTE, INERTE),
+        embedder: embedderFactice(),
+      });
+      assert.equal(cnil.appels.n, 1);
+
+      const seconde = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-12",
+        agents: agents(cnil.agent, INERTE, INERTE, INERTE),
+        embedder: embedderFactice(),
+      });
+      assert.equal(cnil.appels.n, 1);
+      assert.equal(seconde.comptes.presents, 1);
+      assert.equal(seconde.sources[0]?.statut, "ignoree");
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
@@ -700,6 +929,26 @@ describe("ordonnanceur launchd", () => {
       assert.equal(chemin, join(dossier, `${ETIQUETTE}.plist`));
       assert.equal(existsSync(chemin), true);
       assert.match(readFileSync(chemin, "utf8"), /StartInterval/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("n'écrit rien en dry-run et cite les chemins launchctl", () => {
+    const root = racine();
+    try {
+      const dossier = join(root, "LaunchAgents");
+      const chemin = installerPlanificateur({
+        rootDir: "/tmp/depot",
+        nodePath: "/usr/local/bin/node",
+        homeDir: root,
+        dossier,
+        dryRun: true,
+      });
+      assert.equal(existsSync(chemin), false);
+      const commandes = commandesLaunchctl("/tmp/avec espace/fr.vitrine.plist");
+      assert.match(commandes.installer, /'\/tmp\/avec espace\/fr\.vitrine\.plist'$/);
+      assert.match(commandes.retirer, /bootout/);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 ---
 
 # Instruction: Correspondance veille → corpus
@@ -19,7 +19,7 @@ status: pending
 | Setup | Une racine avec `data/entries/` et `data/raw/<2 hex>/<hash>.html` | les entrées et snapshots sont lus hors ligne | test |
 | Happy path | Une entrée CNIL, un snapshot canonique et deux liens `CNILTEXT…` | rend les deux identifiants, sans doublon | test |
 | Happy path | Une entrée CETAT, une entrée Judilibre, une entrée CJUE | rendent `CETATEXT…`, l'identifiant Judilibre et le CELEX | test |
-| Edge case | Une entrée CNIL sans snapshot, une source hors corpus, une date antérieure à `depuis` | `non_mappee`, aucun corpus, entrée écartée de la fenêtre | test |
+| Edge case | Une entrée CNIL sans snapshot, une source hors corpus, une date antérieure à `depuis`, un identifiant Judilibre ou un CELEX invalide | `non_mappee`, aucun corpus, entrée écartée de la fenêtre, identifiant refusé | test |
 
 ## Tasks to do
 
@@ -39,9 +39,9 @@ status: pending
 ### `3)` Mapper une entrée
 
 1. `corpusDeLEntree(entry): "cnil" | "ce" | "cc" | "cjue" | null` : `cnil` → `cnil`, `cetat` → `ce`, `judilibre` → `cc`, `cjeu` → `cjue`, toute autre source → `null`.
-2. `documentsDeLEntree(entry, snapshots): string[]` : CNIL par la carte des snapshots ; `cetat` par `entry.id` si `CETATEXT…` ; `judilibre` par `entry.id` ; `cjeu` par le CELEX de `entry.url` (`CELEX:…`).
+2. `documentsDeLEntree(entry, snapshots): string[]` : CNIL par la carte des snapshots ; `cetat` par `entry.id` si `CETATEXT…` ; `judilibre` par `entry.id` si 24 hexadécimaux minuscules ; `cjeu` par le CELEX de `entry.url` (`CELEX:…`, forme `6…`).
 3. `indexerDocumentsCorpus(rootDir): Map<string, Set<string>>` lit chaque `data/corpus/<corpus>/unites.jsonl` et rend les `document` distincts par corpus.
-4. `documentsEcartes(rootDir, corpus): Map<string, string>` lit `manifest.json` : pour `cjue`, `couverture.documents_ecartes` (`celex` → `motif`) ; les autres corpus rendent une carte vide.
+4. `documentsEcartes(rootDir, corpus): Map<string, string>` lit `manifest.json` : pour `cjue`, `couverture.documents_ecartes` (`celex` → `motif`), en ne retenant que les motifs durables (`avis_avocat_general`, `autre_type`, `version_francaise_absente`) ; un échec de téléchargement reste manquant.
 
 ## Test acceptance criteria
 

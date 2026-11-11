@@ -28,6 +28,8 @@ export type PlanificateurOptions = {
 export type InstallerOptions = PlanificateurOptions & {
   /** Dossier de destination ; par défaut `~/Library/LaunchAgents`. */
   dossier?: string;
+  /** N'écrit rien : rend seulement le chemin qui serait utilisé. */
+  dryRun?: boolean;
 };
 
 /** Échappe une valeur pour un texte XML. */
@@ -97,6 +99,7 @@ export function installerPlanificateur(options: InstallerOptions): string {
   const home = options.homeDir ?? homedir();
   const dossier = options.dossier ?? join(home, "Library", "LaunchAgents");
   const chemin = join(dossier, `${ETIQUETTE}.plist`);
+  if (options.dryRun === true) return chemin;
   const contenu = plistCorpusSync(options);
   mkdirSync(dirname(chemin), { recursive: true });
   mkdirSync(join(home, "Library", "Logs"), { recursive: true });
@@ -107,4 +110,18 @@ export function installerPlanificateur(options: InstallerOptions): string {
   }
   writeFileSync(chemin, contenu, "utf8");
   return chemin;
+}
+
+/** Cite un chemin pour un shell POSIX, espaces et apostrophes compris. */
+export function citerShell(valeur: string): string {
+  return `'${valeur.replace(/'/g, `'\\''`)}'`;
+}
+
+/** Les deux commandes `launchctl`, chemins cités. */
+export function commandesLaunchctl(chemin: string): { installer: string; retirer: string } {
+  const cite = citerShell(chemin);
+  return {
+    installer: `launchctl bootstrap gui/$(id -u) ${cite}`,
+    retirer: `launchctl bootout gui/$(id -u) ${cite}`,
+  };
 }

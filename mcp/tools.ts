@@ -39,13 +39,14 @@ export type EtatCorpus = {
  */
 export function etatCorpus(rootDir: string): EtatCorpus {
   const rapport = lireRapport(rootDir);
+  const documents = Array.isArray(rapport?.documents) ? rapport.documents : [];
   return {
     a_jour_au: rapport?.a_jour_au ?? null,
     derniere_tentative: rapport?.derniere_tentative ?? null,
     depuis: rapport?.depuis ?? null,
     corpus: inventaireCorpus(rootDir),
-    manquants: rapport?.documents.filter((document) => document.statut === "manquant") ?? [],
-    sources: rapport?.sources ?? [],
+    manquants: documents.filter((document) => document.statut === "manquant"),
+    sources: Array.isArray(rapport?.sources) ? rapport.sources : [],
     index: rapport?.index ?? null,
     ...(rapport === null
       ? { message: "Aucune synchronisation enregistrée : lancez « npm run corpus:sync »." }
