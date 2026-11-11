@@ -1,6 +1,6 @@
 # Éval `dev` des deux corpus
 
-Mesures du 11 novembre 2026, sur l'index produit (`data/corpus/index/index.db`, 71 027 unités, `leoipulsar/harrier-0.6b`, 1 024 dimensions), hors split `test`. Les deux jeux comptent 10 questions conceptuelles chacun, sans piège ; la référence attendue est un document entier, satisfait par n'importe lequel de ses fragments.
+Mesures du 11 novembre 2026, sur l'index produit (`data/corpus/index/index.db`, 74 947 unités, `leoipulsar/harrier-0.6b`, 1 024 dimensions), hors split `test`. Les deux jeux comptent 10 questions conceptuelles chacun, sans piège ; la référence attendue est un document entier, satisfait par n'importe lequel de ses fragments.
 
 ## Cour de cassation (`questions-cc.csv`, corpus `cc`)
 
