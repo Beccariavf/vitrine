@@ -64,7 +64,8 @@ incréments (découpage local de 600 à 1 200 caractères, dit dans le `chemin`)
 télécharge le parquet une fois sous `data/raw/cnil/` — non commité, 334 Mo — puis les archives
 `CNIL_YYYYMMDD-HHMMSS.tar.gz` de la DILA ; un document déjà présent n'est remplacé que si l'archive
 est plus récente que sa date, sinon il garde sa numérotation publiée. `get_decision` rend une
-décision entière par identifiant `CNILTEXT…` ou par numéro `SAN-…`, et `search` accepte un
+décision par identifiant `CNILTEXT…` ou par numéro `SAN-…` — sa partie opératoire par défaut, le
+document entier avec `partie: "tous"` — et `search` accepte un
 paramètre `corpus` (`rgpd`, `aiact`, `cnil`). Le filtre est d'abord un choix de corpus, pas de
 document. La route Légifrance `https://www.legifrance.gouv.fr/cnil/id/<id>` est déclarée dans le
 manifeste mais n'a pas été vérifiée : elle répond 403 aux robots.
@@ -138,7 +139,7 @@ l'écart plus grand ou répété. Le rapport v3 est
 
 `npm run mcp:demo` lance `mcp/server.ts` comme le ferait un client, s'y connecte sur stdio et
 appelle les trois outils sur cinq questions : article exact, recherche RGPD, recherche AI Act,
-filtres CNIL, décision entière. Sortie réelle, Ollama requis :
+filtres CNIL, décision par son numéro. Sortie réelle, Ollama requis :
 
 ```
 ### 4. Filtres CNIL poussés dans l'index : cookies, amendes, 2025

@@ -61,32 +61,56 @@ const PHRASE_NOMBRE = new RegExp(
   "gi",
 );
 
-/** Découpe le texte au dernier « PAR CES MOTIFS » ; à défaut, garde la fin. */
-function dispositif(texte: string): string {
-  const normalise = texte.replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
-  const marque = normalise.toUpperCase().lastIndexOf("PAR CES MOTIFS");
-  const minuscules = normalise.toLowerCase();
+/**
+ * Position du début de la partie opératoire, dans le texte reçu.
+ *
+ * Le dernier « PAR CES MOTIFS » fait foi ; à défaut, la dernière conclusion
+ * (« En conséquence », « décide de faire application »), puis la dernière
+ * formule de sanction, puis les 2 500 derniers caractères. Seul l'espace
+ * insécable est remplacé, ce qui conserve la longueur : la position rendue
+ * reste valable dans le texte d'origine, y compris pour y découper des
+ * fragments.
+ */
+export function debutDispositif(texte: string): number {
+  const brut = texte.replace(/\u00a0/g, " ");
+  const minuscules = brut.toLowerCase();
+
+  const marque = minuscules.lastIndexOf("par ces motifs");
+  if (marque !== -1) return marque;
+
   const conclusion = Math.max(
     minuscules.lastIndexOf("en conséquence"),
     minuscules.lastIndexOf("décide de faire application"),
   );
+  if (conclusion !== -1) return conclusion;
+
+  // L'apostrophe est typographique dans les textes de la CNIL : on accepte les
+  // deux formes, sinon « sanction d’un montant » n'est jamais reconnue.
   const sanction = Math.max(
     minuscules.lastIndexOf("sanction pécuniaire"),
+    minuscules.lastIndexOf("sanction d’un montant"),
+    minuscules.lastIndexOf("sanction d'un montant"),
     minuscules.lastIndexOf("amende administrative"),
     minuscules.lastIndexOf("adresse un avertissement"),
     minuscules.lastIndexOf("adresser un avertissement"),
+    minuscules.lastIndexOf("rappel à l’ordre"),
     minuscules.lastIndexOf("rappel à l'ordre"),
     minuscules.lastIndexOf("injonction"),
   );
-  // Sans « PAR CES MOTIFS », on part de la dernière conclusion, sinon de la
-  // dernière formule de sanction ; à défaut, des 2 500 derniers caractères.
-  const depart =
-    marque !== -1 ? marque : conclusion !== -1 ? conclusion : sanction !== -1 ? sanction : normalise.length - 2500;
-  const repli = normalise.slice(Math.max(0, depart));
+  if (sanction !== -1) return sanction;
+
+  return Math.max(0, brut.length - 2500);
+}
+
+/** Découpe le texte à la partie opératoire ; à défaut, garde la fin. */
+function dispositif(texte: string): string {
+  const normalise = texte.replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
+  const repli = normalise.slice(debutDispositif(normalise));
   // La publication ne répète les montants que dans un vrai dispositif ; sur une
   // fin sans marqueur, « communiqué » peut précéder l'avertissement.
-  const publication =
-    marque !== -1 ? /\brendre\b[^.;]{0,40}\bpublique\b|\bcommuniqu[ée]\b/i.exec(repli) : null;
+  const publication = normalise.toLowerCase().includes("par ces motifs")
+    ? /\brendre\b[^.;]{0,40}\bpublique\b|\bcommuniqu[ée]\b/i.exec(repli)
+    : null;
   return publication === null ? repli : repli.slice(0, publication.index);
 }
 
