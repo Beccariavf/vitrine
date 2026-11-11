@@ -22,10 +22,11 @@ const CONSIGNE_PROVENANCE =
 
 const CONSIGNE_PROMESSE =
   "« confiant » est statistique, jamais par réponse : c'est un taux d'erreur mesuré au niveau du " +
-  "document, sur les passages du top 5. Sur le corpus `cnil` (seuils 0,67 / 0,67 / 0,02) et hors " +
-  "pièges, la borne haute à 95 % est de 33,3 % (3 erreurs sur 22 réponses confiantes, 13,6 %, à " +
-  "40,7 % de couverture) ; aucun réglage mesuré ne descend sous 25,9 %, et 10 % demanderait au " +
-  "moins 35 confiantes sans une seule erreur. Le sous-ensemble doctrinal " +
+  "document, sur les passages du top 5. Sur le corpus `cnil` (seuils 0,73 / 0,73 / 0,01) et hors " +
+  "pièges, la borne haute à 95 % est de 22,6 % (2 erreurs sur 28 réponses confiantes, 7,1 %, à " +
+  "51,9 % de couverture) ; constatée hors échantillon à 10,2 % (0 erreur sur 34 confiantes, 63,0 % " +
+  "de couverture). Aucun réglage mesuré ne descend sous 10 %, et la borne minimale sans condition de " +
+  "couverture (19,4 %) coûterait la couverture utile. Le sous-ensemble doctrinal " +
   "`questions-cnil-doctrine.csv` est mesuré à part, hors promesse, comme une recherche filtrée " +
   "(nature, dates, type ou montant) et un k < 5 ; les autres corpus, une " +
   "recherche sans `corpus` et une recherche qui ne nomme qu'un document suivent le repli " +

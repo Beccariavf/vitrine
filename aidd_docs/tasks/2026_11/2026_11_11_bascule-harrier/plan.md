@@ -1,6 +1,6 @@
 ---
 objective: "Le MCP indexe et interroge avec `leoipulsar/harrier-0.6b` servi par Ollama, sa table CNIL est recalibrée sur `dev` et sa promesse constatée sur le `test` déjà stocké."
-status: pending
+status: completed
 ---
 
 # Plan: Basculer l'embedding sur Harrier 0.6B servi par Ollama

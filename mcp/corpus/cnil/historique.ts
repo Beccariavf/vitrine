@@ -3,7 +3,7 @@
  *
  * On ne lit que le texte et les métadonnées : la colonne d'embeddings `bge-m3`
  * reste sur le disque et n'entre jamais dans l'index, dont l'espace vectoriel
- * est celui de `qwen3-embedding:0.6b`. Le parquet n'est pas commité ; il est
+ * est celui de `leoipulsar/harrier-0.6b`. Le parquet n'est pas commité ; il est
  * téléchargé une fois sous `data/raw/cnil/` puis réutilisé.
  */
 

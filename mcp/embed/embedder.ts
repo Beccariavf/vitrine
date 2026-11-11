@@ -9,7 +9,7 @@ export type Embedder = {
   embedQuery(texte: string, portee?: string): Promise<number[]>;
 };
 
-export const MODELE_DEFAUT = "qwen3-embedding:0.6b";
+export const MODELE_DEFAUT = "leoipulsar/harrier-0.6b";
 export const HOTE_DEFAUT = "http://127.0.0.1:11434";
 export const DIM_DEFAUT = 1024;
 

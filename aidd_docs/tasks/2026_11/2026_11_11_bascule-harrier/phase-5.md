@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 ---
 
 # Instruction: Mesures `dev` des cinq autres corpus et de la doctrine

@@ -4,12 +4,14 @@
  * ## Ce que « confiant » garantit
  * Sur le corpus CNIL — le seul dont la ligne de table s'applique — l'étiquette a
  * une promesse chiffrée : sur les 54 questions sémantiques de
- * `questions-cnil-etendu.csv`, 3 erreurs sur 22 réponses confiantes (13,6 %),
- * soit une borne haute à 95 % de **33,3 %** (Wilson), à **40,7 %** de couverture,
+ * `questions-cnil-etendu.csv`, 2 erreurs sur 28 réponses confiantes (7,1 %),
+ * soit une borne haute à 95 % de **22,6 %** (Wilson), à **51,9 %** de couverture,
  * en comptant satisfait un passage qui porte le document attendu dans les cinq
- * premiers du top 5 brut. Aucun réglage mesuré ne descend sous 25,9 %, et 10 %
- * demanderait 35 réponses confiantes sans une seule erreur.
- * Source : `aidd_docs/tasks/2026_11/2026_11_10_promesse-confiance/promesse.md`.
+ * premiers du top 5 brut. Hors échantillon, le split `test` déjà stocké rend
+ * 0 erreur sur 34 confiantes (borne 10,2 %, couverture 63,0 %). Aucun réglage
+ * mesuré ne descend sous 10 %, et la borne minimale sans condition de couverture
+ * (19,4 %) coûterait la couverture utile.
+ * Source : `aidd_docs/tasks/2026_11/2026_11_11_bascule-harrier/mesures/calibration.md`.
  *
  * ## Ce qu'elle ne garantit pas
  * La réponse prise une à une : c'est une moyenne de corpus, aucun signal par
@@ -22,10 +24,10 @@
  *
  * ## La borne qui soutient la promesse
  * `bas` refuse, `haut` et `marge` certifient. Le triplet CNIL a `bas = haut =
- * 0,67` : aucun refus ne porte sur une réponse qui aurait été confiante, et deux
- * bonnes réponses tues par l'ancien plancher (0,677 et 0,6812) sont rendues.
- * Un changement d'embedder, d'index ou de mode de recherche déplace l'échelle :
- * la table se recalibre, la mécanique reste.
+ * 0,73` : aucun refus ne porte sur une réponse qui aurait été confiante, et la
+ * plus faible similarité d'une bonne réponse (0,7304) est rendue. La table est
+ * liée au couple (modèle, corpus) : Harrier 0.6B déplace l'échelle, la table se
+ * recalibre, la mécanique reste.
  */
 export type NiveauConfiance = "confiant" | "incertain" | "aucun_resultat_fiable";
 
@@ -38,8 +40,8 @@ export type SeuilsCorpus = { bas: number; haut: number; marge: number };
  * divergent. Un corpus absent de la table suit le repli, sans promesse chiffrée.
  */
 export const SEUILS_PAR_CORPUS: Record<string, SeuilsCorpus> = {
-  /** CNIL : 33,3 % d'erreur au plus sur les réponses confiantes, à 40,7 % de couverture. */
-  cnil: { bas: 0.67, haut: 0.67, marge: 0.02 },
+  /** CNIL : 22,6 % d'erreur au plus sur les réponses confiantes, à 51,9 % de couverture. */
+  cnil: { bas: 0.73, haut: 0.73, marge: 0.01 },
 };
 
 /** Sous ce seuil, aucun passage n'est digne d'être présenté (repli global). */

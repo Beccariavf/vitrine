@@ -176,7 +176,7 @@ describe("l'adaptateur Ollama", () => {
 
     assert.equal(url, "http://127.0.0.1:9999/api/embed");
     assert.deepEqual(JSON.parse(corps), {
-      model: "qwen3-embedding:0.6b",
+      model: "leoipulsar/harrier-0.6b",
       input: [`${INSTRUCTION_REQUETE}test`],
     });
     assert.deepEqual(vecteur, [0.6, 0.8]);
@@ -241,7 +241,7 @@ describe("l'adaptateur Ollama", () => {
     const fetchImpl: FetchLike = async () => ({ ok: false, status: 404, text: async () => "" });
     const embedder = createOllamaEmbedder({ dim: 2, fetchImpl });
 
-    await assert.rejects(embedder.embedQuery("test"), /ollama pull qwen3-embedding:0\.6b/);
+    await assert.rejects(embedder.embedQuery("test"), /ollama pull leoipulsar\/harrier-0\.6b/);
   });
 
   it("nomme ollama pull quand l'hôte ne répond pas", async () => {
@@ -250,7 +250,7 @@ describe("l'adaptateur Ollama", () => {
     };
     const embedder = createOllamaEmbedder({ dim: 2, fetchImpl });
 
-    await assert.rejects(embedder.embedQuery("test"), /ollama pull qwen3-embedding:0\.6b/);
+    await assert.rejects(embedder.embedQuery("test"), /ollama pull leoipulsar\/harrier-0\.6b/);
   });
 
   it("refuse une dimension inattendue", async () => {
@@ -381,7 +381,7 @@ describe("le choix du fournisseur", () => {
   it("garde Ollama quand --fournisseur est absent", () => {
     assert.equal(lireFournisseur(undefined), "ollama");
     const embedder = creerEmbedder(lireFournisseur(undefined), {});
-    assert.equal(embedder.model, "qwen3-embedding:0.6b");
+    assert.equal(embedder.model, "leoipulsar/harrier-0.6b");
     assert.equal(embedder.dim, 1024);
   });
 

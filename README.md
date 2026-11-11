@@ -31,7 +31,7 @@ npm run lil:sync -- --date 2026-11-09      # loi Informatique et Libertés → d
 npm run cnil:sync -- --tout                # historique DINUM + incréments DILA → data/corpus/cnil/
 npm run cnil:sync -- --increments --dry-run   # ce que les archives ajouteraient, sans écrire
 npm run corpus:index   # index incrémental Ollama + sqlite-vec → data/corpus/index/index.db
-npm run mcp:smoke      # vérifie Ollama et qwen3-embedding:0.6b
+npm run mcp:smoke      # vérifie Ollama et leoipulsar/harrier-0.6b
 npm run mcp            # serveur MCP sur stdio
 npm run mcp:demo       # cinq appels réels au serveur stdio (Ollama requis)
 npm run mcp:eval -- --questions questions-v2.csv --split dev    # 30 questions de développement (hors CI)
@@ -48,8 +48,8 @@ npm run mcp:eval:filtres                                                        
 Le MCP lit le RGPD, l'AI Act, la LIL, les délibérations de la CNIL, les décisions du Conseil
 d'État et les lignes directrices du CEPD par passage exact et par recherche sémantique, avec
 provenance. Seule
-la recherche sémantique exige Ollama sur `127.0.0.1:11434` et le modèle `qwen3-embedding:0.6b`
-(`ollama pull qwen3-embedding:0.6b`) : une question qui cite un article (« article 17 ») est servie
+la recherche sémantique exige Ollama sur `127.0.0.1:11434` et le modèle `leoipulsar/harrier-0.6b`
+(`ollama pull leoipulsar/harrier-0.6b`) : une question qui cite un article (« article 17 ») est servie
 sans index ni modèle. Un document nommé dans la question est honoré quand `document` est absent : les
 sigles et noms ordinaires sont reconnus après normalisation de la casse, des diacritiques et de la
 ponctuation (« RGPD », « R.G.P.D. », « règlement général sur la protection des données », « règlement
@@ -187,7 +187,7 @@ questions AI Act, sans classement) ; le rapport v1 reste
 `qwen3-embedding:4b` a été mesuré sur les 30 questions `dev` : il répare une question au top 5
 (`art_56`), en casse une autre (`art_35`), garde le même top 1 et coûte 6,9× plus d'indexation selon cette mesure v2,
 un chiffre que la mesure v3 porte à 15,5× pour la même indexation : le coût reste imprécis.
-Le produit garde `0.6b` ; l'expérience est dans `eval-v2.md`.
+Le produit a depuis basculé sur `leoipulsar/harrier-0.6b` (ticket #20) ; l'expérience `4b` reste dans `eval-v2.md`.
 
 Le jeu v3 porte 80 questions écrites contre les 99 articles du RGPD avant toute mesure : 40 `dev`,
 40 `test`, dont 34 sémantiques par split, 3 références exactes et 3 pièges. Chaque modèle a été
@@ -195,8 +195,8 @@ mesuré une seule fois sur le `test` avec les seuils calibrés sur son propre `d
 `0.6b` place la référence attendue au top 5 pour 29 questions sur 34 (30 au brut) et `4b` pour 31
 sur 34 (31 au brut) ; au rang 1 rendu, les deux sont à 25 (26 contre 25 au brut). Les paires
 discordantes rendues (`b = 2`, `c = 2`, `b + c = 4` ; `b = 2`, `c = 3`, `b + c = 5` au brut)
-restent sous le plancher de six, donc le verdict est **non établi** et `0.6b` reste le modèle du
-produit. L'avance de `4b` sur `dev` (30 contre 26 au rang 1, `b = 6`, `c = 2`, p ≈ 0,29) n'était pas
+restent sous le plancher de six, donc le verdict est **non établi** et le produit a gardé `0.6b`
+jusqu'au basculement Harrier du 2026-11-11 (#20). L'avance de `4b` sur `dev` (30 contre 26 au rang 1, `b = 6`, `c = 2`, p ≈ 0,29) n'était pas
 significative et le test ne la reproduit pas. Avec 34 questions sémantiques, il
 ne détecte qu'un écart d'environ six questions, donc un effet plus petit demanderait un test tenu à
 l'écart plus grand ou répété. Le rapport v3 est
@@ -212,27 +212,33 @@ résultat est le bon article.
 
 | Corpus demandé | Seuils (`bas / haut / marge`) | Promesse chiffrée |
 | --- | --- | --- |
-| `cnil` (`questions-cnil-etendu.csv`, 54 questions sémantiques `dev`, pièges exclus) | `0,67 / 0,67 / 0,02` | **33,3 % au plus**, à 40,7 % de couverture |
+| `cnil` (`questions-cnil-etendu.csv`, 54 questions sémantiques `dev`, pièges exclus) | `0,73 / 0,73 / 0,01` | **22,6 % au plus**, à 51,9 % de couverture |
 | Autres corpus, recherche sans `corpus`, recherche à document unique | `0,69 / 0,74 / 0,01` | aucune |
 
-Sur le corpus CNIL, 22 des 54 questions sémantiques sont `confiant` (40,7 % de couverture), 3 se
-trompent (13,6 %), et la borne haute à 95 % est de **33,3 %** (Wilson). La cible de 10 % n'est pas
-atteinte :
-aucun réglage mesuré ne descend sous **25,9 %**, et 10 % demanderait au moins **35 réponses
-confiantes sans une seule erreur**. Le sous-ensemble doctrinal (`questions-cnil-doctrine.csv`, corpus
-`cnil`) est mesuré à part et hors promesse : 6 confiantes, 4 fausses, borne 90,3 %. Les autres corpus
-suivent le repli et ne portent aucune promesse chiffrée (19, 12, 10, 10 et 3 questions sémantiques
-pour le RGPD, le Conseil d'État, la LIL, le CEPD et l'AI Act). Une recherche **sans `corpus`**, ou
-qui **ne nomme qu'un document**, suit le repli et sort de la promesse : l'instruction de requête et
-le bassin de candidats y changent. Le plancher de refus CNIL passe de 0,69 à 0,67 : les quatre
-questions muettes d'avant sont rendues, dont deux qui avaient le bon document au top 5.
+La table est liée au couple (modèle, corpus). Depuis le 2026-11-11, le produit embarque
+`leoipulsar/harrier-0.6b` servi par Ollama ; la table CNIL a été recalibrée sur `dev` et sa promesse
+constatée sur le `test` déjà stocké, sans nouveau tir (vecteurs identiques, cosinus 1,00000000).
+
+Sur le corpus CNIL, 28 des 54 questions sémantiques sont `confiant` (51,9 % de couverture), 2 se
+trompent (7,1 %), et la borne haute à 95 % est de **22,6 %** (Wilson). Hors échantillon, le `test`
+rend 34 confiantes, 0 erreur, borne **10,2 %**, couverture 63,0 %. La cible de 10 % n'est pas
+atteinte en `dev` : aucun réglage mesuré ne descend sous **19,4 %**, et ce minimum coûte la
+couverture utile (16 confiantes sur 54, 29,6 %) ; une borne à 10 % avec zéro erreur demanderait
+**35 réponses confiantes**. Le sous-ensemble doctrinal (`questions-cnil-doctrine.csv`, corpus
+`cnil`) est mesuré à part et hors promesse : 3 confiantes, 3 fausses, borne 100,0 %. Les autres
+corpus suivent le repli et ne portent aucune promesse chiffrée (19, 12, 10, 10 et 3 questions
+sémantiques pour le RGPD, le Conseil d'État, la LIL, le CEPD et l'AI Act). Une recherche **sans
+`corpus`**, ou qui **ne nomme qu'un document**, suit le repli et sort de la promesse : l'instruction
+de requête et le bassin de candidats y changent. Le plancher de refus CNIL passe de 0,69 à 0,73 :
+la plus faible similarité d'une bonne réponse vaut 0,7304, et un plancher à 0,74 la tairait.
 Une recherche **filtrée** (`nature`, dates, type ou montant de sanction, numéro) et un `k` inférieur
 à 5 sortent aussi de la promesse : le bassin de candidats change, et le harnais n'exerce pas ces
 filtres.
 
-La borne décrit les 54 questions sémantiques, **pièges exclus**. Sur les 6 pièges du jeu, un est
-pourtant rendu `confiant` et faux (« loueur de vélos en libre-service », similarité 0,7978, mauvais
-document) : le compter donnerait 4 erreurs sur 23 confiantes (17,4 %, borne 37,1 %).
+La borne décrit les 54 questions sémantiques, **pièges exclus**. Sur les 6 pièges du jeu, 5 sont cités
+en `dev` et 2 sont rendus `confiant` et faux (compagnie aérienne, 0,7578 ; puces sous-cutanées,
+0,7777) : les compter donnerait 30 confiantes et 4 erreurs (13,3 %, borne 29,7 %). En `test`, 5 sont
+cités et 2 sont `confiant` et faux (domotique, cantines).
 
 La règle de choix, les mesures et ce qui invaliderait la promesse sont dans
 `aidd_docs/tasks/2026_11/2026_11_10_promesse-confiance/promesse.md`.

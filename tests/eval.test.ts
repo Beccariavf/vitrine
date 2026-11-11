@@ -392,7 +392,7 @@ describe("la règle du produit", () => {
       corpus: "cnil",
     });
 
-    assert.deepEqual(retenus.seuils, { bas: 0.67, haut: 0.67, marge: 0.02 });
+    assert.deepEqual(retenus.seuils, { bas: 0.73, haut: 0.73, marge: 0.01 });
     assert.equal(retenus.calibration, null, "aucune grille ne tourne sous la règle du produit");
     assert.match(retenus.origine, /table \(cnil\)/);
   });
@@ -454,7 +454,7 @@ describe("la règle du produit", () => {
           split: "dev",
         },
         refs: ["CNILTEXT000055000002#f0", "CNILTEXT000055000001#f1"],
-        distances: [0.3, 0.5],
+        distances: [0.265, 0.5],
       },
     ];
     const commun = {
@@ -474,7 +474,7 @@ describe("la règle du produit", () => {
     });
     const produit = objetMesureJson({
       ...commun,
-      seuils: { bas: 0.67, haut: 0.67, marge: 0.02 },
+      seuils: { bas: 0.73, haut: 0.73, marge: 0.01 },
       seuilsOrigine: "table (cnil)",
     });
 
