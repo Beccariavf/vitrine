@@ -19,8 +19,8 @@ aidd_docs/tasks/2026_11/2026_11_11_bascule-harrier/
 
 | Scenario     | Action                  | Observable outcome   | Actor                           |
 | ------------ | ----------------------- | -------------------- | ------------------------------- |
-| Setup        | Lire `mesures/calibration.md` | Le triplet figé est connu avant le test | cli |
-| Happy path   | `node mcp/eval/risque.ts aidd_docs/tasks/2026_11/2026_11_10_promesse-confiance/mesures/test-harrier.json --seuils <triplet figé>` | Confiantes, erreurs, risque, borne 95 % et couverture sur le `test` | cli |
+| Setup        | Lire `mesures/calibration.md` | Le triplet retenu est connu avant le test | cli |
+| Happy path   | `node mcp/eval/risque.ts aidd_docs/tasks/2026_11/2026_11_10_promesse-confiance/mesures/test-harrier.json --seuils <triplet retenu>` | Confiantes, erreurs, risque, borne 95 % et couverture sur le `test` | cli |
 | Edge case    | Une commande `mcp:eval ... --split test` est envisagée | Elle n'est pas lancée : le tir est déjà dépensé et `test-harrier.json` suffit | cli |
 | Teardown     | Aucun marqueur de consommation modifié | `mcp/eval/questions-cnil-etendu.test-consomme.json` reste intact | cli |
 
@@ -45,5 +45,5 @@ aidd_docs/tasks/2026_11/2026_11_11_bascule-harrier/
 
 | Task | Acceptance criteria              |
 | ---- | -------------------------------- |
-| 1 | La borne haute à 95 % et la couverture du `test` sont calculées avec le triplet figé en phase 2, sans nouveau tir. |
+| 1 | La borne haute à 95 % et la couverture du `test` sont calculées avec le triplet retenu en phase 2, sans nouveau tir. |
 | 2 | `test-harrier-promesse.md` nomme le triplet, les confiantes, les erreurs, la borne et la couverture `test`, et le verdict. |

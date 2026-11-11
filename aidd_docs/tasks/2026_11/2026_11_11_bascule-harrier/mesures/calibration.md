@@ -59,7 +59,7 @@ tient, mais elle est mince : un modèle qui dériverait de plus de 4 × 10⁻⁴
 À 0,74, une bonne réponse est tue. `bas` = 0,73 égale `haut` : aucun refus ne porte sur une réponse qui
 aurait été confiante.
 
-## Triplet figé
+## Triplet retenu
 
 | Champ | Valeur |
 | ----- | ------ |
@@ -76,6 +76,5 @@ restent hors population comme hors borne ; les inclure donnerait 30 confiantes e
 borne 29,7 %).
 
 La phrase que la documentation portera : sur les 54 questions sémantiques CNIL, la borne haute à
-95 % est de **22,6 %** (2 erreurs sur 28 réponses confiantes, 51,9 % de couverture) ; aucun réglage
-mesuré ne descend sous 10 %, et la borne minimale sans condition de couverture (19,4 %) coûterait
-la couverture utile.
+95 % est de **22,6 %** (2 erreurs sur 28 réponses confiantes, 51,9 % de couverture) ; le meilleur
+réglage mesuré sur `dev` plafonne à 19,4 %, à 29,6 % de couverture seulement (16 confiantes).

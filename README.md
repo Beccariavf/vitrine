@@ -226,8 +226,9 @@ questions sémantiques) et restent des constats `dev` ; le détail est dans
 `aidd_docs/tasks/2026_11/2026_11_11_bascule-harrier/mesures/autres-corpus.md`.
 
 Sur le corpus CNIL, 28 des 54 questions sémantiques sont `confiant` (51,9 % de couverture), 2 se
-trompent (7,1 %), et la borne haute à 95 % est de **22,6 %** (Wilson). Hors échantillon, le `test`
-rend 34 confiantes, 0 erreur, borne **10,2 %**, couverture 63,0 %. La cible de 10 % n'est pas
+trompent (7,1 %), et la borne haute à 95 % est de **22,6 %** (Wilson). Sur le `test` déjà stocké (constatation non aveugle : le triplet y avait été pré-publié le
+2026-11-10, mais il ne dépend d'aucun choix fait sur ce test), il rend 34 confiantes, 0 erreur, borne
+**10,2 %**, couverture 63,0 %. La cible de 10 % n'est pas
 atteinte en `dev` : aucun réglage mesuré ne descend sous **19,4 %**, et ce minimum coûte la
 couverture utile (16 confiantes sur 54, 29,6 %) ; une borne à 10 % avec zéro erreur demanderait
 **35 réponses confiantes**. Le sous-ensemble doctrinal (`questions-cnil-doctrine.csv`, corpus

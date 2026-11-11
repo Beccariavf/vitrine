@@ -24,7 +24,7 @@ const CONSIGNE_PROMESSE =
   "« confiant » est statistique, jamais par réponse : c'est un taux d'erreur mesuré au niveau du " +
   "document, sur les passages du top 5. Sur le corpus `cnil` (seuils 0,73 / 0,73 / 0,01) et hors " +
   "pièges, la borne haute à 95 % est de 22,6 % (2 erreurs sur 28 réponses confiantes, 7,1 %, à " +
-  "51,9 % de couverture) ; constatée hors échantillon à 10,2 % (0 erreur sur 34 confiantes, 63,0 % " +
+  "51,9 % de couverture) ; constatée sur le test déjà stocké à 10,2 % (0 erreur sur 34 confiantes, 63,0 % " +
   "de couverture). Le meilleur réglage mesuré sur `dev` plafonne à 19,4 %, à 29,6 % de couverture. " +
   "Le sous-ensemble doctrinal " +
   "`questions-cnil-doctrine.csv` est mesuré à part, hors promesse, comme une recherche filtrée " +

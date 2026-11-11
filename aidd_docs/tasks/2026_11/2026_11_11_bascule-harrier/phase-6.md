@@ -44,7 +44,7 @@ aidd_docs/
 > Le produit interroge Harrier Ollama et applique la table calibrée en phase 2.
 
 1. `mcp/embed/embedder.ts` : `MODELE_DEFAUT = "leoipulsar/harrier-0.6b"`, commentaire à jour.
-2. `mcp/confidence.ts` : `SEUILS_PAR_CORPUS.cnil` reçoit le triplet figé ; le commentaire de tête porte la nouvelle borne, la couverture et la source.
+2. `mcp/confidence.ts` : `SEUILS_PAR_CORPUS.cnil` reçoit le triplet retenu ; le commentaire de tête porte la nouvelle borne, la couverture et la source.
 3. `mcp/server.ts` : `CONSIGNE_PROMESSE` porte le nouveau triplet, la nouvelle borne, la couverture et le plancher.
 4. `mcp/corpus/cnil/historique.ts` : le commentaire nomme `leoipulsar/harrier-0.6b` comme espace vectoriel du produit.
 

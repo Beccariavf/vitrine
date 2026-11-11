@@ -26,7 +26,7 @@ aidd_docs/tasks/2026_11/2026_11_11_bascule-harrier/
 | ------------ | ----------------------- | -------------------- | ------------------------------- |
 | Setup        | L'index produit est Harrier (phase 4) | `--modele leoipulsar/harrier-0.6b --dim 1024` accepte l'index sans le reconstruire | cli |
 | Happy path   | Les cinq jeux hors CNIL en `dev` et le jeu doctrine | Top 5, rang 1 et MRR bruts par jeu, sans verdict de supériorité | cli |
-| Happy path   | `--seuils <triplet figé>` pour la doctrine, `--seuils 0.69,0.74,0.01` pour les autres | La vue rendue est celle qu'appliquera le produit, sans attendre la phase 6 | cli |
+| Happy path   | `--seuils <triplet retenu>` pour la doctrine, `--seuils 0.69,0.74,0.01` pour les autres | La vue rendue est celle qu'appliquera le produit, sans attendre la phase 6 | cli |
 | Edge case    | `questions-aiact.csv` n'a pas de colonne `split` | Il est mesuré sans `--split` ni calibration propre, et le rapport le dit | cli |
 | Teardown     | Aucun `--mesurer-test` lancé | Aucun marqueur de consommation n'est écrit | cli |
 
@@ -38,7 +38,7 @@ aidd_docs/tasks/2026_11/2026_11_11_bascule-harrier/
 
 1. `npm run mcp:eval -- --questions questions-v2.csv --split dev --modele leoipulsar/harrier-0.6b --dim 1024 --seuils 0.69,0.74,0.01 --json > aidd_docs/tasks/2026_11/2026_11_11_bascule-harrier/mesures/dev-rgpd-v2.json`.
 2. Même forme pour `questions-lil.csv`, `questions-ce.csv` et `questions-cepd.csv` ; `questions-aiact.csv` sans `--split`.
-3. Mesurer `questions-cnil-doctrine.csv --split dev` avec `--seuils <triplet figé en phase 2>` ; le rapport est `dev-cnil-doctrine.json`.
+3. Mesurer `questions-cnil-doctrine.csv --split dev` avec `--seuils <triplet retenu en phase 2>` ; le rapport est `dev-cnil-doctrine.json`.
 
 ### `2)` Publier les chiffres
 
