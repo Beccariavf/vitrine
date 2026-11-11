@@ -240,6 +240,9 @@ export async function telechargerCjue(
   }).catch(() => null);
   if (reponse === null) return { motif: "echec_telechargement" };
   if (reponse.status === 404) return { motif: "version_francaise_absente" };
+  if (reponse.status === 429) {
+    throw new Error("CELLAR : HTTP 429 (quota) — le corpus existant reste intact, relancez plus tard");
+  }
   if (!reponse.ok) return { motif: "echec_telechargement" };
   const texte = await reponse.text();
   return texte.trim() === "" ? { motif: "echec_telechargement" } : { texte };
@@ -304,7 +307,6 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
   }
   const veille = entreesVeilleCjue(rootDir);
   const dejaListes = new Set(retenues.map((entree) => entree.celex));
-  const datesVeille = new Map<string, string>();
   let veilleAjoutees = 0;
   for (const entree of veille) {
     if (dejaListes.has(entree.celex)) continue;
@@ -319,7 +321,6 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
     }
     retenues.push({ celex: entree.celex, date: entree.date, type });
     dejaListes.add(entree.celex);
-    datesVeille.set(entree.celex, entree.date);
     veilleAjoutees += 1;
   }
   const lues = limite === null ? retenues : retenues.slice(0, limite);
@@ -374,6 +375,14 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
     ecrireSiChange(cheminCache(rootDir, entree.celex), capture);
   }
 
+  const cheminUnites = join(rootDir, DOSSIER_CORPUS, "unites.jsonl");
+  if (ecartes.echec_telechargement > 0 && lireNombreLignes(cheminUnites) > 0) {
+    throw new Error(
+      `${ecartes.echec_telechargement} téléchargement(s) en échec alors que le corpus existe : ` +
+        "il reste intact, relancez quand CELLAR répond.",
+    );
+  }
+
   const unites: Unite[] = [];
   let dateMax: string | null = null;
   let dateMinObserve: string | null = null;
@@ -385,15 +394,12 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
       continue;
     }
     try {
-      let date = entree.date;
-      const dateEntree = datesVeille.get(entree.celex);
-      if (dateEntree !== undefined) {
-        date = dateDecisionCjue(capture) ?? dateEntree;
-        if (date < dateMin) {
-          ecartes.avant_borne += 1;
-          documentsEcartes.push({ celex: entree.celex, motif: "avant_borne" });
-          continue;
-        }
+      // La date de l'en-tête XHTML fait foi ; la liste ne sert que de repli.
+      const date = dateDecisionCjue(capture) ?? entree.date;
+      if (date < dateMin) {
+        ecartes.avant_borne += 1;
+        documentsEcartes.push({ celex: entree.celex, motif: "avant_borne" });
+        continue;
       }
       const nouvelles = unitesCjue(capture, entree.celex, date, descripteur);
       if (nouvelles.length === 0) {
@@ -415,7 +421,6 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
   }
 
   validerUnitesCorpus(unites, "CJUE");
-  const cheminUnites = join(rootDir, DOSSIER_CORPUS, "unites.jsonl");
   if (unites.length === 0 && lireNombreLignes(cheminUnites) > 0) {
     throw new Error(
       "Aucune unité produite alors que le corpus existant n'est pas vide : " +

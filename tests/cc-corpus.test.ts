@@ -288,6 +288,44 @@ describe("la synchronisation du corpus Cour de cassation", () => {
     }
   });
 
+  it("refuse de tronquer un corpus existant quand le budget s'épuise", async () => {
+    const racine = racineTemporaire();
+    try {
+      await syncCc({
+        rootDir: racine,
+        date: "2026-11-11",
+        reponsesRecherche: { "données personnelles": commandeRecherche() },
+        reponsesDecision: { [ID_PERTINENT]: PERTINENT, [ID_HORS_SUJET]: HORS_SUJET },
+      });
+      const corpus = readFileSync(join(racine, "data", "corpus", "cc", "unites.jsonl"), "utf8");
+      rmSync(join(racine, "data", "raw", "cc"), { recursive: true, force: true });
+
+      resetUsage();
+      const fetchImpl: FetchLike = async (url) => {
+        if (url.includes("/search")) return reponse(200, JSON.stringify(commandeRecherche()));
+        return reponse(200, JSON.stringify(PERTINENT));
+      };
+      await assert.rejects(
+        async () =>
+          syncCc({
+            rootDir: racine,
+            date: "2026-11-11",
+            config: CONFIG,
+            fetchImpl,
+            maxAppels: 23,
+          }),
+        /Budget PISTE épuisé avec 1 décision/,
+      );
+      assert.equal(
+        readFileSync(join(racine, "data", "corpus", "cc", "unites.jsonl"), "utf8"),
+        corpus,
+        "le corpus existant reste intact",
+      );
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
+  });
+
   it("s'arrête au budget sans perdre le corpus et reprend au cache", async () => {
     const racine = racineTemporaire();
     const appels: string[] = [];

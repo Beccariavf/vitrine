@@ -36,13 +36,25 @@ const MOIS: Record<string, string> = {
  * l'arrêt. `null` quand aucune date n'est reconnue.
  */
 export function dateDecisionCjue(xhtml: string): string | null {
-  const texte = texteVisible(corps(xhtml))
+  const contenu = corps(xhtml);
+  const enTete = [...contenu.matchAll(/<p[^>]*class="(?:coj-)?sum-title-1"[^>]*>([\s\S]*?)<\/p>/gi)]
+    .slice(0, 2)
+    .map((trouve) => texteVisible(trouve[1] ?? ""))
+    .join(" ");
+  return chercherDate(enTete) ?? chercherDate(texteVisible(contenu).slice(0, 4000));
+}
+
+/** Première date française d'un texte ; « 1 er octobre 2015 » est reconnu. */
+function chercherDate(texte: string): string | null {
+  const normalise = texte
     .normalize("NFD")
     .replace(/\p{M}+/gu, "")
-    .toLowerCase();
-  const trouve = /(\d{1,2})\s+(janvier|fevrier|mars|avril|mai|juin|juillet|aout|septembre|octobre|novembre|decembre)\s+(\d{4})/.exec(
-    texte,
-  );
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+  const trouve =
+    /(\d{1,2})\s*(?:er)?\s+(janvier|fevrier|mars|avril|mai|juin|juillet|aout|septembre|octobre|novembre|decembre)\s+(\d{4})/.exec(
+      normalise,
+    );
   if (trouve === null) return null;
   const [, jour, mois, annee] = trouve;
   const numeroMois = MOIS[mois ?? ""];

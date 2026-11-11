@@ -516,6 +516,13 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
         "le corpus reste intact, vérifiez le cache et les réponses de Judilibre.",
     );
   }
+  if (enAttente.length > 0 && lireNombreLignes(cheminUnites) > 0) {
+    throw new Error(
+      `Budget PISTE épuisé avec ${enAttente.length} décision(s) en attente : ` +
+        "le corpus existant reste intact. Relancez avec un budget plus large ; " +
+        "les décisions déjà lues sont en cache.",
+    );
+  }
   const documents = new Set(unites.map((unite) => unite.document)).size;
   const veilleRetenues = veille.filter((id) =>
     unites.some((unite) => unite.document === id),
