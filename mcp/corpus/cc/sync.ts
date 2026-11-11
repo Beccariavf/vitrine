@@ -61,6 +61,8 @@ export type CouvertureCc = {
     visa_pertinent: boolean;
   };
   veille: { entrees: number; ajoutees: number; retenues: number };
+  /** Borne demandée ; `periode.date_min` porte la première date observée. */
+  borne: string;
   exclusions: EcartesCc;
   /** Identifiants sélectionnés que Judilibre ne rend pas (HTTP 404). */
   introuvables: string[];
@@ -113,6 +115,24 @@ export type ResultatCc = {
   manifestPath: string;
   unitesPath: string;
 };
+
+/** Lit l'état de reprise ; un état absent vaut `null`. */
+function lireEtatCc(chemin: string): EtatCc | null {
+  try {
+    return JSON.parse(readFileSync(chemin, "utf8")) as EtatCc;
+  } catch {
+    return null;
+  }
+}
+
+/** Lit un manifeste existant, pour ne pas changer sa date d'extraction sans raison. */
+function lireManifesteCc(chemin: string): ManifesteCc | null {
+  try {
+    return JSON.parse(readFileSync(chemin, "utf8")) as ManifesteCc;
+  } catch {
+    return null;
+  }
+}
 
 /** Lit le descripteur Cour de cassation. */
 export function lireDescripteurCc(chemin: string): DescripteurCc {
@@ -287,11 +307,22 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
   if (!DATE_ISO.test(dateExtraction) || Number.isNaN(Date.parse(dateExtraction))) {
     throw new Error(`Date d'extraction attendue AAAA-MM-JJ ; reçue « ${dateExtraction} »`);
   }
+  const cheminManifeste = join(rootDir, DOSSIER_CORPUS, "manifest.json");
+  const cheminEtat = join(rootDir, DOSSIER_CORPUS, "etat.json");
+  const etatExistant = lireEtatCc(cheminEtat);
+  const manifesteExistant = lireManifesteCc(cheminManifeste);
   const budget = options.maxAppels ?? descripteur.max_appels;
   const filtreSha256 = empreinteFiltre(descripteur, dateMin);
 
   const cache = lireCache(rootDir);
   const introuvablesConnus = lireIntrouvables(rootDir);
+  const dateManifeste =
+    etatExistant !== null &&
+    manifesteExistant !== null &&
+    etatExistant.filtre_sha256 === filtreSha256 &&
+    etatExistant.cache === cache.size
+      ? manifesteExistant.date_extraction
+      : dateExtraction;
   const veille = entreesVeille(rootDir, "judilibre");
   const veilleIds = new Set(veille);
   const veilleAjoutees = veille.filter((id) => !cache.has(id));
@@ -332,8 +363,12 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
   let doublonsRecherche = 0;
 
   let budgetEpuise = false;
+  let rechercheIncomplete = false;
   for (const requete of descripteur.requetes) {
-    if (budgetEpuise) break;
+    if (budgetEpuise) {
+      rechercheIncomplete = true;
+      break;
+    }
     for (let page = 0; page < maxPages; page += 1) {
       const params = new URLSearchParams({
         query: `"${requete}"`,
@@ -356,6 +391,7 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
         } catch (error) {
           if (error instanceof PisteBudgetError || (error instanceof Error && /HTTP 429/.test(error.message))) {
             budgetEpuise = true;
+            rechercheIncomplete = true;
             break;
           }
           throw error;
@@ -366,6 +402,10 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
       }
 
       const resultats = lireResultats(reponse);
+      if (totalResultats(reponse) > 0 && resultats.length === 0) {
+        rechercheIncomplete = true;
+        break;
+      }
       for (const resultat of resultats) {
         if (selection.has(resultat.id)) {
           doublonsRecherche += 1;
@@ -373,8 +413,16 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
         }
         selection.set(resultat.id, resultat.date);
       }
-      if (resultats.length < pageSize || page + 1 >= maxPages) break;
+      if (resultats.length < pageSize) break;
+      if (page + 1 >= maxPages) rechercheIncomplete = true;
     }
+  }
+
+  if (rechercheIncomplete) {
+    throw new Error(
+      "Recherche Judilibre interrompue ou tronquée (429, budget ou plafond de pages) : " +
+        "le corpus existant reste intact. Relancez avec un budget plus large.",
+    );
   }
 
   for (const id of veille) {
@@ -438,6 +486,7 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
   const ecartes: EcartesCc = { ...ECARTES_CC_VIDES };
   const unites: Unite[] = [];
   let dateMax: string | null = null;
+  let dateMinObserve: string | null = null;
   let documentsLus = 0;
 
   for (const id of [...selection.keys()].sort()) {
@@ -453,6 +502,9 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
     for (const unite of nouvelles) {
       unites.push(unite);
       if (dateMax === null || unite.date_acte > dateMax) dateMax = unite.date_acte;
+      if (dateMinObserve === null || unite.date_acte < dateMinObserve) {
+        dateMinObserve = unite.date_acte;
+      }
     }
   }
 
@@ -474,7 +526,7 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
     titre: descripteur.titre,
     source: "PISTE — Judilibre /search et /decision",
     date_min: dateMin,
-    date_extraction: dateExtraction,
+    date_extraction: dateManifeste,
     licence: descripteur.licence,
     documents,
     fragments: unites.length,
@@ -483,7 +535,8 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
     exclusions: ecartes,
     couverture: {
       source: "PISTE — Judilibre /search et /decision",
-      periode: { date_min: dateMin, date_max: dateMax },
+      periode: { date_min: dateMinObserve ?? dateMin, date_max: dateMax },
+      borne: dateMin,
       champs: descripteur.champs,
       requetes: descripteur.requetes,
       filtre: {
@@ -503,15 +556,6 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
   };
 
   const unitesPath = join(rootDir, DOSSIER_CORPUS, "unites.jsonl");
-  const manifestPath = join(rootDir, DOSSIER_CORPUS, "manifest.json");
-  const etatPath = join(rootDir, DOSSIER_CORPUS, "etat.json");
-  const etat: EtatCc = {
-    date_min: dateMin,
-    filtre_sha256: filtreSha256,
-    lu_le: dateExtraction,
-    cache: cache.size,
-    en_attente: enAttente.length,
-  };
 
   const ecritIntrouvables = ecrireSiChange(
     join(rootDir, DOSSIER_BRUT, "introuvables.json"),
@@ -521,8 +565,18 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
     unitesPath,
     `${unites.map((unite) => JSON.stringify(unite)).join("\n")}${unites.length === 0 ? "" : "\n"}`,
   );
-  const ecritManifeste = ecrireSiChange(manifestPath, `${JSON.stringify(manifeste, null, 2)}\n`);
-  const ecritEtat = ecrireSiChange(etatPath, `${JSON.stringify(etat, null, 2)}\n`);
+  const ecritManifeste = ecrireSiChange(cheminManifeste, `${JSON.stringify(manifeste, null, 2)}\n`);
+  const etat: EtatCc = {
+    date_min: dateMin,
+    filtre_sha256: filtreSha256,
+    lu_le:
+      ecritUnites || ecritManifeste
+        ? dateExtraction
+        : etatExistant?.lu_le ?? dateExtraction,
+    cache: cache.size,
+    en_attente: enAttente.length,
+  };
+  const ecritEtat = ecrireSiChange(cheminEtat, `${JSON.stringify(etat, null, 2)}\n`);
 
   return {
     documents,
@@ -534,7 +588,7 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
     ecartes,
     appels,
     ecrit: ecritUnites || ecritManifeste || ecritEtat || ecritIntrouvables,
-    manifestPath,
+    manifestPath: cheminManifeste,
     unitesPath,
   };
 }

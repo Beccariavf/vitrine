@@ -214,6 +214,31 @@ describe("la synchronisation du corpus CJUE", () => {
     }
   });
 
+  it("ne réécrit rien le lendemain quand la liste n'a pas changé", async () => {
+    const racine = racineTemporaire();
+    try {
+      await syncCjue({
+        rootDir: racine,
+        date: "2026-11-11",
+        reponseListe: LISTE,
+        avantBorne: 42,
+        fetchImpl: fetchCaptures({ [CELEX_ARRET]: ARRET, "62015CJ0001": ARRET }),
+      });
+      const lendemain = await syncCjue({
+        rootDir: racine,
+        date: "2026-11-12",
+        reponseListe: LISTE,
+        avantBorne: 42,
+        fetchImpl: async () => {
+          throw new Error("le cache doit éviter tout téléchargement");
+        },
+      });
+      assert.equal(lendemain.ecrit, false);
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
+  });
+
   it("inclut une décision CJUE publiée par la veille", async () => {
     const racine = racineTemporaire();
     try {
@@ -242,6 +267,40 @@ describe("la synchronisation du corpus CJUE", () => {
         readFileSync(join(racine, "data", "corpus", "cjue", "manifest.json"), "utf8"),
       ) as ManifesteCjue;
       assert.deepEqual(manifeste.couverture.veille, { entrees: 1, ajoutees: 1 });
+      const unites = readFileSync(
+        join(racine, "data", "corpus", "cjue", "unites.jsonl"),
+        "utf8",
+      )
+        .split("\n")
+        .filter((ligne) => ligne !== "")
+        .map((ligne) => JSON.parse(ligne) as Unite);
+      assert.equal(unites[0]?.date_acte, "2014-05-13", "la date vient du XHTML, pas de l'entrée");
+
+      const entreeAvis = racineTemporaire();
+      try {
+        ecrire(
+          entreeAvis,
+          "data/entries/2026/11/avis.json",
+          JSON.stringify({
+            source: "cjue",
+            url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:62018CC0511",
+            publishedAt: "2026-05-01T12:00:00.000Z",
+          }),
+        );
+        const avis = await syncCjue({
+          rootDir: entreeAvis,
+          date: "2026-11-11",
+          reponseListe: { results: { bindings: [] } },
+          avantBorne: 0,
+          fetchImpl: async () => {
+            throw new Error("une conclusion d'avocat général ne se télécharge pas");
+          },
+        });
+        assert.equal(avis.documents, 0);
+        assert.equal(avis.ecartes.avis_avocat_general, 1);
+      } finally {
+        rmSync(entreeAvis, { recursive: true, force: true });
+      }
     } finally {
       rmSync(racine, { recursive: true, force: true });
     }

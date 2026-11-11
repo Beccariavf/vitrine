@@ -15,6 +15,42 @@ import type { DescripteurCjue } from "./liste.ts";
 
 const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
 
+const MOIS: Record<string, string> = {
+  janvier: "01",
+  fevrier: "02",
+  mars: "03",
+  avril: "04",
+  mai: "05",
+  juin: "06",
+  juillet: "07",
+  aout: "08",
+  septembre: "09",
+  octobre: "10",
+  novembre: "11",
+  decembre: "12",
+};
+
+/**
+ * Date de la décision lue en tête du XHTML (« 13 mai 2014 »). Elle sert aux
+ * décisions ajoutées par la veille, dont la date d'entrée n'est pas la date de
+ * l'arrêt. `null` quand aucune date n'est reconnue.
+ */
+export function dateDecisionCjue(xhtml: string): string | null {
+  const texte = texteVisible(corps(xhtml))
+    .normalize("NFD")
+    .replace(/\p{M}+/gu, "")
+    .toLowerCase();
+  const trouve = /(\d{1,2})\s+(janvier|fevrier|mars|avril|mai|juin|juillet|aout|septembre|octobre|novembre|decembre)\s+(\d{4})/.exec(
+    texte,
+  );
+  if (trouve === null) return null;
+  const [, jour, mois, annee] = trouve;
+  const numeroMois = MOIS[mois ?? ""];
+  if (numeroMois === undefined || jour === undefined || annee === undefined) return null;
+  const date = `${annee}-${numeroMois}-${jour.padStart(2, "0")}`;
+  return Number.isNaN(Date.parse(date)) ? null : date;
+}
+
 /** Un point de motivation ou l'en-tête, avant mise en unité. */
 export type BlocCjue = {
   /** `entete`, `point` ou `dispositif`. */

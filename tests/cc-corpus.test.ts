@@ -182,6 +182,31 @@ describe("la synchronisation du corpus Cour de cassation", () => {
     }
   });
 
+  it("ne réécrit rien le lendemain quand le corpus n'a pas changé", async () => {
+    const racine = racineTemporaire();
+    try {
+      await syncCc({
+        rootDir: racine,
+        date: "2026-11-11",
+        reponsesRecherche: { "données personnelles": commandeRecherche() },
+        reponsesDecision: { [ID_PERTINENT]: PERTINENT, [ID_HORS_SUJET]: HORS_SUJET },
+      });
+      const lendemain = await syncCc({
+        rootDir: racine,
+        date: "2026-11-12",
+        reponsesRecherche: { "données personnelles": commandeRecherche() },
+        reponsesDecision: {},
+      });
+      assert.equal(lendemain.ecrit, false);
+      const manifeste = JSON.parse(
+        readFileSync(join(racine, "data", "corpus", "cc", "manifest.json"), "utf8"),
+      ) as ManifesteCc;
+      assert.equal(manifeste.date_extraction, "2026-11-11");
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
+  });
+
   it("inclut les décisions publiées par la veille", async () => {
     const racine = racineTemporaire();
     try {
@@ -216,6 +241,53 @@ describe("la synchronisation du corpus Cour de cassation", () => {
     }
   });
 
+  it("refuse d'écrire un corpus tronqué quand la recherche est interrompue", async () => {
+    const racine = racineTemporaire();
+    try {
+      await syncCc({
+        rootDir: racine,
+        date: "2026-11-11",
+        reponsesRecherche: { "données personnelles": commandeRecherche() },
+        reponsesDecision: {
+          [ID_PERTINENT]: PERTINENT,
+          [ID_HORS_SUJET]: HORS_SUJET,
+        },
+      });
+      const corpus = readFileSync(
+        join(racine, "data", "corpus", "cc", "unites.jsonl"),
+        "utf8",
+      );
+
+      resetUsage();
+      let recherche = 0;
+      const fetchImpl: FetchLike = async (url) => {
+        if (url.includes("/search")) {
+          recherche += 1;
+          if (recherche === 1) return reponse(200, JSON.stringify(commandeRecherche()));
+          return reponse(429, "quota");
+        }
+        return reponse(200, JSON.stringify(PERTINENT));
+      };
+      await assert.rejects(
+        async () =>
+          syncCc({
+            rootDir: racine,
+            date: "2026-11-11",
+            config: CONFIG,
+            fetchImpl,
+          }),
+        /Recherche Judilibre interrompue/,
+      );
+      assert.equal(
+        readFileSync(join(racine, "data", "corpus", "cc", "unites.jsonl"), "utf8"),
+        corpus,
+        "le corpus existant reste intact",
+      );
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
+  });
+
   it("s'arrête au budget sans perdre le corpus et reprend au cache", async () => {
     const racine = racineTemporaire();
     const appels: string[] = [];
@@ -235,11 +307,10 @@ describe("la synchronisation du corpus Cour de cassation", () => {
         date: "2026-11-11",
         config: CONFIG,
         fetchImpl,
-        maxAppels: 1,
+        maxAppels: 23,
       });
-      assert.equal(interrompue.documents, 0);
-      assert.equal(interrompue.enAttente, 2);
-      assert.equal(interrompue.appels.decision, 0);
+      assert.equal(interrompue.enAttente, 1, "le budget s'épuise après la première décision");
+      assert.equal(interrompue.appels.decision, 1);
 
       resetUsage();
       const reprise = await syncCc({

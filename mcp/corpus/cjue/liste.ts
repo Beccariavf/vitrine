@@ -96,6 +96,7 @@ SELECT (COUNT(DISTINCT ?celex) AS ?n) WHERE {
   ?work cdm:work_date_document ?date .
   ?work cdm:resource_legal_is_about_subject-matter <${matiere}> .
   FILTER(STRSTARTS(STR(?celex), "6"))
+  FILTER(REGEX(STR(?celex), "^6[0-9]{4}(CJ|TJ|CO|TO)"))
   FILTER(?date < "${dateMin}"^^xsd:date)
 }`;
 }

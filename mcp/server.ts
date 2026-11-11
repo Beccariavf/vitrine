@@ -126,7 +126,8 @@ export function createServer(deps: ServerDeps): McpServer {
           .string()
           .optional()
           .describe(
-            "Restreint à une collection : rgpd, aiact, cnil, lil, ce, cepd, cc ou cjue ; absent, tous les corpus",
+            "Restreint à une collection CNIL : cnil ; les autres corpus relèvent de search. " +
+              "Absent, toutes les délibérations répondent",
           ),
         partie: z
           .enum(["dispositif", "tous"])

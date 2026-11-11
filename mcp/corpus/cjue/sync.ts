@@ -25,7 +25,7 @@ import {
   lireListe,
 } from "./liste.ts";
 import type { DescripteurCjue, EcartesCjue, EntreeCjue, MotifEcartCjue } from "./liste.ts";
-import { unitesCjue } from "./parse.ts";
+import { dateDecisionCjue, unitesCjue } from "./parse.ts";
 
 const ICI = dirname(fileURLToPath(import.meta.url));
 
@@ -55,8 +55,10 @@ export type CouvertureCjue = {
   matiere: { uri: string; libelle: string };
   langue: string;
   types_retenus: Record<string, string>;
+  /** `date_min` est la première date observée ; `borne` la borne demandée. */
   periode: { date_min: string; date_max: string | null };
-  /** Décisions de la même matière antérieures à la borne, comptées par SPARQL. */
+  borne: string;
+  /** Décisions des types retenus, de la même matière et antérieures à la borne. */
   avant_borne: number | null;
   exclusions: EcartesCjue;
   veille: { entrees: number; ajoutees: number };
@@ -302,12 +304,22 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
   }
   const veille = entreesVeilleCjue(rootDir);
   const dejaListes = new Set(retenues.map((entree) => entree.celex));
+  const datesVeille = new Map<string, string>();
   let veilleAjoutees = 0;
   for (const entree of veille) {
     if (dejaListes.has(entree.celex)) continue;
-    if (entree.date < dateMin) continue;
-    retenues.push({ celex: entree.celex, date: entree.date, type: typeCelex(entree.celex) });
+    const type = typeCelex(entree.celex);
+    const verdict = classerEntree({ celex: entree.celex, date: entree.date, type }, descripteur, dateMin);
+    if (!verdict.retenue) {
+      ecartes[verdict.motif] += 1;
+      if (verdict.motif === "avis_avocat_general" || verdict.motif === "autre_type") {
+        documentsEcartes.push({ celex: entree.celex, motif: verdict.motif });
+      }
+      continue;
+    }
+    retenues.push({ celex: entree.celex, date: entree.date, type });
     dejaListes.add(entree.celex);
+    datesVeille.set(entree.celex, entree.date);
     veilleAjoutees += 1;
   }
   const lues = limite === null ? retenues : retenues.slice(0, limite);
@@ -364,6 +376,7 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
 
   const unites: Unite[] = [];
   let dateMax: string | null = null;
+  let dateMinObserve: string | null = null;
 
   for (const entree of lues) {
     const capture = lireCapture(rootDir, entree.celex);
@@ -372,7 +385,17 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
       continue;
     }
     try {
-      const nouvelles = unitesCjue(capture, entree.celex, entree.date, descripteur);
+      let date = entree.date;
+      const dateEntree = datesVeille.get(entree.celex);
+      if (dateEntree !== undefined) {
+        date = dateDecisionCjue(capture) ?? dateEntree;
+        if (date < dateMin) {
+          ecartes.avant_borne += 1;
+          documentsEcartes.push({ celex: entree.celex, motif: "avant_borne" });
+          continue;
+        }
+      }
+      const nouvelles = unitesCjue(capture, entree.celex, date, descripteur);
       if (nouvelles.length === 0) {
         ecartes.texte_vide += 1;
         documentsEcartes.push({ celex: entree.celex, motif: "texte_vide" });
@@ -381,6 +404,9 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
       for (const unite of nouvelles) {
         unites.push(unite);
         if (dateMax === null || unite.date_acte > dateMax) dateMax = unite.date_acte;
+        if (dateMinObserve === null || unite.date_acte < dateMinObserve) {
+          dateMinObserve = unite.date_acte;
+        }
       }
     } catch {
       ecartes.texte_vide += 1;
@@ -412,14 +438,15 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
     langue: descripteur.langue,
     documents,
     fragments: unites.length,
-    documents_lus: entrees.length + veilleAjoutees,
+    documents_lus: limite === null ? entrees.length + veilleAjoutees : lues.length,
     exclusions: ecartes,
     couverture: {
       source: "CELLAR / EUR-Lex — SPARQL et rendu XHTML français",
       matiere: { uri: descripteur.matiere, libelle: descripteur.matiere_libelle },
       langue: descripteur.langue,
       types_retenus: descripteur.types_retenus,
-      periode: { date_min: dateMin, date_max: dateMax },
+      periode: { date_min: dateMinObserve ?? dateMin, date_max: dateMax },
+      borne: dateMin,
       avant_borne: avantBorne,
       exclusions: ecartes,
       veille: { entrees: veille.length, ajoutees: veilleAjoutees },
@@ -430,19 +457,18 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
 
   const unitesPath = join(rootDir, DOSSIER_CORPUS, "unites.jsonl");
   const manifestPath = join(rootDir, DOSSIER_CORPUS, "manifest.json");
-  const etatEcrit: EtatCjue = {
-    date_min: dateMin,
-    liste_sha256: sha,
-    lu_le: dateExtraction,
-    date_extraction: manifeste.date_extraction,
-    cache: compterCache(rootDir),
-  };
-
   const ecritUnites = ecrireSiChange(
     unitesPath,
     `${unites.map((unite) => JSON.stringify(unite)).join("\n")}${unites.length === 0 ? "" : "\n"}`,
   );
   const ecritManifeste = ecrireSiChange(manifestPath, `${JSON.stringify(manifeste, null, 2)}\n`);
+  const etatEcrit: EtatCjue = {
+    date_min: dateMin,
+    liste_sha256: sha,
+    lu_le: ecritUnites || ecritManifeste ? dateExtraction : etat.lu_le ?? dateExtraction,
+    date_extraction: manifeste.date_extraction,
+    cache: compterCache(rootDir),
+  };
   const ecritEtat = ecrireSiChange(cheminEtat, `${JSON.stringify(etatEcrit, null, 2)}\n`);
 
   return {
