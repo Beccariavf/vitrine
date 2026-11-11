@@ -1,6 +1,6 @@
 # Revue du candidat
 
-- Rounds : 2
+- Rounds : 3
 - Started : 2026-11-11
 
 ## Round 1 · r-4a1f
@@ -184,3 +184,113 @@ ticket #20. Aucun défaut de code, de mesure ou d'index.
 
 **Verdict final : changes-requested** — les corrections de texte listées (dont `phase-2.md`, résidu
 du constat majeur du premier tour) avant de citer publiquement la confirmation.
+
+## Round 3 · r-4e9c
+
+Statut : **approve** sur `734c91b` ; les cinq corrections annoncées sont vérifiées, aucun critère ne
+reste ouvert. Quatre constats mineurs subsistent, dont deux dans le corps du ticket #20.
+
+- Date : 2026-11-11
+- By : revue indépendante (checker)
+- Diff : `30bd0d0...734c91b` (corrections du tour : `bac4621...734c91b`)
+- Axes : code, fonctionnel, pertinence
+- Verdict : approve
+- Score : 17/17 met, 0 unmet, 0 unverified at runtime, 0 out of the diff
+
+### Validation
+
+| Commande / contrôle | Résultat |
+| ------------------- | -------- |
+| `npm test` | 640 tests, 639 pass, 1 skipped, 0 fail |
+| `npm run typecheck` | propre, code de sortie 0 |
+| `npm run build` | 2 pages, code de sortie 0 |
+| `git status --short` | vide à l'ouverture ; HEAD `734c91ba32d8` |
+| `git diff --stat bac4621..734c91b` | 10 fichiers : documentation, plus deux commentaires/une chaîne (`mcp/confidence.ts:10`, `mcp/server.ts:27`) ; aucune logique modifiée |
+| `git diff bac4621..734c91b -- mcp/index mcp/corpus data/corpus` | vide |
+| `meta` de `data/corpus/index/index.db` | `leoipulsar/harrier-0.6b`, 1024, **53 143** unités, construit 2026-11-11T12:54:46Z (inchangé depuis le tour 2) |
+| `meta` de `~/.cache/vitrine-harrier-ollama/root/…/index.db` | `leoipulsar/harrier-0.6b`, 1024, **29 299** unités |
+| `dev` sur `dev-harrier-ollama.json` | agrégats 44/54 top 5, 38/54 rang 1, MRR 0,7404 ; recomptés depuis `refs` : identiques |
+| 60/60 `refs`, `rangs` et `niveaux` vs `harrier-dev-actuelle.json` | identiques ; écart de similarité maximal **7,0363 × 10⁻⁵** |
+| `risque.ts … dev --seuils 0.73,0.73,0.01` | 28 confiantes, 51,9 %, 2 erreurs, 7,1 %, borne **22,6 %**, 0 refusée |
+| `risque.ts … test --seuils 0.73,0.73,0.01` | 34 confiantes, 63,0 %, **0 erreur**, borne **10,2 %**, 0 refusée |
+| Plateau `haut` 0,30 / 0,50 / 0,73, `marge` 0,01, en `dev` et en `test` | une seule ligne à chaque valeur : 28/2/22,6 % en `dev`, 34/0/10,2 % en `test` |
+| `risque-dev-harrier.txt` | 198 lignes de balayage (8–205) ; aucune borne ≤ 10 % ; minimum **19,4 %** (ligne 152 : 16 confiantes, 29,6 %) |
+| Courbe du refus | `bas` 0,72 → 0, 0,73 → 0, 0,74 → 1 juste tue |
+| Marqueur `questions-cnil-etendu.test-consomme.json` | deux entrées (qwen3, mradermacher), **aucune** `leoipulsar` |
+| Six jeux hors CNIL recalculés au triplet livré | RGPD 19/19 (0,886), AI Act 3/3 (0,733), LIL 9/10 (0,725), CE 6/12 (0,347), CEPD 10/10 (1,000), doctrine 2/10 (3 confiantes, 3 fausses, 100 %) |
+| `mcp/embed/embedder.ts` | `MODELE_DEFAUT = "leoipulsar/harrier-0.6b"`, `DIM_DEFAUT = 1024` |
+| Second passage de l'index | non rejoué (consigne) ; `meta` identique au run `0 / 0 / 0 / 53 143` du tour 1, et le diff ne touche ni l'index, ni le corpus |
+
+### Les cinq corrections annoncées
+
+| # | Constat | État |
+| - | ------- | ---- |
+| 1 | `phase-2.md` ne dit plus que le test était unread | **Corrigé** — `phase-2.md:27` « Aucun test lu dans cette phase » ; `:41` « avant de rouvrir le test ; sa pré-publication est dite » ; `:45` renvoie à la pré-publication du 2026-11-10 ; `:52` « il n'a pas servi à choisir le triplet ». |
+| 2 | `memory/data.md` ne dit plus « vecteurs identiques » | **Corrigé** — `data.md:103` : « équivalents au modèle mesuré (rangs et niveaux identiques sur `dev`, écart de similarité ≤ 7,0 × 10⁻⁵) ». |
+| 3 | Phrase de clôture de `calibration.md` | **Corrigé** — `calibration.md:78-80` : 19,4 %, « à 29,6 % de couverture seulement (16 confiantes) » ; la ligne 152 du balayage le confirme, et aucune borne mesurée n'est ≤ 10 %. |
+| 4 | « hors échantillon » → « test déjà stocké » | **Corrigé sur les trois surfaces annoncées** — `mcp/server.ts:27`, `mcp/confidence.ts:10`, `README.md:229-230` (réserve de non-aveuglement incluse). Reste `test-harrier-promesse.md:23` (constat R1). |
+| 5 | Corps du ticket #20 | **Corrigé sur la mesure annoncée** — la phrase « vecteurs identiques … cosinus 1,00000000 » a disparu au profit de « écart de similarité de 7 × 10⁻⁵ au plus ». Deux formulations restent périmées (constats R3, R4). |
+
+### Critères
+
+- [x] Phase 1 — Index d'expérience 29 299 unités `leoipulsar/harrier-0.6b` en 1 024 dimensions ; l'index produit n'est pas touché par la phase. — `meta` de `~/.cache/vitrine-harrier-ollama/root/…/index.db` relu : 29 299, 1024.
+- [x] Phase 1 — Le `dev` rend la référence au top 5 pour 44/54, au rang 1 pour 38/54, MRR 0,7404 ; aucun écart à expliquer. — agrégats du JSON et recomptage depuis `refs` ; 60/60 `refs`, `rangs`, `niveaux` identiques à `harrier-dev-actuelle.json`, écart ≤ 7,0363 × 10⁻⁵.
+- [x] Phase 2 — Grille et courbe du refus produites hors ligne sur 54 questions sémantiques. — `risque-dev-harrier.txt`, 198 lignes de balayage + 76 de courbe du refus.
+- [x] Phase 2 — Le triplet n'est pas choisi sur le test, et sa pré-publication est dite. — `calibration.md:6-10`, `phase-2.md:27,41,45,52` ; invariance du plateau remesurée.
+- [x] Phase 3 — Borne et couverture `test` calculées avec le triplet retenu, sans nouveau tir. — 34/0/10,2 %/63,0 % recalculés ; marqueur sans entrée `leoipulsar`.
+- [x] Phase 3 — `test-harrier-promesse.md` nomme triplet, confiantes, erreurs, borne, couverture et verdict. — lignes 3-24.
+- [x] Phase 4 — L'index produit porte 53 143 unités, `leoipulsar/harrier-0.6b`, 1 024 dimensions. — `meta` de `index.db`.
+- [x] Phase 4 — Le second passage n'ajoute, ne modifie et ne supprime aucune unité. — `meta` inchangé depuis le run `0 / 0 / 0 / 53 143` du tour 1 ; `git diff` vide sur `mcp/index`, `mcp/corpus` et `data/corpus`.
+- [x] Phase 5 — Six mesures `dev` sur l'index produit, sans reconstruction ni tir `test`. — agrégats recalculés des six JSON.
+- [x] Phase 5 — `autres-corpus.md` porte top 5, rang 1, MRR et confiantes par jeu, sans promesse hors CNIL. — table recoupée à l'unité, y compris le recul CE (6/12, 0,347).
+- [x] Phase 6 — `creerEmbedder("ollama", {})` rend `leoipulsar/harrier-0.6b` en 1 024 dimensions ; `SEUILS_PAR_CORPUS.cnil` vaut le triplet de `calibration.md`. — `mcp/embed/embedder.ts:12,14`, `mcp/confidence.ts:43`.
+- [x] Phase 6 — Les lignes « Seuils retenus » et « Repli » de `promesse.md` portent les triplets du code, et la borne publiée est celle de `test-harrier-promesse.md`. — `tests/mcp.test.ts:827-857` ; test vert.
+- [x] Phase 6 — `npm test`, `npm run typecheck` et `npm run build` passent ; README et mémoire ne nomment plus qwen3 comme modèle du produit. — sorties ci-dessus ; les mentions `qwen3` restantes sont datées et comparatives (`README.md:187,239`, `memory/data.md:112,122`).
+- [x] Contrat 1 — Le `dev` re-mesuré reproduit le classement du modèle mesuré ; tout écart est expliqué. — rangs et niveaux identiques sur 60/60.
+- [x] Contrat 2 — La table CNIL est calibrée sur `dev` et sa promesse constatée sur le `test` stocké, borne et couverture publiées. — 22,6 %/51,9 % en `dev`, 10,2 %/63,0 % sur le `test` ; la réserve de non-aveuglement est écrite dans `README.md:229-230`, `promesse.md:25-31`, `calibration.md:6-10` et `test-harrier-promesse.md:3-6`.
+- [x] Contrat 3 — L'index produit est complet, à jour, et le second passage n'embarque rien. — 53 143 unités, `meta` du 2026-11-11, run du tour 1, aucun code d'indexation dans le diff.
+- [x] Contrat 5 — README, instructions MCP et mémoire disent le modèle, la table et la borne. — `mcp/server.ts:47,68` (`CONSIGNE_SERVEUR`), `README.md:215-220`, `memory/data.md:105-110`.
+
+### Constats
+
+- **R1** 🟢 minor, fit — `mesures/test-harrier-promesse.md:23` : « hors échantillon, le `test` rend 10,2 % » est la dernière surface à garder la formule retirée ailleurs, alors que la même page écrit dès la ligne 5 « cette page constate, elle ne confirme pas à l'aveugle ». → écrire « sur ce `test` stocké, il rend 10,2 % ».
+- **R2** 🟢 minor, rot — « écart ≤ 7,0 × 10⁻⁵ » sous-estime le maximum mesuré, **7,0363 × 10⁻⁵**, dans `README.md:220`, `memory/data.md:103`, `promesse.md:183`, `calibration.md:17,57` et `test-harrier-promesse.md:9`. → « ≤ 7,1 × 10⁻⁵ », ou « ≈ 7,0 × 10⁻⁵ ». Sans effet sur l'argument du plancher (4,07 × 10⁻⁴).
+- **R3** 🟢 minor, fit (hors dépôt) — ticket #20, « Risques et limites » : « 4 erreurs sur 6 réponses confiantes à la règle actuelle » décrit la table qwen3 `0,67 / 0,67 / 0,02` (`dev-apres.md:141`) ; sous la table livrée, la doctrine rend 3 confiantes et 3 fausses (100,0 %, `autres-corpus.md:18`). → écrire les deux états.
+- **R4** 🟢 minor, fit (hors dépôt) — ticket #20, « Ce que la mesure établit » : « se confirme hors échantillon » est la formule que le dépôt a retirée pour cette mesure, et « Sur les 60 questions `test` » précède un tableau à dénominateur 54. → « constaté sur le test déjà stocké, triplet non choisi par lui » et « 54 questions sémantiques (6 pièges exclus) ».
+
+### Challenge
+
+Confiance : **90 %**. Aucun défaut de code, de mesure ni d'index ; il ne reste que du texte, et aucun constat n'est majeur.
+
+- **Correct — les cinq corrections tiennent.** `phase-2.md` ne revendique plus une lecture
+  antérieure ; `memory/data.md` dit « équivalents » ; `calibration.md` publie 19,4 % **à 29,6 % de
+  couverture** ; les surfaces publiques disent « test déjà stocké » et le README porte la réserve de
+  non-aveuglement ; le ticket a perdu la phrase sur les vecteurs identiques. Chaque énoncé vérifié
+  contre l'artefact, pas contre la réponse de l'implémenteur.
+- **Correct — l'honnêteté ne coûte aucun chiffre.** Tout se recalcule : `dev` 28/2/22,6 %/51,9 %,
+  `test` 34/0/10,2 %/63,0 %, plateau invariant sur 0,30–0,73 aux deux splits, 198 couples dont
+  aucune borne ≤ 10 %, minimum 19,4 %, courbe du refus 0/0/1, six jeux hors CNIL à l'unité. La
+  promesse publiée (22,6 %) reste plus prudente que le `test` (10,2 %) : aucun biais de sélection ne
+  pousse vers le haut.
+- **La couche que les revues de code ne voient pas.** L'étiquette `confiant` échoue toujours sur le
+  sous-ensemble doctrinal : 3 confiantes, **3 fausses** sous la table livrée, contre 4 fausses sur 6
+  avant. En nombre d'erreurs confiantes le lot améliore, en taux il dégrade (100,0 %), et le code
+  applique la table CNIL à la doctrine, qui déclare le même corpus. C'est publié dans le README, la
+  mémoire, `autres-corpus.md` et le ticket, donc c'est une limite assumée, pas un défaut de ce
+  candidat ; mais « confiant » n'est pas encore sûr sur tout le corpus CNIL, seulement sur le jeu
+  étendu pièges exclus.
+- **Résidu non vérifiable.** L'équivalence Unsloth ↔ Ollama n'est établie que sur `dev` (60/60 rangs
+  et niveaux, écart 7,0363 × 10⁻⁵) : une bascule au cinquième rang du top 5 du `test` resterait
+  invisible sans un nouveau tir. La marge au plancher (4,07 × 10⁻⁴) reste documentée comme mince,
+  et c'est le seul chiffre publié qui dépend de cette équivalence : la promesse de 22,6 % vient du
+  `dev`, mesuré sur Ollama.
+- **Tension de forme.** Les quatre chiffres de la promesse vivent sur sept surfaces ; R2 montre la
+  dérive revenue. Le test ne lie que `promesse.md` au code (`tests/mcp.test.ts:827-857`) : README,
+  mémoire et instructions MCP ne sont vérifiés que par l'œil. Le coût d'un garde-fou automatique
+  dépasserait le bénéfice, mais c'est le point à surveiller au prochain lot.
+- **Ce qui reste ouvert, hors dépôt.** R3 et R4 sont dans le corps du ticket, que ce commit ne peut
+  pas corriger ; R1 est une phrase dans le dépôt. Aucun des trois ne touche un chiffre publié ni le
+  comportement du produit.
+
+**Verdict final : approve** — les cinq corrections du tour 2 sont vérifiées, les 17 critères sont
+tenus, et les constats restants sont mineurs (R1, R2 dans le dépôt ; R3, R4 dans le ticket).
