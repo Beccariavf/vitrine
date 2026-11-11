@@ -41,10 +41,32 @@ describe("le serveur MCP sur stdio", () => {
         "k",
         "montant_max",
         "montant_min",
+        "nature",
         "numero",
         "question",
         "type_sanction",
       ]);
+
+      const instructions = client.getInstructions() ?? "";
+      const descriptionCorpus =
+        (recherche?.inputSchema.properties?.corpus as { description?: string } | undefined)
+          ?.description ?? "";
+      const outilsTexte = JSON.stringify(outils);
+      for (const corpus of ["rgpd", "aiact", "cnil", "lil", "ce", "cepd"]) {
+        assert.ok(
+          instructions.includes(`\`${corpus}\``),
+          `les instructions nomment le corpus ${corpus}`,
+        );
+        assert.ok(
+          descriptionCorpus.includes(corpus),
+          `le schéma de corpus nomme ${corpus}`,
+        );
+        assert.ok(
+          outilsTexte.includes(`\`${corpus}\``),
+          `la description de search nomme ${corpus}`,
+        );
+      }
+      assert.equal(instructions.includes("quatre corpus"), false);
     } finally {
       await client.close();
     }

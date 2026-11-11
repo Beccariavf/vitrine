@@ -1,0 +1,274 @@
+{
+  "date": "2026-11-10",
+  "modele": "qwen3-embedding:0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "aiact",
+  "recherche": "dense",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine-mcp/data/corpus/index/index.db",
+    "unites": 53143
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "table (repli, aiact)",
+  "questions": [
+    {
+      "question": "Que prévoit l'article 5 sur les pratiques interdites ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "32024R1689#art_5"
+      ],
+      "refs": [
+        "32024R1689#art_5"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        1
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Que dit l'article 6 sur la classification à haut risque ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "32024R1689#art_6"
+      ],
+      "refs": [
+        "32024R1689#art_6"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        1
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Que prévoit l'article 9 sur la gestion des risques ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "32024R1689#art_9"
+      ],
+      "refs": [
+        "32024R1689#art_9"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        1
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quel est le contenu de l'article 13 sur la transparence ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "32024R1689#art_13"
+      ],
+      "refs": [
+        "32024R1689#art_13"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        1
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Que prévoit l'article 14 sur le contrôle humain ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "32024R1689#art_14"
+      ],
+      "refs": [
+        "32024R1689#art_14"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        1
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Que dit l'article 50 sur les obligations de transparence ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "32024R1689#art_50"
+      ],
+      "refs": [
+        "32024R1689#art_50"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        1
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelles sanctions l'article 99 permet-il ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "32024R1689#art_99"
+      ],
+      "refs": [
+        "32024R1689#art_99"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        1
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "évaluation ou classification des personnes selon leur comportement social",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32024R1689#art_5"
+      ],
+      "refs": [
+        "32024R1689#rct_31",
+        "32024R1689#rct_42",
+        "32024R1689#rct_58",
+        "32024R1689#rct_44",
+        "32024R1689#rct_111"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.6980324685573578,
+        0.65520179271698,
+        0.6404629945755005,
+        0.6177463233470917,
+        0.6160449981689453
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "évaluation de la conformité d'un système d'IA à haut risque",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32024R1689#art_43"
+      ],
+      "refs": [
+        "32024R1689#art_42",
+        "32024R1689#art_6",
+        "32024R1689#art_43",
+        "32024R1689#art_8",
+        "32024R1689#rct_77"
+      ],
+      "rangs": [
+        3
+      ],
+      "similarites": [
+        0.8685550689697266,
+        0.8607490658760071,
+        0.8586856424808502,
+        0.8545925319194794,
+        0.8631137162446976
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "analyse d'impact sur les droits fondamentaux avant le déploiement",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32024R1689#art_27"
+      ],
+      "refs": [
+        "32024R1689#rct_48",
+        "32024R1689#art_27",
+        "32024R1689#art_1",
+        "32024R1689#rct_5",
+        "32024R1689#rct_96"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.7157530784606934,
+        0.6852604448795319,
+        0.6489283740520477,
+        0.6678754091262817,
+        0.6675926446914673
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quel est le délai de prescription pour une action en licenciement ?",
+      "type": "piege",
+      "piege": true,
+      "attendues": [],
+      "refs": [
+        "32024R1689#art_113",
+        "32024R1689#rct_179",
+        "32024R1689#art_100",
+        "32024R1689#rct_168",
+        "32024R1689#art_97"
+      ],
+      "rangs": [],
+      "similarites": [
+        0.5700737833976746,
+        0.567302405834198,
+        0.5469040870666504,
+        0.5663964748382568,
+        0.5460435152053833
+      ],
+      "niveau": "aucun_resultat_fiable"
+    },
+    {
+      "question": "Que prévoit l'article 120 du règlement sur l'intelligence artificielle ?",
+      "type": "piege",
+      "piege": true,
+      "attendues": [],
+      "refs": [],
+      "rangs": [],
+      "similarites": [],
+      "niveau": "aucun_resultat_fiable"
+    }
+  ],
+  "agregats": {
+    "semantiques": 3,
+    "top5_semantique_succes": 2,
+    "top1_semantique_succes": 0,
+    "mrr_semantique": 0.27777777777777773,
+    "referencees": 10,
+    "top5_global_succes": 9,
+    "top5_rendu_succes": 2,
+    "top1_rendu_succes": 0,
+    "mrr_rendu": 0.27777777777777773,
+    "top5_global_rendu_succes": 9,
+    "pieges_mesures": 1,
+    "pieges_cites": 0,
+    "confiant": 0,
+    "incertain": 3,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  }
+}

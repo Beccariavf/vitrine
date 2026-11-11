@@ -1,0 +1,19 @@
+{
+  "corpus": "cepd",
+  "nom": "CEPD",
+  "titre": "Lignes directrices du Comité européen de la protection des données",
+  "url_liste": "https://www.edpb.europa.eu/our-work-tools/our-documents/publication-type/guidelines_fr",
+  "url_sitemap": "https://www.edpb.europa.eu/sitemap.xml",
+  "pages_sitemap": 5,
+  "langue": "fr",
+  "motif_document": "/(?:our-)?documents/guidelines?/",
+  "types": ["guideline"],
+  "page_debut": 0,
+  "page_max": 20,
+  "domaine": "edpb.europa.eu",
+  "licence": "À vérifier : le site du CEPD ne déclare pas de licence explicite dans la reconnaissance ; les documents sont des publications officielles de l'Union européenne.",
+  "tentatives": 3,
+  "delai_ms": 2000,
+  "url_wayback_api": "https://archive.org/wayback/available",
+  "url_wayback_cdx": "https://web.archive.org/cdx/search/cdx"
+}

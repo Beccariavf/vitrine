@@ -1,0 +1,1574 @@
+{
+  "date": "2026-11-10",
+  "modele": "mradermacher/harrier-oss-v1-0.6b-GGUF",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "cnil",
+  "recherche": "dense",
+  "instruction": "actuelle",
+  "index": {
+    "chemin": "/Users/val/.cache/vitrine-harrier/root/data/corpus/index/index.db",
+    "unites": 29299
+  },
+  "seuils": {
+    "bas": 0.73,
+    "haut": 0.78,
+    "marge": 0.01
+  },
+  "questions": [
+    {
+      "question": "Comment les entreprises peuvent-elles mesurer la diversité au travail sans collecter trop de données personnelles ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000051709275"
+      ],
+      "refs": [
+        "CNILTEXT000051709275#f2",
+        "CNILTEXT000051709275#f1",
+        "CNILTEXT000048924448#f9",
+        "CNILTEXT000048989272#f66",
+        "CNILTEXT000051120331#f36"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7762313783168793,
+        0.7406304180622101,
+        0.7245875597000122,
+        0.7131238877773285,
+        0.7112933993339539
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Que recommande la CNIL aux organismes qui publient des données personnelles en open data ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000049694593"
+      ],
+      "refs": [
+        "CNILTEXT000049694593#f2",
+        "CNILTEXT000051937813#f2",
+        "CNILTEXT000051144655#f2",
+        "CNILTEXT000032823632#f15",
+        "CNILTEXT000032291946#f1"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7981482446193695,
+        0.7619918584823608,
+        0.7616087794303894,
+        0.7611063867807388,
+        0.7577118575572968
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Que recommande la CNIL pour sécuriser le partage de données entre organismes au moyen d'interfaces de programmation ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000047748672"
+      ],
+      "refs": [
+        "CNILTEXT000047748672#f2",
+        "CNILTEXT000055022641#f13",
+        "CNILTEXT000050387096#f1",
+        "CNILTEXT000049417278#f15",
+        "CNILTEXT000054466005#f10"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7868993580341339,
+        0.7795402407646179,
+        0.746379166841507,
+        0.7425186038017273,
+        0.7402260005474091
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles précautions la CNIL demande-t-elle pour la télésurveillance des examens passés à distance ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000048042501"
+      ],
+      "refs": [
+        "CNILTEXT000052388959#f11",
+        "CNILTEXT000053702370#f25",
+        "CNILTEXT000021123155#f5",
+        "CNILTEXT000048042501#f16",
+        "CNILTEXT000022913263#f19"
+      ],
+      "rangs": [
+        4
+      ],
+      "similarites": [
+        0.7576408684253693,
+        0.7496249079704285,
+        0.7423850893974304,
+        0.7400100827217102,
+        0.7358607351779938
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles règles la CNIL pose-t-elle quand un mandataire exerce les droits RGPD à la place d'une personne ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000043708485"
+      ],
+      "refs": [
+        "CNILTEXT000043708485#f3",
+        "CNILTEXT000043708485#f2",
+        "CNILTEXT000044840062#f24",
+        "CNILTEXT000047707063#f14",
+        "CNILTEXT000047552103#f56"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7767141312360764,
+        0.7737967371940613,
+        0.7678638845682144,
+        0.7632394880056381,
+        0.7582265436649323
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Combien de temps conserver les journaux de connexion et comment les utiliser ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000044283637"
+      ],
+      "refs": [
+        "CNILTEXT000045388043#f17",
+        "CNILTEXT000054136834#f90",
+        "CNILTEXT000049128617#f7",
+        "CNILTEXT000044457525#f10",
+        "CNILTEXT000048725566#f20"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7628411501646042,
+        0.759941428899765,
+        0.7580768316984177,
+        0.7576941400766373,
+        0.7514894902706146
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Que recommande la CNIL aux recruteurs qui collectent des informations sur les candidats ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000047110877"
+      ],
+      "refs": [
+        "CNILTEXT000017653561#f5",
+        "CNILTEXT000017653561#f8",
+        "CNILTEXT000017653561#f2",
+        "CNILTEXT000017653562#f1",
+        "CNILTEXT000017653561#f3"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.8058061897754669,
+        0.7979736030101776,
+        0.7953512966632843,
+        0.7914923876523972,
+        0.7898253351449966
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quel avis la CNIL a-t-elle rendu sur la lecture automatisée des plaques d'immatriculation pour le péage en flux libre ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000054303211"
+      ],
+      "refs": [
+        "CNILTEXT000054303211#f5",
+        "CNILTEXT000054303211#f1",
+        "CNILTEXT000054303211#f2",
+        "CNILTEXT000017653160#f2",
+        "CNILTEXT000054303211#f7"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7949675917625427,
+        0.787985309958458,
+        0.7858477085828781,
+        0.757551372051239,
+        0.7538664638996124
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quel est l'avis de la CNIL sur le recensement des personnes et des biens en vue d'une réquisition lors d'un exercice militaire ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000053973741"
+      ],
+      "refs": [
+        "CNILTEXT000053973741#f1",
+        "CNILTEXT000053973741#f2",
+        "CNILTEXT000053973741#f3",
+        "CNILTEXT000033739841#f2",
+        "CNILTEXT000053574128#f1"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8072948753833771,
+        0.7975762635469437,
+        0.7448409199714661,
+        0.7432791590690613,
+        0.7402446269989014
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Que pense la CNIL du fichier national des comptes signalés pour risque de fraude ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000053973732"
+      ],
+      "refs": [
+        "CNILTEXT000053973732#f3",
+        "CNILTEXT000053973732#f5",
+        "CNILTEXT000017653785#f7",
+        "CNILTEXT000053973732#f1",
+        "CNILTEXT000053973732#f4"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.789028063416481,
+        0.764341875910759,
+        0.7643190920352936,
+        0.7587289065122604,
+        0.7577580511569977
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quel avis la CNIL a-t-elle rendu sur le projet de loi qui élargit les caméras individuelles et l'usage des drones par les forces de sécurité ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000053716494"
+      ],
+      "refs": [
+        "CNILTEXT000053716494#f1",
+        "CNILTEXT000053018448#f6",
+        "CNILTEXT000042960768#f3",
+        "CNILTEXT000052484909#f1",
+        "CNILTEXT000053018448#f1"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8337965905666351,
+        0.7984526604413986,
+        0.7911999672651291,
+        0.7886421382427216,
+        0.7882258296012878
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quel est l'avis de la CNIL sur l'examen des caractéristiques génétiques dans les enquêtes pénales ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000053702370"
+      ],
+      "refs": [
+        "CNILTEXT000053702370#f1",
+        "CNILTEXT000053702370#f8",
+        "CNILTEXT000053702370#f10",
+        "CNILTEXT000053702370#f11",
+        "CNILTEXT000053702370#f2"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8097903281450272,
+        0.8020304441452026,
+        0.7868926227092743,
+        0.7684852629899979,
+        0.7664305567741394
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quel avis la CNIL a-t-elle rendu sur le décret qui modifie le fichier électoral et la communication des listes d'électeurs ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000054252707"
+      ],
+      "refs": [
+        "CNILTEXT000054252707#f3",
+        "CNILTEXT000017652642#f3",
+        "CNILTEXT000042105561#f5",
+        "CNILTEXT000026449885#f2",
+        "CNILTEXT000017653406#f12"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.770205944776535,
+        0.7684778422117233,
+        0.7656611204147339,
+        0.7636669427156448,
+        0.7626582533121109
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles conditions la CNIL pose-t-elle aux caméras individuelles des surveillants de prison ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000054419646"
+      ],
+      "refs": [
+        "CNILTEXT000054419646#f1",
+        "CNILTEXT000054419646#f3",
+        "CNILTEXT000048886667#f1",
+        "CNILTEXT000032708408#f5",
+        "CNILTEXT000032708408#f4"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8144957274198532,
+        0.7890743017196655,
+        0.7689006626605988,
+        0.7671379595994949,
+        0.7647166401147842
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quel avis la CNIL a-t-elle rendu sur l'extension du fichier d'honorabilité aux personnes âgées et aux majeurs protégés ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000054019761"
+      ],
+      "refs": [
+        "CNILTEXT000054019761#f1",
+        "CNILTEXT000017653017#f7",
+        "CNILTEXT000017653725#f14",
+        "CNILTEXT000017653137#f19",
+        "CNILTEXT000050959650#f19"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7476925849914551,
+        0.7412289679050446,
+        0.7405857741832733,
+        0.7314434945583344,
+        0.7257066965103149
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quel est l'avis de la CNIL sur l'élargissement de la technique dite de l'algorithme utilisée par les services de renseignement ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000053781864"
+      ],
+      "refs": [
+        "CNILTEXT000053781864#f1",
+        "CNILTEXT000053781864#f3",
+        "CNILTEXT000030395106#f6",
+        "CNILTEXT000047865722#f5",
+        "CNILTEXT000050959650#f19"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8168074637651443,
+        0.7741203010082245,
+        0.7527922987937927,
+        0.7520087957382202,
+        0.7442034184932709
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Que pense la CNIL du traitement qui met en relation les enquêtes administratives de la défense avec d'autres fichiers ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000053574128"
+      ],
+      "refs": [
+        "CNILTEXT000053574128#f1",
+        "CNILTEXT000053574128#f6",
+        "CNILTEXT000023654277#f12",
+        "CNILTEXT000053574128#f7",
+        "CNILTEXT000053574128#f4"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8139848858118057,
+        0.7891921848058701,
+        0.7692333459854126,
+        0.7673258185386658,
+        0.7660544961690903
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quel avis la CNIL a-t-elle rendu sur le visionnage des images de vidéoprotection par les agents d'Île-de-France Mobilités ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000054148225"
+      ],
+      "refs": [
+        "CNILTEXT000054148225#f1",
+        "CNILTEXT000054148225#f5",
+        "CNILTEXT000054148225#f3",
+        "CNILTEXT000048490272#f1",
+        "CNILTEXT000046202707#f5"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8388122022151947,
+        0.7775765359401703,
+        0.7658962905406952,
+        0.7603349387645721,
+        0.7547349482774734
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Que dit la CNIL du traitement qui gère le parcours des personnes détenues en établissement pénitentiaire ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000054202949"
+      ],
+      "refs": [
+        "CNILTEXT000054202949#f1",
+        "CNILTEXT000054202949#f2",
+        "CNILTEXT000017653000#f3",
+        "CNILTEXT000054202949#f3",
+        "CNILTEXT000017652999#f2"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7786735743284225,
+        0.7755378484725952,
+        0.7619409263134003,
+        0.759406566619873,
+        0.758170560002327
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quel avis la CNIL a-t-elle rendu sur l'analyse des manifestes des navires pour cibler les contrôles douaniers ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000054841661"
+      ],
+      "refs": [
+        "CNILTEXT000054841661#f1",
+        "CNILTEXT000054841661#f3",
+        "CNILTEXT000054841661#f2",
+        "CNILTEXT000054841661#f4",
+        "CNILTEXT000017653785#f26"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8134152144193649,
+        0.8037777543067932,
+        0.7899647951126099,
+        0.7637156099081039,
+        0.7598302215337753
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Que pense la CNIL du traitement des signalements d'incidents en milieu scolaire ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000053149493"
+      ],
+      "refs": [
+        "CNILTEXT000053149493#f1",
+        "CNILTEXT000053149493#f6",
+        "CNILTEXT000034985109#f1",
+        "CNILTEXT000048385265#f1",
+        "CNILTEXT000030136907#f18"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8197261840105057,
+        0.7603020370006561,
+        0.7577470242977142,
+        0.754553958773613,
+        0.7528696209192276
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelle sanction la CNIL a-t-elle prononcée contre la société qui analysait l'activité des officines à partir d'entrepôts de données de santé ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000054136834"
+      ],
+      "refs": [
+        "CNILTEXT000054136834#f170",
+        "CNILTEXT000054136834#f34",
+        "CNILTEXT000054136834#f161",
+        "CNILTEXT000054136834#f97",
+        "CNILTEXT000054136834#f46"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7785272747278214,
+        0.7708419263362885,
+        0.7692385762929916,
+        0.7656000703573227,
+        0.7648417204618454
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle amende de trois millions et demi d'euros la CNIL a-t-elle prononcée contre une enseigne de distribution pour son programme de fidélité ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000053391342"
+      ],
+      "refs": [
+        "CNILTEXT000053391342#f3",
+        "CNILTEXT000039419459#f52",
+        "CNILTEXT000042563756#f72",
+        "CNILTEXT000046768989#f60",
+        "CNILTEXT000055022778#f53"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7768763154745102,
+        0.7500785142183304,
+        0.7481456100940704,
+        0.7480471134185791,
+        0.7479874193668365
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle sanction la CNIL a-t-elle prononcée contre l'éditeur israélien d'un logiciel marketing qui hébergeait les données de ses clients ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000053048614"
+      ],
+      "refs": [
+        "CNILTEXT000050202759#f83",
+        "CNILTEXT000038032552#f74",
+        "CNILTEXT000032909770#f4",
+        "CNILTEXT000029406662#f3",
+        "CNILTEXT000046693390#f3"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7676261514425278,
+        0.7547406852245331,
+        0.7544466555118561,
+        0.7533316910266876,
+        0.7501792460680008
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle sanction la CNIL a-t-elle prononcée contre l'éditeur des magazines Vogue et Vanity Fair pour sa politique de cookies ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000052851847"
+      ],
+      "refs": [
+        "CNILTEXT000052851847#f31",
+        "CNILTEXT000052851847#f13",
+        "CNILTEXT000052851847#f4",
+        "CNILTEXT000044840062#f6",
+        "CNILTEXT000052182271#f86"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7608461081981659,
+        0.7604989111423492,
+        0.7597107589244843,
+        0.7574618756771088,
+        0.7544063776731491
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle amende la CNIL a-t-elle prononcée contre la filiale marketing de Pages Jaunes pour ses campagnes de SMS non consenties ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000051630617"
+      ],
+      "refs": [
+        "CNILTEXT000020972755#f10",
+        "CNILTEXT000025165758#f13",
+        "CNILTEXT000025165758#f3",
+        "CNILTEXT000044810599#f3",
+        "CNILTEXT000025165758#f4"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7737247943878174,
+        0.768916130065918,
+        0.7613883465528488,
+        0.7578521370887756,
+        0.7567708939313889
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle sanction la CNIL a-t-elle prononcée contre une agence immobilière qui suivait le temps de travail de ses salariés avec un logiciel dédié ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000051120331"
+      ],
+      "refs": [
+        "CNILTEXT000051120331#f3",
+        "CNILTEXT000019796260#f5",
+        "CNILTEXT000051120331#f26",
+        "CNILTEXT000051120331#f48",
+        "CNILTEXT000038552658#f2"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8038268387317657,
+        0.7653369903564453,
+        0.757352814078331,
+        0.7507138699293137,
+        0.7495147287845612
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelle amende la CNIL a-t-elle prononcée contre Orange pour le service Mail Orange ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000050760620"
+      ],
+      "refs": [
+        "CNILTEXT000050760620#f75",
+        "CNILTEXT000050760620#f2",
+        "CNILTEXT000050760620#f61",
+        "CNILTEXT000050760620#f5",
+        "CNILTEXT000050760620#f6"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7927425801753998,
+        0.7815254032611847,
+        0.7813959568738937,
+        0.7723907977342606,
+        0.7497570216655731
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelle amende a visé une chaîne de boutiques de téléphonie qui prospectait par SMS à partir de fichiers achetés ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000049382214"
+      ],
+      "refs": [
+        "CNILTEXT000020972755#f10",
+        "CNILTEXT000025165758#f13",
+        "CNILTEXT000025165758#f4",
+        "CNILTEXT000044810599#f33",
+        "CNILTEXT000044810599#f3"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7832703441381454,
+        0.7736731618642807,
+        0.7627379596233368,
+        0.7599324434995651,
+        0.7592844814062119
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle sanction a visé un distributeur de coupons de paiement utilisables en ligne ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000048907667"
+      ],
+      "refs": [
+        "CNILTEXT000048907667#f3",
+        "CNILTEXT000029224324#f10",
+        "CNILTEXT000020444175#f10",
+        "CNILTEXT000044609709#f2",
+        "CNILTEXT000046977994#f4"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7992160469293594,
+        0.7624641805887222,
+        0.7531879544258118,
+        0.752781867980957,
+        0.7457064092159271
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelle sanction a été prononcée contre une commune qui n'avait pas désigné de délégué à la protection des données ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000048580096"
+      ],
+      "refs": [
+        "CNILTEXT000048580096#f2",
+        "CNILTEXT000048580096#f6",
+        "CNILTEXT000048580096#f3",
+        "CNILTEXT000048580096#f14",
+        "CNILTEXT000048580096#f7"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8165918290615082,
+        0.7994386553764343,
+        0.7915761172771454,
+        0.7901725023984909,
+        0.7837798595428467
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelle amende a visé le traitement français des demandes de visa qui interrogeait plusieurs fichiers ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000049059221"
+      ],
+      "refs": [
+        "CNILTEXT000049996776#f1",
+        "CNILTEXT000017653405#f6",
+        "CNILTEXT000048725617#f3",
+        "CNILTEXT000048725617#f6",
+        "CNILTEXT000048725617#f2"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7792025655508041,
+        0.7786828577518463,
+        0.7601865828037262,
+        0.749597817659378,
+        0.7458012402057648
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle décision a suivi les 1590 plaintes contre un courriel politique envoyé par une administration à ses agents ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000048388493"
+      ],
+      "refs": [
+        "CNILTEXT000025686553#f3",
+        "CNILTEXT000050760620#f38",
+        "CNILTEXT000044043045#f9",
+        "CNILTEXT000030324201#f3",
+        "CNILTEXT000048388493#f2"
+      ],
+      "rangs": [
+        5
+      ],
+      "similarites": [
+        0.7530065774917603,
+        0.7499484121799469,
+        0.7481328845024109,
+        0.7480469048023224,
+        0.7474826872348785
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle sanction a visé une société de fret aérien après des plaintes de salariés sur des données réclamées par leur employeur ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000048110233"
+      ],
+      "refs": [
+        "CNILTEXT000028450694#f7",
+        "CNILTEXT000048110233#f23",
+        "CNILTEXT000047451717#f2",
+        "CNILTEXT000036403140#f15",
+        "CNILTEXT000048110233#f3"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.7702630460262299,
+        0.7672554701566696,
+        0.7647046148777008,
+        0.7596699893474579,
+        0.7572713047266006
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle amende de quarante millions d'euros la CNIL a-t-elle prononcée contre une régie publicitaire pour le reciblage des internautes ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000047707063"
+      ],
+      "refs": [
+        "CNILTEXT000025686553#f10",
+        "CNILTEXT000039419459#f52",
+        "CNILTEXT000046768989#f60",
+        "CNILTEXT000044286815#f53",
+        "CNILTEXT000020972755#f17"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7602333575487137,
+        0.7578725069761276,
+        0.7560840398073196,
+        0.7493029832839966,
+        0.7493007779121399
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle sanction a visé un site de presse consacré à la santé et au bien-être ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000047552103"
+      ],
+      "refs": [
+        "CNILTEXT000047552103#f3",
+        "CNILTEXT000047346903#f45",
+        "CNILTEXT000043867129#f3",
+        "CNILTEXT000053352643#f73",
+        "CNILTEXT000047682157#f3"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7939985245466232,
+        0.7488180100917816,
+        0.7484633922576904,
+        0.7418927252292633,
+        0.7409641444683075
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelle amende a visé un service de location de trottinettes électriques en libre-service ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000047346903"
+      ],
+      "refs": [
+        "CNILTEXT000047346903#f3",
+        "CNILTEXT000023733987#f28",
+        "CNILTEXT000023733987#f69",
+        "CNILTEXT000039419459#f52",
+        "CNILTEXT000049051422#f36"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7304068505764008,
+        0.719264030456543,
+        0.7177127599716187,
+        0.7168936729431152,
+        0.7148039042949677
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle sanction la CNIL a-t-elle prononcée contre l'application musical.ly devenue TikTok ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000046977994"
+      ],
+      "refs": [
+        "CNILTEXT000046977994#f3",
+        "CNILTEXT000053048614#f15",
+        "CNILTEXT000047707063#f62",
+        "CNILTEXT000055022778#f5",
+        "CNILTEXT000047682157#f73"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7792194783687592,
+        0.7340154349803925,
+        0.7291817367076874,
+        0.722361296415329,
+        0.715091735124588
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle amende a visé un opérateur télécom qui remettait en circulation des box sans effacer les données des abonnés ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000046693390"
+      ],
+      "refs": [
+        "CNILTEXT000046693390#f3",
+        "CNILTEXT000017652585#f3",
+        "CNILTEXT000044043045#f17",
+        "CNILTEXT000023733987#f16",
+        "CNILTEXT000049128617#f45"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7693609148263931,
+        0.7461874186992645,
+        0.7418340146541595,
+        0.7370919585227966,
+        0.7368296384811401
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle sanction a visé un logiciel de messagerie vocale utilisé par les joueurs de jeux vidéo ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000046562676"
+      ],
+      "refs": [
+        "CNILTEXT000046562676#f3",
+        "CNILTEXT000052182222#f99",
+        "CNILTEXT000020972755#f10",
+        "CNILTEXT000046562676#f25",
+        "CNILTEXT000028450683#f2"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7488284111022949,
+        0.7314561605453491,
+        0.7289984822273254,
+        0.7229816615581512,
+        0.7217272222042084
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle amende a visé un groupement qui édite un service d'information légale sur les entreprises ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000046280956"
+      ],
+      "refs": [
+        "CNILTEXT000052851847#f35",
+        "CNILTEXT000039419459#f52",
+        "CNILTEXT000024583206#f2",
+        "CNILTEXT000025686553#f10",
+        "CNILTEXT000052851847#f34"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7650207579135895,
+        0.7566718608140945,
+        0.7541424036026001,
+        0.7539521753787994,
+        0.7525502294301987
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle amende a visé une plateforme d'autopartage de véhicules entre particuliers et professionnels ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000046070924"
+      ],
+      "refs": [
+        "CNILTEXT000046070924#f3",
+        "CNILTEXT000049051422#f36",
+        "CNILTEXT000046988935#f24",
+        "CNILTEXT000039419459#f52",
+        "CNILTEXT000047346903#f12"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7546739727258682,
+        0.7214891612529755,
+        0.7170702219009399,
+        0.7155552208423615,
+        0.7135519087314606
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle amende a visé un éditeur de logiciels pour laboratoires d'analyses médicales ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000045614368"
+      ],
+      "refs": [
+        "CNILTEXT000052851847#f35",
+        "CNILTEXT000045614368#f4",
+        "CNILTEXT000049051422#f36",
+        "CNILTEXT000039419459#f52",
+        "CNILTEXT000050202759#f83"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.7427041232585907,
+        0.7421670258045197,
+        0.7388586699962616,
+        0.7385650277137756,
+        0.736610472202301
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle sanction a visé un groupe hôtelier dont les clients n'obtenaient pas de réponse à leurs demandes ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000046198070"
+      ],
+      "refs": [
+        "CNILTEXT000028450694#f7",
+        "CNILTEXT000017652585#f3",
+        "CNILTEXT000019796192#f3",
+        "CNILTEXT000019796260#f18",
+        "CNILTEXT000024654305#f8"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7593767493963242,
+        0.7549999058246613,
+        0.7539057582616806,
+        0.7532417923212051,
+        0.7524252384901047
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle amende a visé un établissement de paiement qui avait réutilisé des données pour un projet de lutte contre la fraude ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000044609709"
+      ],
+      "refs": [
+        "CNILTEXT000044609709#f3",
+        "CNILTEXT000052400616#f7",
+        "CNILTEXT000020444175#f10",
+        "CNILTEXT000049051422#f36",
+        "CNILTEXT000038552658#f29"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7668623924255371,
+        0.7614459246397018,
+        0.7537458091974258,
+        0.74862340092659,
+        0.74640092253685
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle amende a visé un opérateur de téléphonie mobile pour la prospection commerciale et le droit d'opposition ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000044810599"
+      ],
+      "refs": [
+        "CNILTEXT000044810599#f3",
+        "CNILTEXT000022933007#f21",
+        "CNILTEXT000044810599#f33",
+        "CNILTEXT000022933007#f8",
+        "CNILTEXT000020022105#f2"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7915772348642349,
+        0.7792539745569229,
+        0.7785304933786392,
+        0.7758965045213699,
+        0.7729841470718384
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelle amende a visé le fichier de police qui recense les empreintes digitales des personnes mises en cause ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000044115170"
+      ],
+      "refs": [
+        "CNILTEXT000044115170#f3",
+        "CNILTEXT000044115170#f4",
+        "CNILTEXT000049471074#f3",
+        "CNILTEXT000017653167#f3",
+        "CNILTEXT000017654174#f3"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7849023193120956,
+        0.7682776302099228,
+        0.7595094293355942,
+        0.7541826367378235,
+        0.7480509877204895
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelle sanction a visé une société américaine qui avait fait constituer des fichiers sur des personnalités politiques et des journalistes ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000043860997"
+      ],
+      "refs": [
+        "CNILTEXT000043860997#f3",
+        "CNILTEXT000039419459#f52",
+        "CNILTEXT000024823218#f5",
+        "CNILTEXT000017652585#f2",
+        "CNILTEXT000052851847#f35"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7582776844501495,
+        0.7370648980140686,
+        0.7356302440166473,
+        0.7353237569332123,
+        0.7349238693714142
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle sanction la CNIL a-t-elle prononcée contre une compagnie aérienne pour la reconnaissance faciale des passagers à l'embarquement ?",
+      "type": "piege",
+      "piege": true,
+      "attendues": [],
+      "refs": [
+        "CNILTEXT000047527412#f2",
+        "CNILTEXT000051120331#f71",
+        "CNILTEXT000017651866#f3",
+        "CNILTEXT000017652165#f4",
+        "CNILTEXT000020753405#f21"
+      ],
+      "rangs": [],
+      "similarites": [
+        0.7578210383653641,
+        0.7387363612651825,
+        0.7334489226341248,
+        0.7322989404201508,
+        0.7310059666633606
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quel avis la CNIL a-t-elle rendu sur l'installation de caméras dans les piscines municipales ?",
+      "type": "piege",
+      "piege": true,
+      "attendues": [],
+      "refs": [
+        "CNILTEXT000017654174#f6",
+        "CNILTEXT000033734153#f4",
+        "CNILTEXT000028450694#f2",
+        "CNILTEXT000033734153#f8",
+        "CNILTEXT000032823632#f7"
+      ],
+      "rangs": [],
+      "similarites": [
+        0.747196614742279,
+        0.7410023212432861,
+        0.7386711537837982,
+        0.7377704381942749,
+        0.7374385595321655
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Que recommande la CNIL pour les données de santé des animaux de compagnie dans les cliniques vétérinaires ?",
+      "type": "piege",
+      "piege": true,
+      "attendues": [],
+      "refs": [
+        "CNILTEXT000017652540#f1",
+        "CNILTEXT000034100183#f6",
+        "CNILTEXT000034100183#f4",
+        "CNILTEXT000017652540#f2",
+        "CNILTEXT000017653397#f1"
+      ],
+      "rangs": [],
+      "similarites": [
+        0.7551943957805634,
+        0.7546143233776093,
+        0.7431629598140717,
+        0.7380673289299011,
+        0.7366187870502472
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quel avis la CNIL a-t-elle rendu sur un projet de recherche utilisant des implants cérébraux chez des patients paralysés ?",
+      "type": "piege",
+      "piege": true,
+      "attendues": [],
+      "refs": [
+        "CNILTEXT000049580411#f12",
+        "CNILTEXT000033734150#f5",
+        "CNILTEXT000052593040#f10",
+        "CNILTEXT000048925420#f1",
+        "CNILTEXT000047707063#f62"
+      ],
+      "rangs": [],
+      "similarites": [
+        0.7286006808280945,
+        0.7281689047813416,
+        0.7234176099300385,
+        0.722084641456604,
+        0.7174989283084869
+      ],
+      "niveau": "aucun_resultat_fiable"
+    },
+    {
+      "question": "Quelle sanction la CNIL a-t-elle prononcée contre un loueur de vélos en libre-service pour la géolocalisation des trajets de ses utilisateurs ?",
+      "type": "piege",
+      "piege": true,
+      "attendues": [],
+      "refs": [
+        "CNILTEXT000029298773#f2",
+        "CNILTEXT000023733987#f7",
+        "CNILTEXT000029298773#f17",
+        "CNILTEXT000046070924#f17",
+        "CNILTEXT000023733987#f56"
+      ],
+      "rangs": [],
+      "similarites": [
+        0.769834965467453,
+        0.7686151713132858,
+        0.7562464475631714,
+        0.7549518942832947,
+        0.7548027187585831
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quel avis la CNIL a-t-elle rendu sur les puces électroniques implantées sous la peau des salariés pour contrôler l'accès aux locaux ?",
+      "type": "piege",
+      "piege": true,
+      "attendues": [],
+      "refs": [
+        "CNILTEXT000032823632#f8",
+        "CNILTEXT000029302625#f7",
+        "CNILTEXT000028450694#f2",
+        "CNILTEXT000029302625#f13",
+        "CNILTEXT000022913261#f4"
+      ],
+      "rangs": [],
+      "similarites": [
+        0.7777161449193954,
+        0.7624066919088364,
+        0.7587998658418655,
+        0.7502357810735703,
+        0.7466426193714142
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quel avis la CNIL a-t-elle rendu sur la mise à jour des changements d'état civil dans les fichiers des organismes ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000053308330"
+      ],
+      "refs": [
+        "CNILTEXT000050959650#f19",
+        "CNILTEXT000017653017#f7",
+        "CNILTEXT000032613157#f10",
+        "CNILTEXT000017654617#f3",
+        "CNILTEXT000047865722#f5"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7709162831306458,
+        0.7506261467933655,
+        0.7472817003726959,
+        0.7442175149917603,
+        0.7434907257556915
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quel est l'avis de la CNIL sur l'extension des sources collectées pour détecter les ingérences numériques étrangères ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000053461680"
+      ],
+      "refs": [
+        "CNILTEXT000053461680#f1",
+        "CNILTEXT000053461680#f3",
+        "CNILTEXT000044457481#f1",
+        "CNILTEXT000053781864#f12",
+        "CNILTEXT000017653778#f2"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7665521055459976,
+        0.7494581639766693,
+        0.7464325726032257,
+        0.7424436211585999,
+        0.7416852712631226
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Que pense la CNIL de l'échange de données entre la médecine du travail et l'assurance maladie sur les salariés menacés de désinsertion ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000054019591"
+      ],
+      "refs": [
+        "CNILTEXT000054019591#f1",
+        "CNILTEXT000054019591#f7",
+        "CNILTEXT000017653249#f2",
+        "CNILTEXT000047110868#f1",
+        "CNILTEXT000017654026#f2"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.779527336359024,
+        0.7743317186832428,
+        0.7700336128473282,
+        0.7602386325597763,
+        0.7562409937381744
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quel avis la CNIL a-t-elle rendu sur l'extension du traitement des titres sécurisés à la fraude à l'identité ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000053308064"
+      ],
+      "refs": [
+        "CNILTEXT000033068552#f3",
+        "CNILTEXT000045804764#f6",
+        "CNILTEXT000053308064#f3",
+        "CNILTEXT000050959650#f1",
+        "CNILTEXT000036943799#f3"
+      ],
+      "rangs": [
+        3
+      ],
+      "similarites": [
+        0.7751416265964508,
+        0.7591654062271118,
+        0.7563360184431076,
+        0.7507620602846146,
+        0.7497264444828033
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles obligations la CNIL voit-elle pour les hébergeurs de données de santé au nom de la souveraineté ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000053722050"
+      ],
+      "refs": [
+        "CNILTEXT000053722050#f1",
+        "CNILTEXT000051390526#f5",
+        "CNILTEXT000017653155#f2",
+        "CNILTEXT000017653248#f2",
+        "CNILTEXT000042105548#f2"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8175460249185562,
+        0.7923583835363388,
+        0.7831888347864151,
+        0.7818061709403992,
+        0.7734932005405426
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Que pense la CNIL du dépôt de plainte par visioconférence ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000053308551"
+      ],
+      "refs": [
+        "CNILTEXT000053038296#f13",
+        "CNILTEXT000047865722#f5",
+        "CNILTEXT000042635729#f7",
+        "CNILTEXT000044043045#f17",
+        "CNILTEXT000053308551#f1"
+      ],
+      "rangs": [
+        5
+      ],
+      "similarites": [
+        0.7663137465715408,
+        0.7638158947229385,
+        0.7632062584161758,
+        0.75968337059021,
+        0.7574504315853119
+      ],
+      "niveau": "incertain"
+    }
+  ],
+  "agregats": {
+    "semantiques": 54,
+    "top5_semantique_succes": 44,
+    "top1_semantique_succes": 38,
+    "mrr_semantique": 0.7404320987654323,
+    "referencees": 54,
+    "top5_global_succes": 44,
+    "top5_rendu_succes": 44,
+    "top1_rendu_succes": 38,
+    "mrr_rendu": 0.7404320987654323,
+    "top5_global_rendu_succes": 44,
+    "pieges_mesures": 6,
+    "pieges_cites": 5,
+    "confiant": 16,
+    "incertain": 38,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  }
+}

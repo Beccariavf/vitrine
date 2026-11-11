@@ -1,0 +1,90 @@
+{
+  "corpus": "cepd",
+  "nom": "CEPD",
+  "titre": "Lignes directrices du Comité européen de la protection des données",
+  "url_liste": "https://www.edpb.europa.eu/our-work-tools/our-documents/publication-type/guidelines_fr",
+  "date_liste": "2026-11-09",
+  "depuis": null,
+  "limite": null,
+  "via": "sitemap",
+  "sitemap_pages": [
+    "https://www.edpb.europa.eu/sitemap.xml?page=1",
+    "https://www.edpb.europa.eu/sitemap.xml?page=2",
+    "https://www.edpb.europa.eu/sitemap.xml?page=3",
+    "https://www.edpb.europa.eu/sitemap.xml?page=4",
+    "https://www.edpb.europa.eu/sitemap.xml?page=5"
+  ],
+  "documents": 36,
+  "fragments": 5443,
+  "versions_ecartees": 0,
+  "documents_sans_texte_ecartes": 6,
+  "types_retenus": [
+    "guideline"
+  ],
+  "langues_pdf": {
+    "fr": 36,
+    "en": 0,
+    "autre": 0
+  },
+  "licence": "À vérifier : le site du CEPD ne déclare pas de licence explicite dans la reconnaissance ; les documents sont des publications officielles de l'Union européenne.",
+  "couverture": {
+    "source": "CEPD — pages de lignes directrices (PDF)",
+    "date_liste": "2026-11-09",
+    "limite": null,
+    "via": "sitemap",
+    "sitemap_pages": [
+      "https://www.edpb.europa.eu/sitemap.xml?page=1",
+      "https://www.edpb.europa.eu/sitemap.xml?page=2",
+      "https://www.edpb.europa.eu/sitemap.xml?page=3",
+      "https://www.edpb.europa.eu/sitemap.xml?page=4",
+      "https://www.edpb.europa.eu/sitemap.xml?page=5"
+    ],
+    "pages_lues": 5,
+    "periode": {
+      "date_min": "2018-04-11",
+      "date_max": "2025-06-05"
+    },
+    "types_retenus": [
+      "guideline"
+    ],
+    "langues_pdf": {
+      "fr": 36,
+      "en": 0,
+      "autre": 0
+    },
+    "documents_sans_texte_ecartes": 6,
+    "versions_ecartees": 0,
+    "documents_ecartes": [
+      {
+        "url": "https://www.edpb.europa.eu/documents/guideline/automated-decision-making-and-profiling_fr",
+        "slug": "automated-decision-making-and-profiling",
+        "raison": "PDF absent"
+      },
+      {
+        "url": "https://www.edpb.europa.eu/documents/guideline/data-protection-impact-assessments-high-risk-processing_fr",
+        "slug": "data-protection-impact-assessments-high-risk-processing",
+        "raison": "PDF absent"
+      },
+      {
+        "url": "https://www.edpb.europa.eu/documents/guideline/data-protection-officer_fr",
+        "slug": "data-protection-officer",
+        "raison": "PDF absent"
+      },
+      {
+        "url": "https://www.edpb.europa.eu/documents/guideline/guidelines-on-personal-data-breach-notification-under-regulation-2016679-wp250_fr",
+        "slug": "guidelines-on-personal-data-breach-notification-under-regulation-2016679-wp250",
+        "raison": "PDF absent"
+      },
+      {
+        "url": "https://www.edpb.europa.eu/documents/guideline/right-to-data-portability_fr",
+        "slug": "right-to-data-portability",
+        "raison": "PDF absent"
+      },
+      {
+        "url": "https://www.edpb.europa.eu/documents/guideline/transparency_fr",
+        "slug": "transparency",
+        "raison": "PDF absent"
+      }
+    ]
+  }
+}

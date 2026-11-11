@@ -3,7 +3,7 @@
  *
  * On ne lit que le texte et les métadonnées : la colonne d'embeddings `bge-m3`
  * reste sur le disque et n'entre jamais dans l'index, dont l'espace vectoriel
- * est celui de `qwen3-embedding:0.6b`. Le parquet n'est pas commité ; il est
+ * est celui de `leoipulsar/harrier-0.6b`. Le parquet n'est pas commité ; il est
  * téléchargé une fois sous `data/raw/cnil/` puis réutilisé.
  */
 
@@ -14,6 +14,7 @@ import { asyncBufferFromFile, parquetReadObjects } from "hyparquet";
 import { compressors } from "hyparquet-compressors";
 import type { Unite } from "../parse.ts";
 import { extraireMetaSanction } from "./meta.ts";
+import { estSanction, libelleNature, natureDemandee } from "./nature.ts";
 
 /** Une ligne du parquet, réduite aux colonnes lues. */
 export type LigneDinum = {
@@ -31,7 +32,8 @@ export type LigneDinum = {
 export type DescripteurCnil = {
   corpus: string;
   nom: string;
-  nature: string;
+  /** Natures retenues : sanctions, avis, recommandations et lignes directrices. */
+  natures: string[];
   documents_attendus: number;
   fragments_attendus: number;
   snapshot: string;
@@ -76,8 +78,21 @@ export const COLONNES_LUES = [
   "nature_delib",
 ] as const;
 
+/** Forme brute : un descripteur ancien porte une `nature` unique au singulier. */
+type DescripteurCnilBrut = Omit<DescripteurCnil, "natures"> & {
+  natures?: string[];
+  nature?: string;
+};
+
+/**
+ * Lit le descripteur. La forme `natures` fait foi ; une `nature` unique reste
+ * lue, pour qu'un descripteur ancien ne casse pas la synchronisation.
+ */
 export function lireDescripteur(chemin: string): DescripteurCnil {
-  return JSON.parse(readFileSync(chemin, "utf8")) as DescripteurCnil;
+  const brut = JSON.parse(readFileSync(chemin, "utf8")) as DescripteurCnilBrut;
+  const { nature: singuliere, ...reste } = brut;
+  const natures = reste.natures ?? (singuliere === undefined ? [] : [singuliere]);
+  return { ...reste, natures };
 }
 
 /** Empreinte sha256 des octets d'un fichier. */
@@ -134,26 +149,33 @@ export async function lireLignes(fichiers: string[]): Promise<LigneDinum[]> {
   return lignes;
 }
 
-/** Vrai si la ligne relève de la nature filtrée. */
-export function estDeNature(ligne: LigneDinum, nature: string): boolean {
-  return ligne.nature_delib === nature;
+/** Vrai si la ligne relève de l'une des natures demandées, à la casse près. */
+export function estDeNature(ligne: LigneDinum, natures: readonly string[]): boolean {
+  return natureDemandee(ligne.nature_delib, natures);
 }
 
 /**
  * Mappe une ligne DINUM en unité. La référence reste vérifiable : elle porte le
  * `doc_id` publié et le `chunk_index` publié, jamais une numérotation inventée.
+ * Le chemin nomme la nature de la délibération, étiquette du descripteur.
  */
-export function uniteDinum(ligne: LigneDinum, descripteur: DescripteurCnil): Unite {
+export function uniteDinum(
+  ligne: LigneDinum,
+  descripteur: DescripteurCnil,
+  natures: readonly string[] = descripteur.natures,
+): Unite {
   const document = String(ligne.doc_id ?? "").trim();
   const numero = String(ligne.number ?? "").trim() || document;
   const date = String(ligne.date ?? "").trim();
+  const nature = libelleNature(ligne.nature_delib, natures);
+  const libelle = nature === "" ? "Délibération" : nature;
   return {
     ref: `${document}#f${Number(ligne.chunk_index)}`,
     document,
     corpus: descripteur.corpus,
     niveau: "fragment",
     numero,
-    chemin: `${descripteur.nom} > Sanctions > Délibération ${numero}`,
+    chemin: `${descripteur.nom} > ${libelle} > Délibération ${numero}`,
     texte: String(ligne.text ?? "").trim(),
     date_acte: date,
     date_debut: date,
@@ -161,22 +183,44 @@ export function uniteDinum(ligne: LigneDinum, descripteur: DescripteurCnil): Uni
     statut: String(ligne.status ?? "").trim(),
     url: descripteur.url_texte.replace("{id}", document),
     origine: "dinum",
+    ...(nature === "" ? {} : { nature }),
   };
 }
 
 /**
- * Rend les unités des lignes de la nature demandée. Une ligne vide ou sans
+ * Rend les unités des lignes des natures demandées. Une ligne vide ou sans
  * identifiant est comptée en erreur : l'appelant n'écrit alors aucun fichier.
  */
+export type ExclusionNature = { nature: string; lignes: number };
+
+/** Lignes écartées par nature : la valeur brute, `(vide)` pour null ou vide. */
+export function compterExclusionsNature(
+  lignes: readonly LigneDinum[],
+  natures: readonly string[],
+): ExclusionNature[] {
+  const comptes = new Map<string, number>();
+  for (const ligne of lignes) {
+    if (estDeNature(ligne, natures)) continue;
+    const nature = String(ligne.nature_delib ?? "").trim() || "(vide)";
+    comptes.set(nature, (comptes.get(nature) ?? 0) + 1);
+  }
+  return [...comptes.entries()]
+    .map(([nature, lignes]) => ({ nature, lignes }))
+    .sort(
+      (gauche, droite) =>
+        droite.lignes - gauche.lignes || gauche.nature.localeCompare(droite.nature, "fr"),
+    );
+}
+
 export function unitesDinum(
   lignes: LigneDinum[],
   descripteur: DescripteurCnil,
-  nature = descripteur.nature,
-): { unites: Unite[]; erreurs: string[] } {
+  natures: readonly string[] = descripteur.natures,
+): { unites: Unite[]; erreurs: string[]; exclusions: ExclusionNature[] } {
   const unites: Unite[] = [];
   const erreurs: string[] = [];
   for (const ligne of lignes) {
-    if (!estDeNature(ligne, nature)) continue;
+    if (!estDeNature(ligne, natures)) continue;
     const document = String(ligne.doc_id ?? "").trim();
     const emplacement = `${document || "(sans doc_id)"}#f${ligne.chunk_index}`;
     if (document === "") {
@@ -191,11 +235,12 @@ export function unitesDinum(
       erreurs.push(`${emplacement} : date absente`);
       continue;
     }
-    unites.push(uniteDinum(ligne, descripteur));
+    unites.push(uniteDinum(ligne, descripteur, natures));
   }
 
   // Le dispositif est commun à tous les fragments d'une décision : on le lit
   // une fois, puis on pose le même type et le même montant sur chaque unité.
+  // Seules les sanctions en portent : un avis n'a ni type ni montant.
   const parDocument = new Map<string, Unite[]>();
   for (const unite of unites) {
     const groupe = parDocument.get(unite.document) ?? [];
@@ -203,9 +248,10 @@ export function unitesDinum(
     parDocument.set(unite.document, groupe);
   }
   for (const groupe of parDocument.values()) {
+    if (!groupe.some((unite) => estSanction(unite.nature))) continue;
     const meta = extraireMetaSanction(groupe.map((unite) => unite.texte).join("\n"));
     for (const unite of groupe) Object.assign(unite, meta);
   }
 
-  return { unites, erreurs };
+  return { unites, erreurs, exclusions: compterExclusionsNature(lignes, natures) };
 }

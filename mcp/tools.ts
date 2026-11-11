@@ -4,7 +4,10 @@ import { openIndex, rechercheHybride, searchIndex } from "./index/search.ts";
 import type { Index, ResultatRecherche } from "./index/search.ts";
 import type { Unite } from "./corpus/parse.ts";
 import type { Embedder } from "./embed/embedder.ts";
+import { CANDIDATS_RERANK } from "./rerank/reranker.ts";
+import type { Reranker } from "./rerank/reranker.ts";
 import { debutDispositif, numeroIndex } from "./corpus/cnil/meta.ts";
+import { estSanction } from "./corpus/cnil/nature.ts";
 import { niveauConfiance } from "./confidence.ts";
 import type { NiveauConfiance } from "./confidence.ts";
 
@@ -29,6 +32,8 @@ export type ResultatRechercheOutil = {
   passages: Passage[];
   /** Présent quand une référence exacte est introuvable ou existe dans plusieurs documents. */
   message?: string;
+  /** Présent quand le second étage a tourné : la seule latence imputable au rerank. */
+  rerank?: { modele: string; duree_ms: number };
 };
 
 /** `Article 17`, `art. 17`, `17` : ne garde que le nombre, sans zéro de tête. */
@@ -86,11 +91,17 @@ const ALIAS_AIA_TEXTE: readonly RegExp[] = [
   /\b2024 1689\b/,
 ];
 const ALIAS_AIA_COMPACT: readonly RegExp[] = [/32024r1689/];
+const ALIAS_LIL_TEXTE: readonly RegExp[] = [
+  /\blil\b/,
+  /\bloi informatique et libertes\b/,
+  /\bloi (?:n )?78 17\b/,
+];
 
 /** Nom lisible d'un corpus connu, pour les messages de refus. */
 const NOMS_DOCUMENTS: Record<string, string> = {
   "32016R0679": "RGPD",
   "32024R1689": "AI Act",
+  LEGITEXT000006068624: "LIL",
 };
 
 function libelleDocument(document: string): string {
@@ -99,9 +110,9 @@ function libelleDocument(document: string): string {
 }
 
 /**
- * Tous les corpus nommés par la question. Zéro, un ou deux : « le RGPD et l'AI
- * Act » en nomme deux, et l'appelant doit alors distinguer « aucun nom » de
- * « deux noms » dans ses messages.
+ * Tous les corpus nommés par la question. Zéro, un ou plusieurs : « le RGPD et
+ * l'AI Act » en nomme deux, et l'appelant doit alors distinguer « aucun nom » de
+ * « plusieurs noms » dans ses messages.
  */
 export function documentsNommes(question: string): string[] {
   const texte = normaliserTexte(question);
@@ -118,6 +129,9 @@ export function documentsNommes(question: string): string[] {
     ALIAS_AIA_COMPACT.some((alias) => alias.test(compact))
   ) {
     documents.add("32024R1689");
+  }
+  if (ALIAS_LIL_TEXTE.some((alias) => alias.test(texte))) {
+    documents.add("LEGITEXT000006068624");
   }
   return [...documents];
 }
@@ -177,15 +191,31 @@ export type SearchDeps = {
   seuils?: { bas?: number; haut?: number; marge?: number };
   /** Voie de recherche ; `dense` par défaut, `hybride` sur demande mesurée. */
   recherche?: "dense" | "hybride";
+  /**
+   * Second étage : il réordonne la fenêtre dense, il ne remplace pas l'index.
+   * Absent, la voie dense reste strictement celle d'avant.
+   */
+  rerank?: Reranker;
 };
+
+/**
+ * Corpus dont la table de seuils s'applique : celui demandé, sauf si un document
+ * borne la recherche à un acte. Un document fixé réduit le bassin, change
+ * l'instruction de requête, et suit donc le repli, sans promesse.
+ */
+export function corpusDeNiveau(demande: { corpus?: string; document?: string }): string | undefined {
+  return demande.document === undefined ? demande.corpus : undefined;
+}
 
 export type SearchDemande = {
   question: string;
   k?: number;
-  /** Restreint la recherche à une collection : `rgpd`, `aiact`, `cnil`. */
+  /** Restreint la recherche à une collection : `rgpd`, `aiact`, `cnil`, `lil`, `ce`, `cepd`. */
   corpus?: string;
   /** Restreint la recherche à un document précis. */
   document?: string;
+  /** Restreint à une nature CNIL : Sanction, Avis ou Recommandation/Lignes directrices. */
+  nature?: string;
   /** Date ISO minimale de la décision. */
   date_min?: string;
   /** Date ISO maximale de la décision. */
@@ -217,6 +247,8 @@ export type DecisionTrouvee = {
   url: string;
   /** `dinum` ou `dila` : d'où vient le découpage des fragments. */
   origine?: string;
+  /** Nature de la délibération : toujours une sanction ici. */
+  nature?: string;
   /** Type de sanction lu dans le dispositif. */
   type_sanction?: string;
   /** Montant de la sanction pécuniaire (amende ou liquidation) ; `null` si absent ou masqué. */
@@ -301,22 +333,47 @@ export function getDecision(rootDir: string, demande: DecisionDemande): Resultat
     };
   }
 
-  const unites = lireUnites(rootDir).filter(
+  const trouvees = lireUnites(rootDir).filter(
     (unite) =>
       (corpus === undefined || corpus === "" || unite.corpus === corpus) &&
       (document === undefined || document === "" || unite.document === document) &&
       (numero === undefined || numero === "" || numeroIndex(unite.numero) === numeroIndex(numero)),
   );
 
-  if (unites.length === 0) {
-    const quoi =
-      document !== undefined && document !== ""
-        ? `le document ${document}`
-        : `le numéro ${numero ?? ""}`;
+  const quoi =
+    document !== undefined && document !== ""
+      ? `le document ${document}`
+      : `le numéro ${numero ?? ""}`;
+
+  if (trouvees.length === 0) {
     return {
       trouve: false,
       decisions: [],
       message: `Aucune décision pour ${quoi}${portee}.`,
+    };
+  }
+
+  // `get_decision` reste réservé aux sanctions : un avis ou une recommandation
+  // se lit par `search`, qui porte le filtre `nature`.
+  const unites = trouvees.filter((unite) => estSanction(unite.nature));
+  if (unites.length === 0) {
+    const natures = [
+      ...new Set(
+        trouvees
+          .map((unite) => unite.nature?.trim() ?? "")
+          .filter((nature) => nature !== ""),
+      ),
+    ];
+    const comme =
+      natures.length === 0
+        ? "ce document n'est pas une délibération de sanction"
+        : `la délibération existe comme ${natures.join(", ")}`;
+    return {
+      trouve: false,
+      decisions: [],
+      message:
+        `Aucune sanction pour ${quoi}${portee} : ${comme}. ` +
+        "Utilisez « search » avec le filtre « nature » pour la lire.",
     };
   }
 
@@ -346,6 +403,7 @@ export function getDecision(rootDir: string, demande: DecisionDemande): Resultat
         statut: premier.statut,
         url: premier.url,
         ...(premier.origine === undefined ? {} : { origine: premier.origine }),
+        ...(premier.nature === undefined ? {} : { nature: premier.nature }),
         ...(premier.type_sanction === undefined ? {} : { type_sanction: premier.type_sanction }),
         ...(premier.montant === undefined ? {} : { montant: premier.montant }),
         ...(premier.injonction === undefined ? {} : { injonction: premier.injonction }),
@@ -443,13 +501,17 @@ export async function search(
   const index =
     typeof deps.index === "function" ? deps.index() : deps.index ?? openIndex(cheminIndex(rootDir));
   const k = Math.max(1, Math.trunc(demande.k ?? 5));
+  // Le reranker réordonne une fenêtre plus large que `k` : il ne peut pas
+  // promouvoir un passage que la recherche dense n'a pas ramené.
+  const fenetre = deps.rerank === undefined ? k : Math.max(k, CANDIDATS_RERANK);
   // L'instruction de requête suit le document, puis le corpus : un corpus CNIL
   // ne doit pas recevoir l'instruction mesurée pour le RGPD.
   const vecteur = await deps.embedder.embedQuery(demande.question, document ?? corpus);
   const options = {
-    k,
+    k: fenetre,
     ...(corpus === undefined ? {} : { corpus }),
     ...(document === undefined ? {} : { document }),
+    ...(demande.nature === undefined ? {} : { nature: demande.nature }),
     ...(demande.date_min === undefined ? {} : { date_min: demande.date_min }),
     ...(demande.date_max === undefined ? {} : { date_max: demande.date_max }),
     ...(demande.type_sanction === undefined ? {} : { type_sanction: demande.type_sanction }),
@@ -462,12 +524,45 @@ export async function search(
       ? rechercheHybride(index, vecteur, demande.question, options)
       : searchIndex(index, vecteur, options);
 
-  const niveau = niveauConfiance(resultats, false, deps.seuils);
+  let ordre = resultats;
+  let blocRerank: { modele: string; duree_ms: number } | undefined;
+  if (deps.rerank !== undefined) {
+    const debut = performance.now();
+    const scores = await deps.rerank.score(
+      demande.question,
+      resultats.map((resultat) => resultat.texte),
+    );
+    const duree_ms = performance.now() - debut;
+    // La distance dense de chaque passage est conservée : le rerank ne change
+    // que l'ordre, jamais l'échelle de confiance.
+    ordre = resultats
+      .map((resultat, position) => {
+        const score = scores[position];
+        if (score === undefined) {
+          throw new Error(
+            `Le reranker ${deps.rerank?.model ?? ""} a rendu ${scores.length} scores ` +
+              `pour ${resultats.length} passages.`,
+          );
+        }
+        return { resultat, score, position };
+      })
+      .sort((gauche, droite) => droite.score - gauche.score || gauche.position - droite.position)
+      .slice(0, k)
+      .map((entree) => entree.resultat);
+    blocRerank = { modele: deps.rerank.model, duree_ms };
+  }
+
+  const corpusDuNiveau = corpusDeNiveau(demande);
+  const niveau = niveauConfiance(ordre, false, {
+    ...deps.seuils,
+    ...(corpusDuNiveau === undefined ? {} : { corpus: corpusDuNiveau }),
+  });
   return {
     niveau_confiance: niveau,
     passages:
       niveau === "aucun_resultat_fiable"
         ? []
-        : resultats.map((resultat) => ({ ...resultat, similarite: 1 - resultat.distance })),
+        : ordre.map((resultat) => ({ ...resultat, similarite: 1 - resultat.distance })),
+    ...(blocRerank === undefined ? {} : { rerank: blocRerank }),
   };
 }

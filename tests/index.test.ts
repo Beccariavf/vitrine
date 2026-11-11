@@ -8,8 +8,10 @@ import * as sqliteVec from "sqlite-vec";
 import {
   buildIndex,
   cheminIndex,
+  creerEmbedder,
   empreinteUnite,
   formaterJournal,
+  lireFournisseur,
   migrerVecteurs,
 } from "../mcp/index/build.ts";
 import { search } from "../mcp/tools.ts";
@@ -23,11 +25,13 @@ import {
 } from "../mcp/index/search.ts";
 import {
   INSTRUCTION_AIAct,
+  INSTRUCTION_CNIL,
   INSTRUCTION_REQUETE,
   createOllamaEmbedder,
   normaliser,
 } from "../mcp/embed/embedder.ts";
 import type { Embedder } from "../mcp/embed/embedder.ts";
+import { createOpenAIEmbedder } from "../mcp/embed/openai.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";
 import type { FetchLike } from "../veille/fetch.ts";
 
@@ -172,7 +176,7 @@ describe("l'adaptateur Ollama", () => {
 
     assert.equal(url, "http://127.0.0.1:9999/api/embed");
     assert.deepEqual(JSON.parse(corps), {
-      model: "qwen3-embedding:0.6b",
+      model: "leoipulsar/harrier-0.6b",
       input: [`${INSTRUCTION_REQUETE}test`],
     });
     assert.deepEqual(vecteur, [0.6, 0.8]);
@@ -237,7 +241,7 @@ describe("l'adaptateur Ollama", () => {
     const fetchImpl: FetchLike = async () => ({ ok: false, status: 404, text: async () => "" });
     const embedder = createOllamaEmbedder({ dim: 2, fetchImpl });
 
-    await assert.rejects(embedder.embedQuery("test"), /ollama pull qwen3-embedding:0\.6b/);
+    await assert.rejects(embedder.embedQuery("test"), /ollama pull leoipulsar\/harrier-0\.6b/);
   });
 
   it("nomme ollama pull quand l'hôte ne répond pas", async () => {
@@ -246,7 +250,7 @@ describe("l'adaptateur Ollama", () => {
     };
     const embedder = createOllamaEmbedder({ dim: 2, fetchImpl });
 
-    await assert.rejects(embedder.embedQuery("test"), /ollama pull qwen3-embedding:0\.6b/);
+    await assert.rejects(embedder.embedQuery("test"), /ollama pull leoipulsar\/harrier-0\.6b/);
   });
 
   it("refuse une dimension inattendue", async () => {
@@ -274,6 +278,133 @@ describe("l'adaptateur Ollama", () => {
       assert.ok(Math.abs(norme - 1) < 1e-5);
     },
   );
+});
+
+describe("l'adaptateur OpenAI", () => {
+  const MODELE = "mradermacher/harrier-oss-v1-0.6b-GGUF";
+
+  /** Réponse de forme OpenAI, avec le modèle et les vecteurs demandés. */
+  function reponse(model: string, vecteurs: number[][]): FetchLike {
+    return async () => ({
+      ok: true,
+      status: 200,
+      text: async () => JSON.stringify({ model, data: vecteurs.map((embedding) => ({ embedding })) }),
+    });
+  }
+
+  it("appelle /v1/embeddings, renvoie le modèle et normalise les vecteurs", async () => {
+    let url = "";
+    let corps: unknown;
+    const fetchImpl: FetchLike = async (demande, init) => {
+      url = demande;
+      corps = JSON.parse(init?.body ?? "{}");
+      return {
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({ model: MODELE, data: [{ embedding: [3, 4] }] }),
+      };
+    };
+
+    const embedder = createOpenAIEmbedder({
+      url: "http://127.0.0.1:9999",
+      model: MODELE,
+      dim: 2,
+      fetchImpl,
+    });
+    const vecteur = await embedder.embedQuery("test");
+
+    assert.equal(url, "http://127.0.0.1:9999/v1/embeddings");
+    assert.deepEqual(corps, { model: MODELE, input: [`${INSTRUCTION_REQUETE}test`] });
+    assert.equal(embedder.model, MODELE);
+    assert.equal(embedder.dim, 2);
+    assert.deepEqual(vecteur, [0.6, 0.8]);
+  });
+
+  it("préfixe la requête et laisse les passages intacts", async () => {
+    const entrees: unknown[] = [];
+    const fetchImpl: FetchLike = async (_url, init) => {
+      entrees.push(JSON.parse(init?.body ?? "{}").input);
+      return reponse(MODELE, [[1, 0]])(_url, init);
+    };
+    const embedder = createOpenAIEmbedder({ model: MODELE, dim: 2, fetchImpl });
+
+    await embedder.embedQuery("question", "cnil");
+    await embedder.embedPassages(["passage"]);
+
+    assert.deepEqual(entrees, [[`${INSTRUCTION_CNIL}question`], ["passage"]]);
+  });
+
+  it("choisit l'instruction du document et retombe sur le défaut", async () => {
+    const entrees: string[] = [];
+    const fetchImpl: FetchLike = async (_url, init) => {
+      entrees.push((JSON.parse(init?.body ?? "{}").input as string[])[0] ?? "");
+      return reponse(MODELE, [[1, 0]])(_url, init);
+    };
+    const embedder = createOpenAIEmbedder({ model: MODELE, dim: 2, fetchImpl });
+
+    await embedder.embedQuery("q", "32024R1689");
+    await embedder.embedQuery("q", "document-inconnu");
+
+    assert.deepEqual(entrees, [`${INSTRUCTION_AIAct}q`, `${INSTRUCTION_REQUETE}q`]);
+  });
+
+  it("refuse un autre modèle en nommant les deux", async () => {
+    const embedder = createOpenAIEmbedder({
+      model: MODELE,
+      dim: 2,
+      fetchImpl: reponse("unsloth/bge-small-en-v1.5", [[1, 0]]),
+    });
+
+    await assert.rejects(embedder.embedQuery("test"), (error: Error) => {
+      assert.match(error.message, /unsloth\/bge-small-en-v1\.5/);
+      assert.match(error.message, /mradermacher\/harrier-oss-v1-0\.6b-GGUF/);
+      return true;
+    });
+  });
+
+  it("refuse une autre dimension en nommant les deux", async () => {
+    const embedder = createOpenAIEmbedder({
+      model: MODELE,
+      dim: 1024,
+      fetchImpl: reponse(MODELE, [[1, 0, 0]]),
+    });
+
+    await assert.rejects(embedder.embedQuery("test"), (error: Error) => {
+      assert.match(error.message, /3 dimensions/);
+      assert.match(error.message, /1024 attendues/);
+      return true;
+    });
+  });
+});
+
+describe("le choix du fournisseur", () => {
+  it("garde Ollama quand --fournisseur est absent", () => {
+    assert.equal(lireFournisseur(undefined), "ollama");
+    const embedder = creerEmbedder(lireFournisseur(undefined), {});
+    assert.equal(embedder.model, "leoipulsar/harrier-0.6b");
+    assert.equal(embedder.dim, 1024);
+  });
+
+  it("nomme la valeur refusée", () => {
+    assert.throws(() => lireFournisseur("llama"), /--fournisseur attendu ollama ou openai ; reçu « llama »/);
+  });
+
+  it("rend l'adaptateur OpenAI quand le fournisseur le demande", () => {
+    const embedder = creerEmbedder("openai", {
+      modele: "mradermacher/harrier-oss-v1-0.6b-GGUF",
+      dim: "1024",
+      url: "http://127.0.0.1:9999",
+    });
+    assert.equal(embedder.model, "mradermacher/harrier-oss-v1-0.6b-GGUF");
+    assert.equal(embedder.dim, 1024);
+  });
+
+  it("exige un modèle pour un service OpenAI", () => {
+    assert.throws(
+      () => creerEmbedder("openai", {}),
+      /--fournisseur openai exige --modele/,
+    );
+  });
 });
 
 describe("buildIndex", () => {
@@ -333,11 +464,12 @@ describe("buildIndex", () => {
       try {
         sqliteVec.load(db);
         db.prepare(
-          "INSERT INTO vec_unites (rowid, corpus, document, date_num, type_sanction, montant, numero, injonction, embedding) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+          "INSERT INTO vec_unites (rowid, corpus, document, nature, date_num, type_sanction, montant, numero, injonction, embedding) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         ).run(
           BigInt(1000),
           "rgpd",
           DOCUMENT,
+          "",
           0n,
           "autre",
           -1n,
@@ -371,6 +503,7 @@ describe("buildIndex", () => {
         modifiees: 0,
         supprimees: 0,
         inchangees: 0,
+        metaModifiees: 0,
       });
       assert.equal(compteur.passages, 6);
       const index = openIndex(resultat.chemin);
@@ -624,6 +757,140 @@ describe("buildIndex", () => {
     }
   });
 
+  it("filtre une nature CNIL dans la fenêtre vectorielle", async () => {
+    const root = tempRoot();
+    try {
+      const cnil = (id: string, texte: string, nature: string, numero: string): Unite => ({
+        ref: `${id}#f1`,
+        document: id,
+        corpus: "cnil",
+        niveau: "fragment",
+        numero,
+        chemin: `CNIL > ${nature} > Délibération ${numero}`,
+        texte,
+        date_acte: "2026-01-01",
+        date_debut: "2026-01-01",
+        date_fin: null,
+        statut: "VIGUEUR",
+        url: `https://example.test/${id}`,
+        nature,
+      });
+      const sanction = cnil("CNILTEXT000000001", "sujet sans rapport", "Sanction", "SAN-2026-001");
+      const bruit = Array.from({ length: 100 }, (_, index) =>
+        cnil(
+          `CNILTEXT0000001${String(index).padStart(2, "0")}`,
+          "question identique",
+          "Avis",
+          `AVIS-2026-${String(index).padStart(3, "0")}`,
+        ),
+      );
+      ecrireCorpus(root, "cnil", [sanction, ...bruit]);
+
+      const { chemin } = await buildIndex(root, embedderFactice());
+      const index = openIndex(chemin);
+      try {
+        const vecteur = await embedderFactice().embedQuery("question identique");
+        const resultats = searchIndex(index, vecteur, { k: 1, corpus: "cnil", nature: "Sanction" });
+        assert.equal(resultats.length, 1, "la fenêtre vectorielle doit être filtrée par nature");
+        assert.equal(resultats[0]?.document, "CNILTEXT000000001");
+        assert.equal(resultats[0]?.nature, "Sanction");
+
+        const avis = searchIndex(index, vecteur, { k: 3, corpus: "cnil", nature: "Avis" });
+        assert.equal(avis.length, 3);
+        assert.ok(avis.every((resultat) => resultat.nature === "Avis"));
+
+        const avisMinuscule = searchIndex(index, vecteur, {
+          k: 3,
+          corpus: "cnil",
+          nature: "avis",
+        });
+        assert.equal(avisMinuscule.length, 3, "la nature demandée est insensible à la casse");
+        assert.ok(avisMinuscule.every((resultat) => resultat.nature === "Avis"));
+
+        const hybrides = rechercheHybride(index, vecteur, "question identique", {
+          k: 3,
+          corpus: "cnil",
+          nature: "avis",
+        });
+        assert.equal(hybrides.length, 3);
+        assert.ok(hybrides.every((resultat) => resultat.nature === "Avis"));
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("migre un index sans colonne nature en recopiant les vecteurs", async () => {
+    const root = tempRoot();
+    try {
+      const unites: Unite[] = [
+        {
+          ...unite(1, "sanction cookies"),
+          ref: "CNILTEXT000000001#f1",
+          document: "CNILTEXT000000001",
+          corpus: "cnil",
+          niveau: "fragment",
+          numero: "SAN-2026-001",
+          chemin: "CNIL > Sanction > Délibération SAN-2026-001",
+          nature: "Sanction",
+        },
+        {
+          ...unite(2, "avis cookies"),
+          ref: "CNILTEXT000000002#f1",
+          document: "CNILTEXT000000002",
+          corpus: "cnil",
+          niveau: "fragment",
+          numero: "AVIS-2026-001",
+          chemin: "CNIL > Avis > Délibération AVIS-2026-001",
+          nature: "Avis",
+        },
+      ];
+      ecrireCorpus(root, "cnil", unites);
+      const { chemin } = await buildIndex(root, embedderFactice());
+      const avant = vecteurs(chemin);
+
+      const db = new DatabaseSync(chemin, { allowExtension: true });
+      try {
+        sqliteVec.load(db);
+        const lignes = db
+          .prepare("SELECT rowid, embedding FROM vec_unites")
+          .all() as { rowid: number | bigint; embedding: Uint8Array }[];
+        db.exec("DROP TABLE vec_unites");
+        db.exec(
+          "CREATE VIRTUAL TABLE vec_unites USING vec0(corpus TEXT, document TEXT, date_num INTEGER, " +
+            "type_sanction TEXT, montant INTEGER, numero TEXT, injonction INTEGER, " +
+            "embedding float[8] distance_metric=cosine)",
+        );
+        const inserer = db.prepare(
+          "INSERT INTO vec_unites (rowid, corpus, document, date_num, type_sanction, montant, numero, injonction, embedding) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        );
+        for (const ligne of lignes) {
+          inserer.run(BigInt(ligne.rowid), "cnil", "", 0n, "autre", -1n, "", 0n, ligne.embedding);
+        }
+        db.exec("ALTER TABLE unites DROP COLUMN nature");
+
+        assert.throws(() => openIndex(chemin), /colonnes corpus\/métadonnées/);
+        assert.equal(migrerVecteurs(db, 8, unites), true);
+      } finally {
+        db.close();
+      }
+
+      assert.deepEqual(vecteurs(chemin), avant, "la migration ne ré-embarque aucun vecteur");
+      const index = openIndex(chemin);
+      try {
+        const vecteur = await embedderFactice().embedQuery("avis cookies");
+        const avis = searchIndex(index, vecteur, { k: 5, corpus: "cnil", nature: "Avis" });
+        assert.deepEqual(avis.map((resultat) => resultat.document), ["CNILTEXT000000002"]);
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("filtre par corpus et laisse tous les corpus répondre sans filtre", async () => {
     const root = tempRoot();
     try {
@@ -703,9 +970,69 @@ describe("buildIndex incrémental", () => {
         modifiees: 0,
         supprimees: 0,
         inchangees: 6,
+        metaModifiees: 0,
       });
       assert.equal(compteur.passages, 6);
       assert.deepEqual(vecteurs(second.chemin), avant);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("rafraîchit statut et url sans ré-embarquer ni toucher au vecteur", async () => {
+    const root = tempRoot();
+    try {
+      ecrireCorpus(root, "rgpd", SIX);
+      const { embedder, compteur } = embedderCompteur();
+      const { chemin } = await buildIndex(root, embedder);
+      const vecteursAvant = vecteurs(chemin);
+
+      ecrireCorpus(
+        root,
+        "rgpd",
+        SIX.map((element, index) =>
+          index === 0
+            ? {
+                ...element,
+                statut: "Statut corrigé",
+                url: "https://example.test/url-corrigee",
+              }
+            : element,
+        ),
+      );
+      const resultat = await buildIndex(root, embedder);
+
+      assert.deepEqual(resultat.delta, {
+        ajoutees: 0,
+        modifiees: 0,
+        supprimees: 0,
+        inchangees: 6,
+        metaModifiees: 1,
+      });
+      assert.equal(compteur.passages, 6, "aucun passage ré-embarqué");
+      assert.deepEqual(vecteurs(chemin), vecteursAvant, "les vecteurs restent identiques");
+
+      const db = new DatabaseSync(chemin, { allowExtension: true });
+      try {
+        sqliteVec.load(db);
+        const ligne = db
+          .prepare("SELECT statut, url FROM unites WHERE ref = ?")
+          .get(`${DOCUMENT}#art_1`) as { statut: string; url: string };
+        assert.equal(ligne.statut, "Statut corrigé");
+        assert.equal(ligne.url, "https://example.test/url-corrigee");
+      } finally {
+        db.close();
+      }
+
+      const second = await buildIndex(root, embedder);
+      assert.deepEqual(second.delta, {
+        ajoutees: 0,
+        modifiees: 0,
+        supprimees: 0,
+        inchangees: 6,
+        metaModifiees: 0,
+      });
+      assert.equal(compteur.passages, 6);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
@@ -728,6 +1055,7 @@ describe("buildIndex incrémental", () => {
         modifiees: 0,
         supprimees: 0,
         inchangees: 6,
+        metaModifiees: 0,
       });
       assert.equal(compteur.passages, 7);
       const apres = rowids(chemin);
@@ -802,6 +1130,7 @@ describe("buildIndex incrémental", () => {
         modifiees: 1,
         supprimees: 0,
         inchangees: 5,
+        metaModifiees: 0,
       });
       assert.equal(compteur.passages, 7);
       const vecteursApres = vecteurs(chemin);
@@ -829,6 +1158,7 @@ describe("buildIndex incrémental", () => {
         modifiees: 0,
         supprimees: 1,
         inchangees: 5,
+        metaModifiees: 0,
       });
       assert.equal(compteur.passages, 6);
       assert.equal(rowids(chemin).has(`${DOCUMENT}#art_6`), false);
@@ -915,7 +1245,7 @@ describe("buildIndex incrémental", () => {
         chemin: "/tmp/index.db",
         unites: 7,
         mode: "incremental",
-        delta: { ajoutees: 1, modifiees: 2, supprimees: 3, inchangees: 4 },
+        delta: { ajoutees: 1, modifiees: 2, supprimees: 3, inchangees: 4, metaModifiees: 5 },
       },
       embedderFactice(),
     );
@@ -924,6 +1254,7 @@ describe("buildIndex incrémental", () => {
     assert.match(journal, /2 modifiées/);
     assert.match(journal, /3 supprimées/);
     assert.match(journal, /4 inchangées/);
+    assert.match(journal, /5 métadonnées rafraîchies/);
   });
 });
 

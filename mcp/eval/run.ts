@@ -2,17 +2,30 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { MARGE, SEUIL_BAS, SEUIL_HAUT, niveauConfiance } from "../confidence.ts";
-import { createOllamaEmbedder } from "../embed/embedder.ts";
+import {
+  MARGE,
+  SEUILS_PAR_CORPUS,
+  SEUIL_BAS,
+  SEUIL_HAUT,
+  niveauConfiance,
+  seuilsDuCorpus,
+} from "../confidence.ts";
+import type { OptionsConfiance, SeuilsCorpus } from "../confidence.ts";
+import { INSTRUCTIONS_REQUETE, INSTRUCTION_CNIL } from "../embed/embedder.ts";
 import type { Embedder } from "../embed/embedder.ts";
-import { cheminIndex, lireUnites } from "../index/build.ts";
+import { cheminIndex, creerEmbedder, lireFournisseur, lireUnites } from "../index/build.ts";
 import { openIndex } from "../index/search.ts";
 import type { Index } from "../index/search.ts";
+import { createLlamaReranker } from "../rerank/reranker.ts";
+import type { Reranker } from "../rerank/reranker.ts";
 import { referenceExacte, search } from "../tools.ts";
 
 const ICI = dirname(fileURLToPath(import.meta.url));
 const QUESTIONS = join(ICI, "questions.csv");
 const RACINE = fileURLToPath(new URL("../..", import.meta.url));
+
+/** URL par défaut du serveur `llama-server --reranking` mesuré en phase 3. */
+export const URL_RERANK_DEFAUT = "http://127.0.0.1:8080";
 
 /** Un pli de validation croisée : blocs contigus de `ceil(n / 4)`. */
 export const NB_PLIS = 4;
@@ -20,6 +33,18 @@ export const NB_PLIS = 4;
 export type Split = "dev" | "test";
 export type FiltreSplit = Split | "all";
 export type ModeRecherche = "dense" | "hybride";
+
+/** Instruction de requête CNIL mesurée : celle du produit, ou une variante de même forme. */
+export type VarianteInstruction = "actuelle" | "neutre";
+
+/**
+ * Variante d'instruction propre au harnais : même forme que `INSTRUCTION_CNIL`,
+ * sans nommer la sanction. Le produit garde `INSTRUCTION_CNIL` ; cette variante
+ * ne sert qu'à mesurer ce que coûte la mention « délibération de sanction » sur
+ * un jeu qui mêle doctrine et sanctions.
+ */
+export const INSTRUCTION_CNIL_NEUTRE =
+  "Instruction : retrouve les passages d'une délibération de la CNIL qui répondent à la question\nRequête : ";
 
 export type TypeQuestion = "reference" | "conceptuelle" | "piege";
 
@@ -34,6 +59,17 @@ export type Question = {
 };
 
 export type Seuils = { bas: number; haut: number; marge: number };
+
+/**
+ * D'où viennent les seuils d'une mesure : la grille expérimentale du harnais
+ * (`calibree`), ou la table du produit (`produit`).
+ */
+export type Regle = "calibree" | "produit";
+
+/** Les seuils retenus, avec le corpus demandé quand il est connu. */
+function optionsConfiance(seuils: Seuils, corpus: string | undefined): OptionsConfiance {
+  return corpus === undefined ? seuils : { ...seuils, corpus };
+}
 
 export type Classement = { attendues: string[]; rendus: string[] };
 export type ClassementPiege = { piege: boolean; refusee: boolean };
@@ -421,9 +457,14 @@ function grille(debut: number, fin: number, pas: number): number[] {
   return valeurs;
 }
 
-function refusee(mesure: Mesure, seuils: Seuils): boolean {
-  return niveauConfiance(mesure.distances.map((distance) => ({ distance })), false, seuils) ===
-    "aucun_resultat_fiable";
+function refusee(mesure: Mesure, seuils: Seuils, corpus?: string): boolean {
+  return (
+    niveauConfiance(
+      mesure.distances.map((distance) => ({ distance })),
+      false,
+      optionsConfiance(seuils, corpus),
+    ) === "aucun_resultat_fiable"
+  );
 }
 
 /**
@@ -433,7 +474,7 @@ function refusee(mesure: Mesure, seuils: Seuils): boolean {
  * seuils les plus prudents. Une question `test` fait lever : le split tenu à
  * l'écart ne règle aucun seuil.
  */
-export function calibrer(mesures: Mesure[]): Seuils {
+export function calibrer(mesures: Mesure[], corpus?: string): Seuils {
   const fuite = mesures.find((mesure) => mesure.question.split === "test");
   if (fuite !== undefined) {
     throw new Error(`Calibration interdite sur une question test : « ${fuite.question.question} »`);
@@ -449,10 +490,12 @@ export function calibrer(mesures: Mesure[]): Seuils {
         let invalides = 0;
         let confiants = 0;
         for (const mesure of mesures) {
+          // La grille fixe les trois seuils : la table ne peut pas les déplacer,
+          // et le corpus est propagé pour que le calcul soit le même partout.
           const niveau = niveauConfiance(
             mesure.distances.map((distance) => ({ distance })),
             false,
-            seuils,
+            optionsConfiance(seuils, corpus),
           );
           const refusee = niveau === "aucun_resultat_fiable";
           if (mesure.question.piege) {
@@ -536,21 +579,30 @@ async function mesurer(
   index: Index,
   corpus: string,
   recherche: ModeRecherche,
-): Promise<Mesure[]> {
+  rerank?: Reranker,
+): Promise<{ mesures: Mesure[]; durees: number[] }> {
   const mesures: Mesure[] = [];
+  const durees: number[] = [];
   for (const question of questions) {
     const resultat = await search(
       rootDir,
       { question: question.question, k: 5, corpus },
-      { embedder, index, seuils: { bas: -1, haut: 2, marge: 0 }, recherche },
+      {
+        embedder,
+        index,
+        seuils: { bas: -1, haut: 2, marge: 0 },
+        recherche,
+        ...(rerank === undefined ? {} : { rerank }),
+      },
     );
+    if (resultat.rerank !== undefined) durees.push(resultat.rerank.duree_ms);
     mesures.push({
       question,
       refs: resultat.passages.map((passage) => passage.ref),
       distances: resultat.passages.map((passage) => passage.distance),
     });
   }
-  return mesures;
+  return { mesures, durees };
 }
 
 function compter(mesures: Mesure[], type: TypeQuestion): number {
@@ -609,21 +661,26 @@ function teteInattendue(mesure: Mesure): string | null {
 }
 
 /** Rang de `ref` dans les passages rendus, `0` si absent. */
-function rangDe(mesure: Mesure | undefined, ref: string): number {
+function rangDe(mesure: Mesure | undefined, attendue: string): number {
   if (mesure === undefined) return 0;
-  return mesure.refs.indexOf(ref) + 1;
+  return mesure.refs.findIndex((ref) => refSatisfaite(ref, attendue)) + 1;
 }
 
-function niveau(mesure: Mesure, seuils: Seuils) {
+function niveau(mesure: Mesure, seuils: Seuils, corpus?: string) {
   return niveauConfiance(
     mesure.distances.map((distance) => ({ distance })),
     false,
-    seuils,
+    optionsConfiance(seuils, corpus),
   );
 }
 
 /** Le rapport d'un split : `dev` règle, `test` constate avec les seuils figés. */
-function rapport(mesures: Mesure[], seuils: Seuils, origineSeuils: string): string[] {
+function rapport(
+  mesures: Mesure[],
+  seuils: Seuils,
+  origineSeuils: string,
+  corpus?: string,
+): string[] {
   const exactes = mesures.filter((mesure) => !mesure.question.piege && estExacte(mesure));
   const semantiques = mesures.filter((mesure) => !mesure.question.piege && !estExacte(mesure));
   const classementsSemantiques = classer(semantiques);
@@ -635,11 +692,13 @@ function rapport(mesures: Mesure[], seuils: Seuils, origineSeuils: string): stri
 
   const piegesSeuil = mesures.filter((mesure) => mesure.question.piege && !estExacte(mesure));
   const piegesDeterministes = mesures.filter((mesure) => mesure.question.piege && estExacte(mesure));
-  const piegesCites = piegesSeuil.filter((mesure) => !refusee(mesure, seuils));
-  const piegesConfiants = piegesSeuil.filter((mesure) => niveau(mesure, seuils) === "confiant");
-  const incertaines = semantiques.filter((mesure) => niveau(mesure, seuils) === "incertain");
-  const confiantes = semantiques.filter((mesure) => niveau(mesure, seuils) === "confiant");
-  const refusees = semantiques.filter((mesure) => refusee(mesure, seuils));
+  const piegesCites = piegesSeuil.filter((mesure) => !refusee(mesure, seuils, corpus));
+  const piegesConfiants = piegesSeuil.filter(
+    (mesure) => niveau(mesure, seuils, corpus) === "confiant",
+  );
+  const incertaines = semantiques.filter((mesure) => niveau(mesure, seuils, corpus) === "incertain");
+  const confiantes = semantiques.filter((mesure) => niveau(mesure, seuils, corpus) === "confiant");
+  const refusees = semantiques.filter((mesure) => refusee(mesure, seuils, corpus));
 
   const paraphrase = mesures.find(
     (mesure) => mesure.question.question === "droit de récupérer mes données",
@@ -714,22 +773,22 @@ export type Resume = {
   pieges_confiants: number;
 };
 
-export function resume(mesures: Mesure[], seuils: Seuils): Resume {
+export function resume(mesures: Mesure[], seuils: Seuils, corpus?: string): Resume {
   const semantiques = mesures.filter((mesure) => !mesure.question.piege && !estExacte(mesure));
   const referencees = mesures.filter((mesure) => !mesure.question.piege);
   const classementsSemantiques = classer(semantiques);
   const classementsGlobaux = classer(referencees);
   const classementsRendus = semantiques.map((mesure) => ({
     attendues: mesure.question.attendues,
-    rendus: refusee(mesure, seuils) ? [] : mesure.refs,
+    rendus: refusee(mesure, seuils, corpus) ? [] : mesure.refs,
   }));
   const classementsGlobauxRendus = referencees.map((mesure) => ({
     attendues: mesure.question.attendues,
-    rendus: refusee(mesure, seuils) ? [] : mesure.refs,
+    rendus: refusee(mesure, seuils, corpus) ? [] : mesure.refs,
   }));
   const pieges = mesures.filter((mesure) => mesure.question.piege && !estExacte(mesure));
 
-  const niveaux = semantiques.map((mesure) => niveau(mesure, seuils));
+  const niveaux = semantiques.map((mesure) => niveau(mesure, seuils, corpus));
 
   return {
     semantiques: semantiques.length,
@@ -755,11 +814,13 @@ export function resume(mesures: Mesure[], seuils: Seuils): Resume {
       classement.rendus.slice(0, 5).some((ref) => satisfait(ref, classement.attendues)),
     ).length,
     pieges_mesures: pieges.length,
-    pieges_cites: pieges.filter((mesure) => !refusee(mesure, seuils)).length,
+    pieges_cites: pieges.filter((mesure) => !refusee(mesure, seuils, corpus)).length,
     confiant: niveaux.filter((valeur) => valeur === "confiant").length,
     incertain: niveaux.filter((valeur) => valeur === "incertain").length,
     aucun_resultat_fiable: niveaux.filter((valeur) => valeur === "aucun_resultat_fiable").length,
-    pieges_confiants: pieges.filter((mesure) => niveau(mesure, seuils) === "confiant").length,
+    pieges_confiants: pieges.filter(
+      (mesure) => niveau(mesure, seuils, corpus) === "confiant",
+    ).length,
   };
 }
 
@@ -779,6 +840,32 @@ function lireRecherche(argv: string[]): ModeRecherche {
     throw new Error(`--recherche attendu dense ou hybride ; reçu « ${valeur ?? "(vide)"} »`);
   }
   return valeur;
+}
+
+/** `--instruction` : `actuelle` par défaut ; toute autre valeur est nommée et refusée. */
+export function lireInstruction(valeur: string | undefined): VarianteInstruction {
+  if (valeur === undefined) return "actuelle";
+  if (valeur !== "actuelle" && valeur !== "neutre") {
+    throw new Error(
+      `--instruction attendu actuelle ou neutre ; reçu « ${valeur === "" ? "(vide)" : valeur} »`,
+    );
+  }
+  return valeur;
+}
+
+/** Instruction de requête du corpus CNIL pour la variante demandée. */
+export function instructionCnil(variante: VarianteInstruction): string {
+  return variante === "neutre" ? INSTRUCTION_CNIL_NEUTRE : INSTRUCTION_CNIL;
+}
+
+/**
+ * Instructions de requête de l'embedder : celles du produit, sauf le corpus
+ * CNIL, qui suit la variante mesurée. Aucune autre collection ne change.
+ */
+export function instructionsDeMesure(
+  variante: VarianteInstruction,
+): Record<string, string> {
+  return { ...INSTRUCTIONS_REQUETE, cnil: instructionCnil(variante) };
 }
 
 /** Le split `test` ne s'exécute que sur autorisation explicite. */
@@ -832,18 +919,59 @@ export function lireSeuils(valeur: string | undefined): Seuils | null {
 }
 
 /**
- * Seuils d'une mesure et leur origine. Sans `--seuils`, `dev` calibre et
- * `test` garde les constantes figées. Avec `--seuils`, la calibration `dev`
- * est quand même calculée et rapportée, sans changer les seuils retenus.
+ * Lit `--regle` : `calibree` par défaut (la grille du harnais), `produit` pour
+ * appliquer la table du produit. Toute autre valeur est nommée et refusée.
+ */
+export function lireRegle(valeur: string | undefined): Regle {
+  if (valeur === undefined) return "calibree";
+  if (valeur !== "calibree" && valeur !== "produit") {
+    throw new Error(
+      `--regle attendu calibree ou produit ; reçu « ${valeur === "" ? "(vide)" : valeur} »`,
+    );
+  }
+  return valeur;
+}
+
+/**
+ * `--regle produit` fixe les seuils par la table : `--seuils` en fournirait
+ * d'autres, le conflit est refusé avant toute mesure.
+ */
+export function verifierRegleSeuils(regle: Regle, seuils: Seuils | null): void {
+  if (regle === "produit" && seuils !== null) {
+    throw new Error(
+      "--regle produit refuse --seuils : la table du produit fixe les seuils, " +
+        "--seuils en fournirait d'autres.",
+    );
+  }
+}
+
+/** Origine lisible de la table : le corpus nommé, ou le repli qu'il a suivi. */
+function origineProduit(corpus: string | undefined): string {
+  if (corpus === undefined || corpus === "") return "table (repli, aucun corpus)";
+  return Object.hasOwn(SEUILS_PAR_CORPUS, corpus) ? `table (${corpus})` : `table (repli, ${corpus})`;
+}
+
+/**
+ * Seuils d'une mesure et leur origine. `--regle produit` rend la table du corpus
+ * demandé au lieu de calibrer ou de lire `--seuils`. Sinon, sans `--seuils`,
+ * `dev` calibre et `test` garde les constantes figées ; avec `--seuils`, la
+ * calibration `dev` est quand même calculée et rapportée, sans changer les
+ * seuils retenus.
  */
 export function seuilsDeMesure(args: {
   split: FiltreSplit;
   avecSplit: boolean;
   mesuresDev: Mesure[];
   explicites: Seuils | null;
+  regle?: Regle;
+  corpus?: string;
 }): { seuils: Seuils; origine: string; calibration: Seuils | null } {
+  if (args.regle === "produit") {
+    const seuils: SeuilsCorpus = seuilsDuCorpus(args.corpus);
+    return { seuils, origine: origineProduit(args.corpus), calibration: null };
+  }
   const calibration =
-    !args.avecSplit || args.split === "test" ? null : calibrer(args.mesuresDev);
+    !args.avecSplit || args.split === "test" ? null : calibrer(args.mesuresDev, args.corpus);
   if (args.explicites !== null) {
     const detail =
       calibration === null
@@ -897,7 +1025,11 @@ export type EntreeQuestionJson = {
   niveau: ReturnType<typeof niveauConfiance>;
 };
 
-export function entreeQuestionJson(mesure: Mesure, seuils: Seuils): EntreeQuestionJson {
+export function entreeQuestionJson(
+  mesure: Mesure,
+  seuils: Seuils,
+  corpus?: string,
+): EntreeQuestionJson {
   return {
     question: mesure.question.question,
     type: mesure.question.type,
@@ -906,22 +1038,43 @@ export function entreeQuestionJson(mesure: Mesure, seuils: Seuils): EntreeQuesti
     refs: [...mesure.refs],
     rangs: mesure.question.attendues.map((ref) => rangDe(mesure, ref)),
     similarites: mesure.distances.map((distance) => 1 - distance),
-    niveau: niveau(mesure, seuils),
+    niveau: niveau(mesure, seuils, corpus),
   };
 }
+
+/** Le bloc de rerank : ce qui a été appelé, où, et ce qu'il a coûté en moyenne. */
+export type BlocRerankJson = {
+  modele: string;
+  url: string;
+  latence_ms_moyenne: number;
+};
 
 export type ObjetMesureJson = {
   date: string;
   modele: string;
   dimensions: number;
   split: Split;
-  /** Collection mesurée : `rgpd`, `aiact`, `cnil`. */
+  /** Collection mesurée : `rgpd`, `aiact`, `cnil`, `lil`, `ce`, `cepd`. */
   corpus: string;
   recherche: ModeRecherche;
+  /** Variante d'instruction de requête choisie explicitement ; absente, celle du produit. */
+  instruction?: VarianteInstruction;
+  /** L'index réellement interrogé : un JSON ne dit pas seulement quel modèle. */
+  index: { chemin: string; unites: number };
   seuils: Seuils;
+  /** D'où viennent `seuils` : `table (cnil)`, `table (repli, rgpd)`, `calibrés sur dev`, `fournis par --seuils`. */
+  seuils_origine: string;
   questions: EntreeQuestionJson[];
   agregats: Resume;
+  /** Absent quand aucun étage de rerank n'a tourné. */
+  rerank?: BlocRerankJson;
 };
+
+/** Moyenne d'une série de durées ; zéro sans mesure. */
+export function moyenne(valeurs: number[]): number {
+  if (valeurs.length === 0) return 0;
+  return valeurs.reduce((total, valeur) => total + valeur, 0) / valeurs.length;
+}
 
 export function objetMesureJson(args: {
   date: string;
@@ -930,8 +1083,12 @@ export function objetMesureJson(args: {
   split: Split;
   corpus: string;
   recherche: ModeRecherche;
+  index: { chemin: string; unites: number };
   seuils: Seuils;
+  seuilsOrigine: string;
   mesures: Mesure[];
+  instruction?: VarianteInstruction;
+  rerank?: BlocRerankJson;
 }): ObjetMesureJson {
   return {
     date: args.date,
@@ -940,9 +1097,13 @@ export function objetMesureJson(args: {
     split: args.split,
     corpus: args.corpus,
     recherche: args.recherche,
+    ...(args.instruction === undefined ? {} : { instruction: args.instruction }),
+    index: args.index,
     seuils: args.seuils,
-    questions: args.mesures.map((mesure) => entreeQuestionJson(mesure, args.seuils)),
-    agregats: resume(args.mesures, args.seuils),
+    seuils_origine: args.seuilsOrigine,
+    questions: args.mesures.map((mesure) => entreeQuestionJson(mesure, args.seuils, args.corpus)),
+    agregats: resume(args.mesures, args.seuils, args.corpus),
+    ...(args.rerank === undefined ? {} : { rerank: args.rerank }),
   };
 }
 
@@ -959,7 +1120,11 @@ async function main(argv: string[]): Promise<void> {
   const json = argv.includes("--json");
   verifierJsonSplit(split, json);
   verifierAutorisationTest(split, argv.includes("--mesurer-test"));
+  const regle = lireRegle(valeurDe("--regle", argv));
   const seuilsExplicites = lireSeuils(valeurDe("--seuils", argv));
+  verifierRegleSeuils(regle, seuilsExplicites);
+  const optionInstruction = valeurDe("--instruction", argv);
+  const variante = lireInstruction(optionInstruction);
   const date = new Date().toISOString().slice(0, 10);
   // Racine alternative : permet de mesurer un autre index sans toucher le corpus
   // ni l'index du produit (expérience de modèle, par exemple).
@@ -979,10 +1144,21 @@ async function main(argv: string[]): Promise<void> {
 
   const modele = valeurDe("--modele", argv);
   const dim = valeurDe("--dim", argv);
-  const embedder = createOllamaEmbedder({
-    ...(modele === undefined ? {} : { model: modele }),
-    ...(dim === undefined ? {} : { dim: Number(dim) }),
+  const urlEmbed = valeurDe("--embed-url", argv);
+  const fournisseur = lireFournisseur(valeurDe("--fournisseur", argv));
+  const embedder = creerEmbedder(fournisseur, {
+    ...(modele === undefined ? {} : { modele }),
+    ...(dim === undefined ? {} : { dim }),
+    ...(urlEmbed === undefined ? {} : { url: urlEmbed }),
+    instructions: instructionsDeMesure(variante),
   });
+
+  const modeleRerank = valeurDe("--rerank", argv);
+  const urlRerank = valeurDe("--rerank-url", argv) ?? URL_RERANK_DEFAUT;
+  const rerank =
+    modeleRerank === undefined
+      ? undefined
+      : createLlamaReranker({ url: urlRerank, model: modeleRerank });
 
   const consommeTest = split === "test" || split === "all";
   const marqueurPath = cheminMarqueur(cheminQuestions);
@@ -993,7 +1169,15 @@ async function main(argv: string[]): Promise<void> {
   const index = openIndex(cheminIndex(rootDir));
   try {
     const demandees = filtrerSplit(questions, split);
-    const mesures = await mesurer(rootDir, demandees, embedder, index, corpus, recherche);
+    const { mesures, durees } = await mesurer(
+      rootDir,
+      demandees,
+      embedder,
+      index,
+      corpus,
+      recherche,
+      rerank,
+    );
 
     const mesuresDev =
       split === "all" ? mesures.filter((mesure) => mesure.question.split === "dev") : mesures;
@@ -1002,6 +1186,8 @@ async function main(argv: string[]): Promise<void> {
       avecSplit: jeu.avecSplit,
       mesuresDev,
       explicites: seuilsExplicites,
+      regle,
+      corpus,
     });
 
     const lignes = [
@@ -1009,17 +1195,28 @@ async function main(argv: string[]): Promise<void> {
       `modèle : ${embedder.model} (${embedder.dim} dimensions)`,
       `corpus : ${corpus}`,
       `recherche : ${recherche}`,
+      `instruction : ${variante}`,
       `split : ${split}`,
       ...(split === "all"
         ? [
             "",
             "== dev ==",
-            ...rapport(mesures.filter((mesure) => mesure.question.split === "dev"), seuils, origine),
+            ...rapport(
+              mesures.filter((mesure) => mesure.question.split === "dev"),
+              seuils,
+              origine,
+              corpus,
+            ),
             "",
             "== test ==",
-            ...rapport(mesures.filter((mesure) => mesure.question.split === "test"), seuils, origine),
+            ...rapport(
+              mesures.filter((mesure) => mesure.question.split === "test"),
+              seuils,
+              origine,
+              corpus,
+            ),
           ]
-        : rapport(mesures, seuils, origine)),
+        : rapport(mesures, seuils, origine, corpus)),
     ];
 
     if (consommeTest) {
@@ -1027,7 +1224,7 @@ async function main(argv: string[]): Promise<void> {
         split === "test"
           ? mesures
           : mesures.filter((mesure) => mesure.question.split === "test");
-      const chiffres = resume(mesuresTest, seuils);
+      const chiffres = resume(mesuresTest, seuils, corpus);
       if (!json) {
         lignes.push(
           "",
@@ -1064,8 +1261,20 @@ async function main(argv: string[]): Promise<void> {
         split,
         corpus,
         recherche,
+        index: { chemin: index.chemin, unites: index.unites },
         seuils,
+        seuilsOrigine: origine,
         mesures,
+        ...(optionInstruction === undefined ? {} : { instruction: variante }),
+        ...(rerank === undefined
+          ? {}
+          : {
+              rerank: {
+                modele: rerank.model,
+                url: urlRerank,
+                latence_ms_moyenne: moyenne(durees),
+              },
+            }),
       });
       process.stdout.write(`${JSON.stringify(objet, null, 2)}\n`);
     } else {

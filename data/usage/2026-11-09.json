@@ -1,0 +1,75 @@
+{
+  "date": "2026-11-09",
+  "calls": [
+    {
+      "source": "piste",
+      "endpoint": "oauth",
+      "status": 200,
+      "durationMs": 176,
+      "at": "2026-11-09T15:23:27.949Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "legiPart",
+      "status": 200,
+      "durationMs": 367,
+      "at": "2026-11-09T15:23:28.324Z"
+    },
+    {
+      "source": "piste",
+      "endpoint": "oauth",
+      "status": 200,
+      "durationMs": 229,
+      "at": "2026-11-09T15:27:35.228Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "legiPart",
+      "status": 200,
+      "durationMs": 439,
+      "at": "2026-11-09T15:27:35.668Z"
+    },
+    {
+      "source": "piste",
+      "endpoint": "oauth",
+      "status": 200,
+      "durationMs": 277,
+      "at": "2026-11-09T15:29:34.408Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "legiPart",
+      "status": 200,
+      "durationMs": 331,
+      "at": "2026-11-09T15:29:34.740Z"
+    },
+    {
+      "source": "piste",
+      "endpoint": "oauth",
+      "status": 200,
+      "durationMs": 261,
+      "at": "2026-11-09T15:31:19.110Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "legiPart",
+      "status": 200,
+      "durationMs": 359,
+      "at": "2026-11-09T15:31:19.470Z"
+    },
+    {
+      "source": "piste",
+      "endpoint": "oauth",
+      "status": 200,
+      "durationMs": 207,
+      "at": "2026-11-09T15:31:20.192Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "legiPart",
+      "status": 200,
+      "durationMs": 327,
+      "at": "2026-11-09T15:31:20.520Z"
+    }
+  ]
+}

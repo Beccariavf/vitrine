@@ -1,0 +1,298 @@
+{
+  "date": "2026-11-10",
+  "modele": "mradermacher/harrier-oss-v1-0.6b-GGUF",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "cnil",
+  "recherche": "dense",
+  "instruction": "actuelle",
+  "index": {
+    "chemin": "/Users/val/.cache/vitrine-harrier/root/data/corpus/index/index.db",
+    "unites": 29299
+  },
+  "seuils": {
+    "bas": 0.74,
+    "haut": 0.94,
+    "marge": 0.05
+  },
+  "questions": [
+    {
+      "question": "Quelles règles la CNIL recommande-t-elle pour les images captées par un système de vidéosurveillance ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000049495109"
+      ],
+      "refs": [
+        "CNILTEXT000017652449#f12",
+        "CNILTEXT000017652449#f4",
+        "CNILTEXT000022913263#f19",
+        "CNILTEXT000026971936#f8",
+        "CNILTEXT000028450694#f2"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.785850316286087,
+        0.7771917879581451,
+        0.7763324230909348,
+        0.7759258449077606,
+        0.774118036031723
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles garanties la CNIL exige-t-elle pour un dispositif de reconnaissance biométrique des personnes ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000049290285"
+      ],
+      "refs": [
+        "CNILTEXT000022913261#f3",
+        "CNILTEXT000017653610#f3",
+        "CNILTEXT000023588935#f3",
+        "CNILTEXT000022913261#f2",
+        "CNILTEXT000017653132#f2"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.775152862071991,
+        0.7634095102548599,
+        0.7579414248466492,
+        0.7570876330137253,
+        0.7557157129049301
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles conditions la CNIL pose-t-elle au traitement de données de santé dans un projet de recherche ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000045133748"
+      ],
+      "refs": [
+        "CNILTEXT000054136834#f71",
+        "CNILTEXT000048925420#f1",
+        "CNILTEXT000036195647#f63",
+        "CNILTEXT000017653155#f2",
+        "CNILTEXT000017653248#f2"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7937330156564713,
+        0.7840742915868759,
+        0.7814832329750061,
+        0.7803684920072556,
+        0.7757949680089951
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles précautions la CNIL demande-t-elle avant de diffuser des données publiques en open data ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000037803057"
+      ],
+      "refs": [
+        "CNILTEXT000049694593#f2",
+        "CNILTEXT000054879851#f9",
+        "CNILTEXT000048925175#f7",
+        "CNILTEXT000054982391#f6",
+        "CNILTEXT000052388959#f11"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7680616229772568,
+        0.7628295123577118,
+        0.7607197910547256,
+        0.7597567588090897,
+        0.7559426128864288
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Que recommande la CNIL pour l'usage de la liste électorale à des fins de communication politique ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000025829613"
+      ],
+      "refs": [
+        "CNILTEXT000017651771#f11",
+        "CNILTEXT000043204856#f21",
+        "CNILTEXT000017653807#f10",
+        "CNILTEXT000017651771#f12",
+        "CNILTEXT000025364626#f47"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.8151256442070007,
+        0.791912242770195,
+        0.7911588102579117,
+        0.7903912514448166,
+        0.7884924113750458
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quel encadrement la CNIL recommande-t-elle pour les dispositifs de géolocalisation des véhicules et des personnes ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000022205712"
+      ],
+      "refs": [
+        "CNILTEXT000017651867#f3",
+        "CNILTEXT000028585497#f5",
+        "CNILTEXT000023733987#f7",
+        "CNILTEXT000047346903#f12",
+        "CNILTEXT000054353331#f2"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7991918474435806,
+        0.7950208485126495,
+        0.7891224324703217,
+        0.7832798212766647,
+        0.7812431156635284
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles obligations la CNIL pose-t-elle aux fichiers bancaires traitant les incidents de paiement ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000037481613"
+      ],
+      "refs": [
+        "CNILTEXT000017652229#f3",
+        "CNILTEXT000027694385#f5",
+        "CNILTEXT000026224040#f19",
+        "CNILTEXT000029407099#f7",
+        "CNILTEXT000017652526#f4"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7948555052280426,
+        0.783271312713623,
+        0.7667125165462494,
+        0.7659994065761566,
+        0.7633227556943893
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles règles encadrent la consultation du casier judiciaire par des administrations ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000048725566"
+      ],
+      "refs": [
+        "CNILTEXT000017653457#f3",
+        "CNILTEXT000017653725#f8",
+        "CNILTEXT000049996988#f1",
+        "CNILTEXT000017651851#f8",
+        "CNILTEXT000017651851#f6"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7674403637647629,
+        0.7623856961727142,
+        0.7575862109661102,
+        0.7521687150001526,
+        0.7519755661487579
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles vérifications d'identité la CNIL recommande-t-elle pour le service ProConnect ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000053603662"
+      ],
+      "refs": [
+        "CNILTEXT000045844511#f6",
+        "CNILTEXT000037614709#f9",
+        "CNILTEXT000042181998#f21",
+        "CNILTEXT000031044377#f5",
+        "CNILTEXT000053603662#f13"
+      ],
+      "rangs": [
+        5
+      ],
+      "similarites": [
+        0.7481252253055573,
+        0.7460263073444366,
+        0.7361579835414886,
+        0.7349969446659088,
+        0.7341983914375305
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles limites la CNIL pose-t-elle à la réutilisation des décisions de justice ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000036195647"
+      ],
+      "refs": [
+        "CNILTEXT000036195647#f57",
+        "CNILTEXT000031487367#f11",
+        "CNILTEXT000036195647#f56",
+        "CNILTEXT000044115170#f6",
+        "CNILTEXT000017653503#f4"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7741450071334839,
+        0.7665462642908096,
+        0.7634994387626648,
+        0.756941944360733,
+        0.7552740424871445
+      ],
+      "niveau": "incertain"
+    }
+  ],
+  "agregats": {
+    "semantiques": 10,
+    "top5_semantique_succes": 2,
+    "top1_semantique_succes": 1,
+    "mrr_semantique": 0.12,
+    "referencees": 10,
+    "top5_global_succes": 2,
+    "top5_rendu_succes": 2,
+    "top1_rendu_succes": 1,
+    "mrr_rendu": 0.12,
+    "top5_global_rendu_succes": 2,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 0,
+    "incertain": 10,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  }
+}

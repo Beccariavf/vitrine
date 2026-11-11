@@ -1,0 +1,97 @@
+{
+  "corpus": "ce",
+  "nom": "Conseil d'État",
+  "titre": "Décisions du Conseil d'État publiées et inédites (JADE)",
+  "archive": "Freemium_jade_global_20261108-140000.tar.gz",
+  "archive_sha256": "87ab671358a374b4380e203d51418450e46935ea11f16439445b52b2f9c25297",
+  "archive_url": "https://echanges.dila.gouv.fr/OPENDATA/JADE/Freemium_jade_global_20261108-140000.tar.gz",
+  "date_extraction": "2026-11-09",
+  "date_min": "2014-01-01",
+  "mots_cles": [
+    "données personnelles",
+    "données à caractère personnel",
+    "informatique et libertés",
+    "protection des données",
+    "RGPD",
+    "règlement général sur la protection des données",
+    "commission nationale de l'informatique et des libertés",
+    "CNIL"
+  ],
+  "juridiction": "Conseil d'État",
+  "licence": "Licence Ouverte 2.0 (Etalab)",
+  "documents_lus": 573525,
+  "decisions_ce_depuis_2014": 36191,
+  "documents": 1312,
+  "fragments": 17703,
+  "doublons": 62,
+  "ecartes": {
+    "autre_juridiction": 399198,
+    "avant_borne": 138074,
+    "date_invalide": 0,
+    "sans_mot_cle": 34878,
+    "texte_vide": 1
+  },
+  "couverture": {
+    "source": "DILA — JADE (OPENDATA), fonds publie et inedit",
+    "archive": "Freemium_jade_global_20261108-140000.tar.gz",
+    "periode": {
+      "date_min": "2014-01-01",
+      "date_max": "2026-10-27"
+    },
+    "juridiction": "Conseil d'État",
+    "mots_cles": [
+      "données personnelles",
+      "données à caractère personnel",
+      "informatique et libertés",
+      "protection des données",
+      "RGPD",
+      "règlement général sur la protection des données",
+      "commission nationale de l'informatique et des libertés",
+      "CNIL"
+    ],
+    "fonds": {
+      "publie": {
+        "documents_lus": 61200,
+        "decisions_ce_depuis_2014": 8010,
+        "documents": 181,
+        "fragments": 3080,
+        "doublons": 0,
+        "ecartes": {
+          "autre_juridiction": 9468,
+          "avant_borne": 43722,
+          "date_invalide": 0,
+          "sans_mot_cle": 7828,
+          "texte_vide": 1
+        }
+      },
+      "inedit": {
+        "documents_lus": 512325,
+        "decisions_ce_depuis_2014": 28181,
+        "documents": 1131,
+        "fragments": 14623,
+        "doublons": 62,
+        "ecartes": {
+          "autre_juridiction": 389730,
+          "avant_borne": 94352,
+          "date_invalide": 0,
+          "sans_mot_cle": 27050,
+          "texte_vide": 0
+        }
+      }
+    },
+    "exclusions": {
+      "juridictions": [
+        "cour administrative d'appel",
+        "CAA",
+        "tribunal administratif"
+      ],
+      "motifs": {
+        "autre_juridiction": 399198,
+        "avant_borne": 138074,
+        "date_invalide": 0,
+        "sans_mot_cle": 34878,
+        "texte_vide": 1
+      }
+    }
+  }
+}

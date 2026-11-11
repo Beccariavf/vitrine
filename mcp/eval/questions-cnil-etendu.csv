@@ -1,0 +1,121 @@
+question,type,sources_attendues,piege,split,corpus
+Quelles exigences la CNIL pose-t-elle pour l'authentification multifacteur des comptes en ligne ?,conceptuelle,CNILTEXT000051390242,non,test,cnil
+Que recommande la CNIL aux employeurs qui veulent filtrer la navigation web de leurs salariés avec un serveur mandataire ?,conceptuelle,CNILTEXT000053668553,non,test,cnil
+Quelles règles la CNIL fixe-t-elle pour les pixels de suivi glissés dans les courriels ?,conceptuelle,CNILTEXT000053885080,non,test,cnil
+Quelles garanties la CNIL recommande-t-elle pour le vote par correspondance électronique ?,conceptuelle,CNILTEXT000053950614,non,test,cnil
+Que recommande la CNIL aux prêteurs qui évaluent le risque de défaillance de leurs clients ?,conceptuelle,CNILTEXT000054047151,non,test,cnil
+Quel encadrement la CNIL recommande-t-elle pour les données de localisation des véhicules connectés ?,conceptuelle,CNILTEXT000054353331,non,test,cnil
+Comment les entreprises peuvent-elles mesurer la diversité au travail sans collecter trop de données personnelles ?,conceptuelle,CNILTEXT000051709275,non,dev,cnil
+Que recommande la CNIL aux organismes qui publient des données personnelles en open data ?,conceptuelle,CNILTEXT000049694593,non,dev,cnil
+Que recommande la CNIL pour sécuriser le partage de données entre organismes au moyen d'interfaces de programmation ?,conceptuelle,CNILTEXT000047748672,non,dev,cnil
+Quelles précautions la CNIL demande-t-elle pour la télésurveillance des examens passés à distance ?,conceptuelle,CNILTEXT000048042501,non,dev,cnil
+Quelles règles la CNIL pose-t-elle quand un mandataire exerce les droits RGPD à la place d'une personne ?,conceptuelle,CNILTEXT000043708485,non,dev,cnil
+Combien de temps conserver les journaux de connexion et comment les utiliser ?,conceptuelle,CNILTEXT000044283637,non,dev,cnil
+Que recommande la CNIL aux recruteurs qui collectent des informations sur les candidats ?,conceptuelle,CNILTEXT000047110877,non,dev,cnil
+Quel avis la CNIL a-t-elle rendu sur la lecture automatisée des plaques d'immatriculation pour le péage en flux libre ?,conceptuelle,CNILTEXT000054303211,non,dev,cnil
+Quel est l'avis de la CNIL sur le recensement des personnes et des biens en vue d'une réquisition lors d'un exercice militaire ?,conceptuelle,CNILTEXT000053973741,non,dev,cnil
+Que pense la CNIL du fichier national des comptes signalés pour risque de fraude ?,conceptuelle,CNILTEXT000053973732,non,dev,cnil
+Quel avis la CNIL a-t-elle rendu sur le projet de loi qui élargit les caméras individuelles et l'usage des drones par les forces de sécurité ?,conceptuelle,CNILTEXT000053716494,non,dev,cnil
+Quel est l'avis de la CNIL sur l'examen des caractéristiques génétiques dans les enquêtes pénales ?,conceptuelle,CNILTEXT000053702370,non,dev,cnil
+Quel avis la CNIL a-t-elle rendu sur le décret qui modifie le fichier électoral et la communication des listes d'électeurs ?,conceptuelle,CNILTEXT000054252707,non,dev,cnil
+Quelles conditions la CNIL pose-t-elle aux caméras individuelles des surveillants de prison ?,conceptuelle,CNILTEXT000054419646,non,dev,cnil
+Quel avis la CNIL a-t-elle rendu sur l'extension du fichier d'honorabilité aux personnes âgées et aux majeurs protégés ?,conceptuelle,CNILTEXT000054019761,non,dev,cnil
+Quel est l'avis de la CNIL sur l'élargissement de la technique dite de l'algorithme utilisée par les services de renseignement ?,conceptuelle,CNILTEXT000053781864,non,dev,cnil
+Que pense la CNIL du traitement qui met en relation les enquêtes administratives de la défense avec d'autres fichiers ?,conceptuelle,CNILTEXT000053574128,non,dev,cnil
+Quel avis la CNIL a-t-elle rendu sur le visionnage des images de vidéoprotection par les agents d'Île-de-France Mobilités ?,conceptuelle,CNILTEXT000054148225,non,dev,cnil
+Que dit la CNIL du traitement qui gère le parcours des personnes détenues en établissement pénitentiaire ?,conceptuelle,CNILTEXT000054202949,non,dev,cnil
+Quel avis la CNIL a-t-elle rendu sur l'analyse des manifestes des navires pour cibler les contrôles douaniers ?,conceptuelle,CNILTEXT000054841661,non,dev,cnil
+Que pense la CNIL du traitement des signalements d'incidents en milieu scolaire ?,conceptuelle,CNILTEXT000053149493,non,dev,cnil
+Quelle sanction la CNIL a-t-elle prononcée contre la société qui analysait l'activité des officines à partir d'entrepôts de données de santé ?,conceptuelle,CNILTEXT000054136834,non,dev,cnil
+Quelle amende de trois millions et demi d'euros la CNIL a-t-elle prononcée contre une enseigne de distribution pour son programme de fidélité ?,conceptuelle,CNILTEXT000053391342,non,dev,cnil
+Quelle sanction la CNIL a-t-elle prononcée contre l'éditeur israélien d'un logiciel marketing qui hébergeait les données de ses clients ?,conceptuelle,CNILTEXT000053048614,non,dev,cnil
+Quelle sanction la CNIL a-t-elle prononcée contre l'éditeur des magazines Vogue et Vanity Fair pour sa politique de cookies ?,conceptuelle,CNILTEXT000052851847,non,dev,cnil
+Quelle amende la CNIL a-t-elle prononcée contre la filiale marketing de Pages Jaunes pour ses campagnes de SMS non consenties ?,conceptuelle,CNILTEXT000051630617,non,dev,cnil
+Quelle sanction la CNIL a-t-elle prononcée contre une agence immobilière qui suivait le temps de travail de ses salariés avec un logiciel dédié ?,conceptuelle,CNILTEXT000051120331,non,dev,cnil
+Quelle amende la CNIL a-t-elle prononcée contre Orange pour le service Mail Orange ?,conceptuelle,CNILTEXT000050760620,non,dev,cnil
+Quelle amende a visé une chaîne de boutiques de téléphonie qui prospectait par SMS à partir de fichiers achetés ?,conceptuelle,CNILTEXT000049382214,non,dev,cnil
+Quelle sanction a visé un distributeur de coupons de paiement utilisables en ligne ?,conceptuelle,CNILTEXT000048907667,non,dev,cnil
+Quelle sanction a été prononcée contre une commune qui n'avait pas désigné de délégué à la protection des données ?,conceptuelle,CNILTEXT000048580096,non,dev,cnil
+Quelle amende a visé le traitement français des demandes de visa qui interrogeait plusieurs fichiers ?,conceptuelle,CNILTEXT000049059221,non,dev,cnil
+Quelle décision a suivi les 1590 plaintes contre un courriel politique envoyé par une administration à ses agents ?,conceptuelle,CNILTEXT000048388493,non,dev,cnil
+Quelle sanction a visé une société de fret aérien après des plaintes de salariés sur des données réclamées par leur employeur ?,conceptuelle,CNILTEXT000048110233,non,dev,cnil
+Quelle amende de quarante millions d'euros la CNIL a-t-elle prononcée contre une régie publicitaire pour le reciblage des internautes ?,conceptuelle,CNILTEXT000047707063,non,dev,cnil
+Quelle sanction a visé un site de presse consacré à la santé et au bien-être ?,conceptuelle,CNILTEXT000047552103,non,dev,cnil
+Quelle amende a visé un service de location de trottinettes électriques en libre-service ?,conceptuelle,CNILTEXT000047346903,non,dev,cnil
+Quelle sanction la CNIL a-t-elle prononcée contre l'application musical.ly devenue TikTok ?,conceptuelle,CNILTEXT000046977994,non,dev,cnil
+Quelle amende a visé un opérateur télécom qui remettait en circulation des box sans effacer les données des abonnés ?,conceptuelle,CNILTEXT000046693390,non,dev,cnil
+Quelle sanction a visé un logiciel de messagerie vocale utilisé par les joueurs de jeux vidéo ?,conceptuelle,CNILTEXT000046562676,non,dev,cnil
+Quelle amende a visé un groupement qui édite un service d'information légale sur les entreprises ?,conceptuelle,CNILTEXT000046280956,non,dev,cnil
+Quelle amende a visé une plateforme d'autopartage de véhicules entre particuliers et professionnels ?,conceptuelle,CNILTEXT000046070924,non,dev,cnil
+Quelle amende a visé un éditeur de logiciels pour laboratoires d'analyses médicales ?,conceptuelle,CNILTEXT000045614368,non,dev,cnil
+Quelle sanction a visé un groupe hôtelier dont les clients n'obtenaient pas de réponse à leurs demandes ?,conceptuelle,CNILTEXT000046198070,non,dev,cnil
+Quelle amende a visé un établissement de paiement qui avait réutilisé des données pour un projet de lutte contre la fraude ?,conceptuelle,CNILTEXT000044609709,non,dev,cnil
+Quelle amende a visé un opérateur de téléphonie mobile pour la prospection commerciale et le droit d'opposition ?,conceptuelle,CNILTEXT000044810599,non,dev,cnil
+Quelle amende a visé le fichier de police qui recense les empreintes digitales des personnes mises en cause ?,conceptuelle,CNILTEXT000044115170,non,dev,cnil
+Quelle sanction a visé une société américaine qui avait fait constituer des fichiers sur des personnalités politiques et des journalistes ?,conceptuelle,CNILTEXT000043860997,non,dev,cnil
+Quelle sanction la CNIL a-t-elle prononcée contre une compagnie aérienne pour la reconnaissance faciale des passagers à l'embarquement ?,piege,,oui,dev,cnil
+Quel avis la CNIL a-t-elle rendu sur l'installation de caméras dans les piscines municipales ?,piege,,oui,dev,cnil
+Que recommande la CNIL pour les données de santé des animaux de compagnie dans les cliniques vétérinaires ?,piege,,oui,dev,cnil
+Quel avis la CNIL a-t-elle rendu sur un projet de recherche utilisant des implants cérébraux chez des patients paralysés ?,piege,,oui,dev,cnil
+Quelle sanction la CNIL a-t-elle prononcée contre un loueur de vélos en libre-service pour la géolocalisation des trajets de ses utilisateurs ?,piege,,oui,dev,cnil
+Quel avis la CNIL a-t-elle rendu sur les puces électroniques implantées sous la peau des salariés pour contrôler l'accès aux locaux ?,piege,,oui,dev,cnil
+Quel avis la CNIL a-t-elle rendu sur la mise à jour des changements d'état civil dans les fichiers des organismes ?,conceptuelle,CNILTEXT000053308330,non,dev,cnil
+Quel est l'avis de la CNIL sur l'extension des sources collectées pour détecter les ingérences numériques étrangères ?,conceptuelle,CNILTEXT000053461680,non,dev,cnil
+Que pense la CNIL de l'échange de données entre la médecine du travail et l'assurance maladie sur les salariés menacés de désinsertion ?,conceptuelle,CNILTEXT000054019591,non,dev,cnil
+Quel avis la CNIL a-t-elle rendu sur l'extension du traitement des titres sécurisés à la fraude à l'identité ?,conceptuelle,CNILTEXT000053308064,non,dev,cnil
+Quelles obligations la CNIL voit-elle pour les hébergeurs de données de santé au nom de la souveraineté ?,conceptuelle,CNILTEXT000053722050,non,dev,cnil
+Que pense la CNIL du dépôt de plainte par visioconférence ?,conceptuelle,CNILTEXT000053308551,non,dev,cnil
+Quel avis la CNIL a-t-elle rendu sur l'expérimentation de caméras frontales embarquées dans les tramways ?,conceptuelle,CNILTEXT000053309613,non,test,cnil
+Quelles conditions la CNIL pose-t-elle à l'utilisation pérenne des caméras individuelles par les agents des opérateurs de transport ?,conceptuelle,CNILTEXT000053049970,non,test,cnil
+Quel avis la CNIL a-t-elle rendu sur la base nationale des agréments en vue d'adoption ?,conceptuelle,CNILTEXT000053056915,non,test,cnil
+Que pense la CNIL du cadre unique applicable aux caméras installées sur des drones pour protéger les installations militaires ?,conceptuelle,CNILTEXT000052484909,non,test,cnil
+Que pense la CNIL de la transmission à l'agence européenne de la sécurité aérienne de données complémentaires sur les personnels de l'aviation civile ?,conceptuelle,CNILTEXT000053933790,non,test,cnil
+Quel avis la CNIL a-t-elle rendu sur le traitement des données des tachygraphes pour détecter le travail illégal ?,conceptuelle,CNILTEXT000052853149,non,test,cnil
+Que pense la CNIL de l'élargissement de l'accès des notaires au registre des copropriétés ?,conceptuelle,CNILTEXT000052122659,non,test,cnil
+Quel avis la CNIL a-t-elle rendu sur l'accès au registre des bénéficiaires effectifs ?,conceptuelle,CNILTEXT000052593040,non,test,cnil
+Que pense la CNIL du traitement qui croise la présence aux épreuves et les inscriptions pour lutter contre la fraude au compte personnel de formation ?,conceptuelle,CNILTEXT000052400616,non,test,cnil
+Quel est l'avis de la CNIL sur la désignation de l'ARCEP comme autorité compétente pour le règlement sur les données ?,conceptuelle,CNILTEXT000052593027,non,test,cnil
+Quel avis la CNIL a-t-elle rendu sur la transparence de la publicité politique ciblée ?,conceptuelle,CNILTEXT000052593014,non,test,cnil
+Que pense la CNIL de la mise à disposition des données de trafic routier ?,conceptuelle,CNILTEXT000053722020,non,test,cnil
+Quel avis la CNIL a-t-elle rendu sur le dépôt de plainte entièrement dématérialisé ?,conceptuelle,CNILTEXT000049636895,non,test,cnil
+Que pense la CNIL du logiciel de rédaction des procédures utilisé par les enquêteurs de police judiciaire ?,conceptuelle,CNILTEXT000050342600,non,test,cnil
+Quel avis la CNIL a-t-elle rendu sur l'évolution du fichier automatisé des empreintes digitales ?,conceptuelle,CNILTEXT000049471074,non,test,cnil
+Que pense la CNIL du traitement mis en place pour l'enquête sur le harcèlement scolaire ?,conceptuelle,CNILTEXT000048385265,non,test,cnil
+Quel avis la CNIL a-t-elle rendu sur la collecte des données des plateformes et des réseaux sociaux par la direction générale des finances publiques ?,conceptuelle,CNILTEXT000050773162,non,test,cnil
+Quel avis la CNIL a-t-elle rendu sur le contrôle par caméra du déchargement des déchets ?,conceptuelle,CNILTEXT000043317194,non,test,cnil
+Quel avis la CNIL a-t-elle rendu sur le traitement mis en place pour l'étude détaillée des accidents de la route ?,conceptuelle,CNILTEXT000048925274,non,test,cnil
+Que pense la CNIL du livret de parcours inclusif destiné aux élèves en situation de handicap ?,conceptuelle,CNILTEXT000045403990,non,test,cnil
+Quel avis la CNIL a-t-elle rendu sur le traitement qui identifie les drones circulant sans personne à bord ?,conceptuelle,CNILTEXT000045689718,non,test,cnil
+Quelle décision a visé l'usage de drones par la police et la gendarmerie pendant le confinement ?,conceptuelle,CNILTEXT000042960768,non,test,cnil
+Quelle amende a visé une société qui revendiquait vingt millions d'adresses électroniques de prospects ?,conceptuelle,CNILTEXT000042774286,non,test,cnil
+Quelle sanction a visé une carte de paiement adossée au programme de fidélité d'un groupe de distribution ?,conceptuelle,CNILTEXT000042564657,non,test,cnil
+Quelle décision a suivi l'envoi de courriers de félicitations aux bacheliers par une députée à partir d'un fichier du rectorat ?,conceptuelle,CNILTEXT000042348000,non,test,cnil
+Quelle amende a visé un site de vente de chaussures à distance ?,conceptuelle,CNILTEXT000042203965,non,test,cnil
+Quelle décision a visé un bailleur social qui avait utilisé son fichier de locataires pour défendre les aides au logement ?,conceptuelle,CNILTEXT000037261399,non,test,cnil
+Quelle amende a visé un installateur de pompes à chaleur et d'isolation qui continuait à démarcher après une opposition ?,conceptuelle,CNILTEXT000039419459,non,test,cnil
+Quelle sanction a visé une société de télésurveillance d'ascenseurs qui utilisait un pointage biométrique sans autorisation ?,conceptuelle,CNILTEXT000037413673,non,test,cnil
+Quelle décision a suivi la découverte d'une faille permettant d'accéder aux données d'une plateforme de location de voitures entre particuliers ?,conceptuelle,CNILTEXT000035272571,non,test,cnil
+Quelle sanction a visé le réseau social américain qui comptait un milliard et demi d'utilisateurs ?,conceptuelle,CNILTEXT000034728338,non,test,cnil
+Quelle décision a visé le moteur de recherche qui refusait de déréférencer des pages après la jurisprudence de la Cour de justice ?,conceptuelle,CNILTEXT000032291946,non,test,cnil
+Quelle décision a visé un fournisseur d'accès à Internet qui avait communiqué plus de 1500 fois l'identité du même abonné à la Hadopi ?,conceptuelle,CNILTEXT000032168674,non,test,cnil
+Quelle décision a visé une société qui louait à des tiers une base de données de plus d'un million de seniors ?,conceptuelle,CNILTEXT000031833147,non,test,cnil
+Quelle décision a suivi la violation de données de 1 340 000 clients causée par le serveur d'un prestataire de marketing direct ?,conceptuelle,CNILTEXT000029406662,non,test,cnil
+Quelle décision a visé un organisme de crédit qui maintenait des inscriptions au fichier des incidents de remboursement malgré régularisation ?,conceptuelle,CNILTEXT000029407099,non,test,cnil
+Quelle amende a visé un loueur de voitures de luxe qui géolocalisait ses véhicules à l'insu de ses clients ?,conceptuelle,CNILTEXT000029298773,non,test,cnil
+Quelle amende a visé un grossiste en fruits et légumes dont les magasins et les camions étaient sous surveillance ?,conceptuelle,CNILTEXT000029302625,non,test,cnil
+Quelle décision a visé un site de suivi de régime en ligne ?,conceptuelle,CNILTEXT000029224324,non,test,cnil
+Quelle décision a suivi la mise en ligne de 684 778 fiches clients d'un transporteur accessibles depuis un moteur de recherche ?,conceptuelle,CNILTEXT000029103976,non,test,cnil
+Quelle décision a visé un site de vente en ligne qui stockait des milliers de numéros de cartes bancaires en clair ?,conceptuelle,CNILTEXT000033445256,non,test,cnil
+Quelle décision a ordonné l'interruption de caméras installées dans le bureau d'exploitation d'une entreprise ?,conceptuelle,CNILTEXT000022913263,non,test,cnil
+Quelle amende a visé une société de diagnostics immobiliers qui envoyait des SMS sans consentement ?,conceptuelle,CNILTEXT000025165758,non,test,cnil
+Quelle décision a visé un syndicat de copropriétaires qui filmait le local du poste de sécurité ?,conceptuelle,CNILTEXT000026971936,non,test,cnil
+Quelle amende a visé l'annuaire en ligne d'une association qui refusait d'effacer les coordonnées de professionnels du droit ?,conceptuelle,CNILTEXT000028711042,non,test,cnil
+Quelle décision a visé un hypermarché dont les 47 caméras et les commentaires inscrits sur les fiches clients posaient problème ?,conceptuelle,CNILTEXT000019796260,non,test,cnil
+Quelle décision a suivi l'envoi par un théâtre à ses abonnés d'un courriel critiquant la politique culturelle de la ville ?,conceptuelle,CNILTEXT000030324201,non,test,cnil
+Quelle amende a visé un groupe de presse dont les fichiers de prospects restaient non conformes après une mise en demeure ?,conceptuelle,CNILTEXT000030746041,non,test,cnil
+Quelle amende la CNIL a-t-elle prononcée contre une société de revente de tests ADN récréatifs ?,piege,,oui,test,cnil
+Quelle délibération encadre la collecte des données de sommeil par les montres connectées ?,piege,,oui,test,cnil
+Quelle sanction la CNIL a-t-elle prononcée contre un opérateur funéraire pour la diffusion en ligne d'avis de décès ?,piege,,oui,test,cnil
+Quelle délibération encadre l'usage de la domotique dans les logements sociaux pour surveiller les personnes âgées ?,piege,,oui,test,cnil
+Quel avis la CNIL a-t-elle rendu sur la reconnaissance faciale à l'entrée des cantines scolaires ?,piege,,oui,test,cnil
+Quelle amende la CNIL a-t-elle prononcée contre un zoo pour la vidéosurveillance des visiteurs mineurs ?,piege,,oui,test,cnil

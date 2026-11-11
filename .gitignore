@@ -25,3 +25,12 @@ data/corpus/index/
 
 # Corpus CNIL : parquet DINUM non commité (334 Mo), récupéré par npm run cnil:sync
 data/raw/cnil/
+
+# Corpus LIL : snapshot legiPart non commité, récupéré par npm run lil:sync
+data/raw/lil/
+
+# Corpus CE : archive JADE globale (1,32 Go) non commitée, récupérée par npm run ce:sync
+data/raw/ce/
+
+# Corpus CEPD : PDF téléchargés non commités, récupérés par npm run cepd:sync
+data/raw/cepd/

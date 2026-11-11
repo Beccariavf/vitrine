@@ -306,14 +306,49 @@ function descriptorReduit(attendus: { documents: number; fragments: number }): D
 }
 
 describe("l'historique DINUM", () => {
-  it("ne retient que la nature filtrée", () => {
-    const sanctions = LIGNES.filter((ligne) => estDeNature(ligne, DESCRIPTEUR.nature));
+  it("retient les trois natures demandées, AVIS majuscule compris", () => {
+    const retenues = LIGNES.filter((ligne) => estDeNature(ligne, DESCRIPTEUR.natures));
     const { unites } = unitesDinum(LIGNES, DESCRIPTEUR);
 
-    assert.equal(sanctions.length, 2);
+    assert.equal(retenues.length, 5);
+    assert.equal(unites.length, 5);
+    assert.deepEqual(
+      unites.map((unite) => unite.nature),
+      ["Sanction", "Sanction", "Avis", "Avis", "Recommandation/Lignes directrices"],
+      "AVIS majuscule est retenu et ramené à l'étiquette du descripteur",
+    );
+    assert.equal(
+      unites.find((unite) => unite.document === "CNILTEXT000043470687")?.nature,
+      "Avis",
+    );
+  });
+
+  it("compte les lignes écartées par nature, (vide) compris", () => {
+    const exclues: LigneDinum[] = [
+      { ...LIGNES[0]!, doc_id: "CNILTEXT_EXCLU_1", chunk_index: 0, nature_delib: "Plainte" },
+      { ...LIGNES[0]!, doc_id: "CNILTEXT_EXCLU_2", chunk_index: 0, nature_delib: null },
+      { ...LIGNES[0]!, doc_id: "CNILTEXT_EXCLU_3", chunk_index: 0, nature_delib: null },
+    ];
+    const { unites, exclusions } = unitesDinum([...LIGNES, ...exclues], DESCRIPTEUR);
+
+    assert.equal(unites.length, 5, "les lignes écartées ne deviennent pas des unités");
+    assert.deepEqual(exclusions, [
+      { nature: "(vide)", lignes: 2 },
+      { nature: "Plainte", lignes: 1 },
+    ]);
+    assert.equal(
+      exclusions.reduce((total, exclusion) => total + exclusion.lignes, 0),
+      3,
+    );
+  });
+
+  it("ne retient que la nature explicitement demandée", () => {
+    const { unites } = unitesDinum(LIGNES, DESCRIPTEUR, ["Sanction"]);
+
     assert.equal(unites.length, 2);
+    assert.ok(unites.every((unite) => unite.nature === "Sanction"));
     assert.ok(
-      LIGNES.filter((ligne) => !estDeNature(ligne, DESCRIPTEUR.nature)).every(
+      LIGNES.filter((ligne) => !estDeNature(ligne, ["Sanction"])).every(
         (ligne) => !unites.some((unite) => unite.document === ligne.doc_id),
       ),
     );
@@ -329,7 +364,8 @@ describe("l'historique DINUM", () => {
     assert.equal(premier.corpus, "cnil");
     assert.equal(premier.niveau, "fragment");
     assert.equal(premier.numero, "SAN-2021-004");
-    assert.equal(premier.chemin, "CNIL > Sanctions > Délibération SAN-2021-004");
+    assert.equal(premier.nature, "Sanction");
+    assert.equal(premier.chemin, "CNIL > Sanction > Délibération SAN-2021-004");
     assert.equal(premier.date_acte, "2021-04-30");
     assert.equal(premier.date_debut, "2021-04-30");
     assert.equal(premier.date_fin, null);
@@ -338,11 +374,23 @@ describe("l'historique DINUM", () => {
     assert.equal(premier.url, "https://www.legifrance.gouv.fr/cnil/id/CNILTEXT000043470685");
   });
 
+  it("nomme l'avis dans le chemin et ne lui pose aucune métadonnée de sanction", () => {
+    const { unites } = unitesDinum(LIGNES, DESCRIPTEUR);
+    const avis = unites.find((unite) => unite.document === "CNILTEXT000043470686");
+
+    assert.ok(avis);
+    assert.equal(avis.nature, "Avis");
+    assert.equal(avis.chemin, "CNIL > Avis > Délibération CNILTEXT000043470686");
+    assert.equal(avis.type_sanction, undefined);
+    assert.equal(avis.montant, undefined);
+    assert.equal(avis.injonction, undefined);
+  });
+
   it("rejette une ligne sans texte en la nommant", () => {
     const vide: LigneDinum = { ...LIGNES[0]!, chunk_index: 2, text: "   " };
     const { unites, erreurs } = unitesDinum([...LIGNES, vide], DESCRIPTEUR);
 
-    assert.equal(unites.length, 2);
+    assert.equal(unites.length, 5);
     assert.deepEqual(erreurs, ["CNILTEXT000043470685#f2 : texte vide"]);
   });
 
@@ -367,15 +415,35 @@ describe("l'historique DINUM", () => {
 });
 
 describe("le manifeste CNIL", () => {
-  it("compte les documents, les fragments et les deux origines", () => {
+  it("compte les documents, les fragments, les natures, les exclusions et les deux origines", () => {
     const { unites } = unitesDinum(LIGNES, DESCRIPTEUR);
-    const manifeste = manifesteCnil(descriptorReduit({ documents: 1, fragments: 2 }), unites, FICHIERS, ETAT_VIDE);
+    const exclusions = [
+      { nature: "(vide)", lignes: 2 },
+      { nature: "Plainte", lignes: 1 },
+    ];
+    const manifeste = manifesteCnil(
+      descriptorReduit({ documents: 4, fragments: 5 }),
+      unites,
+      FICHIERS,
+      ETAT_VIDE,
+      DESCRIPTEUR.natures,
+      exclusions,
+    );
 
     assert.equal(manifeste.corpus, "cnil");
-    assert.equal(manifeste.nature, "Sanction");
-    assert.equal(manifeste.documents, 1);
-    assert.equal(manifeste.unites, 2);
-    assert.deepEqual(manifeste.origines, { dinum: 2, dila: 0 });
+    assert.deepEqual(manifeste.natures, [
+      "Sanction",
+      "Avis",
+      "Recommandation/Lignes directrices",
+    ]);
+    assert.equal(manifeste.documents, 4);
+    assert.equal(manifeste.unites, 5);
+    assert.deepEqual(manifeste.par_nature, {
+      Avis: { documents: 2, unites: 2 },
+      "Recommandation/Lignes directrices": { documents: 1, unites: 1 },
+      Sanction: { documents: 1, unites: 2 },
+    });
+    assert.deepEqual(manifeste.origines, { dinum: 5, dila: 0 });
     assert.equal(manifeste.decoupage, "dinum");
     assert.equal(manifeste.url_texte_verifiee, false);
     assert.deepEqual(
@@ -388,6 +456,58 @@ describe("le manifeste CNIL", () => {
     assert.equal(manifeste.sources[0]?.licence?.huggingface, "etalab-2.0");
     assert.equal(manifeste.sources[0]?.licence?.data_gouv, "lov2");
     assert.equal(manifeste.sources[0]?.licence?.incoherence, true);
+    assert.equal(manifeste.couverture.source, "CNIL — historique DINUM et incréments DILA");
+    assert.deepEqual(manifeste.couverture.natures, manifeste.natures);
+    assert.deepEqual(manifeste.couverture.comptes, { documents: 4, unites: 5 });
+    assert.deepEqual(manifeste.couverture.exclusions, exclusions);
+    assert.equal(manifeste.couverture.lignes_lues, 8);
+    assert.deepEqual(manifeste.natures_demandees, DESCRIPTEUR.natures);
+    assert.deepEqual(manifeste.natures_exclues, []);
+    assert.deepEqual(manifeste.couverture.natures_exclues, []);
+  });
+
+  it("déclare les natures demandées et exclues d'une synchronisation partielle", () => {
+    const { unites, exclusions } = unitesDinum(LIGNES, DESCRIPTEUR, ["Sanction"]);
+    const manifeste = manifesteCnil(
+      descriptorReduit({ documents: 1, fragments: 2 }),
+      unites,
+      FICHIERS,
+      ETAT_VIDE,
+      ["Sanction"],
+      exclusions,
+    );
+
+    assert.deepEqual(manifeste.natures, ["Sanction"]);
+    assert.deepEqual(manifeste.natures_demandees, ["Sanction"]);
+    assert.deepEqual(manifeste.natures_exclues, [
+      "Avis",
+      "Recommandation/Lignes directrices",
+    ]);
+    assert.deepEqual(manifeste.couverture.natures, ["Sanction"]);
+    assert.deepEqual(manifeste.couverture.natures_exclues, manifeste.natures_exclues);
+    assert.deepEqual(manifeste.par_nature, { Sanction: { documents: 1, unites: 2 } });
+    assert.equal(
+      manifeste.couverture.exclusions.reduce((total, exclusion) => total + exclusion.lignes, 0),
+      3,
+    );
+  });
+
+  it("un dry-run partiel ne prétend pas aux trois natures", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-cnil-"));
+    try {
+      const resultat = await syncHistorique({
+        rootDir: root,
+        lignes: LIGNES,
+        nature: "Sanction",
+        dryRun: true,
+      });
+
+      assert.equal(resultat.unites, 2);
+      assert.equal(resultat.ecrit, false);
+      assert.equal(existsSync(join(root, "data", "corpus", "cnil", "manifest.json")), false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 
   it("refuse des comptes qui ne correspondent pas au contenu", () => {
@@ -395,7 +515,7 @@ describe("le manifeste CNIL", () => {
 
     assert.throws(
       () => validerUnites(unites, { documents: 249, fragments: 6342 }),
-      /1 documents au lieu de 249 attendus ; 2 fragments au lieu de 6342 attendus/,
+      /4 documents au lieu de 249 attendus ; 5 fragments au lieu de 6342 attendus/,
     );
   });
 
@@ -416,7 +536,7 @@ describe("le manifeste CNIL", () => {
 });
 
 describe("la synchronisation DINUM", () => {
-  const ATTENDUS = { documents: 1, fragments: 2 };
+  const ATTENDUS = { documents: 4, fragments: 5 };
 
   it("écrit le corpus après validation et ne le réécrit pas au second passage", async () => {
     const root = mkdtempSync(join(tmpdir(), "vitrine-cnil-"));
@@ -425,10 +545,10 @@ describe("la synchronisation DINUM", () => {
       const cheminUnites = join(root, "data", "corpus", "cnil", "unites.jsonl");
       const avant = statSync(cheminUnites).mtimeMs;
 
-      assert.equal(premier.documents, 1);
-      assert.equal(premier.unites, 2);
+      assert.equal(premier.documents, 4);
+      assert.equal(premier.unites, 5);
       assert.equal(premier.ecrit, true);
-      assert.equal(readFileSync(cheminUnites, "utf8").trimEnd().split("\n").length, 2);
+      assert.equal(readFileSync(cheminUnites, "utf8").trimEnd().split("\n").length, 5);
 
       const second = await syncHistorique({ rootDir: root, lignes: LIGNES, attendus: ATTENDUS });
 
@@ -464,7 +584,7 @@ describe("la synchronisation DINUM", () => {
       });
 
       assert.equal(resultat.ecrit, false);
-      assert.equal(resultat.unites, 2);
+      assert.equal(resultat.unites, 5);
       assert.equal(existsSync(join(root, "data")), false);
     } finally {
       rmSync(root, { recursive: true, force: true });
@@ -557,17 +677,30 @@ describe("le découpage local", () => {
     assert.deepEqual(fragments, ["a".repeat(300), long, "b".repeat(300)]);
   });
 
-  it("marque l'origine dila et le découpage local", () => {
+  it("marque l'origine dila, la nature et le découpage local", () => {
     const unites = unitesDila(decision, DESCRIPTEUR);
 
     assert.equal(unites.length, 2);
     assert.equal(unites[0]?.ref, "CNILTEXT000043470685#f0");
     assert.equal(unites[0]?.origine, "dila");
+    assert.equal(unites[0]?.nature, "Sanction");
     assert.equal(unites[0]?.niveau, "fragment");
     assert.equal(unites[0]?.numero, "SAN-2021-004");
-    assert.match(unites[0]?.chemin ?? "", /Découpage local$/);
+    assert.equal(unites[0]?.chemin, "CNIL > Sanction > Délibération SAN-2021-004 > Découpage local");
     assert.equal(unites[0]?.statut, "VIGUEUR");
     assert.equal(unites[0]?.date_acte, "2021-04-30");
+  });
+
+  it("nomme la nature d'un avis et ne lui pose aucune métadonnée de sanction", () => {
+    const avis = parseTexteCnil(XML.replace("Sanction", "Avis"), "avis.xml");
+    const unites = unitesDila(avis, DESCRIPTEUR);
+
+    assert.equal(avis.natureDelib, "Avis");
+    assert.ok(unites.every((unite) => unite.nature === "Avis"));
+    assert.ok(unites.every((unite) => unite.chemin.includes("CNIL > Avis >")));
+    assert.ok(unites.every((unite) => unite.type_sanction === undefined));
+    assert.ok(unites.every((unite) => unite.montant === undefined));
+    assert.ok(unites.every((unite) => unite.injonction === undefined));
   });
 });
 
@@ -617,23 +750,30 @@ describe("les archives DILA", () => {
     );
   });
 
-  it("décompresse une archive et retient la nature demandée", async () => {
+  it("décompresse une archive et retient les natures demandées", async () => {
     const archive = gzipSync(
       tarDe([
         { nom: "a/CNILTEXT000043470685.xml", contenu: XML },
         { nom: "a/CNILTEXT000043470686.xml", contenu: XML.replace("Sanction", "Avis") },
       ]),
     );
-    const lue = await lireArchiveDepuis(
+    const sanctions = await lireArchiveDepuis(
+      "CNIL_20261028-212713.tar.gz",
+      DESCRIPTEUR,
+      fetchOctets(archive),
+      ["Sanction"],
+    );
+    const toutes = await lireArchiveDepuis(
       "CNIL_20261028-212713.tar.gz",
       DESCRIPTEUR,
       fetchOctets(archive),
     );
 
-    assert.equal(lue.documentsLus, 2);
-    assert.equal(lue.decisions.length, 1);
-    assert.equal(lue.decisions[0]?.id, "CNILTEXT000043470685");
-    assert.equal(lue.sha256.length, 64);
+    assert.equal(sanctions.documentsLus, 2);
+    assert.equal(sanctions.decisions.length, 1);
+    assert.equal(sanctions.decisions[0]?.id, "CNILTEXT000043470685");
+    assert.equal(sanctions.sha256.length, 64);
+    assert.equal(toutes.decisions.length, 2, "les trois natures du descripteur sont retenues");
   });
 
   it("remplace toutes les unités d'un document connu, sans doublon", () => {
@@ -644,13 +784,30 @@ describe("les archives DILA", () => {
     assert.equal(fusion.remplacees, 2);
     assert.equal(fusion.ajoutees, 2);
     assert.equal(fusion.ignorees, 0);
-    assert.equal(fusion.unites.length, 2);
+    assert.equal(fusion.unites.length, 5, "les autres délibérations restent en place");
     assert.deepEqual(
-      fusion.unites.map((unite) => unite.ref),
+      fusion.unites
+        .filter((unite) => unite.document === "CNILTEXT000043470685")
+        .map((unite) => unite.ref),
       ["CNILTEXT000043470685#f0", "CNILTEXT000043470685#f1"],
     );
-    assert.ok(fusion.unites.every((unite) => unite.origine === "dila"));
-    assert.equal(new Set(fusion.unites.map((unite) => unite.ref)).size, 2);
+    assert.ok(
+      fusion.unites
+        .filter((unite) => unite.document === "CNILTEXT000043470685")
+        .every((unite) => unite.origine === "dila"),
+    );
+    assert.equal(new Set(fusion.unites.map((unite) => unite.ref)).size, 5);
+  });
+
+  it("écarte une décision hors des natures demandées", () => {
+    const avis = parseTexteCnil(
+      XML.replace("Sanction", "Avis").replace("CNILTEXT000043470685", "CNILTEXT000099999999"),
+      "avis.xml",
+    );
+    const fusion = fusionnerDecisions([], [avis], DESCRIPTEUR, ["Sanction"]);
+
+    assert.equal(fusion.ajoutees, 0);
+    assert.equal(fusion.unites.length, 0);
   });
 
   it("conserve le découpage DINUM quand l'archive n'est pas plus récente", () => {
@@ -688,7 +845,7 @@ describe("les archives DILA", () => {
 
 describe("la synchronisation DILA", () => {
   const NOM = "CNIL_20261028-212713.tar.gz";
-  const ATTENDUS = { documents: 1, fragments: 2 };
+  const ATTENDUS = { documents: 4, fragments: 5 };
 
   function archiveLue(): Promise<ArchiveLue> {
     return Promise.resolve({
@@ -709,10 +866,20 @@ describe("la synchronisation DILA", () => {
       const unites = readFileSync(join(root, "data", "corpus", "cnil", "unites.jsonl"), "utf8")
         .trimEnd()
         .split("\n")
-        .map((ligne) => JSON.parse(ligne) as { ref: string; origine?: string });
+        .map((ligne) => JSON.parse(ligne) as { ref: string; document: string; origine?: string });
 
-      assert.equal(rejoue.unites, 2);
-      assert.ok(unites.every((unite) => unite.origine === "dila"));
+      assert.equal(rejoue.unites, 5);
+      assert.ok(
+        unites
+          .filter((unite) => unite.document === "CNILTEXT000043470685")
+          .every((unite) => unite.origine === "dila"),
+        "l'incrément DILA survit au rejeu de l'historique",
+      );
+      assert.equal(
+        unites.filter((unite) => unite.document !== "CNILTEXT000043470685").length,
+        3,
+        "les autres délibérations restent DINUM",
+      );
       assert.equal(new Set(unites.map((unite) => unite.ref)).size, unites.length);
     } finally {
       rmSync(root, { recursive: true, force: true });
@@ -737,14 +904,17 @@ describe("la synchronisation DILA", () => {
       assert.equal(premier.documents_retenus, 1);
       assert.equal(premier.documents_ignores, 0);
       assert.equal(premier.unites_remplacees, 2);
-      assert.equal(premier.unites, 2);
-      assert.deepEqual(premier.origines, { dinum: 0, dila: 2 });
+      assert.equal(premier.unites, 5);
+      assert.deepEqual(premier.origines, { dinum: 3, dila: 2 });
       assert.equal(premier.ecrit, true);
       assert.equal(JSON.parse(readFileSync(cheminEtat, "utf8")).derniere_archive, NOM);
 
       const lignes = readFileSync(cheminUnites, "utf8").trimEnd().split("\n");
-      assert.equal(lignes.length, 2);
-      assert.ok(lignes.every((ligne) => JSON.parse(ligne).origine === "dila"));
+      assert.equal(lignes.length, 5);
+      assert.equal(
+        lignes.filter((ligne) => JSON.parse(ligne).origine === "dila").length,
+        2,
+      );
       const avant = statSync(cheminUnites).mtimeMs;
 
       const second = await syncIncrements({

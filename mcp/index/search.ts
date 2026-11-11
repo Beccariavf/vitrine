@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 import * as sqliteVec from "sqlite-vec";
 import { dateIndex, numeroIndex } from "../corpus/cnil/meta.ts";
+import { natureComparable } from "../corpus/cnil/nature.ts";
 
 /** Un index ouvert, avec son modèle et sa dimension lus dans `meta`. */
 export type Index = {
@@ -24,7 +25,7 @@ export const BANDE_ARTICLE = 0.02;
 export type ResultatRecherche = {
   ref: string;
   document: string;
-  /** Collection d'appartenance : `rgpd`, `aiact`, `cnil`. */
+  /** Collection d'appartenance : `rgpd`, `aiact`, `cnil`, `lil`, `ce`, `cepd`. */
   corpus: string;
   niveau: string;
   numero: string;
@@ -35,6 +36,8 @@ export type ResultatRecherche = {
   date_debut: string;
   date_fin: string | null;
   statut: string;
+  /** Nature CNIL : Sanction, Avis ou Recommandation/Lignes directrices ; absent hors CNIL. */
+  nature?: string;
   /** Type de sanction CNIL ; `autre` hors CNIL. */
   type_sanction?: string;
   /** Montant de la sanction pécuniaire CNIL (amende ou liquidation) ; `null` si absent ou masqué. */
@@ -48,12 +51,14 @@ export type ResultatRecherche = {
 export type SearchOptions = {
   k: number;
   /**
-   * Restreint à une collection (`rgpd`, `aiact`, `cnil`) ; absent, tous les
-   * corpus répondent.
+   * Restreint à une collection (`rgpd`, `aiact`, `cnil`, `lil`, `ce`, `cepd`) ;
+   * absent, tous les corpus répondent.
    */
   corpus?: string;
   /** Restreint aux unités de ce document ; absent, tout le corpus répond. */
   document?: string;
+  /** Restreint à une nature CNIL (Sanction, Avis, Recommandation/Lignes directrices). */
+  nature?: string;
   /** Date ISO minimale (`AAAA-MM-JJ`) sur la date de la décision. */
   date_min?: string;
   /** Date ISO maximale (`AAAA-MM-JJ`) sur la date de la décision. */
@@ -86,6 +91,7 @@ export function openIndex(chemin: string): Index {
     const attendues = [
       "corpus",
       "document",
+      "nature",
       "date_num",
       "type_sanction",
       "montant",
@@ -94,6 +100,7 @@ export function openIndex(chemin: string): Index {
     ];
     if (
       !colonnes.some((colonne) => colonne.name === "corpus") ||
+      !colonnes.some((colonne) => colonne.name === "nature") ||
       !attendues.every((nom) => nomsVecteurs.has(nom))
     ) {
       throw new Error(
@@ -130,6 +137,7 @@ function ligneVersResultat(ligne: Ligne): ResultatRecherche {
     typeof valeur === "string" ? valeur : String(valeur ?? "");
   const nullable = (valeur: Valeur | undefined): string | null =>
     valeur === null || valeur === undefined ? null : texte(valeur);
+  const nature = texte(ligne.nature);
 
   return {
     ref: texte(ligne.ref),
@@ -144,6 +152,7 @@ function ligneVersResultat(ligne: Ligne): ResultatRecherche {
     date_debut: texte(ligne.date_debut),
     date_fin: nullable(ligne.date_fin),
     statut: texte(ligne.statut),
+    ...(nature === "" ? {} : { nature }),
     type_sanction: texte(ligne.type_sanction),
     montant: ligne.montant === null || ligne.montant === undefined ? null : Number(ligne.montant),
     injonction: Number(ligne.injonction) === 1,
@@ -175,11 +184,32 @@ export function rangerPassages(resultats: ResultatRecherche[], k: number): Resul
     .map((entree) => entree.resultat);
 }
 
-/** Vrai si le résultat passe les filtres optionnels de corpus et de document. */
+/** Vrai si le résultat passe les filtres optionnels de corpus, document et nature. */
 function retenu(resultat: ResultatRecherche, options: SearchOptions): boolean {
   if (options.corpus !== undefined && resultat.corpus !== options.corpus) return false;
   if (options.document !== undefined && resultat.document !== options.document) return false;
+  if (
+    options.nature !== undefined &&
+    natureComparable(resultat.nature) !== natureComparable(options.nature)
+  ) {
+    return false;
+  }
   return true;
+}
+
+/**
+ * Résout la nature demandée vers l'étiquette réellement stockée, à la casse et
+ * aux accents près. `searchIndex` et `rechercheHybride` l'appellent avant les
+ * filtres SQL et le post-filtre.
+ */
+function optionsAvecNature(index: Index, options: SearchOptions): SearchOptions {
+  if (options.nature === undefined) return options;
+  const cherchee = natureComparable(options.nature);
+  const lignes = index.db
+    .prepare("SELECT DISTINCT nature FROM unites WHERE nature <> ''")
+    .all() as { nature: string }[];
+  const trouvee = lignes.find((ligne) => natureComparable(ligne.nature) === cherchee);
+  return { ...options, nature: trouvee?.nature ?? options.nature };
 }
 
 /**
@@ -196,13 +226,14 @@ export function searchIndex(index: Index, vecteur: number[], options: SearchOpti
     );
   }
 
+  const filtres = optionsAvecNature(index, options);
   const k = Math.max(0, Math.trunc(options.k));
   if (k === 0) return [];
 
   const candidats = Math.max(k * 10, 50);
   // Le filtre `corpus` descend dans la requête `vec0` : sans cela, un corpus
   // majoritaire (la CNIL) remplirait la fenêtre et affamerait les autres.
-  const { conditions, valeurs } = filtresVectoriels(options);
+  const { conditions, valeurs } = filtresVectoriels(filtres);
   const filtre = conditions.length === 0 ? "" : ` AND ${conditions.join(" AND ")}`;
   const parametres: (string | number | bigint)[] = [
     JSON.stringify(vecteur),
@@ -212,7 +243,7 @@ export function searchIndex(index: Index, vecteur: number[], options: SearchOpti
   const lignes = index.db
     .prepare(
       `SELECT u.ref, u.document, u.corpus, u.niveau, u.numero, u.texte, u.chemin, u.url,
-              u.date_acte, u.date_debut, u.date_fin, u.statut, u.type_sanction, u.montant,
+              u.date_acte, u.date_debut, u.date_fin, u.statut, u.nature, u.type_sanction, u.montant,
               u.injonction, v.distance
          FROM vec_unites v
          JOIN unites u ON u.rowid = v.rowid
@@ -221,7 +252,7 @@ export function searchIndex(index: Index, vecteur: number[], options: SearchOpti
     )
     .all(...parametres) as Ligne[];
 
-  const resultats = lignes.map(ligneVersResultat).filter((resultat) => retenu(resultat, options));
+  const resultats = lignes.map(ligneVersResultat).filter((resultat) => retenu(resultat, filtres));
   return rangerPassages(resultats, k);
 }
 
@@ -239,6 +270,10 @@ function filtresVectoriels(options: SearchOptions): {
   if (options.document !== undefined) {
     conditions.push("v.document = ?");
     valeurs.push(options.document);
+  }
+  if (options.nature !== undefined) {
+    conditions.push("v.nature = ?");
+    valeurs.push(options.nature);
   }
   if (options.date_min !== undefined) {
     conditions.push("v.date_num >= ?");
@@ -314,7 +349,7 @@ function candidatsDenses(
   const lignes = index.db
     .prepare(
       `SELECT v.rowid AS rowid, u.ref, u.document, u.corpus, u.niveau, u.numero, u.texte, u.chemin, u.url,
-              u.date_acte, u.date_debut, u.date_fin, u.statut, u.type_sanction, u.montant,
+              u.date_acte, u.date_debut, u.date_fin, u.statut, u.nature, u.type_sanction, u.montant,
               u.injonction, v.distance
          FROM vec_unites v
          JOIN unites u ON u.rowid = v.rowid
@@ -349,6 +384,10 @@ function candidatsLexicaux(
   if (options.document !== undefined) {
     conditions.push("u.document = ?");
     parametres.push(options.document);
+  }
+  if (options.nature !== undefined) {
+    conditions.push("u.nature = ?");
+    parametres.push(options.nature);
   }
   if (options.date_min !== undefined) {
     conditions.push("u.date_num >= ?");
@@ -439,7 +478,7 @@ function resultatsParRowid(
   const lignes = index.db
     .prepare(
       `SELECT rowid, ref, document, corpus, niveau, numero, texte, chemin, url,
-              date_acte, date_debut, date_fin, statut, type_sanction, montant, injonction
+              date_acte, date_debut, date_fin, statut, nature, type_sanction, montant, injonction
          FROM unites
         WHERE rowid IN (${marques})`,
     )
@@ -474,11 +513,12 @@ export function rechercheHybride(
     );
   }
 
+  const filtres = optionsAvecNature(index, options);
   const k = Math.max(0, Math.trunc(options.k));
   if (k === 0) return [];
 
   const limite = Math.max(CANDIDATS_VOIE, k);
-  const denses = candidatsDenses(index, vecteur, limite, options);
+  const denses = candidatsDenses(index, vecteur, limite, filtres);
   const distances = new Map(denses.map((candidat) => [candidat.rowid, candidat.resultat.distance]));
 
   const rowidParRef = new Map(denses.map((candidat) => [candidat.resultat.ref, candidat.rowid]));
@@ -491,7 +531,7 @@ export function rechercheHybride(
     if (rowid !== undefined) rangDense.set(rowid, position + 1);
   });
 
-  const lexicaux = candidatsLexicaux(index, texte, limite, options);
+  const lexicaux = candidatsLexicaux(index, texte, limite, filtres);
   const absents = lexicaux.filter((rowid) => !distances.has(rowid));
   for (const [rowid, distance] of distancesManquantes(index, vecteur, absents)) {
     distances.set(rowid, distance);

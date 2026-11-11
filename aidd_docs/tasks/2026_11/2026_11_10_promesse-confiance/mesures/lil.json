@@ -1,0 +1,297 @@
+{
+  "date": "2026-11-10",
+  "modele": "qwen3-embedding:0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "lil",
+  "recherche": "dense",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine-mcp/data/corpus/index/index.db",
+    "unites": 53143
+  },
+  "seuils": {
+    "bas": 0.64,
+    "haut": 0.69,
+    "marge": 0.01
+  },
+  "questions": [
+    {
+      "question": "Quel principe la loi pose-t-elle sur l'informatique au service de chaque citoyen ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "LEGIARTI000037822962"
+      ],
+      "refs": [
+        "LEGIARTI000037822962",
+        "LEGIARTI000037813978",
+        "LEGIARTI000037822953",
+        "LEGIARTI000051830334",
+        "LEGIARTI000043887431"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.6934773623943329,
+        0.5920461416244507,
+        0.5856945216655731,
+        0.5813878178596497,
+        0.5783506631851196
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quels principes encadrent le traitement des données à caractère personnel ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "LEGIARTI000037822953"
+      ],
+      "refs": [
+        "LEGIARTI000037822950",
+        "LEGIARTI000037822953",
+        "LEGIARTI000037822828",
+        "LEGIARTI000037817686",
+        "LEGIARTI000037817715"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.7283977270126343,
+        0.7267006635665894,
+        0.7084507346153259,
+        0.674915999174118,
+        0.6646427810192108
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles données sensibles la loi interdit-elle de traiter ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "LEGIARTI000037822942"
+      ],
+      "refs": [
+        "LEGIARTI000037822942",
+        "LEGIARTI000037822953",
+        "LEGIARTI000037822950",
+        "LEGIARTI000037813953",
+        "LEGIARTI000037823097"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7071114182472229,
+        0.6982623040676117,
+        0.6897471845149994,
+        0.6694135963916779,
+        0.6679287850856781
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quel est le statut juridique de la Commission nationale de l'informatique et des libertés ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "LEGIARTI000054142440"
+      ],
+      "refs": [
+        "LEGIARTI000038923323",
+        "LEGIARTI000054142440",
+        "LEGIARTI000037822757",
+        "LEGIARTI000051830334",
+        "LEGIARTI000037822907"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.8020969331264496,
+        0.7972090840339661,
+        0.769575372338295,
+        0.7623893320560455,
+        0.7358368933200836
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "De combien de membres la Commission nationale de l'informatique et des libertés est-elle composée ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "LEGIARTI000038923323"
+      ],
+      "refs": [
+        "LEGIARTI000038923323",
+        "LEGIARTI000037822907",
+        "LEGIARTI000051830334",
+        "LEGIARTI000045072448",
+        "LEGIARTI000054142440"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8303618729114532,
+        0.7260264158248901,
+        0.7182483077049255,
+        0.7157043218612671,
+        0.7053901851177216
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelles sanctions la Commission peut-elle prononcer en cas de manquement au règlement général sur la protection des données ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "LEGIARTI000054138897"
+      ],
+      "refs": [
+        "LEGIARTI000049568348",
+        "LEGIARTI000049571930",
+        "LEGIARTI000049578536",
+        "LEGIARTI000054138897",
+        "LEGIARTI000037817692"
+      ],
+      "rangs": [
+        4
+      ],
+      "similarites": [
+        0.7257887125015259,
+        0.7136339545249939,
+        0.6968604922294617,
+        0.6909421980381012,
+        0.676914632320404
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quels traitements doivent être autorisés par arrêté après avis motivé de la Commission ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "LEGIARTI000037822860"
+      ],
+      "refs": [
+        "LEGIARTI000037822860",
+        "LEGIARTI000037822810",
+        "LEGIARTI000037822818",
+        "LEGIARTI000037822812",
+        "LEGIARTI000054138897"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7164192199707031,
+        0.6874167621135712,
+        0.67703977227211,
+        0.6615384519100189,
+        0.6574731767177582
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "À quel âge un mineur peut-il consentir seul à un traitement de données en ligne ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "LEGIARTI000037823135"
+      ],
+      "refs": [
+        "LEGIARTI000037823135",
+        "LEGIARTI000043887431",
+        "LEGIARTI000037823040",
+        "LEGIARTI000037822950",
+        "LEGIARTI000037822953"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8551853895187378,
+        0.7284199595451355,
+        0.6775537729263306,
+        0.6272946894168854,
+        0.5922409892082214
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelles règles encadrent le traitement des données relatives aux condamnations pénales ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "LEGIARTI000037823133"
+      ],
+      "refs": [
+        "LEGIARTI000037823133",
+        "LEGIARTI000037817622",
+        "LEGIARTI000037817698",
+        "LEGIARTI000037817658",
+        "LEGIARTI000037817636"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8022987693548203,
+        0.7129755616188049,
+        0.704524427652359,
+        0.6854696571826935,
+        0.6681623160839081
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelles obligations de sécurité pèsent sur le responsable du traitement ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "LEGIARTI000037823101"
+      ],
+      "refs": [
+        "LEGIARTI000037817729",
+        "LEGIARTI000037823072",
+        "LEGIARTI000037823077",
+        "LEGIARTI000037823101",
+        "LEGIARTI000037823087"
+      ],
+      "rangs": [
+        4
+      ],
+      "similarites": [
+        0.7780452966690063,
+        0.745794028043747,
+        0.7294844388961792,
+        0.7202246785163879,
+        0.705328106880188
+      ],
+      "niveau": "confiant"
+    }
+  ],
+  "agregats": {
+    "semantiques": 10,
+    "top5_semantique_succes": 10,
+    "top1_semantique_succes": 6,
+    "mrr_semantique": 0.75,
+    "referencees": 10,
+    "top5_global_succes": 10,
+    "top5_rendu_succes": 10,
+    "top1_rendu_succes": 6,
+    "mrr_rendu": 0.75,
+    "top5_global_rendu_succes": 10,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 7,
+    "incertain": 3,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  }
+}

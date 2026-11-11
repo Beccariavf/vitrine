@@ -1,0 +1,298 @@
+{
+  "date": "2026-11-10",
+  "modele": "qwen3-embedding:0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "cepd",
+  "recherche": "dense",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine-mcp/data/corpus/index/index.db",
+    "unites": 53143
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "table (repli, cepd)",
+  "questions": [
+    {
+      "question": "Comment le CEPD calcule-t-il le montant des amendes administratives au titre du RGPD ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "guidelines-042022-on-the-calculation-of-administrative-fines-under-the-gdpr"
+      ],
+      "refs": [
+        "guidelines-042022-on-the-calculation-of-administrative-fines-under-the-gdpr#f2",
+        "guidelines-042022-on-the-calculation-of-administrative-fines-under-the-gdpr#f29",
+        "guidelines-042022-on-the-calculation-of-administrative-fines-under-the-gdpr#f220",
+        "guidelines-042022-on-the-calculation-of-administrative-fines-under-the-gdpr#f32",
+        "guidelines-042022-on-the-calculation-of-administrative-fines-under-the-gdpr#f1"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8814701214432716,
+        0.8750323206186295,
+        0.8701507896184921,
+        0.8688235729932785,
+        0.8683626353740692
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles garanties encadrent l'utilisation de la reconnaissance faciale par les autorités répressives ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "guidelines-052022-on-the-use-of-facial-recognition-technology-in-the-area-of"
+      ],
+      "refs": [
+        "guidelines-052022-on-the-use-of-facial-recognition-technology-in-the-area-of#f14",
+        "guidelines-052022-on-the-use-of-facial-recognition-technology-in-the-area-of#f32",
+        "guidelines-052022-on-the-use-of-facial-recognition-technology-in-the-area-of#f221",
+        "guidelines-052022-on-the-use-of-facial-recognition-technology-in-the-area-of#f225",
+        "guidelines-052022-on-the-use-of-facial-recognition-technology-in-the-area-of#f161"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8398316353559494,
+        0.8329225182533264,
+        0.8301942944526672,
+        0.8275284022092819,
+        0.8258434385061264
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles informations le responsable du traitement doit-il fournir à la personne qui exerce son droit d'accès ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "guidelines-012022-on-data-subject-rights-right-of-access"
+      ],
+      "refs": [
+        "guidelines-012022-on-data-subject-rights-right-of-access#f228",
+        "guidelines-012022-on-data-subject-rights-right-of-access#f245",
+        "guidelines-012022-on-data-subject-rights-right-of-access#f87",
+        "guidelines-012022-on-data-subject-rights-right-of-access#f211",
+        "guidelines-012022-on-data-subject-rights-right-of-access#f98"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7941532731056213,
+        0.787520557641983,
+        0.78599613904953,
+        0.7835113704204559,
+        0.7821339666843414
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quels critères permettent de reconnaître un modèle de conception trompeur sur les plateformes de médias sociaux ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "guidelines-032022-on-deceptive-design-patterns-in-social-media-platform"
+      ],
+      "refs": [
+        "guidelines-032022-on-deceptive-design-patterns-in-social-media-platform#f62",
+        "guidelines-032022-on-deceptive-design-patterns-in-social-media-platform#f29",
+        "guidelines-032022-on-deceptive-design-patterns-in-social-media-platform#f7",
+        "guidelines-032022-on-deceptive-design-patterns-in-social-media-platform#f244",
+        "guidelines-032022-on-deceptive-design-patterns-in-social-media-platform#f0"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7767687737941742,
+        0.7722110748291016,
+        0.7681475579738617,
+        0.7666126191616058,
+        0.7653069198131561
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles obligations s'appliquent aux assistants vocaux virtuels qui traitent des données personnelles ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "guidelines-022021-on-virtual-voice-assistants"
+      ],
+      "refs": [
+        "guidelines-022021-on-virtual-voice-assistants#f72",
+        "guidelines-022021-on-virtual-voice-assistants#f79",
+        "guidelines-022021-on-virtual-voice-assistants#f103",
+        "guidelines-022021-on-virtual-voice-assistants#f135",
+        "guidelines-022021-on-virtual-voice-assistants#f70"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8373854458332062,
+        0.8327866196632385,
+        0.8294439762830734,
+        0.8235640823841095,
+        0.821299821138382
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Comment distinguer un responsable du traitement d'un sous-traitant au sens du RGPD ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "guidelines-072020-on-the-concepts-of-controller-and-processor-in-the-gdpr"
+      ],
+      "refs": [
+        "guidelines-072020-on-the-concepts-of-controller-and-processor-in-the-gdpr#f7",
+        "guidelines-072020-on-the-concepts-of-controller-and-processor-in-the-gdpr#f136",
+        "guidelines-072020-on-the-concepts-of-controller-and-processor-in-the-gdpr#f239",
+        "guidelines-072020-on-the-concepts-of-controller-and-processor-in-the-gdpr#f283",
+        "guidelines-072020-on-the-concepts-of-controller-and-processor-in-the-gdpr#f240"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.9038326442241669,
+        0.9025401100516319,
+        0.8879312872886658,
+        0.8871836140751839,
+        0.8846869915723801
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Que signifie l'obligation de protection des données dès la conception et par défaut ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "guidelines-42019-on-article-25-data-protection-by-design-and-by-default"
+      ],
+      "refs": [
+        "guidelines-42019-on-article-25-data-protection-by-design-and-by-default#f7",
+        "guidelines-42019-on-article-25-data-protection-by-design-and-by-default#f8",
+        "guidelines-42019-on-article-25-data-protection-by-design-and-by-default#f14",
+        "guidelines-42019-on-article-25-data-protection-by-design-and-by-default#f13",
+        "guidelines-42019-on-article-25-data-protection-by-design-and-by-default#f20"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8781853839755058,
+        0.8595222681760788,
+        0.8577763885259628,
+        0.854525163769722,
+        0.8474626243114471
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quels critères le CEPD retient-il pour le droit à l'oubli dans les moteurs de recherche ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "guidelines-52019-on-the-criteria-of-the-right-to-be-forgotten-in-the-search"
+      ],
+      "refs": [
+        "guidelines-52019-on-the-criteria-of-the-right-to-be-forgotten-in-the-search#f72",
+        "guidelines-52019-on-the-criteria-of-the-right-to-be-forgotten-in-the-search#f7",
+        "guidelines-52019-on-the-criteria-of-the-right-to-be-forgotten-in-the-search#f35",
+        "guidelines-52019-on-the-criteria-of-the-right-to-be-forgotten-in-the-search#f0",
+        "guidelines-52019-on-the-criteria-of-the-right-to-be-forgotten-in-the-search#f8"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8194788247346878,
+        0.8121422082185745,
+        0.8106520026922226,
+        0.804237887263298,
+        0.8000852018594742
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles règles encadrent le traitement de données de santé à des fins de recherche pendant la pandémie de COVID-19 ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "guidelines-032020-on-the-processing-of-data-concerning-health-for-the-purpose"
+      ],
+      "refs": [
+        "guidelines-032020-on-the-processing-of-data-concerning-health-for-the-purpose#f61",
+        "guidelines-032020-on-the-processing-of-data-concerning-health-for-the-purpose#f17",
+        "guidelines-032020-on-the-processing-of-data-concerning-health-for-the-purpose#f5",
+        "guidelines-032020-on-the-processing-of-data-concerning-health-for-the-purpose#f7",
+        "guidelines-032020-on-the-processing-of-data-concerning-health-for-the-purpose#f8"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8911227881908417,
+        0.8772820755839348,
+        0.8673665821552277,
+        0.8640018701553345,
+        0.863560676574707
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelles conditions encadrent l'utilisation de données de localisation et d'outils de recherche de contacts pendant la pandémie ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "guidelines-042020-on-the-use-of-location-data-and-contact-tracing-tools-in-the"
+      ],
+      "refs": [
+        "guidelines-042020-on-the-use-of-location-data-and-contact-tracing-tools-in-the#f61",
+        "guidelines-042020-on-the-use-of-location-data-and-contact-tracing-tools-in-the#f1",
+        "guidelines-042020-on-the-use-of-location-data-and-contact-tracing-tools-in-the#f46",
+        "guidelines-042020-on-the-use-of-location-data-and-contact-tracing-tools-in-the#f5",
+        "guidelines-042020-on-the-use-of-location-data-and-contact-tracing-tools-in-the#f37"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8670686334371567,
+        0.8662648648023605,
+        0.860179677605629,
+        0.8585836738348007,
+        0.8581545501947403
+      ],
+      "niveau": "incertain"
+    }
+  ],
+  "agregats": {
+    "semantiques": 10,
+    "top5_semantique_succes": 10,
+    "top1_semantique_succes": 10,
+    "mrr_semantique": 1,
+    "referencees": 10,
+    "top5_global_succes": 10,
+    "top5_rendu_succes": 10,
+    "top1_rendu_succes": 10,
+    "mrr_rendu": 1,
+    "top5_global_rendu_succes": 10,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 2,
+    "incertain": 8,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  }
+}

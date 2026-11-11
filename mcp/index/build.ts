@@ -8,6 +8,7 @@ import type { Unite } from "../corpus/parse.ts";
 import { dateIndex, montantIndex, numeroIndex } from "../corpus/cnil/meta.ts";
 import { createOllamaEmbedder } from "../embed/embedder.ts";
 import type { Embedder } from "../embed/embedder.ts";
+import { createOpenAIEmbedder } from "../embed/openai.ts";
 
 const RACINE = fileURLToPath(new URL("../..", import.meta.url));
 
@@ -30,6 +31,8 @@ export type DeltaIndex = {
   modifiees: number;
   supprimees: number;
   inchangees: number;
+  /** Unités dont seule une colonne d'affichage a changé. */
+  metaModifiees: number;
 };
 
 export type ResultatBuild = {
@@ -107,6 +110,7 @@ CREATE TABLE unites (
   statut TEXT NOT NULL,
   url TEXT NOT NULL,
   empreinte TEXT NOT NULL,
+  nature TEXT NOT NULL DEFAULT '',
   type_sanction TEXT NOT NULL DEFAULT 'autre',
   montant INTEGER,
   injonction INTEGER NOT NULL DEFAULT 0,
@@ -116,6 +120,7 @@ CREATE TABLE unites (
 CREATE VIRTUAL TABLE vec_unites USING vec0(
   corpus TEXT,
   document TEXT,
+  nature TEXT,
   date_num INTEGER,
   type_sanction TEXT,
   montant INTEGER,
@@ -128,6 +133,8 @@ CREATE VIRTUAL TABLE fts_unites USING fts5(chemin, texte, tokenize="unicode61 re
 
 /** Métadonnées d'index d'une unité ; `-1` marque un montant inconnu. */
 export type ChampsMeta = {
+  /** Nature CNIL ; `""` pour les corpus qui n'en portent pas. */
+  nature: string;
   type_sanction: string;
   /** `null` pour un montant absent ou masqué ; `-1` est réservé à `vec0`. */
   montant: number | null;
@@ -138,6 +145,7 @@ export type ChampsMeta = {
 
 export function champsMeta(unite: Unite): ChampsMeta {
   return {
+    nature: unite.nature ?? "",
     type_sanction: unite.type_sanction ?? "autre",
     montant: unite.montant === undefined || unite.montant === null ? null : Math.trunc(unite.montant),
     injonction: unite.injonction === true ? 1 : 0,
@@ -184,7 +192,18 @@ export function empreinteUnite(unite: Unite, embedder: Embedder): string {
     .digest("hex");
 }
 
-type LigneIndex = { ref: string; rowid: number; empreinte: string };
+type LigneIndex = {
+  ref: string;
+  rowid: number;
+  empreinte: string;
+  numero: string;
+  niveau: string;
+  date_acte: string;
+  date_debut: string;
+  date_fin: string | null;
+  statut: string;
+  url: string;
+};
 
 type Existant =
   | { compatible: true; db: DatabaseSync; lignes: LigneIndex[]; maxRowid: number }
@@ -239,10 +258,21 @@ function ouvrirExistant(chemin: string, embedder: Embedder): Existant {
       return { compatible: false, raison: "index sans table lexicale" };
     }
 
-    const lignes = db.prepare("SELECT ref, rowid, empreinte FROM unites").all() as {
+    const lignes = db
+      .prepare(
+        "SELECT ref, rowid, empreinte, numero, niveau, date_acte, date_debut, date_fin, statut, url FROM unites",
+      )
+      .all() as {
       ref: string;
       rowid: number | bigint;
       empreinte: string;
+      numero: string;
+      niveau: string;
+      date_acte: string;
+      date_debut: string;
+      date_fin: string | null;
+      statut: string;
+      url: string;
     }[];
     const maximum = db.prepare("SELECT max(rowid) AS maximum FROM unites").get() as {
       maximum: number | bigint | null;
@@ -254,6 +284,13 @@ function ouvrirExistant(chemin: string, embedder: Embedder): Existant {
         ref: ligne.ref,
         rowid: Number(ligne.rowid),
         empreinte: ligne.empreinte,
+        numero: ligne.numero,
+        niveau: ligne.niveau,
+        date_acte: ligne.date_acte,
+        date_debut: ligne.date_debut,
+        date_fin: ligne.date_fin,
+        statut: ligne.statut,
+        url: ligne.url,
       })),
       maxRowid: maximum.maximum === null ? 0 : Number(maximum.maximum),
     };
@@ -272,7 +309,22 @@ type Delta = {
   modifiees: Unite[];
   supprimees: LigneIndex[];
   inchangees: Unite[];
+  /** Unités inchangées pour le vecteur, mais dont l'affichage a changé. */
+  metaModifiees: { unite: Unite; rowid: number }[];
 };
+
+/** Vrai si une colonne d'affichage a changé sans toucher au passage embarqué. */
+function metaChangee(existante: LigneIndex, unite: Unite): boolean {
+  return (
+    existante.numero !== unite.numero ||
+    existante.niveau !== unite.niveau ||
+    existante.date_acte !== unite.date_acte ||
+    existante.date_debut !== unite.date_debut ||
+    existante.date_fin !== unite.date_fin ||
+    existante.statut !== unite.statut ||
+    existante.url !== unite.url
+  );
+}
 
 function calculerDelta(
   lignes: LigneIndex[],
@@ -285,17 +337,24 @@ function calculerDelta(
   const ajoutees: Unite[] = [];
   const modifiees: Unite[] = [];
   const inchangees: Unite[] = [];
+  const metaModifiees: { unite: Unite; rowid: number }[] = [];
   for (const unite of unites) {
     const existante = parRef.get(unite.ref);
     if (existante === undefined) ajoutees.push(unite);
     else if (existante.empreinte !== empreintes.get(unite.ref)) modifiees.push(unite);
-    else inchangees.push(unite);
+    else {
+      inchangees.push(unite);
+      if (metaChangee(existante, unite)) {
+        metaModifiees.push({ unite, rowid: existante.rowid });
+      }
+    }
   }
   return {
     ajoutees,
     modifiees,
     supprimees: lignes.filter((ligne) => !refsCorpus.has(ligne.ref)),
     inchangees,
+    metaModifiees,
   };
 }
 
@@ -341,11 +400,11 @@ async function construireComplet(
     db.exec(SCHEMA(embedder.dim));
 
     const insererUnite = db.prepare(`
-      INSERT INTO unites (rowid, ref, document, corpus, niveau, numero, chemin, texte, date_acte, date_debut, date_fin, statut, url, empreinte, type_sanction, montant, injonction, date_num, numero_index)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO unites (rowid, ref, document, corpus, niveau, numero, chemin, texte, date_acte, date_debut, date_fin, statut, url, empreinte, nature, type_sanction, montant, injonction, date_num, numero_index)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     const insererVecteur = db.prepare(
-      "INSERT INTO vec_unites (rowid, corpus, document, date_num, type_sanction, montant, numero, injonction, embedding) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO vec_unites (rowid, corpus, document, nature, date_num, type_sanction, montant, numero, injonction, embedding) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
     );
     const insererFts = db.prepare(
       "INSERT INTO fts_unites (rowid, chemin, texte) VALUES (?, ?, ?)",
@@ -374,6 +433,7 @@ async function construireComplet(
         unite.statut,
         unite.url,
         empreintes.get(unite.ref) ?? "",
+        meta.nature,
         meta.type_sanction,
         meta.montant,
         BigInt(meta.injonction),
@@ -384,6 +444,7 @@ async function construireComplet(
         rowid,
         unite.corpus,
         unite.document,
+        meta.nature,
         BigInt(meta.date_num),
         meta.type_sanction,
         montantVecteur(meta.montant),
@@ -432,15 +493,21 @@ async function appliquerDelta(
     UPDATE unites
        SET document = ?, corpus = ?, niveau = ?, numero = ?, chemin = ?, texte = ?, date_acte = ?,
            date_debut = ?, date_fin = ?, statut = ?, url = ?, empreinte = ?,
-           type_sanction = ?, montant = ?, injonction = ?, date_num = ?, numero_index = ?
+           nature = ?, type_sanction = ?, montant = ?, injonction = ?, date_num = ?, numero_index = ?
+     WHERE rowid = ?
+  `);
+  const modifierMeta = db.prepare(`
+    UPDATE unites
+       SET numero = ?, numero_index = ?, niveau = ?, date_acte = ?, date_debut = ?, date_fin = ?,
+           statut = ?, url = ?
      WHERE rowid = ?
   `);
   const insererUnite = db.prepare(`
-    INSERT INTO unites (rowid, ref, document, corpus, niveau, numero, chemin, texte, date_acte, date_debut, date_fin, statut, url, empreinte, type_sanction, montant, injonction, date_num, numero_index)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO unites (rowid, ref, document, corpus, niveau, numero, chemin, texte, date_acte, date_debut, date_fin, statut, url, empreinte, nature, type_sanction, montant, injonction, date_num, numero_index)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
   const insererVecteur = db.prepare(
-    "INSERT INTO vec_unites (rowid, corpus, document, date_num, type_sanction, montant, numero, injonction, embedding) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    "INSERT INTO vec_unites (rowid, corpus, document, nature, date_num, type_sanction, montant, numero, injonction, embedding) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
   );
   const ecrireMeta = db.prepare(
     "INSERT INTO meta (cle, valeur) VALUES (?, ?) ON CONFLICT(cle) DO UPDATE SET valeur = excluded.valeur",
@@ -469,6 +536,20 @@ async function appliquerDelta(
       supprimerUnite.run(BigInt(ligne.rowid));
     }
 
+    for (const { unite, rowid } of delta.metaModifiees) {
+      modifierMeta.run(
+        unite.numero,
+        numeroIndex(unite.numero),
+        unite.niveau,
+        unite.date_acte,
+        unite.date_debut,
+        unite.date_fin,
+        unite.statut,
+        unite.url,
+        BigInt(rowid),
+      );
+    }
+
     for (const unite of delta.modifiees) {
       const rowid = anciennes.get(unite.ref);
       const vecteur = vecteurs.get(unite.ref);
@@ -489,6 +570,7 @@ async function appliquerDelta(
         unite.statut,
         unite.url,
         empreintes.get(unite.ref) ?? "",
+        meta.nature,
         meta.type_sanction,
         meta.montant,
         BigInt(meta.injonction),
@@ -501,6 +583,7 @@ async function appliquerDelta(
         BigInt(rowid),
         unite.corpus,
         unite.document,
+        meta.nature,
         BigInt(meta.date_num),
         meta.type_sanction,
         montantVecteur(meta.montant),
@@ -534,6 +617,7 @@ async function appliquerDelta(
         unite.statut,
         unite.url,
         empreintes.get(unite.ref) ?? "",
+        meta.nature,
         meta.type_sanction,
         meta.montant,
         BigInt(meta.injonction),
@@ -544,6 +628,7 @@ async function appliquerDelta(
         BigInt(rowid),
         unite.corpus,
         unite.document,
+        meta.nature,
         BigInt(meta.date_num),
         meta.type_sanction,
         montantVecteur(meta.montant),
@@ -572,6 +657,7 @@ export function migrerVecteurs(db: DatabaseSync, dim: number, unites: Unite[]): 
   const colonnesUnites = db.prepare("PRAGMA table_info(unites)").all() as { name: string }[];
   const nomsUnites = new Set(colonnesUnites.map((colonne) => colonne.name));
   const ajouts: [string, string][] = [
+    ["nature", "TEXT NOT NULL DEFAULT ''"],
     ["type_sanction", "TEXT NOT NULL DEFAULT 'autre'"],
     ["montant", "INTEGER"],
     ["injonction", "INTEGER NOT NULL DEFAULT 0"],
@@ -586,12 +672,13 @@ export function migrerVecteurs(db: DatabaseSync, dim: number, unites: Unite[]): 
   try {
     const maj = db.prepare(`
       UPDATE unites
-         SET type_sanction = ?, montant = ?, injonction = ?, date_num = ?, numero_index = ?
+         SET nature = ?, type_sanction = ?, montant = ?, injonction = ?, date_num = ?, numero_index = ?
        WHERE ref = ?
     `);
     for (const unite of unites) {
       const meta = champsMeta(unite);
       maj.run(
+        meta.nature,
         meta.type_sanction,
         meta.montant,
         BigInt(meta.injonction),
@@ -603,7 +690,7 @@ export function migrerVecteurs(db: DatabaseSync, dim: number, unites: Unite[]): 
 
     const colonnesVecteurs = db.prepare("PRAGMA table_info(vec_unites)").all() as { name: string }[];
     const nomsVecteurs = new Set(colonnesVecteurs.map((colonne) => colonne.name));
-    const attendues = ["corpus", "document", "date_num", "type_sanction", "montant", "numero", "injonction"];
+    const attendues = ["corpus", "document", "nature", "date_num", "type_sanction", "montant", "numero", "injonction"];
     const complete = attendues.every((nom) => nomsVecteurs.has(nom));
     const sha = empreinteMeta(unites);
     const ancienSha = (() => {
@@ -625,11 +712,11 @@ export function migrerVecteurs(db: DatabaseSync, dim: number, unites: Unite[]): 
     // laisse ses tables d'ombre sous l'ancien nom et casse l'index.
     db.exec(
       "CREATE TABLE vec_migration (rowid INTEGER PRIMARY KEY, corpus TEXT, document TEXT, " +
-        "date_num INTEGER, type_sanction TEXT, montant INTEGER, numero TEXT, injonction INTEGER, embedding BLOB)",
+        "nature TEXT, date_num INTEGER, type_sanction TEXT, montant INTEGER, numero TEXT, injonction INTEGER, embedding BLOB)",
     );
     db.exec(
-      `INSERT INTO vec_migration (rowid, corpus, document, date_num, type_sanction, montant, numero, injonction, embedding)
-         SELECT v.rowid, u.corpus, u.document, u.date_num, u.type_sanction, u.montant, u.numero_index,
+      `INSERT INTO vec_migration (rowid, corpus, document, nature, date_num, type_sanction, montant, numero, injonction, embedding)
+         SELECT v.rowid, u.corpus, u.document, u.nature, u.date_num, u.type_sanction, u.montant, u.numero_index,
                 u.injonction, v.embedding
            FROM vec_unites v JOIN unites u ON u.rowid = v.rowid`,
     );
@@ -638,6 +725,7 @@ export function migrerVecteurs(db: DatabaseSync, dim: number, unites: Unite[]): 
       `CREATE VIRTUAL TABLE vec_unites USING vec0(
          corpus TEXT,
          document TEXT,
+         nature TEXT,
          date_num INTEGER,
          type_sanction TEXT,
          montant INTEGER,
@@ -648,12 +736,13 @@ export function migrerVecteurs(db: DatabaseSync, dim: number, unites: Unite[]): 
     );
     const lignes = db
       .prepare(
-        "SELECT rowid, corpus, document, date_num, type_sanction, montant, numero, injonction, embedding FROM vec_migration",
+        "SELECT rowid, corpus, document, nature, date_num, type_sanction, montant, numero, injonction, embedding FROM vec_migration",
       )
       .all() as {
       rowid: number | bigint;
       corpus: string;
       document: string;
+      nature: string;
       date_num: number | bigint;
       type_sanction: string;
       montant: number | bigint;
@@ -662,13 +751,14 @@ export function migrerVecteurs(db: DatabaseSync, dim: number, unites: Unite[]): 
       embedding: Uint8Array;
     }[];
     const inserer = db.prepare(
-      "INSERT INTO vec_unites (rowid, corpus, document, date_num, type_sanction, montant, numero, injonction, embedding) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO vec_unites (rowid, corpus, document, nature, date_num, type_sanction, montant, numero, injonction, embedding) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
     );
     for (const ligne of lignes) {
       inserer.run(
         BigInt(ligne.rowid),
         ligne.corpus,
         ligne.document,
+        ligne.nature,
         BigInt(ligne.date_num),
         ligne.type_sanction,
         BigInt(ligne.montant === null ? -1 : ligne.montant),
@@ -715,6 +805,7 @@ export async function buildIndex(rootDir: string, embedder: Embedder): Promise<R
         modifiees: 0,
         supprimees: 0,
         inchangees: 0,
+        metaModifiees: 0,
       },
       mode: "complet",
       raison: existant.raison,
@@ -745,6 +836,7 @@ export async function buildIndex(rootDir: string, embedder: Embedder): Promise<R
         modifiees: delta.modifiees.length,
         supprimees: delta.supprimees.length,
         inchangees: delta.inchangees.length,
+        metaModifiees: delta.metaModifiees.length,
       },
       mode: "incremental",
     };
@@ -766,16 +858,64 @@ export function formaterJournal(resultat: ResultatBuild, embedder: Embedder): st
     `${resultat.unites} unités indexées dans ${resultat.chemin} ` +
     `(${embedder.model}, ${embedder.dim} dimensions, ${resultat.mode}${raison}) : ` +
     `${resultat.delta.ajoutees} ajoutées, ${resultat.delta.modifiees} modifiées, ` +
-    `${resultat.delta.supprimees} supprimées, ${resultat.delta.inchangees} inchangées\n`
+    `${resultat.delta.supprimees} supprimées, ${resultat.delta.inchangees} inchangées, ` +
+    `${resultat.delta.metaModifiees} métadonnées rafraîchies\n`
   );
+}
+
+/** `--fournisseur` : `ollama` par défaut, `openai` pour un service `/v1/embeddings`. */
+export type Fournisseur = "ollama" | "openai";
+
+export function lireFournisseur(valeur: string | undefined): Fournisseur {
+  if (valeur === undefined) return "ollama";
+  if (valeur !== "ollama" && valeur !== "openai") {
+    throw new Error(
+      `--fournisseur attendu ollama ou openai ; reçu « ${valeur === "" ? "(vide)" : valeur} »`,
+    );
+  }
+  return valeur;
+}
+
+/** L'embedder du fournisseur demandé ; un `--fournisseur` absent garde Ollama. */
+export function creerEmbedder(
+  fournisseur: Fournisseur,
+  options: {
+    modele?: string;
+    dim?: string;
+    url?: string;
+    instructions?: Record<string, string>;
+    defaut?: string;
+  },
+): Embedder {
+  if (fournisseur === "openai" && (options.modele === undefined || options.modele === "")) {
+    throw new Error(
+      "--fournisseur openai exige --modele : le service ne dit pas de lui-même quel modèle il sert.",
+    );
+  }
+  const commun = {
+    ...(options.modele === undefined ? {} : { model: options.modele }),
+    ...(options.dim === undefined ? {} : { dim: Number(options.dim) }),
+    ...(options.instructions === undefined ? {} : { instructions: options.instructions }),
+    ...(options.defaut === undefined ? {} : { defaut: options.defaut }),
+  };
+  if (fournisseur === "openai") {
+    return createOpenAIEmbedder({
+      ...commun,
+      model: options.modele ?? "",
+      ...(options.url === undefined ? {} : { url: options.url }),
+    });
+  }
+  return createOllamaEmbedder(commun);
 }
 
 async function main(argv: string[]): Promise<void> {
   const modele = valeurDe("--modele", argv);
   const dim = valeurDe("--dim", argv);
-  const embedder = createOllamaEmbedder({
-    ...(modele === undefined ? {} : { model: modele }),
-    ...(dim === undefined ? {} : { dim: Number(dim) }),
+  const url = valeurDe("--embed-url", argv);
+  const embedder = creerEmbedder(lireFournisseur(valeurDe("--fournisseur", argv)), {
+    ...(modele === undefined ? {} : { modele }),
+    ...(dim === undefined ? {} : { dim }),
+    ...(url === undefined ? {} : { url }),
   });
   const resultat = await buildIndex(valeurDe("--root", argv) ?? RACINE, embedder);
   process.stderr.write(formaterJournal(resultat, embedder));

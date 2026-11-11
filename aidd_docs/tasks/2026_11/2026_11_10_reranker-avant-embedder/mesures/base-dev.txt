@@ -1,0 +1,73 @@
+date : 2026-11-10
+modèle : qwen3-embedding:0.6b (1024 dimensions)
+corpus : cnil
+recherche : dense
+instruction : actuelle
+split : dev
+jeu : 60 questions (0 références, 54 conceptuelles, 6 pièges)
+seuils : bas=0.620 haut=0.670 marge=0.010 (calibrés sur dev)
+références exactes : 0 questions, rang 1 par construction (recall@5 0.000, MRR 0.000)
+recherche sémantique : 54 questions, recall@5 0.722 (39/54), MRR 0.625
+top-1 sémantique : 53.7 %
+niveaux sémantiques : 30 confiant, 24 incertain, 0 aucun_resultat_fiable
+pièges : 6 par seuil, 0 déterministe (aucun)
+pièges cités : 6/6 (Quelle sanction la CNIL a-t-elle prononcée contre une compagnie aérienne pour la reconnaissance faciale des passagers à l'embarquement ? · Quel avis la CNIL a-t-elle rendu sur l'installation de caméras dans les piscines municipales ? · Que recommande la CNIL pour les données de santé des animaux de compagnie dans les cliniques vétérinaires ? · Quel avis la CNIL a-t-elle rendu sur un projet de recherche utilisant des implants cérébraux chez des patients paralysés ? · Quelle sanction la CNIL a-t-elle prononcée contre un loueur de vélos en libre-service pour la géolocalisation des trajets de ses utilisateurs ? · Quel avis la CNIL a-t-elle rendu sur les puces électroniques implantées sous la peau des salariés pour contrôler l'accès aux locaux ?)
+pièges confiants : 4 (Quelle sanction la CNIL a-t-elle prononcée contre une compagnie aérienne pour la reconnaissance faciale des passagers à l'embarquement ? · Que recommande la CNIL pour les données de santé des animaux de compagnie dans les cliniques vétérinaires ? · Quelle sanction la CNIL a-t-elle prononcée contre un loueur de vélos en libre-service pour la géolocalisation des trajets de ses utilisateurs ? · Quel avis la CNIL a-t-elle rendu sur les puces électroniques implantées sous la peau des salariés pour contrôler l'accès aux locaux ?)
+référence attendue, rang et similarité :
+  Comment les entreprises peuvent-elles mesurer la diversité au travail sans collecter trop de données personnelles ? → CNILTEXT000051709275 : rang 1 (0.747)
+  Que recommande la CNIL aux organismes qui publient des données personnelles en open data ? → CNILTEXT000049694593 : rang 1 (0.860)
+  Que recommande la CNIL pour sécuriser le partage de données entre organismes au moyen d'interfaces de programmation ? → CNILTEXT000047748672 : rang 2 (0.756)
+  Quelles précautions la CNIL demande-t-elle pour la télésurveillance des examens passés à distance ? → CNILTEXT000048042501 : rang 1 (0.806)
+  Quelles règles la CNIL pose-t-elle quand un mandataire exerce les droits RGPD à la place d'une personne ? → CNILTEXT000043708485 : rang 2 (0.747)
+  Combien de temps conserver les journaux de connexion et comment les utiliser ? → CNILTEXT000044283637 : rang 1 (0.793)
+  Que recommande la CNIL aux recruteurs qui collectent des informations sur les candidats ? → CNILTEXT000047110877 : rang absent
+  Quel avis la CNIL a-t-elle rendu sur la lecture automatisée des plaques d'immatriculation pour le péage en flux libre ? → CNILTEXT000054303211 : rang 1 (0.825)
+  Quel est l'avis de la CNIL sur le recensement des personnes et des biens en vue d'une réquisition lors d'un exercice militaire ? → CNILTEXT000053973741 : rang 1 (0.799)
+  Que pense la CNIL du fichier national des comptes signalés pour risque de fraude ? → CNILTEXT000053973732 : rang 1 (0.758)
+  Quel avis la CNIL a-t-elle rendu sur le projet de loi qui élargit les caméras individuelles et l'usage des drones par les forces de sécurité ? → CNILTEXT000053716494 : rang 1 (0.903)
+  Quel est l'avis de la CNIL sur l'examen des caractéristiques génétiques dans les enquêtes pénales ? → CNILTEXT000053702370 : rang 1 (0.824)
+  Quel avis la CNIL a-t-elle rendu sur le décret qui modifie le fichier électoral et la communication des listes d'électeurs ? → CNILTEXT000054252707 : rang absent
+  Quelles conditions la CNIL pose-t-elle aux caméras individuelles des surveillants de prison ? → CNILTEXT000054419646 : rang 1 (0.813)
+  Quel avis la CNIL a-t-elle rendu sur l'extension du fichier d'honorabilité aux personnes âgées et aux majeurs protégés ? → CNILTEXT000054019761 : rang absent
+  Quel est l'avis de la CNIL sur l'élargissement de la technique dite de l'algorithme utilisée par les services de renseignement ? → CNILTEXT000053781864 : rang 1 (0.815)
+  Que pense la CNIL du traitement qui met en relation les enquêtes administratives de la défense avec d'autres fichiers ? → CNILTEXT000053574128 : rang 2 (0.774)
+  Quel avis la CNIL a-t-elle rendu sur le visionnage des images de vidéoprotection par les agents d'Île-de-France Mobilités ? → CNILTEXT000054148225 : rang 1 (0.861)
+  Que dit la CNIL du traitement qui gère le parcours des personnes détenues en établissement pénitentiaire ? → CNILTEXT000054202949 : rang 1 (0.785)
+  Quel avis la CNIL a-t-elle rendu sur l'analyse des manifestes des navires pour cibler les contrôles douaniers ? → CNILTEXT000054841661 : rang 1 (0.796)
+  Que pense la CNIL du traitement des signalements d'incidents en milieu scolaire ? → CNILTEXT000053149493 : rang 1 (0.830)
+  Quelle sanction la CNIL a-t-elle prononcée contre la société qui analysait l'activité des officines à partir d'entrepôts de données de santé ? → CNILTEXT000054136834 : rang 1 (0.753)
+  Quelle amende de trois millions et demi d'euros la CNIL a-t-elle prononcée contre une enseigne de distribution pour son programme de fidélité ? → CNILTEXT000053391342 : rang absent
+  Quelle sanction la CNIL a-t-elle prononcée contre l'éditeur israélien d'un logiciel marketing qui hébergeait les données de ses clients ? → CNILTEXT000053048614 : rang absent
+  Quelle sanction la CNIL a-t-elle prononcée contre l'éditeur des magazines Vogue et Vanity Fair pour sa politique de cookies ? → CNILTEXT000052851847 : rang 4 (0.734)
+  Quelle amende la CNIL a-t-elle prononcée contre la filiale marketing de Pages Jaunes pour ses campagnes de SMS non consenties ? → CNILTEXT000051630617 : rang 2 (0.731)
+  Quelle sanction la CNIL a-t-elle prononcée contre une agence immobilière qui suivait le temps de travail de ses salariés avec un logiciel dédié ? → CNILTEXT000051120331 : rang 2 (0.737)
+  Quelle amende la CNIL a-t-elle prononcée contre Orange pour le service Mail Orange ? → CNILTEXT000050760620 : rang 1 (0.820)
+  Quelle amende a visé une chaîne de boutiques de téléphonie qui prospectait par SMS à partir de fichiers achetés ? → CNILTEXT000049382214 : rang absent
+  Quelle sanction a visé un distributeur de coupons de paiement utilisables en ligne ? → CNILTEXT000048907667 : rang 1 (0.719)
+  Quelle sanction a été prononcée contre une commune qui n'avait pas désigné de délégué à la protection des données ? → CNILTEXT000048580096 : rang 1 (0.851)
+  Quelle amende a visé le traitement français des demandes de visa qui interrogeait plusieurs fichiers ? → CNILTEXT000049059221 : rang 1 (0.756)
+  Quelle décision a suivi les 1590 plaintes contre un courriel politique envoyé par une administration à ses agents ? → CNILTEXT000048388493 : rang 1 (0.803)
+  Quelle sanction a visé une société de fret aérien après des plaintes de salariés sur des données réclamées par leur employeur ? → CNILTEXT000048110233 : rang absent
+  Quelle amende de quarante millions d'euros la CNIL a-t-elle prononcée contre une régie publicitaire pour le reciblage des internautes ? → CNILTEXT000047707063 : rang absent
+  Quelle sanction a visé un site de presse consacré à la santé et au bien-être ? → CNILTEXT000047552103 : rang absent
+  Quelle amende a visé un service de location de trottinettes électriques en libre-service ? → CNILTEXT000047346903 : rang 1 (0.677)
+  Quelle sanction la CNIL a-t-elle prononcée contre l'application musical.ly devenue TikTok ? → CNILTEXT000046977994 : rang 1 (0.681)
+  Quelle amende a visé un opérateur télécom qui remettait en circulation des box sans effacer les données des abonnés ? → CNILTEXT000046693390 : rang absent
+  Quelle sanction a visé un logiciel de messagerie vocale utilisé par les joueurs de jeux vidéo ? → CNILTEXT000046562676 : rang 2 (0.695)
+  Quelle amende a visé un groupement qui édite un service d'information légale sur les entreprises ? → CNILTEXT000046280956 : rang absent
+  Quelle amende a visé une plateforme d'autopartage de véhicules entre particuliers et professionnels ? → CNILTEXT000046070924 : rang absent
+  Quelle amende a visé un éditeur de logiciels pour laboratoires d'analyses médicales ? → CNILTEXT000045614368 : rang absent
+  Quelle sanction a visé un groupe hôtelier dont les clients n'obtenaient pas de réponse à leurs demandes ? → CNILTEXT000046198070 : rang 1 (0.728)
+  Quelle amende a visé un établissement de paiement qui avait réutilisé des données pour un projet de lutte contre la fraude ? → CNILTEXT000044609709 : rang absent
+  Quelle amende a visé un opérateur de téléphonie mobile pour la prospection commerciale et le droit d'opposition ? → CNILTEXT000044810599 : rang 1 (0.762)
+  Quelle amende a visé le fichier de police qui recense les empreintes digitales des personnes mises en cause ? → CNILTEXT000044115170 : rang absent
+  Quelle sanction a visé une société américaine qui avait fait constituer des fichiers sur des personnalités politiques et des journalistes ? → CNILTEXT000043860997 : rang 2 (0.710)
+  Quel avis la CNIL a-t-elle rendu sur la mise à jour des changements d'état civil dans les fichiers des organismes ? → CNILTEXT000053308330 : rang 1 (0.751)
+  Quel est l'avis de la CNIL sur l'extension des sources collectées pour détecter les ingérences numériques étrangères ? → CNILTEXT000053461680 : rang 2 (0.744)
+  Que pense la CNIL de l'échange de données entre la médecine du travail et l'assurance maladie sur les salariés menacés de désinsertion ? → CNILTEXT000054019591 : rang 1 (0.826)
+  Quel avis la CNIL a-t-elle rendu sur l'extension du traitement des titres sécurisés à la fraude à l'identité ? → CNILTEXT000053308064 : rang 2 (0.743)
+  Quelles obligations la CNIL voit-elle pour les hébergeurs de données de santé au nom de la souveraineté ? → CNILTEXT000053722050 : rang 1 (0.833)
+  Que pense la CNIL du dépôt de plainte par visioconférence ? → CNILTEXT000053308551 : rang 1 (0.762)
+premiers passages inattendus : CNILTEXT000047748672 ← CNILTEXT000055022641#f13 · CNILTEXT000043708485 ← CNILTEXT000044840062#f36 · CNILTEXT000047110877 ← CNILTEXT000017653561#f13 · CNILTEXT000054252707 ← CNILTEXT000017652959#f5 · CNILTEXT000054019761 ← CNILTEXT000054142873#f19 · CNILTEXT000053574128 ← CNILTEXT000049512612#f2 · CNILTEXT000053391342 ← CNILTEXT000046988935#f31 · CNILTEXT000053048614 ← CNILTEXT000034728338#f54 · CNILTEXT000052851847 ← CNILTEXT000043867129#f43 · CNILTEXT000051630617 ← CNILTEXT000025165758#f13 · CNILTEXT000051120331 ← CNILTEXT000028450684#f3 · CNILTEXT000049382214 ← CNILTEXT000025165758#f13 · CNILTEXT000048110233 ← CNILTEXT000034473080#f3 · CNILTEXT000047707063 ← CNILTEXT000046768989#f60 · CNILTEXT000047552103 ← CNILTEXT000050202759#f60 · CNILTEXT000046693390 ← CNILTEXT000017653887#f3 · CNILTEXT000046562676 ← CNILTEXT000046988935#f31 · CNILTEXT000046280956 ← CNILTEXT000052851847#f35 · CNILTEXT000046070924 ← CNILTEXT000046988935#f31 · CNILTEXT000045614368 ← CNILTEXT000052851847#f35 · CNILTEXT000044609709 ← CNILTEXT000036066916#f17 · CNILTEXT000044115170 ← CNILTEXT000017652231#f19 · CNILTEXT000043860997 ← CNILTEXT000028450267#f67 · CNILTEXT000053461680 ← CNILTEXT000053781864#f12 · CNILTEXT000053308064 ← CNILTEXT000050959650#f1
+têtes considérant pour un article attendu : 0/54
+paraphrase « droit de récupérer mes données » → art_20 : question absente de ce split

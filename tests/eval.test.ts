@@ -13,11 +13,17 @@ import {
   ecrireMesureTest,
   entreeQuestionJson,
   filtrerSplit,
+  INSTRUCTION_CNIL_NEUTRE,
+  instructionCnil,
+  instructionsDeMesure,
   intervalleWilson,
+  lireInstruction,
   lireJeu,
   lireQuestions,
+  lireRegle,
   lireSeuils,
   mrr,
+  moyenne,
   objetMesureJson,
   precisionAt1,
   recallAt5,
@@ -31,9 +37,15 @@ import {
   validerReferences,
   verifierAutorisationTest,
   verifierJsonSplit,
+  verifierRegleSeuils,
   verifierTestNonConsomme,
 } from "../mcp/eval/run.ts";
 import type { MarqueurV3, Mesure, Question, Split } from "../mcp/eval/run.ts";
+import {
+  INSTRUCTION_AIAct,
+  INSTRUCTION_CNIL,
+  INSTRUCTION_REQUETE,
+} from "../mcp/embed/embedder.ts";
 import { referenceExacte } from "../mcp/tools.ts";
 
 const QUESTIONS = readFileSync(new URL("../mcp/eval/questions.csv", import.meta.url), "utf8");
@@ -366,6 +378,180 @@ describe("les seuils figés", () => {
     assert.notEqual(resultat.status, 0);
     assert.equal(resultat.stdout, "", "le refus précède toute mesure");
     assert.match(resultat.stderr, /hors de \[0, 1\] « 1\.2 »/);
+  });
+});
+
+describe("la règle du produit", () => {
+  it("rend la table du corpus CNIL avec l'origine table", () => {
+    const retenus = seuilsDeMesure({
+      split: "dev",
+      avecSplit: true,
+      mesuresDev: [],
+      explicites: null,
+      regle: "produit",
+      corpus: "cnil",
+    });
+
+    assert.deepEqual(retenus.seuils, { bas: 0.73, haut: 0.73, marge: 0.01 });
+    assert.equal(retenus.calibration, null, "aucune grille ne tourne sous la règle du produit");
+    assert.match(retenus.origine, /table \(cnil\)/);
+  });
+
+  it("suit le repli pour un corpus sans promesse, en le nommant", () => {
+    const retenus = seuilsDeMesure({
+      split: "dev",
+      avecSplit: true,
+      mesuresDev: [],
+      explicites: null,
+      regle: "produit",
+      corpus: "rgpd",
+    });
+
+    assert.deepEqual(retenus.seuils, { bas: 0.69, haut: 0.74, marge: 0.01 });
+    assert.equal(retenus.calibration, null);
+    assert.match(retenus.origine, /table \(repli, rgpd\)/);
+  });
+
+  it("refuse --seuils en même temps, en nommant le conflit", () => {
+    assert.throws(
+      () => verifierRegleSeuils("produit", { bas: 0.6, haut: 0.7, marge: 0.01 }),
+      /--regle produit refuse --seuils/,
+    );
+    verifierRegleSeuils("calibree", { bas: 0.6, haut: 0.7, marge: 0.01 });
+    verifierRegleSeuils("produit", null);
+  });
+
+  it("refuse le conflit au niveau CLI, avant toute mesure", () => {
+    const run = fileURLToPath(new URL("../mcp/eval/run.ts", import.meta.url));
+    const racine = fileURLToPath(new URL("..", import.meta.url));
+    const resultat = spawnSync(
+      process.execPath,
+      [run, "--regle", "produit", "--seuils", "0.6,0.7,0.01"],
+      { cwd: racine, encoding: "utf8", timeout: 30_000 },
+    );
+
+    assert.notEqual(resultat.status, 0);
+    assert.equal(resultat.stdout, "", "le refus précède toute mesure");
+    assert.match(resultat.stderr, /--regle produit refuse --seuils/);
+  });
+
+  it("refuse une règle inconnue en la nommant", () => {
+    assert.equal(lireRegle(undefined), "calibree");
+    assert.equal(lireRegle("calibree"), "calibree");
+    assert.equal(lireRegle("produit"), "produit");
+    assert.throws(() => lireRegle("grille"), /--regle attendu calibree ou produit ; reçu « grille »/);
+    assert.throws(() => lireRegle(""), /--regle attendu calibree ou produit ; reçu « \(vide\) »/);
+  });
+
+  it("garde les refs d'une mesure dev quand seule la règle change", () => {
+    const mesures: Mesure[] = [
+      {
+        question: {
+          question: "une sanction récente sur les cookies",
+          type: "conceptuelle",
+          attendues: ["CNILTEXT000055000001"],
+          piege: false,
+          split: "dev",
+        },
+        refs: ["CNILTEXT000055000002#f0", "CNILTEXT000055000001#f1"],
+        distances: [0.265, 0.5],
+      },
+    ];
+    const commun = {
+      date: "2026-11-10",
+      modele: "qwen3-embedding:0.6b",
+      dimensions: 1024,
+      split: "dev" as const,
+      corpus: "cnil",
+      recherche: "dense" as const,
+      index: { chemin: "/tmp/corpus/index/index.db", unites: 53_143 },
+      mesures,
+    };
+    const calibree = objetMesureJson({
+      ...commun,
+      seuils: { bas: 0.69, haut: 0.74, marge: 0.01 },
+      seuilsOrigine: "calibrés sur dev",
+    });
+    const produit = objetMesureJson({
+      ...commun,
+      seuils: { bas: 0.73, haut: 0.73, marge: 0.01 },
+      seuilsOrigine: "table (cnil)",
+    });
+
+    assert.equal(calibree.seuils_origine, "calibrés sur dev");
+    assert.equal(produit.seuils_origine, "table (cnil)");
+
+    assert.deepEqual(
+      produit.questions.map((entree) => entree.refs),
+      calibree.questions.map((entree) => entree.refs),
+      "la règle ne touche pas ce que la recherche a rendu",
+    );
+    assert.deepEqual(
+      produit.questions.map((entree) => entree.similarites),
+      calibree.questions.map((entree) => entree.similarites),
+    );
+    assert.equal(calibree.questions[0]?.niveau, "incertain");
+    assert.equal(produit.questions[0]?.niveau, "confiant");
+  });
+});
+
+describe("l'instruction de requête mesurée", () => {
+  it("choisit l'instruction du produit quand --instruction est absent", () => {
+    assert.equal(lireInstruction(undefined), "actuelle");
+    assert.equal(instructionCnil(lireInstruction(undefined)), INSTRUCTION_CNIL);
+  });
+
+  it("rend la variante neutre sur --instruction neutre", () => {
+    assert.equal(lireInstruction("neutre"), "neutre");
+    assert.equal(instructionCnil("neutre"), INSTRUCTION_CNIL_NEUTRE);
+  });
+
+  it("garde la forme de l'instruction CNIL sans nommer la sanction", () => {
+    assert.equal(
+      INSTRUCTION_CNIL_NEUTRE,
+      "Instruction : retrouve les passages d'une délibération de la CNIL qui répondent à la question\nRequête : ",
+    );
+    assert.match(INSTRUCTION_CNIL_NEUTRE, /^Instruction : .*CNIL.*\nRequête : $/);
+    assert.doesNotMatch(INSTRUCTION_CNIL_NEUTRE, /sanction/i);
+    assert.match(INSTRUCTION_CNIL, /sanction/i, "l'instruction du produit, elle, nomme la sanction");
+    assert.notEqual(INSTRUCTION_CNIL_NEUTRE, INSTRUCTION_CNIL);
+  });
+
+  it("ne change que l'instruction CNIL, jamais celles du RGPD ni de l'AI Act", () => {
+    const neutre = instructionsDeMesure("neutre");
+    const actuelle = instructionsDeMesure("actuelle");
+
+    assert.equal(neutre.cnil, INSTRUCTION_CNIL_NEUTRE);
+    assert.equal(actuelle.cnil, INSTRUCTION_CNIL);
+    assert.equal(neutre.rgpd, INSTRUCTION_REQUETE);
+    assert.equal(neutre.aiact, INSTRUCTION_AIAct);
+    assert.equal(neutre["32016R0679"], INSTRUCTION_REQUETE);
+    assert.equal(neutre["32024R1689"], INSTRUCTION_AIAct);
+  });
+
+  it("refuse une valeur inconnue en la nommant", () => {
+    assert.throws(
+      () => lireInstruction("moderee"),
+      /--instruction attendu actuelle ou neutre ; reçu « moderee »/,
+    );
+    assert.throws(
+      () => lireInstruction(""),
+      /--instruction attendu actuelle ou neutre ; reçu « \(vide\) »/,
+    );
+  });
+
+  it("refuse --instruction inconnu au niveau CLI, avant toute mesure", () => {
+    const run = fileURLToPath(new URL("../mcp/eval/run.ts", import.meta.url));
+    const racine = fileURLToPath(new URL("..", import.meta.url));
+    const resultat = spawnSync(
+      process.execPath,
+      [run, "--questions", "questions-v3.csv", "--split", "dev", "--instruction", "moderee"],
+      { cwd: racine, encoding: "utf8", timeout: 30_000 },
+    );
+
+    assert.notEqual(resultat.status, 0);
+    assert.equal(resultat.stdout, "", "le refus précède toute mesure");
+    assert.match(resultat.stderr, /--instruction attendu actuelle ou neutre ; reçu « moderee »/);
   });
 });
 
@@ -764,7 +950,9 @@ describe("le verrou du test", () => {
       split: "test",
       corpus: "rgpd",
       recherche: "dense",
+      index: { chemin: "/tmp/corpus/index/index.db", unites: 12 },
       seuils,
+      seuilsOrigine: "fournis par --seuils",
       mesures,
     });
 
@@ -778,7 +966,60 @@ describe("le verrou du test", () => {
     assert.equal(objet.questions[1]?.piege, true);
     assert.equal(objet.agregats.semantiques, 1);
     assert.equal(objet.agregats.pieges_mesures, 1);
+    assert.deepEqual(objet.index, { chemin: "/tmp/corpus/index/index.db", unites: 12 });
+    assert.equal("rerank" in objet, false);
     assert.equal(entreeQuestionJson(mesures[0]!, seuils).rangs[0], 2);
+  });
+
+  it("porte le bloc rerank seulement quand l'étage a tourné", () => {
+    const commun = {
+      date: "2026-11-05",
+      modele: "qwen3-embedding:0.6b",
+      dimensions: 1024,
+      split: "test" as const,
+      corpus: "cnil",
+      recherche: "dense" as const,
+      index: { chemin: "/tmp/corpus/index/index.db", unites: 29_299 },
+      seuils: { bas: 0.6, haut: 0.7, marge: 0.01 },
+      seuilsOrigine: "figés avant la mesure",
+      mesures: [],
+    };
+
+    assert.equal("rerank" in objetMesureJson(commun), false);
+
+    const objet = objetMesureJson({
+      ...commun,
+      rerank: {
+        modele: "qwen3-reranker-0.6b",
+        url: "http://127.0.0.1:8080",
+        latence_ms_moyenne: moyenne([3600, 3692]),
+      },
+    });
+
+    assert.deepEqual(objet.rerank, {
+      modele: "qwen3-reranker-0.6b",
+      url: "http://127.0.0.1:8080",
+      latence_ms_moyenne: 3646,
+    });
+    assert.equal(objet.index.unites, 29_299);
+    assert.equal(moyenne([]), 0);
+  });
+
+  it("compte une référence documentaire satisfaite par un fragment", () => {
+    const mesure: Mesure = {
+      question: {
+        question: "quelle décision vise ce document ?",
+        type: "conceptuelle",
+        attendues: ["CNILTEXT000000001"],
+        piege: false,
+        split: "test",
+      },
+      refs: ["CNILTEXT000000001#f18"],
+      distances: [0.2],
+    };
+    const entree = entreeQuestionJson(mesure, { bas: 0.6, haut: 0.7, marge: 0.01 });
+
+    assert.deepEqual(entree.rangs, [1]);
   });
 
   it("refuse --json avec --split all", () => {
@@ -1068,5 +1309,159 @@ describe("questions-cnil-v2.csv", () => {
     for (const question of questions) {
       assert.ok(!connues.has(question.question), question.question);
     }
+  });
+});
+
+describe("questions-cnil-etendu.csv", () => {
+  const CSV = readFileSync(new URL("../mcp/eval/questions-cnil-etendu.csv", import.meta.url), "utf8");
+  const jeu = lireJeu(CSV);
+  const questions = jeu.questions;
+  const lignes = CSV.trimEnd().split(/\r?\n/);
+  const unites = (
+    JSON.parse(
+      `[${readFileSync(
+        new URL("../data/corpus/cnil/unites.jsonl", import.meta.url),
+        "utf8",
+      )
+        .trimEnd()
+        .split("\n")
+        .join(",")}]`,
+    ) as { document: string; numero: string; nature: string }[]
+  );
+  const documents = new Set(unites.map((unite) => unite.document));
+  const natures = new Map(unites.map((unite) => [unite.document, unite.nature]));
+  const numeros = new Map(unites.map((unite) => [unite.document, unite.numero]));
+  const autres = [
+    QUESTIONS,
+    QUESTIONS_V2,
+    QUESTIONS_V3,
+    QUESTIONS_AIAct,
+    readFileSync(new URL("../mcp/eval/questions-cnil.csv", import.meta.url), "utf8"),
+    readFileSync(new URL("../mcp/eval/questions-cnil-v2.csv", import.meta.url), "utf8"),
+    readFileSync(new URL("../mcp/eval/questions-cnil-doctrine.csv", import.meta.url), "utf8"),
+  ].flatMap((csv) => lireQuestions(csv));
+  const natureDe = (question: Question) => natures.get(question.attendues[0] ?? "");
+
+  it("garde l'en-tête à six colonnes", () => {
+    assert.equal(lignes[0], "question,type,sources_attendues,piege,split,corpus");
+    assert.equal(jeu.avecSplit, true);
+    for (const ligne of lignes.slice(1)) {
+      assert.equal(ligne.split(",").length, 6, ligne);
+    }
+  });
+
+  it("vise le corpus cnil sur chaque ligne et porte un split", () => {
+    assert.equal(corpusDuJeu(questions), "cnil");
+    assert.ok(questions.every((question) => question.corpus === "cnil"));
+    assert.ok(questions.every((question) => question.split === "dev" || question.split === "test"));
+  });
+
+  it("n'attend que des documents présents, un seul par question et tous distincts", () => {
+    validerReferences(questions, new Set(), documents);
+
+    const cibles = questions.flatMap((question) => question.attendues);
+    assert.equal(cibles.length, 108);
+    assert.ok(cibles.every((ref) => !ref.includes("#") && documents.has(ref)));
+    assert.equal(new Set(cibles).size, 108);
+  });
+
+  it("ne donne aucune source attendue à un piège", () => {
+    const pieges = questions.filter((question) => question.piege);
+
+    assert.equal(pieges.length, 12);
+    for (const piege of pieges) {
+      assert.deepEqual(piege.attendues, [], piege.question);
+    }
+  });
+
+  it("ne nomme ni l'identifiant ni le numéro de la décision visée", () => {
+    for (const question of questions) {
+      const cible = question.attendues[0] ?? "";
+      if (cible === "") continue;
+      const numero = (numeros.get(cible) ?? "").replace(/[–—]/g, "-");
+      assert.ok(!question.question.includes(cible), question.question);
+      assert.ok(
+        !question.question.replace(/[–—]/g, "-").includes(numero),
+        `${question.question} nomme ${numero}`,
+      );
+    }
+  });
+
+  it("ne contient aucune référence d'article numérotée", () => {
+    for (const question of questions) {
+      assert.equal(referenceExacte(question.question), null, question.question);
+    }
+  });
+
+  it("ne réutilise aucune question des autres jeux", () => {
+    const connues = new Set(autres.map((question) => question.question));
+    for (const question of questions) {
+      assert.ok(!connues.has(question.question), question.question);
+    }
+  });
+
+  it("compte au moins 27 avis ou recommandations et 27 sanctions parmi les documents visés", () => {
+    const doctrinaires = questions.filter(
+      (question) =>
+        natureDe(question) === "Avis" ||
+        natureDe(question) === "Recommandation/Lignes directrices",
+    );
+    const sanctions = questions.filter((question) => natureDe(question) === "Sanction");
+
+    assert.equal(doctrinaires.length, 54);
+    assert.equal(sanctions.length, 54);
+  });
+
+  it("porte cent vingt questions : 27 doctrine, 27 sanctions et 6 pièges par split", () => {
+    assert.equal(questions.length, 120);
+    for (const split of ["dev", "test"] as const) {
+      const duSplit = filtrerSplit(questions, split);
+
+      assert.equal(duSplit.length, 60, split);
+      assert.equal(duSplit.filter((question) => question.piege).length, 6, split);
+      assert.equal(
+        duSplit.filter(
+          (question) =>
+            !question.piege &&
+            (natureDe(question) === "Avis" ||
+              natureDe(question) === "Recommandation/Lignes directrices"),
+        ).length,
+        27,
+        split,
+      );
+      assert.equal(
+        duSplit.filter((question) => !question.piege && natureDe(question) === "Sanction").length,
+        27,
+        split,
+      );
+    }
+  });
+
+  it("mixe les avis et les recommandations à l'identique dans les deux splits", () => {
+    const attendu = {
+      dev: { avis: 20, recommandations: 7 },
+      test: { avis: 21, recommandations: 6 },
+    } as const;
+
+    for (const split of ["dev", "test"] as const) {
+      const duSplit = filtrerSplit(questions, split).filter((question) => !question.piege);
+      const compter = (nature: string) =>
+        duSplit.filter((question) => natureDe(question) === nature).length;
+
+      assert.equal(compter("Avis"), attendu[split].avis, split);
+      assert.equal(
+        compter("Recommandation/Lignes directrices"),
+        attendu[split].recommandations,
+        split,
+      );
+      assert.equal(compter("Sanction"), 27, split);
+    }
+    assert.equal(questions.filter((question) => natureDe(question) === "Avis").length, 41, "Avis");
+    assert.equal(
+      questions.filter((question) => natureDe(question) === "Recommandation/Lignes directrices")
+        .length,
+      13,
+      "Recommandation",
+    );
   });
 });

@@ -1,0 +1,11 @@
+question,type,sources_attendues,piege,split,corpus
+Quelles règles la CNIL recommande-t-elle pour les images captées par un système de vidéosurveillance ?,conceptuelle,CNILTEXT000049495109,non,dev,cnil
+Quelles garanties la CNIL exige-t-elle pour un dispositif de reconnaissance biométrique des personnes ?,conceptuelle,CNILTEXT000049290285,non,dev,cnil
+Quelles conditions la CNIL pose-t-elle au traitement de données de santé dans un projet de recherche ?,conceptuelle,CNILTEXT000045133748,non,dev,cnil
+Quelles précautions la CNIL demande-t-elle avant de diffuser des données publiques en open data ?,conceptuelle,CNILTEXT000037803057,non,dev,cnil
+Que recommande la CNIL pour l'usage de la liste électorale à des fins de communication politique ?,conceptuelle,CNILTEXT000025829613,non,dev,cnil
+Quel encadrement la CNIL recommande-t-elle pour les dispositifs de géolocalisation des véhicules et des personnes ?,conceptuelle,CNILTEXT000022205712,non,dev,cnil
+Quelles obligations la CNIL pose-t-elle aux fichiers bancaires traitant les incidents de paiement ?,conceptuelle,CNILTEXT000037481613,non,dev,cnil
+Quelles règles encadrent la consultation du casier judiciaire par des administrations ?,conceptuelle,CNILTEXT000048725566,non,dev,cnil
+Quelles vérifications d'identité la CNIL recommande-t-elle pour le service ProConnect ?,conceptuelle,CNILTEXT000053603662,non,dev,cnil
+Quelles limites la CNIL pose-t-elle à la réutilisation des décisions de justice ?,conceptuelle,CNILTEXT000036195647,non,dev,cnil

@@ -7,6 +7,26 @@
   "date_acte": "2016-04-27",
   "date_publication": "2016-05-04",
   "date_debut": "2018-05-25",
+  "date_fin": null,
+  "statut": "en_vigueur",
   "snapshot": "6e649590895bab390dce8cee8d5eb2b8abef60329571513dc6fbc38e9ca7a5c2.xhtml",
-  "unites": 272
+  "unites": 272,
+  "couverture": {
+    "source": "CELLAR — publications.europa.eu/resource/celex/32016R0679",
+    "date_publication": "2016-05-04",
+    "bornes": {
+      "debut": "2018-05-25",
+      "fin": null
+    },
+    "statut": "en_vigueur",
+    "types_retenus": [
+      "article",
+      "considérant"
+    ],
+    "exclusions": [],
+    "comptes": {
+      "articles": 99,
+      "considerants": 173
+    }
+  }
 }
