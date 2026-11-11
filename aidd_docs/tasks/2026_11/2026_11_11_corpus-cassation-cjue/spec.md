@@ -32,7 +32,7 @@ Le MCP répond sur les décisions de la Cour de cassation et de la CJUE relative
 | 8 | Unités : fragments numérotés par nous (`<document>#f<n>`) pour la Cour de cassation ; points de motivation (`#pointN`), en-tête et dispositif pour la CJUE. | Citations stables et passages assez courts pour l'embedding. |
 | 9 | Licence : Licence Ouverte 2.0 (Etalab) pour Judilibre ; réutilisation EUR-Lex autorisée par la décision 2011/833/UE pour CELLAR. | Le dépôt est public ; la licence est écrite au manifeste. |
 | 10 | Éval `dev` : 10 questions par corpus, colonne `corpus`, attente au document (le rang est rapporté). | Le ticket demande le jeu et ses rangs ; le split `test` reste hors de ce lot. |
-| 11 | CJUE : la sélection réunit la matière `PDON` **et** la notion `fd_578/4.11.01` (« Protection des données à caractère personnel »), plus deux CELEX explicites (`62018CJ0746`, `62019CJ0511`) que CELLAR ne classe pas dans la protection des données. | `PDON` seul manquait La Quadrature du Net et les deux Prokuratuur ; la notion fine en récupère une partie, la liste déclarée couvre le reste. La limite est écrite au manifeste. |
+| 11 | CJUE : la sélection réunit la matière `PDON` **et** la notion `fd_578/4.11.01` (« Protection des données à caractère personnel »), plus un CELEX explicite (`62018CJ0746`, Prokuratuur) que CELLAR ne classe pas dans la protection des données. | `PDON` seul manquait La Quadrature du Net et Prokuratuur C-746/18 ; la notion fine récupère la première, la liste déclarée couvre le second. La limite est écrite au manifeste. |
 
 ## Critères d'acceptation
 

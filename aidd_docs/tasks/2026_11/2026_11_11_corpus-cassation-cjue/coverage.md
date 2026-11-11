@@ -11,7 +11,7 @@ Comptes lus dans les `manifest.json` du 11 novembre 2026, jamais recopiés depui
 | `ce` | 1 312 | 17 703 | 2014-01-01 → 2026-10-27 | DILA — JADE, fonds `publie` et `inedit` | Licence Ouverte 2.0 (Etalab) |
 | `cepd` | 36 | 5 443 | 2018-04-11 → 2025-06-05 | CEPD, sitemap des pages `_fr` et PDF | À vérifier : aucune licence explicite déclarée |
 | `cc` | 352 | 7 048 | 2014-01-14 → 2026-11-10 | PISTE — Judilibre `/search` et `/decision` | Licence Ouverte 2.0 (Etalab) et CGU Judilibre |
-| `cjue` | 152 | 14 756 | 2014-04-08 → 2026-11-05 | CELLAR / EUR-Lex — SPARQL `PDON` + notion `4.11.01` + 2 CELEX, XHTML français | Décision 2011/833/UE (CC BY 4.0) |
+| `cjue` | 151 | 14 700 | 2014-04-08 → 2026-11-05 | CELLAR / EUR-Lex — SPARQL `PDON` + notion `4.11.01` + 1 CELEX, XHTML français | Décision 2011/833/UE (CC BY 4.0) |
 
 ## Détail `cc`
 
@@ -24,17 +24,18 @@ Comptes lus dans les `manifest.json` du 11 novembre 2026, jamais recopiés depui
 
 ## Détail `cjue`
 
-- SPARQL CELLAR, union de la matière `PDON` et de la notion fine `fd_578/4.11.01` (« Protection des données à caractère personnel »), CELEX `6…`, date ≥ `2014-01-01` ; deux CELEX explicites (`62018CJ0746`, `62019CJ0511`) que CELLAR ne classe pas dans les données personnelles.
-- 252 CELEX listés et 2 complémentaires : 152 retenus, 73 conclusions d'avocat général (`CC`), 2 autres types, 27 versions françaises absentes (404 consignés).
-- Types retenus par suffixe CELEX : `CJ`, `TJ`, `CO`, `TO` ; 27 n'ont pas de version française et 152 ont produit des unités.
+- SPARQL CELLAR, union de la matière `PDON` et de la notion fine `fd_578/4.11.01` (« Protection des données à caractère personnel »), CELEX `6…`, date ≥ `2014-01-01` ; un CELEX explicite (`62018CJ0746`, Prokuratuur) que CELLAR ne classe pas dans les données personnelles.
+- 252 CELEX listés et 1 complémentaire : 151 retenus, 73 conclusions d'avocat général (`CC`), 2 autres types, 27 versions françaises absentes (404 consignés).
+- Types retenus par suffixe CELEX : `CJ`, `TJ`, `CO`, `TO` ; 27 n'ont pas de version française et 151 ont produit des unités.
 - 44 décisions des types retenus, de la même sélection et antérieures à 2014, sont comptées à part (`couverture.avant_borne`).
 - La borne 2014 inclut la fin de la directive 95/46 et la préparation du RGPD ; elle exclut la jurisprudence antérieure, comptée mais non collectée.
 - `periode.date_min` est la première date observée (2014-04-08) ; `couverture.borne` porte la borne demandée (2014-01-01).
-- La notion `4.11.01` récupère La Quadrature du Net (C-511/18) ; les deux Prokuratuur (C-746/18, C-511/19) sont ajoutées par la liste explicite. Le manifeste porte `couverture.notion`, `celex_complementaires` et `complementaires_ajoutes`.
+- La notion `4.11.01` récupère La Quadrature du Net (C-511/18) ; Prokuratuur (C-746/18) est ajouté par la liste explicite. Le manifeste porte `couverture.notion`, `celex_complementaires` et `complementaires_ajoutes`.
+- La notion `4.11.01` est large : six décisions ajoutées (douanes, droit d'auteur, agents FIFA, État de droit, réparation automobile, ne bis in idem) ne traitent les données personnelles que dans une partie de leur raisonnement. Elles restent dans le corpus, la source officielle et son libellé étant déclarés.
 
 ## Évaluations `dev`
 
-Mesures du 11 novembre 2026, hors split `test`, sur l'index à huit corpus (74 947 unités).
+Mesures du 11 novembre 2026, hors split `test`, sur l'index à huit corpus (74 891 unités).
 
 | Jeu | Résultat |
 |---|---|

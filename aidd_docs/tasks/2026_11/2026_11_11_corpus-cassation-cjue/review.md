@@ -26,6 +26,12 @@ Trois passes du vérificateur `aidd-dev-checker`, sans modification du travail p
 - Un échec permanent CELLAR non-429 bloque une passe tant que le corpus existe : c'est le prix de la préservation ; un marquage par CELEX serait une amélioration ultérieure.
 - Les tests de budget reposent sur les 22 requêtes du descripteur réel.
 
+## Passe 4 — élargissement CJUE
+
+- **Bloquant** : le CELEX `62019CJ0511` avait été présenté comme Prokuratuur ; c'est en réalité *Olympiako Athlitiko Kentro Athinon* (discrimination par l'âge). Il est retiré de la liste complémentaire. Le seul Prokuratuur est C-746/18.
+- Correctifs : comptes 151 / 14 700, index 74 891 ; la notion `4.11.01` est déclarée large (six décisions ne traitent les données personnelles que partiellement) ; l'invariant des complémentaires écartés est couvert ; un test vérifie l'empreinte de liste.
+- Vérifié : La Quadrature du Net (C-511/18) et Prokuratuur (C-746/18) présents ; requête union sans doublon ; 44 décisions avant borne ; éval CJUE 8/10 (MRR 0,750) inchangée.
+
 ## Décision
 
 Candidate livrée en brouillon : PR #21.

@@ -9,10 +9,10 @@
 
 ## Vérification
 
-- La Quadrature du Net (C-511/18), Prokuratuur (C-746/18) et Prokuratuur (C-511/19) sont dans `unites.jsonl`.
+- La Quadrature du Net (C-511/18) et Prokuratuur (C-746/18) sont dans `unites.jsonl`.
 - Le manifeste porte `couverture.notion`, `celex_complementaires` et `complementaires_ajoutes`.
 - Un CELEX complémentaire sans version française est écarté et compté, sans faire échouer les autres.
 
 ## État
 
-Livré : 252 CELEX listés et 2 complémentaires, 152 décisions et 14 756 fragments. La Quadrature du Net (C-511/18), Prokuratuur C-746/18 et C-511/19 sont dans `unites.jsonl`. Index à 74 947 unités ; éval CJUE inchangée à 8/10 (MRR 0,750).
+Livré : 252 CELEX listés et 1 complémentaire, 151 décisions et 14 700 fragments. La Quadrature du Net (C-511/18), Prokuratuur C-746/18 sont dans `unites.jsonl`. Index à 74 891 unités ; éval CJUE inchangée à 8/10 (MRR 0,750).

@@ -186,11 +186,11 @@ données personnelles depuis 2014. `npm run cjue:sync` interroge CELLAR en SPARQ
 matière `PDON` et la notion fine `4.11.01` (« Protection des données à caractère personnel »),
 puis lit le rendu XHTML **français** de chaque CELEX et le met en cache sous `data/raw/cjue/`.
 Deux CELEX que CELLAR ne classe pas dans la protection des données sont ajoutés explicitement :
-Prokuratuur C-746/18 et C-511/19. Les conclusions d'avocat général (`CC`) et les autres types sont
+Prokuratuur C-746/18. Les conclusions d'avocat général (`CC`) et les autres types sont
 écartés et comptés ; une version française absente (404) est consignée pour ne pas être redemandée.
 Chaque décision rend son en-tête, ses points de motivation numérotés (`#pointN`) et son dispositif.
-Mesure du 11 novembre 2026 : 252 CELEX listés et 2 complémentaires, 152 décisions retenues,
-14 756 fragments, 73 conclusions d'avocat général et 2 autres types écartés, 27 versions françaises
+Mesure du 11 novembre 2026 : 252 CELEX listés et 1 complémentaire, 151 décisions retenues,
+14 700 fragments, 73 conclusions d'avocat général et 2 autres types écartés, 27 versions françaises
 absentes ; 44 décisions des types retenus antérieures à 2014 sont comptées à part ; période
 2014-04-08 → 2026-11-05. Les 10 questions `dev` rendent le document attendu au top 5 pour
 8 d'entre elles (MRR 0,750, top 1 70,0 %). Le classement CELLAR reste incomplet : la liste de deux
