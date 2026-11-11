@@ -8,7 +8,7 @@ import type { Embedder } from "./embed/embedder.ts";
 import { cheminIndex } from "./index/build.ts";
 import { openIndex } from "./index/search.ts";
 import type { Index } from "./index/search.ts";
-import { getArticle, getDecision, search } from "./tools.ts";
+import { getArticle, getDecision, search, etatCorpus } from "./tools.ts";
 
 /** Racine du dépôt, résolue depuis ce fichier et jamais depuis le répertoire courant. */
 export const RACINE = fileURLToPath(new URL("..", import.meta.url));
@@ -49,6 +49,8 @@ const CONSIGNE_SERVEUR =
   "opératoire par défaut et le document entier avec `partie: \"tous\"` ; " +
   "un avis ou une recommandation se lit par `search` avec `nature`. Le texte rendu vient du corpus " +
   "local, jamais d'une génération ; l'embedding est local (`leoipulsar/harrier-0.6b` sur Ollama). " +
+  "`etat_corpus` dit à quelle date le corpus a été rafraîchi depuis la veille (`a_jour_au`), " +
+  "quels documents manquent et quelle source a échoué ; il ne lit ni l'index ni le réseau. " +
   CONSIGNE_PROMESSE;
 
 export type ServerDeps = {
@@ -58,7 +60,7 @@ export type ServerDeps = {
   index?: Index;
 };
 
-/** Construit le serveur MCP : deux outils, aucun accès réseau direct. */
+/** Construit le serveur MCP : quatre outils, aucun accès réseau direct. */
 export function createServer(deps: ServerDeps): McpServer {
   const { rootDir, embedder } = deps;
   let indexCourant: Index | null = deps.index ?? null;
@@ -145,6 +147,24 @@ export function createServer(deps: ServerDeps): McpServer {
         ...(corpus === undefined ? {} : { corpus }),
         ...(partie === undefined ? {} : { partie }),
       });
+      return { content: [{ type: "text", text: JSON.stringify(resultat, null, 2) }] };
+    },
+  );
+
+  serveur.registerTool(
+    "etat_corpus",
+    {
+      title: "Dire à quelle date le corpus est à jour",
+      description:
+        "Rend la date de la dernière synchronisation réussie depuis la veille (`a_jour_au`), " +
+        "la fenêtre de veille, l'inventaire des huit corpus avec leurs comptes, les documents " +
+        "manquants et l'état des sources et de l'index. Un document manquant n'est pas une " +
+        "génération : il est absent du corpus local et le rapport le nomme. " +
+        "Aucun accès réseau, aucun index : lit `data/corpus/sync.json` et les manifestes.",
+      inputSchema: {},
+    },
+    async () => {
+      const resultat = etatCorpus(rootDir);
       return { content: [{ type: "text", text: JSON.stringify(resultat, null, 2) }] };
     },
   );
@@ -269,7 +289,7 @@ async function main(): Promise<void> {
   await serveur.connect(transport);
   process.stderr.write(
     "Serveur MCP des huit corpus (RGPD, AI Act, CNIL, LIL, CE, CEPD, CC, CJUE) prêt sur stdio " +
-      "(trois outils : get_article, get_decision, search).\n",
+      "(quatre outils : get_article, get_decision, search, etat_corpus).\n",
   );
 }
 

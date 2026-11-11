@@ -10,6 +10,54 @@ import { debutDispositif, numeroIndex } from "./corpus/cnil/meta.ts";
 import { estSanction } from "./corpus/cnil/nature.ts";
 import { niveauConfiance } from "./confidence.ts";
 import type { NiveauConfiance } from "./confidence.ts";
+import { inventaireCorpus, lireRapport } from "./corpus/sync-rapport.ts";
+import type {
+  CorpusRapport,
+  DocumentRapport,
+  IndexRapport,
+  SourceRapport,
+} from "./corpus/sync-rapport.ts";
+
+/** Ce que le serveur dit de la fraîcheur du corpus, sans réseau ni index. */
+export type EtatCorpus = {
+  /** Dernière passe sans source ni index en panne ; `null` avant la première. */
+  a_jour_au: string | null;
+  derniere_tentative: string | null;
+  /** Borne basse de la dernière fenêtre de veille. */
+  depuis: string | null;
+  corpus: CorpusRapport[];
+  manquants: DocumentRapport[];
+  sources: SourceRapport[];
+  index: IndexRapport | null;
+  message?: string;
+};
+
+/**
+ * Lit le rapport de `npm run corpus:sync` et l'inventaire des manifestes. Un
+ * rapport absent n'empêche pas de décrire les collections : seule la fraîcheur
+ * est alors inconnue.
+ */
+export function etatCorpus(rootDir: string): EtatCorpus {
+  const rapport = lireRapport(rootDir);
+  const documents = Array.isArray(rapport?.documents) ? rapport.documents : [];
+  return {
+    a_jour_au: rapport?.a_jour_au ?? null,
+    derniere_tentative: rapport?.derniere_tentative ?? null,
+    depuis: rapport?.depuis ?? null,
+    corpus: inventaireCorpus(rootDir),
+    manquants: documents.filter(
+      (document) =>
+        typeof document === "object" &&
+        document !== null &&
+        (document as { statut?: unknown }).statut === "manquant",
+    ),
+    sources: Array.isArray(rapport?.sources) ? rapport.sources : [],
+    index: rapport?.index ?? null,
+    ...(rapport === null
+      ? { message: "Aucune synchronisation enregistrée : lancez « npm run corpus:sync »." }
+      : {}),
+  };
+}
 
 /** Un article trouvé : le texte du corpus, jamais une génération. */
 export type ArticleTrouve = Unite & { trouve: true };

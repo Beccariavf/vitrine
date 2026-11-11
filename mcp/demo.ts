@@ -3,7 +3,7 @@
  *
  * Les tests couvrent le protocole en mémoire et le calcul hors ligne ; ce script
  * lance le vrai `mcp/server.ts`, s'y connecte comme un client MCP, appelle les
- * trois outils et imprime une transcription lisible. Il vérifie donc le chemin
+ * trois des quatre outils et imprime une transcription lisible. Il vérifie donc le chemin
  * réel — entrée stdio, embeddings Ollama, index construit — et pas seulement des
  * fonctions importées.
  *

@@ -15,7 +15,7 @@ const RACINE = fileURLToPath(new URL("..", import.meta.url));
  * le test reste hors ligne.
  */
 describe("le serveur MCP sur stdio", () => {
-  it("démarre par son point d'entrée et expose les trois outils", async () => {
+  it("démarre par son point d'entrée et expose les quatre outils", async () => {
     const transport = new StdioClientTransport({
       command: process.execPath,
       args: ["mcp/server.ts"],
@@ -28,7 +28,7 @@ describe("le serveur MCP sur stdio", () => {
       const outils = (await client.listTools()).tools;
       assert.deepEqual(
         outils.map((outil) => outil.name).sort(),
-        ["get_article", "get_decision", "search"],
+        ["etat_corpus", "get_article", "get_decision", "search"],
       );
 
       const recherche = outils.find((outil) => outil.name === "search");
@@ -67,6 +67,10 @@ describe("le serveur MCP sur stdio", () => {
         );
       }
       assert.equal(instructions.includes("quatre corpus"), false);
+      assert.ok(
+        instructions.includes("etat_corpus"),
+        "les instructions nomment l'outil de fraîcheur",
+      );
     } finally {
       await client.close();
     }
