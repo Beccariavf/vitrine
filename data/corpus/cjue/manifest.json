@@ -1,0 +1,461 @@
+{
+  "corpus": "cjue",
+  "nom": "CJUE",
+  "titre": "Décisions de la Cour de justice de l'Union européenne sur les données personnelles",
+  "source": "CELLAR / EUR-Lex — SPARQL et rendu XHTML français",
+  "date_min": "2014-01-01",
+  "date_extraction": "2026-11-11",
+  "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+  "langue": "fra",
+  "documents": 125,
+  "fragments": 10836,
+  "documents_lus": 226,
+  "exclusions": {
+    "avant_borne": 0,
+    "date_invalide": 0,
+    "avis_avocat_general": 73,
+    "autre_type": 2,
+    "version_francaise_absente": 26,
+    "echec_telechargement": 0,
+    "texte_vide": 0
+  },
+  "couverture": {
+    "source": "CELLAR / EUR-Lex — SPARQL et rendu XHTML français",
+    "matiere": {
+      "uri": "http://publications.europa.eu/resource/authority/subject-matter/PDON",
+      "libelle": "Protection des données personnelles"
+    },
+    "langue": "fra",
+    "types_retenus": {
+      "CJ": "Arrêt de la Cour",
+      "TJ": "Arrêt du Tribunal",
+      "CO": "Ordonnance de la Cour",
+      "TO": "Ordonnance du Tribunal"
+    },
+    "periode": {
+      "date_min": "2014-01-01",
+      "date_max": "2026-06-04"
+    },
+    "avant_borne": 67,
+    "exclusions": {
+      "avant_borne": 0,
+      "date_invalide": 0,
+      "avis_avocat_general": 73,
+      "autre_type": 2,
+      "version_francaise_absente": 26,
+      "echec_telechargement": 0,
+      "texte_vide": 0
+    },
+    "veille": {
+      "entrees": 0,
+      "ajoutees": 0
+    },
+    "documents_ecartes": [
+      {
+        "celex": "62013CC0127",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62013CC0212",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62014CC0201",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62014CC0230",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62014CC0235",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62014CC0362",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62014CC0582",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62014FJ0057",
+        "motif": "autre_type"
+      },
+      {
+        "celex": "62015CC0001",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62015CC0191",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62015CC0203",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62015CC0398",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62015CC0424",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62015CC0536",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62015CV0001(01)",
+        "motif": "autre_type"
+      },
+      {
+        "celex": "62016CC0013",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62016CC0073",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62016CC0207",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62016CC0210",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62016CC0434",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62017CC0025",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62017CC0040",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62017CC0136",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62017CC0345",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62017CC0507",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62017CC0623",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62017CC0673",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62018CC0311",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62019CC0061",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62019CC0439",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62019CC0620",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62019CC0645",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62019CC0793",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62019CC0817",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62020CC0102",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62020CC0140",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62020CC0175",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62020CC0184",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62020CC0245",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62020CC0319",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62020CC0460",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62020CC0534",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62021CC0034",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62021CC0077",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62021CC0129",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62021CC0132",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62021CC0154",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62021CC0180",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62021CC0205",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62021CC0252",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62021CC0268",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62021CC0300",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62021CC0340",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62021CC0349",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62021CC0470",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62021CC0470(01)",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62021CC0487",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62021CC0579",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62021CC0634",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62021CC0667",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62021CC0683",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62021CC0755",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62021CC0807",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62022CC0026",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62022CC0033",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62022CC0061",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62022CC0115",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62022CC0118",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62022CC0178",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62022CC0182",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62022CC0231",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62022CC0307",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62022CC0333",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62022CC0757",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62024CC0312",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62012TJ0537",
+        "motif": "version_francaise_absente"
+      },
+      {
+        "celex": "62013CO0683",
+        "motif": "version_francaise_absente"
+      },
+      {
+        "celex": "62015TJ0684",
+        "motif": "version_francaise_absente"
+      },
+      {
+        "celex": "62016CO0508",
+        "motif": "version_francaise_absente"
+      },
+      {
+        "celex": "62016TJ0652",
+        "motif": "version_francaise_absente"
+      },
+      {
+        "celex": "62016TO0670",
+        "motif": "version_francaise_absente"
+      },
+      {
+        "celex": "62017TO0452",
+        "motif": "version_francaise_absente"
+      },
+      {
+        "celex": "62020TJ0528",
+        "motif": "version_francaise_absente"
+      },
+      {
+        "celex": "62021CJ0350",
+        "motif": "version_francaise_absente"
+      },
+      {
+        "celex": "62021CJ0560",
+        "motif": "version_francaise_absente"
+      },
+      {
+        "celex": "62021TJ0200",
+        "motif": "version_francaise_absente"
+      },
+      {
+        "celex": "62021TO0469",
+        "motif": "version_francaise_absente"
+      },
+      {
+        "celex": "62022CO0357",
+        "motif": "version_francaise_absente"
+      },
+      {
+        "celex": "62022CO0444",
+        "motif": "version_francaise_absente"
+      },
+      {
+        "celex": "62022TO0266",
+        "motif": "version_francaise_absente"
+      },
+      {
+        "celex": "62022TO0286",
+        "motif": "version_francaise_absente"
+      },
+      {
+        "celex": "62022TO0354(01)",
+        "motif": "version_francaise_absente"
+      },
+      {
+        "celex": "62023CO0097(01)",
+        "motif": "version_francaise_absente"
+      },
+      {
+        "celex": "62023CO0097(02)",
+        "motif": "version_francaise_absente"
+      },
+      {
+        "celex": "62023CO0312",
+        "motif": "version_francaise_absente"
+      },
+      {
+        "celex": "62023CO0599",
+        "motif": "version_francaise_absente"
+      },
+      {
+        "celex": "62023TO0562(01)",
+        "motif": "version_francaise_absente"
+      },
+      {
+        "celex": "62023TO1138",
+        "motif": "version_francaise_absente"
+      },
+      {
+        "celex": "62024CJ0541",
+        "motif": "version_francaise_absente"
+      },
+      {
+        "celex": "62024CO0534",
+        "motif": "version_francaise_absente"
+      },
+      {
+        "celex": "62024TO0349",
+        "motif": "version_francaise_absente"
+      }
+    ],
+    "limite": null
+  }
+}

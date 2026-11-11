@@ -1,0 +1,92 @@
+{
+  "corpus": "cc",
+  "nom": "Cour de cassation",
+  "titre": "Décisions de la Cour de cassation relatives aux données personnelles",
+  "source": "PISTE — Judilibre /search et /decision",
+  "date_min": "2014-01-01",
+  "date_extraction": "2026-11-11",
+  "licence": "Licence Ouverte 2.0 (Etalab), conditions générales d'utilisation Judilibre",
+  "documents": 403,
+  "fragments": 8467,
+  "documents_lus": 1133,
+  "doublons_recherche": 641,
+  "exclusions": {
+    "avant_borne": 0,
+    "date_invalide": 0,
+    "hors_sujet": 730,
+    "texte_vide": 0
+  },
+  "couverture": {
+    "source": "PISTE — Judilibre /search et /decision",
+    "periode": {
+      "date_min": "2014-01-01",
+      "date_max": "2026-11-10"
+    },
+    "champs": "text",
+    "requetes": [
+      "données personnelles",
+      "données à caractère personnel",
+      "protection des données",
+      "informatique et libertés",
+      "Commission nationale de l'informatique et des libertés",
+      "directive 95/46",
+      "règlement général sur la protection des données",
+      "RGPD",
+      "ePrivacy",
+      "droit à l'oubli",
+      "profilage",
+      "données de santé",
+      "données de connexion",
+      "vidéosurveillance",
+      "géolocalisation",
+      "cookies",
+      "traceurs",
+      "transfert de données",
+      "violation de données",
+      "conservation des données",
+      "responsable du traitement",
+      "CNIL"
+    ],
+    "filtre": {
+      "mots_cles": [
+        "rgpd",
+        "règlement général sur la protection des données",
+        "règlement (ue) 2016/679",
+        "règlement (ue) n° 2016/679",
+        "règlement n° 2016/679",
+        "règlement 2016/679",
+        "2016/679",
+        "directive 95/46",
+        "loi n° 78-17",
+        "loi 78-17",
+        "informatique et libertés",
+        "données personnelles",
+        "données à caractère personnel",
+        "protection des données",
+        "commission nationale de l'informatique et des libertés",
+        "cnil",
+        "eprivacy",
+        "traitement de données",
+        "données de connexion"
+      ],
+      "occurrences_min": 2,
+      "visa_pertinent": true
+    },
+    "veille": {
+      "entrees": 4,
+      "ajoutees": 0,
+      "retenues": 4
+    },
+    "exclusions": {
+      "avant_borne": 0,
+      "date_invalide": 0,
+      "hors_sujet": 730,
+      "texte_vide": 0
+    },
+    "introuvables": [],
+    "reprise": {
+      "en_cache": 1133,
+      "en_attente": 0
+    }
+  }
+}
