@@ -1,13 +1,13 @@
 # Éval `dev` des deux corpus
 
-Mesures du 11 novembre 2026, sur l'index produit (`data/corpus/index/index.db`, 72 446 unités, `leoipulsar/harrier-0.6b`, 1 024 dimensions), hors split `test`. Les deux jeux comptent 10 questions conceptuelles chacun, sans piège ; la référence attendue est un document entier, satisfait par n'importe lequel de ses fragments.
+Mesures du 11 novembre 2026, sur l'index produit (`data/corpus/index/index.db`, 71 027 unités, `leoipulsar/harrier-0.6b`, 1 024 dimensions), hors split `test`. Les deux jeux comptent 10 questions conceptuelles chacun, sans piège ; la référence attendue est un document entier, satisfait par n'importe lequel de ses fragments.
 
 ## Cour de cassation (`questions-cc.csv`, corpus `cc`)
 
 ```
 recherche sémantique : 10 questions, recall@5 0.600 (6/10), MRR 0.470
 top-1 sémantique : 40.0 %
-niveaux sémantiques : 6 confiant, 4 incertain, 0 aucun_resultat_fiable
+niveaux sémantiques : 5 confiant, 5 incertain, 0 aucun_resultat_fiable (table produit 0,69 / 0,74 / 0,01 ; 6 / 4 avec la grille calibrée sur ce dev)
 ```
 
 | Question | Document | Rang | Similarité |
@@ -23,14 +23,14 @@ niveaux sémantiques : 6 confiant, 4 incertain, 0 aucun_resultat_fiable
 | Communication de documents de tiers contenant des données personnelles | `66fe33ec91b69e88a370f983` | 2 | 0,734 |
 | Géolocalisation d'un véhicule et directive ePrivacy | `65dd88c8af7bf00008e554e6` | 1 | 0,779 |
 
-Les quatre absences sont des décisions proches d'une autre décision retenue : le corpus contient 403 décisions aux visas et aux textes souvent voisins. Le seuil est celui calibré sur ce `dev` (0,670 / 0,720 / 0,010) ; les rangs ne dépendent pas des seuils.
+Les quatre absences sont des décisions proches d'une autre décision retenue : le corpus contient 403 décisions aux visas et aux textes souvent voisins. Les rangs ne dépendent pas des seuils. Les niveaux affichés sont ceux de la table produit ; avec la grille calibrée sur ce `dev` (0,670 / 0,720 / 0,010), on obtient 6 `confiant` et 4 `incertain`.
 
 ## CJUE (`questions-cjue.csv`, corpus `cjue`)
 
 ```
 recherche sémantique : 10 questions, recall@5 0.800 (8/10), MRR 0.750
 top-1 sémantique : 70.0 %
-niveaux sémantiques : 2 confiant, 8 incertain, 0 aucun_resultat_fiable
+niveaux sémantiques : 1 confiant, 9 incertain, 0 aucun_resultat_fiable (table produit 0,69 / 0,74 / 0,01 ; 2 / 8 avec la grille calibrée sur ce dev)
 ```
 
 | Question | Document | Rang | Similarité |
@@ -46,7 +46,7 @@ niveaux sémantiques : 2 confiant, 8 incertain, 0 aucun_resultat_fiable
 | Scoring automatisé et décision individuelle (SCHUFA) | `62021CJ0634` | 1 | 0,725 |
 | Droit d'accès et copie des documents | `62021CJ0487` | 1 | 0,726 |
 
-Les deux absences sont des arrêts très cités, dont les points de motivation répètent le vocabulaire d'autres décisions du corpus (conservation, déréférencement). Le seuil est celui calibré sur ce `dev` (0,670 / 0,720 / 0,010).
+Les deux absences sont des arrêts très cités, dont les points de motivation répètent le vocabulaire d'autres décisions du corpus (conservation, déréférencement). Les rangs ne dépendent pas des seuils. Les niveaux affichés sont ceux de la table produit ; la grille calibrée sur ce `dev` (0,670 / 0,720 / 0,010) donne 2 `confiant` et 8 `incertain`.
 
 ## Lecture
 

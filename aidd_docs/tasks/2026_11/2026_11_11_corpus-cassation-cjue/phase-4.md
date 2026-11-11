@@ -14,7 +14,7 @@
 
 ## Mesures
 
-- Index : 72 446 unités (`leoipulsar/harrier-0.6b`, 1 024 dimensions), 19 303 ajoutées depuis les 53 143 d'avant le lot.
+- Index : 71 027 unités (`leoipulsar/harrier-0.6b`, 1 024 dimensions), 17 884 ajoutées depuis les 53 143 d'avant le lot.
 - Cour de cassation : 6/10 au top 5, MRR 0,470, top 1 40,0 %.
 - CJUE : 8/10 au top 5, MRR 0,750, top 1 70,0 %.
 - Détail : [`eval.md`](./eval.md) ; comptes : [`coverage.md`](./coverage.md).

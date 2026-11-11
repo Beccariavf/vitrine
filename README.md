@@ -28,7 +28,7 @@ npm run ce:sync -- --dry-run               # ce que l'archive produirait, sans �
 npm run cc:sync                            # Judilibre → data/corpus/cc/ (budget PISTE, reprise au cache)
 npm run cc:sync -- --max-appels 300        # borne les appels de la passe, reprend ensuite
 npm run cjue:sync                          # CELLAR → data/corpus/cjue/ (SPARQL + XHTML français)
-npm run cjue:sync -- --limite 20           # essai sur les 20 premières décisions
+npm run cjue:sync -- --limite 20 --root /tmp/essai   # essai partiel hors du corpus commité
 npm run cepd:sync                          # lignes directrices du CEPD → data/corpus/cepd/
 npm run cepd:sync -- --dry-run             # ce que la liste produirait, sans écrire
 npm run lil:sync -- --date 2026-11-09      # loi Informatique et Libertés → data/corpus/lil/
@@ -174,9 +174,10 @@ Le corpus `cc` porte les décisions de la Cour de cassation sur les données per
 des données, ou au moins deux occurrences d'une expression centrale. Le budget d'appels
 (`--max-appels`, 1 500 par défaut) est dédié à la collecte ; quand il s'épuise, le corpus garde les
 décisions déjà lues et la passe suivante reprend au cache. Les quatre entrées Judilibre de la veille
-sont incluses d'office. Mesure du 11 novembre 2026 : 1 133 décisions lues, 403 retenues,
-8 467 fragments, 730 écartées faute de pertinence, période 2014-01-01 → 2026-11-10. Chaque décision
-rend son visa en premier fragment puis son texte découpé en 600 à 1 200 caractères. Les 10
+sont incluses d'office. Mesure du 11 novembre 2026 : 1 133 décisions lues, 352 retenues,
+7 048 fragments, 781 écartées faute de pertinence, période 2014-01-14 → 2026-11-10. Chaque décision
+indexe son visa quand Judilibre le porte (124 rejets non spécialement motivés n'en ont pas), puis
+regroupe son texte en fragments de 600 à 1 200 caractères — un paragraphe plus long reste entier. Les 10
 questions `dev` rendent le document attendu au top 5 pour 6 d'entre elles (MRR 0,470, top 1
 40,0 %). Licence Ouverte 2.0 (Etalab) et conditions générales d'utilisation Judilibre.
 
@@ -188,10 +189,11 @@ CELEX et le met en cache sous `data/raw/cjue/` — non commité. Les conclusions
 consignée pour ne pas être redemandée. Chaque décision rend son en-tête, ses points de motivation
 numérotés (`#pointN`) et son dispositif. Mesure du 11 novembre 2026 : 226 CELEX listés, 125 décisions
 retenues, 10 836 fragments, 73 conclusions d'avocat général et 2 autres types écartés, 26 versions
-françaises absentes ; 67 décisions de la même matière antérieures à 2014 sont comptées à part ;
-période 2014-05-13 → 2026-06-04. Les 10 questions `dev` rendent le document attendu au top 5 pour
-8 d'entre elles (MRR 0,750, top 1 70,0 %). Réutilisation autorisée par la décision 2011/833/UE
-(CC BY 4.0).
+françaises absentes ; 43 décisions de la même matière antérieures à 2014 sont comptées à part ;
+période 2014-04-08 → 2026-06-04. Les 10 questions `dev` rendent le document attendu au top 5 pour
+8 d'entre elles (MRR 0,750, top 1 70,0 %). Le filtre `PDON` de CELLAR est officiel mais
+incomplet : La Quadrature du Net (C-511/18) et Prokuratuur (C-511/19), classées `TELE`/`DFON`, n'y
+figurent pas. Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0).
 
 Chaque `manifest.json` porte un bloc `couverture` émis par sa synchronisation : source, date ou
 archive, bornes, types ou natures retenus, exclusions et comptes. Le tableau des huit corpus

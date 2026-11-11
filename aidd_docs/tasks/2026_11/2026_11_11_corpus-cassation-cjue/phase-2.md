@@ -3,7 +3,7 @@
 ## Livrables
 
 - `mcp/corpus/cc/sync.ts` : recherche paginée, union des identifiants, inclusion des entrées de veille, cache brut par décision, reprise, manifeste et `etat.json`.
-- Commande `npm run cc:sync` (`--dry-run`, `--max-appels`, `--date-min`, `--archive` implicite).
+- Commande `npm run cc:sync` (`--dry-run`, `--max-appels`, `--date-min`).
 - Fixtures et tests hors ligne : recherche paginée, reprise sans redemander, budget épuisé sans écrire, corpus commité conforme au manifeste.
 
 ## Vérification
