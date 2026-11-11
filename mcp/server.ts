@@ -14,9 +14,10 @@ import { getArticle, getDecision, search } from "./tools.ts";
 export const RACINE = fileURLToPath(new URL("..", import.meta.url));
 
 const CONSIGNE_PROVENANCE =
-  "Le texte rendu vient des six corpus locaux (RGPD `32016R0679`, AI Act `32024R1689`, LIL " +
-  "`LEGITEXT000006068624`, délibérations CNIL `cnil`, décisions du Conseil d'État `ce` et lignes " +
-  "directrices du CEPD `cepd`), jamais d'une génération. Citer la référence et l'URL rendues. " +
+  "Le texte rendu vient des huit corpus locaux (RGPD `32016R0679`, AI Act `32024R1689`, LIL " +
+  "`LEGITEXT000006068624`, délibérations CNIL `cnil`, décisions du Conseil d'État `ce`, lignes " +
+  "directrices du CEPD `cepd`, décisions de la Cour de cassation `cc` et décisions de la CJUE " +
+  "`cjue`), jamais d'une génération. Citer la référence et l'URL rendues. " +
   "Respecter le niveau de confiance : « aucun_resultat_fiable » signifie qu'il faut le dire au " +
   "lecteur, pas inventer un passage.";
 
@@ -33,12 +34,14 @@ const CONSIGNE_PROMESSE =
   "0,69 / 0,74 / 0,01 et ne portent aucune promesse chiffrée.";
 
 const CONSIGNE_SERVEUR =
-  "Serveur de lecture et de recherche sur six corpus juridiques : le RGPD " +
+  "Serveur de lecture et de recherche sur huit corpus juridiques : le RGPD " +
   "(corpus `rgpd`, CELEX 32016R0679), l'AI Act (corpus `aiact`, CELEX 32024R1689), la loi " +
   "Informatique et Libertés (corpus `lil`, LEGITEXT000006068624), les délibérations de la CNIL " +
   "(corpus `cnil`, natures Sanction, Avis et Recommandation/Lignes directrices), les décisions du " +
-  "Conseil d'État (corpus `ce`) et les lignes directrices du CEPD (corpus `cepd`). Les outils de " +
-  "recherche acceptent les paramètres `corpus` et `nature` ; sans eux, la recherche couvre les six " +
+  "Conseil d'État (corpus `ce`), les lignes directrices du CEPD (corpus `cepd`), les décisions de " +
+  "la Cour de cassation sur les données personnelles (corpus `cc`) et celles de la CJUE (corpus " +
+  "`cjue`). Les outils de " +
+  "recherche acceptent les paramètres `corpus` et `nature` ; sans eux, la recherche couvre les huit " +
   "collections et toutes les natures. Un document nommé dans la question (sigle ou nom ordinaire, " +
   "casse et ponctuation indifférentes) est honoré quand `document` et `corpus` sont absents ; sans " +
   "nom, une référence exacte qui n'existe que dans un corpus est `incertain` et le corpus est " +
@@ -123,7 +126,8 @@ export function createServer(deps: ServerDeps): McpServer {
           .string()
           .optional()
           .describe(
-            "Restreint à une collection : rgpd, aiact, cnil, lil, ce ou cepd ; absent, tous les corpus",
+            "Restreint à une collection CNIL : cnil ; les autres corpus relèvent de search. " +
+              "Absent, toutes les délibérations répondent",
           ),
         partie: z
           .enum(["dispositif", "tous"])
@@ -148,16 +152,18 @@ export function createServer(deps: ServerDeps): McpServer {
   serveur.registerTool(
     "search",
     {
-      title: "Chercher dans les six corpus juridiques",
+      title: "Chercher dans les huit corpus juridiques",
       description:
         "Cherche par le sens dans le RGPD, l'AI Act, la LIL, les délibérations de la CNIL " +
-        "(sanctions, avis, recommandations et lignes directrices), les décisions du Conseil d'État " +
-        "et les lignes directrices du CEPD, et rend les passages les plus proches avec leur " +
+        "(sanctions, avis, recommandations et lignes directrices), les décisions du Conseil d'État, " +
+        "les lignes directrices du CEPD, les décisions de la Cour de cassation sur les données " +
+        "personnelles et celles de la CJUE, et rend les passages les plus proches avec leur " +
         "provenance et un niveau de confiance (confiant, incertain, aucun_resultat_fiable). " +
         "L'article pose la règle et le considérant l'éclaire : à pertinence comparable, l'article passe " +
         "devant, mais aucun considérant n'est retiré du résultat. " +
         "Une question qui cite un article rend cet article exact, sans recherche vectorielle. " +
-        "`corpus` borne la recherche à une collection (`rgpd`, `aiact`, `cnil`, `lil`, `ce`, `cepd`) " +
+        "`corpus` borne la recherche à une collection (`rgpd`, `aiact`, `cnil`, `lil`, `ce`, `cepd`, " +
+        "`cc`, `cjue`) " +
         "et prime sur tout nom de document présent dans la question. " +
         "`nature` borne une recherche CNIL à une nature (`Sanction`, `Avis`, " +
         "`Recommandation/Lignes directrices`) ; sans lui, toutes les natures répondent. " +
@@ -181,15 +187,17 @@ export function createServer(deps: ServerDeps): McpServer {
           .string()
           .optional()
           .describe(
-            "Restreint la recherche à une collection : rgpd, aiact, cnil, lil, ce ou cepd ; cnil " +
-              "couvre les sanctions, avis, recommandations et lignes directrices ; absent, toutes répondent",
+            "Restreint la recherche à une collection : rgpd, aiact, cnil, lil, ce, cepd, cc ou " +
+              "cjue ; cnil couvre les sanctions, avis, recommandations et lignes directrices ; " +
+              "absent, toutes répondent",
           ),
         document: z
           .string()
           .optional()
           .describe(
             "Restreint la recherche à un document : 32016R0679 (RGPD), 32024R1689 (AI Act), " +
-              "LEGITEXT000006068624 (LIL) ou un identifiant CNILTEXT ; absent, tous les corpus répondent",
+              "LEGITEXT000006068624 (LIL), un identifiant CNILTEXT, un identifiant Judilibre (cc) " +
+              "ou un CELEX de jurisprudence (cjue) ; absent, tous les corpus répondent",
           ),
         nature: z
           .string()
@@ -260,7 +268,7 @@ async function main(): Promise<void> {
 
   await serveur.connect(transport);
   process.stderr.write(
-    "Serveur MCP des six corpus (RGPD, AI Act, CNIL, LIL, CE, CEPD) prêt sur stdio " +
+    "Serveur MCP des huit corpus (RGPD, AI Act, CNIL, LIL, CE, CEPD, CC, CJUE) prêt sur stdio " +
       "(trois outils : get_article, get_decision, search).\n",
   );
 }

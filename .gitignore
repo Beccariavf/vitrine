@@ -34,3 +34,9 @@ data/raw/ce/
 
 # Corpus CEPD : PDF téléchargés non commités, récupérés par npm run cepd:sync
 data/raw/cepd/
+
+# Corpus Cour de cassation : cache Judilibre non commité, rempli par npm run cc:sync
+data/raw/cc/
+
+# Corpus CJUE : captures XHTML non commitées, récupérées par npm run cjue:sync
+data/raw/cjue/

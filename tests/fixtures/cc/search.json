@@ -1,0 +1,19 @@
+{
+  "page": 0,
+  "page_size": 50,
+  "total": 2,
+  "results": [
+    {
+      "id": "6af2c6c76c2e1778126fe354",
+      "decision_date": "2026-11-10",
+      "chamber": "soc",
+      "number": "25-14.493"
+    },
+    {
+      "id": "6aed6b376c2e1778124430e0",
+      "decision_date": "2026-11-05",
+      "chamber": "civ2",
+      "number": "25-12.778"
+    }
+  ]
+}

@@ -52,7 +52,7 @@ describe("le serveur MCP sur stdio", () => {
         (recherche?.inputSchema.properties?.corpus as { description?: string } | undefined)
           ?.description ?? "";
       const outilsTexte = JSON.stringify(outils);
-      for (const corpus of ["rgpd", "aiact", "cnil", "lil", "ce", "cepd"]) {
+      for (const corpus of ["rgpd", "aiact", "cnil", "lil", "ce", "cepd", "cc", "cjue"]) {
         assert.ok(
           instructions.includes(`\`${corpus}\``),
           `les instructions nomment le corpus ${corpus}`,

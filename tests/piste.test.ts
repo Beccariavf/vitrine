@@ -52,6 +52,23 @@ describe("la session PISTE", () => {
     resetUsage();
   });
 
+  it("accepte un budget dédié à une collecte", async () => {
+    resetUsage();
+    const fetchImpl: FetchLike = async () => response(200, JSON.stringify({ results: [] }));
+    const session = new PisteSession(CONFIG, 2);
+    assert.equal(session.remainingCalls(), 2);
+
+    await session.judilibre(fetchImpl, new URLSearchParams({ query: "a" }));
+    await session.judilibre(fetchImpl, new URLSearchParams({ query: "b" }));
+    assert.equal(session.remainingCalls(), 0);
+    await assert.rejects(
+      async () => session.judilibre(fetchImpl, new URLSearchParams({ query: "c" })),
+      /PISTE quota guard: 2 calls/,
+    );
+    resetUsage();
+    assert.throws(() => new PisteSession(CONFIG, 0), /Budget PISTE attendu entier positif/);
+  });
+
   it("lit les trois secrets ou rend null", () => {
     assert.deepEqual(
       readPisteConfig({ PISTE_CLIENT_ID: "a", PISTE_CLIENT_SECRET: "b", PISTE_KEY_ID: "c" }),

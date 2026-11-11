@@ -84,9 +84,14 @@ function record(source: string, endpoint: string, status: number, startedAt: num
   });
 }
 
-function assertQuota(): void {
-  if (calls.length >= MAX_CALLS_PER_RUN) {
-    throw new Error(`PISTE quota guard: ${MAX_CALLS_PER_RUN} calls already made in this pass`);
+/**
+ * Dépassement du budget d'appels d'une session. La veille garde le plafond de
+ * 16 ; une collecte de corpus ouvre un budget dédié et reprend après coupure.
+ */
+export class PisteBudgetError extends Error {
+  constructor(budget: number) {
+    super(`PISTE quota guard: ${budget} calls already made in this pass`);
+    this.name = "PisteBudgetError";
   }
 }
 
@@ -107,17 +112,27 @@ async function readJson(response: Awaited<ReturnType<FetchLike>>, label: string)
  */
 export class PisteSession {
   readonly config: PisteConfig;
+  /** Plafond d'appels de cette session, journal global compris. */
+  readonly budget: number;
   private token: string | null = null;
   private expiresAt = 0;
 
-  constructor(config: PisteConfig) {
+  constructor(config: PisteConfig, budget = MAX_CALLS_PER_RUN) {
+    if (!Number.isInteger(budget) || budget <= 0) {
+      throw new Error(`Budget PISTE attendu entier positif ; reçu « ${budget} »`);
+    }
     this.config = config;
+    this.budget = budget;
+  }
+
+  private assertQuota(): void {
+    if (calls.length >= this.budget) throw new PisteBudgetError(this.budget);
   }
 
   private async fetchToken(fetchImpl: FetchLike): Promise<string> {
     if (this.token !== null && Date.now() < this.expiresAt) return this.token;
 
-    assertQuota();
+    this.assertQuota();
     const started = Date.now();
     const body = new URLSearchParams({
       grant_type: "client_credentials",
@@ -195,7 +210,7 @@ export class PisteSession {
       if (floor > 0 && this.remainingCalls() <= floor) {
         throw new Error(`${label}: PISTE call budget reserved (${floor} calls)`);
       }
-      assertQuota();
+      this.assertQuota();
       const started = Date.now();
       const response = await fetchImpl(url, {
         method: "POST",
@@ -218,7 +233,7 @@ export class PisteSession {
 
   /** Recherche Judilibre, authentifiée par `KeyId`. */
   async judilibre(fetchImpl: FetchLike, params: URLSearchParams): Promise<unknown> {
-    assertQuota();
+    this.assertQuota();
     const started = Date.now();
     const response = await fetchImpl(`${JUDILIBRE_SEARCH}?${params.toString()}`, {
       method: "GET",
@@ -233,7 +248,7 @@ export class PisteSession {
    * la décision, pas dans les résultats de recherche.
    */
   async judilibreDecision(fetchImpl: FetchLike, id: string): Promise<unknown> {
-    assertQuota();
+    this.assertQuota();
     const started = Date.now();
     const params = new URLSearchParams({ id });
     const response = await fetchImpl(`${JUDILIBRE_DECISION}?${params.toString()}`, {
@@ -246,6 +261,6 @@ export class PisteSession {
 
   /** Appels encore autorisés dans cette passe ; `0` interdit tout nouvel appel. */
   remainingCalls(): number {
-    return Math.max(0, MAX_CALLS_PER_RUN - calls.length);
+    return Math.max(0, this.budget - calls.length);
   }
 }

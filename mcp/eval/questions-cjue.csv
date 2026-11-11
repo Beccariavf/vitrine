@@ -1,0 +1,11 @@
+question,type,sources_attendues,piege,split,corpus
+Un moteur de recherche doit-il déréférencer des informations personnelles à la demande de la personne concernée ?,conceptuelle,62012CJ0131,non,dev,cjue
+La Commission peut-elle constater qu'un pays tiers assure une protection adéquate quand ses autorités peuvent accéder aux données transférées ?,conceptuelle,62014CJ0362,non,dev,cjue
+Quelles garanties entourent les transferts de données vers les États-Unis après l'invalidation du Privacy Shield ?,conceptuelle,62018CJ0311,non,dev,cjue
+Une conservation généralisée et indifférenciée des données de trafic et de localisation est-elle compatible avec la Charte ?,conceptuelle,62012CJ0293,non,dev,cjue
+Une réglementation nationale peut-elle imposer la conservation de toutes les données de communications électroniques pour lutter contre la criminalité ?,conceptuelle,62015CJ0203,non,dev,cjue
+Une adresse IP dynamique constitue-t-elle une donnée à caractère personnel pour l'éditeur d'un site ?,conceptuelle,62014CJ0582,non,dev,cjue
+Les données consignées dans une copie d'examen professionnel sont-elles des données à caractère personnel ?,conceptuelle,62016CJ0434,non,dev,cjue
+Une autorité de concurrence peut-elle constater une violation du RGPD pour établir un abus de position dominante ?,conceptuelle,62021CJ0252,non,dev,cjue
+Le scoring automatisé d'un demandeur de crédit constitue-t-il une décision individuelle automatisée au sens du RGPD ?,conceptuelle,62021CJ0634,non,dev,cjue
+Le droit d'accès permet-il d'obtenir une copie des documents contenant les données personnelles ?,conceptuelle,62021CJ0487,non,dev,cjue

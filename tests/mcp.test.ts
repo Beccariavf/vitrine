@@ -751,7 +751,7 @@ describe("la table de confiance par corpus", () => {
   it("ne porte que la CNIL et laisse le repli à tout le reste", () => {
     assert.deepEqual(Object.keys(SEUILS_PAR_CORPUS), ["cnil"]);
     assert.deepEqual(SEUILS_PAR_CORPUS.cnil, { bas: 0.73, haut: 0.73, marge: 0.01 });
-    for (const corpus of ["rgpd", "aiact", "lil", "ce", "cepd", "inconnu"]) {
+    for (const corpus of ["rgpd", "aiact", "lil", "ce", "cepd", "cc", "cjue", "inconnu"]) {
       assert.equal(SEUILS_PAR_CORPUS[corpus], undefined, corpus);
     }
     assert.deepEqual(
