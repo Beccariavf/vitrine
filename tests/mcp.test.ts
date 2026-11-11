@@ -1112,12 +1112,17 @@ describe("get_decision", () => {
     );
     const root = racine([...unites].reverse());
     try {
-      const resultat = getDecision(root, { document: "CNILTEXT000055022778" });
+      const resultat = getDecision(root, {
+        document: "CNILTEXT000055022778",
+        partie: "tous",
+      });
 
       assert.equal(resultat.trouve, true);
       assert.equal(resultat.decisions.length, 1);
       const decision = resultat.decisions[0];
       assert.equal(decision?.numero, "SAN-2026-015");
+      assert.equal(decision?.partie, "tous");
+      assert.equal(decision?.fragments_total, 11);
       assert.equal(decision?.date_acte, "2026-10-22");
       assert.equal(decision?.statut, "VIGUEUR");
       assert.equal(decision?.origine, "dinum");
@@ -1125,6 +1130,58 @@ describe("get_decision", () => {
       assert.deepEqual(
         decision?.fragments.map((element) => element.ref),
         Array.from({ length: 11 }, (_, index) => `CNILTEXT000055022778#f${index}`),
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("rend la seule partie opératoire par défaut", () => {
+    const unites = [
+      fragment("CNILTEXT000055022778", 0, "Le considérant expose les faits."),
+      fragment("CNILTEXT000055022778", 1, "La formation restreinte retient un manquement."),
+      fragment(
+        "CNILTEXT000055022778",
+        2,
+        "PAR CES MOTIFS La formation restreinte décide de prononcer une amende de 5 000 euros.",
+      ),
+      fragment("CNILTEXT000055022778", 3, "La décision sera rendue publique."),
+    ];
+    const root = racine(unites);
+    try {
+      const resultat = getDecision(root, { document: "CNILTEXT000055022778" });
+      const decision = resultat.decisions[0];
+
+      assert.equal(decision?.partie, "dispositif");
+      assert.equal(decision?.fragments_total, 4);
+      assert.deepEqual(
+        decision?.fragments.map((element) => element.ref),
+        ["CNILTEXT000055022778#f2", "CNILTEXT000055022778#f3"],
+      );
+      assert.match(decision?.fragments[0]?.texte ?? "", /amende de 5 000 euros/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("borne aussi une décision sans « PAR CES MOTIFS »", () => {
+    const unites = [
+      fragment("CNILTEXT000055022778", 0, "Les observations de la société contestent les faits."),
+      fragment("CNILTEXT000055022778", 1, "Le rapporteur relève plusieurs manquements."),
+      fragment(
+        "CNILTEXT000055022778",
+        2,
+        "En conséquence, la Commission décide de prononcer une sanction pécuniaire de 15 000 euros.",
+      ),
+    ];
+    const root = racine(unites);
+    try {
+      const decision = getDecision(root, { document: "CNILTEXT000055022778" }).decisions[0];
+
+      assert.equal(decision?.partie, "dispositif");
+      assert.deepEqual(
+        decision?.fragments.map((element) => element.ref),
+        ["CNILTEXT000055022778#f2"],
       );
     } finally {
       rmSync(root, { recursive: true, force: true });
