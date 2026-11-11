@@ -53,6 +53,10 @@ export type DocumentEcartCjue = { celex: string; motif: MotifEcartCjue };
 export type CouvertureCjue = {
   source: string;
   matiere: { uri: string; libelle: string };
+  notion: { uri: string; libelle: string };
+  /** CELEX ajoutés hors classement CELLAR, et combien ont été retenus. */
+  celex_complementaires: string[];
+  complementaires_ajoutes: number;
   langue: string;
   types_retenus: Record<string, string>;
   /** `date_min` est la première date observée ; `borne` la borne demandée. */
@@ -97,6 +101,8 @@ export type SyncCjueOptions = {
   avantBorne?: number | null;
   /** XHTML par CELEX, quand l'appelant connaît déjà les captures. */
   reponsesXhtml?: Record<string, string>;
+  /** Remplace la liste de CELEX complémentaires du descripteur (tests). */
+  complementaires?: string[];
 };
 
 export type ResultatCjue = {
@@ -185,9 +191,17 @@ function dateDuJour(instant = new Date()): string {
 }
 
 /** Empreinte de la liste lue : elle décide de l'inutilité d'une seconde passe. */
-export function empreinteListe(entrees: readonly EntreeCjue[]): string {
+export function empreinteListe(
+  entrees: readonly EntreeCjue[],
+  complementaires: readonly string[] = [],
+): string {
   return createHash("sha256")
-    .update(entrees.map((entree) => `${entree.celex}\t${entree.date}`).join("\n"))
+    .update(
+      [
+        ...entrees.map((entree) => `${entree.celex}\t${entree.date}`),
+        ...complementaires.map((celex) => `${celex}\tmanuel`),
+      ].join("\n"),
+    )
     .digest("hex");
 }
 
@@ -278,7 +292,8 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
     appelsListe = 1;
   }
   const entrees = lireListe(reponseListe);
-  const sha = empreinteListe(entrees);
+  const complementaires = options.complementaires ?? descripteur.celex_complementaires ?? [];
+  const sha = empreinteListe(entrees, complementaires);
 
   let avantBorne = options.avantBorne;
   let appelsAvantBorne = 0;
@@ -322,6 +337,22 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
     retenues.push({ celex: entree.celex, date: entree.date, type });
     dejaListes.add(entree.celex);
     veilleAjoutees += 1;
+  }
+
+  let complementairesAjoutes = 0;
+  for (const celex of complementaires) {
+    if (dejaListes.has(celex)) continue;
+    const type = typeCelex(celex);
+    if (type === "CC" || type === "autre") {
+      const motif: MotifEcartCjue =
+        type === "CC" ? "avis_avocat_general" : "autre_type";
+      ecartes[motif] += 1;
+      documentsEcartes.push({ celex, motif });
+      continue;
+    }
+    retenues.push({ celex, date: "", type });
+    dejaListes.add(celex);
+    complementairesAjoutes += 1;
   }
   const lues = limite === null ? retenues : retenues.slice(0, limite);
 
@@ -396,6 +427,11 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
     try {
       // La date de l'en-tête XHTML fait foi ; la liste ne sert que de repli.
       const date = dateDecisionCjue(capture) ?? entree.date;
+      if (!DATE_ISO.test(date)) {
+        ecartes.date_invalide += 1;
+        documentsEcartes.push({ celex: entree.celex, motif: "date_invalide" });
+        continue;
+      }
       if (date < dateMin) {
         ecartes.avant_borne += 1;
         documentsEcartes.push({ celex: entree.celex, motif: "avant_borne" });
@@ -443,11 +479,17 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
     langue: descripteur.langue,
     documents,
     fragments: unites.length,
-    documents_lus: limite === null ? entrees.length + veilleAjoutees : lues.length,
+    documents_lus:
+      limite === null
+        ? entrees.length + veilleAjoutees + complementairesAjoutes
+        : lues.length,
     exclusions: ecartes,
     couverture: {
       source: "CELLAR / EUR-Lex — SPARQL et rendu XHTML français",
       matiere: { uri: descripteur.matiere, libelle: descripteur.matiere_libelle },
+      notion: { uri: descripteur.notion.uri, libelle: descripteur.notion.libelle },
+      celex_complementaires: [...complementaires],
+      complementaires_ajoutes: complementairesAjoutes,
       langue: descripteur.langue,
       types_retenus: descripteur.types_retenus,
       periode: { date_min: dateMinObserve ?? dateMin, date_max: dateMax },
@@ -479,7 +521,10 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
   return {
     documents,
     fragments: unites.length,
-    documentsLus: entrees.length + veilleAjoutees,
+    documentsLus:
+      limite === null
+        ? entrees.length + veilleAjoutees + complementairesAjoutes
+        : lues.length,
     ecartes,
     documentsEcartes,
     appels: { liste: appelsListe, avantBorne: appelsAvantBorne, documents: appelsDocuments },

@@ -20,6 +20,10 @@ export type DescripteurCjue = {
   /** URI de la matière CELLAR, par exemple `.../subject-matter/PDON`. */
   matiere: string;
   matiere_libelle: string;
+  /** Notion fine de la jurisprudence, complément de la matière. */
+  notion: { uri: string; libelle: string };
+  /** CELEX ajoutés à la main, hors classement CELLAR. */
+  celex_complementaires: string[];
   date_min: string;
   langue: string;
   /** Types CELEX retenus, avec leur libellé. */
@@ -74,27 +78,36 @@ export function typeCelex(celex: string): TypeCjue {
   }
 }
 
+type Selection = Pick<DescripteurCjue, "matiere" | "notion">;
+
+/** Bloc SPARQL qui réunit la matière grossière et la notion fine. */
+function selection({ matiere, notion }: Selection): string {
+  return `{ ?work cdm:resource_legal_is_about_subject-matter <${matiere}> }
+  UNION
+  { ?work cdm:case-law_is_about_concept_new_case-law <${notion.uri}> }`;
+}
+
 /** Requête SPARQL des décisions de la matière après la borne. */
-export function requeteListe(matiere: string, dateMin: string): string {
+export function requeteListe(descripteur: Selection, dateMin: string): string {
   return `PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 SELECT DISTINCT ?celex ?date WHERE {
   ?work cdm:resource_legal_id_celex ?celex .
   ?work cdm:work_date_document ?date .
-  ?work cdm:resource_legal_is_about_subject-matter <${matiere}> .
+  ${selection(descripteur)}
   FILTER(STRSTARTS(STR(?celex), "6"))
   FILTER(?date >= "${dateMin}"^^xsd:date)
 }`;
 }
 
-/** Requête SPARQL du nombre de décisions de la matière avant la borne. */
-export function requeteAvantBorne(matiere: string, dateMin: string): string {
+/** Requête SPARQL du nombre de décisions de la sélection avant la borne. */
+export function requeteAvantBorne(descripteur: Selection, dateMin: string): string {
   return `PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 SELECT (COUNT(DISTINCT ?celex) AS ?n) WHERE {
   ?work cdm:resource_legal_id_celex ?celex .
   ?work cdm:work_date_document ?date .
-  ?work cdm:resource_legal_is_about_subject-matter <${matiere}> .
+  ${selection(descripteur)}
   FILTER(STRSTARTS(STR(?celex), "6"))
   FILTER(REGEX(STR(?celex), "^6[0-9]{4}(CJ|TJ|CO|TO)"))
   FILTER(?date < "${dateMin}"^^xsd:date)
@@ -166,7 +179,7 @@ export async function fetchListe(
       Accept: "application/sparql-results+json",
       "content-type": "application/x-www-form-urlencoded",
     },
-    body: new URLSearchParams({ query: requeteListe(descripteur.matiere, dateMin) }).toString(),
+    body: new URLSearchParams({ query: requeteListe(descripteur, dateMin) }).toString(),
   });
   if (!reponse.ok) {
     throw new Error(`CELLAR SPARQL : HTTP ${reponse.status}`);
@@ -194,7 +207,7 @@ export async function fetchAvantBorne(
         "content-type": "application/x-www-form-urlencoded",
       },
       body: new URLSearchParams({
-        query: requeteAvantBorne(descripteur.matiere, dateMin),
+        query: requeteAvantBorne(descripteur, dateMin),
       }).toString(),
     });
     if (!reponse.ok) return null;

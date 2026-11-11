@@ -14,5 +14,13 @@
     "CO": "Ordonnance de la Cour",
     "TO": "Ordonnance du Tribunal"
   },
-  "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)"
+  "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+  "notion": {
+    "uri": "http://publications.europa.eu/resource/authority/fd_578/4.11.01",
+    "libelle": "Protection des données à caractère personnel"
+  },
+  "celex_complementaires": [
+    "62018CJ0746",
+    "62019CJ0511"
+  ]
 }
