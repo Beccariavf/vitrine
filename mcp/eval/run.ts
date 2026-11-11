@@ -1054,7 +1054,7 @@ export type ObjetMesureJson = {
   modele: string;
   dimensions: number;
   split: Split;
-  /** Collection mesurée : `rgpd`, `aiact`, `cnil`, `lil`, `ce`, `cepd`. */
+  /** Collection mesurée : `rgpd`, `aiact`, `cnil`, `lil`, `ce`, `cepd`, `cc`, `cjue`. */
   corpus: string;
   recherche: ModeRecherche;
   /** Variante d'instruction de requête choisie explicitement ; absente, celle du produit. */

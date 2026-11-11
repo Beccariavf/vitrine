@@ -1,0 +1,51 @@
+{
+  "id": "6aed6b376c2e1778124430e0",
+  "source": "jurinet",
+  "text": "CIV. 2\n \n EN1\n \n \n \n COUR DE CASSATION\n ______________________\n \n \n Arrêt du 5 novembre 2026\n \n \n \n \n Rejet\n \n \n Mme MARTINEL, présidente\n \n \n \n Arrêt n° 1121 F-B\n \n Pourvoi n° F 25-12.778 \n \n \n \n \n R É P U B L I Q U E F R A N Ç A I S E \n \n _________________________\n \n AU NOM DU PEUPLE FRANÇAIS\n _________________________\n \n \n ARRÊT DE LA COUR DE CASSATION, DEUXIÈME CHAMBRE CIVILE, DU 5 NOVEMBRE 2026\n \n M. [W] [D], domicilié [Adresse 1], a formé le pourvoi n° F 25-12.778 contre l'arrêt rendu le 16 janvier 2025 par la cour d'appel de Lyon (6ème chambre), dans le litige l'opposant au Fonds de garantie des victimes des actes de terrorisme et d'autres infractions, dont le siège est [Adresse 2], défendeur à la cassation.\n \n Le demandeur invoque, à l'appui de son pourvoi, un moyen unique de cassation.\n \n Le dossier a été communiqué au procureur général.\n \n Sur le rapport de Mme Salomon, conseillère, les observations de la SCP Lyon-Caen et Thiriez, avocat de M. [D], de la SARL Boré, Salve de Bruneton et Mégret, avocat du Fonds de garantie des victimes des actes de terrorisme et d'autres infractions, après débats en l'audience publique du 23 septembre 2026 où étaient présentes Mme Martinel, présidente, Mme Salomon, conseillère rapporteure, Mme Isola, conseillère doyenne, et Mme Cathala, greffière de chambre,\n \n la deuxième chambre civile de la Cour de cassation, composée de la présidente et des conseillères précitées, après en avoir délibéré conformément à la loi, a rendu le présent arrêt.\n \n Faits et procédure\n \n 1. Selon l'arrêt attaqué (Lyon, 16 janvier 2025), M. [D], exposant avoir été victime d'une escroquerie à sa carte bancaire entre les 20 et 23 mars 2018, a saisi une commission d'indemnisation des victimes d'infractions, par requête du 23 mars 2021.\n \n Examen du moyen\n \n Enoncé du moyen\n \n 2. M. [D] fait grief à l'arrêt de dire qu'il a commis une faute exclusive de son droit à indemnisation et de déclarer sa demande d'indemnisation par le Fonds de garantie des victimes d'actes de terrorisme et d'autres infractions irrecevable, alors :\n \n « 1° / que la remise effectuée à la suite d'une tromperie, élément matériel de l'infraction d'escroquerie et partant, condition de son droit à indemnisation prévu à l'article 706-14 du code de procédure pénale, ne saurait constituer une faute de la victime exclusive de ce même droit à indemnisation ; qu'il résulte des constatations de l'arrêt que la matérialité de l'infraction d'escroquerie était caractérisée au préjudice ",
+  "chamber": "civ2",
+  "decision_date": "2026-11-05",
+  "ecli": "ECLI:FR:CCASS:2026:C201121",
+  "jurisdiction": "cc",
+  "number": "25-12.778",
+  "numbers": [
+    "25-12.778",
+    "25-12.778"
+  ],
+  "publication": [
+    "b"
+  ],
+  "solution": "rejet",
+  "type": "other",
+  "formation": "frh",
+  "summary": "Il résulte des articles 706-3 et 706-14 du code de procédure pénale que la réparation du dommage causé par une escroquerie peut être refusée ou son montant réduit en raison de la faute de la victime en relation de causalité directe et certaine avec le dommage.\nAyant relevé que l'attention de la victime d'une escroquerie à la carte bancaire aurait dû être attirée par plusieurs anomalies lors de la transaction, la cour d'appel a pu en déduire qu'elle avait commis une faute",
+  "themes": [
+    "indemnisation des victimes d'infraction",
+    "indemnité",
+    "refus ou réduction",
+    "faute de la victime",
+    "lien de causalité avec le dommage",
+    "applications diverses",
+    "escroquerie à la carte bancaire"
+  ],
+  "partial": false,
+  "visa": [
+    {
+      "title": "Articles <a href=\"https://www.legifrance.gouv.fr/search/code?tab_selection=code&searchField=ALL&query=706-3+code+de+proc%C3%A9dure+p%C3%A9nale&page=1&init=true\" target=\"_blank\">706-3</a> et <a href=\"https://www.legifrance.gouv.fr/search/code?tab_selection=code&searchField=ALL&query=706-14+code+de+proc%C3%A9dure+p%C3%A9nale&page=1&init=true\" target=\"_blank\">706-14</a> du code de procédure pénale."
+    }
+  ],
+  "titlesAndSummaries": [
+    {
+      "titles": [
+        "INDEMNISATION DES VICTIMES D'INFRACTION",
+        "Indemnité",
+        "Refus ou réduction",
+        "Faute de la victime",
+        "Lien de causalité avec le dommage",
+        "Applications diverses",
+        "Escroquerie à la carte bancaire"
+      ],
+      "summary": "Il résulte des articles 706-3 et 706-14 du code de procédure pénale que la réparation du dommage causé par une escroquerie peut être refusée ou son montant réduit en raison de la faute de la victime en relation de causalité directe et certaine avec le dommage. Ayant relevé que l'attention de la victime d'une escroquerie à la carte bancaire aurait dû être attirée par plusieurs anomalies lors de la transaction, la cour d'appel a pu en déduire qu'elle avait commis une faute",
+      "secondaryTitles": []
+    }
+  ]
+}

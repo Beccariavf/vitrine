@@ -1,0 +1,18 @@
+{
+  "corpus": "cjue",
+  "nom": "CJUE",
+  "titre": "Décisions de la Cour de justice de l'Union européenne sur les données personnelles",
+  "url_texte": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:{celex}",
+  "endpoint_sparql": "https://publications.europa.eu/webapi/rdf/sparql",
+  "matiere": "http://publications.europa.eu/resource/authority/subject-matter/PDON",
+  "matiere_libelle": "Protection des données personnelles",
+  "date_min": "2014-01-01",
+  "langue": "fra",
+  "types_retenus": {
+    "CJ": "Arrêt de la Cour",
+    "TJ": "Arrêt du Tribunal",
+    "CO": "Ordonnance de la Cour",
+    "TO": "Ordonnance du Tribunal"
+  },
+  "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)"
+}

@@ -239,3 +239,32 @@ export function parseCellar(xhtml: string, descripteur: Descripteur): Unite[] {
 export function parseRgpd(xhtml: string, descripteur: Descripteur): Unite[] {
   return parseCellar(xhtml, descripteur);
 }
+
+/**
+ * Valide un corpus avant écriture : référence unique et non vide, texte non
+ * vide, document et corpus nommés, date ISO. Le nom du corpus est dans le
+ * message pour qu'une capture fautive se nomme elle-même.
+ */
+export function validerUnitesCorpus(unites: readonly Unite[], nomCorpus: string): void {
+  const erreurs: string[] = [];
+  const vues = new Set<string>();
+  for (const unite of unites) {
+    if (unite.ref.trim() === "") {
+      erreurs.push("référence vide");
+      continue;
+    }
+    if (vues.has(unite.ref)) erreurs.push(`référence dupliquée : ${unite.ref}`);
+    vues.add(unite.ref);
+    if (unite.texte.trim() === "") erreurs.push(`texte vide : ${unite.ref}`);
+    if (unite.document.trim() === "") erreurs.push(`document vide : ${unite.ref}`);
+    if (unite.corpus.trim() === "") erreurs.push(`corpus vide : ${unite.ref}`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(unite.date_acte) || Number.isNaN(Date.parse(unite.date_acte))) {
+      erreurs.push(`date non ISO : ${unite.ref} (${unite.date_acte || "vide"})`);
+    }
+  }
+  if (erreurs.length > 0) {
+    const liste = erreurs.slice(0, 10).join(" ; ");
+    const reste = erreurs.length > 10 ? ` ; et ${erreurs.length - 10} autre(s)` : "";
+    throw new Error(`Corpus ${nomCorpus} invalide, rien n'est écrit : ${liste}${reste}`);
+  }
+}

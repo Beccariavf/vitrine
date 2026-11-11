@@ -1,0 +1,11 @@
+question,type,sources_attendues,piege,split,corpus
+Le juge peut-il ordonner la communication des données personnelles d'autres salariés pour établir la preuve d'une discrimination ?,conceptuelle,6af2c6c76c2e1778126fe354,non,dev,cc
+Quelles conditions le droit à l'effacement pose-t-il pour le déréférencement d'informations diffusées sur internet ?,conceptuelle,6a1fbf96cdc6046d47ea0349,non,dev,cc
+Les données d'une garde à vue annulée peuvent-elles rester inscrites dans le fichier des antécédents judiciaires ?,conceptuelle,69786db4cdc6046d47d707b1,non,dev,cc
+Le détournement de finalité d'un traitement de données suppose-t-il que les données aient été collectées illicitement ?,conceptuelle,6965e5becdc6046d471b4ab6,non,dev,cc
+L'enregistrement des séances du comité social et économique peut-il porter atteinte aux données personnelles des salariés ?,conceptuelle,6ac6079ec27382d099f5a06e,non,dev,cc
+Les données de trafic et de localisation d'une personne mise en examen peuvent-elles être consultées pendant le contrôle judiciaire ?,conceptuelle,6717402d6a24f8a713323ad6,non,dev,cc
+La technique de reconnaissance faciale utilisée au cours d'une enquête pénale respecte-t-elle le droit au respect de la vie privée ?,conceptuelle,673d7cc0d666990c113dbe3a,non,dev,cc
+Les images d'un système de vidéoprotection peuvent-elles fonder une sanction disciplinaire ?,conceptuelle,682d68f316fd466a1ce900c4,non,dev,cc
+Un juge peut-il ordonner la communication de documents de tiers contenant des données personnelles ?,conceptuelle,66fe33ec91b69e88a370f983,non,dev,cc
+La géolocalisation d'un véhicule relève-t-elle de la directive sur la vie privée dans les communications électroniques ?,conceptuelle,65dd88c8af7bf00008e554e6,non,dev,cc
