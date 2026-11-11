@@ -340,8 +340,10 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
   }
 
   let complementairesAjoutes = 0;
+  let complementairesLus = 0;
   for (const celex of complementaires) {
     if (dejaListes.has(celex)) continue;
+    complementairesLus += 1;
     const type = typeCelex(celex);
     if (type === "CC" || type === "autre") {
       const motif: MotifEcartCjue =
@@ -481,7 +483,7 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
     fragments: unites.length,
     documents_lus:
       limite === null
-        ? entrees.length + veilleAjoutees + complementairesAjoutes
+        ? entrees.length + veilleAjoutees + complementairesLus
         : lues.length,
     exclusions: ecartes,
     couverture: {
@@ -523,7 +525,7 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
     fragments: unites.length,
     documentsLus:
       limite === null
-        ? entrees.length + veilleAjoutees + complementairesAjoutes
+        ? entrees.length + veilleAjoutees + complementairesLus
         : lues.length,
     ecartes,
     documentsEcartes,

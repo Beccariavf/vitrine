@@ -15,7 +15,7 @@ import {
 } from "../mcp/corpus/cjue/liste.ts";
 import type { DescripteurCjue } from "../mcp/corpus/cjue/liste.ts";
 import { unitesCjue } from "../mcp/corpus/cjue/parse.ts";
-import { entreesVeilleCjue, syncCjue } from "../mcp/corpus/cjue/sync.ts";
+import { empreinteListe, entreesVeilleCjue, syncCjue } from "../mcp/corpus/cjue/sync.ts";
 import type { ManifesteCjue } from "../mcp/corpus/cjue/sync.ts";
 import { validerUnitesCorpus } from "../mcp/corpus/parse.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";
@@ -48,6 +48,15 @@ function reponse(status: number, body: string) {
 }
 
 describe("la liste CELLAR de la CJUE", () => {
+  it("change l'empreinte de liste quand un CELEX complémentaire change", () => {
+    const entrees = lireListe(LISTE);
+    assert.notEqual(empreinteListe(entrees), empreinteListe(entrees, ["62018CJ0746"]));
+    assert.notEqual(
+      empreinteListe(entrees, ["62018CJ0746"]),
+      empreinteListe(entrees, ["62019CJ0511"]),
+    );
+  });
+
   it("classe les identifiants par type CELEX et compte la matière avant la borne", () => {
     assert.equal(typeCelex("62012CJ0131"), "CJ");
     assert.equal(typeCelex("62023TO0562(01)"), "TO");
