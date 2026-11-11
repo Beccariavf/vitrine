@@ -218,7 +218,8 @@ function classer(
   return documents;
 }
 
-function compter(documents: DocumentRapport[]): RapportSync["comptes"] {  const comptes = { presents: 0, manquants: 0, ecartes: 0, non_mappes: 0 };
+function compter(documents: DocumentRapport[]): RapportSync["comptes"] {
+  const comptes = { presents: 0, manquants: 0, ecartes: 0, non_mappes: 0 };
   for (const document of documents) {
     switch (document.statut) {
       case "present":

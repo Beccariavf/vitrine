@@ -431,6 +431,27 @@ describe("rapport de synchronisation", () => {
       );
       assert.equal(lireRapport(root), null);
       assert.deepEqual(etatCorpus(root).manquants, []);
+
+      writeFileSync(
+        join(root, "data", "corpus", "sync.json"),
+        JSON.stringify({
+          version: 1,
+          documents: [],
+          corpus: [],
+          sources: [null],
+          index: { statut: "ok" },
+          depuis: "2026-01-01",
+        }),
+        "utf8",
+      );
+      assert.equal(lireRapport(root), null);
+
+      writeFileSync(
+        join(root, "data", "corpus", "sync.json"),
+        JSON.stringify({ version: 1, documents: [], corpus: [], sources: [], depuis: "2026-01-01" }),
+        "utf8",
+      );
+      assert.equal(lireRapport(root), null);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
@@ -936,14 +957,19 @@ describe("synchronisation du corpus", () => {
   });
 
   it("signale un journal d'usage en panne sans faire échouer cc", async () => {
+    let racineVue = "";
     const agents = agentsParDefaut("/tmp/depot", {
-      syncCc: async () => ({ ecrit: true, documentsLus: 2, documents: 1, enAttente: 0 }),
+      syncCc: async (options) => {
+        racineVue = options.rootDir;
+        return { ecrit: true, documentsLus: 2, documents: 1, enAttente: 0 };
+      },
       flushUsage: () => {
         throw new Error("disque plein");
       },
     });
     assert.deepEqual(Object.keys(agents).sort(), ["cc", "ce", "cjue", "cnil"]);
     const resultat = await agents.cc();
+    assert.equal(racineVue, "/tmp/depot");
     assert.equal(resultat.ecrit, true);
     assert.match(resultat.message, /journal d'usage non écrit \(disque plein\)/);
   });

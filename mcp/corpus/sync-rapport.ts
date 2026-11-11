@@ -71,17 +71,18 @@ export function lireRapport(rootDir: string): RapportSync | null {
   if (!existsSync(chemin)) return null;
   try {
     const valeur = JSON.parse(readFileSync(chemin, "utf8")) as Partial<RapportSync>;
+    const estObjet = (element: unknown): boolean =>
+      typeof element === "object" && element !== null;
+    const aStatut = (element: unknown): boolean =>
+      estObjet(element) && typeof (element as { statut?: unknown }).statut === "string";
     if (
       valeur.version !== 1 ||
       !Array.isArray(valeur.documents) ||
-      !valeur.documents.every(
-        (document) =>
-          typeof document === "object" &&
-          document !== null &&
-          typeof (document as { statut?: unknown }).statut === "string",
-      ) ||
+      !valeur.documents.every(aStatut) ||
       !Array.isArray(valeur.corpus) ||
       !Array.isArray(valeur.sources) ||
+      !valeur.sources.every(aStatut) ||
+      !aStatut(valeur.index) ||
       typeof valeur.depuis !== "string"
     ) {
       return null;
