@@ -35,6 +35,9 @@ npm run lil:sync -- --date 2026-11-09      # loi Informatique et Libertés → d
 npm run cnil:sync -- --tout                # historique DINUM + incréments DILA → data/corpus/cnil/
 npm run cnil:sync -- --increments --dry-run   # ce que les archives ajouteraient, sans écrire
 npm run corpus:index   # index incrémental Ollama + sqlite-vec → data/corpus/index/index.db
+npm run corpus:sync    # entrées récentes → sources → index → data/corpus/sync.json
+npm run corpus:sync -- --dry-run --depuis 2026-10-01   # la passe sans écrire
+npm run corpus:sync -- --planifier                     # agent launchd de trois jours, sans le charger
 npm run mcp:smoke      # vérifie Ollama et leoipulsar/harrier-0.6b
 npm run mcp            # serveur MCP sur stdio
 npm run mcp:demo       # cinq appels réels au serveur stdio (Ollama requis)
@@ -204,6 +207,30 @@ archive, bornes, types ou natures retenus, exclusions et comptes. Le tableau des
 `aidd_docs/tasks/2026_11/2026_11_11_corpus-cassation-cjue/coverage.md` ; il reprend les comptes
 des manifestes, jamais une recopie approximative.
 
+## Rafraîchir le corpus depuis la veille
+
+`npm run corpus:sync` lit les entrées de `data/entries/` publiées depuis `a_jour_au` du rapport
+précédent — 7 jours avant la passe s'il n'existe pas — et fait correspondre celles qui visent un
+document : `CNILTEXT…` par l'URL canonique du snapshot HTML de `data/raw/<2 hex>/` puis ses liens
+`legifrance.gouv.fr/cnil/id/…`, `CETATEXT…` pour le Conseil d'État, l'identifiant Judilibre pour la
+Cour de cassation, le CELEX de l'URL pour la CJUE. Seules les sources concernées sont lancées
+(`cnil` incréments DILA, `ce` archive JADE, `cc` Judilibre, `cjue` CELLAR) ; un document déjà présent
+ne relance rien, et les corpus `rgpd`, `aiact`, `lil` et `cepd` ne sont pas rafraîchis.
+
+La passe écrit `data/corpus/sync.json` (sauf en `--dry-run`) : `a_jour_au`, `derniere_tentative`, fenêtre `depuis`,
+comptes, une ligne par document (`present`, `manquant`, `ecarte`, `non_mappe`), inventaire des
+corpus, état des sources et de l'index. Un document manquant n'est pas un échec ; une source ou
+l'index en panne laisse `a_jour_au` inchangé et l'index est réessayé à la passe suivante. Un CELEX
+listé dans `couverture.documents_ecartes` est `ecarte` et ne relance pas la CJUE. `--dry-run`
+n'écrit rien et `--json` rend le rapport brut ; `etat_corpus` expose le même état au client MCP,
+sans réseau ni index.
+
+`npm run corpus:sync -- --planifier` écrit `~/Library/LaunchAgents/fr.vitrine.corpus-sync.plist`
+(`StartInterval` 259 200 s, soit trois jours) et imprime les commandes `launchctl` `bootstrap` et
+`bootout` ; elle ne charge pas l'agent. Les logs vont dans `~/Library/Logs/vitrine-corpus-sync.log`
+et `.err`. Autres options : `--depuis AAAA-MM-JJ`, `--date AAAA-MM-JJ`, `--root <racine>`,
+`--dossier <dir>`.
+
 L'évaluation v2 porte sur 60 questions écrites contre le texte du RGPD : 12 références exactes,
 38 conceptuelles et 10 pièges, réparties en 30 `dev` et 30 `test`. Chaque mesure est filtrée par
 corpus, pour qu'un jeu ne mélange jamais deux collections. Les 30 questions
@@ -304,7 +331,7 @@ filtres CNIL, décision par son numéro. Sortie réelle, Ollama requis :
 ```
 
 Ce n'est pas un test : la suite couvre le protocole en mémoire et le calcul hors ligne, et
-`tests/server-stdio.test.ts` vérifie que le point d'entrée démarre et expose les trois outils sans
+`tests/server-stdio.test.ts` vérifie que le point d'entrée démarre et expose les quatre outils sans
 Ollama. La démonstration prouve le chemin complet — entrée stdio, embeddings, index construit — et
 affiche la provenance de chaque passage.
 
@@ -348,12 +375,13 @@ les expose comme outils directs.
 
 - `veille/` — le pipeline : dix adaptateurs (neuf autorités, la Commission a deux flux) → normalisation → rattachement aux matières → `data/`.
 - `src/` — les pages Astro, qui lisent `data/` au build et filtrent les matières actives.
-- `mcp/` — les corpus RGPD, AI Act, LIL, CNIL, Conseil d'État et CEPD, l'index vectoriel et lexical,
-  le serveur MCP stdio (`get_article`, `get_decision`, `search`), séparés du pipeline et du site.
+- `mcp/` — les corpus RGPD, AI Act, LIL, CNIL, Conseil d'État, CEPD, Cour de cassation et CJUE,
+  l'index vectoriel et lexical, le serveur MCP stdio (`get_article`, `get_decision`, `search`,
+  `etat_corpus`), séparés du pipeline et du site.
 - `data/` — snapshots bruts adressés par leur contenu, entrées JSON, journal d'appels PISTE et
-  corpus RGPD/AI Act/LIL/CNIL/CE/CEPD, versionnés dans git ; l'index `data/corpus/index/` est un
-  dérivé ignoré, et les sources brutes sous `data/raw/cnil/`, `data/raw/lil/`, `data/raw/ce/` et
-  `data/raw/cepd/` aussi.
+  corpus RGPD/AI Act/LIL/CNIL/CE/CEPD/CC/CJUE, versionnés dans git ; l'index `data/corpus/index/` est
+  un dérivé ignoré, et les sources brutes sous `data/raw/cnil/`, `data/raw/lil/`, `data/raw/ce/`,
+  `data/raw/cepd/`, `data/raw/cc/` et `data/raw/cjue/` aussi.
 - `veille/themes.json` — les cinq matières, leurs textes, leurs sources et leur état.
 - `tools/parametres.html` — l'outil local qui active ou désactive une matière.
 - `aidd_docs/INSTALL.md` — les décisions d'architecture et les étapes d'installation.

@@ -947,13 +947,22 @@ describe("le serveur en mémoire", () => {
     rmSync(root, { recursive: true, force: true });
   });
 
-  it("expose exactement get_article, get_decision et search", async () => {
+  it("expose exactement etat_corpus, get_article, get_decision et search", async () => {
     const { tools } = await client.listTools();
 
     assert.deepEqual(
       tools.map((outil) => outil.name).sort(),
-      ["get_article", "get_decision", "search"],
+      ["etat_corpus", "get_article", "get_decision", "search"],
     );
+  });
+
+  it("rend l'état du corpus sans rapport par etat_corpus", async () => {
+    const resultat = await client.callTool({ name: "etat_corpus", arguments: {} });
+    const payload = contenu(resultat);
+
+    assert.equal(payload.a_jour_au, null);
+    assert.equal(Array.isArray(payload.corpus), true);
+    assert.match(String(payload.message), /corpus:sync/);
   });
 
   it("rend l'article 3 par get_article", async () => {
