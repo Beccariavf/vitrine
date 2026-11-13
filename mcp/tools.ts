@@ -1,3 +1,5 @@
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 import { lireUnites } from "./index/build.ts";
 import { cheminIndex } from "./index/build.ts";
 import { openIndex, rechercheHybride, searchIndex } from "./index/search.ts";
@@ -29,6 +31,103 @@ import type {
   SourceRapport,
 } from "./corpus/sync-rapport.ts";
 import type { ClassementHorsCorpus } from "./corpus/hors-corpus.ts";
+import { normaliserIdentifiant } from "./corpus/citations.ts";
+
+/** Où lire les exclusions déclarées : le bloc `couverture` de chaque corpus, rendu par `etat_corpus`. */
+export const RENVOI_EXCLUSIONS = "etat_corpus → corpus[].couverture";
+
+/** Un corpus interrogé et la date d'arrêté que porte son manifeste. */
+export type CorpusInterroge = { corpus: string; arrete_le: string | null };
+
+/**
+ * Ce qu'une réponse a interrogé et à quelle date : le lecteur juge ainsi si une
+ * absence vient du droit ou des limites du corpus.
+ */
+export type Perimetre = {
+  corpus: CorpusInterroge[];
+  /** Présent quand l'appel est borné à un document. */
+  document?: string;
+  /** Dernière passe réussie de `npm run corpus:sync` ; `null` si aucune ou sans rapport. */
+  a_jour_au: string | null;
+  /** Renvoi vers les exclusions déclarées, jamais leur copie. */
+  exclusions: typeof RENVOI_EXCLUSIONS;
+  /** Présent seulement sur une recherche sans résultat fiable. */
+  avertissement?: string;
+};
+
+/** Manifestes lisibles sous `data/corpus/`, par nom de corpus ; un manifeste illisible est ignoré. */
+function lireManifestes(rootDir: string): Map<string, Record<string, unknown>> {
+  const manifestes = new Map<string, Record<string, unknown>>();
+  const racine = join(rootDir, "data", "corpus");
+  if (!existsSync(racine)) return manifestes;
+  for (const dossier of readdirSync(racine, { withFileTypes: true })) {
+    if (!dossier.isDirectory()) continue;
+    const chemin = join(racine, dossier.name, "manifest.json");
+    if (!existsSync(chemin)) continue;
+    try {
+      const valeur: unknown = JSON.parse(readFileSync(chemin, "utf8"));
+      if (typeof valeur === "object" && valeur !== null && !Array.isArray(valeur)) {
+        manifestes.set(dossier.name, valeur as Record<string, unknown>);
+      }
+    } catch {
+      // Un manifeste illisible ne masque pas les autres corpus.
+    }
+  }
+  return manifestes;
+}
+
+/** Corpus dont le manifeste déclare ce document (`document` ou `text_id`) ; `null` sinon. */
+function corpusDuDocument(rootDir: string, document: string): string | null {
+  const cherche = normaliserIdentifiant(document);
+  for (const [corpus, manifeste] of lireManifestes(rootDir)) {
+    for (const champ of ["document", "text_id"]) {
+      const valeur = manifeste[champ];
+      if (typeof valeur === "string" && normaliserIdentifiant(valeur) === cherche) return corpus;
+    }
+  }
+  return null;
+}
+
+/**
+ * Périmètre d'une réponse : le corpus demandé, sinon celui dont le manifeste
+ * déclare le document, sinon tous les corpus de l'inventaire. La date vient du
+ * rapport de synchronisation, jamais d'une déduction. `avertir` ajoute la phrase
+ * d'une recherche sans résultat fiable.
+ */
+export function perimetreDe(
+  rootDir: string,
+  borne: { corpus?: string; document?: string },
+  avertir = false,
+): Perimetre {
+  const inventaire = inventaireCorpus(rootDir);
+  const corpusDemande = borne.corpus?.trim() || undefined;
+  const document = borne.document?.trim() || undefined;
+  const cible =
+    corpusDemande ?? (document === undefined ? null : corpusDuDocument(rootDir, document));
+  const corpus: CorpusInterroge[] =
+    cible === null || cible === undefined
+      ? inventaire.map(({ corpus: nom, arrete_le }) => ({ corpus: nom, arrete_le }))
+      : [{ corpus: cible, arrete_le: inventaire.find((entree) => entree.corpus === cible)?.arrete_le ?? null }];
+  const a_jour_au = lireRapport(rootDir)?.a_jour_au ?? null;
+  const perimetre: Perimetre = {
+    corpus,
+    ...(document === undefined ? {} : { document }),
+    a_jour_au,
+    exclusions: RENVOI_EXCLUSIONS,
+  };
+  if (!avertir) return perimetre;
+  const noms = corpus.length === 0 ? "aucun corpus présent" : corpus.map((entree) => entree.corpus).join(", ");
+  const borneDocument = document === undefined ? "" : `, document ${document}`;
+  const date =
+    a_jour_au === null ? "date de synchronisation inconnue" : `corpus à jour au ${a_jour_au}`;
+  return {
+    ...perimetre,
+    avertissement:
+      `Aucun résultat fiable dans le périmètre interrogé (${noms}${borneDocument} ; ${date}). ` +
+      "Cela ne prouve pas que la règle n'existe pas : elle peut se trouver hors de ce périmètre, " +
+      `dans une exclusion déclarée (${RENVOI_EXCLUSIONS}) ou après la dernière synchronisation.`,
+  };
+}
 
 /** Ce que le serveur dit de la fraîcheur du corpus, sans réseau ni index. */
 export type EtatCorpus = {
@@ -37,7 +136,8 @@ export type EtatCorpus = {
   derniere_tentative: string | null;
   /** Borne basse de la dernière fenêtre de veille. */
   depuis: string | null;
-  corpus: CorpusRapport[];
+  /** Chaque corpus porte le bloc `couverture` de son manifeste : ses exclusions déclarées. */
+  corpus: (CorpusRapport & { couverture: Record<string, unknown> | null })[];
   manquants: DocumentRapport[];
   /**
    * Classement des documents cités absents du corpus, daté et recalculé par
@@ -58,11 +158,21 @@ export type EtatCorpus = {
 export function etatCorpus(rootDir: string): EtatCorpus {
   const rapport = lireRapport(rootDir);
   const documents = Array.isArray(rapport?.documents) ? rapport.documents : [];
+  const manifestes = lireManifestes(rootDir);
   return {
     a_jour_au: rapport?.a_jour_au ?? null,
     derniere_tentative: rapport?.derniere_tentative ?? null,
     depuis: rapport?.depuis ?? null,
-    corpus: inventaireCorpus(rootDir),
+    corpus: inventaireCorpus(rootDir).map((entree) => {
+      const couverture = manifestes.get(entree.corpus)?.couverture;
+      return {
+        ...entree,
+        couverture:
+          typeof couverture === "object" && couverture !== null && !Array.isArray(couverture)
+            ? (couverture as Record<string, unknown>)
+            : null,
+      };
+    }),
     manquants: documents.filter(
       (document) =>
         typeof document === "object" &&
@@ -79,7 +189,11 @@ export function etatCorpus(rootDir: string): EtatCorpus {
 }
 
 /** Un article trouvé : le texte du corpus, jamais une génération. */
-export type ArticleTrouve = Unite & { trouve: true; statut_application: StatutApplication };
+export type ArticleTrouve = Unite & {
+  trouve: true;
+  statut_application: StatutApplication;
+  perimetre: Perimetre;
+};
 
 /** Un article absent : la réponse le dit, elle ne rend pas de chaîne vide. */
 export type ArticleAbsent = {
@@ -87,6 +201,7 @@ export type ArticleAbsent = {
   document: string;
   numero: string;
   message: string;
+  perimetre: Perimetre;
 };
 
 export type ResultatArticle = ArticleTrouve | ArticleAbsent;
@@ -107,6 +222,7 @@ export type ResultatRechercheOutil = {
   message?: string;
   /** Présent quand le second étage a tourné : la seule latence imputable au rerank. */
   rerank?: { modele: string; duree_ms: number };
+  perimetre: Perimetre;
 };
 
 /** `Article 17`, `art. 17`, `17` : ne garde que le nombre, sans zéro de tête. */
@@ -280,13 +396,16 @@ function trouverArticles(
   );
 }
 
-/** Lit un article exact dans le corpus de `document`. */
+/** Lit un article exact dans le corpus de `document`, avec le périmètre interrogé. */
 export function getArticle(
   rootDir: string,
   demande: { document: string; numero: string | number },
 ): ResultatArticle {
+  const perimetre = perimetreDe(rootDir, { document: demande.document });
   const article = trouverArticles(rootDir, { document: demande.document }, demande.numero)[0];
-  if (article !== undefined) return { ...avecStatutApplication(article), trouve: true };
+  if (article !== undefined) {
+    return { ...avecStatutApplication(article), trouve: true, perimetre };
+  }
   // Un instrument connu mais absent du corpus est dit absent, jamais « introuvable » ;
   // un identifiant inconnu garde le message d'un article manquant.
   return {
@@ -296,6 +415,7 @@ export function getArticle(
     message:
       absenceDuDocument(rootDir, demande.document) ??
       `Article ${demande.numero} introuvable dans le document ${demande.document}.`,
+    perimetre,
   };
 }
 
@@ -392,6 +512,7 @@ export type ResultatDecision = {
   trouve: boolean;
   decisions: DecisionTrouvee[];
   message?: string;
+  perimetre: Perimetre;
 };
 
 export type DecisionDemande = {
@@ -438,6 +559,19 @@ function premierFragmentDuDispositif(fragments: Unite[]): number {
  * chacun est rendu avec son identifiant. Une absence est dite, jamais comblée.
  */
 export function getDecision(rootDir: string, demande: DecisionDemande): ResultatDecision {
+  return {
+    ...lireDecision(rootDir, demande),
+    perimetre: perimetreDe(rootDir, {
+      ...(demande.corpus === undefined ? {} : { corpus: demande.corpus }),
+      ...(demande.document === undefined ? {} : { document: demande.document }),
+    }),
+  };
+}
+
+function lireDecision(
+  rootDir: string,
+  demande: DecisionDemande,
+): Omit<ResultatDecision, "perimetre"> {
   const document = demande.document?.trim();
   const numero = demande.numero?.trim();
   const corpus = demande.corpus?.trim();
@@ -559,6 +693,33 @@ export async function search(
   demande: SearchDemande,
   deps: SearchDeps,
 ): Promise<ResultatRechercheOutil> {
+  const resultat = await chercher(rootDir, demande, deps);
+  // Le périmètre suit la borne effective : le document inféré de la question en fait partie.
+  const document =
+    demande.document ??
+    (demande.corpus === undefined ? documentNomme(demande.question) : null) ??
+    undefined;
+  return {
+    ...resultat,
+    perimetre: perimetreDe(
+      rootDir,
+      {
+        ...(demande.corpus === undefined ? {} : { corpus: demande.corpus }),
+        ...(document === undefined ? {} : { document }),
+      },
+      resultat.niveau_confiance === "aucun_resultat_fiable",
+    ),
+  };
+}
+
+/** Recherche sans périmètre : `search` l'ajoute à chaque sortie. */
+type RechercheBrute = Omit<ResultatRechercheOutil, "perimetre">;
+
+async function chercher(
+  rootDir: string,
+  demande: SearchDemande,
+  deps: SearchDeps,
+): Promise<RechercheBrute> {
   // Le document nommé par la question vaut document demandé : une question qui
   // cite « l'article 100 du RGPD » ne doit jamais rendre l'article 100 de l'AI Act.
   // Un corpus demandé prime : il borne la recherche, même si la question nomme
@@ -578,7 +739,7 @@ export async function search(
     return { niveau_confiance: "aucun_resultat_fiable", passages: [], message: absence };
   }
   /** Enrichit les passages rendus de leurs citations, sans toucher au reste. */
-  const rendre = (resultat: ResultatRechercheOutil): ResultatRechercheOutil => ({
+  const rendre = (resultat: RechercheBrute): RechercheBrute => ({
     ...resultat,
     passages: avecCitations(rootDir, resultat.passages),
   });
