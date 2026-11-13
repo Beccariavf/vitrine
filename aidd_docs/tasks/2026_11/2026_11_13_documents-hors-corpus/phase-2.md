@@ -60,4 +60,4 @@ status: completed
 | 1... | le marquage suit le document, sur chaque passage de `search` comme sur chaque décision de `get_decision` |
 | 2... | les trois outils rendent la phrase d'absence, avec la liste des huit corpus, et aucun texte               |
 | 2... | un identifiant inconnu et un article manquant d'un document présent gardent leur message actuel           |
-| 3... | les descriptions assertées par `tests/server-stdio.test.ts` restent exactes                              |
+| 3... | les descriptions assertées par `tests/mcp.test.ts` restent exactes                                       |
