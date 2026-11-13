@@ -18,7 +18,7 @@ Un nouvel outil MCP `decisions_citant` rend, pour un article donné (`document` 
 
 ## Critères d'acceptation
 
-1. `decisions_citant({ document, numero })` rend `decisions`, chacune `{ document, corpus, autorite, numero, date_acte, url, reference }`, triées par date décroissante puis identifiant.
+1. `decisions_citant({ document, numero })` rend `decisions`, chacune `{ document, corpus, autorite, intitule, date_acte, url, reference }`, triées par date décroissante puis identifiant. `intitule` vient du chemin de la décision (`Conseil d'État > Décision 353066`, `CJUE > Arrêt de la Cour C-131/12`) : le `numero` d'unité de la Cour de cassation et de la CJUE est un nom de section.
 2. Le résultat porte `total` (décisions citantes distinctes) et `par_autorite` (`[{ autorite, decisions }]`, compte décroissant), calculés sur toutes les décisions, même quand la liste est paginée.
 3. Un numéro est reconnu sous ses formes courantes : `9`, `art. 9`, `article 9`, `1er`, `L. 34-5`, `L.34-5`, `26-1`. Une citation de l'article 9 avec alinéa (`9(2)`, `9.2`) ou une plage qui le contient (`8–10`) compte ; `26-1` ne compte pas pour `26`.
 4. Un article présent au corpus qu'aucune décision ne cite rend `decisions: []`, `total: 0` et un message qui le dit, en rappelant que la liste des citations est non exhaustive.

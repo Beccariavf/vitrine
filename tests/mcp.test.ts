@@ -969,12 +969,12 @@ describe("le serveur en mémoire", () => {
     rmSync(root, { recursive: true, force: true });
   });
 
-  it("expose exactement etat_corpus, get_article, get_decision et search", async () => {
+  it("expose exactement decisions_citant, etat_corpus, get_article, get_decision et search", async () => {
     const { tools } = await client.listTools();
 
     assert.deepEqual(
       tools.map((outil) => outil.name).sort(),
-      ["etat_corpus", "get_article", "get_decision", "search"],
+      ["decisions_citant", "etat_corpus", "get_article", "get_decision", "search"],
     );
   });
 
@@ -996,6 +996,19 @@ describe("le serveur en mémoire", () => {
     assert.match(description("etat_corpus"), /citations/);
     assert.match(description("etat_corpus"), /autorités/);
     assert.match(description("etat_corpus"), /exclu/);
+  });
+
+  it("décrit decisions_citant : comptes, pagination, liste non exhaustive et article absent", async () => {
+    const { tools } = await client.listTools();
+    const texte = tools.find((outil) => outil.name === "decisions_citant")?.description ?? "";
+
+    assert.match(texte, /par_autorite/);
+    assert.match(texte, /`limite`/);
+    assert.match(texte, /`decalage`/);
+    assert.match(texte, /non exhaustive/);
+    assert.match(texte, /ne prouve jamais/);
+    assert.match(texte, /article_au_corpus: false/);
+    assert.match(texte, /jamais un article « jamais cité »/);
   });
 
   it("nomme statut_application et l'interdit d'applicabilité dans les trois descriptions", async () => {
