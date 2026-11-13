@@ -35,7 +35,10 @@ import {
   formaterRapport,
   inventaireCorpus,
   lireRapport,
+  ORDRE_SOURCES,
 } from "./sync-rapport.ts";
+
+export { ORDRE_SOURCES };
 import type {
   DocumentRapport,
   IndexRapport,
@@ -50,8 +53,6 @@ export const RACINE = fileURLToPath(new URL("../..", import.meta.url));
 /** Fenêtre par défaut quand aucun rapport n'existe encore. */
 export const FENETRE_JOURS = 7;
 
-/** Ordre d'exécution des sources ; les corpus statiques n'y figurent pas. */
-export const ORDRE_SOURCES: readonly CorpusVeille[] = ["cnil", "ce", "cc", "cjue"];
 
 const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
 

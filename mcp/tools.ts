@@ -1,5 +1,3 @@
-import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { join } from "node:path";
 import { lireUnites } from "./index/build.ts";
 import { cheminIndex } from "./index/build.ts";
 import { openIndex, rechercheHybride, searchIndex } from "./index/search.ts";
@@ -23,7 +21,7 @@ import { statutApplication } from "./corpus/statut.ts";
 import type { StatutApplication } from "./corpus/statut.ts";
 import { niveauConfiance } from "./confidence.ts";
 import type { NiveauConfiance } from "./confidence.ts";
-import { inventaireCorpus, lireRapport } from "./corpus/sync-rapport.ts";
+import { ORDRE_SOURCES, inventaireCorpus, lireManifestes, lireRapport } from "./corpus/sync-rapport.ts";
 import type {
   CorpusRapport,
   DocumentRapport,
@@ -36,8 +34,20 @@ import { normaliserIdentifiant } from "./corpus/citations.ts";
 /** Où lire les exclusions déclarées : le bloc `couverture` de chaque corpus, rendu par `etat_corpus`. */
 export const RENVOI_EXCLUSIONS = "etat_corpus → corpus[].couverture";
 
-/** Un corpus interrogé et la date d'arrêté que porte son manifeste. */
-export type CorpusInterroge = { corpus: string; arrete_le: string | null };
+/**
+ * Un corpus interrogé et sa fraîcheur. Seul un corpus sous veille (`veille: true`)
+ * est revérifié par `npm run corpus:sync` : lui seul reçoit `a_jour_au`. Un corpus
+ * statique est un instantané daté par `arrete_le`, `null` quand son manifeste ne
+ * porte aucune date.
+ */
+export type CorpusInterroge = {
+  corpus: string;
+  veille: boolean;
+  /** Dernière passe réussie de la veille ; toujours `null` pour un corpus statique. */
+  a_jour_au: string | null;
+  /** Date d'arrêté portée par le manifeste ; `null` si le manifeste n'en porte pas. */
+  arrete_le: string | null;
+};
 
 /**
  * Ce qu'une réponse a interrogé et à quelle date : le lecteur juge ainsi si une
@@ -47,39 +57,19 @@ export type Perimetre = {
   corpus: CorpusInterroge[];
   /** Présent quand l'appel est borné à un document. */
   document?: string;
-  /** Dernière passe réussie de `npm run corpus:sync` ; `null` si aucune ou sans rapport. */
-  a_jour_au: string | null;
   /** Renvoi vers les exclusions déclarées, jamais leur copie. */
   exclusions: typeof RENVOI_EXCLUSIONS;
   /** Présent seulement sur une recherche sans résultat fiable. */
   avertissement?: string;
 };
 
-/** Manifestes lisibles sous `data/corpus/`, par nom de corpus ; un manifeste illisible est ignoré. */
-function lireManifestes(rootDir: string): Map<string, Record<string, unknown>> {
-  const manifestes = new Map<string, Record<string, unknown>>();
-  const racine = join(rootDir, "data", "corpus");
-  if (!existsSync(racine)) return manifestes;
-  for (const dossier of readdirSync(racine, { withFileTypes: true })) {
-    if (!dossier.isDirectory()) continue;
-    const chemin = join(racine, dossier.name, "manifest.json");
-    if (!existsSync(chemin)) continue;
-    try {
-      const valeur: unknown = JSON.parse(readFileSync(chemin, "utf8"));
-      if (typeof valeur === "object" && valeur !== null && !Array.isArray(valeur)) {
-        manifestes.set(dossier.name, valeur as Record<string, unknown>);
-      }
-    } catch {
-      // Un manifeste illisible ne masque pas les autres corpus.
-    }
-  }
-  return manifestes;
-}
-
 /** Corpus dont le manifeste déclare ce document (`document` ou `text_id`) ; `null` sinon. */
-function corpusDuDocument(rootDir: string, document: string): string | null {
+function corpusDuDocument(
+  manifestes: ReadonlyMap<string, Record<string, unknown>>,
+  document: string,
+): string | null {
   const cherche = normaliserIdentifiant(document);
-  for (const [corpus, manifeste] of lireManifestes(rootDir)) {
+  for (const [corpus, manifeste] of manifestes) {
     for (const champ of ["document", "text_id"]) {
       const valeur = manifeste[champ];
       if (typeof valeur === "string" && normaliserIdentifiant(valeur) === cherche) return corpus;
@@ -88,44 +78,61 @@ function corpusDuDocument(rootDir: string, document: string): string | null {
   return null;
 }
 
+/** Fraîcheur lisible d'un corpus, pour l'avertissement. */
+function fraicheurLisible(entree: CorpusInterroge): string {
+  if (entree.veille) {
+    return entree.a_jour_au === null
+      ? `${entree.corpus} : sous veille, aucune synchronisation réussie`
+      : `${entree.corpus} : sous veille, à jour au ${entree.a_jour_au}`;
+  }
+  return entree.arrete_le === null
+    ? `${entree.corpus} : instantané fixe non daté, jamais revérifié`
+    : `${entree.corpus} : instantané fixe arrêté le ${entree.arrete_le}, jamais revérifié`;
+}
+
 /**
  * Périmètre d'une réponse : le corpus demandé, sinon celui dont le manifeste
- * déclare le document, sinon tous les corpus de l'inventaire. La date vient du
- * rapport de synchronisation, jamais d'une déduction. `avertir` ajoute la phrase
- * d'une recherche sans résultat fiable.
+ * déclare le document, sinon tous les corpus de l'inventaire. La fraîcheur vient
+ * du rapport de synchronisation pour les corpus sous veille et du manifeste pour
+ * les autres, jamais d'une déduction. `avertir` ajoute la phrase d'une recherche
+ * sans résultat fiable.
  */
 export function perimetreDe(
   rootDir: string,
   borne: { corpus?: string; document?: string },
   avertir = false,
 ): Perimetre {
-  const inventaire = inventaireCorpus(rootDir);
-  const corpusDemande = borne.corpus?.trim() || undefined;
+  const manifestes = lireManifestes(rootDir);
+  const inventaire = inventaireCorpus(rootDir, manifestes);
+  const a_jour_au = lireRapport(rootDir)?.a_jour_au ?? null;
   const document = borne.document?.trim() || undefined;
   const cible =
-    corpusDemande ?? (document === undefined ? null : corpusDuDocument(rootDir, document));
-  const corpus: CorpusInterroge[] =
-    cible === null || cible === undefined
-      ? inventaire.map(({ corpus: nom, arrete_le }) => ({ corpus: nom, arrete_le }))
-      : [{ corpus: cible, arrete_le: inventaire.find((entree) => entree.corpus === cible)?.arrete_le ?? null }];
-  const a_jour_au = lireRapport(rootDir)?.a_jour_au ?? null;
+    borne.corpus?.trim() || (document === undefined ? null : corpusDuDocument(manifestes, document));
+  const noms = cible === null ? inventaire.map((entree) => entree.corpus) : [cible];
+  const corpus: CorpusInterroge[] = noms.map((nom) => {
+    const veille = (ORDRE_SOURCES as readonly string[]).includes(nom);
+    return {
+      corpus: nom,
+      veille,
+      a_jour_au: veille ? a_jour_au : null,
+      arrete_le: inventaire.find((entree) => entree.corpus === nom)?.arrete_le ?? null,
+    };
+  });
   const perimetre: Perimetre = {
     corpus,
     ...(document === undefined ? {} : { document }),
-    a_jour_au,
     exclusions: RENVOI_EXCLUSIONS,
   };
   if (!avertir) return perimetre;
-  const noms = corpus.length === 0 ? "aucun corpus présent" : corpus.map((entree) => entree.corpus).join(", ");
-  const borneDocument = document === undefined ? "" : `, document ${document}`;
-  const date =
-    a_jour_au === null ? "date de synchronisation inconnue" : `corpus à jour au ${a_jour_au}`;
+  const liste =
+    corpus.length === 0 ? "aucun corpus présent" : corpus.map(fraicheurLisible).join(" ; ");
+  const borneDocument = document === undefined ? "" : ` Borne : document ${document}.`;
   return {
     ...perimetre,
     avertissement:
-      `Aucun résultat fiable dans le périmètre interrogé (${noms}${borneDocument} ; ${date}). ` +
+      `Aucun résultat fiable dans le périmètre interrogé (${liste}).${borneDocument} ` +
       "Cela ne prouve pas que la règle n'existe pas : elle peut se trouver hors de ce périmètre, " +
-      `dans une exclusion déclarée (${RENVOI_EXCLUSIONS}) ou après la dernière synchronisation.`,
+      `dans une exclusion déclarée (${RENVOI_EXCLUSIONS}) ou après la date de chaque corpus.`,
   };
 }
 
@@ -163,7 +170,7 @@ export function etatCorpus(rootDir: string): EtatCorpus {
     a_jour_au: rapport?.a_jour_au ?? null,
     derniere_tentative: rapport?.derniere_tentative ?? null,
     depuis: rapport?.depuis ?? null,
-    corpus: inventaireCorpus(rootDir).map((entree) => {
+    corpus: inventaireCorpus(rootDir, manifestes).map((entree) => {
       const couverture = manifestes.get(entree.corpus)?.couverture;
       return {
         ...entree,
@@ -693,12 +700,15 @@ export async function search(
   demande: SearchDemande,
   deps: SearchDeps,
 ): Promise<ResultatRechercheOutil> {
-  const resultat = await chercher(rootDir, demande, deps);
-  // Le périmètre suit la borne effective : le document inféré de la question en fait partie.
+  // Le document nommé par la question vaut document demandé : une question qui
+  // cite « l'article 100 du RGPD » ne doit jamais rendre l'article 100 de l'AI Act.
+  // Un corpus demandé prime : il borne la recherche, même si la question nomme
+  // un autre corpus. La même borne sert à chercher et à dire le périmètre.
   const document =
     demande.document ??
     (demande.corpus === undefined ? documentNomme(demande.question) : null) ??
     undefined;
+  const resultat = await chercher(rootDir, demande, document, deps);
   return {
     ...resultat,
     perimetre: perimetreDe(
@@ -718,17 +728,9 @@ type RechercheBrute = Omit<ResultatRechercheOutil, "perimetre">;
 async function chercher(
   rootDir: string,
   demande: SearchDemande,
+  document: string | undefined,
   deps: SearchDeps,
 ): Promise<RechercheBrute> {
-  // Le document nommé par la question vaut document demandé : une question qui
-  // cite « l'article 100 du RGPD » ne doit jamais rendre l'article 100 de l'AI Act.
-  // Un corpus demandé prime : il borne la recherche, même si la question nomme
-  // un autre corpus.
-  const documentInferé =
-    demande.document === undefined && demande.corpus === undefined
-      ? documentNomme(demande.question)
-      : null;
-  const document = demande.document ?? documentInferé ?? undefined;
   const corpus = demande.corpus;
   // La confiance ne peut certifier un corpus que la question ou l'appel nomme.
   const corpusNomme = corpus !== undefined || document !== undefined;

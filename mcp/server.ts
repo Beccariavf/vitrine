@@ -58,12 +58,15 @@ const CONSIGNE_CITATIONS =
   "citation n'a été reconnue, jamais que la décision n'a pas de base juridique.";
 
 const CONSIGNE_PERIMETRE =
-  "Chaque réponse porte `perimetre` : les corpus interrogés (`corpus`, chacun avec la date " +
-  "d'arrêté `arrete_le` de son manifeste), le document quand l'appel y est borné, `a_jour_au` — la " +
-  "dernière synchronisation réussie, `null` si aucune — et `exclusions`, un renvoi vers les " +
-  "exclusions déclarées que rend `etat_corpus` (`corpus[].couverture`). Le rappeler au lecteur. " +
-  "Une absence de résultat ne prouve jamais que la règle n'existe pas : elle peut être hors du " +
-  "périmètre, exclue ou postérieure à `a_jour_au`. Une recherche `aucun_resultat_fiable` porte " +
+  "Chaque réponse porte `perimetre` : les corpus interrogés (`corpus`), le document quand l'appel " +
+  "y est borné, et `exclusions`, un renvoi vers les exclusions déclarées que rend `etat_corpus` " +
+  "(`corpus[].couverture`). Chaque corpus dit sa fraîcheur : `veille: true` pour les corpus " +
+  "revérifiés par la synchronisation (`cnil`, `ce`, `cc`, `cjue`), avec `a_jour_au`, la dernière " +
+  "synchronisation réussie (`null` si aucune) ; `veille: false` pour un instantané fixe jamais " +
+  "revérifié (`rgpd`, `aiact`, `lil`, `cepd`), daté par `arrete_le` ou non daté (`null`). Ne " +
+  "jamais présenter un instantané fixe comme à jour. Le rappeler au lecteur. Une absence de " +
+  "résultat ne prouve jamais que la règle n'existe pas : elle peut être hors du périmètre, exclue " +
+  "ou postérieure à la date du corpus. Une recherche `aucun_resultat_fiable` porte " +
   "`perimetre.avertissement`, à transmettre tel quel.";
 
 const CONSIGNE_SERVEUR =
@@ -202,7 +205,8 @@ export function createServer(deps: ServerDeps): McpServer {
         "la fenêtre de veille, l'inventaire des huit corpus avec leurs comptes, les documents " +
         "manquants et l'état des sources et de l'index. Chaque corpus porte `couverture`, le bloc que " +
         "déclare son manifeste — sources, bornes et exclusions — : c'est la cible du renvoi " +
-        "`perimetre.exclusions` des autres outils. `hors_corpus` porte le classement des " +
+        "`perimetre.exclusions` des autres outils. Les clés d'exclusion varient selon le corpus " +
+        "(`exclusions`, `documents_ecartes`, `versions_ecartees`, `articles_abroges_ecartes`…). `hors_corpus` porte le classement des " +
         "documents hors corpus : ceux que les décisions citent sans qu'ils soient au corpus, par " +
         "nombre de décisions citantes décroissant (`citations`), avec les autorités qui les citent et " +
         "leur compte ; un document " +
