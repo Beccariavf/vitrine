@@ -5,7 +5,7 @@ La langue visuelle : jetons, typographie, modules et conventions. Ce que ça res
 ## System
 
 - Tailwind via le plugin Vite d'Astro ; les jetons vivent dans le bloc `@theme` de `src/styles/global.css`.
-- Aucune bibliothèque de composants : deux pages et un layout partagé (`src/layouts/Base.astro`).
+- Aucune bibliothèque de composants : les pages, un layout partagé (`src/layouts/Base.astro`) et un seul composant maison (`src/components/Demo.astro`).
 - Aucune web font, aucun JavaScript côté client : le rendu vient du HTML et du CSS seuls.
 
 ## Tokens
@@ -17,8 +17,11 @@ La langue visuelle : jetons, typographie, modules et conventions. Ce que ça res
 
 ## Modules
 
-- En-tête : wordmark `VITRINE_` en mono, navigation encadrée, page courante en aplat encre.
-- Accueil « Registre » : grand titre, bloc rouge de dernière publication, bandeau de chiffres, bloc `pipeline.log` en encre, méthode numérotée, produits en cartes avec filet rouge, bleu ou jaune.
+- En-tête : wordmark `VITRINE_` en mono, navigation encadrée (« Connecteur » puis « Veille »), page courante en aplat encre et `aria-current="page"`.
+- Accueil réorganisé autour du connecteur : hero (promesse « Une IA juridique qui cite ses sources. », sous-titre au vouvoiement, bouton encre « Découvrir le connecteur » vers `/connecteur`, lien secondaire « Consulter la veille »), démo compacte dans la grille du hero quand elle existe (à droite en `lg`, sous le texte en mobile ; sans démo, aucun emplacement vide), bandeau papier « Sources du connecteur » qui liste les collections de `data/corpus/` (lues par `src/lib/corpus.ts`) en pastilles mono à filet 1 px, avec un lien « Dates par collection » vers la couverture de `/connecteur` (une date globale masquerait les collections plus anciennes ; bandeau omis sans collection), puis « Dernières publications » : les trois plus récentes de la veille en rangées compactes (jour en mono, source, titre lié en nouvel onglet) et le lien « Toute la veille ». Ni chiffres non mesurés, ni `pipeline.log`, ni cartes produits.
+- Connecteur (`/connecteur`, `src/pages/connecteur.astro`) : statut « En préparation » en mono, titre et sous-titre au vouvoiement ; démo complète si elle existe ; trois étapes numérotées (ajouter le connecteur, poser vos questions, chaque réponse cite sa source officielle) ; tableau papier de couverture (collection, documents, « À jour au » ou « texte consolidé » pour RGPD et AI Act) suivi d'une ligne sur le hors-périmètre ; bloc `pipeline.log` en encre avec `npm run corpus:sync` et `npm run mcp`, sans chiffre ; transparence (code et corpus ouverts, lien GitHub) ; action « Consulter la veille » et mention d'aide à la recherche. Aucune offre ni prix.
+- Démo avant / après (`src/components/Demo.astro`, données lues par `src/lib/demo.ts`) : une capture réelle, jamais fictive, rendue seulement si `src/demo/demo.json` existe. En-tête papier avec la question, la date de capture et le modèle en mono ; réponse avec connecteur sur papier à filet rouge gauche, suivie des sources en pastilles mono à filet 1 px liées au texte officiel. Variante compacte dans le hero de l'accueil (question, réponse avec connecteur, sources) ; variante complète en deux colonnes (sans / avec) et mention « Capture réelle, non retouchée. ». Le texte des réponses reste sur papier, garde ses retours à la ligne et se coupe n'importe où plutôt que de déborder.
+- Pied de page signé sur toutes les pages : « Valentin Fouich · Juriste en droit du numérique », la mention « Outil d'aide à la recherche, ne remplace pas l'analyse d'un professionnel du droit », les crédits de sources et le lien GitHub.
 - Veille : bascule grille / liste sans JavaScript, grille par défaut. Grille de cartes sur 3 colonnes ; liste de lecture centrée à 56rem.
 - Un sélecteur compact de cinq matières (pills, toutes actives par défaut) précède la liste et masque les publications des matières décochées, sans JavaScript. Une ligne d'explication avec un « i » rappelle le geste. À 375 px, une media query réduit padding, taille et interlettrage pour tenir sur deux lignes.
 - Chaque publication porte un badge de matière rouge et son label de source.

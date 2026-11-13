@@ -1,202 +1,130 @@
 ---
+import Demo from "../components/Demo.astro";
 import Base from "../layouts/Base.astro";
+import { sourcesCorpus } from "../lib/corpus.ts";
+import { lireDemo } from "../lib/demo.ts";
 import { getVisibleEntries } from "../lib/entries.ts";
 import { sourceLabel } from "../lib/sources.ts";
 
-const entries = getVisibleEntries();
-const sourceLabels = [...new Set(entries.map((entry) => sourceLabel(entry.source)))];
-const sources = sourceLabels.length;
-const sourceList = sourceLabels.join(" + ");
-
-const latest = entries.find((entry) => entry.publishedAt !== null)?.publishedAt ?? null;
+const sources = sourcesCorpus();
+const publications = getVisibleEntries().slice(0, 3);
+const demo = lireDemo();
 const dayFormat = new Intl.DateTimeFormat("fr-FR", { day: "2-digit", timeZone: "UTC" });
-const monthFormat = new Intl.DateTimeFormat("fr-FR", { month: "short", year: "numeric", timeZone: "UTC" });
-
-const products = [
-  {
-    title: "Veille active",
-    body: "Les publications des autorités, de la CJUE et des juridictions françaises, collectées depuis leurs sources officielles et publiées en statique, de la plus récente à la plus ancienne.",
-    link: "/veille",
-    status: "Disponible",
-    accent: "border-l-4 border-l-red",
-  },
-  {
-    title: "MCP",
-    body: "Un serveur MCP pour interroger le même corpus depuis un assistant, sans quitter la conversation.",
-    link: null,
-    status: "À venir",
-    accent: "border-l-4 border-l-blue",
-  },
-  {
-    title: "Plugin",
-    body: "Un plugin pour consulter la veille et préparer une note sans quitter l'outil de travail.",
-    link: null,
-    status: "À venir",
-    accent: "border-l-4 border-l-yellow",
-  },
-];
-
-const steps = [
-  {
-    number: "01",
-    title: "Collecte",
-    body: "Les sources officielles des autorités et de la jurisprudence sont lues une fois par passe. Chaque réponse brute est conservée telle quelle.",
-  },
-  {
-    number: "02",
-    title: "Normalisation",
-    body: "Chaque actualité ou arrêt reçoit un identifiant stable, une URL canonique et une date en UTC.",
-  },
-  {
-    number: "03",
-    title: "Publication",
-    body: "Le site est régénéré à partir des fichiers versionnés. Aucune API, aucun script au chargement.",
-  },
-];
+const shortMonth = new Intl.DateTimeFormat("fr-FR", { month: "short", timeZone: "UTC" });
 ---
 
 <Base
-  title="Vitrine — veille juridique française"
-  description="Veille juridique française publiée en statique : publications des autorités, de la CJUE et des juridictions françaises, de la plus récente à la plus ancienne."
+  title="Vitrine — une IA juridique qui cite ses sources"
+  description="Un connecteur en préparation entre votre IA et les sources officielles du droit des données personnelles, et une veille des publications officielles du droit du numérique."
 >
   <section class="grid gap-8 lg:grid-cols-12 lg:gap-10">
-    <div class="lg:col-span-8">
+    <div class:list={[demo !== null ? "lg:col-span-7" : "lg:col-span-8"]}>
       <p class="font-mono text-[0.7rem] uppercase tracking-[0.14em] text-muted">
-        Droit du numérique · Automatisation
+        Droit des données personnelles
       </p>
-      <h1 class="mt-6 text-5xl sm:text-6xl lg:text-7xl">
-        La veille juridique, publiée en statique.
-      </h1>
+      <h1 class="mt-6 text-5xl sm:text-6xl lg:text-7xl">Une IA juridique qui cite ses sources.</h1>
       <p class="mt-6 max-w-xl text-lg leading-relaxed text-muted text-pretty">
-        Un pipeline qui lit les sources officielles, normalise, versionne dans git et publie. Aucune
-        API au chargement, aucun traceur : la page est écrite au moment de la publication.
+        Vitrine prépare un connecteur entre votre IA et les sources officielles du droit des données
+        personnelles : textes, autorités et juridictions. En attendant, consultez la veille : chaque
+        publication renvoie à son texte officiel.
       </p>
 
-      <div class="mt-8 flex flex-wrap items-center gap-5">
+      <div class="mt-8 flex flex-col items-stretch gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-5">
         <a
-          href="/veille"
-          class="inline-flex items-center gap-2 border-2 border-ink bg-ink px-5 py-3 font-mono text-[0.7rem] font-bold uppercase tracking-[0.12em] text-paper no-underline shadow-hard hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-red hover:no-underline hover:shadow-hard-lg"
+          href="/connecteur"
+          class="inline-flex items-center justify-center gap-2 border-2 border-ink bg-ink px-5 py-3 font-mono text-[0.7rem] font-bold uppercase tracking-[0.12em] text-paper no-underline shadow-hard hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-red hover:no-underline hover:shadow-hard-lg"
         >
-          Consulter la veille <span aria-hidden="true">→</span>
+          Découvrir le connecteur <span aria-hidden="true">→</span>
         </a>
-        <a href="#methode" class="text-sm text-ink underline decoration-red decoration-2 underline-offset-4">
-          Comment ça marche
+        <a href="/veille" class="text-center text-sm text-ink underline decoration-red decoration-2 underline-offset-4">
+          Consulter la veille
         </a>
       </div>
     </div>
-
-    <aside class="lg:col-span-4">
-      <div class="border-2 border-ink bg-red p-6 text-paper shadow-hard">
-        <p class="font-mono text-[0.7rem] uppercase tracking-[0.14em]">Dernière publication</p>
-        {latest !== null ? (
-          <p class="mt-4">
-            <span class="block font-mono text-7xl font-bold leading-none tabular-nums">
-              {dayFormat.format(new Date(latest))}
-            </span>
-            <span class="mt-2 block font-mono text-sm uppercase tracking-[0.12em]">
-              {monthFormat.format(new Date(latest))}
-            </span>
-          </p>
-        ) : (
-          <p class="mt-4 font-mono text-2xl">Sans date</p>
-        )}
-        <p class="mt-6 border-t border-paper/30 pt-3 font-mono text-[0.7rem] uppercase tracking-[0.12em]">
-          {sourceList} · {entries.length} publications
-        </p>
-      </div>
-    </aside>
+    {
+      demo !== null && (
+        <div class="min-w-0 lg:col-span-5">
+          <Demo demo={demo} variante="compacte" />
+        </div>
+      )
+    }
   </section>
 
-  <dl class="mt-10 grid grid-cols-2 gap-0.5 border-2 border-ink bg-ink shadow-hard sm:grid-cols-4">
-    <div class="bg-paper p-4">
-      <dt class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">Publications</dt>
-      <dd class="mt-1 font-mono text-3xl font-bold tabular-nums">{entries.length}</dd>
-    </div>
-    <div class="bg-paper p-4">
-      <dt class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">Sources</dt>
-      <dd class="mt-1 font-mono text-3xl font-bold tabular-nums">{sources}</dd>
-    </div>
-    <div class="bg-paper p-4">
-      <dt class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">JavaScript</dt>
-      <dd class="mt-1 font-mono text-3xl font-bold tabular-nums">0 ko</dd>
-    </div>
-    <div class="bg-paper p-4">
-      <dt class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">Coût</dt>
-      <dd class="mt-1 font-mono text-3xl font-bold tabular-nums">0 €</dd>
-    </div>
-  </dl>
+  {
+    sources.length > 0 && (
+      <section aria-labelledby="sources" class="mt-14 border-2 border-ink bg-paper shadow-hard">
+        <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b-2 border-ink px-4 py-2">
+          <h2 id="sources" class="font-mono text-[0.7rem] font-normal uppercase tracking-[0.14em]">
+            Sources du connecteur
+          </h2>
+          <a
+            href="/connecteur#couverture"
+            class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted"
+          >
+            Dates par collection <span aria-hidden="true">→</span>
+          </a>
+        </div>
+        <ul class="flex flex-wrap gap-1.5 p-4">
+          {sources.map((source) => (
+            <li class="border border-ink px-2 py-1 font-mono text-[0.7rem] uppercase tracking-[0.08em]">
+              {source.libelle}
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
 
-  <section class="mt-14 border-2 border-ink bg-ink text-paper shadow-hard">
-    <div
-      class="flex items-center justify-between border-b-2 border-paper/20 px-4 py-2 font-mono text-[0.7rem] uppercase tracking-[0.14em]"
-    >
-      <span>pipeline.log</span>
-      <span class="text-paper/60">lecture seule</span>
-    </div>
-    <div class="overflow-x-auto p-4 font-mono text-xs leading-relaxed sm:p-6 sm:text-sm">
-      <p><span class="text-yellow">$</span> npm run veille</p>
-      <p class="text-paper/70">→ {entries.length} entrées · {sources} source{sources > 1 ? "s" : ""}</p>
-      <p class="mt-3"><span class="text-yellow">$</span> npm run build</p>
-      <p class="text-paper/70">→ 0 ko de JavaScript</p>
-    </div>
-  </section>
-
-  <section id="methode" class="mt-20 scroll-mt-8">
+  <section aria-labelledby="publications" class="mt-16">
     <div class="flex items-end justify-between gap-4 border-b-2 border-ink pb-3">
-      <h2 class="text-3xl sm:text-4xl">Comment ça marche</h2>
-      <span class="hidden font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted sm:block">01—03</span>
+      <h2 id="publications" class="text-3xl sm:text-4xl">Dernières publications</h2>
+      <a
+        href="/veille"
+        class="shrink-0 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-ink no-underline hover:underline"
+      >
+        Toute la veille <span aria-hidden="true">→</span>
+      </a>
     </div>
-    <ol class="mt-8 grid gap-8 sm:grid-cols-3">
+    <ol>
       {
-        steps.map((step) => (
-          <li class="border-t-2 border-ink pt-4">
-            <span class="font-mono text-xs tracking-[0.12em]">{step.number}</span>
-            <h3 class="mt-2 text-xl">{step.title}</h3>
-            <p class="mt-2 text-sm leading-relaxed text-muted text-pretty">{step.body}</p>
-          </li>
-        ))
+        publications.map((entry) => {
+          const date = entry.publishedAt !== null ? new Date(entry.publishedAt) : null;
+          return (
+            <li data-publication class="border-b-2 border-ink hover:bg-paper">
+              <div class="grid grid-cols-[4rem_1fr] gap-4 py-4 sm:gap-6">
+                <div class="pt-1 font-mono">
+                  {date !== null ? (
+                    <time datetime={entry.publishedAt ?? undefined}>
+                      <span class="block text-2xl font-bold leading-none">{dayFormat.format(date)}</span>
+                      <span class="mt-1 block text-[0.7rem] uppercase tracking-[0.12em] text-muted">
+                        {shortMonth.format(date)}
+                      </span>
+                    </time>
+                  ) : (
+                    <span class="text-xs text-muted">Sans date</span>
+                  )}
+                </div>
+                <div class="min-w-0">
+                  <p class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">
+                    {sourceLabel(entry.source)}
+                  </p>
+                  <h3 class="mt-1 text-lg leading-snug">
+                    <a
+                      href={entry.url}
+                      target="_blank"
+                      rel="noopener"
+                      class="break-words text-ink underline decoration-red decoration-2 underline-offset-4 hover:decoration-4"
+                    >
+                      {entry.title}
+                      <span class="sr-only"> (nouvel onglet)</span>
+                    </a>
+                  </h3>
+                </div>
+              </div>
+            </li>
+          );
+        })
       }
     </ol>
-  </section>
-
-  <section class="mt-20">
-    <div class="flex items-end justify-between gap-4 border-b-2 border-ink pb-3">
-      <h2 class="text-3xl sm:text-4xl">Trois produits</h2>
-      <span class="hidden font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted sm:block">01—03</span>
-    </div>
-    <ul class="mt-8 grid gap-5 sm:grid-cols-3">
-      {
-        products.map((product, index) => (
-          <li
-            class:list={[
-              "flex flex-col border-2 border-ink bg-paper p-5 shadow-hard",
-              product.accent,
-            ]}
-          >
-            <div class="flex items-center justify-between gap-3">
-              <span class="font-mono text-xs text-muted tabular-nums">{String(index + 1).padStart(2, "0")}</span>
-              <span
-                class:list={[
-                  "font-mono text-[0.7rem] uppercase tracking-[0.12em]",
-                  product.link ? "text-red" : "text-muted",
-                ]}
-              >
-                {product.status}
-              </span>
-            </div>
-            <h3 class="mt-6 text-xl">{product.title}</h3>
-            <p class="mt-3 flex-1 text-sm leading-relaxed text-muted text-pretty">{product.body}</p>
-            {product.link && (
-              <a
-                href={product.link}
-                class="mt-5 inline-flex items-center gap-2 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-ink no-underline hover:no-underline"
-              >
-                Découvrir <span aria-hidden="true">→</span>
-              </a>
-            )}
-          </li>
-        ))
-      }
-    </ul>
   </section>
 </Base>

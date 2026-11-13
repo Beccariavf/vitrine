@@ -4,12 +4,14 @@ Ce que ce projet est, le problème qu'il résout et son vocabulaire métier. Le 
 
 ## What it is
 
-- Vitrine : portfolio technique d'un avocat en droit du numérique, destiné aux recruteurs et aux associés de cabinets (droit du numérique, IP-IT, data).
+- Vitrine : le site de Valentin Fouich, juriste en droit du numérique. Aujourd'hui une vitrine : l'accueil réorganisé met en avant le connecteur en préparation, liste ses collections réelles (`src/lib/corpus.ts`) et publie la veille.
+- Plus tard : un abonnement au connecteur, qui relie l'IA du juriste aux sources officielles du droit des données personnelles.
+- Cible : les juristes en données personnelles (cabinets, directions juridiques, DPO).
 - Il démontre, par des outils qui fonctionnent réellement, sa capacité à automatiser des tâches juridiques récurrentes.
 
 ## Why it exists
 
-- Prouver une compétence, pas vendre un SaaS : le site est la vitrine, les trois produits en sont les preuves.
+- Prouver par des données réelles avant de vendre : aucune offre n'est publiée tant que le connecteur n'est pas livrable.
 - Objectif secondaire mais prioritaire : la montée en compétence de son auteur en développement. Chaque livraison doit être expliquée, pas seulement fonctionnelle.
 
 ## Domain language
@@ -29,5 +31,4 @@ Ce que ce projet est, le problème qu'il résout et son vocabulaire métier. Le 
 - Veille sélectionnable par matière : données personnelles, IA, cybersécurité, données non personnelles, plateformes.
 - Neuf autorités officielles, dix adaptateurs : CNIL, CJUE, ANSSI, CEPD, ARCEP, Commission (numérique et DMA), ARCOM, Conseil d'État, Cour de cassation.
 - MCP juridique sur sources officielles.
-- Plugin de workflows juridiques déterministes, inspiré d'AIDD.
 - Mode « Explique-moi » : chaque livraison explique le code et les choix.
