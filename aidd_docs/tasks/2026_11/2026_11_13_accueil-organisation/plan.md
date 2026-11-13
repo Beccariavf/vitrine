@@ -1,6 +1,6 @@
 ---
 objective: "Un juriste comprend en 5 secondes l'accueil de Vitrine, qui met en avant le connecteur, renvoie vers une page Connecteur sans impasse et prouve chaque promesse par une donnée réelle."
-status: pending
+status: completed
 ---
 
 # Plan: Réorganiser l'accueil et les pages autour du connecteur

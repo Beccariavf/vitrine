@@ -12,6 +12,12 @@ type Props = {
 
 const { title, description, containerClass = "max-w-5xl" } = Astro.props;
 const path = Astro.url.pathname;
+
+/** Navigation principale, dans l'ordre affiché. */
+const NAV = [
+  { href: "/connecteur", label: "Connecteur" },
+  { href: "/veille", label: "Veille" },
+];
 ---
 
 <!doctype html>
@@ -37,19 +43,24 @@ const path = Astro.url.pathname;
             Droit du numérique
           </span>
         </a>
-        <nav aria-label="Navigation principale">
-          <a
-            href="/veille"
-            aria-current={path.startsWith("/veille") ? "page" : undefined}
-            class:list={[
-              "border-2 border-ink px-3 py-1 font-mono text-[0.7rem] uppercase tracking-[0.12em] no-underline hover:no-underline",
-              path.startsWith("/veille")
-                ? "bg-ink text-paper"
-                : "bg-paper text-ink hover:bg-ink hover:text-paper",
-            ]}
-          >
-            Veille
-          </a>
+        <nav aria-label="Navigation principale" class="flex gap-2">
+          {
+            NAV.map((lien) => {
+              const courant = path.startsWith(lien.href);
+              return (
+                <a
+                  href={lien.href}
+                  aria-current={courant ? "page" : undefined}
+                  class:list={[
+                    "border-2 border-ink px-3 py-1 font-mono text-[0.7rem] uppercase tracking-[0.12em] no-underline hover:no-underline",
+                    courant ? "bg-ink text-paper" : "bg-paper text-ink hover:bg-ink hover:text-paper",
+                  ]}
+                >
+                  {lien.label}
+                </a>
+              );
+            })
+          }
         </nav>
       </div>
     </header>
