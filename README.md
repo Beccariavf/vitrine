@@ -130,7 +130,7 @@ champ `statut` reste la valeur de la source — statut de publication
 jamais présenté comme applicable. Une valeur de source non reconnue rend `inconnu`, jamais
 `en_vigueur`. La table ne lit que des champs déjà portés par chaque unité : aucun réindex, aucune
 synchronisation, aucune écriture dans `data/`. Elle dit la force du document, pas l'applicabilité
-article par article : les dates d'application échelonnées de l'AI Act vivent dans `date_debut`.
+article par article : le corpus ne porte pas les dates d'application échelonnées de l'AI Act, que son article 113 fixe disposition par disposition.
 
 Un instrument connu mais absent du corpus — ePrivacy, 95/46, 2016/680, 2018/1725, CPCE, code pénal —
 répond, par `get_article`, `get_decision` et `search` : « absent de mon corpus (périmètre : RGPD,

@@ -24,9 +24,9 @@ Chaque passage de `search`, chaque article de `get_article` et chaque décision 
 3. La table rend : `rgpd` et `aiact` `en_vigueur` → `en_vigueur` ; `lil` `VIGUEUR` → `en_vigueur` et `ABROGE` → `abroge` ; `ce`, `cc` et `cjue` → `rendue` quel que soit le statut source ; `cnil` et `cepd` : un statut de source sans effet (`ABROGE`, `ANNULE`) prime sur la nature et rend `abroge`, une délibération `MODIFIE` rend `inconnu`, une sanction ou une décision CNIL `VIGUEUR` rend `rendue`, un avis ou une recommandation `VIGUEUR` rend `adoptee`, une ligne directrice CEPD `finale` rend `adoptee`. La priorité du statut sans effet ne s'applique qu'à ces deux corpus.
 4. Une valeur source non reconnue rend `inconnu`, jamais `en_vigueur` ni une valeur par défaut qui affirmerait l'applicabilité.
 5. `propose` et `pendant` existent dans le type et la table, et sont testés sur la fonction pure ; aucun corpus ne les porte aujourd'hui, ils arrivent avec #24.
-6. Un article abrogé est rendu avec `statut_application: "abroge"`, son `date_fin` et son `date_debut`, jamais comme applicable ; prouvé sur une unité de test portant `ABROGE`.
+6. Un article abrogé présent au corpus est rendu avec `statut_application: "abroge"`, son `date_fin` et son `date_debut`, jamais comme applicable ; prouvé sur une unité de test portant `ABROGE`. Les articles abrogés que la synchronisation écarte (54 pour la LIL) ne sont pas rendus : leur ingestion n'a pas de ticket.
 7. Le statut d'un article de la loi 78-17 vient de la version consolidée que le corpus contient — une seule version, datée au manifeste : chaque article porte son `date_debut` et son statut Légifrance, et aucune unité ne vient d'une version postérieure à la consolidation. Lire une version antérieure demanderait un paramètre de date (#46).
-8. Les descriptions de `search`, `get_article` et `get_decision` nomment `statut_application` et disent qu'un texte abrogé ou proposé n'est jamais applicable ; `npm run typecheck`, `npm test` et `npm run build` passent.
+8. Les descriptions de `search`, `get_article` et `get_decision` nomment `statut_application` et disent qu'un texte abrogé, annulé ou proposé n'est jamais applicable ; `npm run typecheck`, `npm test` et `npm run build` passent.
 
 ## Décisions
 

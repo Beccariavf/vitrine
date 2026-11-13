@@ -1934,6 +1934,11 @@ describe("le statut d'application dans les réponses", () => {
     assert.equal(unites.length > 0, true);
     assert.deepEqual([...new Set(unites.map((unite) => unite.statut))], ["VIGUEUR"]);
     assert.equal(
+      new Set(unites.map((unite) => unite.numero)).size,
+      unites.length,
+      "une seule version par article : c'est la version consolidée",
+    );
+    assert.equal(
       unites.every((unite) => unite.date_debut <= manifeste.date_debut_version),
       true,
       "aucun article ne peut venir d'une version postérieure à la consolidation",

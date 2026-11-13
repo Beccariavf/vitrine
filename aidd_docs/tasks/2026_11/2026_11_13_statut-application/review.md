@@ -31,3 +31,25 @@
 - `mcp/corpus/lil/parse.ts:166-170` + `data/corpus/lil/manifest.json` : les articles abrogés sont écartés à l'ingestion ; `get_article` sur l'article 37 rend `trouve: false` / « Article 37 introuvable », jamais `abroge`. La promesse du critère 6 ne se produit pas sur le corpus réel, seulement sur une racine synthétique. → ticket suivant (#46 / versions abrogées). — 🟢 minor, fit (hors diff, pré-existant).
 - `data/corpus/aiact/unites.jsonl` (293 unités `en_vigueur`, `date_debut: 2024-08-01`) + `mcp/corpus/parse.ts:154` : l'article 6(1) et les obligations Annex I ne s'appliquent qu'au 2027-08-02 (art. 113, présent au corpus) et rendent pourtant `en_vigueur` ; le champ ne distingue pas « en vigueur » de « applicable ». → ticket suivant (dates d'application par disposition), documenter la limite. — 🟢 minor, fit (hors diff, pré-existant).
 - `mcp/tools.ts:113-116` : `normaliserNumero` jette le suffixe ; `getArticle` sur `20-1` rend l'article 20 (`numero: "20"`, `en_vigueur`), pas l'article 20-1. Pré-existant, hors diff, mais il affaiblit le critère 7 pour les articles suffixés (`20-1`, `22-1`, `124-1` à `124-5`). → ticket suivant. — 🟢 minor, fit.
+
+## Round 2 · r-7b2e
+
+- Date: 2026-11-13
+- By: Beccariavf
+- Diff: `6647b07...a9b23ed` (réparation des constats du round 1)
+- Axes: code, functional, relevancy
+- Verdict: changes-requested
+- Score: 8/8 met, 0 unmet, 0 unverified at runtime ; 0,90 après la régression documentaire
+
+### Findings
+
+- `README.md:133`, `mcp/server.ts:41-42`, `aidd_docs/memory/architecture.md:38` : « les dates d'application échelonnées de l'AI Act vivent dans `date_debut` » est faux — les 293 unités portent `date_debut: 2024-08-01`, alors que l'article 113 du corpus fixe l'application de l'article 6(1) au 2027-08-02. Contredit la section « Limites assumées » de la spec, sur le point exact que le ticket doit éviter. — 🔴 blocking, conform.
+- `aidd_docs/memory/testing.md:61` (« les six vocabulaires sources ») et `plan.md:27` (attribution `ABROGE`/`ANNULE`/`MODIFIE` à « LIL, CNIL » quand la LIL ne porte que `VIGUEUR`) : inventaire encore inexact. — 🟢 minor, conform.
+- `tests/mcp.test.ts:1921-1947` : la preuve sur le corpus réel ne vérifie pas l'unicité de version, seulement l'absence de date postérieure à la consolidation. — 🟢 minor, code-health.
+- `spec.md` critère 6 : « un article abrogé est rendu » ne dit pas que 54 articles abrogés de la LIL sont écartés à l'ingestion et n'ont aucun ticket. — 🟢 minor, fit.
+- `mcp/tools.ts:113-116` : `normaliserNumero` jette le suffixe (`20-1` rend l'article 20). Pré-existant, hors diff, à ticket. — 🟢 minor, fit.
+- `review.md` : le round 1 reste seul consigné. — 🟢 minor, rot.
+
+### Réparé depuis
+
+Les trois phrases sur `date_debut` sont corrigées (le corpus ne porte pas ces dates), l'inventaire est exact, le test vérifie l'unicité de version, le critère 6 dit « présent au corpus » et nomme les 54 articles écartés sans ticket. Code, tests et build inchangés par ces corrections.

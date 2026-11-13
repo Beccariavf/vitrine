@@ -39,8 +39,8 @@ const CONSIGNE_STATUT_APPLICATION =
   "`abroge`, `propose`, `pendant`, `rendue`, `adoptee` ou `inconnu`. `statut` reste la valeur de la " +
   "source — statut de publication, type d'acte ou statut Légifrance — et n'est jamais réécrit. Un " +
   "texte abrogé, annulé ou proposé n'est jamais applicable : le dire, ne pas le présenter comme en " +
-  "vigueur. Le champ dit la force du document, pas l'applicabilité article par article, que porte " +
-  "`date_debut`. `inconnu` dit que la source n'a pas été reconnue, ou que le document est modifié et " +
+  "vigueur. Le champ dit la force du document, pas l'applicabilité article par article : le " +
+  "corpus ne porte pas les dates d'application échelonnées. `inconnu` dit que la source n'a pas été reconnue, ou que le document est modifié et " +
   "que la version rendue n'est pas nécessairement celle en vigueur ; jamais que le texte s'applique.";
 
 const CONSIGNE_CITATIONS =
