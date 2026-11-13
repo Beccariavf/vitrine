@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { after, describe, it } from "node:test";
-import { sourcesCorpus } from "../src/lib/corpus.ts";
+import { etagesFacade, sourcesCorpus } from "../src/lib/corpus.ts";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 
@@ -72,5 +72,36 @@ describe("sourcesCorpus", () => {
     assert.equal(sources[0]?.libelle, "RGPD");
     assert.equal(sources[0]?.arrete_le, null);
     assert.equal(sources.find((source) => source.corpus === "cc")?.arrete_le, "2026-11-11");
+  });
+});
+
+describe("unités et étages de la façade", () => {
+  it("rend les unités indexées de chaque collection committée", () => {
+    const unites = new Map(sourcesCorpus(ROOT).map((source) => [source.corpus, source.unites]));
+    assert.equal(unites.get("rgpd"), 272);
+    assert.equal(unites.get("aiact"), 293);
+    assert.equal(unites.get("cnil"), 29299);
+    assert.ok([...unites.values()].every((nombre) => nombre > 0));
+  });
+
+  it("lit les fragments quand le manifeste ne porte pas d'unités", () => {
+    const racine = racineTemporaire();
+    ecrireManifeste(racine, "cc", { documents: 4, fragments: 70 });
+    ecrireManifeste(racine, "zz", { documents: 1 });
+    const unites = new Map(sourcesCorpus(racine).map((source) => [source.corpus, source.unites]));
+    assert.equal(unites.get("cc"), 70);
+    assert.equal(unites.get("zz"), 0);
+  });
+
+  it("donne ceil(log10(unités)) étages, bornés entre 1 et 5", () => {
+    assert.equal(etagesFacade(272), 3);
+    assert.equal(etagesFacade(29299), 5);
+    assert.equal(etagesFacade(7048), 4);
+    assert.equal(etagesFacade(1000), 3);
+    assert.equal(etagesFacade(1001), 4);
+    assert.equal(etagesFacade(5_000_000), 5);
+    assert.equal(etagesFacade(10), 1);
+    assert.equal(etagesFacade(1), 1);
+    assert.equal(etagesFacade(0), 1);
   });
 });
