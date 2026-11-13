@@ -16,6 +16,7 @@ import { buildIndex } from "../index/build.ts";
 import type { ResultatBuild } from "../index/build.ts";
 import { createOllamaEmbedder } from "../embed/embedder.ts";
 import type { Embedder } from "../embed/embedder.ts";
+import { classementHorsCorpus } from "./hors-corpus.ts";
 import { syncIncrements } from "./cnil/sync.ts";
 import { syncCe } from "./ce/sync.ts";
 import { syncCc } from "./cc/sync.ts";
@@ -388,6 +389,11 @@ export async function syncCorpus(options: SyncCorpusOptions = {}): Promise<Rappo
     }
   }
 
+  // Le classement suit la relecture du corpus : une extraction de citations en
+  // échec est ignorée par corpus, la passe ne doit pas échouer. Rendu aussi en
+  // `dry-run`, il n'est alors simplement pas écrit.
+  const horsCorpus = classementHorsCorpus(rootDir, date);
+
   const rapport: RapportSync = {
     version: 1,
     a_jour_au:
@@ -401,6 +407,7 @@ export async function syncCorpus(options: SyncCorpusOptions = {}): Promise<Rappo
     corpus: inventaireCorpus(rootDir),
     sources,
     index,
+    hors_corpus: horsCorpus,
   };
 
   if (options.dryRun !== true) ecrireRapport(rootDir, rapport);

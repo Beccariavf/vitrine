@@ -26,6 +26,7 @@ import type {
   IndexRapport,
   SourceRapport,
 } from "./corpus/sync-rapport.ts";
+import type { ClassementHorsCorpus } from "./corpus/hors-corpus.ts";
 
 /** Ce que le serveur dit de la fraîcheur du corpus, sans réseau ni index. */
 export type EtatCorpus = {
@@ -36,6 +37,12 @@ export type EtatCorpus = {
   depuis: string | null;
   corpus: CorpusRapport[];
   manquants: DocumentRapport[];
+  /**
+   * Classement des documents cités absents du corpus, daté et recalculé par
+   * `npm run corpus:sync`. Il vient du rapport, jamais d'un calcul à la lecture ;
+   * `null` quand le rapport est absent ou antérieur au classement.
+   */
+  hors_corpus: ClassementHorsCorpus | null;
   sources: SourceRapport[];
   index: IndexRapport | null;
   message?: string;
@@ -60,6 +67,7 @@ export function etatCorpus(rootDir: string): EtatCorpus {
         document !== null &&
         (document as { statut?: unknown }).statut === "manquant",
     ),
+    hors_corpus: rapport?.hors_corpus ?? null,
     sources: Array.isArray(rapport?.sources) ? rapport.sources : [],
     index: rapport?.index ?? null,
     ...(rapport === null

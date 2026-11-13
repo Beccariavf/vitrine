@@ -71,6 +71,13 @@ type Instrument = {
    * (`Article 6 GDPR`) ou tableau (`article 82 LIL`).
    */
   sigle?: readonly string[];
+  /**
+   * Périmètre déclaré : `exclu` déclare le document visé hors du périmètre du
+   * corpus, l'absence du champ vaut `couvert`. Aucun instrument n'est exclu
+   * aujourd'hui ; une exclusion se déclare, elle ne se déduit jamais d'une date
+   * ni d'un manifeste.
+   */
+  perimetre?: "exclu";
 };
 
 /** Qualificatif d'institution admis dans un alias, français ou anglais. */
@@ -202,6 +209,42 @@ export function instrumentParIdentifiant(
   return instrument === undefined
     ? null
     : { libelle: instrument.libelle, identifiant: instrument.identifiant };
+}
+
+/**
+ * Déclaration complète d'un instrument : libellé, identifiant officiel, lien et
+ * périmètre. `null` quand l'identifiant est inconnu, casse et espaces
+ * neutralisés.
+ */
+export function documentDeclare(
+  identifiant: string,
+): {
+  libelle: string;
+  identifiant: string;
+  url: string | null;
+  perimetre: "couvert" | "exclu";
+} | null {
+  const instrument = PAR_IDENTIFIANT.get(normaliserIdentifiant(identifiant));
+  return instrument === undefined
+    ? null
+    : {
+        libelle: instrument.libelle,
+        identifiant: instrument.identifiant,
+        url: instrument.url,
+        perimetre: instrument.perimetre ?? "couvert",
+      };
+}
+
+/**
+ * Identifiants normalisés des instruments déclarés `exclu` au catalogue. Vide
+ * tant que le catalogue n'exclut rien : le classement ne devine aucune exclusion.
+ */
+export function documentsExclus(): ReadonlySet<string> {
+  return new Set(
+    INSTRUMENTS.filter((instrument) => instrument.perimetre === "exclu").map((instrument) =>
+      normaliserIdentifiant(instrument.identifiant),
+    ),
+  );
 }
 
 /**

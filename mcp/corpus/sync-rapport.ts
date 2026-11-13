@@ -8,6 +8,7 @@
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import type { ClassementHorsCorpus } from "./hors-corpus.ts";
 import type { CorpusVeille } from "./veille.ts";
 
 /** Chemin du rapport, relatif à la racine du dépôt. */
@@ -63,9 +64,18 @@ export type RapportSync = {
   corpus: CorpusRapport[];
   sources: SourceRapport[];
   index: IndexRapport;
+  /**
+   * Classement des documents cités absents du corpus, recalculé et daté à chaque
+   * passe. Absent d'un rapport antérieur : `etat_corpus` rend alors `null`.
+   */
+  hors_corpus?: ClassementHorsCorpus;
 };
 
-/** Lit le rapport ; `null` s'il est absent, illisible ou d'une forme inconnue. */
+/**
+ * Lit le rapport ; `null` s'il est absent, illisible ou d'une forme inconnue. Le
+ * classement hors corpus est facultatif — un rapport antérieur reste lisible —,
+ * mais un bloc présent et mal formé rend `null` : aucune forme inventée.
+ */
 export function lireRapport(rootDir: string): RapportSync | null {
   const chemin = join(rootDir, CHEMIN_RAPPORT);
   if (!existsSync(chemin)) return null;
@@ -75,6 +85,12 @@ export function lireRapport(rootDir: string): RapportSync | null {
       typeof element === "object" && element !== null;
     const aStatut = (element: unknown): boolean =>
       estObjet(element) && typeof (element as { statut?: unknown }).statut === "string";
+    const horsCorpus = valeur.hors_corpus;
+    const horsCorpusLisible =
+      horsCorpus === undefined ||
+      (estObjet(horsCorpus) &&
+        typeof (horsCorpus as { calcule_le?: unknown }).calcule_le === "string" &&
+        Array.isArray((horsCorpus as { documents?: unknown }).documents));
     if (
       valeur.version !== 1 ||
       !Array.isArray(valeur.documents) ||
@@ -83,7 +99,8 @@ export function lireRapport(rootDir: string): RapportSync | null {
       !Array.isArray(valeur.sources) ||
       !valeur.sources.every(aStatut) ||
       !aStatut(valeur.index) ||
-      typeof valeur.depuis !== "string"
+      typeof valeur.depuis !== "string" ||
+      !horsCorpusLisible
     ) {
       return null;
     }
@@ -167,7 +184,7 @@ function ligneManquant(document: DocumentRapport): string {
     : `${document.document} (${document.corpus ?? document.source})`;
 }
 
-/** Texte court : fraîcheur, fenêtre, comptes, manquants, sources et index. */
+/** Texte court : fraîcheur, fenêtre, comptes, manquants, hors corpus, sources et index. */
 export function formaterRapport(rapport: RapportSync): string {
   const fraicheur =
     rapport.a_jour_au === null
@@ -206,6 +223,25 @@ export function formaterRapport(rapport: RapportSync): string {
         .map(([motif, compte]) => `${motif} : ${compte}`)
         .join(", ")}`,
     );
+  }
+  const classement = rapport.hors_corpus;
+  if (classement !== undefined && classement.documents.length > 0) {
+    lignes.push(
+      `Hors corpus : ${classement.documents.length} document(s) au ${classement.calcule_le}`,
+    );
+    for (const document of classement.documents) {
+      const autorites =
+        document.autorites.length === 0
+          ? ""
+          : ` — ${document.autorites
+              .map((autorite) => `${autorite.autorite} ${autorite.citations}`)
+              .join(", ")}`;
+      lignes.push(
+        `${document.instrument} (${document.document}) : ${document.citations} citation(s)` +
+          autorites +
+          (document.statut === "exclu" ? " [exclu]" : ""),
+      );
+    }
   }
   for (const source of rapport.sources) {
     lignes.push(
