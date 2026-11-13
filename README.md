@@ -52,6 +52,7 @@ npm run mcp:eval -- --questions questions-cjue.csv --split dev                 #
 npm run mcp:eval -- --questions questions-cnil-v2.csv --split dev --seuils 0.690,0.740,0.010   # 25 questions CNIL documentaires (hors CI)
 npm run mcp:eval -- --questions questions-cnil-v2.csv --split test --mesurer-test --seuils 0.690,0.740,0.010   # déjà consommé le 2026-11-06 ; ne pas relancer
 npm run mcp:eval:filtres                                                        # 12 cas de filtrage CNIL (hors CI)
+node mcp/eval/citations.ts cnil --taille 5                                      # 5 décisions CNIL, leurs citations et leur passage (hors CI)
 ```
 
 Le MCP lit le RGPD, l'AI Act, la LIL, les délibérations de la CNIL, les décisions du Conseil
@@ -88,6 +89,18 @@ opératoire par défaut, le document entier avec `partie: "tous"` — et `search
 `nature` pour les trois natures CNIL. Le filtre est d'abord un choix de corpus, pas de document. La
 route Légifrance `https://www.legifrance.gouv.fr/cnil/id/<id>` est déclarée dans le manifeste mais
 n'a pas été vérifiée : elle répond 403 aux robots.
+
+Une décision rendue par `search` ou `get_decision` — corpus `cnil`, `ce`, `cc`, `cjue` et `cepd` —
+porte `citations` : les instruments et articles que son texte nomme (`RGPD · art. 6`,
+`loi 78-17 · art. 82`), chacun avec son lien officiel (`url`, `null` s'il est inconnu). L'extraction
+est déterministe, faite à la lecture depuis `data/corpus/<corpus>/unites.jsonl`, au niveau du
+document : tous les passages d'une décision portent sa base juridique entière, même quand le passage
+rendu ne la nomme pas. Une liste vide dit qu'aucune citation n'a été reconnue dans le texte, jamais
+que la décision n'a pas de base juridique. Le périmètre est fermé — RGPD, 95/46, ePrivacy, 2016/680,
+2018/1725, loi 78-17, CPCE, code pénal à partir de 226-16 — et la précision prime : un instrument
+hors périmètre, un visa qui ne fait qu'appliquer une loi, une anaphore ambiguë ne produisent rien.
+La précision mesurée sur 25 documents relus est dans
+`aidd_docs/tasks/2026_11/2026_11_13_citations-decisions/mesure.md` ; aucun seuil n'est publié.
 
 Le corpus `lil` porte la loi n° 78-17 dans sa version consolidée : 1 document, 133 articles en
 vigueur, 54 articles abrogés écartés et 50 sections parcourues. `npm run lil:sync -- --date
