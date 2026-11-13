@@ -12,6 +12,34 @@ import { formaterAutorites } from "./hors-corpus.ts";
 import type { ClassementHorsCorpus } from "./hors-corpus.ts";
 import type { CorpusVeille } from "./veille.ts";
 
+/**
+ * Sources que `npm run corpus:sync` revérifie, dans leur ordre d'exécution. Les
+ * corpus statiques (`rgpd`, `aiact`, `lil`, `cepd`) n'y figurent pas : `a_jour_au`
+ * ne les couvre pas.
+ */
+export const ORDRE_SOURCES: readonly CorpusVeille[] = ["cnil", "ce", "cc", "cjue"];
+
+/** Manifestes lisibles sous `data/corpus/`, par nom de corpus ; un manifeste illisible est ignoré. */
+export function lireManifestes(rootDir: string): Map<string, Record<string, unknown>> {
+  const manifestes = new Map<string, Record<string, unknown>>();
+  const racine = join(rootDir, "data", "corpus");
+  if (!existsSync(racine)) return manifestes;
+  for (const dossier of readdirSync(racine, { withFileTypes: true })) {
+    if (!dossier.isDirectory()) continue;
+    const chemin = join(racine, dossier.name, "manifest.json");
+    if (!existsSync(chemin)) continue;
+    try {
+      const valeur: unknown = JSON.parse(readFileSync(chemin, "utf8"));
+      if (typeof valeur === "object" && valeur !== null && !Array.isArray(valeur)) {
+        manifestes.set(dossier.name, valeur as Record<string, unknown>);
+      }
+    } catch {
+      // Un manifeste illisible ne masque pas les autres corpus.
+    }
+  }
+  return manifestes;
+}
+
 /** Chemin du rapport, relatif à la racine du dépôt. */
 export const CHEMIN_RAPPORT = join("data", "corpus", "sync.json");
 
@@ -158,40 +186,32 @@ function nombre(valeur: unknown, defaut: number): number {
  * `date_extraction` pour les collectes, `couverture.date` pour la LIL et
  * `couverture.date_liste` pour le CEPD.
  */
-export function inventaireCorpus(rootDir: string): CorpusRapport[] {
-  const racine = join(rootDir, "data", "corpus");
-  if (!existsSync(racine)) return [];
-
+export function inventaireCorpus(
+  rootDir: string,
+  manifestes: ReadonlyMap<string, Record<string, unknown>> = lireManifestes(rootDir),
+): CorpusRapport[] {
   const corpus: CorpusRapport[] = [];
-  for (const dossier of readdirSync(racine, { withFileTypes: true })) {
-    if (!dossier.isDirectory()) continue;
-    const chemin = join(racine, dossier.name, "manifest.json");
-    if (!existsSync(chemin)) continue;
-    try {
-      const manifeste = JSON.parse(readFileSync(chemin, "utf8")) as Record<string, unknown>;
-      const couverture =
-        typeof manifeste.couverture === "object" && manifeste.couverture !== null
-          ? (manifeste.couverture as Record<string, unknown>)
-          : {};
-      const date =
-        (typeof manifeste.arrete_le === "string" ? manifeste.arrete_le : null) ??
-        (typeof manifeste.date_extraction === "string" ? manifeste.date_extraction : null) ??
-        (typeof couverture.date === "string" ? couverture.date : null) ??
-        (typeof couverture.date_liste === "string" ? couverture.date_liste : null);
-      corpus.push({
-        corpus: dossier.name,
-        documents:
-          typeof manifeste.documents === "number"
-            ? manifeste.documents
-            : dossier.name === "rgpd" || dossier.name === "aiact"
-              ? 1
-              : 0,
-        unites: nombre(manifeste.unites, nombre(manifeste.fragments, 0)),
-        arrete_le: date,
-      });
-    } catch {
-      // Un manifeste illisible ne masque pas les autres corpus.
-    }
+  for (const [nom, manifeste] of manifestes) {
+    const couverture =
+      typeof manifeste.couverture === "object" && manifeste.couverture !== null
+        ? (manifeste.couverture as Record<string, unknown>)
+        : {};
+    const date =
+      (typeof manifeste.arrete_le === "string" ? manifeste.arrete_le : null) ??
+      (typeof manifeste.date_extraction === "string" ? manifeste.date_extraction : null) ??
+      (typeof couverture.date === "string" ? couverture.date : null) ??
+      (typeof couverture.date_liste === "string" ? couverture.date_liste : null);
+    corpus.push({
+      corpus: nom,
+      documents:
+        typeof manifeste.documents === "number"
+          ? manifeste.documents
+          : nom === "rgpd" || nom === "aiact"
+            ? 1
+            : 0,
+      unites: nombre(manifeste.unites, nombre(manifeste.fragments, 0)),
+      arrete_le: date,
+    });
   }
   return corpus.sort((gauche, droite) => gauche.corpus.localeCompare(droite.corpus));
 }
