@@ -87,11 +87,28 @@ export function lireRapport(rootDir: string): RapportSync | null {
     const aStatut = (element: unknown): boolean =>
       estObjet(element) && typeof (element as { statut?: unknown }).statut === "string";
     const horsCorpus = valeur.hors_corpus;
+    const aClassement = (element: unknown): boolean =>
+      estObjet(element) &&
+      typeof (element as { document?: unknown }).document === "string" &&
+      typeof (element as { instrument?: unknown }).instrument === "string" &&
+      ((element as { url?: unknown }).url === null ||
+        typeof (element as { url?: unknown }).url === "string") &&
+      ((element as { statut?: unknown }).statut === "absent" ||
+        (element as { statut?: unknown }).statut === "exclu") &&
+      typeof (element as { citations?: unknown }).citations === "number" &&
+      Array.isArray((element as { autorites?: unknown }).autorites) &&
+      ((element as { autorites?: unknown[] }).autorites ?? []).every(
+        (autorite) =>
+          estObjet(autorite) &&
+          typeof (autorite as { autorite?: unknown }).autorite === "string" &&
+          typeof (autorite as { citations?: unknown }).citations === "number",
+      );
     const horsCorpusLisible =
       horsCorpus === undefined ||
       (estObjet(horsCorpus) &&
         typeof (horsCorpus as { calcule_le?: unknown }).calcule_le === "string" &&
-        Array.isArray((horsCorpus as { documents?: unknown }).documents));
+        Array.isArray((horsCorpus as { documents?: unknown }).documents) &&
+        ((horsCorpus as { documents?: unknown[] }).documents ?? []).every(aClassement));
     if (
       valeur.version !== 1 ||
       !Array.isArray(valeur.documents) ||

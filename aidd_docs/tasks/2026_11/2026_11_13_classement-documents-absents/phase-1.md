@@ -34,7 +34,7 @@ status: completed
 > Le catalogue dit ce qui est couvert et ce qui est exclu ; il n'exclut rien aujourd'hui.
 
 1. Ajouter `perimetre?: "exclu"` à `Instrument` dans `mcp/corpus/citations.ts` ; l'absence du champ vaut `"couvert"`.
-2. Exporter `documentDeclare(identifiant): { libelle, identifiant, url, perimetre } | null` : lecture par `PAR_IDENTIFIANT`, `null` quand l'identifiant est inconnu.
+2. Exporter `documentDeclare(identifiant): { libelle, url } | null` : lecture par `PAR_IDENTIFIANT`, `null` quand l'identifiant est inconnu.
 3. Exporter `documentsExclus(): ReadonlySet<string>` : identifiants normalisés des instruments déclarés `exclu`.
 4. Ne marquer aucun des huit instruments `exclu` : tous sont au périmètre (#41, #42).
 
@@ -55,7 +55,7 @@ status: completed
 
 | Task | Acceptance criteria |
 | ---- | ------------------- |
-| 1... | `documentDeclare("32002l0058")` rend `libelle: "ePrivacy"`, son URL et `perimetre: "couvert"` ; un identifiant inconnu rend `null` |
+| 1... | `documentDeclare("32002l0058")` rend `libelle: "ePrivacy"` et son URL ; un identifiant inconnu rend `null` |
 | 1... | `documentsExclus()` rend un ensemble vide sur le catalogue actuel |
 | 2... | `classerCitations` compte les citations rendues, écarte les présents, marque les exclus et trie comme le contrat l'exige |
 | 2... | `classementHorsCorpus` sur un `rootDir` temporaire (deux corpus de décisions, un manifeste) rend le classement et sa date |

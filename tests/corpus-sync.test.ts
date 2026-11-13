@@ -1209,6 +1209,39 @@ describe("classement des documents hors corpus", () => {
         "utf8",
       );
       assert.equal(lireRapport(root), null);
+
+      // Une entrée incomplète est refusée aussi : `formaterRapport` la lirait.
+      writeFileSync(
+        chemin,
+        JSON.stringify({
+          ...sansBloc,
+          hors_corpus: { calcule_le: "2026-11-13", documents: [{}] },
+        }),
+        "utf8",
+      );
+      assert.equal(lireRapport(root), null);
+
+      writeFileSync(
+        chemin,
+        JSON.stringify({
+          ...sansBloc,
+          hors_corpus: {
+            calcule_le: "2026-11-13",
+            documents: [
+              {
+                document: "32002L0058",
+                instrument: "ePrivacy",
+                url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32002L0058",
+                statut: "absent",
+                citations: 1,
+                autorites: [{ autorite: "CNIL", citations: 1 }],
+              },
+            ],
+          },
+        }),
+        "utf8",
+      );
+      assert.equal(lireRapport(root)?.hors_corpus?.documents.length, 1);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

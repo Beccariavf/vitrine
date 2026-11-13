@@ -27,7 +27,7 @@ jour.
 Corpus réel au 2026-11-13 :
 
 ```
-classement des documents hors corpus au 2026-11-13 : 6 document(s), 410 décision(s) citante(s)
+classement des documents hors corpus au 2026-11-13 : 6 document(s), 410 citation(s) rendue(s)
 CPCE (LEGITEXT000006070987) — absent : 130 décision(s) citante(s) — CNIL 82, Conseil d'État 25, Cour de cassation 21, CJUE 2
 directive 95/46/CE (31995L0046) — absent : 97 décision(s) citante(s) — CJUE 38, CNIL 22, Conseil d'État 22, CEPD 10, Cour de cassation 5
 ePrivacy (32002L0058) — absent : 73 décision(s) citante(s) — Cour de cassation 26, CJUE 17, CNIL 15, Conseil d'État 14, CEPD 1
@@ -51,7 +51,9 @@ Deux instruments du catalogue n'y figurent pas parce qu'ils sont au corpus : le 
 ne porte que les documents absents, conformément au contrat : un document présent n'est pas un trou.
 
 **Unité comptée : la citation rendue** (une par décision et par instrument), c'est-à-dire une
-décision citante par document. Le libellé affiché dit « décision(s) citante(s) » ; le champ JSON
+décision citante par document. Le libellé d'une ligne dit « décision(s) citante(s) » ; le total
+somme ces couples et s'appelle donc « citation(s) rendue(s) », pas « décisions » : ces 410 couples
+portent **361 décisions distinctes**, une décision pouvant citer deux instruments. Le champ JSON
 reste `citations`, le même dénominateur que la mesure des citations de #28, qui en compte 4 459 sur
 les mêmes cinq corpus. Les 410 couples (décision, document) comptés ici sont donc 9,2 % de ces
 4 459 citations ; les deux mesures restent comparables parce qu'elles comptent la même chose.

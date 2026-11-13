@@ -204,7 +204,7 @@ export function rendreClassement(rootDir: string, date: string): string {
   const total = classement.documents.reduce((somme, document) => somme + document.citations, 0);
   const lignes = [
     `classement des documents hors corpus au ${classement.calcule_le} : ` +
-      `${classement.documents.length} document(s), ${total} décision(s) citante(s)`,
+      `${classement.documents.length} document(s), ${total} citation(s) rendue(s)`,
   ];
   for (const document of classement.documents) {
     lignes.push(
