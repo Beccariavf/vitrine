@@ -245,6 +245,43 @@ describe("périmètre et fraîcheur dans chaque réponse", () => {
     }
   });
 
+  it("un corpus sous veille sans passe réussie garde sa date d'arrêté dans l'avertissement", async () => {
+    const root = racine();
+    try {
+      const resultat = await search(
+        root,
+        { question: "article 999", corpus: "cnil" },
+        { embedder: EMBEDDER_INTERDIT },
+      );
+
+      assert.match(
+        resultat.perimetre.avertissement ?? "",
+        /cnil : sous veille, aucune synchronisation réussie, données arrêtées le 2026-10-30/,
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("un corpus demandé inconnu est dit inconnu, jamais instantané fixe", async () => {
+    const root = racine("2026-11-12");
+    try {
+      const resultat = await search(
+        root,
+        { question: "article 999", corpus: "CNIL" },
+        { embedder: EMBEDDER_INTERDIT },
+      );
+
+      assert.deepEqual(resultat.perimetre.corpus, [
+        { corpus: "CNIL", veille: false, a_jour_au: null, arrete_le: null, inconnu: true },
+      ]);
+      assert.match(resultat.perimetre.avertissement ?? "", /CNIL : corpus inconnu, rien n'a été interrogé/);
+      assert.doesNotMatch(resultat.perimetre.avertissement ?? "", /instantané fixe/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("search incertain porte le périmètre sans avertissement", async () => {
     const root = racine("2026-11-12");
     try {

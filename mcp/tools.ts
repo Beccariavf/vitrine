@@ -47,6 +47,8 @@ export type CorpusInterroge = {
   a_jour_au: string | null;
   /** Date d'arrêté portée par le manifeste ; `null` si le manifeste n'en porte pas. */
   arrete_le: string | null;
+  /** Présent quand le corpus demandé n'existe pas localement : rien n'y a été interrogé. */
+  inconnu?: true;
 };
 
 /**
@@ -80,10 +82,11 @@ function corpusDuDocument(
 
 /** Fraîcheur lisible d'un corpus, pour l'avertissement. */
 function fraicheurLisible(entree: CorpusInterroge): string {
+  if (entree.inconnu === true) return `${entree.corpus} : corpus inconnu, rien n'a été interrogé`;
   if (entree.veille) {
-    return entree.a_jour_au === null
-      ? `${entree.corpus} : sous veille, aucune synchronisation réussie`
-      : `${entree.corpus} : sous veille, à jour au ${entree.a_jour_au}`;
+    if (entree.a_jour_au !== null) return `${entree.corpus} : sous veille, à jour au ${entree.a_jour_au}`;
+    const arrete = entree.arrete_le === null ? "" : `, données arrêtées le ${entree.arrete_le}`;
+    return `${entree.corpus} : sous veille, aucune synchronisation réussie${arrete}`;
   }
   return entree.arrete_le === null
     ? `${entree.corpus} : instantané fixe non daté, jamais revérifié`
@@ -110,12 +113,14 @@ export function perimetreDe(
     borne.corpus?.trim() || (document === undefined ? null : corpusDuDocument(manifestes, document));
   const noms = cible === null ? inventaire.map((entree) => entree.corpus) : [cible];
   const corpus: CorpusInterroge[] = noms.map((nom) => {
-    const veille = (ORDRE_SOURCES as readonly string[]).includes(nom);
+    const inventorie = inventaire.find((entree) => entree.corpus === nom);
+    const veille = inventorie !== undefined && (ORDRE_SOURCES as readonly string[]).includes(nom);
     return {
       corpus: nom,
       veille,
       a_jour_au: veille ? a_jour_au : null,
-      arrete_le: inventaire.find((entree) => entree.corpus === nom)?.arrete_le ?? null,
+      arrete_le: inventorie?.arrete_le ?? null,
+      ...(inventorie === undefined ? { inconnu: true as const } : {}),
     };
   });
   const perimetre: Perimetre = {

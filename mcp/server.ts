@@ -63,7 +63,8 @@ const CONSIGNE_PERIMETRE =
   "(`corpus[].couverture`). Chaque corpus dit sa fraîcheur : `veille: true` pour les corpus " +
   "revérifiés par la synchronisation (`cnil`, `ce`, `cc`, `cjue`), avec `a_jour_au`, la dernière " +
   "synchronisation réussie (`null` si aucune) ; `veille: false` pour un instantané fixe jamais " +
-  "revérifié (`rgpd`, `aiact`, `lil`, `cepd`), daté par `arrete_le` ou non daté (`null`). Ne " +
+  "revérifié (`rgpd`, `aiact`, `lil`, `cepd`), daté par `arrete_le` ou non daté (`null`) ; " +
+  "`inconnu: true` dit qu'un corpus demandé n'existe pas localement et que rien n'y a été interrogé. Ne " +
   "jamais présenter un instantané fixe comme à jour. Le rappeler au lecteur. Une absence de " +
   "résultat ne prouve jamais que la règle n'existe pas : elle peut être hors du périmètre, exclue " +
   "ou postérieure à la date du corpus. Une recherche `aucun_resultat_fiable` porte " +
