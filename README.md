@@ -91,8 +91,10 @@ route Légifrance `https://www.legifrance.gouv.fr/cnil/id/<id>` est déclarée d
 n'a pas été vérifiée : elle répond 403 aux robots.
 
 Une décision rendue par `search` ou `get_decision` — corpus `cnil`, `ce`, `cc`, `cjue` et `cepd` —
-porte `citations` : les instruments et articles que son texte nomme (`RGPD · art. 6`,
-`loi 78-17 · art. 82`), chacun avec son lien officiel (`url`, `null` s'il est inconnu). L'extraction
+porte `citations` : la liste des instruments et articles **reconnus** dans son texte (`RGPD · art. 6`,
+`loi 78-17 · art. 82`), chacun avec son lien officiel (`url`, `null` s'il est inconnu). Cette liste
+n'est pas un relevé exhaustif : une citation absente peut exister dans la décision, et il ne faut pas
+en conclure qu'elle n'y figure pas. L'extraction
 est déterministe, faite à la lecture depuis `data/corpus/<corpus>/unites.jsonl`, au niveau du
 document : tous les passages d'une décision portent sa base juridique entière, même quand le passage
 rendu ne la nomme pas. Une liste vide dit qu'aucune citation n'a été reconnue dans le texte, jamais

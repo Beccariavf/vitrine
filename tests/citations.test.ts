@@ -212,6 +212,50 @@ describe("l'extraction des citations d'une décision", () => {
     ]);
   });
 
+  it("compte une loi nommée par sa date ou son qualificatif comme un antécédent concurrent", () => {
+    // L'antécédent est la loi organique, la loi du pays, la loi de 1984 ou la
+    // loi du 6 fructidor : aucune n'appartient au périmètre, et la LIL n'est pas
+    // « la même loi ».
+    assert.deepEqual(references("Vu la loi organique n° 2004-192. L'article 96 de la même loi organique"), []);
+    assert.deepEqual(references("la loi du pays n° 2018-1. L'article 90 de la même loi du pays"), []);
+    assert.deepEqual(references("Vu la loi du 22 décembre 1984. L'article 4 de la même loi"), []);
+    assert.deepEqual(
+      references("Vu la loi du 6 fructidor an II et la loi n° 78-17. L'article 4 de la même loi"),
+      [],
+    );
+    // La LIL nommée par sa date reste une seule et même loi.
+    assert.deepEqual(references("Vu la loi du 6 janvier 1978. L'article 82 de la même loi"), [
+      "loi 78-17 · art. 82",
+    ]);
+  });
+
+  it("attribue une liste distribuée à l'instrument de chaque segment", () => {
+    assert.deepEqual(references("articles 9 du RGPD et 6 de la loi n° 78-17"), [
+      "RGPD · art. 9",
+      "loi 78-17 · art. 6",
+    ]);
+    assert.deepEqual(references("articles 13 du RGPD, 32 de la loi n° 78-17"), [
+      "RGPD · art. 13",
+      "loi 78-17 · art. 32",
+    ]);
+    // Un segment sans instrument ne reçoit rien.
+    assert.deepEqual(references("articles 9 du RGPD et 6 sans instrument"), ["RGPD · art. 9"]);
+  });
+
+  it("admet l'institution sans parenthèses", () => {
+    assert.deepEqual(references("article 6 du règlement UE 2016/679"), ["RGPD · art. 6"]);
+    assert.deepEqual(references("l'article 5 de la directive CE 95/46"), ["directive 95/46/CE · art. 5"]);
+  });
+
+  it("lit les formes anglaises du périmètre", () => {
+    assert.deepEqual(references("Article 4 of Directive (EU) 2016/680"), ["2016/680 · art. 4"]);
+    assert.deepEqual(references("Article 4 of Regulation (EU) 2018/1725"), ["2018/1725 · art. 4"]);
+    assert.deepEqual(references("Article 5(3) of Directive 2002/58/EC"), ["ePrivacy · art. 5(3)"]);
+    assert.deepEqual(references("Article 6(1)(a) GDPR"), ["RGPD · art. 6(1)(a)"]);
+    assert.deepEqual(references("Article 6 of the GDPR"), ["RGPD · art. 6"]);
+    assert.deepEqual(references("Articles 12 to 14 GDPR"), ["RGPD · art. 12–14"]);
+  });
+
   it("laisse l'anaphore béante quand deux instruments de même nature sont nommés", () => {
     assert.deepEqual(
       references(

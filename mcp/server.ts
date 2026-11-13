@@ -35,10 +35,11 @@ const CONSIGNE_PROMESSE =
 
 const CONSIGNE_CITATIONS =
   "Chaque décision rendue par `search` et par `get_decision` (corpus `cnil`, `ce`, `cc`, `cjue` et " +
-  "`cepd`) porte `citations` : les instruments et articles que son texte nomme, avec leur lien " +
-  "officiel (`url`, `null` quand il est inconnu). Citer cette liste telle quelle, sans en déduire " +
-  "d'autres articles. Une liste vide dit qu'aucune citation n'a été reconnue dans le texte, jamais " +
-  "que la décision n'a pas de base juridique.";
+  "`cepd`) porte `citations` : la liste des instruments et articles reconnus dans son texte, non " +
+  "exhaustive, chacun avec son lien officiel (`url`, `null` quand il est inconnu). Une citation " +
+  "absente de la liste peut exister dans la décision : ne pas en conclure qu'elle n'y figure pas. " +
+  "Citer cette liste telle quelle, sans en déduire d'autres articles. Une liste vide dit qu'aucune " +
+  "citation n'a été reconnue, jamais que la décision n'a pas de base juridique.";
 
 const CONSIGNE_SERVEUR =
   "Serveur de lecture et de recherche sur huit corpus juridiques : le RGPD " +

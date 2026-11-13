@@ -57,6 +57,15 @@ type Instrument = {
   sigle?: readonly string[];
 };
 
+/** Qualificatif d'institution admis dans un alias, français ou anglais. */
+const INSTITUTION = "(?:UE|EU|CE|EC|CEE|Euratom)";
+
+/** Parenthèse d'institution d'un acte : « (UE) », « (CE, Euratom) ». */
+const PARENTHESE = `\\(${INSTITUTION}(?:, ?${INSTITUTION})*\\)`;
+
+/** Qualificatif d'institution, entre parenthèses ou non, espace compris : « (UE) », « UE ». */
+const QUALIFICATIF = `(?:(?:${PARENTHESE}|(?:${INSTITUTION})) )?`;
+
 /**
  * Le périmètre fermé, dans l'ordre de rendu : un article d'un autre instrument
  * n'est jamais rendu, même correctement attribué.
@@ -70,10 +79,9 @@ const INSTRUMENTS: readonly Instrument[] = [
       "RGPD",
       "GDPR",
       "règlement général sur la protection des données",
-      "règlement \\((?:UE|CE)\\) (?:général sur la protection des données|(?:n[o°] ?)?2016/679)",
-      "règlement (?:(?:UE|CE) )?(?:n[o°] ?)?2016/679",
-      "Regulation \\(EU\\) (?:n[o°] ?)?2016/679",
-      "Regulation 2016/679",
+      `règlement ${PARENTHESE} (?:général sur la protection des données|(?:n[o°] ?)?2016/679)`,
+      `règlement ${QUALIFICATIF}(?:n[o°] ?)?2016/679`,
+      `Regulation ${QUALIFICATIF}(?:n[o°] ?)?2016/679`,
     ],
     sigle: ["RGPD", "GDPR"],
   },
@@ -82,7 +90,7 @@ const INSTRUMENTS: readonly Instrument[] = [
     nature: "directive",
     url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:31995L0046",
     alias: [
-      "directive (?:\\((?:CE|UE|CEE)\\) )?(?:n[o°] ?)?95/46(?:/(?:CE|EC))?",
+      `directive ${QUALIFICATIF}(?:n[o°] ?)?95/46(?:/(?:${INSTITUTION}))?`,
       "directive (?:du Parlement européen et du Conseil )?(?:n[o°] ?)?du 24 octobre 1995",
     ],
   },
@@ -91,7 +99,7 @@ const INSTRUMENTS: readonly Instrument[] = [
     nature: "directive",
     url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32002L0058",
     alias: [
-      "directive (?:\\((?:CE|UE)\\) )?(?:n[o°] ?)?2002/58(?:/(?:CE|EC))?",
+      `directive ${QUALIFICATIF}(?:n[o°] ?)?2002/58(?:/(?:${INSTITUTION}))?`,
       "directive e-?privacy",
       "directive (?:du Parlement européen et du Conseil )?(?:n[o°] ?)?du 12 juillet 2002",
       "e-?privacy",
@@ -102,13 +110,16 @@ const INSTRUMENTS: readonly Instrument[] = [
     libelle: "2016/680",
     nature: "directive",
     url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32016L0680",
-    alias: ["directive (?:\\((?:UE|CE)\\) )?(?:n[o°] ?)?2016/680"],
+    alias: [`directive ${QUALIFICATIF}(?:n[o°] ?)?2016/680`],
   },
   {
     libelle: "2018/1725",
     nature: "règlement",
     url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32018R1725",
-    alias: ["règlement (?:\\((?:UE|CE)\\) )?(?:n[o°] ?)?2018/1725"],
+    alias: [
+      `règlement ${QUALIFICATIF}(?:n[o°] ?)?2018/1725`,
+      `Regulation ${QUALIFICATIF}(?:n[o°] ?)?2018/1725`,
+    ],
   },
   {
     libelle: "loi 78-17",
@@ -176,14 +187,22 @@ const ANCRAGES_SIGLES = new Map(
 const BALAYAGES = INSTRUMENTS.map((instrument) => ({ instrument, motif: balayage(instrument) }));
 
 /**
- * Numéro d'article : `6`, `1er`, `L. 34-5`, `226-16`, `6.1`, `R. 431-5`.
+ * Numéro d'article : `6`, `1er`, `L. 34-5`, `226-16`, `6.1`, `R. 431-5`,
+ * et leurs subdivisions anglaises `5(3)`, `6(1)(a)`.
  * Un groupe suivi de `°` est un point d'énumération, pas un sous-numéro :
  * « l'article 4-2° de la loi » cite l'article 4, point 2°.
  */
-const NUMERO = "(?:[LRD]\\. ?)?\\d{1,4}(?:er)?(?:[.-]\\d{1,4}(?!°))*";
+const NUMERO =
+  "(?:[LRD]\\. ?)?\\d{1,4}(?:er)?(?:[.-]\\d{1,4}(?!°))*(?:\\(\\d{1,4}\\)|\\([a-z]\\))*";
+
+/** Le même jeton, pour relire une liste déjà reconnue et en extraire les numéros. */
+const JETON_ARTICLE = new RegExp(
+  "(?:[LRD]\\. ?)?\\d+(?:er)?(?:[.-]\\d+)*(?:\\(\\d{1,4}\\)|\\([a-z]\\))*",
+  "gi",
+);
 
 /** Liste ou plage d'articles, « et suivants » compris. */
-const LISTE = `${NUMERO}(?: ?(?:,|et|ou|à|–) ?${NUMERO}| +- +${NUMERO})*(?: et suivants?)?`;
+const LISTE = `${NUMERO}(?: ?(?:,|et|ou|à|–|to) ?${NUMERO}| +- +${NUMERO})*(?: et suivants?)?`;
 
 /** `article 6`, `articles 8 et 20`, `art. L. 34-5`, `Article 6` : la liste seule. */
 const ARTICLE = new RegExp(`\\b(?:articles?|art\\.?) (${LISTE})`, "gi");
@@ -192,10 +211,14 @@ const ARTICLE = new RegExp(`\\b(?:articles?|art\\.?) (${LISTE})`, "gi");
 const LISTE_ANCRÉE = new RegExp(`^(?:${LISTE})`, "i");
 
 /** Connecteur qui fait suivre l'article de son instrument. */
-const CONNECTEUR = /^(?:du|de la|de l['’]|des|of) /i;
+const CONNECTEUR = /^(?:du|de la|de l['’]|des|of(?: the)?) /i;
 
-/** Anaphore : « du même règlement », « de la même directive ». */
-const ANAPHORE = /^même (règlement|directive|loi|code)s?\b/i;
+/**
+ * Anaphore : « du même règlement », « de la même directive ». Le qualificatif
+ * est capturé pour être refusé : aucune « loi organique » ni « loi du pays »
+ * n'appartient au périmètre.
+ */
+const ANAPHORE = /^même (règlement|directive|loi|code)s?(?: (organique|du pays))?/i;
 
 /** En-tête : l'instrument précède sa liste. */
 const ENTETE =
@@ -219,8 +242,24 @@ const RENVOI = /(?:application|modification|modifiant|modifiée? par|en applicat
 const ACTE_GENERIQUE =
   /(règlement|directive) (?:\\((?:UE|CE|CEE|Euratom)\\) )?(?:n[o°] ?)?(\d{1,4}\/\d{1,4}(?:\/[A-Z]{2,4})?)/gi;
 
-/** Une loi numérotée nommée hors du périmètre. */
-const LOI_NUMEROTEE = /loi (?:n[o°] ?)?(\d{1,4}-\d{1,4})/gi;
+/**
+ * Une loi nommée, du périmètre ou non : par son numéro, par sa date
+ * grégorienne ou par sa date républicaine, qualificatif compris
+ * (« loi organique n° 2004-192 », « loi du pays n° 2018-1 », « loi du
+ * 6 fructidor an II »). Toutes comptent pour une anaphore.
+ */
+const MOIS =
+  "janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre";
+const MOIS_REPUBLICAIN =
+  "vendémiaire|brumaire|frimaire|nivôse|pluviôse|ventôse|germinal|floréal|prairial|messidor|thermidor|fructidor";
+const LOI_NOMMEE = new RegExp(
+  `lois? (?:organique |du pays )?(?:` +
+    `(?:n[o°] ?)?(\\d{1,4}-\\d{1,4})` +
+    `|(?:du |de la )?(\\d{1,2}(?:er)? (?:${MOIS}) \\d{4})` +
+    `|(?:du )?(\\d{1,2}(?:er)? (?:${MOIS_REPUBLICAIN}) an [IVX]+)` +
+    `)`,
+  "gi",
+);
 
 /** Un code nommé, dans la limite de ce qu'un nom de code porte. */
 const CODE_NOMME =
@@ -275,9 +314,7 @@ function normaliserArticle(valeur: string): string {
 function numerosArticles(liste: string): string[] {
   const suffixe = / et suivants?$/i.exec(liste);
   const coeur = suffixe === null ? liste : liste.slice(0, suffixe.index);
-  const trouves = [
-    ...coeur.matchAll(/[LRD]\. ?\d+(?:er)?(?:[.-]\d+)*|\d+(?:er)?(?:[.-]\d+)*/gi),
-  ].map((trouve) => ({
+  const trouves = [...coeur.matchAll(JETON_ARTICLE)].map((trouve) => ({
     texte: normaliserArticle(trouve[0]),
     debut: trouve.index ?? 0,
     fin: (trouve.index ?? 0) + trouve[0].length,
@@ -291,7 +328,7 @@ function numerosArticles(liste: string): string[] {
     if (courant === undefined) continue;
     if (
       suivant !== undefined &&
-      /^ ?(?:à|–|-) ?$/.test(coeur.slice(courant.fin, suivant.debut))
+      /^ ?(?:à|–|-|to) ?$/.test(coeur.slice(courant.fin, suivant.debut))
     ) {
       articles.push(`${courant.texte}–${suivant.texte}`);
       rang += 1;
@@ -418,7 +455,7 @@ function naturesNommees(texte: string): Map<Nature, Set<string>> {
     const nature = (trouve[1] ?? "").toLowerCase() as Nature;
     ajouter(nature, identifiantActe(nature, trouve[0]));
   }
-  for (const trouve of texte.matchAll(LOI_NUMEROTEE)) {
+  for (const trouve of texte.matchAll(LOI_NOMMEE)) {
     ajouter("loi", identifiantActe("loi", trouve[0]));
   }
   for (const trouve of texte.matchAll(CODE_NOMME)) ajouter("code", identifiantCode(trouve[0]));
@@ -426,7 +463,14 @@ function naturesNommees(texte: string): Map<Nature, Set<string>> {
   return parNature;
 }
 
-/** Instrument que désigne une anaphore, seulement si sa nature est univoque. */
+/**
+ * Instrument que désigne une anaphore. La résolution est au document, jamais à
+ * la proposition : « de la même loi » ne se résout que si une seule loi est
+ * nommée dans tout le document. Une fenêtre de proximité a été essayée puis
+ * écartée : elle attribue « l'article 12 de la même directive » à la directive
+ * 95/46 citée dans une phrase voisine, alors que l'antécédent est la directive
+ * 2002/58. Manquer une citation reste préférable à l'inventer.
+ */
 function resoudreAnaphore(nature: Nature, nommes: Map<Nature, Set<string>>): Instrument | null {
   const identifiants = nommes.get(nature) ?? new Set<string>();
   if (identifiants.size !== 1) return null;
@@ -435,7 +479,55 @@ function resoudreAnaphore(nature: Nature, nommes: Map<Nature, Set<string>>): Ins
   return instrument === undefined || instrument.nature !== nature ? null : instrument;
 }
 
-/** Articles attribués par « l'article 6 du règlement … ». */
+/** Le séparateur d'une liste distribuée : « articles 9 du RGPD et 6 de la loi ». */
+const SEPARATEUR_DISTRIBUE = /^(?:,|et) /;
+
+/** Nombre de segments qu'une même liste distribuée peut porter. */
+const SEGMENTS_DISTRIBUES = 4;
+
+/**
+ * Attribue une liste d'articles à l'instrument qui la suit : connecteur puis
+ * instrument, ou anaphore. Rend la fin de l'instrument reconnu, pour les listes
+ * distribuées ; `null` quand rien n'est attribué, et rien n'est alors poussé.
+ */
+function attribuerDepuis(
+  texte: string,
+  apresListe: number,
+  articles: readonly string[],
+  nommes: Map<Nature, Set<string>>,
+  trouvailles: Trouvaille[],
+  position: number,
+): number | null {
+  const depart = sansBlancs(texte, apresListe, apresListe + 4);
+  const connecteur = CONNECTEUR.exec(texte.slice(depart, depart + 12));
+  if (connecteur === null) {
+    // Sans connecteur, seul un sigle suffit : « Article 6 GDPR ».
+    const sigle = instrumentEn(texte, depart, true);
+    if (sigle === null) return null;
+    trouvailles.push({ position, instrument: sigle.instrument, articles: [...articles] });
+    return sigle.fin;
+  }
+
+  const apres = depart + connecteur[0].length;
+  const anaphore = ANAPHORE.exec(texte.slice(apres, apres + 24));
+  if (anaphore !== null) {
+    // Une « loi organique » ou une « loi du pays » n'est aucun instrument du
+    // périmètre : l'anaphore ne s'y résout pas.
+    if (anaphore[2] !== undefined) return null;
+    const nature = (anaphore[1] ?? "").toLowerCase() as Nature;
+    const instrument = resoudreAnaphore(nature, nommes);
+    if (instrument === null) return null;
+    trouvailles.push({ position, instrument, articles: [...articles] });
+    return apres + anaphore[0].length;
+  }
+
+  const cible = instrumentEn(texte, apres, false);
+  if (cible === null) return null;
+  trouvailles.push({ position, instrument: cible.instrument, articles: [...articles] });
+  return cible.fin;
+}
+
+/** Articles attribués par « l'article 6 du règlement … », listes distribuées comprises. */
 function articlesAvantInstrument(
   texte: string,
   nommes: Map<Nature, Set<string>>,
@@ -446,27 +538,40 @@ function articlesAvantInstrument(
     if (articles.length === 0) continue;
 
     const position = trouve.index ?? 0;
-    const finListe = position + trouve[0].length;
-    const depart = sansBlancs(texte, finListe, finListe + 4);
-    const connecteur = CONNECTEUR.exec(texte.slice(depart, depart + 8));
-    if (connecteur === null) {
-      // Sans connecteur, seul un sigle suffit : « Article 6 GDPR ».
-      const sigle = instrumentEn(texte, depart, true);
-      if (sigle !== null) trouvailles.push({ position, instrument: sigle.instrument, articles });
-      continue;
-    }
+    let curseur = attribuerDepuis(
+      texte,
+      position + trouve[0].length,
+      articles,
+      nommes,
+      trouvailles,
+      position,
+    );
+    if (curseur === null) continue;
 
-    const apres = depart + connecteur[0].length;
-    const anaphore = ANAPHORE.exec(texte.slice(apres, apres + 20));
-    if (anaphore !== null) {
-      const nature = (anaphore[1] ?? "").toLowerCase() as Nature;
-      const instrument = resoudreAnaphore(nature, nommes);
-      if (instrument !== null) trouvailles.push({ position, instrument, articles });
-      continue;
-    }
+    // « articles 9 du RGPD et 6 de la loi n° 78-17 » : chaque segment porte
+    // son propre instrument, dans la même proposition.
+    for (let segment = 0; segment < SEGMENTS_DISTRIBUES; segment += 1) {
+      const debut = sansBlancs(texte, curseur, curseur + 4);
+      const separateur = SEPARATEUR_DISTRIBUE.exec(texte.slice(debut, debut + 4));
+      if (separateur === null) break;
 
-    const cible = instrumentEn(texte, apres, false);
-    if (cible !== null) trouvailles.push({ position, instrument: cible.instrument, articles });
+      const debutListe = sansBlancs(texte, debut + separateur[0].length, debut + 8);
+      const liste = LISTE_ANCRÉE.exec(texte.slice(debutListe, debutListe + 40));
+      if (liste === null) break;
+      const suivants = numerosArticles(liste[0]);
+      if (suivants.length === 0) break;
+
+      const fin = attribuerDepuis(
+        texte,
+        debutListe + liste[0].length,
+        suivants,
+        nommes,
+        trouvailles,
+        debutListe,
+      );
+      if (fin === null) break;
+      curseur = fin;
+    }
   }
 }
 
@@ -527,7 +632,7 @@ function composer(trouvailles: readonly Trouvaille[]): Citation[] {
       instrument: instrument.libelle,
       articles,
       reference: `${instrument.libelle} · art. ${articles.join(", ")}`,
-      url: instrument.url,
+      url: urlOfficielle(instrument.libelle),
     });
   }
   return citations;
