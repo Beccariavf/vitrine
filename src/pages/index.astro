@@ -1,8 +1,10 @@
 ---
 import Demo from "../components/Demo.astro";
+import Legende from "../components/Legende.astro";
 import Base from "../layouts/Base.astro";
 import { sourcesCorpus } from "../lib/corpus.ts";
 import { lireDemo } from "../lib/demo.ts";
+import { familleDeSource } from "../lib/familles.ts";
 import { getVisibleEntries } from "../lib/entries.ts";
 import { sourceLabel } from "../lib/sources.ts";
 
@@ -105,7 +107,16 @@ const shortMonth = new Intl.DateTimeFormat("fr-FR", { month: "short", timeZone: 
                   )}
                 </div>
                 <div class="min-w-0">
-                  <p class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">
+                  <p
+                    data-source={entry.source}
+                    data-famille={familleDeSource(entry.source).id}
+                    class="flex items-center gap-2 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted"
+                  >
+                    <span
+                      data-pastille
+                      aria-hidden="true"
+                      class:list={["inline-block h-3 w-3 shrink-0 border border-ink", familleDeSource(entry.source).classeFond]}
+                    ></span>
                     {sourceLabel(entry.source)}
                   </p>
                   <h3 class="mt-1 text-lg leading-snug">
@@ -126,5 +137,6 @@ const shortMonth = new Intl.DateTimeFormat("fr-FR", { month: "short", timeZone: 
         })
       }
     </ol>
+    <Legende class="mt-4" />
   </section>
 </Base>

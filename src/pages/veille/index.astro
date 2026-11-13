@@ -1,6 +1,8 @@
 ---
+import Legende from "../../components/Legende.astro";
 import Base from "../../layouts/Base.astro";
 import { getVisibleEntries, isRedundantSummary } from "../../lib/entries.ts";
+import { familleDeSource } from "../../lib/familles.ts";
 import { referenceLabel, referenceUrl } from "../../lib/references.ts";
 import { sourceLabel } from "../../lib/sources.ts";
 import { activeThemes, readThemes } from "../../../veille/themes.ts";
@@ -37,14 +39,6 @@ const shortMonth = new Intl.DateTimeFormat("fr-FR", { month: "short", timeZone: 
 
 const latest = entries.find((entry) => entry.publishedAt !== null)?.publishedAt ?? null;
 const count = `${entries.length} ${entries.length > 1 ? "publications" : "publication"}`;
-
-/** Quatre teintes de façade, dont le béton : la quatrième casse l'alignement des colonnes. */
-const CARD_COLORS = [
-  { bg: "bg-red", text: "text-paper" },
-  { bg: "bg-blue", text: "text-paper" },
-  { bg: "bg-yellow", text: "text-ink" },
-  { bg: "bg-concrete", text: "text-ink" },
-];
 ---
 
 <Base
@@ -65,6 +59,7 @@ const CARD_COLORS = [
         </p>
       )
     }
+    <Legende class="mt-5" />
   </header>
 
   <section class="mt-10" aria-labelledby="matieres">
@@ -146,21 +141,23 @@ const CARD_COLORS = [
   <div class="view-grid mt-8">
     <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {
-        entries.map((entry, index) => {
+        entries.map((entry) => {
           const summary =
             entry.summary !== null && !isRedundantSummary(entry.title, entry.summary)
               ? entry.summary
               : null;
-          const color = CARD_COLORS[index % CARD_COLORS.length];
+          const famille = familleDeSource(entry.source);
           const date = entry.publishedAt !== null ? new Date(entry.publishedAt) : null;
           return (
             <li class:list={["entry", ...entry.themes.map((theme) => `theme-${theme}`)]}>
               <div class="flex h-full flex-col border-2 border-ink bg-paper hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-hard">
                 <div
+                  data-source={entry.source}
+                  data-famille={famille.id}
                   class:list={[
                     "flex items-end justify-between gap-3 border-b-2 border-ink px-4 pb-2 pt-3",
-                    color.bg,
-                    color.text,
+                    famille.classeFond,
+                    famille.classeTexte,
                   ]}
                 >
                   <span class="font-mono text-3xl font-bold leading-none">
