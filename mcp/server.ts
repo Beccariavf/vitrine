@@ -36,7 +36,13 @@ const CONSIGNE_PROMESSE =
 const CONSIGNE_CITATIONS =
   "Chaque décision rendue par `search` et par `get_decision` (corpus `cnil`, `ce`, `cc`, `cjue` et " +
   "`cepd`) porte `citations` : la liste des instruments et articles reconnus dans son texte, non " +
-  "exhaustive, chacun avec son lien officiel (`url`, `null` quand il est inconnu). Une citation " +
+  "exhaustive, chacun avec l'identifiant du document visé (`document`, `32016R0679`…), son lien " +
+  "officiel (`url`, `null` quand il est inconnu) et `hors_corpus` (`true` quand ce document n'est " +
+  "pas dans le corpus local). Une citation hors corpus garde son lien et ne porte aucun texte ni " +
+  "résumé. Un document qui est un instrument connu absent du corpus répond « absent de mon corpus " +
+  "(périmètre : RGPD, AI Act, LIL, CNIL, Conseil d'État, CEPD, Cour de cassation, CJUE). », sans " +
+  "rendre de texte ni de passage, quand l'appel le nomme par `document` ; " +
+  "un identifiant inconnu garde sa réponse actuelle. Une citation " +
   "absente de la liste peut exister dans la décision : ne pas en conclure qu'elle n'y figure pas. " +
   "Citer cette liste telle quelle, sans en déduire d'autres articles. Une liste vide dit qu'aucune " +
   "citation n'a été reconnue, jamais que la décision n'a pas de base juridique.";
@@ -89,7 +95,10 @@ export function createServer(deps: ServerDeps): McpServer {
       description:
         "Rend le texte exact d'un article du RGPD, de l'AI Act ou de la LIL, avec sa référence, " +
         "son chemin, ses dates et son URL. Répondre « introuvable » quand l'article n'existe pas ; " +
-        "ne jamais compléter un texte absent. " +
+        "ne jamais compléter un texte absent. Un document qui est un instrument connu absent du " +
+        "corpus répond « absent de mon corpus (périmètre : RGPD, AI Act, LIL, CNIL, Conseil " +
+        "d'État, CEPD, Cour de cassation, CJUE). », sans rendre de texte ; un identifiant inconnu " +
+        "garde la réponse d'un article introuvable. " +
         CONSIGNE_PROVENANCE,
       inputSchema: {
         document: z

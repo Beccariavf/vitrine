@@ -4,14 +4,23 @@
  * `node mcp/eval/citations.ts <corpus> --taille <n>` affiche les citations de n
  * documents pris à pas régulier dans l'ordre trié des identifiants, avec le
  * passage qui les porte : c'est le support de la relecture, pas une mesure
- * automatique. Deux exécutions donnent la même sortie ; aucun fichier n'est
- * écrit, seul `data/corpus/` est lu.
+ * automatique. Chaque citation porte son document et sa présence au corpus ; une
+ * ligne finale compte, sur tous les documents du corpus, les citations hors
+ * corpus par instrument. Deux exécutions donnent la même sortie ; aucun fichier
+ * n'est écrit, seul `data/corpus/` est lu.
  */
 
 import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { CORPUS_DECISIONS, citationsDesUnites, extraireAttributions } from "../corpus/citations.ts";
+import {
+  CORPUS_DECISIONS,
+  citationsDesUnites,
+  documentsPresents,
+  extraireAttributions,
+  marquerPresence,
+} from "../corpus/citations.ts";
+import type { CitationRendue } from "../corpus/citations.ts";
 import type { Unite } from "../corpus/parse.ts";
 
 const RACINE = fileURLToPath(new URL("../..", import.meta.url));
@@ -79,12 +88,53 @@ function lireCorpusUnites(rootDir: string, corpus: string): Unite[] {
   return unites;
 }
 
+/** Mention d'une citation : son document et sa présence, lue dans les manifestes. */
+function mention(citation: CitationRendue): string {
+  return `${citation.reference} — ${citation.document} (${citation.hors_corpus ? "hors corpus" : "au corpus"})`;
+}
+
+/** Bilan des citations d'un corpus entier, tous documents confondus. */
+export function compterCitations(
+  rootDir: string,
+  documents: Map<string, Unite[]>,
+): {
+  documents: number;
+  citations: number;
+  hors_corpus: number;
+  par_instrument: [string, number][];
+} {
+  const presents = documentsPresents(rootDir);
+  let citations = 0;
+  let horsCorpus = 0;
+  const parInstrument = new Map<string, number>();
+
+  for (const fragments of documents.values()) {
+    for (const citation of marquerPresence(presents, citationsDesUnites(fragments))) {
+      citations += 1;
+      if (!citation.hors_corpus) continue;
+      horsCorpus += 1;
+      const cle = `${citation.instrument} (${citation.document})`;
+      parInstrument.set(cle, (parInstrument.get(cle) ?? 0) + 1);
+    }
+  }
+
+  return {
+    documents: documents.size,
+    citations,
+    hors_corpus: horsCorpus,
+    par_instrument: [...parInstrument.entries()].sort(
+      (gauche, droite) => droite[1] - gauche[1] || gauche[0].localeCompare(droite[0]),
+    ),
+  };
+}
+
 /** Sortie de l'échantillonneur, prête à relire. */
 export function rendreEchantillon(rootDir: string, corpus: string, taille: number): string {
   const unites = lireCorpusUnites(rootDir, corpus);
   const documents = parDocument(unites);
   const identifiants = [...documents.keys()].sort();
   const choisis = echantillonner(identifiants, taille);
+  const presents = documentsPresents(rootDir);
 
   const lignes = [
     `corpus ${corpus} : ${identifiants.length} documents, échantillon de ${choisis.length} ` +
@@ -94,7 +144,7 @@ export function rendreEchantillon(rootDir: string, corpus: string, taille: numbe
   for (const document of choisis) {
     const fragments = documents.get(document) ?? [];
     const texte = fragments.map((unite) => unite.texte).join("\n");
-    const citations = citationsDesUnites(fragments);
+    const citations = marquerPresence(presents, citationsDesUnites(fragments));
     const premier = fragments[0];
     lignes.push("");
     lignes.push(
@@ -107,7 +157,7 @@ export function rendreEchantillon(rootDir: string, corpus: string, taille: numbe
       continue;
     }
     for (const citation of citations) {
-      lignes.push(`  ${citation.reference}`);
+      lignes.push(`  ${mention(citation)}`);
       lignes.push(`    ${citation.url ?? "(sans lien officiel)"}`);
     }
     for (const attribution of extraireAttributions(texte)) {
@@ -115,6 +165,19 @@ export function rendreEchantillon(rootDir: string, corpus: string, taille: numbe
       lignes.push(`    ${attribution.extrait}`);
     }
   }
+
+  const bilan = compterCitations(rootDir, documents);
+  lignes.push("");
+  lignes.push(
+    `Bilan sur les ${bilan.documents} documents : ${bilan.citations} citation(s), ` +
+      `${bilan.hors_corpus} hors corpus.`,
+  );
+  lignes.push(
+    bilan.par_instrument.length === 0
+      ? "  aucune citation hors corpus"
+      : "  hors corpus par instrument : " +
+          bilan.par_instrument.map(([instrument, compte]) => `${instrument} ${compte}`).join(", "),
+  );
 
   return `${lignes.join("\n")}\n`;
 }

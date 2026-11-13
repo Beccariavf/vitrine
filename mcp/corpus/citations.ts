@@ -12,9 +12,15 @@
  *
  * L'extraction se fait à la lecture, sans index ni stockage. Le cache ne garde
  * que les citations par document, jamais le texte.
+ *
+ * La présence d'un document se lit à la lecture dans `data/corpus/<corpus>/manifest.json` :
+ * un instrument du périmètre absent du corpus est rendu avec `hors_corpus: true`,
+ * et les trois outils refusent son identifiant par une phrase unique. Jamais de
+ * constante : un manifeste ajouté fait disparaître la mention sans changement de
+ * code.
  */
 
-import { readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import type { Unite } from "./parse.ts";
 
@@ -22,6 +28,11 @@ import type { Unite } from "./parse.ts";
 export type Citation = {
   /** Libellé court : `RGPD`, `loi 78-17`, `CPCE`… */
   instrument: string;
+  /**
+   * Identifiant officiel du document visé : CELEX (`32016R0679`) ou identifiant
+   * Légifrance (`LEGITEXT000006068624`).
+   */
+  document: string;
   /** Articles normalisés, dans l'ordre de rencontre et sans doublon. */
   articles: string[];
   /** Forme affichable : `RGPD · art. 6, 12`. */
@@ -29,6 +40,9 @@ export type Citation = {
   /** Lien officiel de l'instrument ; `null` quand il n'en a pas. */
   url: string | null;
 };
+
+/** Une citation rendue : son document et son appartenance au corpus, lues à la lecture. */
+export type CitationRendue = Citation & { hors_corpus: boolean };
 
 /** Une citation telle que la mesure la relit : sa référence et son passage. */
 export type Attribution = {
@@ -43,6 +57,8 @@ type Nature = "règlement" | "directive" | "loi" | "code";
 type Instrument = {
   /** Libellé court rendu, aussi court que la forme citée. */
   libelle: string;
+  /** Identifiant officiel du document : CELEX ou identifiant Légifrance. */
+  identifiant: string;
   nature: Nature;
   url: string | null;
   /**
@@ -73,6 +89,7 @@ const QUALIFICATIF = `(?:(?:${PARENTHESE}|(?:${INSTITUTION})) )?`;
 const INSTRUMENTS: readonly Instrument[] = [
   {
     libelle: "RGPD",
+    identifiant: "32016R0679",
     nature: "règlement",
     url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32016R0679",
     alias: [
@@ -87,6 +104,7 @@ const INSTRUMENTS: readonly Instrument[] = [
   },
   {
     libelle: "directive 95/46/CE",
+    identifiant: "31995L0046",
     nature: "directive",
     url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:31995L0046",
     alias: [
@@ -96,6 +114,7 @@ const INSTRUMENTS: readonly Instrument[] = [
   },
   {
     libelle: "ePrivacy",
+    identifiant: "32002L0058",
     nature: "directive",
     url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32002L0058",
     alias: [
@@ -108,12 +127,14 @@ const INSTRUMENTS: readonly Instrument[] = [
   },
   {
     libelle: "2016/680",
+    identifiant: "32016L0680",
     nature: "directive",
     url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32016L0680",
     alias: [`directive ${QUALIFICATIF}(?:n[o°] ?)?2016/680`],
   },
   {
     libelle: "2018/1725",
+    identifiant: "32018R1725",
     nature: "règlement",
     url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32018R1725",
     alias: [
@@ -123,6 +144,7 @@ const INSTRUMENTS: readonly Instrument[] = [
   },
   {
     libelle: "loi 78-17",
+    identifiant: "LEGITEXT000006068624",
     nature: "loi",
     url: "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000006068624",
     alias: [
@@ -133,6 +155,7 @@ const INSTRUMENTS: readonly Instrument[] = [
   },
   {
     libelle: "CPCE",
+    identifiant: "LEGITEXT000006070987",
     nature: "code",
     url: "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006070987",
     alias: [
@@ -144,6 +167,7 @@ const INSTRUMENTS: readonly Instrument[] = [
   },
   {
     libelle: "code pénal",
+    identifiant: "LEGITEXT000006070719",
     nature: "code",
     url: "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006070719",
     alias: ["code pénal"],
@@ -151,6 +175,96 @@ const INSTRUMENTS: readonly Instrument[] = [
 ];
 
 const PAR_LIBELLE = new Map(INSTRUMENTS.map((instrument) => [instrument.libelle, instrument]));
+
+/**
+ * Les huit corpus du serveur, dans l'ordre de la phrase de refus. Aucune date de
+ * fraîcheur : le refus d'un document absent ne porte que le périmètre.
+ */
+const PERIMETRE = "RGPD, AI Act, LIL, CNIL, Conseil d'État, CEPD, Cour de cassation, CJUE";
+
+/** Forme comparable d'un identifiant : majuscules, sans espace. */
+export function normaliserIdentifiant(identifiant: string): string {
+  return identifiant.replace(/\s+/g, "").toUpperCase();
+}
+
+const PAR_IDENTIFIANT = new Map(
+  INSTRUMENTS.map((instrument) => [normaliserIdentifiant(instrument.identifiant), instrument]),
+);
+
+/**
+ * Instrument dont l'identifiant est connu, casse et espaces neutralisés ; `null`
+ * sinon. Un identifiant inconnu n'est jamais déclaré absent.
+ */
+export function instrumentParIdentifiant(
+  identifiant: string,
+): { libelle: string; identifiant: string } | null {
+  const instrument = PAR_IDENTIFIANT.get(normaliserIdentifiant(identifiant));
+  return instrument === undefined
+    ? null
+    : { libelle: instrument.libelle, identifiant: instrument.identifiant };
+}
+
+/**
+ * Identifiants des documents présents au corpus, lus dans les manifestes
+ * `data/corpus/<corpus>/manifest.json` (champs `document` et `text_id`). Un manifeste
+ * illisible ne masque pas les autres corpus ; une racine sans manifeste rend
+ * l'ensemble vide.
+ */
+export function documentsPresents(rootDir: string): ReadonlySet<string> {
+  const presents = new Set<string>();
+  const racine = join(rootDir, "data", "corpus");
+  if (!existsSync(racine)) return presents;
+
+  for (const entree of readdirSync(racine, { withFileTypes: true })) {
+    if (!entree.isDirectory()) continue;
+    const chemin = join(racine, entree.name, "manifest.json");
+    if (!existsSync(chemin)) continue;
+    try {
+      const manifeste = JSON.parse(readFileSync(chemin, "utf8")) as Record<string, unknown>;
+      for (const champ of ["document", "text_id"]) {
+        const valeur = manifeste[champ];
+        if (typeof valeur === "string" && valeur.trim() !== "") {
+          presents.add(normaliserIdentifiant(valeur));
+        }
+      }
+    } catch {
+      // Un manifeste illisible ne déclare aucun document.
+    }
+  }
+  return presents;
+}
+
+/** Marque des citations déjà extraites avec une présence calculée une seule fois. */
+export function marquerPresence(
+  presents: ReadonlySet<string>,
+  citations: readonly Citation[],
+): CitationRendue[] {
+  return citations.map((citation) => ({
+    ...citation,
+    hors_corpus: !presents.has(normaliserIdentifiant(citation.document)),
+  }));
+}
+
+/** Marque des citations d'après les manifestes du corpus, relus à chaque appel. */
+export function avecPresence(rootDir: string, citations: readonly Citation[]): CitationRendue[] {
+  return marquerPresence(documentsPresents(rootDir), citations);
+}
+
+/**
+ * Phrase unique de refus d'un document connu mais absent du corpus ; `null`
+ * quand l'identifiant est inconnu ou quand le document est présent. Les trois
+ * outils partagent cette phrase : une seconde formulation ouvrirait deux vérités.
+ */
+export function absenceDuDocument(rootDir: string, document: string): string | null {
+  const identifiant = normaliserIdentifiant(document);
+  const instrument = PAR_IDENTIFIANT.get(identifiant);
+  if (instrument === undefined) return null;
+  if (documentsPresents(rootDir).has(identifiant)) return null;
+  return (
+    `${instrument.libelle} (${instrument.identifiant}) est absent de mon corpus ` +
+    `(périmètre : ${PERIMETRE}).`
+  );
+}
 
 /** Les corpus dont les documents sont des décisions, seuls porteurs de citations. */
 export const CORPUS_DECISIONS: readonly string[] = ["cnil", "ce", "cc", "cjue", "cepd"];
@@ -630,6 +744,7 @@ function composer(trouvailles: readonly Trouvaille[]): Citation[] {
     if (articles.length === 0) continue;
     citations.push({
       instrument: instrument.libelle,
+      document: instrument.identifiant,
       articles,
       reference: `${instrument.libelle} · art. ${articles.join(", ")}`,
       url: urlOfficielle(instrument.libelle),
