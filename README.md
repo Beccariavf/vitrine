@@ -27,7 +27,7 @@ npm run ce:sync                            # archive JADE globale → data/corpu
 npm run ce:sync -- --dry-run               # ce que l'archive produirait, sans écrire
 npm run cc:sync                            # Judilibre → data/corpus/cc/ (budget PISTE, reprise au cache)
 npm run cc:sync -- --max-appels 300        # borne la passe ; s'arrête sans tronquer, reprend au cache ensuite
-npm run cjue:sync                          # CELLAR → data/corpus/cjue/ (SPARQL + XHTML français)
+npm run cjue:sync                          # CELLAR → data/corpus/cjue/ (SPARQL + XHTML français puis anglais)
 npm run cjue:sync -- --limite 20 --root /tmp/essai   # essai partiel, exclusions sur la liste entière
 npm run cepd:sync                          # lignes directrices du CEPD → data/corpus/cepd/
 npm run cepd:sync -- --dry-run             # ce que la liste produirait, sans écrire
@@ -186,16 +186,21 @@ questions `dev` rendent le document attendu au top 5 pour 6 d'entre elles (MRR 0
 
 Le corpus `cjue` porte les arrêts et ordonnances de la Cour et du Tribunal sur la protection des
 données personnelles depuis 2014. `npm run cjue:sync` interroge CELLAR en SPARQL en réunissant la
-matière `PDON` et la notion fine `4.11.01` (« Protection des données à caractère personnel »),
-puis lit le rendu XHTML **français** de chaque CELEX et le met en cache sous `data/raw/cjue/`.
+matière `PDON` et deux notions fines, `4.11.01` (« Protection des données à caractère personnel »)
+et `2.04` (« Protection des données à caractère personnel par les institutions de l'Union »), puis
+lit le rendu XHTML de chaque CELEX en **français**, et en **anglais** quand le français répond 404 ;
+le texte est mis en cache sous `data/raw/cjue/` et `chemin` porte « (texte anglais) » hors français.
 Un CELEX que CELLAR ne classe pas dans la protection des données est ajouté explicitement :
 Prokuratuur C-746/18. Les conclusions d'avocat général (`CC`) et les autres types sont
-écartés et comptés ; une version française absente (404) est consignée pour ne pas être redemandée.
-Chaque décision rend son en-tête, ses points de motivation numérotés (`#pointN`) et son dispositif.
-Mesure du 11 novembre 2026 : 252 CELEX listés et 1 complémentaire, 151 décisions retenues,
-14 700 fragments, 73 conclusions d'avocat général et 2 autres types écartés, 27 versions françaises
-absentes ; 44 décisions des types retenus antérieures à 2014 sont comptées à part ; période
-2014-04-08 → 2026-11-05. Les 10 questions `dev` rendent le document attendu au top 5 pour
+écartés et comptés ; un XHTML absent dans toutes les langues (404) est consigné en `xhtml_absent`
+pour ne pas être redemandé. Chaque décision rend son en-tête, ses points de motivation numérotés
+(`#pointN`) et son dispositif.
+Mesure du 13 novembre 2026 : 295 CELEX listés et 1 complémentaire, 166 décisions retenues,
+16 916 fragments, 73 conclusions d'avocat général et 2 autres types écartés, 55 XHTML absents dans
+toutes les langues ; 45 décisions des types retenus antérieures à 2014 sont comptées à part ;
+période 2014-04-08 → 2026-11-05. La notion `2.04` apporte 15 décisions, dont C-413/23 P
+(CEPD c. SRB, 4 septembre 2025) ; les 55 décisions sans XHTML étant absentes dans les deux langues,
+elles seules restent hors corpus. Les 10 questions `dev` rendent le document attendu au top 5 pour
 8 d'entre elles (MRR 0,750, top 1 70,0 %). Le classement CELLAR reste large et incomplet : la notion `4.11.01` inclut six décisions qui ne
 traitent les données personnelles que dans une partie de leur raisonnement, et la liste
 complémentaire est déclarée au manifeste. Réutilisation autorisée par la décision 2011/833/UE
