@@ -7,6 +7,8 @@ export type SourceCorpus = {
   /** Libellé lisible ; l'identifiant quand le corpus est inconnu. */
   libelle: string;
   documents: number;
+  /** Unités indexées : articles, considérants ou fragments. */
+  unites: number;
   /** Date d'arrêté de la collection ; `null` pour un texte consolidé sans date. */
   arrete_le: string | null;
 };
@@ -37,6 +39,7 @@ export function sourcesCorpus(rootDir: string = process.cwd()): SourceCorpus[] {
       corpus: item.corpus,
       libelle: LIBELLE.get(item.corpus) ?? item.corpus,
       documents: item.documents,
+      unites: item.unites,
       arrete_le: item.arrete_le,
     }))
     .sort(
@@ -44,4 +47,17 @@ export function sourcesCorpus(rootDir: string = process.cwd()): SourceCorpus[] {
         (RANG.get(gauche.corpus) ?? LIBELLES.length) - (RANG.get(droite.corpus) ?? LIBELLES.length) ||
         gauche.corpus.localeCompare(droite.corpus),
     );
+}
+
+/** Étages les plus bas et les plus hauts d'une colonne de la façade. */
+export const ETAGES_MIN = 1;
+export const ETAGES_MAX = 5;
+
+/**
+ * Hauteur d'une colonne de la façade du corpus : `ceil(log10(unités))`, bornée à [1, 5].
+ * L'échelle log garde les textes (quelques centaines d'unités) visibles face aux fragments CNIL.
+ */
+export function etagesFacade(unites: number): number {
+  if (!(unites > 1)) return ETAGES_MIN;
+  return Math.min(ETAGES_MAX, Math.max(ETAGES_MIN, Math.ceil(Math.log10(unites))));
 }

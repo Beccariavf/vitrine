@@ -1,6 +1,6 @@
 ---
 import Demo from "../components/Demo.astro";
-import Legende from "../components/Legende.astro";
+import Facade from "../components/Facade.astro";
 import Base from "../layouts/Base.astro";
 import { sourcesCorpus } from "../lib/corpus.ts";
 import { lireDemo } from "../lib/demo.ts";
@@ -19,8 +19,8 @@ const shortMonth = new Intl.DateTimeFormat("fr-FR", { month: "short", timeZone: 
   title="Vitrine — une IA juridique qui cite ses sources"
   description="Un connecteur en préparation entre votre IA et les sources officielles du droit des données personnelles, et une veille des publications officielles du droit du numérique."
 >
-  <section class="grid gap-8 lg:grid-cols-12 lg:gap-10">
-    <div class:list={[demo !== null ? "lg:col-span-7" : "lg:col-span-8"]}>
+  <section class:list={[demo !== null && "grid gap-8 lg:grid-cols-12 lg:gap-10"]}>
+    <div class:list={[demo !== null ? "lg:col-span-7" : "max-w-4xl"]}>
       <p class="font-mono text-[0.7rem] uppercase tracking-[0.14em] text-muted">
         Droit des données personnelles
       </p>
@@ -54,8 +54,8 @@ const shortMonth = new Intl.DateTimeFormat("fr-FR", { month: "short", timeZone: 
 
   {
     sources.length > 0 && (
-      <section aria-labelledby="sources" class="mt-14 border-2 border-ink bg-paper shadow-hard">
-        <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b-2 border-ink px-4 py-2">
+      <section aria-labelledby="sources" class="pleine-largeur mt-14 py-8 sm:py-10">
+        <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
           <h2 id="sources" class="font-mono text-[0.7rem] font-normal uppercase tracking-[0.14em]">
             Sources du connecteur
           </h2>
@@ -66,13 +66,7 @@ const shortMonth = new Intl.DateTimeFormat("fr-FR", { month: "short", timeZone: 
             Dates par collection <span aria-hidden="true">→</span>
           </a>
         </div>
-        <ul class="flex flex-wrap gap-1.5 p-4">
-          {sources.map((source) => (
-            <li class="border border-ink px-2 py-1 font-mono text-[0.7rem] uppercase tracking-[0.08em]">
-              {source.libelle}
-            </li>
-          ))}
-        </ul>
+        <Facade sources={sources} class="mt-6" />
       </section>
     )
   }
@@ -137,6 +131,5 @@ const shortMonth = new Intl.DateTimeFormat("fr-FR", { month: "short", timeZone: 
         })
       }
     </ol>
-    <Legende class="mt-4" />
   </section>
 </Base>

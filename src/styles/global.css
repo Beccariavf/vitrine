@@ -37,6 +37,17 @@
   --radius-full: 0px;
 }
 
+/*
+ * Bande papier pleine largeur : le fond déborde du conteneur jusqu'aux bords de la fenêtre
+ * par une ombre pleine, rognée verticalement. Jamais 100vw, qui compte la barre de
+ * défilement et crée un défilement horizontal.
+ */
+@utility pleine-largeur {
+  background-color: var(--color-paper);
+  box-shadow: 0 0 0 100vmax var(--color-paper);
+  clip-path: inset(0 -100vmax);
+}
+
 @layer base {
   html {
     background-color: var(--color-concrete);
