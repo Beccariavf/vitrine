@@ -2,38 +2,49 @@
   "corpus": "cjue",
   "nom": "CJUE",
   "titre": "Décisions de la Cour de justice de l'Union européenne sur les données personnelles",
-  "source": "CELLAR / EUR-Lex — SPARQL et rendu XHTML français",
+  "source": "CELLAR / EUR-Lex — SPARQL, rendu XHTML français puis anglais",
   "date_min": "2014-01-01",
-  "date_extraction": "2026-11-11",
+  "date_extraction": "2026-11-13",
   "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
   "langue": "fra",
-  "documents": 151,
-  "fragments": 14700,
-  "documents_lus": 253,
+  "documents": 166,
+  "fragments": 16916,
+  "documents_lus": 296,
   "exclusions": {
     "avant_borne": 0,
     "date_invalide": 0,
     "avis_avocat_general": 73,
     "autre_type": 2,
-    "version_francaise_absente": 27,
+    "xhtml_absent": 55,
     "echec_telechargement": 0,
     "texte_vide": 0
   },
   "couverture": {
-    "source": "CELLAR / EUR-Lex — SPARQL et rendu XHTML français",
+    "source": "CELLAR / EUR-Lex — SPARQL, rendu XHTML français puis anglais",
     "matiere": {
       "uri": "http://publications.europa.eu/resource/authority/subject-matter/PDON",
       "libelle": "Protection des données personnelles"
     },
-    "notion": {
-      "uri": "http://publications.europa.eu/resource/authority/fd_578/4.11.01",
-      "libelle": "Protection des données à caractère personnel"
-    },
+    "notions": [
+      {
+        "uri": "http://publications.europa.eu/resource/authority/fd_578/4.11.01",
+        "libelle": "Protection des données à caractère personnel"
+      },
+      {
+        "uri": "http://publications.europa.eu/resource/authority/fd_578/2.04",
+        "libelle": "Protection des données à caractère personnel par les institutions de l'Union"
+      }
+    ],
     "celex_complementaires": [
       "62018CJ0746"
     ],
     "complementaires_ajoutes": 1,
     "langue": "fra",
+    "langues": {
+      "fra": 166,
+      "eng": 0
+    },
+    "documents_langues": {},
     "types_retenus": {
       "CJ": "Arrêt de la Cour",
       "TJ": "Arrêt du Tribunal",
@@ -45,13 +56,13 @@
       "date_max": "2026-11-05"
     },
     "borne": "2014-01-01",
-    "avant_borne": 44,
+    "avant_borne": 45,
     "exclusions": {
       "avant_borne": 0,
       "date_invalide": 0,
       "avis_avocat_general": 73,
       "autre_type": 2,
-      "version_francaise_absente": 27,
+      "xhtml_absent": 55,
       "echec_telechargement": 0,
       "texte_vide": 0
     },
@@ -362,111 +373,223 @@
       },
       {
         "celex": "62012TJ0537",
-        "motif": "version_francaise_absente"
+        "motif": "xhtml_absent"
       },
       {
         "celex": "62013CO0683",
-        "motif": "version_francaise_absente"
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62013TJ0496",
+        "motif": "xhtml_absent"
       },
       {
         "celex": "62015TJ0684",
-        "motif": "version_francaise_absente"
+        "motif": "xhtml_absent"
       },
       {
         "celex": "62016CO0508",
-        "motif": "version_francaise_absente"
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62016TJ0604",
+        "motif": "xhtml_absent"
       },
       {
         "celex": "62016TJ0652",
-        "motif": "version_francaise_absente"
+        "motif": "xhtml_absent"
       },
       {
         "celex": "62016TO0670",
-        "motif": "version_francaise_absente"
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62017TJ0039",
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62017TJ0399",
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62017TJ0461",
+        "motif": "xhtml_absent"
       },
       {
         "celex": "62017TO0452",
-        "motif": "version_francaise_absente"
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62018TJ0692",
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62019TJ0130",
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62020TJ0384",
+        "motif": "xhtml_absent"
       },
       {
         "celex": "62020TJ0384(01)",
-        "motif": "version_francaise_absente"
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62020TJ0415",
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62020TJ0470",
+        "motif": "xhtml_absent"
       },
       {
         "celex": "62020TJ0528",
-        "motif": "version_francaise_absente"
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62020TJ0754",
+        "motif": "xhtml_absent"
       },
       {
         "celex": "62021CJ0350",
-        "motif": "version_francaise_absente"
+        "motif": "xhtml_absent"
       },
       {
         "celex": "62021CJ0560",
-        "motif": "version_francaise_absente"
+        "motif": "xhtml_absent"
       },
       {
         "celex": "62021TJ0200",
-        "motif": "version_francaise_absente"
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62021TJ0448",
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62021TJ0506",
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62021TJ0651",
+        "motif": "xhtml_absent"
       },
       {
         "celex": "62021TO0469",
-        "motif": "version_francaise_absente"
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62022CJ0458",
+        "motif": "xhtml_absent"
       },
       {
         "celex": "62022CO0357",
-        "motif": "version_francaise_absente"
+        "motif": "xhtml_absent"
       },
       {
         "celex": "62022CO0444",
-        "motif": "version_francaise_absente"
+        "motif": "xhtml_absent"
       },
       {
         "celex": "62022TO0266",
-        "motif": "version_francaise_absente"
+        "motif": "xhtml_absent"
       },
       {
         "celex": "62022TO0286",
-        "motif": "version_francaise_absente"
+        "motif": "xhtml_absent"
       },
       {
         "celex": "62022TO0354(01)",
-        "motif": "version_francaise_absente"
+        "motif": "xhtml_absent"
       },
       {
         "celex": "62023CO0097(01)",
-        "motif": "version_francaise_absente"
+        "motif": "xhtml_absent"
       },
       {
         "celex": "62023CO0097(02)",
-        "motif": "version_francaise_absente"
+        "motif": "xhtml_absent"
       },
       {
         "celex": "62023CO0312",
-        "motif": "version_francaise_absente"
+        "motif": "xhtml_absent"
       },
       {
         "celex": "62023CO0599",
-        "motif": "version_francaise_absente"
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62023TJ0110",
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62023TJ0291",
+        "motif": "xhtml_absent"
       },
       {
         "celex": "62023TO0562(01)",
-        "motif": "version_francaise_absente"
+        "motif": "xhtml_absent"
       },
       {
         "celex": "62023TO1138",
-        "motif": "version_francaise_absente"
+        "motif": "xhtml_absent"
       },
       {
         "celex": "62024CJ0541",
-        "motif": "version_francaise_absente"
+        "motif": "xhtml_absent"
       },
       {
         "celex": "62024CO0534",
-        "motif": "version_francaise_absente"
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62024TJ0084",
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62024TJ0167",
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62024TJ0235",
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62024TJ0318",
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62024TJ0529",
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62024TO0148",
+        "motif": "xhtml_absent"
       },
       {
         "celex": "62024TO0349",
-        "motif": "version_francaise_absente"
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62024TO0484",
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62024TO0506",
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62024TO0587",
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62025TJ0030",
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62026TO0071",
+        "motif": "xhtml_absent"
       }
     ],
     "limite": null

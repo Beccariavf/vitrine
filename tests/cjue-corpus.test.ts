@@ -14,8 +14,8 @@ import {
   typeCelex,
 } from "../mcp/corpus/cjue/liste.ts";
 import type { DescripteurCjue } from "../mcp/corpus/cjue/liste.ts";
-import { unitesCjue } from "../mcp/corpus/cjue/parse.ts";
-import { empreinteListe, entreesVeilleCjue, syncCjue } from "../mcp/corpus/cjue/sync.ts";
+import { dateDecisionCjue, langueCapture, unitesCjue } from "../mcp/corpus/cjue/parse.ts";
+import { empreinteListe, entreesVeilleCjue, lireCapture, syncCjue } from "../mcp/corpus/cjue/sync.ts";
 import type { ManifesteCjue } from "../mcp/corpus/cjue/sync.ts";
 import { validerUnitesCorpus } from "../mcp/corpus/parse.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";
@@ -26,12 +26,20 @@ const DESCRIPTEUR = JSON.parse(
 const LISTE = JSON.parse(
   readFileSync(new URL("./fixtures/cjue/liste.json", import.meta.url), "utf8"),
 ) as unknown;
+const LISTE_204 = JSON.parse(
+  readFileSync(new URL("./fixtures/cjue/liste-204.json", import.meta.url), "utf8"),
+) as unknown;
 const ARRET = readFileSync(
   new URL("./fixtures/cjue/62012CJ0131.xhtml", import.meta.url),
   "utf8",
 );
+const ARRET_EN = readFileSync(
+  new URL("./fixtures/cjue/62023CJ0413-en.xhtml", import.meta.url),
+  "utf8",
+);
 const RACINE = fileURLToPath(new URL("..", import.meta.url));
 const CELEX_ARRET = "62012CJ0131";
+const CELEX_204 = "62023CJ0413";
 
 function racineTemporaire(): string {
   return mkdtempSync(join(tmpdir(), "cjue-corpus-"));
@@ -66,13 +74,28 @@ describe("la liste CELLAR de la CJUE", () => {
     assert.equal(lireNombre({ results: { bindings: [] } }), 0);
   });
 
-  it("réunit la matière PDON et la notion fine de protection des données", () => {
+  it("expose les deux notions et les deux langues dans l'ordre", () => {
+    assert.deepEqual(
+      DESCRIPTEUR.notions.map((notion) => notion.uri),
+      [
+        "http://publications.europa.eu/resource/authority/fd_578/4.11.01",
+        "http://publications.europa.eu/resource/authority/fd_578/2.04",
+      ],
+    );
+    assert.equal(DESCRIPTEUR.notions[1]?.libelle, "Protection des données à caractère personnel par les institutions de l'Union");
+    assert.deepEqual(DESCRIPTEUR.langues, ["fra", "eng"]);
+  });
+
+  it("réunit la matière PDON et les deux notions fines", () => {
     const liste = requeteListe(DESCRIPTEUR, "2014-01-01");
     assert.match(liste, /subject-matter\/PDON/);
     assert.match(liste, /fd_578\/4\.11\.01/);
-    assert.match(liste, /UNION/);
+    assert.match(liste, /fd_578\/2\.04/);
+    assert.equal(liste.match(/UNION/g)?.length, 2, "une union par notion");
     const avant = requeteAvantBorne(DESCRIPTEUR, "2014-01-01");
+    assert.match(avant, /subject-matter\/PDON/);
     assert.match(avant, /fd_578\/4\.11\.01/);
+    assert.match(avant, /fd_578\/2\.04/);
     assert.match(avant, /CJ\|TJ\|CO\|TO/);
   });
 
@@ -156,6 +179,40 @@ describe("le découpage d'une décision CJUE", () => {
     assert.equal(unites[0]?.ref, "62015CO0001#h");
     assert.match(unites[0]?.texte ?? "", /rayé/);
   });
+
+  it("découpe un arrêt anglais : date, numéro d'affaire avec P et dispositif", () => {
+    assert.equal(langueCapture(ARRET), "fra");
+    assert.equal(
+      langueCapture(`<html><body><p>«Renvoi préjudiciel – Marché intérieur – Mai 2022»</p></body></html>`),
+      "fra",
+      "« Marché » n'est pas le mois anglais March",
+    );
+    assert.equal(
+      langueCapture(
+        `<html><body><p>voir arrêt du 27 mars 2019, August Wolff et Remedia/Commission</p></body></html>`,
+      ),
+      "fra",
+      "« August Wolff » est un nom de partie, pas une date anglaise",
+    );
+    assert.equal(langueCapture(ARRET_EN), "eng");
+    const date = dateDecisionCjue(ARRET_EN);
+    assert.equal(date, "2025-09-04", "« 4 September 2025 » se lit en tête");
+
+    const unites = unitesCjue(ARRET_EN, CELEX_204, date ?? "", DESCRIPTEUR);
+    assert.ok(unites.some((unite) => unite.ref === `${CELEX_204}#point85`));
+    assert.match(unites[0]?.texte ?? "", /JUDGMENT OF THE COURT/);
+
+    const dispositif = unites.find((unite) => unite.numero === "dispositif");
+    assert.ok(dispositif, "« On those grounds » ouvre le dispositif");
+    assert.match(dispositif.texte, /^On those grounds/);
+    assert.match(dispositif.chemin, /Arrêt de la Cour C-413\/23 P \(texte anglais\) > Dispositif$/);
+    assert.equal(
+      dispositif.url,
+      "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:62023CJ0413",
+    );
+    assert.equal(dispositif.date_acte, "2025-09-04");
+    assert.doesNotThrow(() => validerUnitesCorpus(unites, "CJUE"));
+  });
 });
 
 describe("la synchronisation du corpus CJUE", () => {
@@ -165,6 +222,34 @@ describe("la synchronisation du corpus CJUE", () => {
       const capture = captures[celex];
       return capture === undefined ? reponse(404, "") : reponse(200, capture);
     };
+  }
+
+  /** `fetch` qui répond par langue : `fra` puis `eng`, dans l'ordre reçu. */
+  function fetchLangues(reponses: Record<string, () => ReturnType<typeof reponse>>): {
+    fetch: FetchLike;
+    langues: string[];
+  } {
+    const langues: string[] = [];
+    const fetch: FetchLike = async (_url, init) => {
+      const langue = init?.headers?.["Accept-Language"] ?? "";
+      langues.push(langue);
+      const reponseLangue = reponses[langue];
+      return reponseLangue === undefined ? reponse(404, "") : reponseLangue();
+    };
+    return { fetch, langues };
+  }
+
+  function lireManifeste(racine: string): ManifesteCjue {
+    return JSON.parse(
+      readFileSync(join(racine, "data", "corpus", "cjue", "manifest.json"), "utf8"),
+    ) as ManifesteCjue;
+  }
+
+  function lireUnites(racine: string): Unite[] {
+    return readFileSync(join(racine, "data", "corpus", "cjue", "unites.jsonl"), "utf8")
+      .split("\n")
+      .filter((ligne) => ligne !== "")
+      .map((ligne) => JSON.parse(ligne) as Unite);
   }
 
   it("écrit un corpus filtré, compte les écarts et reste idempotent", async () => {
@@ -189,7 +274,7 @@ describe("la synchronisation du corpus CJUE", () => {
         date_invalide: 0,
         avis_avocat_general: 1,
         autre_type: 1,
-        version_francaise_absente: 1,
+        xhtml_absent: 1,
         echec_telechargement: 0,
         texte_vide: 0,
       });
@@ -210,6 +295,8 @@ describe("la synchronisation du corpus CJUE", () => {
       assert.equal(manifeste.documents, 2);
       assert.equal(manifeste.couverture.avant_borne, 42);
       assert.equal(manifeste.couverture.langue, "fra");
+      assert.deepEqual(manifeste.couverture.langues, { fra: 2, eng: 0 });
+      assert.deepEqual(manifeste.couverture.documents_langues, {});
       assert.equal(
         manifeste.documents + Object.values(manifeste.exclusions).reduce((a, b) => a + b, 0),
         manifeste.documents_lus ?? resultat.documentsLus,
@@ -399,6 +486,286 @@ describe("la synchronisation du corpus CJUE", () => {
     }
   });
 
+  it("retient un CELEX classé seulement dans la notion 2.04", async () => {
+    const racine = racineTemporaire();
+    try {
+      const resultat = await syncCjue({
+        rootDir: racine,
+        date: "2026-11-12",
+        reponseListe: LISTE_204,
+        avantBorne: 0,
+        complementaires: [],
+        reponsesXhtml: { [CELEX_204]: ARRET },
+      });
+      assert.equal(resultat.documents, 1);
+      const manifeste = lireManifeste(racine);
+      assert.deepEqual(
+        manifeste.couverture.notions.map((notion) => notion.libelle),
+        [
+          "Protection des données à caractère personnel",
+          "Protection des données à caractère personnel par les institutions de l'Union",
+        ],
+      );
+      assert.ok(lireUnites(racine).every((unite) => unite.document === CELEX_204));
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
+  });
+
+  it("écarte avant la borne un CELEX 2.04 daté 2013 sans lire sa capture", async () => {
+    const racine = racineTemporaire();
+    let appels = 0;
+    try {
+      const resultat = await syncCjue({
+        rootDir: racine,
+        date: "2026-11-12",
+        reponseListe: {
+          results: {
+            bindings: [{ celex: { value: CELEX_204 }, date: { value: "2013-09-04" } }],
+          },
+        },
+        avantBorne: 0,
+        complementaires: [],
+        fetchImpl: async () => {
+          appels += 1;
+          throw new Error("aucune capture ne doit être demandée");
+        },
+      });
+      assert.equal(resultat.documents, 0);
+      assert.equal(resultat.ecartes.avant_borne, 1);
+      assert.equal(appels, 0, "une décision hors borne ne se télécharge pas");
+      assert.equal(lireCapture(racine, CELEX_204), null);
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
+  });
+
+  it("lit en anglais quand le français répond 404", async () => {
+    const racine = racineTemporaire();
+    try {
+      const { fetch, langues } = fetchLangues({
+        fra: () => reponse(404, ""),
+        eng: () => reponse(200, ARRET_EN),
+      });
+      const resultat = await syncCjue({
+        rootDir: racine,
+        date: "2026-11-12",
+        reponseListe: LISTE_204,
+        avantBorne: 0,
+        complementaires: [],
+        fetchImpl: fetch,
+      });
+      assert.deepEqual(langues, ["fra", "eng"], "l'ordre des langues est respecté");
+      assert.equal(resultat.documents, 1);
+      assert.equal(resultat.ecartes.xhtml_absent, 0);
+      const manifeste = lireManifeste(racine);
+      assert.deepEqual(manifeste.couverture.langues, { fra: 0, eng: 1 });
+      assert.deepEqual(manifeste.couverture.documents_langues, { [CELEX_204]: "eng" });
+      assert.equal(manifeste.langue, "fra");
+      const unites = lireUnites(racine);
+      assert.ok(
+        unites.every(
+          (unite) =>
+            unite.url ===
+            "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:62023CJ0413",
+        ),
+      );
+      assert.ok(unites.every((unite) => unite.chemin.includes("(texte anglais)")));
+      assert.equal(
+        existsSync(join(racine, "data", "raw", "cjue", `${CELEX_204}.absente.json`)),
+        false,
+        "un texte trouvé en anglais n'écrit aucun marqueur",
+      );
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
+  });
+
+  it("compte un échec de téléchargement quand le français tombe en panne et l'anglais n'est pas essayé", async () => {
+    const racine = racineTemporaire();
+    try {
+      const { fetch, langues } = fetchLangues({
+        fra: () => reponse(502, ""),
+        eng: () => reponse(404, ""),
+      });
+      const resultat = await syncCjue({
+        rootDir: racine,
+        date: "2026-11-12",
+        reponseListe: LISTE_204,
+        avantBorne: 0,
+        complementaires: [],
+        fetchImpl: fetch,
+      });
+      assert.deepEqual(langues, ["fra"], "une panne du français n'est pas un 404 : l'anglais n'est pas essayé");
+      assert.equal(resultat.ecartes.echec_telechargement, 1);
+      assert.equal(resultat.ecartes.xhtml_absent, 0);
+      assert.equal(
+        existsSync(join(racine, "data", "raw", "cjue", `${CELEX_204}.absente.json`)),
+        false,
+        "une panne n'écrit aucun marqueur durable",
+      );
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
+  });
+
+  it("consigne un XHTML absent dans toutes les langues et ne le redemande plus", async () => {
+    const racine = racineTemporaire();
+    try {
+      const { fetch, langues } = fetchLangues({
+        fra: () => reponse(404, ""),
+        eng: () => reponse(404, ""),
+      });
+      const premier = await syncCjue({
+        rootDir: racine,
+        date: "2026-11-12",
+        reponseListe: LISTE_204,
+        avantBorne: 0,
+        complementaires: [],
+        fetchImpl: fetch,
+      });
+      assert.deepEqual(langues, ["fra", "eng"]);
+      assert.equal(premier.ecartes.xhtml_absent, 1);
+      const marqueur = JSON.parse(
+        readFileSync(
+          join(racine, "data", "raw", "cjue", `${CELEX_204}.absente.json`),
+          "utf8",
+        ),
+      ) as { motif: string };
+      assert.equal(marqueur.motif, "xhtml_absent");
+
+      const second = await syncCjue({
+        rootDir: racine,
+        date: "2026-11-12",
+        reponseListe: LISTE_204,
+        avantBorne: 0,
+        complementaires: [],
+        fetchImpl: async () => {
+          throw new Error("un XHTML absent ne se redemande pas");
+        },
+      });
+      assert.equal(second.appels.documents, 0);
+      assert.equal(second.ecartes.xhtml_absent, 1);
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
+  });
+
+  it("garde durable un marqueur version_francaise_absente déjà écrit", async () => {
+    const racine = racineTemporaire();
+    try {
+      ecrire(
+        racine,
+        `data/raw/cjue/${CELEX_204}.absente.json`,
+        JSON.stringify({
+          celex: CELEX_204,
+          motif: "version_francaise_absente",
+          date: "2026-11-11",
+        }),
+      );
+      const resultat = await syncCjue({
+        rootDir: racine,
+        date: "2026-11-12",
+        reponseListe: LISTE_204,
+        avantBorne: 0,
+        complementaires: [],
+        fetchImpl: async () => {
+          throw new Error("l'ancien marqueur doit rester durable");
+        },
+      });
+      assert.equal(resultat.appels.documents, 0);
+      assert.equal(resultat.ecartes.xhtml_absent, 1);
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
+  });
+
+  it("inclut en anglais une décision de la veille absente de CELLAR", async () => {
+    const racine = racineTemporaire();
+    try {
+      ecrire(
+        racine,
+        "data/entries/2026/11/entree.json",
+        JSON.stringify({
+          source: "cjue",
+          url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:62023CJ0413",
+          publishedAt: "2026-09-04T12:00:00.000Z",
+        }),
+      );
+      const { fetch, langues } = fetchLangues({
+        fra: () => reponse(404, ""),
+        eng: () => reponse(200, ARRET_EN),
+      });
+      const resultat = await syncCjue({
+        rootDir: racine,
+        date: "2026-11-12",
+        reponseListe: { results: { bindings: [] } },
+        avantBorne: 0,
+        complementaires: [],
+        fetchImpl: fetch,
+      });
+      assert.deepEqual(langues, ["fra", "eng"]);
+      assert.equal(resultat.documents, 1);
+      const manifeste = lireManifeste(racine);
+      assert.deepEqual(manifeste.couverture.veille, { entrees: 1, ajoutees: 1 });
+      assert.deepEqual(manifeste.couverture.documents_langues, { [CELEX_204]: "eng" });
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
+  });
+
+  it("interrompt la passe sur un 429 sans écrire ni exclusion ni marqueur", async () => {
+    const racine = racineTemporaire();
+    try {
+      await syncCjue({
+        rootDir: racine,
+        date: "2026-11-12",
+        reponseListe: LISTE_204,
+        avantBorne: 0,
+        complementaires: [],
+        reponsesXhtml: { [CELEX_204]: ARRET },
+      });
+      const cheminUnites = join(racine, "data", "corpus", "cjue", "unites.jsonl");
+      const avant = readFileSync(cheminUnites, "utf8");
+      const manifesteAvant = readFileSync(
+        join(racine, "data", "corpus", "cjue", "manifest.json"),
+        "utf8",
+      );
+
+      await assert.rejects(
+        () =>
+          syncCjue({
+            rootDir: racine,
+            date: "2026-11-12",
+            reponseListe: {
+              results: {
+                bindings: [
+                  { celex: { value: CELEX_204 }, date: { value: "2025-09-04" } },
+                  { celex: { value: "62021CJ0001" }, date: { value: "2021-06-01" } },
+                ],
+              },
+            },
+            avantBorne: 0,
+            complementaires: [],
+            fetchImpl: async () => reponse(429, ""),
+          }),
+        /429/,
+      );
+      assert.equal(readFileSync(cheminUnites, "utf8"), avant, "le corpus antérieur reste intact");
+      assert.equal(
+        readFileSync(join(racine, "data", "corpus", "cjue", "manifest.json"), "utf8"),
+        manifesteAvant,
+      );
+      assert.equal(
+        existsSync(join(racine, "data", "raw", "cjue", "62021CJ0001.absente.json")),
+        false,
+        "un 429 n'écrit aucun marqueur",
+      );
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
+  });
+
   it("ne crée aucun fichier en dry-run", async () => {
     const racine = racineTemporaire();
     try {
@@ -427,6 +794,17 @@ describe("la synchronisation du corpus CJUE", () => {
       .map((ligne) => JSON.parse(ligne) as Unite);
     assert.equal(unites.length, manifeste.fragments);
     assert.equal(new Set(unites.map((unite) => unite.document)).size, manifeste.documents);
+    assert.equal(manifeste.couverture.notions.length, 2);
+    const anglais = new Set(Object.keys(manifeste.couverture.documents_langues));
+    for (const unite of unites) {
+      const attendu = anglais.has(unite.document);
+      assert.equal(
+        unite.chemin.includes(" (texte anglais)"),
+        attendu,
+        `${unite.ref} : le chemin et le manifeste s'accordent sur la langue`,
+      );
+      assert.equal(unite.url.includes("/EN/"), attendu, `${unite.ref} : l'URL suit la langue`);
+    }
     assert.doesNotThrow(() => validerUnitesCorpus(unites, "CJUE"));
   });
 });

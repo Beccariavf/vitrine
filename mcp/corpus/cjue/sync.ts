@@ -2,10 +2,11 @@
  * Synchronise le corpus CJUE depuis CELLAR.
  *
  * La liste vient d'une requête SPARQL sur la matière « protection des données
- * personnelles » ; chaque décision est ensuite lue en XHTML français et mise
- * en cache sous `data/raw/cjue/`. Une version française absente (404) ou un
- * texte vide est écarté et compté ; une panne d'un document n'emporte pas les
- * autres. Le corpus n'est écrit qu'après validation de toutes ses unités.
+ * personnelles » et deux notions fines ; chaque décision est ensuite lue en
+ * XHTML, français d'abord puis anglais, et mise en cache sous `data/raw/cjue/`.
+ * Un texte absent dans toutes les langues (404) ou vide est écarté et compté ;
+ * une panne d'un document n'emporte pas les autres. Le corpus n'est écrit
+ * qu'après validation de toutes ses unités.
  */
 
 import { createHash } from "node:crypto";
@@ -25,7 +26,7 @@ import {
   lireListe,
 } from "./liste.ts";
 import type { DescripteurCjue, EcartesCjue, EntreeCjue, MotifEcartCjue } from "./liste.ts";
-import { dateDecisionCjue, unitesCjue } from "./parse.ts";
+import { dateDecisionCjue, langueCapture, unitesCjue } from "./parse.ts";
 
 const ICI = dirname(fileURLToPath(import.meta.url));
 
@@ -40,6 +41,9 @@ export const DOSSIER_BRUT = join("data", "raw", "cjue");
 const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
 const CELEX = /^6[a-zA-Z0-9()]+$/;
 
+/** Provenance écrite au manifeste. */
+const SOURCE = "CELLAR / EUR-Lex — SPARQL, rendu XHTML français puis anglais";
+
 export type EtatCjue = {
   date_min: string;
   liste_sha256: string;
@@ -53,11 +57,16 @@ export type DocumentEcartCjue = { celex: string; motif: MotifEcartCjue };
 export type CouvertureCjue = {
   source: string;
   matiere: { uri: string; libelle: string };
-  notion: { uri: string; libelle: string };
+  notions: Array<{ uri: string; libelle: string }>;
   /** CELEX ajoutés hors classement CELLAR, et combien ont été retenus. */
   celex_complementaires: string[];
   complementaires_ajoutes: number;
+  /** Langue de lecture préférée, la première du descripteur. */
   langue: string;
+  /** Décisions retenues par langue du texte capturé. */
+  langues: Record<string, number>;
+  /** Décisions dont le texte n'est pas français, par CELEX. */
+  documents_langues: Record<string, string>;
   types_retenus: Record<string, string>;
   /** `date_min` est la première date observée ; `borne` la borne demandée. */
   periode: { date_min: string; date_max: string | null };
@@ -219,18 +228,23 @@ export function lireCapture(rootDir: string, celex: string): string | null {
   }
 }
 
-/** Marqueur d'une version française absente : elle n'est pas redemandée. */
+/** Marqueur d'un XHTML absent dans toutes les langues : il n'est pas redemandé. */
 function cheminRefus(rootDir: string, celex: string): string {
   return join(rootDir, DOSSIER_BRUT, `${celex}.absente.json`);
 }
 
+/** Marqueurs acceptés : `xhtml_absent`, et son ancien nom resté durable. */
+const MOTIFS_REFUS = new Set(["xhtml_absent", "version_francaise_absente"]);
+
 /** Motif d'un refus déjà consigné pour ce CELEX, `null` sinon. */
-export function lireRefus(rootDir: string, celex: string): "version_francaise_absente" | null {
+export function lireRefus(rootDir: string, celex: string): "xhtml_absent" | null {
   try {
     const valeur = JSON.parse(readFileSync(cheminRefus(rootDir, celex), "utf8")) as {
       motif?: unknown;
     };
-    return valeur.motif === "version_francaise_absente" ? "version_francaise_absente" : null;
+    return typeof valeur.motif === "string" && MOTIFS_REFUS.has(valeur.motif)
+      ? "xhtml_absent"
+      : null;
   } catch {
     return null;
   }
@@ -243,23 +257,41 @@ export function compterCache(rootDir: string): number {
   return readdirSync(dossier).filter((nom) => nom.endsWith(".xhtml") && CELEX.test(nom.slice(0, -6))).length;
 }
 
-/** Télécharge le XHTML français d'un CELEX ; `null` si la version manque. */
+/**
+ * Télécharge le XHTML d'un CELEX dans l'ordre des langues. Un 404 ou un texte
+ * vide fait essayer la langue suivante ; seul un 404 dans toutes les langues
+ * vaut `xhtml_absent`. Une panne réseau ou un 5xx rend `echec_telechargement`
+ * sans rien consigner de durable : la décision est redemandée à la passe
+ * suivante, et un français momentanément en panne n'est jamais remplacé par
+ * l'anglais. Un `429` interrompt la passe : le quota CELLAR est transitoire et
+ * ne doit pas passer pour un échec de document.
+ */
 export async function telechargerCjue(
   celex: string,
-  langue: string,
+  langues: readonly string[],
   fetchImpl: FetchLike = fetch,
-): Promise<{ texte: string } | { motif: "version_francaise_absente" | "echec_telechargement" }> {
-  const reponse = await fetchImpl(`https://publications.europa.eu/resource/celex/${celex}`, {
-    headers: { Accept: "application/xhtml+xml", "Accept-Language": langue },
-  }).catch(() => null);
-  if (reponse === null) return { motif: "echec_telechargement" };
-  if (reponse.status === 404) return { motif: "version_francaise_absente" };
-  if (reponse.status === 429) {
-    throw new Error("CELLAR : HTTP 429 (quota) — le corpus existant reste intact, relancez plus tard");
+): Promise<
+  { texte: string; langue: string } | { motif: "xhtml_absent" | "echec_telechargement" }
+> {
+  let absences = 0;
+  for (const langue of langues) {
+    const reponse = await fetchImpl(`https://publications.europa.eu/resource/celex/${celex}`, {
+      headers: { Accept: "application/xhtml+xml", "Accept-Language": langue },
+    }).catch(() => null);
+    if (reponse === null) return { motif: "echec_telechargement" };
+    if (reponse.status === 429) {
+      throw new Error("CELLAR : HTTP 429 (quota) — le corpus existant reste intact, relancez plus tard");
+    }
+    if (reponse.status === 404) {
+      absences += 1;
+      continue;
+    }
+    if (!reponse.ok) return { motif: "echec_telechargement" };
+    const texte = await reponse.text();
+    if (texte.trim() === "") continue;
+    return { texte, langue };
   }
-  if (!reponse.ok) return { motif: "echec_telechargement" };
-  const texte = await reponse.text();
-  return texte.trim() === "" ? { motif: "echec_telechargement" } : { texte };
+  return absences === langues.length ? { motif: "xhtml_absent" } : { motif: "echec_telechargement" };
 }
 
 /**
@@ -376,8 +408,8 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
   for (const entree of lues) {
     if (lireCapture(rootDir, entree.celex) !== null) continue;
     if (lireRefus(rootDir, entree.celex) !== null) {
-      ecartes.version_francaise_absente += 1;
-      documentsEcartes.push({ celex: entree.celex, motif: "version_francaise_absente" });
+      ecartes.xhtml_absent += 1;
+      documentsEcartes.push({ celex: entree.celex, motif: "xhtml_absent" });
       continue;
     }
     let capture: string;
@@ -390,12 +422,16 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
       }
       capture = fournie;
     } else {
-      const resultat = await telechargerCjue(entree.celex, descripteur.langue, options.fetchImpl ?? fetch);
+      const resultat = await telechargerCjue(
+        entree.celex,
+        descripteur.langues,
+        options.fetchImpl ?? fetch,
+      );
       appelsDocuments += 1;
       if ("motif" in resultat) {
         ecartes[resultat.motif] += 1;
         documentsEcartes.push({ celex: entree.celex, motif: resultat.motif });
-        if (resultat.motif === "version_francaise_absente") {
+        if (resultat.motif === "xhtml_absent") {
           ecrireSiChange(
             cheminRefus(rootDir, entree.celex),
             `${JSON.stringify({ celex: entree.celex, motif: resultat.motif, date: dateExtraction }, null, 2)}\n`,
@@ -419,6 +455,8 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
   const unites: Unite[] = [];
   let dateMax: string | null = null;
   let dateMinObserve: string | null = null;
+  const langues: Record<string, number> = { fra: 0, eng: 0 };
+  const documentsLangues: Record<string, string> = {};
 
   for (const entree of lues) {
     const capture = lireCapture(rootDir, entree.celex);
@@ -445,6 +483,9 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
         documentsEcartes.push({ celex: entree.celex, motif: "texte_vide" });
         continue;
       }
+      const langue = langueCapture(capture);
+      langues[langue] = (langues[langue] ?? 0) + 1;
+      if (langue !== "fra") documentsLangues[entree.celex] = langue;
       for (const unite of nouvelles) {
         unites.push(unite);
         if (dateMax === null || unite.date_acte > dateMax) dateMax = unite.date_acte;
@@ -471,14 +512,14 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
     corpus: descripteur.corpus,
     nom: descripteur.nom,
     titre: descripteur.titre,
-    source: "CELLAR / EUR-Lex — SPARQL et rendu XHTML français",
+    source: SOURCE,
     date_min: dateMin,
     date_extraction:
       etat.liste_sha256 === sha && etat.date_extraction !== null
         ? etat.date_extraction
         : dateExtraction,
     licence: descripteur.licence,
-    langue: descripteur.langue,
+    langue: descripteur.langues[0] ?? "",
     documents,
     fragments: unites.length,
     documents_lus:
@@ -487,12 +528,14 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
         : lues.length,
     exclusions: ecartes,
     couverture: {
-      source: "CELLAR / EUR-Lex — SPARQL et rendu XHTML français",
+      source: SOURCE,
       matiere: { uri: descripteur.matiere, libelle: descripteur.matiere_libelle },
-      notion: { uri: descripteur.notion.uri, libelle: descripteur.notion.libelle },
+      notions: descripteur.notions.map((notion) => ({ ...notion })),
       celex_complementaires: [...complementaires],
       complementaires_ajoutes: complementairesAjoutes,
-      langue: descripteur.langue,
+      langue: descripteur.langues[0] ?? "",
+      langues,
+      documents_langues: documentsLangues,
       types_retenus: descripteur.types_retenus,
       periode: { date_min: dateMinObserve ?? dateMin, date_max: dateMax },
       borne: dateMin,
