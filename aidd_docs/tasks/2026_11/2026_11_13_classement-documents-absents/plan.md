@@ -1,6 +1,6 @@
 ---
 objective: "`etat_corpus` rend le classement des documents cités absents du corpus, daté et recalculé à chaque synchronisation, avec les autorités qui les citent et la mention « exclu » pour un document déclaré hors périmètre."
-status: planned
+status: completed
 ---
 
 # Plan: Classer les documents absents les plus cités

@@ -1,5 +1,5 @@
 ---
-status: planned
+status: completed
 ---
 
 # Instruction: Écrire le classement dans le rapport de synchronisation

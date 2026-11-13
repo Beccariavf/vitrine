@@ -1,5 +1,5 @@
 ---
-status: planned
+status: completed
 ---
 
 # Instruction: Déclarer le périmètre au catalogue et calculer le classement

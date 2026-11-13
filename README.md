@@ -53,6 +53,7 @@ npm run mcp:eval -- --questions questions-cnil-v2.csv --split dev --seuils 0.690
 npm run mcp:eval -- --questions questions-cnil-v2.csv --split test --mesurer-test --seuils 0.690,0.740,0.010   # déjà consommé le 2026-11-06 ; ne pas relancer
 npm run mcp:eval:filtres                                                        # 12 cas de filtrage CNIL (hors CI)
 node mcp/eval/citations.ts cnil --taille 5                                      # 5 décisions CNIL, leurs citations, leur passage et le compte hors corpus (hors CI)
+node mcp/eval/citations.ts --classement                                         # classement réel des documents cités absents du corpus, sans écrire (hors CI)
 ```
 
 Le MCP lit le RGPD, l'AI Act, la LIL, les délibérations de la CNIL, les décisions du Conseil
@@ -257,9 +258,18 @@ Judilibre, `cjue` CELLAR) ; un document déjà présent ne relance rien, et les 
 
 La passe écrit `data/corpus/sync.json` (sauf en `--dry-run`) : `a_jour_au`, `derniere_tentative`,
 fenêtre `depuis`, comptes, une ligne par document (`present`, `manquant`, `ecarte`, `non_mappe`),
-inventaire des corpus, état des sources et de l'index. Un document manquant n'est pas un échec et
-reste listé tant qu'il n'entre pas au corpus ; une source ou l'index en panne laisse `a_jour_au`
-inchangé, et l'index est réessayé à la passe suivante. Un CELEX listé dans
+inventaire des corpus, état des sources et de l'index, et le bloc `hors_corpus`. Ce bloc est le
+classement des documents cités par les décisions et absents du corpus, recalculé et daté
+(`calcule_le`) à chaque passe : par nombre de citations décroissant puis par identifiant, chaque
+entrée portant son libellé, son lien officiel, son statut (`absent` ou `exclu`), son compte de
+citations et les autorités qui le citent avec leur compte. Un document déclaré `exclu` au catalogue
+d'instruments de `mcp/corpus/citations.ts` est marqué comme tel : il n'est jamais présenté comme un
+trou, et le catalogue n'exclut aucun de ses huit instruments aujourd'hui. `etat_corpus` rend ce bloc
+tel quel, sans le recalculer ; un rapport antérieur au bloc le rend `null`. Le relevé réel du
+2026-11-13 (6 documents, 410 citations) et ses limites sont dans
+`aidd_docs/tasks/2026_11/2026_11_13_classement-documents-absents/mesure.md`. Un document manquant
+n'est pas un échec et reste listé tant qu'il n'entre pas au corpus ; une source ou l'index en panne
+laisse `a_jour_au` inchangé, et l'index est réessayé à la passe suivante. Un CELEX listé dans
 `couverture.documents_ecartes` est `ecarte` et ne relance pas la CJUE. `--dry-run` n'écrit rien et
 `--json` rend le rapport brut ; `--date` date le rapport et la fenêtre de la passe (les sources
 consignent leur propre date), `etat_corpus` expose le même état au client MCP, sans réseau ni index.

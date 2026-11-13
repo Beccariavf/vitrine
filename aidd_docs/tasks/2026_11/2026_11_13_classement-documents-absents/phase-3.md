@@ -1,5 +1,5 @@
 ---
-status: planned
+status: completed
 ---
 
 # Instruction: Rendre le classement dans etat_corpus et prouver le relevé
