@@ -73,6 +73,8 @@ function racine(): string {
       decision("cnil", "CNILTEXT1", "2024-01-10", "en application de l'article 9(2) du RGPD", "CNIL > Sanctions > Délibération SAN-2024-001"),
       decision("cnil", "CNILTEXT2", "2025-03-01", "les articles 8 à 10 du RGPD", "CNIL > Avis > Délibération 2025-010"),
       decision("cnil", "CNILTEXT3", "2023-06-01", "Vu l'article 26-1 de la loi n° 78-17 du 6 janvier 1978.", "CNIL > Avis > Délibération 2023-050"),
+      decision("cnil", "CNILTEXT5", "2018-05-24", "Vu l'article 26 de la loi n° 78-17 du 6 janvier 1978.", "CNIL > Avis > Délibération 2018-100"),
+      decision("cnil", "CNILTEXT6", "2020-01-15", "les articles 226-16 à 226-24 du code pénal", "CNIL > Sanctions > Délibération SAN-2020-001"),
       decision("cnil", "CNILTEXT4", "2022-02-02", "l'article L. 34-5 du code des postes et des communications électroniques", "CNIL > Sanctions > Délibération SAN-2022-002"),
     ],
     { corpus: "cnil" },
@@ -97,6 +99,9 @@ describe("formes d'article", () => {
     assert.deepEqual(formeArticle("L.34-5"), { prefixe: "L. ", corps: "34-5" });
     assert.deepEqual(formeArticle("L. 34-5"), { prefixe: "L. ", corps: "34-5" });
     assert.equal(formeArticle("considérant"), null);
+    assert.equal(formeArticle("9 bis"), null);
+    assert.equal(formeArticle("9abc"), null);
+    assert.deepEqual(formeArticle("12(1)(a)"), { prefixe: "", corps: "12" });
   });
 
   it("compte l'alinéa et la plage, jamais l'article à tiret", () => {
@@ -109,6 +114,10 @@ describe("formes d'article", () => {
     assert.equal(citeArticle("10–12", neuf), false);
     assert.equal(citeArticle("26-1", vingtSix), false);
     assert.equal(citeArticle("L. 9", neuf), false);
+    const penal = formeArticle("226-18");
+    assert.ok(penal !== null);
+    assert.equal(citeArticle("226-16–226-24", penal), true);
+    assert.equal(citeArticle("226-19–226-24", penal), false);
   });
 });
 
@@ -133,6 +142,8 @@ describe("decisions_citant", () => {
           ["CNILTEXT1", "2024-01-10"],
         ],
       );
+      assert.equal(resultat.decisions.find((d) => d.document === "CNILTEXT2")?.via_plage, true);
+      assert.equal(resultat.decisions.find((d) => d.document === "CNILTEXT1")?.via_plage, undefined);
       const cassation = resultat.decisions.find((d) => d.corpus === "cc");
       assert.equal(cassation?.autorite, "Cour de cassation");
       assert.equal(cassation?.intitule, "Cour de cassation > Chambre sociale > Décision du 1 mars 2025");
@@ -155,6 +166,31 @@ describe("decisions_citant", () => {
       assert.equal(page.decalage, 1);
       assert.equal(page.tronque, true);
       assert.equal(decisionsCitant(root, { document: RGPD, numero: "9", decalage: 2 }).tronque, false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("écarte de la LIL les citations antérieures à la renumérotation du 2019-06-01", () => {
+    const root = racine();
+    try {
+      const resultat = decisionsCitant(root, { document: LIL, numero: "26" });
+
+      assert.equal(resultat.total, 0);
+      assert.equal(resultat.ecartees_numerotation_anterieure, 1);
+      assert.match(resultat.message ?? "", /ordonnance 2018-1125/);
+      assert.equal(decisionsCitant(root, { document: RGPD, numero: "9" }).ecartees_numerotation_anterieure, undefined);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("rend une plage à bornes composées et refuse un suffixe bis", () => {
+    const root = racine();
+    try {
+      const penal = decisionsCitant(root, { document: "LEGITEXT000006070719", numero: "226-18" });
+      assert.deepEqual(penal.decisions.map((d) => [d.document, d.via_plage]), [["CNILTEXT6", true]]);
+      assert.equal(decisionsCitant(root, { document: RGPD, numero: "9 bis" }).trouve, false);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

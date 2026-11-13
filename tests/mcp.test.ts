@@ -1009,6 +1009,22 @@ describe("le serveur en mémoire", () => {
     assert.match(texte, /ne prouve jamais/);
     assert.match(texte, /article_au_corpus: false/);
     assert.match(texte, /jamais un article « jamais cité »/);
+    assert.match(texte, /via_plage/);
+    assert.match(texte, /2018-1125/);
+  });
+
+  it("rend decisions_citant par le client, pagination comprise", async () => {
+    const resultat = await client.callTool({
+      name: "decisions_citant",
+      arguments: { document: DOCUMENT, numero: "art. 3", limite: 1, decalage: 0 },
+    });
+    const payload = contenu(resultat);
+
+    assert.equal(payload.trouve, true);
+    assert.equal(payload.document, DOCUMENT);
+    assert.equal(payload.decalage, 0);
+    assert.equal(Array.isArray(payload.decisions), true);
+    assert.equal(typeof payload.total, "number");
   });
 
   it("nomme statut_application et l'interdit d'applicabilité dans les trois descriptions", async () => {

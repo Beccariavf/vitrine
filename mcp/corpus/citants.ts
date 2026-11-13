@@ -36,6 +36,8 @@ export type DecisionCitante = {
   url: string;
   /** La citation qui vise l'instrument, au format de #28 : `RGPD · art. 6, 9`. */
   reference: string;
+  /** Présent quand l'article n'est atteint que par une plage (`8–10`), jamais nommément. */
+  via_plage?: true;
 };
 
 export type ResultatCitants = {
@@ -48,6 +50,12 @@ export type ResultatCitants = {
   /** Décisions citantes distinctes, toutes pages confondues. */
   total: number;
   par_autorite: { autorite: string; decisions: number }[];
+  /**
+   * LIL seulement : décisions antérieures au 2019-06-01 qui citent ce numéro.
+   * L'ordonnance 2018-1125 a renuméroté la loi : elles visent un autre texte et
+   * sont écartées de `decisions`, `total` et `par_autorite`.
+   */
+  ecartees_numerotation_anterieure?: number;
   decisions: DecisionCitante[];
   decalage: number;
   /** Vrai quand des décisions restent après cette page. */
@@ -73,12 +81,29 @@ export function formeArticle(valeur: string | number): Article | null {
   const brut = String(valeur)
     .trim()
     .replace(/^(?:articles?|art\.?)\s*/i, "");
-  const trouve = /^(?:([LRD])\.?\s*)?(\d+)(?:er)?((?:-\d+)*)(.*)$/i.exec(brut);
+  // Seule une subdivision suit le numéro : alinéa `(2)`, point `.2` ; `9 bis` n'est pas `9`.
+  const trouve = /^(?:([LRD])\.?\s*)?(\d+)(?:er)?((?:-\d+)*)((?:\([0-9a-z]{1,4}\)|\.\d+)*)\s*$/i.exec(brut);
   if (trouve === null) return null;
   return {
     prefixe: trouve[1] === undefined ? "" : `${trouve[1].toUpperCase()}. `,
     corps: `${Number(trouve[2])}${trouve[3] ?? ""}`,
   };
+}
+
+/** Compare deux corps `226-16` et `226-24` segment par segment ; un segment absent vaut moins. */
+function comparer(gauche: string, droite: string): number {
+  const a = gauche.split("-").map(Number);
+  const b = droite.split("-").map(Number);
+  for (let i = 0; i < Math.max(a.length, b.length); i += 1) {
+    const ecart = (a[i] ?? -1) - (b[i] ?? -1);
+    if (ecart !== 0) return ecart;
+  }
+  return 0;
+}
+
+/** Vrai quand l'article cité est une plage `a–b`. */
+function estPlage(articleCite: string): boolean {
+  return articleCite.includes("–");
 }
 
 /**
@@ -93,11 +118,7 @@ export function citeArticle(articleCite: string, demande: Article): boolean {
     const fin = formeArticle(bornes[1] ?? "");
     if (debut === null || fin === null || debut.prefixe !== demande.prefixe) return false;
     if (debut.prefixe !== fin.prefixe) return false;
-    const [a, b, n] = [debut.corps, fin.corps, demande.corps].map(Number);
-    if ([a, b, n].some((nombre) => nombre === undefined || !Number.isInteger(nombre))) {
-      return debut.corps === demande.corps || fin.corps === demande.corps;
-    }
-    return (a ?? 0) <= (n ?? 0) && (n ?? 0) <= (b ?? 0);
+    return comparer(debut.corps, demande.corps) <= 0 && comparer(demande.corps, fin.corps) <= 0;
   }
   const cite = formeArticle(articleCite);
   return cite !== null && cite.prefixe === demande.prefixe && cite.corps === demande.corps;
@@ -146,19 +167,27 @@ function articleAuCorpus(rootDir: string, document: string, demande: Article): b
   return false;
 }
 
-/** Citation d'une décision qui vise l'article demandé ; `null` sinon. */
+/** Loi 78-17 : sa numérotation actuelle date de l'ordonnance 2018-1125, en vigueur le 2019-06-01. */
+const LIL = "LEGITEXT000006068624";
+const RENUMEROTATION_LIL = "2019-06-01";
+
+/**
+ * Citation d'une décision qui vise l'article demandé, et si elle ne l'atteint
+ * que par une plage ; `null` sinon.
+ */
 function citationVisant(
   citations: readonly Citation[],
   document: string,
   demande: Article,
-): Citation | null {
-  return (
-    citations.find(
-      (citation) =>
-        normaliserIdentifiant(citation.document) === document &&
-        citation.articles.some((article) => citeArticle(article, demande)),
-    ) ?? null
-  );
+): { citation: Citation; viaPlage: boolean } | null {
+  let parPlage: Citation | null = null;
+  for (const citation of citations) {
+    if (normaliserIdentifiant(citation.document) !== document) continue;
+    const touches = citation.articles.filter((article) => citeArticle(article, demande));
+    if (touches.some((article) => !estPlage(article))) return { citation, viaPlage: false };
+    if (touches.length > 0) parPlage ??= citation;
+  }
+  return parPlage === null ? null : { citation: parPlage, viaPlage: true };
 }
 
 /** Corpus dont le chemin d'une unité finit par la section du fragment (`Visa`, `En-tête`). */
@@ -234,23 +263,31 @@ export function decisionsCitant(rootDir: string, demandeBrute: DemandeCitants): 
   }
 
   const citantes: DecisionCitante[] = [];
+  let anterieures = 0;
   for (const corpus of CORPUS_DECISIONS) {
-    const visees = new Map<string, Citation>();
+    const visees = new Map<string, { citation: Citation; viaPlage: boolean }>();
     for (const [decision, citations] of citationsDuCorpus(rootDir, corpus)) {
-      const citation = citationVisant(citations, document, demande);
-      if (citation !== null) visees.set(decision, citation);
+      const vise = citationVisant(citations, document, demande);
+      if (vise !== null) visees.set(decision, vise);
     }
     const premieres = premieresUnites(rootDir, corpus, new Set(visees.keys()));
-    for (const [decision, citation] of visees) {
+    for (const [decision, { citation, viaPlage }] of visees) {
       const unite = premieres.get(decision);
+      const date_acte = unite?.date_acte ?? "";
+      // Une date inconnue n'est pas écartée : rien ne dit qu'elle précède la renumérotation.
+      if (document === LIL && date_acte !== "" && date_acte < RENUMEROTATION_LIL) {
+        anterieures += 1;
+        continue;
+      }
       citantes.push({
         document: decision,
         corpus,
         autorite: autoriteDe(corpus),
         intitule: intituleDe(corpus, unite),
-        date_acte: unite?.date_acte ?? "",
+        date_acte,
         url: unite?.url ?? "",
         reference: citation.reference,
+        ...(viaPlage ? { via_plage: true as const } : {}),
       });
     }
   }
@@ -277,7 +314,13 @@ export function decisionsCitant(rootDir: string, demandeBrute: DemandeCitants): 
       ? `Aucune décision du corpus ne cite ${quoi} parmi les citations reconnues ; ` +
         "la liste est non exhaustive et ne prouve pas que l'article n'est jamais cité."
       : null;
-  const message = [absence, aucune].filter((partie) => partie !== null).join(" ");
+  const renumerotation =
+    anterieures === 0
+      ? null
+      : `${anterieures} décision(s) antérieure(s) au ${RENUMEROTATION_LIL} citent un article 78-17 ` +
+        `numéroté ${numero} : l'ordonnance 2018-1125 a renuméroté la loi, elles visent un autre ` +
+        "texte et sont écartées des comptes.";
+  const message = [absence, aucune, renumerotation].filter((partie) => partie !== null).join(" ");
 
   return {
     ...vide,
@@ -285,6 +328,7 @@ export function decisionsCitant(rootDir: string, demandeBrute: DemandeCitants): 
     article_au_corpus,
     total: citantes.length,
     par_autorite,
+    ...(document === LIL ? { ecartees_numerotation_anterieure: anterieures } : {}),
     decisions: citantes.slice(decalage, decalage + limite),
     tronque: decalage + limite < citantes.length,
     ...(message === "" ? {} : { message }),
