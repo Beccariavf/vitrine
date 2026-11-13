@@ -199,8 +199,10 @@ Mesure du 13 novembre 2026 : 295 CELEX listés et 1 complémentaire, 166 décisi
 16 916 fragments, 73 conclusions d'avocat général et 2 autres types écartés, 55 XHTML absents dans
 toutes les langues ; 45 décisions des types retenus antérieures à 2014 sont comptées à part ;
 période 2014-04-08 → 2026-11-05. La notion `2.04` apporte 15 décisions, dont C-413/23 P
-(CEPD c. SRB, 4 septembre 2025) ; les 55 décisions sans XHTML étant absentes dans les deux langues,
-elles seules restent hors corpus. Les 10 questions `dev` rendent le document attendu au top 5 pour
+(EDPS c. SRB, 4 septembre 2025) ; sur les 32 absences classées `2.04`, 4 étaient déjà écartées avant
+l'élargissement, soit 28 exclusions nouvelles. Les 55 décisions sans XHTML sont absentes en `fra` et
+en `eng` (28 vérifiées par la passe du 13 novembre, 27 héritées d'une sonde du 12 novembre) et seules
+restent hors corpus. Les 10 questions `dev` rendent le document attendu au top 5 pour
 8 d'entre elles (MRR 0,750, top 1 70,0 %). Le classement CELLAR reste large et incomplet : la notion `4.11.01` inclut six décisions qui ne
 traitent les données personnelles que dans une partie de leur raisonnement, et la liste
 complémentaire est déclarée au manifeste. Réutilisation autorisée par la décision 2011/833/UE

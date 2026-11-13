@@ -581,7 +581,7 @@ describe("la synchronisation du corpus CJUE", () => {
     }
   });
 
-  it("compte un échec de téléchargement quand le français tombe en panne et l'anglais manque", async () => {
+  it("compte un échec de téléchargement quand le français tombe en panne et l'anglais n'est pas essayé", async () => {
     const racine = racineTemporaire();
     try {
       const { fetch, langues } = fetchLangues({
@@ -794,6 +794,17 @@ describe("la synchronisation du corpus CJUE", () => {
       .map((ligne) => JSON.parse(ligne) as Unite);
     assert.equal(unites.length, manifeste.fragments);
     assert.equal(new Set(unites.map((unite) => unite.document)).size, manifeste.documents);
+    assert.equal(manifeste.couverture.notions.length, 2);
+    const anglais = new Set(Object.keys(manifeste.couverture.documents_langues));
+    for (const unite of unites) {
+      const attendu = anglais.has(unite.document);
+      assert.equal(
+        unite.chemin.includes(" (texte anglais)"),
+        attendu,
+        `${unite.ref} : le chemin et le manifeste s'accordent sur la langue`,
+      );
+      assert.equal(unite.url.includes("/EN/"), attendu, `${unite.ref} : l'URL suit la langue`);
+    }
     assert.doesNotThrow(() => validerUnitesCorpus(unites, "CJUE"));
   });
 });

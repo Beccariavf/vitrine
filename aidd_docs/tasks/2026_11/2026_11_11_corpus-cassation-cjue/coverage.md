@@ -1,6 +1,6 @@
 # Couverture des huit corpus
 
-Comptes lus dans les `manifest.json` du 11 novembre 2026, jamais recopiés depuis un autre rapport.
+Comptes lus dans les `manifest.json` du 13 novembre 2026 (11 novembre pour les corpus inchangés), jamais recopiés depuis un autre rapport.
 
 | Corpus | Documents | Fragments | Période | Source | Licence |
 |---|---:|---:|---|---|---|
@@ -26,8 +26,8 @@ Comptes lus dans les `manifest.json` du 11 novembre 2026, jamais recopiés depui
 
 - SPARQL CELLAR, union de la matière `PDON` et de deux notions fines, `fd_578/4.11.01` (« Protection des données à caractère personnel ») et `fd_578/2.04` (« Protection des données à caractère personnel par les institutions de l'Union »), CELEX `6…`, date ≥ `2014-01-01` ; un CELEX explicite (`62018CJ0746`, Prokuratuur) que CELLAR ne classe pas dans les données personnelles.
 - 295 CELEX listés et 1 complémentaire : 166 retenus, 73 conclusions d'avocat général (`CC`), 2 autres types, 55 XHTML absents dans toutes les langues (404 consignés en `xhtml_absent`) ; `documents_lus` vaut 296, soit exactement les documents retenus plus les exclusions (166 + 73 + 2 + 55).
-- Types retenus par suffixe CELEX : `CJ`, `TJ`, `CO`, `TO` ; 55 décisions ne sont servies dans aucune langue et 166 ont produit des unités. La notion `2.04` apporte 15 décisions joignables, dont C-413/23 P (CEPD c. SRB, 4 septembre 2025), et 28 des 55 exclusions ; 32 des 55 absences relèvent de la seule notion `2.04`.
-- Langue : un seul XHTML par décision, la première servie — français d'abord, anglais après un 404 français. Le texte capturé est classé par son contenu (`langueCapture`) : `couverture.langues` = 166 `fra`, 0 `eng`, `couverture.documents_langues` vide. Aucune décision du corpus n'existe uniquement en anglais ; les 55 absentes répondent 404 dans les deux langues. Une panne (5xx, réseau) ne crée aucun marqueur durable : la décision est redemandée à la passe suivante plutôt que lue en anglais.
+- Types retenus par suffixe CELEX : `CJ`, `TJ`, `CO`, `TO` ; 55 décisions ne sont servies dans aucune langue et 166 ont produit des unités. La notion `2.04` apporte 15 décisions joignables, dont C-413/23 P (EDPS c. SRB, 4 septembre 2025) ; sur les 32 absences classées `2.04`, 4 étaient déjà écartées avant l'élargissement, donc 28 des 55 exclusions sont nouvelles.
+- Langue : un seul XHTML par décision, la première servie — français d'abord, anglais après un 404 français. Le texte capturé est classé par son contenu (`langueCapture`) : `couverture.langues` = 166 `fra`, 0 `eng`, `couverture.documents_langues` vide. Aucune décision du corpus n'existe uniquement en anglais. Les 55 absences sont des 404 bilingues : 28 demandées en `fra` puis `eng` par la passe du 13 novembre, 27 héritées dont le 404 bilingue vient de la sonde du 2026-11-12 (hors dépôt) et que la passe ne redemande pas. Une panne (5xx, réseau) ne crée aucun marqueur durable : la décision est redemandée à la passe suivante plutôt que lue en anglais.
 - 45 décisions des types retenus, de la même sélection et antérieures à 2014, sont comptées à part (`couverture.avant_borne`) ; l'élargissement à `2.04` en ajoute une aux 44 précédentes.
 - La borne 2014 inclut la fin de la directive 95/46 et la préparation du RGPD ; elle exclut la jurisprudence antérieure, comptée mais non collectée.
 - `periode.date_min` est la première date observée (2014-04-08) ; `couverture.borne` porte la borne demandée (2014-01-01).
@@ -43,6 +43,6 @@ Mesures du 11 novembre 2026, hors split `test`, sur l'index à huit corpus (74 8
 | Cour de cassation, 10 questions | 6/10 au top 5, MRR 0,470, top 1 40,0 % |
 | CJUE, 10 questions | 8/10 au top 5, MRR 0,750, top 1 70,0 % |
 
-Les rangs CJUE ont été rejoués le 13 novembre 2026 sur l'index élargi (77 107 unités) : mêmes résultats, 2 `confiant` et 8 `incertain` aux seuils recalibrés sur `dev`. La recherche « données pseudonymisées identifiables par le destinataire » (`corpus: "cjue"`, `k: 5`) rend C-413/23 P au premier rang (`62023CJ0413#point68`, similarité 0,729), avec l'URL EUR-Lex française de l'arrêt.
+Les rangs CJUE ont été rejoués le 13 novembre 2026 sur l'index élargi (77 107 unités) : mêmes résultats, 1 `confiant` et 9 `incertain` aux seuils produit (0,69 / 0,74 / 0,01) ; la calibration `dev` du harnais donne 2 et 8. La recherche « données pseudonymisées identifiables par le destinataire » (`corpus: "cjue"`, `k: 5`) rend C-413/23 P au premier rang (`62023CJ0413#point68`, similarité 0,729), avec l'URL EUR-Lex française de l'arrêt.
 
 Le détail des rangs et des similarités est dans [`eval.md`](./eval.md). Ces jeux ne calibrent aucun seuil : le produit applique le repli `0,69 / 0,74 / 0,01` à `cc` et `cjue`.

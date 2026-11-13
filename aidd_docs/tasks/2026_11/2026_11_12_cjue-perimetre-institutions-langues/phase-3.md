@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 ---
 
 # Instruction: Resynchroniser le corpus et corriger la couverture déclarée

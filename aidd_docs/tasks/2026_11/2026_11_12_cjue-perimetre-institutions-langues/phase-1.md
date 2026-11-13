@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 ---
 
 # Instruction: Élargir la sélection CELLAR à la notion « données personnelles par les institutions de l'Union »

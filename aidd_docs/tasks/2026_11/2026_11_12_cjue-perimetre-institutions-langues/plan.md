@@ -1,6 +1,6 @@
 ---
 objective: "La CJUE indexe les décisions du CEPD (EDPS) contre les institutions, notion CELLAR 2.04, et lit le XHTML en français puis en anglais — C-413/23 P compris."
-status: pending
+status: completed
 ---
 
 # Plan: Élargir le corpus CJUE au contentieux du CEPD et au XHTML anglais
