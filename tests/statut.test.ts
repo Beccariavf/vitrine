@@ -42,13 +42,31 @@ describe("la table par corpus", () => {
     assert.equal(statutApplication("cepd", "finale"), "adoptee");
   });
 
-  it("laisse une abrogation déclarée par la source primer sur la nature", () => {
-    // 471 unités CNIL portent ABROGE sur le corpus réel (462 recommandations, 9 avis).
+  it("laisse un statut sans effet primer sur la nature, dans les corpus concernés", () => {
+    // 471 unités CNIL portent ABROGE sur le corpus réel (462 recommandations, 9 avis),
+    // 12 portent ANNULE (2 recommandations, dont une annulée par le Conseil d'État).
     assert.equal(statutApplication("cnil", "ABROGE", "Recommandation/Lignes directrices"), "abroge");
     assert.equal(statutApplication("cnil", "ABROGE", "Avis"), "abroge");
     assert.equal(statutApplication("cnil", "ABROGE", "Sanction"), "abroge");
+    assert.equal(statutApplication("cnil", "ANNULE", "Recommandation/Lignes directrices"), "abroge");
     assert.equal(statutApplication("cepd", "ABROGE"), "abroge");
     assert.equal(statutApplication("lil", "abrogé"), "abroge");
+  });
+
+  it("ne laisse pas un statut sans effet déborder hors des corpus où il fait sens", () => {
+    // La priorité est bornée : le statut d'une décision est sa publication, et un
+    // corpus inconnu n'affirme rien, même quand la valeur ressemble à une abrogation.
+    assert.equal(statutApplication("ce", "ABROGE"), "rendue");
+    assert.equal(statutApplication("cc", "ANNULE"), "rendue");
+    assert.equal(statutApplication("inconnu", "ABROGE"), "inconnu");
+  });
+
+  it("rend inconnu une doctrine modifiée, jamais applicable d'office", () => {
+    // 26 unités CNIL MODIFIE (2 recommandations) : la version rendue n'est pas
+    // nécessairement celle en vigueur.
+    assert.equal(statutApplication("cnil", "MODIFIE", "Recommandation/Lignes directrices"), "inconnu");
+    assert.equal(statutApplication("cepd", "projet"), "inconnu");
+    assert.equal(statutApplication("cepd", "EN_CONSULTATION"), "inconnu");
   });
 
   it("atteint propose et pendant, qu'aucun corpus ne porte aujourd'hui", () => {

@@ -74,12 +74,17 @@ function formeComparable(valeur: string | null | undefined): string {
     .replace(/^_+|_+$/g, "");
 }
 
+/** Statuts de source qui disent qu'une unité ne s'applique plus. */
+const STATUTS_SANS_EFFET: readonly string[] = ["ABROGE", "ANNULE"];
+
 /**
- * Statut d'application d'une unité. Une abrogation déclarée par la source prime
- * sur tout le reste ; les textes suivent ensuite leur statut source ; les
- * décisions juridictionnelles et les sanctions CNIL sont rendues ; les lignes
- * directrices du CEPD et la doctrine CNIL sont adoptées. Tout le reste — corpus
- * inconnu, statut non reconnu, nature CNIL absente — rend `inconnu`, sans lever.
+ * Statut d'application d'une unité. Le corpus décide d'abord : les textes
+ * suivent leur statut source, les décisions juridictionnelles sont rendues. Pour
+ * la CNIL et le CEPD, un statut sans effet (`ABROGE`, `ANNULE`) prime sur la
+ * nature — une recommandation abrogée ne s'applique plus —, puis la nature ou la
+ * version tranche. Un statut modifié rend `inconnu` : la version rendue n'est pas
+ * nécessairement celle en vigueur. Tout le reste — corpus inconnu, statut non
+ * reconnu, nature CNIL absente — rend `inconnu`, jamais `en_vigueur`, sans lever.
  */
 export function statutApplication(
   corpus: string,
@@ -90,20 +95,23 @@ export function statutApplication(
     .trim()
     .toLowerCase();
   const source = formeComparable(statut);
-  // Une abrogation déclarée par la source prime sur la nature : une
-  // recommandation ou un avis abrogé ne s'applique plus, même s'il a été adopté.
-  if (source === "ABROGE") return "abroge";
   if (CORPUS_TEXTES.includes(collection)) {
     return STATUTS_TEXTES.get(source) ?? "inconnu";
   }
   if (CORPUS_JURIDICTIONNELS.includes(collection)) return "rendue";
   if (collection === "cnil") {
+    if (STATUTS_SANS_EFFET.includes(source)) return "abroge";
+    // Une délibération modifiée n'est rendue ici que dans sa version d'origine.
+    if (source !== "VIGUEUR") return "inconnu";
     const natureComparable = formeComparable(nature);
     if (natureComparable === NATURE_SANCTION) return "rendue";
     if (NATURES_DOCTRINE.includes(natureComparable)) return "adoptee";
     // Une nature absente ou inconnue ne dit pas si la délibération est rendue ou adoptée.
     return "inconnu";
   }
-  if (collection === "cepd") return "adoptee";
+  if (collection === "cepd") {
+    if (STATUTS_SANS_EFFET.includes(source)) return "abroge";
+    return source === "FINALE" ? "adoptee" : "inconnu";
+  }
   return "inconnu";
 }

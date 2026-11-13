@@ -1010,7 +1010,8 @@ describe("le serveur en mémoire", () => {
       for (const valeur of valeurs) {
         assert.ok(texte.includes(`\`${valeur}\``), `${nom} nomme ${valeur}`);
       }
-      assert.match(texte, /abrogé ou proposé n'est jamais applicable/, nom);
+      assert.match(texte, /abrogé, annulé ou proposé n'est jamais applicable/, nom);
+      assert.match(texte, /pas l'applicabilité article par article/, nom);
       assert.match(texte, /`statut` reste la valeur de la source/, nom);
       assert.match(texte, /n'est jamais réécrit/, nom);
     }
@@ -1918,24 +1919,31 @@ describe("le statut d'application dans les réponses", () => {
     }
   });
 
-  it("porte en_vigueur sur la version consolidée de la LIL, avec son statut VIGUEUR et sa date", () => {
-    const root = mkdtempSync(join(tmpdir(), "vitrine-statut-"));
-    try {
-      ecrireCorpus(
-        root,
-        [unitLil(1, "les fichiers doivent être créés dans l'intérêt des personnes")],
-        "lil",
-      );
-      const article = getArticle(root, { document: ECHELLE, numero: "1" });
+  it("ne sert qu'une version consolidée de la loi 78-17, celle de son manifeste", () => {
+    // Preuve sur le corpus réel, non circulaire : la LIL ne contient qu'une version,
+    // et chaque article rendu porte la date et le statut de son unité.
+    const manifeste = JSON.parse(readFileSync("data/corpus/lil/manifest.json", "utf8")) as {
+      date_debut_version: string;
+      documents: number;
+    };
+    const unites = readFileSync("data/corpus/lil/unites.jsonl", "utf8")
+      .split("\n")
+      .filter((ligne) => ligne.trim() !== "")
+      .map((ligne) => JSON.parse(ligne) as Unite);
 
-      assert.equal(article.trouve, true);
-      assert.equal(article.statut_application, "en_vigueur");
-      assert.equal(article.statut, "VIGUEUR");
-      assert.equal(article.date_debut, "2019-06-01");
-      assert.equal(article.date_fin, null);
-    } finally {
-      rmSync(root, { recursive: true, force: true });
-    }
+    assert.equal(unites.length > 0, true);
+    assert.deepEqual([...new Set(unites.map((unite) => unite.statut))], ["VIGUEUR"]);
+    assert.equal(
+      unites.every((unite) => unite.date_debut <= manifeste.date_debut_version),
+      true,
+      "aucun article ne peut venir d'une version postérieure à la consolidation",
+    );
+
+    const article = getArticle(".", { document: ECHELLE, numero: "1" });
+    assert.equal(article.trouve, true);
+    assert.equal(article.statut_application, "en_vigueur");
+    assert.equal(article.statut, "VIGUEUR");
+    assert.equal(article.date_debut, unites.find((unite) => unite.numero === "1")?.date_debut);
   });
 
   it("rend un article abrogé avec abroge, ses dates et son statut source", () => {
