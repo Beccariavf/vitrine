@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
-import { intervalleWilson } from "../mcp/eval/run.ts";
+import { intervalleWilson } from "../mcp/statistiques.ts";
 import type { EntreeQuestionJson, ObjetMesureJson, TypeQuestion } from "../mcp/eval/run.ts";
 import {
   BAS_MAX,

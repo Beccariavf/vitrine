@@ -16,7 +16,6 @@ import {
   INSTRUCTION_CNIL_NEUTRE,
   instructionCnil,
   instructionsDeMesure,
-  intervalleWilson,
   lireInstruction,
   lireJeu,
   lireQuestions,
@@ -40,6 +39,7 @@ import {
   verifierRegleSeuils,
   verifierTestNonConsomme,
 } from "../mcp/eval/run.ts";
+import { intervalleWilson } from "../mcp/statistiques.ts";
 import type { MarqueurV3, Mesure, Question, Split } from "../mcp/eval/run.ts";
 import { compterCitations } from "../mcp/eval/citations.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";

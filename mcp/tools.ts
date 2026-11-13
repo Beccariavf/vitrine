@@ -17,6 +17,8 @@ import {
   marquerPresence,
 } from "./corpus/citations.ts";
 import type { Citation, CitationRendue } from "./corpus/citations.ts";
+import { decisionsCitees } from "./corpus/citations-decisions.ts";
+import type { DecisionCitee } from "./corpus/citations-decisions.ts";
 import { statutApplication } from "./corpus/statut.ts";
 import type { StatutApplication } from "./corpus/statut.ts";
 import { niveauConfiance } from "./confidence.ts";
@@ -98,6 +100,8 @@ export type Passage = ResultatRecherche & {
   statut_application: StatutApplication;
   /** Instruments et articles cités par la décision ; absent hors des cinq corpus de décisions. */
   citations?: CitationRendue[];
+  /** Décisions que la décision cite, familles exposées seulement ; absent hors des corpus de décisions. */
+  decisions_citees?: DecisionCitee[];
 };
 
 export type ResultatRechercheOutil = {
@@ -156,6 +160,7 @@ function avecCitations(rootDir: string, passages: Passage[]): Passage[] {
     return {
       ...passage,
       citations: marquerPresence(presents, corpus.get(passage.document) ?? []),
+      decisions_citees: decisionsCitees(rootDir, passage.corpus, passage.document),
     };
   });
 }
@@ -381,6 +386,8 @@ export type DecisionTrouvee = {
   partie: PartieDecision;
   /** Instruments et articles que le texte de la décision cite ; `[]` si aucun. */
   citations: CitationRendue[];
+  /** Décisions que la décision cite, familles exposées seulement ; `[]` si aucune. */
+  decisions_citees: DecisionCitee[];
   fragments: FragmentDecision[];
 };
 
@@ -538,6 +545,7 @@ export function getDecision(rootDir: string, demande: DecisionDemande): Resultat
         fragments_total: premiers.length,
         partie,
         citations: marquerPresence(presents, citationsDesUnites(premiers)),
+        decisions_citees: decisionsCitees(rootDir, premier.corpus, identifiant),
         fragments: rendus.map((unite) => ({
           ref: unite.ref,
           numero: unite.numero,
