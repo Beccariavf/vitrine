@@ -609,7 +609,11 @@ export function decisionsCitantDecision(
       // sont résolues, et la plus précise est rendue — cibles à la bonne date, puis cibles, puis aucune.
       const mentions = references.filter((r) => r.famille === lue.famille && r.cle === lue.cle);
       if (mentions.length === 0) continue;
-      const resolues = mentions.map((mention) => resolution(rootDir, mention, document));
+      const resolues = mentions.map((mention) => {
+        const resolue = resolution(rootDir, mention, document);
+        // Chaque mention garde son acte : « cite » dit pourquoi des conclusions n'ont pas de cible.
+        return resolue === null ? null : { ...(mention.acte === undefined ? {} : { acte: mention.acte }), ...resolue };
+      });
       const unite = etat.premieres.get(document);
       if (resolues.some((r) => r === null) || unite === undefined) continue;
       const valides = resolues.filter((r) => r !== null);

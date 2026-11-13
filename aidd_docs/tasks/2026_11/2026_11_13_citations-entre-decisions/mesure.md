@@ -81,3 +81,9 @@ toutes sont rendues avec `date_divergente: true` plutôt qu'une absence fausse.
 
 Non mesuré par un seuil. Observé en relecture : références manquantes (pourvois en liste sans « n° »,
 décisions citées par le nom des parties, ECLI).
+
+## Revues
+
+1. Première revue (70/100, refusée) : auto-citations, dates mal lues, fausses absences, outils en désaccord — corrigés, mesure refaite.
+2. Seconde revue (82/100, une faute bloquante) : résolution inverse, détecteur de conclusions, `acte`, borne stratifiée — corrigés.
+3. Vérification ciblée (0,95) : tout résolu ; `acte` ajouté au `cite` de l'outil inverse.

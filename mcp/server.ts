@@ -227,7 +227,8 @@ export function createServer(deps: ServerDeps): McpServer {
         "`par_autorite` comptent toutes les décisions, même quand la liste est paginée par " +
         `\`limite\` (${LIMITE_DEFAUT} par défaut, ${LIMITE_MAX} au plus) et \`decalage\` ; ` +
         "`tronque` dit qu'il en reste. Chaque décision citante porte `cite`, ce que sa citation " +
-        "désigne selon la même résolution que `decisions_citees` (date du texte, `date_divergente`). " +
+        "désigne selon la même résolution que `decisions_citees` (date du texte, `date_divergente`, " +
+        "`acte` quand il cite des conclusions ou une ordonnance). " +
         "`cibles` donne la ou les décisions du corpus que la référence " +
         "désigne : vide hors corpus, plusieurs quand elle est ambiguë, sans choix silencieux. Le lien " +
         "dit seulement « cite », jamais applique, écarte ou renverse. La liste est non exhaustive : " +

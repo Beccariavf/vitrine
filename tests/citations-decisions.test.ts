@@ -223,6 +223,11 @@ describe("decisions_citant_decision", () => {
         unite("cnil", "CNIL3", "2023-001", "CNIL", "2023-01-01",
           "conclusions de l’avocat général dans l’affaire C-311/18 ; arrêt du 16 juillet 2020, C-311/18"),
       ]);
+      ecrire(root, "cepd", [
+        unite("cepd", "CEPD1", "1", "CEPD", "2023-01-01", "voir les conclusions de l’avocat général dans l’affaire C-311/18"),
+      ]);
+      const seulesConclusions = decisionsCitantDecision(root, { reference: "C-311/18" }, TOUTES);
+      assert.deepEqual(seulesConclusions.decisions.find((d) => d.document === "CEPD1")?.cite, { acte: "conclusions", cibles: [] });
       const direct = decisionsCitees(root, "cnil", "CNIL3", TOUTES);
       assert.deepEqual(direct.map((c) => [c.acte, c.cibles.length]), [["conclusions", 0], [undefined, 1]]);
       const inverse = decisionsCitantDecision(root, { reference: "C-311/18" }, TOUTES);
