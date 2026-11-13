@@ -1,6 +1,6 @@
 ---
 objective: "Le site garde sa grammaire Le Corbusier et gagne une identité polychrome qui signifie : chaque couleur nomme une famille de source, et une façade dessinée à partir du corpus prouve sa couverture, avec une police de titre monumentale, sans JavaScript et sans perte de contraste."
-status: in-progress
+status: completed
 ---
 
 # Plan: Identité polychrome : la façade est le corpus
