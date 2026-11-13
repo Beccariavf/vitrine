@@ -105,7 +105,7 @@ d'extraits ont été relus. Une population comptée n'est pas une population rel
 - **Attributions** — une par liste d'articles reconnue, plusieurs par citation : 16 600.
 - **Relecture** : les 25 documents de l'échantillon, 247 attributions, relues intégralement. Hors
   échantillon, par leurs extraits : 20 attributions au code pénal sur 131, 40 au CPCE sur 605,
-  25 à ePrivacy sur 228, 20 à 2016/680 sur 210, 2 à 2018/1725 sur 47.
+  25 à ePrivacy sur 228, 20 à 2016/680 sur 211, 2 à 2018/1725 sur 47.
 - **Visa « … notamment son/ses article(s) »** : la formule apparaît 3 217 fois dans les cinq
   `unites.jsonl` —
 
@@ -132,8 +132,12 @@ Ce contrôle ne mesure pas la précision : il ne dit pas combien de citations fa
   (`loi n° 2004-192`), par sa date (`loi du 22 décembre 1984`) ou par un qualificatif (`loi organique
   n° 2004-192`, `loi du pays n° 2018-1`, `loi du 6 fructidor an II`) ; « de la même loi organique » et
   « de la même loi du pays » ne se résolvent jamais, aucun instrument du périmètre n'étant l'une ou
-  l'autre. Le coût est assumé : une anaphore juste se perd quand le document nomme par ailleurs une
-  autre loi (`CNILTEXT000017653155`, article 19 « de la même loi »). Une fenêtre de proximité a été
+  l'autre. Le coût est mesuré, pas seulement supposé : entre `4957f0c` et `c32da19`, 19 couples
+  instrument × article ont disparu, dont les 6 citations fausses retirées et 13 citations justes
+  perdues dans 12 documents (`CNILTEXT000017652449`, `…653155`, `…653248`, `…653525`, `…25829613`,
+  `CETATEXT000041785967`, `…042499856`, `…044316288`, `…044316289`, `…044462348`, `…046082443`,
+  `…054394408`), contre 49 couples gagnés par la lecture des listes distribuées et des formes
+  anglaises. Une fenêtre de proximité a été
   essayée puis écartée : elle attribuait « l'article 12 de la même directive » à la directive 95/46/CE
   dans `62021CJ0129`, alors que l'antécédent est la directive 2002/58 — mesurée sur l'échantillon,
   elle y ajoutait cette fausse citation.
@@ -149,9 +153,10 @@ Ce contrôle ne mesure pas la précision : il ne dit pas combien de citations fa
   rend `21`, `27-II-2°` rend `27`, `L. 34-5` reste `L. 34-5`. Quand la subdivision sépare l'article de
   son instrument, la citation disparaît : `l'article 5-1-c du RGPD`, `l'article 14-5-b du RGPD`,
   `l'article 5 (1-b) du RGPD` et `l'article 9, paragraphe 2, sous e) du RGPD` rendent tous `[]`.
-  Le corpus `cnil` porte 320 occurrences de la forme `5-1-c` (98 documents), 77 de la forme `5 (1-b)`
-  (31 documents) et 735 de la forme `9, paragraphe 2` (94 documents). Ces formes ne sont pas lues dans
-  cette passe : la limite est déclarée, pas corrigée. Une plage au milieu d'une liste garde ses bornes
+  Le corpus `cnil` porte 504 occurrences de la forme `N-M-x` (`5-1-c`, 163 documents), 5 de la
+  forme `N (M-x)` (`5 (1-b)`, 1 document) et 763 de la forme `N, paragraphe 2` (95 documents),
+  comptées par `\b\d+[-.]\d+[-.][a-z]\b`, `\b\d+ \(\d+-[a-z]\)` et `\b\d+, paragraphe \d+`.
+  Ces formes ne sont pas lues dans cette passe : la limite est déclarée, pas corrigée. Une plage au milieu d'une liste garde ses bornes
   (`5, 12 à 22 et 34` rend `5, 12–22, 34`), et un article simple déjà couvert par une plage n'est pas
   répété.
 - **Décisions anglaises.** Les formes anglaises sont lues et testées : `Article 6 GDPR`,

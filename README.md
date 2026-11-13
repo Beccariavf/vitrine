@@ -96,7 +96,7 @@ porte `citations` : la liste des instruments et articles **reconnus** dans son t
 n'est pas un relevé exhaustif : une citation absente peut exister dans la décision, et il ne faut pas
 en conclure qu'elle n'y figure pas. L'extraction
 est déterministe, faite à la lecture depuis `data/corpus/<corpus>/unites.jsonl`, au niveau du
-document : tous les passages d'une décision portent sa base juridique entière, même quand le passage
+document : tous les passages d'une décision portent la base juridique reconnue de la décision, même quand le passage
 rendu ne la nomme pas. Une liste vide dit qu'aucune citation n'a été reconnue dans le texte, jamais
 que la décision n'a pas de base juridique. Le périmètre est fermé — RGPD, 95/46, ePrivacy, 2016/680,
 2018/1725, loi 78-17, CPCE, code pénal à partir de 226-16 — et la précision prime : un instrument
