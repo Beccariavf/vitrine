@@ -29,12 +29,15 @@ const LIEN_CNIL = /https?:\/\/www\.legifrance\.gouv\.fr\/cnil\/id\/(CNILTEXT\d+)
 
 /**
  * Motifs d'exclusion durables : une conclusion d'avocat général, un autre type
- * ou une version française absente ne seront pas réparés par une nouvelle
- * passe. Un échec de téléchargement, lui, reste transitoire.
+ * ou un XHTML absent dans toutes les langues ne seront pas réparés par une
+ * nouvelle passe. Un échec de téléchargement, lui, reste transitoire.
+ * `version_francaise_absente` est l'ancien nom de `xhtml_absent` : les
+ * manifestes déjà écrits le portent et restent durables.
  */
 const MOTIFS_DURABLES = new Set([
   "avis_avocat_general",
   "autre_type",
+  "xhtml_absent",
   "version_francaise_absente",
 ]);
 
