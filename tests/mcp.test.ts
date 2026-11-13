@@ -956,6 +956,18 @@ describe("le serveur en mémoire", () => {
     );
   });
 
+  it("décrit les citations de search et get_decision, sans toucher à get_article", async () => {
+    const { tools } = await client.listTools();
+    const description = (nom: string): string =>
+      tools.find((outil) => outil.name === nom)?.description ?? "";
+
+    assert.match(description("search"), /citations/);
+    assert.match(description("get_decision"), /citations/);
+    assert.match(description("search"), /lien officiel/);
+    assert.match(description("get_decision"), /lien officiel/);
+    assert.equal(/citations/.test(description("get_article")), false);
+  });
+
   it("rend l'état du corpus sans rapport par etat_corpus", async () => {
     const resultat = await client.callTool({ name: "etat_corpus", arguments: {} });
     const payload = contenu(resultat);
@@ -1290,6 +1302,51 @@ describe("get_decision", () => {
       rmSync(root, { recursive: true, force: true });
     }
   });
+
+  it("rend les instruments et articles que la décision cite, avec leur lien", () => {
+    const root = racine([
+      fragment(
+        "CNILTEXT000055022778",
+        0,
+        "La formation restreinte rappelle l'article 6 du règlement (UE) 2016/679 et " +
+          "l'article 82 de la loi n° 78-17.",
+      ),
+      fragment("CNILTEXT000055022778", 1, "Le manquement est constitué."),
+    ]);
+    try {
+      const decision = getDecision(root, { document: "CNILTEXT000055022778" }).decisions[0];
+
+      assert.deepEqual(decision?.citations, [
+        {
+          instrument: "RGPD",
+          articles: ["6"],
+          reference: "RGPD · art. 6",
+          url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32016R0679",
+        },
+        {
+          instrument: "loi 78-17",
+          articles: ["82"],
+          reference: "loi 78-17 · art. 82",
+          url: "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000006068624",
+        },
+      ]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("rend une liste vide quand la décision ne cite rien de reconnu", () => {
+    const root = racine([
+      fragment("CNILTEXT000055022778", 0, "Le décret du 20 octobre 2005 n'est pas visé."),
+    ]);
+    try {
+      const decision = getDecision(root, { document: "CNILTEXT000055022778" }).decisions[0];
+
+      assert.deepEqual(decision?.citations, []);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
 });
 
 describe("la recherche restreinte à une nature", () => {
@@ -1342,6 +1399,67 @@ describe("la recherche restreinte à une nature", () => {
       } finally {
         index.db.close();
       }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("les citations dans les réponses de search", () => {
+  it("recopie sur le passage les citations du document, même si le passage ne les nomme pas", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-citations-search-"));
+    try {
+      ecrireCorpus(
+        root,
+        [
+          fragment(
+            "CNILTEXT000055022778",
+            0,
+            "La formation restreinte rappelle l'article 6 du règlement (UE) 2016/679 " +
+              "et l'article 82 de la loi n° 78-17.",
+          ),
+          fragment("CNILTEXT000055022778", 1, "Le manquement est constitué et sera publié."),
+        ],
+        "cnil",
+      );
+      const { chemin } = await buildIndex(root, embedderFactice());
+      const index = openIndex(chemin);
+      try {
+        const resultat = await search(
+          root,
+          { question: "manquement constitué et publié", corpus: "cnil", k: 5 },
+          { embedder: embedderFactice(), index, seuils: { bas: -1, haut: 2, marge: 0 } },
+        );
+
+        const passage = resultat.passages[0];
+        assert.ok(passage !== undefined);
+        assert.equal(/article 6|article 82/.test(passage.texte), false);
+        assert.deepEqual(
+          passage.citations?.map((citation) => citation.reference),
+          ["RGPD · art. 6", "loi 78-17 · art. 82"],
+        );
+        assert.equal(passage.citations?.[0]?.url, "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32016R0679");
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("laisse le champ absent hors des corpus de décisions", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-citations-search-"));
+    try {
+      ecrireCorpus(root);
+      const resultat = await search(
+        root,
+        { question: "article 3 du RGPD" },
+        { embedder: EMBEDDER_INTERDIT },
+      );
+
+      const passage = resultat.passages[0];
+      assert.ok(passage !== undefined);
+      assert.equal("citations" in passage, false);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

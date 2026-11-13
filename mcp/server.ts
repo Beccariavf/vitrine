@@ -33,6 +33,13 @@ const CONSIGNE_PROMESSE =
   "recherche sans `corpus` et une recherche qui ne nomme qu'un document suivent le repli " +
   "0,69 / 0,74 / 0,01 et ne portent aucune promesse chiffrée.";
 
+const CONSIGNE_CITATIONS =
+  "Chaque décision rendue par `search` et par `get_decision` (corpus `cnil`, `ce`, `cc`, `cjue` et " +
+  "`cepd`) porte `citations` : les instruments et articles que son texte nomme, avec leur lien " +
+  "officiel (`url`, `null` quand il est inconnu). Citer cette liste telle quelle, sans en déduire " +
+  "d'autres articles. Une liste vide dit qu'aucune citation n'a été reconnue dans le texte, jamais " +
+  "que la décision n'a pas de base juridique.";
+
 const CONSIGNE_SERVEUR =
   "Serveur de lecture et de recherche sur huit corpus juridiques : le RGPD " +
   "(corpus `rgpd`, CELEX 32016R0679), l'AI Act (corpus `aiact`, CELEX 32024R1689), la loi " +
@@ -114,6 +121,7 @@ export function createServer(deps: ServerDeps): McpServer {
         "`trouve: false` et renvoie à `search` avec son filtre `nature`. N'invente aucun " +
         "fragment : une décision absente est dite, avec un message. Un numéro porté par deux " +
         "documents rend les deux, chacun avec son identifiant. " +
+        `${CONSIGNE_CITATIONS} ` +
         CONSIGNE_PROVENANCE,
       inputSchema: {
         document: z
@@ -199,6 +207,7 @@ export function createServer(deps: ServerDeps): McpServer {
         "est rendu avec le niveau `incertain` et un message qui nomme ce corpus. " +
         "Si le numéro existe dans plusieurs documents, chaque article est rendu avec sa provenance " +
         "et le niveau est `incertain` ; préciser `document` ou nommer le corpus lève l'ambiguïté. " +
+        `${CONSIGNE_CITATIONS} ` +
         CONSIGNE_PROVENANCE,
       inputSchema: {
         question: z.string().describe("Question en langage naturel, par exemple « effacement et moteurs de recherche »"),

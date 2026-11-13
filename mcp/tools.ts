@@ -8,6 +8,12 @@ import { CANDIDATS_RERANK } from "./rerank/reranker.ts";
 import type { Reranker } from "./rerank/reranker.ts";
 import { debutDispositif, numeroIndex } from "./corpus/cnil/meta.ts";
 import { estSanction } from "./corpus/cnil/nature.ts";
+import {
+  citationsDesUnites,
+  citationsDuCorpus,
+  estCorpusDecision,
+} from "./corpus/citations.ts";
+import type { Citation } from "./corpus/citations.ts";
 import { niveauConfiance } from "./confidence.ts";
 import type { NiveauConfiance } from "./confidence.ts";
 import { inventaireCorpus, lireRapport } from "./corpus/sync-rapport.ts";
@@ -73,7 +79,11 @@ export type ArticleAbsent = {
 export type ResultatArticle = ArticleTrouve | ArticleAbsent;
 
 /** Un passage rendu à la recherche : la distance devient une similarité lisible. */
-export type Passage = ResultatRecherche & { similarite: number };
+export type Passage = ResultatRecherche & {
+  similarite: number;
+  /** Instruments et articles cités par la décision ; absent hors des cinq corpus de décisions. */
+  citations?: Citation[];
+};
 
 export type ResultatRechercheOutil = {
   niveau_confiance: NiveauConfiance;
@@ -92,6 +102,24 @@ function normaliserNumero(numero: string | number): string | null {
 
 function passageExact(unite: Unite): Passage {
   return { ...unite, distance: 0, similarite: 1 };
+}
+
+/**
+ * Recopie les citations du document sur ses passages : une décision garde sa
+ * base juridique entière, même quand le passage rendu ne la nomme pas. Hors des
+ * cinq corpus de décisions, le champ reste absent.
+ */
+function avecCitations(rootDir: string, passages: Passage[]): Passage[] {
+  const parCorpus = new Map<string, ReadonlyMap<string, Citation[]>>();
+  return passages.map((passage) => {
+    if (!estCorpusDecision(passage.corpus)) return passage;
+    let corpus = parCorpus.get(passage.corpus);
+    if (corpus === undefined) {
+      corpus = citationsDuCorpus(rootDir, passage.corpus);
+      parCorpus.set(passage.corpus, corpus);
+    }
+    return { ...passage, citations: corpus.get(passage.document) ?? [] };
+  });
 }
 
 /** Numéro cité par « article N », « art. N » ou « art N » ; `null` sinon. */
@@ -307,6 +335,8 @@ export type DecisionTrouvee = {
   fragments_total: number;
   /** Partie rendue : la partie opératoire, ou le document entier. */
   partie: PartieDecision;
+  /** Instruments et articles que le texte de la décision cite ; `[]` si aucun. */
+  citations: Citation[];
   fragments: FragmentDecision[];
 };
 
@@ -457,6 +487,7 @@ export function getDecision(rootDir: string, demande: DecisionDemande): Resultat
         ...(premier.injonction === undefined ? {} : { injonction: premier.injonction }),
         fragments_total: premiers.length,
         partie,
+        citations: citationsDesUnites(premiers),
         fragments: rendus.map((unite) => ({
           ref: unite.ref,
           numero: unite.numero,
@@ -490,6 +521,11 @@ export async function search(
   const corpus = demande.corpus;
   // La confiance ne peut certifier un corpus que la question ou l'appel nomme.
   const corpusNomme = corpus !== undefined || document !== undefined;
+  /** Enrichit les passages rendus de leurs citations, sans toucher au reste. */
+  const rendre = (resultat: ResultatRechercheOutil): ResultatRechercheOutil => ({
+    ...resultat,
+    passages: avecCitations(rootDir, resultat.passages),
+  });
   const numero = referenceExacte(demande.question);
   if (numero !== null) {
     const articles = trouverArticles(
@@ -503,13 +539,13 @@ export async function search(
     if (articles.length > 0) {
       const documents = [...new Set(articles.map((article) => article.document))];
       if (documents.length > 1) {
-        return {
+        return rendre({
           niveau_confiance: "incertain",
           passages: articles.map(passageExact),
           message:
             `L'article ${numero} existe dans plusieurs documents ` +
             `(${documents.join(", ")}). Précisez « document » pour n'en rendre qu'un.`,
-        };
+        });
       }
       const article = articles[0];
       if (article === undefined) {
@@ -525,13 +561,13 @@ export async function search(
             : `L'article ${numero} n'existe que dans ${libelleDocument(article.document)}. ` +
               "La question ne nomme aucun document : nommez le corpus ou précisez « document » " +
               "pour lever l'ambiguïté.";
-        return {
+        return rendre({
           niveau_confiance: "incertain",
           passages: [passageExact(article)],
           message: motif,
-        };
+        });
       }
-      return { niveau_confiance: "confiant", passages: [passageExact(article)] };
+      return rendre({ niveau_confiance: "confiant", passages: [passageExact(article)] });
     }
     return {
       niveau_confiance: "aucun_resultat_fiable",
@@ -605,12 +641,12 @@ export async function search(
     ...deps.seuils,
     ...(corpusDuNiveau === undefined ? {} : { corpus: corpusDuNiveau }),
   });
-  return {
+  return rendre({
     niveau_confiance: niveau,
     passages:
       niveau === "aucun_resultat_fiable"
         ? []
         : ordre.map((resultat) => ({ ...resultat, similarite: 1 - resultat.distance })),
     ...(blocRerank === undefined ? {} : { rerank: blocRerank }),
-  };
+  });
 }
