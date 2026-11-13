@@ -9,6 +9,7 @@ import { cheminIndex } from "./index/build.ts";
 import { openIndex } from "./index/search.ts";
 import type { Index } from "./index/search.ts";
 import { getArticle, getDecision, search, etatCorpus } from "./tools.ts";
+import { LIMITE_DEFAUT, LIMITE_MAX, decisionsCitant } from "./corpus/citants.ts";
 
 /** Racine du dépôt, résolue depuis ce fichier et jamais depuis le répertoire courant. */
 export const RACINE = fileURLToPath(new URL("..", import.meta.url));
@@ -73,6 +74,8 @@ const CONSIGNE_SERVEUR =
   "opératoire par défaut et le document entier avec `partie: \"tous\"` ; " +
   "un avis ou une recommandation se lit par `search` avec `nature`. Le texte rendu vient du corpus " +
   "local, jamais d'une génération ; l'embedding est local (`leoipulsar/harrier-0.6b` sur Ollama). " +
+  "`decisions_citant` rend les décisions qui citent un article, comptées par autorité ; une liste " +
+  "vide ne prouve pas qu'aucune ne le cite. " +
   "`etat_corpus` dit à quelle date le corpus a été rafraîchi depuis la veille (`a_jour_au`), " +
   "quels documents manquent, quels documents cités restent hors du corpus avec les autorités " +
   "qui les citent, et quelle source a échoué ; il ne lit ni l'index ni le réseau. " +
@@ -85,7 +88,7 @@ export type ServerDeps = {
   index?: Index;
 };
 
-/** Construit le serveur MCP : quatre outils, aucun accès réseau direct. */
+/** Construit le serveur MCP : cinq outils, aucun accès réseau direct. */
 export function createServer(deps: ServerDeps): McpServer {
   const { rootDir, embedder } = deps;
   let indexCourant: Index | null = deps.index ?? null;
@@ -177,6 +180,63 @@ export function createServer(deps: ServerDeps): McpServer {
         ...(numero === undefined ? {} : { numero }),
         ...(corpus === undefined ? {} : { corpus }),
         ...(partie === undefined ? {} : { partie }),
+      });
+      return { content: [{ type: "text", text: JSON.stringify(resultat, null, 2) }] };
+    },
+  );
+
+  serveur.registerTool(
+    "decisions_citant",
+    {
+      title: "Trouver les décisions qui citent un article",
+      description:
+        "Rend les décisions du corpus qui citent un article (`document` + `numero`) : CNIL, Conseil " +
+        "d'État, Cour de cassation, CJUE et lignes directrices du CEPD, chacune avec son autorité, " +
+        "son intitulé, sa date, son lien et la citation qui vise l'instrument (`reference`), triées " +
+        "par date décroissante. `total` et `par_autorite` comptent toutes les décisions citantes, " +
+        `même quand la liste est paginée par \`limite\` (${LIMITE_DEFAUT} par défaut, ${LIMITE_MAX} au plus) ` +
+        "et `decalage` ; `tronque` dit qu'il en reste. Le numéro s'écrit `9`, `art. 9`, `1er` ou " +
+        "`L. 34-5` ; un alinéa (`9(2)`) compte comme l'article ; une plage (`8–10`) compte et " +
+        "porte `via_plage: true` ; `26-1` reste un autre article que `26`, `9 bis` " +
+        "n'est pas `9`. Pour la loi 78-17, renumérotée par l'ordonnance 2018-1125 au 2019-06-01, " +
+        "les décisions antérieures visent la numérotation antérieure de la loi, donc un autre " +
+        "article : elles sont écartées des comptes et " +
+        "comptées dans `ecartees_numerotation_anterieure`. La liste vient des citations reconnues " +
+        "dans le texte des décisions : elle est non exhaustive, et une liste vide ne prouve jamais " +
+        "qu'aucune décision ne cite l'article — le dire ainsi. `article_au_corpus: false` signale " +
+        "un article absent du corpus local, jamais un article « jamais cité » : ses décisions " +
+        "citantes restent rendues. Un instrument connu absent du corpus garde la phrase « absent de " +
+        "mon corpus (périmètre : …) » ; un identifiant inconnu rend `trouve: false`. " +
+        CONSIGNE_PROVENANCE,
+      inputSchema: {
+        document: z
+          .string()
+          .describe(
+            "Identifiant de l'instrument cité : 32016R0679 (RGPD), 32024R1689 (AI Act), " +
+              "LEGITEXT000006068624 (LIL) ou un instrument du catalogue de citations (CPCE…)",
+          ),
+        numero: z.string().describe("Numéro d'article, par exemple 9, art. 9, 1er ou L. 34-5"),
+        limite: z
+          .number()
+          .int()
+          .min(1)
+          .max(LIMITE_MAX)
+          .optional()
+          .describe(`Nombre de décisions rendues, ${LIMITE_DEFAUT} par défaut`),
+        decalage: z
+          .number()
+          .int()
+          .min(0)
+          .optional()
+          .describe("Nombre de décisions à sauter, 0 par défaut"),
+      },
+    },
+    async ({ document, numero, limite, decalage }) => {
+      const resultat = decisionsCitant(rootDir, {
+        document,
+        numero,
+        ...(limite === undefined ? {} : { limite }),
+        ...(decalage === undefined ? {} : { decalage }),
       });
       return { content: [{ type: "text", text: JSON.stringify(resultat, null, 2) }] };
     },
@@ -326,7 +386,7 @@ async function main(): Promise<void> {
   await serveur.connect(transport);
   process.stderr.write(
     "Serveur MCP des huit corpus (RGPD, AI Act, CNIL, LIL, CE, CEPD, CC, CJUE) prêt sur stdio " +
-      "(quatre outils : get_article, get_decision, search, etat_corpus).\n",
+      "(cinq outils : get_article, get_decision, search, decisions_citant, etat_corpus).\n",
   );
 }
 
