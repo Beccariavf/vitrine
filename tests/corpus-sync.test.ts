@@ -305,6 +305,7 @@ describe("correspondance veille → corpus", () => {
             documents_ecartes: [
               { celex: "62013CC0127", motif: "avis_avocat_general" },
               { celex: "62024CJ0001", motif: "echec_telechargement" },
+              { celex: "62024CJ0002", motif: "xhtml_absent" },
             ],
           },
         }),
@@ -315,6 +316,7 @@ describe("correspondance veille → corpus", () => {
         ["CNILTEXT000000000001"],
       );
       assert.equal(documentsEcartes(root, "cjue").get("62013CC0127"), "avis_avocat_general");
+      assert.equal(documentsEcartes(root, "cjue").get("62024CJ0002"), "xhtml_absent");
       assert.equal(documentsEcartes(root, "cjue").has("62024CJ0001"), false);
       assert.equal(documentsEcartes(root, "cnil").size, 0);
       assert.equal(normaliserUrl("https://www.cnil.fr/fr/x/?q=1#a"), "https://www.cnil.fr/fr/x");
@@ -644,6 +646,55 @@ describe("synchronisation du corpus", () => {
         rapport.documents.find((document) => document.document === "62024CA0798")?.motif,
         "autre_type",
       );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("classe un document xhtml_absent en écarté, pas en manquant", async () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "cjue", [{ ...uniteCnil("62012CJ0131"), corpus: "cjue" }]);
+      mkdirSync(join(root, "data", "corpus", "cjue"), { recursive: true });
+      writeFileSync(
+        join(root, "data", "corpus", "cjue", "manifest.json"),
+        JSON.stringify({
+          corpus: "cjue",
+          documents: 1,
+          fragments: 1,
+          date_extraction: "2026-11-12",
+          couverture: {
+            documents_ecartes: [{ celex: "62023CJ0413", motif: "xhtml_absent" }],
+          },
+        }),
+        "utf8",
+      );
+      ecrireEntree(
+        root,
+        entree(
+          "cjeu",
+          "entree-cjue-anglaise",
+          "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:62023CJ0413",
+        ),
+      );
+      let appels = 0;
+      const inerte = async (): Promise<{ ecrit: boolean; message: string }> => {
+        appels += 1;
+        return { ecrit: false, message: "appelé" };
+      };
+      const rapport = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-13",
+        depuis: "2026-11-01",
+        agents: agents(INERTE, INERTE, INERTE, inerte),
+        embedder: embedderFactice(),
+      });
+      assert.equal(appels, 0, "un XHTML absent ne relance pas la CJUE");
+      assert.equal(rapport.comptes.ecartes, 1);
+      assert.equal(rapport.comptes.manquants, 0);
+      const document = rapport.documents.find((element) => element.document === "62023CJ0413");
+      assert.equal(document?.statut, "ecarte");
+      assert.equal(document?.motif, "xhtml_absent");
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

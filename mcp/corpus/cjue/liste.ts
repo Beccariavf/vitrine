@@ -3,7 +3,9 @@
  * par SPARQL sur CELLAR, et lit la réponse en entrées classées.
  *
  * La matière est un identifiant officiel de CELLAR (`PDON`, protection des
- * données personnelles). Le type de décision vient du suffixe CELEX : `CJ` et
+ * données personnelles) ; les notions fines la complètent, `4.11.01` pour la
+ * protection des données et `2.04` pour le contentieux des institutions de
+ * l'Union (CEPD c. SRB). Le type de décision vient du suffixe CELEX : `CJ` et
  * `TJ` sont des arrêts, `CO` et `TO` des ordonnances, `CC` les conclusions d'un
  * avocat général, qui ne sont pas des décisions de justice.
  */
@@ -20,12 +22,13 @@ export type DescripteurCjue = {
   /** URI de la matière CELLAR, par exemple `.../subject-matter/PDON`. */
   matiere: string;
   matiere_libelle: string;
-  /** Notion fine de la jurisprudence, complément de la matière. */
-  notion: { uri: string; libelle: string };
+  /** Notions fines de la jurisprudence, compléments de la matière. */
+  notions: Array<{ uri: string; libelle: string }>;
   /** CELEX ajoutés à la main, hors classement CELLAR. */
   celex_complementaires: string[];
   date_min: string;
-  langue: string;
+  /** Langues de lecture, dans l'ordre essayé : la première disponible fait foi. */
+  langues: string[];
   /** Types CELEX retenus, avec leur libellé. */
   types_retenus: Record<string, string>;
   licence: string;
@@ -45,7 +48,7 @@ export type MotifEcartCjue =
   | "date_invalide"
   | "avis_avocat_general"
   | "autre_type"
-  | "version_francaise_absente"
+  | "xhtml_absent"
   | "echec_telechargement"
   | "texte_vide";
 
@@ -56,7 +59,7 @@ export const ECARTES_CJUE_VIDES: EcartesCjue = {
   date_invalide: 0,
   avis_avocat_general: 0,
   autre_type: 0,
-  version_francaise_absente: 0,
+  xhtml_absent: 0,
   echec_telechargement: 0,
   texte_vide: 0,
 };
@@ -78,13 +81,17 @@ export function typeCelex(celex: string): TypeCjue {
   }
 }
 
-type Selection = Pick<DescripteurCjue, "matiere" | "notion">;
+type Selection = Pick<DescripteurCjue, "matiere" | "notions">;
 
-/** Bloc SPARQL qui réunit la matière grossière et la notion fine. */
-function selection({ matiere, notion }: Selection): string {
-  return `{ ?work cdm:resource_legal_is_about_subject-matter <${matiere}> }
-  UNION
-  { ?work cdm:case-law_is_about_concept_new_case-law <${notion.uri}> }`;
+/** Bloc SPARQL qui réunit la matière grossière et chaque notion fine. */
+function selection({ matiere, notions }: Selection): string {
+  const groupes = [
+    `{ ?work cdm:resource_legal_is_about_subject-matter <${matiere}> }`,
+    ...notions.map(
+      (notion) => `{ ?work cdm:case-law_is_about_concept_new_case-law <${notion.uri}> }`,
+    ),
+  ];
+  return groupes.join("\n  UNION\n  ");
 }
 
 /** Requête SPARQL des décisions de la matière après la borne. */
