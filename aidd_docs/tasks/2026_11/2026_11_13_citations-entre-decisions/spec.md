@@ -23,7 +23,7 @@ Une décision rendue par `search` ou `get_decision` liste les décisions qu'elle
 - Familles : affaire de l'Union (`C-311/18`, `T-435/16`, suffixe `P`), ECLI, délibération CNIL (`SAN-2019-001`, `délibération n° 2019-001`), requête du Conseil d'État (`n° 353066` dans un contexte qui nomme le Conseil d'État), pourvoi de la Cour de cassation (`19-17.278`).
 - Extraction déterministe à la lecture depuis `data/corpus/{cnil,ce,cc,cjue,cepd}/unites.jsonl`, au niveau du document ; cache par fichier comme #28.
 - Résolution vers le corpus : CJUE par le numéro d'affaire de son chemin, CNIL par son `numero`, Conseil d'État par son `numero`, Cour de cassation par le numéro de pourvoi de son chemin. L'ECLI n'est porté par aucune unité : il est reconnu, jamais résolu.
-- Hors périmètre : qualification du lien (applique, écarte, renverse), résolution des ECLI (demande une synchronisation qui les écrive), affaires jointes autres que la première du chemin CJUE, citations vers des décisions d'autres juridictions.
+- Hors périmètre : qualification du lien (applique, écarte, renverse), résolution des ECLI (demande une synchronisation qui les écrive), citations vers des décisions d'autres juridictions.
 
 ## Critères d'acceptation
 
@@ -43,13 +43,15 @@ Une décision rendue par `search` ou `get_decision` liste les décisions qu'elle
 | 2   | Requête du Conseil d'État reconnue seulement près d'une mention du Conseil d'État. | Un « n° 123456 » seul est aussi un numéro de déclaration, de dossier ou de délibération d'un autre organe. |
 | 3   | Champ `decisions_citees` distinct de `citations`. | `citations` vise des instruments (#28) ; mêler décisions et textes brouillerait `hors_corpus`. |
 | 4   | Outil inverse dédié plutôt qu'un mode de `decisions_citant` (#29). | #29 n'est pas fusionné ; la clé d'entrée est une référence de décision, pas un couple document + article. |
-| 5   | ECLI reconnu, non résolu. | Aucune unité du corpus ne porte d'ECLI ; l'écrire demande une synchronisation réseau (`data/` ne s'édite pas à la main). |
+| 5   | ECLI reconnu, non résolu. | Aucune unité du corpus ne porte d'ECLI ; l'écrire demande une synchronisation réseau (`data/` ne s'édite pas à la main). Mesuré à 34/55 : non exposé. |
+| 6   | Une date donnée par le texte filtre les cibles. | Révisée après la première mesure : un numéro de requête ou de pourvoi porte souvent plusieurs décisions (fond, référé, renvoi) ; la date qui suit la référence prime sur celle qui la précède. |
+| 7   | Numéros joints indexés : « Sous le n° » (CE), pourvois de l'en-tête (Cour de cassation), « Dans les affaires jointes » (CJUE). | Révisée après mesure : sans eux, une décision du corpus citée par un numéro joint était dite hors corpus. |
 
 ## Limites assumées
 
 - L'extraction est non exhaustive : une référence sous une forme non reconnue manque.
 - Une décision citée seulement par son nom de partie (« arrêt Google Spain ») n'est pas reconnue.
-- Les affaires jointes d'un arrêt CJUE ne sont résolues que par le premier numéro de son chemin.
+- Une date erronée dans le texte citant écarte la bonne décision (une faute mesurée sur 60 en `requete_ce`).
 
 ## Preuve de réussite
 

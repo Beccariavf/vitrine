@@ -969,12 +969,12 @@ describe("le serveur en mémoire", () => {
     rmSync(root, { recursive: true, force: true });
   });
 
-  it("expose exactement etat_corpus, get_article, get_decision et search", async () => {
+  it("expose exactement decisions_citant_decision, etat_corpus, get_article, get_decision et search", async () => {
     const { tools } = await client.listTools();
 
     assert.deepEqual(
       tools.map((outil) => outil.name).sort(),
-      ["etat_corpus", "get_article", "get_decision", "search"],
+      ["decisions_citant_decision", "etat_corpus", "get_article", "get_decision", "search"],
     );
   });
 
@@ -996,6 +996,21 @@ describe("le serveur en mémoire", () => {
     assert.match(description("etat_corpus"), /citations/);
     assert.match(description("etat_corpus"), /autorités/);
     assert.match(description("etat_corpus"), /exclu/);
+  });
+
+  it("publie les familles exposées et leur mesure dans les descriptions des citations entre décisions", async () => {
+    const { tools } = await client.listTools();
+    const description = (nom: string): string =>
+      tools.find((outil) => outil.name === nom)?.description ?? "";
+
+    for (const nom of ["search", "get_decision", "decisions_citant_decision"]) {
+      const texte = description(nom);
+      assert.match(texte, /Familles exposées : `affaire_ue`, `deliberation_cnil`, `requete_ce`, `pourvoi_cc`/, nom);
+      assert.match(texte, /ecli : 34\/55 justes, borne basse 48,6 %/, nom);
+      assert.match(texte, /« cite »/, nom);
+      assert.match(texte, /non exhaustive/, nom);
+    }
+    assert.match(description("search"), /decisions_citees/);
   });
 
   it("nomme statut_application et l'interdit d'applicabilité dans les trois descriptions", async () => {

@@ -9,6 +9,24 @@ import { cheminIndex } from "./index/build.ts";
 import { openIndex } from "./index/search.ts";
 import type { Index } from "./index/search.ts";
 import { getArticle, getDecision, search, etatCorpus } from "./tools.ts";
+import {
+  FAMILLES,
+  LIMITE_DEFAUT,
+  LIMITE_MAX,
+  chiffreFamille,
+  decisionsCitantDecision,
+  famillesExposees,
+} from "./corpus/citations-decisions.ts";
+
+/** Familles exposées et chiffres mesurés, lus au démarrage : la description publie la mesure. */
+function chiffresCitationsDecisions(): string {
+  const exposees = [...famillesExposees()];
+  return (
+    `Familles exposées : ${exposees.length === 0 ? "aucune" : exposees.map((f) => `\`${f}\``).join(", ")}. ` +
+    "Précision mesurée sur un échantillon relu, seuil : borne basse de Wilson à 95 % ≥ 90 % — " +
+    `${FAMILLES.map(chiffreFamille).join(" ; ")}.`
+  );
+}
 
 /** Racine du dépôt, résolue depuis ce fichier et jamais depuis le répertoire courant. */
 export const RACINE = fileURLToPath(new URL("..", import.meta.url));
@@ -57,6 +75,15 @@ const CONSIGNE_CITATIONS =
   "Citer cette liste telle quelle, sans en déduire d'autres articles. Une liste vide dit qu'aucune " +
   "citation n'a été reconnue, jamais que la décision n'a pas de base juridique.";
 
+const CONSIGNE_DECISIONS_CITEES =
+  "Chaque décision rendue par `search` et `get_decision` porte `decisions_citees` : les décisions " +
+  "qu'elle cite, reconnues par leur référence (numéro d'affaire de l'Union, ECLI, délibération " +
+  "CNIL, requête du Conseil d'État, pourvoi), chacune avec `famille` et `cibles`, les décisions du " +
+  "corpus qu'elle désigne (vide hors corpus, plusieurs quand la référence est ambiguë : ne pas " +
+  "choisir). Le lien dit seulement « cite » : ne jamais le qualifier (applique, écarte, renverse). " +
+  "La liste est non exhaustive : une liste vide ne prouve pas que la décision ne cite rien. " +
+  `${chiffresCitationsDecisions()}`;
+
 const CONSIGNE_SERVEUR =
   "Serveur de lecture et de recherche sur huit corpus juridiques : le RGPD " +
   "(corpus `rgpd`, CELEX 32016R0679), l'AI Act (corpus `aiact`, CELEX 32024R1689), la loi " +
@@ -73,6 +100,7 @@ const CONSIGNE_SERVEUR =
   "opératoire par défaut et le document entier avec `partie: \"tous\"` ; " +
   "un avis ou une recommandation se lit par `search` avec `nature`. Le texte rendu vient du corpus " +
   "local, jamais d'une génération ; l'embedding est local (`leoipulsar/harrier-0.6b` sur Ollama). " +
+  "`decisions_citant_decision` rend les décisions qui citent une décision donnée par sa référence. " +
   "`etat_corpus` dit à quelle date le corpus a été rafraîchi depuis la veille (`a_jour_au`), " +
   "quels documents manquent, quels documents cités restent hors du corpus avec les autorités " +
   "qui les citent, et quelle source a échoué ; il ne lit ni l'index ni le réseau. " +
@@ -85,7 +113,7 @@ export type ServerDeps = {
   index?: Index;
 };
 
-/** Construit le serveur MCP : quatre outils, aucun accès réseau direct. */
+/** Construit le serveur MCP : cinq outils, aucun accès réseau direct. */
 export function createServer(deps: ServerDeps): McpServer {
   const { rootDir, embedder } = deps;
   let indexCourant: Index | null = deps.index ?? null;
@@ -144,6 +172,7 @@ export function createServer(deps: ServerDeps): McpServer {
         "fragment : une décision absente est dite, avec un message. Un numéro porté par deux " +
         "documents rend les deux, chacun avec son identifiant. " +
         `${CONSIGNE_CITATIONS} ` +
+        `${CONSIGNE_DECISIONS_CITEES} ` +
         `${CONSIGNE_STATUT_APPLICATION} ` +
         CONSIGNE_PROVENANCE,
       inputSchema: {
@@ -177,6 +206,48 @@ export function createServer(deps: ServerDeps): McpServer {
         ...(numero === undefined ? {} : { numero }),
         ...(corpus === undefined ? {} : { corpus }),
         ...(partie === undefined ? {} : { partie }),
+      });
+      return { content: [{ type: "text", text: JSON.stringify(resultat, null, 2) }] };
+    },
+  );
+
+  serveur.registerTool(
+    "decisions_citant_decision",
+    {
+      title: "Trouver les décisions qui citent une décision",
+      description:
+        "Rend les décisions du corpus qui citent une décision donnée par sa référence : numéro " +
+        "d'affaire de l'Union (`C-311/18`), ECLI, délibération CNIL (`SAN-2019-001`, `2019-001`), " +
+        "requête du Conseil d'État (`353066`) ou pourvoi (`19-17.278`). Chaque décision citante porte " +
+        "son autorité, son intitulé, sa date et son lien, triées par date décroissante ; `total` et " +
+        "`par_autorite` comptent toutes les décisions, même quand la liste est paginée par " +
+        `\`limite\` (${LIMITE_DEFAUT} par défaut, ${LIMITE_MAX} au plus) et \`decalage\` ; ` +
+        "`tronque` dit qu'il en reste. `cibles` donne la ou les décisions du corpus que la référence " +
+        "désigne : vide hors corpus, plusieurs quand elle est ambiguë, sans choix silencieux. Le lien " +
+        "dit seulement « cite », jamais applique, écarte ou renverse. La liste est non exhaustive : " +
+        "une liste vide ne prouve pas que la décision n'est jamais citée. Une référence d'une famille " +
+        "non exposée est refusée avec son chiffre ; une référence illisible est refusée. " +
+        `${chiffresCitationsDecisions()} ` +
+        CONSIGNE_PROVENANCE,
+      inputSchema: {
+        reference: z
+          .string()
+          .describe("Référence de la décision citée : C-311/18, ECLI:EU:C:2020:559, SAN-2019-001, 353066 ou 19-17.278"),
+        limite: z
+          .number()
+          .int()
+          .min(1)
+          .max(LIMITE_MAX)
+          .optional()
+          .describe(`Nombre de décisions rendues, ${LIMITE_DEFAUT} par défaut`),
+        decalage: z.number().int().min(0).optional().describe("Nombre de décisions à sauter, 0 par défaut"),
+      },
+    },
+    async ({ reference, limite, decalage }) => {
+      const resultat = decisionsCitantDecision(rootDir, {
+        reference,
+        ...(limite === undefined ? {} : { limite }),
+        ...(decalage === undefined ? {} : { decalage }),
       });
       return { content: [{ type: "text", text: JSON.stringify(resultat, null, 2) }] };
     },
@@ -235,6 +306,7 @@ export function createServer(deps: ServerDeps): McpServer {
         "Si le numéro existe dans plusieurs documents, chaque article est rendu avec sa provenance " +
         "et le niveau est `incertain` ; préciser `document` ou nommer le corpus lève l'ambiguïté. " +
         `${CONSIGNE_CITATIONS} ` +
+        `${CONSIGNE_DECISIONS_CITEES} ` +
         `${CONSIGNE_STATUT_APPLICATION} ` +
         CONSIGNE_PROVENANCE,
       inputSchema: {
@@ -326,7 +398,7 @@ async function main(): Promise<void> {
   await serveur.connect(transport);
   process.stderr.write(
     "Serveur MCP des huit corpus (RGPD, AI Act, CNIL, LIL, CE, CEPD, CC, CJUE) prêt sur stdio " +
-      "(quatre outils : get_article, get_decision, search, etat_corpus).\n",
+      "(cinq outils : get_article, get_decision, search, decisions_citant_decision, etat_corpus).\n",
   );
 }
 

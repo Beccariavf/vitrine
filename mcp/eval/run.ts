@@ -19,6 +19,9 @@ import type { Index } from "../index/search.ts";
 import { createLlamaReranker } from "../rerank/reranker.ts";
 import type { Reranker } from "../rerank/reranker.ts";
 import { referenceExacte, search } from "../tools.ts";
+import { intervalleWilson } from "../statistiques.ts";
+
+export { intervalleWilson };
 
 const ICI = dirname(fileURLToPath(import.meta.url));
 const QUESTIONS = join(ICI, "questions.csv");
@@ -288,18 +291,6 @@ export function tauxCitationsInvalides(classements: ClassementPiege[]): number {
   return pieges.filter((classement) => !classement.refusee).length / pieges.length;
 }
 
-/** Intervalle de confiance à 95 % d'une proportion, méthode de Wilson. */
-export function intervalleWilson(succes: number, total: number): [number, number] {
-  if (total === 0) return [0, 0];
-  const z = 1.959963984540054;
-  const proportion = succes / total;
-  const denominateur = 1 + (z * z) / total;
-  const centre = (proportion + (z * z) / (2 * total)) / denominateur;
-  const demiLargeur =
-    (z * Math.sqrt((proportion * (1 - proportion)) / total + (z * z) / (4 * total * total))) /
-    denominateur;
-  return [Math.max(0, centre - demiLargeur), Math.min(1, centre + demiLargeur)];
-}
 
 /** Une mesure du test, appendue au marqueur v3 : un modèle, ses seuils, ses chiffres. */
 export type MesureMarqueur = {
