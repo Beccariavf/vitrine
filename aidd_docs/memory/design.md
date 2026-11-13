@@ -6,18 +6,18 @@ La langue visuelle : jetons, typographie, modules et conventions. Ce que ça res
 
 - Tailwind via le plugin Vite d'Astro ; les jetons vivent dans le bloc `@theme` de `src/styles/global.css`.
 - Aucune bibliothèque de composants : les pages, un layout partagé (`src/layouts/Base.astro`) et un seul composant maison (`src/components/Demo.astro`).
-- Aucune web font, aucun JavaScript côté client : le rendu vient du HTML et du CSS seuls.
+- Une seule police servie : Archivo Variable (`@fontsource-variable/archivo` épinglé à `5.3.0`, licence OFL-1.1, axes `wdth` 62–125 % et `wght` 100–900), auto-hébergée et importée par `src/layouts/Base.astro` (`wdth.css`) ; aucune requête tierce, `font-display: swap`. Le corps reste en police système. Aucun JavaScript côté client : le rendu vient du HTML et du CSS seuls.
 
 ## Tokens
 
-- Couleurs : béton `#E7E2D7`, papier `#F4F0E8`, encre `#121212`, rouge `#C62828`, bleu `#1E4E79`, jaune `#E0A82E`, gris `#57534E`.
-- Typographie : display Helvetica Neue puis sans système, graisse 700, interlettrage serré ; corps en sans système ; labels, dates et chiffres en mono.
+- Couleurs : béton `#E7E2D7`, papier `#F4F0E8`, encre `#121212`, rouge `#C62828`, bleu `#1E4E79`, jaune `#E0A82E`, vert `#2F6B4F` (Cité radieuse), gris `#57534E` ; socle sombre réservé au pied de page : béton sombre `#2B2A27` et pierre `#B8B2A7` pour son texte secondaire.
+- Typographie : display Archivo Variable, repli Helvetica Neue puis sans système ; `h1` condensé (`font-stretch` 72 %), graisse 850, interlettrage -0,035em, interligne 0,95, taille plafonnée en mobile par les classes de page, mots longs coupés plutôt que débordants ; `h2`–`h4` en largeur 88 %, graisse 700 ; corps en sans système ; labels, dates et chiffres en mono.
 - Formes : rayon 0 partout, bordures de blocs 2 px en encre, filets 1 px, ombres dures `4px 4px 0` et `6px 6px 0`, aucun dégradé, aucun flou.
 - Règle 80/20 : béton et encre dominent ; la couleur reste un accent, sauf les en-têtes de la grille de veille.
 
 ## Modules
 
-- En-tête : wordmark `VITRINE_` en mono, navigation encadrée (« Connecteur » puis « Veille »), page courante en aplat encre et `aria-current="page"`.
+- En-tête : wordmark « VITRINE » en police de titre condensée (72 %, graisse 850), nom provisoire, navigation encadrée (« Connecteur » puis « Veille »), page courante en aplat encre et `aria-current="page"`.
 - Accueil réorganisé autour du connecteur : hero (promesse « Une IA juridique qui cite ses sources. », sous-titre au vouvoiement, bouton encre « Découvrir le connecteur » vers `/connecteur`, lien secondaire « Consulter la veille »), démo compacte dans la grille du hero quand elle existe (à droite en `lg`, sous le texte en mobile ; sans démo, aucun emplacement vide), bandeau papier « Sources du connecteur » qui liste les collections de `data/corpus/` (lues par `src/lib/corpus.ts`) en pastilles mono à filet 1 px, avec un lien « Dates par collection » vers la couverture de `/connecteur` (une date globale masquerait les collections plus anciennes ; bandeau omis sans collection), puis « Dernières publications » : les trois plus récentes de la veille en rangées compactes (jour en mono, source, titre lié en nouvel onglet) et le lien « Toute la veille ». Ni chiffres non mesurés, ni `pipeline.log`, ni cartes produits.
 - Connecteur (`/connecteur`, `src/pages/connecteur.astro`) : statut « En préparation » en mono, titre et sous-titre au vouvoiement ; démo complète si elle existe ; trois étapes numérotées (ajouter le connecteur, poser vos questions, chaque réponse cite sa source officielle) ; tableau papier de couverture (collection, documents, « À jour au » ou « texte consolidé » pour RGPD et AI Act) suivi d'une ligne sur le hors-périmètre ; bloc `pipeline.log` en encre avec `npm run corpus:sync` et `npm run mcp`, sans chiffre ; transparence (code et corpus ouverts, lien GitHub) ; action « Consulter la veille » et mention d'aide à la recherche. Aucune offre ni prix.
 - Démo avant / après (`src/components/Demo.astro`, données lues par `src/lib/demo.ts`) : une capture réelle, jamais fictive, rendue seulement si `src/demo/demo.json` existe. En-tête papier avec la question, la date de capture et le modèle en mono ; réponse avec connecteur sur papier à filet rouge gauche, suivie des sources en pastilles mono à filet 1 px liées au texte officiel. Variante compacte dans le hero de l'accueil (question, réponse avec connecteur, sources) ; variante complète en deux colonnes (sans / avec) et mention « Capture réelle, non retouchée. ». Le texte des réponses reste sur papier, garde ses retours à la ligne et se coupe n'importe où plutôt que de déborder.
@@ -35,6 +35,7 @@ La langue visuelle : jetons, typographie, modules et conventions. Ce que ça res
 
 ## Accessibility
 
-- Contrastes mesurés : encre sur béton 14,50:1 ; gris sur béton 5,91:1 ; encre sur papier 16,48:1 ; gris sur papier 6,71:1 ; rouge sur papier 4,95:1 ; papier sur rouge 4,95:1 ; papier sur bleu 7,63:1 ; encre sur jaune 8,75:1.
+- Contrastes mesurés, verrouillés par `tests/contrastes.test.ts` (lit les jetons de `global.css`) : encre sur béton 14,50:1 ; gris sur béton 5,91:1 ; encre sur papier 16,48:1 ; gris sur papier 6,71:1 ; rouge sur papier 4,95:1 ; papier sur rouge 4,95:1 ; papier sur bleu 7,63:1 ; papier sur vert 5,54:1 ; encre sur jaune 8,75:1 ; sur béton sombre : papier 12,63:1, jaune 6,70:1, pierre 6,81:1.
+- Interdits sur béton sombre : gris (1,88:1) et rouge (2,55:1).
 - Rouge sur béton plafonne à 4,35:1 : le rouge reste réservé aux grands textes, aplats et filets ; le texte courant reste en encre ou gris.
 - Focus clavier visible en contour encre de 2 px ; `aria-current` sur la navigation ; `aria-label` sur les liens de carte ; dates portées par `<time>`.
