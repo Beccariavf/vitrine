@@ -402,47 +402,42 @@ describe("rapport de synchronisation", () => {
   });
 
   it("imprime le classement hors corpus et marque un document exclu", () => {
-    const root = racine();
-    try {
-      const rapport: RapportSync = {
-        version: 1,
-        a_jour_au: "2026-11-13",
-        derniere_tentative: "2026-11-13",
-        depuis: "2026-11-06",
-        entrees_lues: 0,
-        comptes: { presents: 0, manquants: 0, ecartes: 0, non_mappes: 0 },
-        documents: [],
-        corpus: [],
-        sources: [],
-        index: { statut: "ignoree", message: "corpus inchangé" },
-        hors_corpus: {
-          calcule_le: "2026-11-13",
-          documents: [
-            {
-              document: "32002L0058",
-              instrument: "ePrivacy",
-              url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32002L0058",
-              statut: "exclu",
-              citations: 5,
-              autorites: [
-                { autorite: "CNIL", citations: 4 },
-                { autorite: "Conseil d'État", citations: 1 },
-              ],
-            },
-          ],
-        },
-      };
+    const rapport: RapportSync = {
+      version: 1,
+      a_jour_au: "2026-11-13",
+      derniere_tentative: "2026-11-13",
+      depuis: "2026-11-06",
+      entrees_lues: 0,
+      comptes: { presents: 0, manquants: 0, ecartes: 0, non_mappes: 0 },
+      documents: [],
+      corpus: [],
+      sources: [],
+      index: { statut: "ignoree", message: "corpus inchangé" },
+      hors_corpus: {
+        calcule_le: "2026-11-13",
+        documents: [
+          {
+            document: "32002L0058",
+            instrument: "ePrivacy",
+            url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32002L0058",
+            statut: "exclu",
+            citations: 5,
+            autorites: [
+              { autorite: "CNIL", citations: 4 },
+              { autorite: "Conseil d'État", citations: 1 },
+            ],
+          },
+        ],
+      },
+    };
 
-      const texte = formaterRapport(rapport);
-      assert.match(texte, /Hors corpus :/);
-      assert.match(
-        texte,
-        /ePrivacy \(32002L0058\) : 5 citation\(s\) — CNIL 4, Conseil d'État 1 \[exclu\]/,
-      );
-      assert.equal(/manquant/i.test(texte.split("Hors corpus :")[1] ?? ""), false);
-    } finally {
-      rmSync(root, { recursive: true, force: true });
-    }
+    const texte = formaterRapport(rapport);
+    assert.match(texte, /Hors corpus :/);
+    assert.match(
+      texte,
+      /ePrivacy \(32002L0058\) : 5 décision\(s\) citante\(s\) — CNIL 4, Conseil d'État 1 \[exclu\]/,
+    );
+    assert.equal(/manquant/i.test(texte.split("Hors corpus :")[1] ?? ""), false);
   });
 
   it("n'imprime rien quand le classement est vide ou absent", () => {
@@ -1219,22 +1214,49 @@ describe("classement des documents hors corpus", () => {
     }
   });
 
-  it("ignore un corpus illisible sans faire échouer la passe", async () => {
+  it("classe un corpus lisible et ignore le même corpus illisible sans faire échouer la passe", async () => {
     const root = racine();
     try {
       ecrireCorpus(root, "cnil", [uniteCnil("CNILTEXT000000000001")]);
-      mkdirSync(join(root, "data", "corpus", "ce"), { recursive: true });
-      writeFileSync(join(root, "data", "corpus", "ce", "unites.jsonl"), "{ pas du JSON\n", "utf8");
+      ecrireCorpus(root, "ce", [
+        {
+          ...uniteCnil("CETATEXT000000000001", "l'article 13 de la directive ePrivacy"),
+          corpus: "ce",
+        },
+      ]);
 
-      const rapport = await syncCorpus({
+      const lisible = await syncCorpus({
         rootDir: root,
         date: "2026-11-13",
         depuis: "2026-11-06",
         agents: agents(INERTE, INERTE, INERTE, INERTE),
         embedder: embedderFactice(),
       });
-      assert.deepEqual(rapport.hors_corpus?.documents, []);
-      assert.equal(rapport.hors_corpus?.calcule_le, "2026-11-13");
+      assert.deepEqual(
+        lisible.hors_corpus?.documents.map((document) => [
+          document.document,
+          document.citations,
+          document.autorites,
+        ]),
+        [["32002L0058", 1, [{ autorite: "Conseil d'État", citations: 1 }]]],
+        "un corpus lisible doit citer ePrivacy dans le classement",
+      );
+
+      // Même corpus, illisible : la passe ne lève pas et le document disparaît.
+      writeFileSync(
+        join(root, "data", "corpus", "ce", "unites.jsonl"),
+        "{ pas du JSON, et pas la même taille\n",
+        "utf8",
+      );
+      const illisible = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-13",
+        depuis: "2026-11-06",
+        agents: agents(INERTE, INERTE, INERTE, INERTE),
+        embedder: embedderFactice(),
+      });
+      assert.deepEqual(illisible.hors_corpus?.documents, []);
+      assert.equal(illisible.hors_corpus?.calcule_le, "2026-11-13");
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

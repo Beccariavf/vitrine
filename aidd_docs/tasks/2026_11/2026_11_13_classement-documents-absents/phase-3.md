@@ -37,8 +37,8 @@ status: completed
 ### `1)` Exposer le classement
 
 1. `mcp/tools.ts` : ajouter `hors_corpus: ClassementHorsCorpus | null` à `EtatCorpus`, renseigné par `rapport?.hors_corpus ?? null` ; documenter que le classement vient du rapport, jamais d'un calcul à la lecture.
-2. `mcp/server.ts` : la description de `etat_corpus` nomme le classement des documents hors corpus, son nombre de citations et les autorités citantes, et rappelle qu'un document déclaré exclu est marqué comme tel.
-3. `mcp/corpus/sync-rapport.ts` : `formaterRapport` ajoute une section `Hors corpus :` — une ligne par document, `libellé (identifiant) : N citation(s) — CNIL 82, CE 25` puis ` [exclu]` pour un document exclu ; rien quand le classement est vide ou absent.
+2. `mcp/server.ts` : la description de `etat_corpus` nomme le classement des documents hors corpus, son nombre de décisions citantes et les autorités citantes, et rappelle qu'un document déclaré exclu est marqué comme tel.
+3. `mcp/corpus/sync-rapport.ts` : `formaterRapport` ajoute une section `Hors corpus :` — une ligne par document, `libellé (identifiant) : N décision(s) citante(s) — CNIL 82, CE 25` puis ` [exclu]` pour un document exclu ; rien quand le classement est vide ou absent.
 
 ### `2)` Prouver sur le corpus réel
 
@@ -52,7 +52,7 @@ status: completed
 2. `aidd_docs/memory/architecture.md` : une décision de plus — le classement, sa déclaration d'exclusion au catalogue, son écriture par la synchronisation.
 3. `aidd_docs/memory/codebase-map.md` : `hors-corpus.ts` dans `mcp/`, `--classement` dans `mcp/eval/citations.ts`.
 4. `aidd_docs/memory/testing.md` : les nouveaux tests et le relevé.
-5. Cocher la case de #32 dans la feuille de route #65 (`gh issue edit 65`), sans fermer #32 : la PR le fera.
+5. La case de #32 sera cochée à la fermeture, par la PR (règle 8 de #65) ; ne rien éditer sur GitHub ici.
 
 ## Test acceptance criteria
 

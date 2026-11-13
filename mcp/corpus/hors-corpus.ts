@@ -65,6 +65,18 @@ function autoriteDe(corpus: string): string {
   return AUTORITES[corpus] ?? corpus;
 }
 
+/**
+ * Autorités citantes d'un document hors corpus, pour le texte court :
+ * « — CNIL 82, Conseil d'État 25 » ; chaîne vide quand aucune autorité ne le
+ * cite. Le statut n'entre pas ici, chaque rendu le place selon son format.
+ */
+export function formaterAutorites(autorites: readonly AutoriteCitations[]): string {
+  if (autorites.length === 0) return "";
+  return ` — ${autorites
+    .map((autorite) => `${autorite.autorite} ${autorite.citations}`)
+    .join(", ")}`;
+}
+
 /** Autorités citantes triées par compte décroissant, puis par libellé. */
 function trierAutorites(comptes: ReadonlyMap<string, number>): AutoriteCitations[] {
   return [...comptes.entries()]

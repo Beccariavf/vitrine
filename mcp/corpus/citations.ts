@@ -212,27 +212,13 @@ export function instrumentParIdentifiant(
 }
 
 /**
- * Déclaration complète d'un instrument : libellé, identifiant officiel, lien et
- * périmètre. `null` quand l'identifiant est inconnu, casse et espaces
- * neutralisés.
+ * Déclaration d'un instrument au catalogue : son libellé et son lien officiel.
+ * `null` quand l'identifiant est inconnu, casse et espaces neutralisés. Le
+ * périmètre ne passe pas par ici : `documentsExclus()` en est la seule lecture.
  */
-export function documentDeclare(
-  identifiant: string,
-): {
-  libelle: string;
-  identifiant: string;
-  url: string | null;
-  perimetre: "couvert" | "exclu";
-} | null {
+export function documentDeclare(identifiant: string): { libelle: string; url: string | null } | null {
   const instrument = PAR_IDENTIFIANT.get(normaliserIdentifiant(identifiant));
-  return instrument === undefined
-    ? null
-    : {
-        libelle: instrument.libelle,
-        identifiant: instrument.identifiant,
-        url: instrument.url,
-        perimetre: instrument.perimetre ?? "couvert",
-      };
+  return instrument === undefined ? null : { libelle: instrument.libelle, url: instrument.url };
 }
 
 /**

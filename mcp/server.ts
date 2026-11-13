@@ -179,7 +179,8 @@ export function createServer(deps: ServerDeps): McpServer {
         "la fenêtre de veille, l'inventaire des huit corpus avec leurs comptes, les documents " +
         "manquants et l'état des sources et de l'index. `hors_corpus` porte le classement des " +
         "documents hors corpus : ceux que les décisions citent sans qu'ils soient au corpus, par " +
-        "nombre de citations décroissant, avec les autorités citantes et leur compte ; un document " +
+        "nombre de décisions citantes décroissant (`citations`), avec les autorités qui les citent et " +
+        "leur compte ; un document " +
         "déclaré hors du périmètre y est marqué `exclu`, jamais présenté comme un trou. Un document " +
         "manquant n'est pas une génération : il est absent du corpus local et le rapport le nomme. " +
         "Aucun accès réseau, aucun index : lit `data/corpus/sync.json` et les manifestes.",

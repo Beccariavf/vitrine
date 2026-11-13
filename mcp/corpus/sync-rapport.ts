@@ -8,6 +8,7 @@
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { formaterAutorites } from "./hors-corpus.ts";
 import type { ClassementHorsCorpus } from "./hors-corpus.ts";
 import type { CorpusVeille } from "./veille.ts";
 
@@ -230,15 +231,9 @@ export function formaterRapport(rapport: RapportSync): string {
       `Hors corpus : ${classement.documents.length} document(s) au ${classement.calcule_le}`,
     );
     for (const document of classement.documents) {
-      const autorites =
-        document.autorites.length === 0
-          ? ""
-          : ` — ${document.autorites
-              .map((autorite) => `${autorite.autorite} ${autorite.citations}`)
-              .join(", ")}`;
       lignes.push(
-        `${document.instrument} (${document.document}) : ${document.citations} citation(s)` +
-          autorites +
+        `${document.instrument} (${document.document}) : ${document.citations} décision(s) citante(s)` +
+          formaterAutorites(document.autorites) +
           (document.statut === "exclu" ? " [exclu]" : ""),
       );
     }

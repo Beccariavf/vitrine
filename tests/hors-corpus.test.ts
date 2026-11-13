@@ -169,15 +169,11 @@ describe("le classement des documents hors corpus", () => {
     );
   });
 
-  it("déclare le périmètre d'un instrument au catalogue, sans exclu aujourd'hui", () => {
-    assert.deepEqual(documentDeclare("32002l0058"), {
-      libelle: "ePrivacy",
-      identifiant: "32002L0058",
-      url: EPRIVACY,
-      perimetre: "couvert",
-    });
+  it("déclare le libellé et le lien d'un instrument, et n'exclut rien aujourd'hui", () => {
+    assert.deepEqual(documentDeclare("32002l0058"), { libelle: "ePrivacy", url: EPRIVACY });
     assert.equal(documentDeclare("inconnu"), null);
-    assert.equal(documentsExclus().size, 0);
+    // Le statut de périmètre ne se lit que là : vide tant que le catalogue n'exclut rien.
+    assert.deepEqual(documentsExclus(), new Set<string>());
   });
 
   it("lit un corpus temporaire et le date", () => {
