@@ -15,19 +15,19 @@ const nombre = new Intl.NumberFormat("fr-FR");
 const etapes = [
   {
     numero: "01",
-    couleur: "text-blue",
+    couleur: "bg-blue text-paper",
     titre: "Ajoutez le connecteur",
     texte: "Le connecteur se branche sur votre assistant comme un serveur MCP : vos conversations restent dans votre outil.",
   },
   {
     numero: "02",
-    couleur: "text-red",
+    couleur: "bg-red text-paper",
     titre: "Posez votre question",
     texte: "Interrogez votre IA comme d'habitude : elle va chercher dans les textes, les autorités et les juridictions du droit des données personnelles.",
   },
   {
     numero: "03",
-    couleur: "text-yellow",
+    couleur: "bg-yellow text-ink",
     titre: "Vérifiez la source",
     texte: "Les passages retrouvés portent leur référence et leur lien vers le texte officiel : vous vérifiez avant de vous appuyer dessus.",
   },
@@ -64,7 +64,7 @@ const etapes = [
       {
         etapes.map((etape, index) => (
           <li class:list={["p-5 sm:p-6", index > 0 && "border-t-2 border-ink sm:border-t-0 sm:border-l-2"]}>
-            <span aria-hidden="true" class:list={["etape-numero block font-display", etape.couleur]}>
+            <span aria-hidden="true" class:list={["etape-numero", etape.couleur]}>
               {etape.numero}
             </span>
             <h3 class="mt-4 text-2xl">{etape.titre}</h3>
@@ -172,14 +172,20 @@ const etapes = [
 </Base>
 
 <style>
-  /* Grands chiffres décoratifs : l'ordre est porté par la liste ordonnée ; le filet encre garde le jaune lisible sur papier. */
+  /* Plaque brute : aplat de famille, cadre encre, ombre dure, chiffre mono. L'ordre est porté par la liste ordonnée. */
   .etape-numero {
-    font-size: 4.5rem;
-    font-weight: 850;
-    font-stretch: 72%;
-    line-height: 0.85;
-    letter-spacing: -0.02em;
-    -webkit-text-stroke: 1.5px var(--color-ink);
-    paint-order: stroke fill;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 5rem;
+    height: 5rem;
+    border: 3px solid var(--color-ink);
+    box-shadow: 6px 6px 0 var(--color-ink);
+    font-family: var(--font-mono);
+    font-size: 2.6rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
   }
 </style>
