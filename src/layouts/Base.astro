@@ -34,27 +34,34 @@ const NAV = [
     <header class="border-b-2 border-ink bg-paper">
       <div
         class:list={[
-          "mx-auto flex w-full flex-wrap items-center justify-between gap-4 px-5 py-4 sm:px-8",
+          "mx-auto flex w-full flex-wrap items-center justify-between gap-x-6 gap-y-4 px-5 py-5 sm:px-8",
           containerClass,
         ]}
       >
-        <a href="/" class="flex items-baseline gap-3 text-ink no-underline hover:no-underline">
-          <span class="font-display text-2xl leading-none font-[850] tracking-[-0.01em] [font-stretch:72%]">VITRINE</span>
-          <span class="hidden font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted sm:inline">
-            Droit du numérique
+        <a href="/" class="flex items-center gap-3 text-ink no-underline hover:no-underline">
+          <span aria-hidden="true" class="grid size-9 shrink-0 grid-cols-2 grid-rows-2 border-2 border-ink shadow-hard">
+            <span class="border-r-2 border-b-2 border-ink bg-blue"></span>
+            <span class="border-b-2 border-ink bg-red"></span>
+            <span class="border-r-2 border-ink bg-green"></span>
+            <span class="bg-yellow"></span>
+          </span>
+          <span class="flex flex-col">
+            <span class="font-display text-3xl leading-[0.85] font-[850] tracking-[-0.01em] [font-stretch:72%]">VITRINE</span>
+            <span class="mt-1 font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted">Droit du numérique</span>
           </span>
         </a>
-        <nav aria-label="Navigation principale" class="flex gap-2">
+        <nav aria-label="Navigation principale" class="flex border-2 border-ink bg-paper shadow-hard">
           {
-            NAV.map((lien) => {
+            NAV.map((lien, index) => {
               const courant = path.startsWith(lien.href);
               return (
                 <a
                   href={lien.href}
                   aria-current={courant ? "page" : undefined}
                   class:list={[
-                    "border-2 border-ink px-3 py-1 font-mono text-[0.7rem] uppercase tracking-[0.12em] no-underline hover:no-underline",
-                    courant ? "bg-ink text-paper" : "bg-paper text-ink hover:bg-ink hover:text-paper",
+                    "px-4 py-2 font-mono text-[0.7rem] font-bold uppercase tracking-[0.12em] no-underline hover:no-underline",
+                    index > 0 && "border-l-2 border-ink",
+                    courant ? "bg-ink text-paper" : "text-ink hover:bg-ink hover:text-paper",
                   ]}
                 >
                   {lien.label}
