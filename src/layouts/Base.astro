@@ -1,4 +1,5 @@
 ---
+import "@fontsource-variable/archivo/wdth.css";
 import "../styles/global.css";
 
 type Props = {
@@ -12,6 +13,12 @@ type Props = {
 
 const { title, description, containerClass = "max-w-5xl" } = Astro.props;
 const path = Astro.url.pathname;
+
+/** Navigation principale, dans l'ordre affiché. */
+const NAV = [
+  { href: "/connecteur", label: "Connecteur" },
+  { href: "/veille", label: "Veille" },
+];
 ---
 
 <!doctype html>
@@ -21,35 +28,48 @@ const path = Astro.url.pathname;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   </head>
   <body class="min-h-dvh bg-concrete text-ink antialiased">
     <a href="#contenu" class="skip-link">Aller au contenu</a>
     <header class="border-b-2 border-ink bg-paper">
       <div
         class:list={[
-          "mx-auto flex w-full flex-wrap items-center justify-between gap-4 px-5 py-4 sm:px-8",
+          "mx-auto flex w-full flex-wrap items-center justify-between gap-x-6 gap-y-4 px-5 py-5 sm:px-8",
           containerClass,
         ]}
       >
-        <a href="/" class="flex items-baseline gap-3 text-ink no-underline hover:no-underline">
-          <span class="font-mono text-lg font-bold tracking-[0.08em]">VITRINE_</span>
-          <span class="hidden font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted sm:inline">
-            Droit du numérique
+        <a href="/" class="flex items-center gap-3 text-ink no-underline hover:no-underline">
+          <span
+            aria-hidden="true"
+            class="flex h-9 w-[1.875rem] shrink-0 items-end justify-end border-2 border-ink bg-concrete p-1 shadow-[3px_3px_0_var(--color-ink)]"
+          >
+            <span class="h-5 w-3 border-2 border-ink bg-red"></span>
+          </span>
+          <span class="flex flex-col">
+            <span class="font-display text-3xl leading-[0.85] font-[850] tracking-[-0.01em] [font-stretch:72%]">VITRINE</span>
+            <span class="mt-1 font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted">Droit du numérique</span>
           </span>
         </a>
-        <nav aria-label="Navigation principale">
-          <a
-            href="/veille"
-            aria-current={path.startsWith("/veille") ? "page" : undefined}
-            class:list={[
-              "border-2 border-ink px-3 py-1 font-mono text-[0.7rem] uppercase tracking-[0.12em] no-underline hover:no-underline",
-              path.startsWith("/veille")
-                ? "bg-ink text-paper"
-                : "bg-paper text-ink hover:bg-ink hover:text-paper",
-            ]}
-          >
-            Veille
-          </a>
+        <nav aria-label="Navigation principale" class="flex border-2 border-ink bg-paper shadow-hard">
+          {
+            NAV.map((lien, index) => {
+              const courant = path.startsWith(lien.href);
+              return (
+                <a
+                  href={lien.href}
+                  aria-current={courant ? "page" : undefined}
+                  class:list={[
+                    "px-4 py-2 font-mono text-[0.7rem] font-bold uppercase tracking-[0.12em] no-underline hover:no-underline",
+                    index > 0 && "border-l-2 border-ink",
+                    courant ? "bg-ink text-paper" : "text-ink hover:bg-ink hover:text-paper",
+                  ]}
+                >
+                  {lien.label}
+                </a>
+              );
+            })
+          }
         </nav>
       </div>
     </header>
@@ -60,14 +80,19 @@ const path = Astro.url.pathname;
       </div>
     </main>
 
-    <footer class="border-t-2 border-ink bg-paper">
+    <footer class="border-t-2 border-ink bg-concrete-dark text-stone [&_a]:decoration-stone [&_a:focus-visible]:outline-paper">
       <div
         class:list={[
-          "mx-auto flex w-full flex-col gap-2 px-5 py-6 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted sm:flex-row sm:items-center sm:justify-between sm:px-8",
+          "mx-auto flex w-full flex-col gap-2 px-5 py-6 font-mono text-[0.7rem] uppercase tracking-[0.12em] sm:flex-row sm:items-center sm:justify-between sm:px-8",
           containerClass,
         ]}
       >
-        <p>Vitrine — veille juridique française, statique.</p>
+        <div class="flex flex-col gap-1">
+          <p class="text-paper">Valentin Fouich · Juriste en droit du numérique</p>
+          <p class="font-sans text-xs normal-case tracking-normal">
+            Outil d'aide à la recherche, ne remplace pas l'analyse d'un professionnel du droit.
+          </p>
+        </div>
         <p class="flex flex-wrap gap-x-5 gap-y-2">
           <a href="https://www.cnil.fr">CNIL</a>
           <a href="https://www.legifrance.gouv.fr">Légifrance</a>

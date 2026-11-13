@@ -1,0 +1,113 @@
+---
+import type { Entry } from "../lib/entries.ts";
+import { isRedundantSummary } from "../lib/entries.ts";
+import { familleDeSource } from "../lib/familles.ts";
+import { referenceLabel, referenceUrl } from "../lib/references.ts";
+import { sourceLabel } from "../lib/sources.ts";
+
+type Props = {
+  entry: Entry;
+  /** `compacte` : date, source et titre (accueil) ; `complete` : avec résumé, références et matières (veille). */
+  variante: "compacte" | "complete";
+  /** Niveau du titre, choisi par la page selon sa hiérarchie. */
+  niveau: "h2" | "h3";
+  /** Libellés des matières, requis par la variante complète. */
+  matieres?: Map<string, string>;
+  /** Classes ajoutées à la rangée, par exemple pour le filtre des matières. */
+  class?: string;
+};
+
+const { entry, variante, niveau: Titre, matieres, class: classes } = Astro.props;
+const famille = familleDeSource(entry.source);
+const date = entry.publishedAt !== null ? new Date(entry.publishedAt) : null;
+const complete = variante === "complete";
+const summary =
+  complete && entry.summary !== null && !isRedundantSummary(entry.title, entry.summary) ? entry.summary : null;
+
+/** Dates en français, à l'heure UTC : les mêmes au build comme en test. */
+const dayFormat = new Intl.DateTimeFormat("fr-FR", { day: "2-digit", timeZone: "UTC" });
+const shortMonth = new Intl.DateTimeFormat("fr-FR", { month: "short", timeZone: "UTC" });
+---
+
+<li data-publication class:list={["border-b-2 border-ink hover:bg-paper", classes]}>
+  <div class="grid grid-cols-[4rem_1fr] gap-4 py-5 sm:grid-cols-[5rem_1fr] sm:gap-6">
+    <div class="pt-1 font-mono">
+      {
+        date !== null ? (
+          <time datetime={entry.publishedAt ?? undefined}>
+            <span class="block text-2xl font-bold leading-none">{dayFormat.format(date)}</span>
+            <span class="mt-1 block text-[0.7rem] uppercase tracking-[0.12em] text-muted">
+              {shortMonth.format(date)}
+            </span>
+          </time>
+        ) : (
+          <span class="text-xs text-muted">Sans date</span>
+        )
+      }
+    </div>
+    <div class="min-w-0">
+      <p
+        data-source={entry.source}
+        data-famille={famille.id}
+        class="flex items-center gap-2 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted"
+      >
+        <span
+          data-pastille
+          aria-hidden="true"
+          class:list={["inline-block h-3 w-3 shrink-0 border border-ink", famille.classeFond]}
+        ></span>
+        {sourceLabel(entry.source)}
+      </p>
+      <Titre class="mt-1 text-lg leading-snug sm:text-xl">
+        <a
+          href={entry.url}
+          target="_blank"
+          rel="noopener"
+          class="break-words text-ink underline decoration-red decoration-2 underline-offset-4 hover:decoration-4"
+        >
+          {entry.title}
+          <span class="sr-only"> (nouvel onglet)</span>
+        </a>
+      </Titre>
+      {summary !== null && <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-muted">{summary}</p>}
+      {
+        complete && entry.references.length > 0 && (
+          <ul class="mt-3 flex flex-wrap gap-1.5" aria-label="Références">
+            {entry.references.map((reference) => {
+              const href = referenceUrl(reference);
+              return (
+                <li class="border border-ink px-1.5 py-0.5 font-mono text-[0.7rem] leading-snug break-words">
+                  {href === null ? (
+                    <span title={reference}>{referenceLabel(reference)}</span>
+                  ) : (
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener"
+                      title={reference}
+                      class="text-ink no-underline hover:underline hover:decoration-2 hover:underline-offset-2"
+                    >
+                      {referenceLabel(reference)}
+                      <span class="sr-only"> (nouvel onglet)</span>
+                    </a>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )
+      }
+      {
+        complete && entry.themes.length > 0 && (
+          <ul class="mt-2 flex flex-wrap gap-1.5" aria-label="Matières">
+            {entry.themes.map((theme) => (
+              <li class="bg-ink px-1.5 py-0.5 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-paper">
+                {matieres?.get(theme) ?? theme}
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </div>
+  </div>
+</li>

@@ -1,8 +1,10 @@
 @import "tailwindcss";
 
 /*
- * Jetons du thème « Cité Radieuse » : béton, papier, encre, rouge, bleu, jaune.
+ * Jetons du thème « Cité Radieuse » : béton, papier, encre, rouge, bleu, jaune, vert,
+ * et le socle sombre (béton sombre, pierre) réservé au pied de page.
  * Une seule source de vérité pour la palette, les formes et les polices.
+ * Les paires de contraste autorisées sont vérifiées par tests/contrastes.test.ts.
  */
 @theme {
   --color-concrete: #e7e2d7;
@@ -11,9 +13,13 @@
   --color-red: #c62828;
   --color-blue: #1e4e79;
   --color-yellow: #e0a82e;
+  --color-green: #2f6b4f;
   --color-muted: #57534e;
+  --color-concrete-dark: #2b2a27;
+  --color-stone: #b8b2a7;
 
-  --font-display: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  /* Archivo Variable (wdth + wght), auto-hébergée, importée par src/layouts/Base.astro. */
+  --font-display: "Archivo Variable", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 
@@ -29,6 +35,17 @@
   --radius-3xl: 0px;
   --radius-4xl: 0px;
   --radius-full: 0px;
+}
+
+/*
+ * Bande papier pleine largeur : le fond déborde du conteneur jusqu'aux bords de la fenêtre
+ * par une ombre pleine, rognée verticalement. Jamais 100vw, qui compte la barre de
+ * défilement et crée un défilement horizontal.
+ */
+@utility pleine-largeur {
+  background-color: var(--color-paper);
+  box-shadow: 0 0 0 100vmax var(--color-paper);
+  clip-path: inset(0 -100vmax);
 }
 
 @layer base {
@@ -50,9 +67,22 @@
   h4 {
     font-family: var(--font-display);
     font-weight: 700;
+    font-stretch: 88%;
     letter-spacing: -0.02em;
+    word-spacing: 0.08em;
     line-height: 1.08;
     text-wrap: balance;
+  }
+
+  /* Titre monumental : condensé, très gras, serré ; les mots longs se coupent plutôt que de déborder. */
+  h1 {
+    font-stretch: 72%;
+    font-weight: 850;
+    letter-spacing: -0.03em;
+    word-spacing: 0.14em;
+    line-height: 0.95;
+    overflow-wrap: break-word;
+    hyphens: auto;
   }
 
   a {
