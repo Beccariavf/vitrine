@@ -41,10 +41,11 @@ status: planned
 2. Normaliser le statut source : majuscules, diacritiques retirés, espaces et tirets réduits — sans dépendre d'un module de recherche.
 3. Textes (`rgpd`, `aiact`, `lil`) : `EN_VIGUEUR` et `VIGUEUR` → `en_vigueur` ; `ABROGE` → `abroge` ; `PROJET`, `PROPOSE`, `PROPOSITION` → `propose` ; `PENDANT` → `pendant` ; sinon `inconnu`.
 4. Décisions (`ce`, `cc`, `cjue`) : `rendue`, quel que soit le statut source.
-5. `cnil` : nature normalisée `SANCTION` → `rendue` ; `AVIS`, `RECOMMANDATION`, `RECOMMANDATION/LIGNES DIRECTRICES` → `adoptee` ; nature absente ou inconnue → `inconnu`.
-6. `cepd` : `adoptee`.
-7. Tout autre corpus : `inconnu`.
-8. Ne jamais lever : une entrée inattendue rend `inconnu`.
+5. Une abrogation déclarée par la source (`ABROGE`) prime sur la nature, pour tous les corpus : une recommandation ou un avis CNIL abrogé rend `abroge`.
+6. `cnil` : nature normalisée `SANCTION` → `rendue` ; `AVIS`, `RECOMMANDATION`, `RECOMMANDATION/LIGNES DIRECTRICES` → `adoptee` ; nature absente ou inconnue → `inconnu`.
+7. `cepd` : `adoptee`.
+8. Tout autre corpus : `inconnu`.
+9. Ne jamais lever : une entrée inattendue rend `inconnu`.
 
 ## Test acceptance criteria
 
