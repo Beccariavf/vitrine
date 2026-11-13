@@ -15,17 +15,20 @@ const nombre = new Intl.NumberFormat("fr-FR");
 const etapes = [
   {
     numero: "01",
-    titre: "Ajoutez le connecteur à votre IA",
+    couleur: "text-blue",
+    titre: "Ajoutez le connecteur",
     texte: "Le connecteur se branche sur votre assistant comme un serveur MCP : vos conversations restent dans votre outil.",
   },
   {
     numero: "02",
-    titre: "Posez vos questions",
+    couleur: "text-red",
+    titre: "Posez votre question",
     texte: "Interrogez votre IA comme d'habitude : elle va chercher dans les textes, les autorités et les juridictions du droit des données personnelles.",
   },
   {
     numero: "03",
-    titre: "Chaque réponse cite sa source officielle",
+    couleur: "text-yellow",
+    titre: "Vérifiez la source",
     texte: "Les passages retrouvés portent leur référence et leur lien vers le texte officiel : vous vérifiez avant de vous appuyer dessus.",
   },
 ];
@@ -56,16 +59,15 @@ const etapes = [
   }
 
   <section aria-labelledby="fonctionnement" class="mt-20">
-    <div class="flex items-end justify-between gap-4 border-b-2 border-ink pb-3">
-      <h2 id="fonctionnement" class="text-3xl sm:text-4xl">Comment ça marche</h2>
-      <span class="hidden font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted sm:block">01—03</span>
-    </div>
-    <ol class="mt-8 grid gap-8 sm:grid-cols-3">
+    <h2 id="fonctionnement" class="text-3xl sm:text-4xl">Comment ça marche</h2>
+    <ol class="mt-8 grid border-2 border-ink bg-paper shadow-hard sm:grid-cols-3">
       {
-        etapes.map((etape) => (
-          <li class="border-t-2 border-ink pt-4">
-            <span class="font-mono text-xs tracking-[0.12em]">{etape.numero}</span>
-            <h3 class="mt-2 text-xl">{etape.titre}</h3>
+        etapes.map((etape, index) => (
+          <li class:list={["p-5 sm:p-6", index > 0 && "border-t-2 border-ink sm:border-t-0 sm:border-l-2"]}>
+            <span aria-hidden="true" class:list={["etape-numero block font-display", etape.couleur]}>
+              {etape.numero}
+            </span>
+            <h3 class="mt-4 text-2xl">{etape.titre}</h3>
             <p class="mt-2 text-sm leading-relaxed text-muted text-pretty">{etape.texte}</p>
           </li>
         ))
@@ -168,3 +170,16 @@ const etapes = [
     </p>
   </section>
 </Base>
+
+<style>
+  /* Grands chiffres décoratifs : l'ordre est porté par la liste ordonnée ; le filet encre garde le jaune lisible sur papier. */
+  .etape-numero {
+    font-size: 4.5rem;
+    font-weight: 850;
+    font-stretch: 72%;
+    line-height: 0.85;
+    letter-spacing: -0.02em;
+    -webkit-text-stroke: 1.5px var(--color-ink);
+    paint-order: stroke fill;
+  }
+</style>
