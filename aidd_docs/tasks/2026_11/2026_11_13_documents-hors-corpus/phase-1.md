@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 ---
 
 # Instruction: Porter l'identifiant du document et sa présence dans les citations

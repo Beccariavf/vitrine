@@ -2,11 +2,16 @@ import { strict as assert } from "node:assert";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
 import {
+  absenceDuDocument,
+  avecPresence,
   citationsDesUnites,
   citationsDuCorpus,
+  documentsPresents,
   extraireCitations,
+  instrumentParIdentifiant,
   urlOfficielle,
 } from "../mcp/corpus/citations.ts";
 import type { Citation } from "../mcp/corpus/citations.ts";
@@ -384,6 +389,193 @@ describe("l'extraction des citations d'une décision", () => {
       assert.equal(citationsDuCorpus(root, "cnil").size, 0);
     } finally {
       rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
+/** Écrit un manifeste de corpus sous une racine temporaire. */
+function ecrireManifeste(root: string, corpus: string, champs: Record<string, unknown>): void {
+  const dossier = join(root, "data", "corpus", corpus);
+  mkdirSync(dossier, { recursive: true });
+  writeFileSync(join(dossier, "manifest.json"), `${JSON.stringify(champs, null, 2)}\n`, "utf8");
+}
+
+/** Racine temporaire portant les manifestes du RGPD et de la LIL, rien d'autre. */
+function racineAvecRgpdEtLil(): string {
+  const root = mkdtempSync(join(tmpdir(), "vitrine-presence-"));
+  ecrireManifeste(root, "rgpd", { document: "32016R0679", unites: 272 });
+  ecrireManifeste(root, "lil", { corpus: "lil", text_id: "LEGITEXT000006068624" });
+  return root;
+}
+
+describe("l'identifiant du document visé", () => {
+  it("nomme le document officiel de chaque instrument du périmètre", () => {
+    const textes: [string, string, string][] = [
+      ["l'article 6 du règlement (UE) 2016/679", "RGPD", "32016R0679"],
+      ["l'article 6 de la directive 95/46/CE", "directive 95/46/CE", "31995L0046"],
+      ["l'article 13 de la directive 2002/58/CE", "ePrivacy", "32002L0058"],
+      ["l'article 5 de la directive (UE) 2016/680", "2016/680", "32016L0680"],
+      ["l'article 5 du règlement (UE) 2018/1725", "2018/1725", "32018R1725"],
+      ["l'article 82 de la loi n° 78-17", "loi 78-17", "LEGITEXT000006068624"],
+      ["l'article L. 34-5 du CPCE", "CPCE", "LEGITEXT000006070987"],
+      ["l'article 226-21 du code pénal", "code pénal", "LEGITEXT000006070719"],
+    ];
+
+    for (const [texte, instrument, document] of textes) {
+      const trouvee = citation(texte);
+      assert.equal(trouvee.instrument, instrument, texte);
+      assert.equal(trouvee.document, document, texte);
+      assert.ok(trouvee.url?.includes("https://"), texte);
+    }
+  });
+
+  it("compare un identifiant reçu sans tenir compte de la casse ni des espaces", () => {
+    assert.deepEqual(instrumentParIdentifiant("  32002l0058 "), {
+      libelle: "ePrivacy",
+      identifiant: "32002L0058",
+    });
+    assert.deepEqual(instrumentParIdentifiant("legitEXT000006068624"), {
+      libelle: "loi 78-17",
+      identifiant: "LEGITEXT000006068624",
+    });
+    assert.equal(instrumentParIdentifiant("CNILTEXT000000000000"), null);
+    assert.equal(instrumentParIdentifiant(""), null);
+  });
+});
+
+describe("la présence des documents cités", () => {
+  it("lit les identifiants des manifestes, `document` ou `text_id`", () => {
+    const root = racineAvecRgpdEtLil();
+    try {
+      const presents = documentsPresents(root);
+
+      assert.equal(presents.has("32016R0679"), true);
+      assert.equal(presents.has("LEGITEXT000006068624"), true);
+      assert.equal(presents.has("32002L0058"), false);
+      assert.equal(presents.size, 2);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("marque présent un instrument dont le manifeste existe, absent les autres", () => {
+    const root = racineAvecRgpdEtLil();
+    try {
+      const citations = extraireCitations(
+        "l'article 6 du règlement (UE) 2016/679, l'article 82 de la loi n° 78-17 " +
+          "et l'article 13 de la directive 2002/58/CE",
+      );
+      const marquees = avecPresence(root, citations);
+
+      assert.deepEqual(
+        marquees.map((rendue) => [rendue.document, rendue.hors_corpus]),
+        [
+          ["32016R0679", false],
+          ["32002L0058", true],
+          ["LEGITEXT000006068624", false],
+        ],
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("laisse une citation hors corpus sans texte ni résumé", () => {
+    const root = racineAvecRgpdEtLil();
+    try {
+      const [eprivacy] = avecPresence(root, extraireCitations("l'article 13 de la directive 2002/58/CE"));
+
+      assert.ok(eprivacy !== undefined);
+      assert.equal(eprivacy.hors_corpus, true);
+      assert.deepEqual(Object.keys(eprivacy).sort(), [
+        "articles",
+        "document",
+        "hors_corpus",
+        "instrument",
+        "reference",
+        "url",
+      ]);
+      assert.equal(eprivacy.url, EPRIVACY);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("marque tout hors corpus quand aucun manifeste n'existe, sans lever", () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-presence-"));
+    try {
+      assert.equal(documentsPresents(root).size, 0);
+      assert.deepEqual(
+        avecPresence(root, extraireCitations("l'article 6 du RGPD")).map((rendue) => rendue.hors_corpus),
+        [true],
+      );
+      assert.deepEqual(avecPresence(root, []), []);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("fait disparaître la mention dès que le manifeste du document arrive", () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-presence-"));
+    try {
+      const citations = extraireCitations("l'article 13 de la directive 2002/58/CE");
+      assert.equal(avecPresence(root, citations)[0]?.hors_corpus, true);
+
+      ecrireManifeste(root, "eprivacy", { document: "32002L0058", unites: 12 });
+
+      assert.equal(avecPresence(root, citations)[0]?.hors_corpus, false);
+      assert.equal(absenceDuDocument(root, "32002L0058"), null);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("ne déclare jamais absent un identifiant qu'il ne connaît pas", () => {
+    const root = racineAvecRgpdEtLil();
+    try {
+      assert.equal(absenceDuDocument(root, "CNILTEXT000000000000"), null);
+      assert.equal(absenceDuDocument(root, "inconnu"), null);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("rend la même phrase pour un instrument connu absent, et rien pour un présent", () => {
+    const root = racineAvecRgpdEtLil();
+    try {
+      assert.equal(absenceDuDocument(root, "32016R0679"), null);
+      assert.equal(absenceDuDocument(root, "LEGITEXT000006068624"), null);
+      assert.equal(
+        absenceDuDocument(root, "32002L0058"),
+        "ePrivacy (32002L0058) est absent de mon corpus (périmètre : RGPD, AI Act, LIL, CNIL, " +
+          "Conseil d'État, CEPD, Cour de cassation, CJUE).",
+      );
+      assert.equal(
+        absenceDuDocument(root, " 32002l0058 "),
+        "ePrivacy (32002L0058) est absent de mon corpus (périmètre : RGPD, AI Act, LIL, CNIL, " +
+          "Conseil d'État, CEPD, Cour de cassation, CJUE).",
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("tient sur le corpus réel : RGPD et LIL présents, les six autres absents", () => {
+    const root = fileURLToPath(new URL("..", import.meta.url));
+    const presents = documentsPresents(root);
+
+    assert.equal(presents.has("32016R0679"), true);
+    assert.equal(presents.has("LEGITEXT000006068624"), true);
+    for (const absent of [
+      "31995L0046",
+      "32002L0058",
+      "32016L0680",
+      "32018R1725",
+      "LEGITEXT000006070987",
+      "LEGITEXT000006070719",
+    ]) {
+      assert.equal(presents.has(absent), false, absent);
+      assert.match(absenceDuDocument(root, absent) ?? "", /absent de mon corpus/);
     }
   });
 });

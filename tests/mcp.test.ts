@@ -116,6 +116,26 @@ const EMBEDDER_INTERDIT: Embedder = {
   },
 };
 
+/** Manifeste d'un corpus de texte : le champ qui porte son identifiant de document. */
+const MANIFESTES: Record<string, Record<string, string>> = {
+  rgpd: { document: DOCUMENT },
+  aiact: { document: DOCUMENT_AIAct },
+  lil: { text_id: ECHELLE },
+};
+
+/** Écrit un manifeste de corpus, comme le fait chaque synchronisation. */
+function ecrireManifeste(root: string, corpus: string, champs: Record<string, string>): void {
+  const dossier = join(root, "data", "corpus", corpus);
+  mkdirSync(dossier, { recursive: true });
+  writeFileSync(join(dossier, "manifest.json"), `${JSON.stringify(champs, null, 2)}\n`, "utf8");
+}
+
+/** Déclare présents les deux corpus de texte que citent les décisions des tests. */
+function ecrireManifestesDesTextes(root: string): void {
+  ecrireManifeste(root, "rgpd", MANIFESTES.rgpd ?? {});
+  ecrireManifeste(root, "lil", MANIFESTES.lil ?? {});
+}
+
 function ecrireCorpus(root: string, unites: Unite[] = SIX, nom = "rgpd"): void {
   const dossier = join(root, "data", "corpus", nom);
   mkdirSync(dossier, { recursive: true });
@@ -124,6 +144,8 @@ function ecrireCorpus(root: string, unites: Unite[] = SIX, nom = "rgpd"): void {
     `${unites.map((unite) => JSON.stringify(unite)).join("\n")}\n`,
     "utf8",
   );
+  const manifeste = MANIFESTES[nom];
+  if (manifeste !== undefined) ecrireManifeste(root, nom, manifeste);
 }
 
 function contenu(resultat: unknown): Record<string, unknown> {
@@ -965,6 +987,10 @@ describe("le serveur en mémoire", () => {
     assert.match(description("get_decision"), /citations/);
     assert.match(description("search"), /lien officiel/);
     assert.match(description("get_decision"), /lien officiel/);
+    assert.match(description("search"), /hors_corpus/);
+    assert.match(description("get_decision"), /hors_corpus/);
+    assert.match(description("search"), /absent de mon corpus/);
+    assert.match(description("get_article"), /absent de mon corpus/);
     assert.equal(/citations/.test(description("get_article")), false);
   });
 
@@ -1124,6 +1150,7 @@ describe("get_decision", () => {
   function racine(unites: Unite[]): string {
     const root = mkdtempSync(join(tmpdir(), "vitrine-decision-"));
     ecrireCorpus(root, unites, "cnil");
+    ecrireManifestesDesTextes(root);
     return root;
   }
 
@@ -1319,15 +1346,19 @@ describe("get_decision", () => {
       assert.deepEqual(decision?.citations, [
         {
           instrument: "RGPD",
+          document: "32016R0679",
           articles: ["6"],
           reference: "RGPD · art. 6",
           url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32016R0679",
+          hors_corpus: false,
         },
         {
           instrument: "loi 78-17",
+          document: "LEGITEXT000006068624",
           articles: ["82"],
           reference: "loi 78-17 · art. 82",
           url: "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000006068624",
+          hors_corpus: false,
         },
       ]);
     } finally {
@@ -1422,6 +1453,7 @@ describe("les citations dans les réponses de search", () => {
         ],
         "cnil",
       );
+      ecrireManifestesDesTextes(root);
       const { chemin } = await buildIndex(root, embedderFactice());
       const index = openIndex(chemin);
       try {
@@ -1437,6 +1469,13 @@ describe("les citations dans les réponses de search", () => {
         assert.deepEqual(
           passage.citations?.map((citation) => citation.reference),
           ["RGPD · art. 6", "loi 78-17 · art. 82"],
+        );
+        assert.deepEqual(
+          passage.citations?.map((citation) => [citation.document, citation.hors_corpus]),
+          [
+            ["32016R0679", false],
+            ["LEGITEXT000006068624", false],
+          ],
         );
         assert.equal(passage.citations?.[0]?.url, "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32016R0679");
       } finally {
@@ -1615,6 +1654,175 @@ describe("la recherche restreinte à un corpus", () => {
       } finally {
         index.db.close();
       }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("les documents cités absents du corpus", () => {
+  const EPRIVACY = "32002L0058";
+  const MESSAGE_EPRIVACY =
+    "ePrivacy (32002L0058) est absent de mon corpus (périmètre : RGPD, AI Act, LIL, CNIL, " +
+    "Conseil d'État, CEPD, Cour de cassation, CJUE).";
+
+  /** Décision citant le RGPD, la LIL et l'ePrivacy, sous une racine qui ne porte que les deux premiers. */
+  function racine(unites: Unite[]): string {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-hors-corpus-"));
+    ecrireCorpus(root, unites, "cnil");
+    ecrireManifestesDesTextes(root);
+    return root;
+  }
+
+  it("marque présent le RGPD cité et absent l'ePrivacy citée", () => {
+    const root = racine([
+      fragment(
+        "CNILTEXT000055022778",
+        0,
+        "La formation restreinte rappelle l'article 6 du règlement (UE) 2016/679, " +
+          "l'article 82 de la loi n° 78-17 et l'article 13 de la directive 2002/58/CE.",
+      ),
+    ]);
+    try {
+      const decision = getDecision(root, { document: "CNILTEXT000055022778" }).decisions[0];
+
+      assert.deepEqual(
+        decision?.citations.map((citation) => [
+          citation.instrument,
+          citation.document,
+          citation.hors_corpus,
+        ]),
+        [
+          ["RGPD", "32016R0679", false],
+          ["ePrivacy", EPRIVACY, true],
+          ["loi 78-17", "LEGITEXT000006068624", false],
+        ],
+      );
+      const horsCorpus = decision?.citations.find((citation) => citation.hors_corpus);
+      assert.equal(horsCorpus?.url, "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32002L0058");
+      assert.equal("texte" in (horsCorpus ?? {}), false);
+      assert.equal("resume" in (horsCorpus ?? {}), false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("recopie la marque d'une citation hors corpus sur le passage rendu", async () => {
+    const root = racine([
+      fragment(
+        "CNILTEXT000055022778",
+        0,
+        "La formation restreinte rappelle l'article 6 du règlement (UE) 2016/679 " +
+          "et l'article 13 de la directive 2002/58/CE.",
+      ),
+      fragment("CNILTEXT000055022778", 1, "Le manquement constitué sera publié."),
+    ]);
+    try {
+      const { chemin } = await buildIndex(root, embedderFactice());
+      const index = openIndex(chemin);
+      try {
+        const resultat = await search(
+          root,
+          { question: "manquement constitué et publié", corpus: "cnil", k: 5 },
+          { embedder: embedderFactice(), index, seuils: { bas: -1, haut: 2, marge: 0 } },
+        );
+
+        const citations = resultat.passages[0]?.citations ?? [];
+        assert.deepEqual(
+          citations.map((citation) => [citation.document, citation.hors_corpus]),
+          [
+            ["32016R0679", false],
+            [EPRIVACY, true],
+          ],
+        );
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("refuse un article d'un instrument connu absent, sans rendre de texte", () => {
+    const root = racine([fragment("CNILTEXT000055022778", 0, "texte")]);
+    try {
+      const article = getArticle(root, { document: EPRIVACY, numero: "5" });
+
+      assert.equal(article.trouve, false);
+      assert.equal("texte" in article, false);
+      assert.equal(article.message, MESSAGE_EPRIVACY);
+      for (const corpus of [
+        "RGPD",
+        "AI Act",
+        "LIL",
+        "CNIL",
+        "Conseil d'État",
+        "CEPD",
+        "Cour de cassation",
+        "CJUE",
+      ]) {
+        assert.ok(article.message.includes(corpus), `le périmètre nomme ${corpus}`);
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("refuse une décision d'un instrument connu absent, sans rendre de décision", () => {
+    const root = racine([fragment("CNILTEXT000055022778", 0, "texte")]);
+    try {
+      const resultat = getDecision(root, { document: EPRIVACY });
+
+      assert.equal(resultat.trouve, false);
+      assert.deepEqual(resultat.decisions, []);
+      assert.equal(resultat.message, MESSAGE_EPRIVACY);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("refuse la recherche sur un instrument connu absent, avant l'embedder et l'index", async () => {
+    const root = racine([fragment("CNILTEXT000055022778", 0, "texte")]);
+    try {
+      const resultat = await search(
+        root,
+        { question: "cookies et traceurs", document: EPRIVACY },
+        { embedder: EMBEDDER_INTERDIT },
+      );
+
+      assert.equal(resultat.niveau_confiance, "aucun_resultat_fiable");
+      assert.deepEqual(resultat.passages, []);
+      assert.equal(resultat.message, MESSAGE_EPRIVACY);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("garde la réponse actuelle pour un identifiant inconnu", () => {
+    const root = racine([fragment("CNILTEXT000055022778", 0, "texte")]);
+    try {
+      const article = getArticle(root, { document: "CNILTEXT000000000000", numero: "5" });
+      const decision = getDecision(root, { document: "CNILTEXT000000000000" });
+
+      assert.equal(article.trouve, false);
+      assert.match(article.message, /introuvable/);
+      assert.doesNotMatch(article.message, /absent de mon corpus/);
+      assert.equal(decision.trouve, false);
+      assert.match(decision.message ?? "", /Aucune décision pour le document CNILTEXT000000000000/);
+      assert.doesNotMatch(decision.message ?? "", /absent de mon corpus/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("garde « introuvable » pour un article manquant d'un document présent", () => {
+    const root = racine([fragment("CNILTEXT000055022778", 0, "texte")]);
+    try {
+      ecrireCorpus(root);
+      const article = getArticle(root, { document: DOCUMENT, numero: "99" });
+
+      assert.equal(article.trouve, false);
+      assert.equal(article.message, `Article 99 introuvable dans le document ${DOCUMENT}.`);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

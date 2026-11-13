@@ -52,7 +52,7 @@ npm run mcp:eval -- --questions questions-cjue.csv --split dev                 #
 npm run mcp:eval -- --questions questions-cnil-v2.csv --split dev --seuils 0.690,0.740,0.010   # 25 questions CNIL documentaires (hors CI)
 npm run mcp:eval -- --questions questions-cnil-v2.csv --split test --mesurer-test --seuils 0.690,0.740,0.010   # déjà consommé le 2026-11-06 ; ne pas relancer
 npm run mcp:eval:filtres                                                        # 12 cas de filtrage CNIL (hors CI)
-node mcp/eval/citations.ts cnil --taille 5                                      # 5 décisions CNIL, leurs citations et leur passage (hors CI)
+node mcp/eval/citations.ts cnil --taille 5                                      # 5 décisions CNIL, leurs citations, leur passage et le compte hors corpus (hors CI)
 ```
 
 Le MCP lit le RGPD, l'AI Act, la LIL, les délibérations de la CNIL, les décisions du Conseil
@@ -92,7 +92,12 @@ n'a pas été vérifiée : elle répond 403 aux robots.
 
 Une décision rendue par `search` ou `get_decision` — corpus `cnil`, `ce`, `cc`, `cjue` et `cepd` —
 porte `citations` : la liste des instruments et articles **reconnus** dans son texte (`RGPD · art. 6`,
-`loi 78-17 · art. 82`), chacun avec son lien officiel (`url`, `null` s'il est inconnu). Cette liste
+`loi 78-17 · art. 82`), chacun avec l'identifiant du document visé (`document`, `32016R0679`…), son
+lien officiel (`url`, `null` s'il est inconnu) et `hors_corpus` (`true` quand ce document n'est pas
+dans le corpus local, `false` sinon). Une citation hors corpus garde son lien et ne porte aucun texte
+ni résumé. La présence est lue à la lecture dans les manifestes `data/corpus/<corpus>/manifest.json`
+(champs `document` et `text_id`), jamais dans une constante : ajouter le manifeste d'un instrument
+suffit à faire disparaître la mention, sans changement de code. Cette liste
 n'est pas un relevé exhaustif : une citation absente peut exister dans la décision, et il ne faut pas
 en conclure qu'elle n'y figure pas. L'extraction
 est déterministe, faite à la lecture depuis `data/corpus/<corpus>/unites.jsonl`, au niveau du
@@ -102,7 +107,17 @@ que la décision n'a pas de base juridique. Le périmètre est fermé — RGPD, 
 2018/1725, loi 78-17, CPCE, code pénal à partir de 226-16 — et la précision prime : un instrument
 hors périmètre, un visa qui ne fait qu'appliquer une loi, une anaphore ambiguë ne produisent rien.
 La précision mesurée sur 25 documents relus est dans
-`aidd_docs/tasks/2026_11/2026_11_13_citations-decisions/mesure.md` ; aucun seuil n'est publié.
+`aidd_docs/tasks/2026_11/2026_11_13_citations-decisions/mesure.md` ; aucun seuil n'est publié. Le
+relevé du marquage, sur les 4 459 citations des cinq corpus de décisions, est dans
+`aidd_docs/tasks/2026_11/2026_11_13_documents-hors-corpus/mesure.md`.
+
+Un instrument connu mais absent du corpus — ePrivacy, 95/46, 2016/680, 2018/1725, CPCE, code pénal —
+répond, par `get_article`, `get_decision` et `search` : « absent de mon corpus (périmètre : RGPD,
+AI Act, LIL, CNIL, Conseil d'État, CEPD, Cour de cassation, CJUE). », sans rendre de texte ni de
+passage. Le refus de `search` précède l'embedder et l'index : un document absent n'a aucun passage à
+chercher. Un identifiant que le serveur ne connaît pas garde sa réponse actuelle — « introuvable »
+pour un article, « Aucune décision pour… » pour une décision —, et un article manquant d'un document
+présent garde aussi son message : le serveur n'affirme jamais l'absence de ce qu'il ne connaît pas.
 
 Le corpus `lil` porte la loi n° 78-17 dans sa version consolidée : 1 document, 133 articles en
 vigueur, 54 articles abrogés écartés et 50 sections parcourues. `npm run lil:sync -- --date

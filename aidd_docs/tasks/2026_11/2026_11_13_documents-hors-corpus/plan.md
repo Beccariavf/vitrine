@@ -1,6 +1,6 @@
 ---
 objective: "Chaque citation d'instrument rendue par search et get_decision porte l'identifiant du document visé et son appartenance au corpus ; un instrument connu absent répond « absent de mon corpus (périmètre : …) » sans rendre de texte."
-status: pending
+status: completed
 ---
 
 # Plan: Signaler les documents cités absents du corpus

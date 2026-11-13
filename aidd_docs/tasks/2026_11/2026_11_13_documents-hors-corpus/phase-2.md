@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 ---
 
 # Instruction: Exposer la mention dans les réponses et refuser un document absent

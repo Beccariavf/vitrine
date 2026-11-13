@@ -9,11 +9,14 @@ import type { Reranker } from "./rerank/reranker.ts";
 import { debutDispositif, numeroIndex } from "./corpus/cnil/meta.ts";
 import { estSanction } from "./corpus/cnil/nature.ts";
 import {
+  absenceDuDocument,
   citationsDesUnites,
   citationsDuCorpus,
+  documentsPresents,
   estCorpusDecision,
+  marquerPresence,
 } from "./corpus/citations.ts";
-import type { Citation } from "./corpus/citations.ts";
+import type { Citation, CitationRendue } from "./corpus/citations.ts";
 import { niveauConfiance } from "./confidence.ts";
 import type { NiveauConfiance } from "./confidence.ts";
 import { inventaireCorpus, lireRapport } from "./corpus/sync-rapport.ts";
@@ -82,7 +85,7 @@ export type ResultatArticle = ArticleTrouve | ArticleAbsent;
 export type Passage = ResultatRecherche & {
   similarite: number;
   /** Instruments et articles cités par la décision ; absent hors des cinq corpus de décisions. */
-  citations?: Citation[];
+  citations?: CitationRendue[];
 };
 
 export type ResultatRechercheOutil = {
@@ -111,14 +114,20 @@ function passageExact(unite: Unite): Passage {
  */
 function avecCitations(rootDir: string, passages: Passage[]): Passage[] {
   const parCorpus = new Map<string, ReadonlyMap<string, Citation[]>>();
+  // La présence est lue une fois par réponse : huit manifestes, jamais par passage.
+  let presents: ReadonlySet<string> | undefined;
   return passages.map((passage) => {
     if (!estCorpusDecision(passage.corpus)) return passage;
+    presents ??= documentsPresents(rootDir);
     let corpus = parCorpus.get(passage.corpus);
     if (corpus === undefined) {
       corpus = citationsDuCorpus(rootDir, passage.corpus);
       parCorpus.set(passage.corpus, corpus);
     }
-    return { ...passage, citations: corpus.get(passage.document) ?? [] };
+    return {
+      ...passage,
+      citations: marquerPresence(presents, corpus.get(passage.document) ?? []),
+    };
   });
 }
 
@@ -249,11 +258,15 @@ export function getArticle(
 ): ResultatArticle {
   const article = trouverArticles(rootDir, { document: demande.document }, demande.numero)[0];
   if (article !== undefined) return { ...article, trouve: true };
+  // Un instrument connu mais absent du corpus est dit absent, jamais « introuvable » ;
+  // un identifiant inconnu garde le message d'un article manquant.
   return {
     trouve: false,
     document: demande.document,
     numero: String(demande.numero),
-    message: `Article ${demande.numero} introuvable dans le document ${demande.document}.`,
+    message:
+      absenceDuDocument(rootDir, demande.document) ??
+      `Article ${demande.numero} introuvable dans le document ${demande.document}.`,
   };
 }
 
@@ -336,7 +349,7 @@ export type DecisionTrouvee = {
   /** Partie rendue : la partie opératoire, ou le document entier. */
   partie: PartieDecision;
   /** Instruments et articles que le texte de la décision cite ; `[]` si aucun. */
-  citations: Citation[];
+  citations: CitationRendue[];
   fragments: FragmentDecision[];
 };
 
@@ -424,10 +437,12 @@ export function getDecision(rootDir: string, demande: DecisionDemande): Resultat
       : `le numéro ${numero ?? ""}`;
 
   if (trouvees.length === 0) {
+    const absence =
+      document === undefined || document === "" ? null : absenceDuDocument(rootDir, document);
     return {
       trouve: false,
       decisions: [],
-      message: `Aucune décision pour ${quoi}${portee}.`,
+      message: absence ?? `Aucune décision pour ${quoi}${portee}.`,
     };
   }
 
@@ -462,6 +477,7 @@ export function getDecision(rootDir: string, demande: DecisionDemande): Resultat
     parDocument.set(unite.document, liste);
   }
 
+  const presents = documentsPresents(rootDir);
   const decisions: DecisionTrouvee[] = [...parDocument.entries()]
     .sort((gauche, droite) => gauche[0].localeCompare(droite[0]))
     .map(([identifiant, fragments]) => {
@@ -487,7 +503,7 @@ export function getDecision(rootDir: string, demande: DecisionDemande): Resultat
         ...(premier.injonction === undefined ? {} : { injonction: premier.injonction }),
         fragments_total: premiers.length,
         partie,
-        citations: citationsDesUnites(premiers),
+        citations: marquerPresence(presents, citationsDesUnites(premiers)),
         fragments: rendus.map((unite) => ({
           ref: unite.ref,
           numero: unite.numero,
@@ -521,6 +537,12 @@ export async function search(
   const corpus = demande.corpus;
   // La confiance ne peut certifier un corpus que la question ou l'appel nomme.
   const corpusNomme = corpus !== undefined || document !== undefined;
+  // Un document connu mais absent du corpus n'a aucun passage à chercher : le
+  // refus précède l'embedder et l'index, et garde la phrase des trois outils.
+  const absence = document === undefined ? null : absenceDuDocument(rootDir, document);
+  if (absence !== null) {
+    return { niveau_confiance: "aucun_resultat_fiable", passages: [], message: absence };
+  }
   /** Enrichit les passages rendus de leurs citations, sans toucher au reste. */
   const rendre = (resultat: ResultatRechercheOutil): ResultatRechercheOutil => ({
     ...resultat,
