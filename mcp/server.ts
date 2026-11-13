@@ -64,7 +64,8 @@ const CONSIGNE_SERVEUR =
   "un avis ou une recommandation se lit par `search` avec `nature`. Le texte rendu vient du corpus " +
   "local, jamais d'une génération ; l'embedding est local (`leoipulsar/harrier-0.6b` sur Ollama). " +
   "`etat_corpus` dit à quelle date le corpus a été rafraîchi depuis la veille (`a_jour_au`), " +
-  "quels documents manquent et quelle source a échoué ; il ne lit ni l'index ni le réseau. " +
+  "quels documents manquent, quels documents cités restent hors du corpus avec les autorités " +
+  "qui les citent, et quelle source a échoué ; il ne lit ni l'index ni le réseau. " +
   CONSIGNE_PROMESSE;
 
 export type ServerDeps = {
@@ -176,8 +177,12 @@ export function createServer(deps: ServerDeps): McpServer {
       description:
         "Rend la date de la dernière synchronisation réussie depuis la veille (`a_jour_au`), " +
         "la fenêtre de veille, l'inventaire des huit corpus avec leurs comptes, les documents " +
-        "manquants et l'état des sources et de l'index. Un document manquant n'est pas une " +
-        "génération : il est absent du corpus local et le rapport le nomme. " +
+        "manquants et l'état des sources et de l'index. `hors_corpus` porte le classement des " +
+        "documents hors corpus : ceux que les décisions citent sans qu'ils soient au corpus, par " +
+        "nombre de décisions citantes décroissant (`citations`), avec les autorités qui les citent et " +
+        "leur compte ; un document " +
+        "déclaré hors du périmètre y est marqué `exclu`, jamais présenté comme un trou. Un document " +
+        "manquant n'est pas une génération : il est absent du corpus local et le rapport le nomme. " +
         "Aucun accès réseau, aucun index : lit `data/corpus/sync.json` et les manifestes.",
       inputSchema: {},
     },

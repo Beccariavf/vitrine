@@ -8,6 +8,11 @@
  * ligne finale compte, sur tous les documents du corpus, les citations hors
  * corpus par instrument. Deux exécutions donnent la même sortie ; aucun fichier
  * n'est écrit, seul `data/corpus/` est lu.
+ *
+ * `node mcp/eval/citations.ts --classement` imprime le classement réel des
+ * documents cités absents du corpus, celui que `npm run corpus:sync` écrit dans
+ * `data/corpus/sync.json` : documents, statut, décisions citantes et autorités
+ * citantes. Même lecture seule, aucun index, aucun réseau.
  */
 
 import { readFileSync } from "node:fs";
@@ -21,6 +26,7 @@ import {
   marquerPresence,
 } from "../corpus/citations.ts";
 import type { CitationRendue } from "../corpus/citations.ts";
+import { classementHorsCorpus, formaterAutorites } from "../corpus/hors-corpus.ts";
 import type { Unite } from "../corpus/parse.ts";
 
 const RACINE = fileURLToPath(new URL("../..", import.meta.url));
@@ -30,7 +36,13 @@ const TAILLE_DEFAUT = 5;
 
 const USAGE =
   "Usage : node mcp/eval/citations.ts <corpus> [--taille <n>] [--root <racine>]\n" +
+  "        node mcp/eval/citations.ts --classement [--root <racine>]\n" +
   `Corpus acceptés : ${CORPUS_DECISIONS.join(", ")}.`;
+
+/** Date du jour en UTC, forme `AAAA-MM-JJ`, la même que la passe de synchronisation. */
+function dateDuJour(instant = new Date()): string {
+  return instant.toISOString().slice(0, 10);
+}
 
 /** Corpus demandé, refusé s'il n'est pas un corpus de décisions. */
 export function lireCorpus(valeur: string | undefined): string {
@@ -182,16 +194,67 @@ export function rendreEchantillon(rootDir: string, corpus: string, taille: numbe
   return `${lignes.join("\n")}\n`;
 }
 
+/**
+ * Classement réel des documents cités absents du corpus : une ligne par
+ * document, son statut, ses décisions citantes et les autorités qui le citent,
+ * puis le total. Aucune écriture, aucun index, aucun réseau.
+ */
+export function rendreClassement(rootDir: string, date: string): string {
+  const classement = classementHorsCorpus(rootDir, date);
+  const total = classement.documents.reduce((somme, document) => somme + document.citations, 0);
+  const lignes = [
+    `classement des documents hors corpus au ${classement.calcule_le} : ` +
+      `${classement.documents.length} document(s), ${total} citation(s) rendue(s)`,
+  ];
+  for (const document of classement.documents) {
+    lignes.push(
+      `${document.instrument} (${document.document}) — ${document.statut} : ` +
+        `${document.citations} décision(s) citante(s)${formaterAutorites(document.autorites)}`,
+    );
+  }
+  return `${lignes.join("\n")}\n`;
+}
+
+/** Options qui prennent une valeur ; leur valeur n'est jamais un positionnel. */
+const OPTIONS_A_VALEUR: readonly string[] = ["--taille", "--root"];
+
+/**
+ * Arguments positionnels : les options et la valeur qui les suit sont écartées,
+ * pour que `--root .` ne se lise pas comme un corpus.
+ */
+export function positionnels(argv: readonly string[]): string[] {
+  const resultat: string[] = [];
+  for (let rang = 0; rang < argv.length; rang += 1) {
+    const argument = argv[rang] ?? "";
+    if (OPTIONS_A_VALEUR.includes(argument)) {
+      rang += 1;
+      continue;
+    }
+    if (!argument.startsWith("--")) resultat.push(argument);
+  }
+  return resultat;
+}
+
 async function main(argv: string[]): Promise<void> {
-  const positionnels = argv.filter((argument) => !argument.startsWith("--"));
   const valeurDe = (nom: string): string | undefined => {
     const position = argv.indexOf(nom);
     return position === -1 ? undefined : argv[position + 1];
   };
 
-  const corpus = lireCorpus(positionnels[0]);
-  const taille = lireTaille(valeurDe("--taille"));
   const rootDir = resolve(valeurDe("--root") ?? RACINE);
+  if (argv.includes("--classement")) {
+    const corpus = positionnels(argv)[0];
+    if (corpus !== undefined) {
+      throw new Error(
+        `--classement couvre les cinq corpus de décisions : aucun corpus positionnel, reçu « ${corpus} ».`,
+      );
+    }
+    process.stdout.write(rendreClassement(rootDir, dateDuJour()));
+    return;
+  }
+
+  const corpus = lireCorpus(positionnels(argv)[0]);
+  const taille = lireTaille(valeurDe("--taille"));
   process.stdout.write(rendreEchantillon(rootDir, corpus, taille));
 }
 

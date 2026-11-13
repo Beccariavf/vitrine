@@ -11,6 +11,7 @@ import { normaliser } from "../mcp/embed/embedder.ts";
 import { cheminIndex } from "../mcp/index/build.ts";
 import { openIndex } from "../mcp/index/search.ts";
 import { etatCorpus, search } from "../mcp/tools.ts";
+import { rendreClassement } from "../mcp/eval/citations.ts";
 import { agentsParDefaut, syncCorpus } from "../mcp/corpus/sync.ts";
 import type { AgentSync } from "../mcp/corpus/sync.ts";
 import {
@@ -399,6 +400,67 @@ describe("rapport de synchronisation", () => {
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
+  });
+
+  it("imprime le classement hors corpus et marque un document exclu", () => {
+    const rapport: RapportSync = {
+      version: 1,
+      a_jour_au: "2026-11-13",
+      derniere_tentative: "2026-11-13",
+      depuis: "2026-11-06",
+      entrees_lues: 0,
+      comptes: { presents: 0, manquants: 0, ecartes: 0, non_mappes: 0 },
+      documents: [],
+      corpus: [],
+      sources: [],
+      index: { statut: "ignoree", message: "corpus inchangé" },
+      hors_corpus: {
+        calcule_le: "2026-11-13",
+        documents: [
+          {
+            document: "32002L0058",
+            instrument: "ePrivacy",
+            url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32002L0058",
+            statut: "exclu",
+            citations: 5,
+            autorites: [
+              { autorite: "CNIL", citations: 4 },
+              { autorite: "Conseil d'État", citations: 1 },
+            ],
+          },
+        ],
+      },
+    };
+
+    const texte = formaterRapport(rapport);
+    assert.match(texte, /Hors corpus :/);
+    assert.match(
+      texte,
+      /ePrivacy \(32002L0058\) : 5 décision\(s\) citante\(s\) — CNIL 4, Conseil d'État 1 \[exclu\]/,
+    );
+    assert.equal(/manquant/i.test(texte.split("Hors corpus :")[1] ?? ""), false);
+  });
+
+  it("n'imprime rien quand le classement est vide ou absent", () => {
+    const vide: RapportSync = {
+      version: 1,
+      a_jour_au: "2026-11-13",
+      derniere_tentative: "2026-11-13",
+      depuis: "2026-11-06",
+      entrees_lues: 0,
+      comptes: { presents: 0, manquants: 0, ecartes: 0, non_mappes: 0 },
+      documents: [],
+      corpus: [],
+      sources: [],
+      index: { statut: "ignoree", message: "corpus inchangé" },
+    };
+    assert.equal(/Hors corpus/.test(formaterRapport(vide)), false);
+    assert.equal(
+      /Hors corpus/.test(
+        formaterRapport({ ...vide, hors_corpus: { calcule_le: "2026-11-13", documents: [] } }),
+      ),
+      false,
+    );
   });
 
   it("expose l'état sans rapport et le message qui nomme la commande", () => {
@@ -1039,6 +1101,201 @@ describe("synchronisation du corpus", () => {
       assert.equal(rapport.a_jour_au, "2026-11-11");
       assert.equal(rapport.sources.every((source) => source.statut === "ignoree"), true);
       assert.equal(existsSync(join(root, "data", "corpus", "sync.json")), true);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("classement des documents hors corpus", () => {
+  it("écrit le classement daté à chaque passe et le rend par etat_corpus", async () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "cnil", [
+        uniteCnil("CNILTEXT000000000001", "l'article 13 de la directive ePrivacy"),
+        uniteCnil("CNILTEXT000000000002", "l'article 13 de la directive ePrivacy"),
+      ]);
+      const premiere = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-12",
+        depuis: "2026-11-05",
+        agents: agents(INERTE, INERTE, INERTE, INERTE),
+        embedder: embedderFactice(),
+      });
+      assert.equal(premiere.hors_corpus?.calcule_le, "2026-11-12");
+      assert.deepEqual(
+        premiere.hors_corpus?.documents.map((document) => [document.document, document.citations]),
+        [["32002L0058", 2]],
+      );
+      assert.deepEqual(lireRapport(root)?.hors_corpus, premiere.hors_corpus);
+      assert.deepEqual(etatCorpus(root).hors_corpus, premiere.hors_corpus);
+
+      const seconde = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-13",
+        agents: agents(INERTE, INERTE, INERTE, INERTE),
+        embedder: embedderFactice(),
+      });
+      assert.equal(seconde.hors_corpus?.calcule_le, "2026-11-13");
+      assert.equal(lireRapport(root)?.hors_corpus?.calcule_le, "2026-11-13");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("rend le classement en dry-run et laisse le fichier intact", async () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "cnil", [
+        uniteCnil("CNILTEXT000000000001", "l'article 13 de la directive ePrivacy"),
+      ]);
+      await syncCorpus({
+        rootDir: root,
+        date: "2026-11-12",
+        depuis: "2026-11-05",
+        agents: agents(INERTE, INERTE, INERTE, INERTE),
+        embedder: embedderFactice(),
+      });
+      const chemin = join(root, "data", "corpus", "sync.json");
+      const avant = readFileSync(chemin);
+
+      const dry = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-13",
+        dryRun: true,
+        agents: agents(INERTE, INERTE, INERTE, INERTE),
+        embedder: embedderFactice(),
+      });
+      assert.equal(dry.hors_corpus?.calcule_le, "2026-11-13");
+      assert.deepEqual(readFileSync(chemin), avant);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("lit un rapport sans classement et refuse un bloc mal formé", () => {
+    const root = racine();
+    try {
+      const sansBloc = {
+        version: 1,
+        a_jour_au: "2026-11-12",
+        derniere_tentative: "2026-11-12",
+        depuis: "2026-11-05",
+        entrees_lues: 0,
+        comptes: { presents: 0, manquants: 0, ecartes: 0, non_mappes: 0 },
+        documents: [],
+        corpus: [],
+        sources: [],
+        index: { statut: "ignoree" },
+      };
+      mkdirSync(join(root, "data", "corpus"), { recursive: true });
+      const chemin = join(root, "data", "corpus", "sync.json");
+      writeFileSync(chemin, JSON.stringify(sansBloc), "utf8");
+      assert.equal(lireRapport(root)?.hors_corpus, undefined);
+      assert.equal(etatCorpus(root).hors_corpus, null);
+
+      writeFileSync(
+        chemin,
+        JSON.stringify({ ...sansBloc, hors_corpus: { calcule_le: 3, documents: [] } }),
+        "utf8",
+      );
+      assert.equal(lireRapport(root), null);
+
+      writeFileSync(chemin, JSON.stringify({ ...sansBloc, hors_corpus: [] }), "utf8");
+      assert.equal(lireRapport(root), null);
+
+      writeFileSync(
+        chemin,
+        JSON.stringify({ ...sansBloc, hors_corpus: { calcule_le: "2026-11-13" } }),
+        "utf8",
+      );
+      assert.equal(lireRapport(root), null);
+
+      // Une entrée incomplète est refusée aussi : `formaterRapport` la lirait.
+      writeFileSync(
+        chemin,
+        JSON.stringify({
+          ...sansBloc,
+          hors_corpus: { calcule_le: "2026-11-13", documents: [{}] },
+        }),
+        "utf8",
+      );
+      assert.equal(lireRapport(root), null);
+
+      writeFileSync(
+        chemin,
+        JSON.stringify({
+          ...sansBloc,
+          hors_corpus: {
+            calcule_le: "2026-11-13",
+            documents: [
+              {
+                document: "32002L0058",
+                instrument: "ePrivacy",
+                url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32002L0058",
+                statut: "absent",
+                citations: 1,
+                autorites: [{ autorite: "CNIL", citations: 1 }],
+              },
+            ],
+          },
+        }),
+        "utf8",
+      );
+      assert.equal(lireRapport(root)?.hors_corpus?.documents.length, 1);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("classe un corpus lisible et ignore le même corpus illisible sans faire échouer la passe", async () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "cnil", [uniteCnil("CNILTEXT000000000001")]);
+      ecrireCorpus(root, "ce", [
+        {
+          ...uniteCnil("CETATEXT000000000001", "l'article 13 de la directive ePrivacy"),
+          corpus: "ce",
+        },
+      ]);
+
+      const lisible = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-13",
+        depuis: "2026-11-06",
+        agents: agents(INERTE, INERTE, INERTE, INERTE),
+        embedder: embedderFactice(),
+      });
+      assert.deepEqual(
+        lisible.hors_corpus?.documents.map((document) => [
+          document.document,
+          document.citations,
+          document.autorites,
+        ]),
+        [["32002L0058", 1, [{ autorite: "Conseil d'État", citations: 1 }]]],
+        "un corpus lisible doit citer ePrivacy dans le classement",
+      );
+
+      // Le relevé texte dit l'unité de chaque ligne et celle du total.
+      const texte = rendreClassement(root, "2026-11-13");
+      assert.match(texte, /au 2026-11-13 : 1 document\(s\), 1 citation\(s\) rendue\(s\)/);
+      assert.match(texte, /ePrivacy \(32002L0058\) — absent : 1 décision\(s\) citante\(s\)/);
+
+      // Même corpus, illisible : la passe ne lève pas et le document disparaît.
+      writeFileSync(
+        join(root, "data", "corpus", "ce", "unites.jsonl"),
+        "{ pas du JSON, et pas la même taille\n",
+        "utf8",
+      );
+      const illisible = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-13",
+        depuis: "2026-11-06",
+        agents: agents(INERTE, INERTE, INERTE, INERTE),
+        embedder: embedderFactice(),
+      });
+      assert.deepEqual(illisible.hors_corpus?.documents, []);
+      assert.equal(illisible.hors_corpus?.calcule_le, "2026-11-13");
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

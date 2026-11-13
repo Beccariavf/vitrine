@@ -992,6 +992,10 @@ describe("le serveur en mémoire", () => {
     assert.match(description("search"), /absent de mon corpus/);
     assert.match(description("get_article"), /absent de mon corpus/);
     assert.equal(/citations/.test(description("get_article")), false);
+    assert.match(description("etat_corpus"), /hors corpus/);
+    assert.match(description("etat_corpus"), /citations/);
+    assert.match(description("etat_corpus"), /autorités/);
+    assert.match(description("etat_corpus"), /exclu/);
   });
 
   it("rend l'état du corpus sans rapport par etat_corpus", async () => {
@@ -1000,6 +1004,7 @@ describe("le serveur en mémoire", () => {
 
     assert.equal(payload.a_jour_au, null);
     assert.equal(Array.isArray(payload.corpus), true);
+    assert.equal(payload.hors_corpus, null);
     assert.match(String(payload.message), /corpus:sync/);
   });
 
