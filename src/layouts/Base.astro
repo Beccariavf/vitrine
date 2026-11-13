@@ -28,6 +28,7 @@ const NAV = [
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   </head>
   <body class="min-h-dvh bg-concrete text-ink antialiased">
     <a href="#contenu" class="skip-link">Aller au contenu</a>
@@ -39,11 +40,11 @@ const NAV = [
         ]}
       >
         <a href="/" class="flex items-center gap-3 text-ink no-underline hover:no-underline">
-          <span aria-hidden="true" class="grid size-9 shrink-0 grid-cols-2 grid-rows-2 border-2 border-ink shadow-hard">
-            <span class="border-r-2 border-b-2 border-ink bg-blue"></span>
-            <span class="border-b-2 border-ink bg-red"></span>
-            <span class="border-r-2 border-ink bg-green"></span>
-            <span class="bg-yellow"></span>
+          <span
+            aria-hidden="true"
+            class="flex h-9 w-[1.875rem] shrink-0 items-end justify-end border-2 border-ink bg-concrete p-1 shadow-[3px_3px_0_var(--color-ink)]"
+          >
+            <span class="h-5 w-3 border-2 border-ink bg-red"></span>
           </span>
           <span class="flex flex-col">
             <span class="font-display text-3xl leading-[0.85] font-[850] tracking-[-0.01em] [font-stretch:72%]">VITRINE</span>
