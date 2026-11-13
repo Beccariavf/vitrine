@@ -26,8 +26,8 @@ Source: GitHub issue #31 (epic #25, feuille de route #65), contrat dans `spec.md
 
 | Category                                           | Verdict and evidence | Handled in         |
 | -------------------------------------------------- | -------------------- | ------------------ |
-| runtime | Lecture de huit `manifest.json` (29 035 octets au total, mesuré le 2026-11-13) à chaque réponse qui rend des citations ou refuse un document : aucun réseau, aucune écriture. Le marquage ne relit pas `unites.jsonl` ; le cache par fichier de `citationsDuCorpus` reste celui des citations brutes. | 1, 2 |
-| regression | `Citation` gagne `document` ; `Passage.citations` et `DecisionTrouvee.citations` passent au type enrichi, lus par `mcp/eval/citations.ts`, `tests/citations.test.ts` et `tests/mcp.test.ts`. Les descriptions d'outils sont assertées par `tests/server-stdio.test.ts` : elles sont relues et ajustées. Aucun changement d'index ni de `data/`. | 1, 2 |
+| runtime | Lecture de huit `manifest.json` (28 765 octets au total, mesuré le 2026-11-13) à chaque réponse qui rend des citations ou refuse un document : aucun réseau, aucune écriture. Le marquage ne relit pas `unites.jsonl` ; le cache par fichier de `citationsDuCorpus` reste celui des citations brutes. | 1, 2 |
+| regression | `Citation` gagne `document` ; `Passage.citations` et `DecisionTrouvee.citations` passent au type enrichi, lus par `mcp/eval/citations.ts`, `tests/citations.test.ts` et `tests/mcp.test.ts`. Les descriptions d'outils sont assertées par `tests/mcp.test.ts` : elles sont relues et ajustées. Aucun changement d'index ni de `data/`. | 1, 2 |
 | architecture | Aucun module nouveau : `mcp/corpus/citations.ts` reste la source unique des instruments et de leurs identifiants ; la présence se lit dans les manifestes, jamais dans une constante (décision 2 du contrat). Le refus passe par les trois outils existants, sans champ nouveau. | 1, 2 |
 | documentation | `README.md` §réponses des outils, `architecture.md` (citations et présence), `codebase-map.md` (`citations.ts`, `tools.ts`), `testing.md` (tests et échantillonneur), et `mesure.md` (relevé par corpus). | 3 |
 

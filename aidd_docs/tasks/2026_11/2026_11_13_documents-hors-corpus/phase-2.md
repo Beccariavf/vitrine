@@ -12,8 +12,7 @@ status: completed
 │   ├── tools.ts                ✏️ citations marquées, refus partagé par les trois outils
 │   └── server.ts               ✏️ descriptions des outils
 └── tests/
-    ├── mcp.test.ts             ✏️ citations marquées, absences, identifiant inconnu
-    └── server-stdio.test.ts    ✏️ description des outils si le texte change
+    └── mcp.test.ts             ✏️ citations marquées, absences, identifiant inconnu
 ```
 
 ## Test Scope

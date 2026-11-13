@@ -1815,6 +1815,29 @@ describe("les documents cités absents du corpus", () => {
     }
   });
 
+  it("ne refuse pas la recherche sur un identifiant inconnu", async () => {
+    const root = racine([fragment("CNILTEXT000055022778", 0, "cookies et traceurs")]);
+    try {
+      const { chemin } = await buildIndex(root, embedderFactice());
+      const index = openIndex(chemin);
+      try {
+        const resultat = await search(
+          root,
+          { question: "cookies et traceurs", document: "CNILTEXT000000000000" },
+          { embedder: embedderFactice(), index, seuils: { bas: -1, haut: 2, marge: 0 } },
+        );
+
+        assert.deepEqual(resultat.passages, []);
+        assert.equal(resultat.message, undefined);
+        assert.doesNotMatch(JSON.stringify(resultat), /absent de mon corpus/);
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("garde « introuvable » pour un article manquant d'un document présent", () => {
     const root = racine([fragment("CNILTEXT000055022778", 0, "texte")]);
     try {

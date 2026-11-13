@@ -1,7 +1,7 @@
 import { strict as assert } from "node:assert";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
@@ -41,6 +41,8 @@ import {
   verifierTestNonConsomme,
 } from "../mcp/eval/run.ts";
 import type { MarqueurV3, Mesure, Question, Split } from "../mcp/eval/run.ts";
+import { compterCitations } from "../mcp/eval/citations.ts";
+import type { Unite } from "../mcp/corpus/parse.ts";
 import {
   INSTRUCTION_AIAct,
   INSTRUCTION_CNIL,
@@ -1463,5 +1465,69 @@ describe("questions-cnil-etendu.csv", () => {
       13,
       "Recommandation",
     );
+  });
+});
+
+describe("le bilan des citations d'un corpus", () => {
+  function unite(document: string, ref: string, texte: string): Unite {
+    return {
+      ref,
+      document,
+      corpus: "cnil",
+      niveau: "fragment",
+      numero: "SAN-2026-001",
+      chemin: "CNIL > Sanctions > Délibération SAN-2026-001",
+      texte,
+      date_acte: "2026-01-01",
+      date_debut: "2026-01-01",
+      date_fin: null,
+      statut: "VIGUEUR",
+      url: `https://www.legifrance.gouv.fr/cnil/id/${document}`,
+    };
+  }
+
+  it("compte les citations hors corpus sur tous les documents, par instrument", () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-bilan-"));
+    try {
+      const rgpd = join(root, "data", "corpus", "rgpd");
+      mkdirSync(rgpd, { recursive: true });
+      writeFileSync(
+        join(rgpd, "manifest.json"),
+        `${JSON.stringify({ document: "32016R0679" })}\n`,
+        "utf8",
+      );
+
+      const documents = new Map<string, Unite[]>([
+        [
+          "CNILTEXT000055022778",
+          [
+            unite(
+              "CNILTEXT000055022778",
+              "CNILTEXT000055022778#f0",
+              "l'article 6 du RGPD et l'article 13 de la directive 2002/58/CE",
+            ),
+          ],
+        ],
+        [
+          "CNILTEXT000055022779",
+          [
+            unite(
+              "CNILTEXT000055022779",
+              "CNILTEXT000055022779#f0",
+              "l'article 5 de la directive 2002/58/CE",
+            ),
+          ],
+        ],
+      ]);
+
+      assert.deepEqual(compterCitations(root, documents), {
+        documents: 2,
+        citations: 3,
+        hors_corpus: 2,
+        par_instrument: [["ePrivacy (32002L0058)", 2]],
+      });
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 });
