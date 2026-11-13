@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { after, describe, it } from "node:test";
-import { derniereMiseAJour, sourcesCorpus } from "../src/lib/corpus.ts";
+import { sourcesCorpus } from "../src/lib/corpus.ts";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 
@@ -48,7 +48,6 @@ describe("sourcesCorpus", () => {
   it("rend une liste vide sans data/corpus/", () => {
     const racine = racineTemporaire();
     assert.deepEqual(sourcesCorpus(racine), []);
-    assert.equal(derniereMiseAJour(sourcesCorpus(racine)), null);
   });
 
   it("laisse un corpus inconnu à son identifiant, après les connus", () => {
@@ -64,7 +63,7 @@ describe("sourcesCorpus", () => {
     );
   });
 
-  it("prend la date des autres corpus quand le RGPD n'en porte pas", () => {
+  it("laisse le RGPD sans date quand son manifeste n'en porte pas", () => {
     const racine = racineTemporaire();
     ecrireManifeste(racine, "rgpd", { unites: 272 });
     ecrireManifeste(racine, "cnil", { documents: 3, arrete_le: "2026-10-30" });
@@ -72,6 +71,6 @@ describe("sourcesCorpus", () => {
     const sources = sourcesCorpus(racine);
     assert.equal(sources[0]?.libelle, "RGPD");
     assert.equal(sources[0]?.arrete_le, null);
-    assert.equal(derniereMiseAJour(sources), "2026-11-11");
+    assert.equal(sources.find((source) => source.corpus === "cc")?.arrete_le, "2026-11-11");
   });
 });

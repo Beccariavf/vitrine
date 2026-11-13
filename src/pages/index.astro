@@ -1,25 +1,21 @@
 ---
 import Demo from "../components/Demo.astro";
 import Base from "../layouts/Base.astro";
-import { derniereMiseAJour, sourcesCorpus } from "../lib/corpus.ts";
+import { sourcesCorpus } from "../lib/corpus.ts";
 import { lireDemo } from "../lib/demo.ts";
 import { getVisibleEntries } from "../lib/entries.ts";
 import { sourceLabel } from "../lib/sources.ts";
 
 const sources = sourcesCorpus();
-const miseAJour = derniereMiseAJour(sources);
 const publications = getVisibleEntries().slice(0, 3);
 const demo = lireDemo();
-
-/** Dates en français, à l'heure UTC : les mêmes au build comme en test. */
-const dateFormat = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeZone: "UTC" });
 const dayFormat = new Intl.DateTimeFormat("fr-FR", { day: "2-digit", timeZone: "UTC" });
 const shortMonth = new Intl.DateTimeFormat("fr-FR", { month: "short", timeZone: "UTC" });
 ---
 
 <Base
   title="Vitrine — une IA juridique qui cite ses sources"
-  description="Un connecteur en préparation entre votre IA et les sources officielles du droit des données personnelles, et une veille juridique publiée depuis ces mêmes sources."
+  description="Un connecteur en préparation entre votre IA et les sources officielles du droit des données personnelles, et une veille des publications officielles du droit du numérique."
 >
   <section class="grid gap-8 lg:grid-cols-12 lg:gap-10">
     <div class:list={[demo !== null ? "lg:col-span-7" : "lg:col-span-8"]}>
@@ -61,11 +57,12 @@ const shortMonth = new Intl.DateTimeFormat("fr-FR", { month: "short", timeZone: 
           <h2 id="sources" class="font-mono text-[0.7rem] font-normal uppercase tracking-[0.14em]">
             Sources du connecteur
           </h2>
-          {miseAJour !== null && (
-            <p class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">
-              À jour au <time datetime={miseAJour}>{dateFormat.format(new Date(miseAJour))}</time>
-            </p>
-          )}
+          <a
+            href="/connecteur#couverture"
+            class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted"
+          >
+            Dates par collection <span aria-hidden="true">→</span>
+          </a>
         </div>
         <ul class="flex flex-wrap gap-1.5 p-4">
           {sources.map((source) => (

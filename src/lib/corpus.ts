@@ -45,14 +45,3 @@ export function sourcesCorpus(rootDir: string = process.cwd()): SourceCorpus[] {
         gauche.corpus.localeCompare(droite.corpus),
     );
 }
-
-/** La date d'arrêté la plus récente des collections, ou `null` si aucune n'en porte. */
-export function derniereMiseAJour(sources: SourceCorpus[]): string | null {
-  return sources.reduce<string | null>(
-    (plusRecente, source) =>
-      source.arrete_le !== null && (plusRecente === null || source.arrete_le > plusRecente)
-        ? source.arrete_le
-        : plusRecente,
-    null,
-  );
-}
