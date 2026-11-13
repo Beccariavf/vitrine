@@ -16,8 +16,7 @@ const dateFormat = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeZon
 <figure class="min-w-0 border-2 border-ink bg-paper shadow-hard">
   <div class="border-b-2 border-ink p-4 sm:p-5">
     <p class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted wrap-anywhere">
-      Question · capturée le <time datetime={demo.capturee_le}>{dateFormat.format(new Date(demo.capturee_le))}</time>
-      · {demo.modele}
+      Question · capturée le <time datetime={demo.capturee_le}>{dateFormat.format(new Date(demo.capturee_le))}</time>{" · "}{demo.modele}
     </p>
     <p class="mt-2 text-lg font-bold leading-snug wrap-anywhere">« {demo.question} »</p>
   </div>
