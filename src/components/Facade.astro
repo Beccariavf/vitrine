@@ -23,8 +23,8 @@ const colonnes = sources.map((source) => {
   };
 });
 
-const resume = `Façade du corpus, une colonne par collection, hauteur selon le volume indexé : ${colonnes
-  .map((colonne) => `${colonne.libelle}, ${nombre.format(colonne.unites)} unités`)
+const resume = `Façade du corpus, une colonne par collection, hauteur selon le nombre de passages indexés, en échelle logarithmique : ${colonnes
+  .map((colonne) => `${colonne.libelle}, ${nombre.format(colonne.unites)} passages`)
   .join(" ; ")}.`;
 ---
 
@@ -53,13 +53,13 @@ const resume = `Façade du corpus, une colonne par collection, hauteur selon le 
               {colonne.libelle}
             </p>
             <p class="mt-0.5 font-mono text-[0.62rem] tabular-nums text-muted sm:text-[0.66rem]">
-              {nombre.format(colonne.unites)}
+              {nombre.format(colonne.unites)} passages
             </p>
           </div>
         ))}
       </div>
       <figcaption class="mt-6 border-t-2 border-ink pt-3">
-        <Legende complement="hauteur = volume indexé (échelle log)" />
+        <Legende complement="hauteur = passages indexés (échelle log), pas le nombre de décisions" />
       </figcaption>
     </figure>
   )

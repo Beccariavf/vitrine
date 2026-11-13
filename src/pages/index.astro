@@ -85,6 +85,7 @@ const shortMonth = new Intl.DateTimeFormat("fr-FR", { month: "short", timeZone: 
       {
         publications.map((entry) => {
           const date = entry.publishedAt !== null ? new Date(entry.publishedAt) : null;
+          const famille = familleDeSource(entry.source);
           return (
             <li data-publication class="border-b-2 border-ink hover:bg-paper">
               <div class="grid grid-cols-[4rem_1fr] gap-4 py-4 sm:gap-6">
@@ -103,13 +104,13 @@ const shortMonth = new Intl.DateTimeFormat("fr-FR", { month: "short", timeZone: 
                 <div class="min-w-0">
                   <p
                     data-source={entry.source}
-                    data-famille={familleDeSource(entry.source).id}
+                    data-famille={famille.id}
                     class="flex items-center gap-2 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted"
                   >
                     <span
                       data-pastille
                       aria-hidden="true"
-                      class:list={["inline-block h-3 w-3 shrink-0 border border-ink", familleDeSource(entry.source).classeFond]}
+                      class:list={["inline-block h-3 w-3 shrink-0 border border-ink", famille.classeFond]}
                     ></span>
                     {sourceLabel(entry.source)}
                   </p>

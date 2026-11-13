@@ -49,8 +49,7 @@ export function sourcesCorpus(rootDir: string = process.cwd()): SourceCorpus[] {
     );
 }
 
-/** Étages les plus bas et les plus hauts d'une colonne de la façade. */
-export const ETAGES_MIN = 1;
+/** Étages les plus hauts d'une colonne de la façade ; la plus basse en a un. */
 export const ETAGES_MAX = 5;
 
 /**
@@ -58,6 +57,6 @@ export const ETAGES_MAX = 5;
  * L'échelle log garde les textes (quelques centaines d'unités) visibles face aux fragments CNIL.
  */
 export function etagesFacade(unites: number): number {
-  if (!(unites > 1)) return ETAGES_MIN;
-  return Math.min(ETAGES_MAX, Math.max(ETAGES_MIN, Math.ceil(Math.log10(unites))));
+  if (!(unites > 1)) return 1;
+  return Math.min(ETAGES_MAX, Math.ceil(Math.log10(unites)));
 }
