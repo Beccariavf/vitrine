@@ -52,8 +52,8 @@ export type ResultatCitants = {
   par_autorite: { autorite: string; decisions: number }[];
   /**
    * LIL seulement : décisions antérieures au 2019-06-01 qui citent ce numéro.
-   * L'ordonnance 2018-1125 a renuméroté la loi : elles visent un autre texte et
-   * sont écartées de `decisions`, `total` et `par_autorite`.
+   * L'ordonnance 2018-1125 a renuméroté la loi : elles visent la numérotation
+   * antérieure, donc un autre article, et sont écartées de `decisions`, `total` et `par_autorite`.
    */
   ecartees_numerotation_anterieure?: number;
   decisions: DecisionCitante[];
@@ -311,15 +311,16 @@ export function decisionsCitant(rootDir: string, demandeBrute: DemandeCitants): 
     : absenceDuDocument(rootDir, document);
   const aucune =
     citantes.length === 0
-      ? `Aucune décision du corpus ne cite ${quoi} parmi les citations reconnues ; ` +
+      ? `Aucune décision ${anterieures > 0 ? `postérieure au ${RENUMEROTATION_LIL}` : "du corpus"} ` +
+        `ne cite ${quoi} parmi les citations reconnues ; ` +
         "la liste est non exhaustive et ne prouve pas que l'article n'est jamais cité."
       : null;
   const renumerotation =
     anterieures === 0
       ? null
       : `${anterieures} décision(s) antérieure(s) au ${RENUMEROTATION_LIL} citent un article 78-17 ` +
-        `numéroté ${numero} : l'ordonnance 2018-1125 a renuméroté la loi, elles visent un autre ` +
-        "texte et sont écartées des comptes.";
+        `numéroté ${numero} : l'ordonnance 2018-1125 a renuméroté la loi, elles visent la ` +
+        "numérotation antérieure, donc un autre article, et sont écartées des comptes.";
   const message = [absence, aucune, renumerotation].filter((partie) => partie !== null).join(" ");
 
   return {

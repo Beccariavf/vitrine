@@ -74,6 +74,8 @@ function racine(): string {
       decision("cnil", "CNILTEXT2", "2025-03-01", "les articles 8 à 10 du RGPD", "CNIL > Avis > Délibération 2025-010"),
       decision("cnil", "CNILTEXT3", "2023-06-01", "Vu l'article 26-1 de la loi n° 78-17 du 6 janvier 1978.", "CNIL > Avis > Délibération 2023-050"),
       decision("cnil", "CNILTEXT5", "2018-05-24", "Vu l'article 26 de la loi n° 78-17 du 6 janvier 1978.", "CNIL > Avis > Délibération 2018-100"),
+      decision("cnil", "CNILTEXT7", "2019-06-01", "Vu l'article 1er de la loi n° 78-17 du 6 janvier 1978.", "CNIL > Avis > Délibération 2019-001"),
+      decision("cnil", "CNILTEXT8", "", "Vu l'article 1er de la loi n° 78-17 du 6 janvier 1978.", "CNIL > Avis > Délibération sans date"),
       decision("cnil", "CNILTEXT6", "2020-01-15", "les articles 226-16 à 226-24 du code pénal", "CNIL > Sanctions > Délibération SAN-2020-001"),
       decision("cnil", "CNILTEXT4", "2022-02-02", "l'article L. 34-5 du code des postes et des communications électroniques", "CNIL > Sanctions > Délibération SAN-2022-002"),
     ],
@@ -179,6 +181,8 @@ describe("decisions_citant", () => {
       assert.equal(resultat.total, 0);
       assert.equal(resultat.ecartees_numerotation_anterieure, 1);
       assert.match(resultat.message ?? "", /ordonnance 2018-1125/);
+      assert.match(resultat.message ?? "", /Aucune décision postérieure au 2019-06-01/);
+      assert.match(resultat.message ?? "", /numérotation antérieure/);
       assert.equal(decisionsCitant(root, { document: RGPD, numero: "9" }).ecartees_numerotation_anterieure, undefined);
     } finally {
       rmSync(root, { recursive: true, force: true });
@@ -204,10 +208,10 @@ describe("decisions_citant", () => {
         decisionsCitant(root, { document: LIL, numero: "26-1" }).decisions.map((d) => d.document),
         ["CNILTEXT3"],
       );
-      assert.deepEqual(
-        decisionsCitant(root, { document: LIL, numero: "1" }).decisions.map((d) => d.document),
-        ["jud1"],
-      );
+      // La date de renumérotation elle-même et une date inconnue ne sont pas écartées.
+      const premier = decisionsCitant(root, { document: LIL, numero: "1" });
+      assert.deepEqual(premier.decisions.map((d) => d.document), ["jud1", "CNILTEXT7", "CNILTEXT8"]);
+      assert.equal(premier.ecartees_numerotation_anterieure, 0);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

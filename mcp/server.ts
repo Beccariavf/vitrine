@@ -196,10 +196,11 @@ export function createServer(deps: ServerDeps): McpServer {
         "par date décroissante. `total` et `par_autorite` comptent toutes les décisions citantes, " +
         `même quand la liste est paginée par \`limite\` (${LIMITE_DEFAUT} par défaut, ${LIMITE_MAX} au plus) ` +
         "et `decalage` ; `tronque` dit qu'il en reste. Le numéro s'écrit `9`, `art. 9`, `1er` ou " +
-        "`L. 34-5` ; une citation d'un alinéa (`9(2)`) ou d'une plage (`8–10`) compte pour " +
-        "l'article et porte alors `via_plage: true`, `26-1` reste un autre article que `26`, `9 bis` " +
+        "`L. 34-5` ; un alinéa (`9(2)`) compte comme l'article ; une plage (`8–10`) compte et " +
+        "porte `via_plage: true` ; `26-1` reste un autre article que `26`, `9 bis` " +
         "n'est pas `9`. Pour la loi 78-17, renumérotée par l'ordonnance 2018-1125 au 2019-06-01, " +
-        "les décisions antérieures visent un autre texte : elles sont écartées des comptes et " +
+        "les décisions antérieures visent la numérotation antérieure de la loi, donc un autre " +
+        "article : elles sont écartées des comptes et " +
         "comptées dans `ecartees_numerotation_anterieure`. La liste vient des citations reconnues " +
         "dans le texte des décisions : elle est non exhaustive, et une liste vide ne prouve jamais " +
         "qu'aucune décision ne cite l'article — le dire ainsi. `article_au_corpus: false` signale " +
