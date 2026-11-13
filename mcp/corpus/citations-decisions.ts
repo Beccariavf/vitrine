@@ -68,6 +68,8 @@ export type CibleDecision = {
 export type DecisionCitee = {
   reference: string;
   famille: Famille;
+  /** Présent quand le texte cite des conclusions d'avocat général ou une ordonnance, pas l'arrêt. */
+  acte?: "conclusions" | "ordonnance";
   cibles: CibleDecision[];
   date_citee?: string;
   date_divergente?: true;
@@ -77,10 +79,20 @@ export type DecisionCitee = {
  * Précision relevée par famille sur l'échantillon relu (`mesure.md`). Une famille
  * absente n'a pas été mesurée : elle n'est pas exposée.
  */
-export const MESURES: Partial<Record<Famille, { justes: number; relues: number }>> = {
-  affaire_ue: { justes: 60, relues: 60 },
+export type Mesure = {
+  justes: number;
+  relues: number;
+  /**
+   * Strate « date divergente » relue à part quand l'échantillon n'en contient
+   * pas : `part` est sa fraction des citations de la famille au jour de la mesure.
+   */
+  divergentes?: { justes: number; relues: number; part: number };
+};
+
+export const MESURES: Partial<Record<Famille, Mesure>> = {
+  affaire_ue: { justes: 60, relues: 60, divergentes: { justes: 1, relues: 1, part: 1 / 2838 } },
   ecli: { justes: 34, relues: 55 },
-  deliberation_cnil: { justes: 60, relues: 60 },
+  deliberation_cnil: { justes: 60, relues: 60, divergentes: { justes: 38, relues: 51, part: 51 / 2408 } },
   requete_ce: { justes: 119, relues: 119 },
   pourvoi_cc: { justes: 60, relues: 60 },
 };
@@ -91,7 +103,13 @@ export const SEUIL_BORNE_BASSE = 0.9;
 /** Borne basse de Wilson d'une famille ; `null` si elle n'a pas été mesurée. */
 export function borneBasse(famille: Famille): number | null {
   const mesure = MESURES[famille];
-  return mesure === undefined ? null : intervalleWilson(mesure.justes, mesure.relues)[0];
+  if (mesure === undefined) return null;
+  const echantillon = intervalleWilson(mesure.justes, mesure.relues)[0];
+  const strate = mesure.divergentes;
+  // Somme pondérée des bornes basses de chaque strate : plus prudente qu'un intervalle joint.
+  return strate === undefined
+    ? echantillon
+    : (1 - strate.part) * echantillon + strate.part * intervalleWilson(strate.justes, strate.relues)[0];
 }
 
 /** Familles dont la borne basse atteint le seuil : les seules rendues par les outils. */
@@ -193,9 +211,18 @@ function acteAvant(texte: string, position: number): "conclusions" | "ordonnance
   const coupures = [...fenetre.matchAll(COUPURE)];
   const derniere = coupures[coupures.length - 1];
   const proposition = derniere === undefined ? fenetre : fenetre.slice((derniere.index ?? 0) + derniere[0].length);
-  if (/\bconclusions\b|\bavocat général\b|\bopinion of advocate general\b/i.test(proposition)) return "conclusions";
-  if (/\bordonnance\b|\border of\b/i.test(proposition)) return "ordonnance";
-  return undefined;
+  // « Conclusions » seul est un mot courant (« conclusions des parties ») : seul l'avocat général compte.
+  const conclusions = dernierIndice(proposition, /\bavocat général\b|\badvocate general\b|\bses conclusions\b/gi);
+  const ordonnance = dernierIndice(proposition, /\bordonnance\b|\border of\b/gi);
+  if (conclusions < 0 && ordonnance < 0) return undefined;
+  // Le mot le plus proche de la référence l'emporte.
+  return conclusions > ordonnance ? "conclusions" : "ordonnance";
+}
+
+/** Position de la dernière occurrence d'un motif ; -1 s'il n'y en a pas. */
+function dernierIndice(texte: string, motif: RegExp): number {
+  const trouves = [...texte.matchAll(motif)];
+  return trouves.length === 0 ? -1 : (trouves[trouves.length - 1]?.index ?? -1);
 }
 
 /** Année sur quatre chiffres : `06` devient `2006`, `86` devient `1986`. */
@@ -479,7 +506,12 @@ export function decisionsCitees(
     if (!familles.has(reference.famille)) continue;
     const resolue = resolution(rootDir, reference, document);
     if (resolue === null) continue;
-    rendues.push({ reference: reference.reference, famille: reference.famille, ...resolue });
+    rendues.push({
+      reference: reference.reference,
+      famille: reference.famille,
+      ...(reference.acte === undefined ? {} : { acte: reference.acte }),
+      ...resolue,
+    });
   }
   return rendues;
 }
@@ -515,8 +547,12 @@ export function chiffreFamille(famille: Famille): string {
   const mesure = MESURES[famille];
   const borne = borneBasse(famille);
   if (mesure === undefined || borne === null) return `${famille} : non mesurée`;
+  const strate =
+    mesure.divergentes === undefined
+      ? ""
+      : `, dont date divergente ${mesure.divergentes.justes}/${mesure.divergentes.relues}`;
   return (
-    `${famille} : ${mesure.justes}/${mesure.relues} justes, borne basse ` +
+    `${famille} : ${mesure.justes}/${mesure.relues} justes${strate}, borne basse ` +
     `${(borne * 100).toFixed(1).replace(".", ",")} %`
   );
 }
@@ -569,11 +605,19 @@ export function decisionsCitantDecision(
   for (const corpus of CORPUS_DECISIONS) {
     const etat = lireCorpusDecisions(rootDir, corpus);
     for (const [document, references] of etat.references) {
-      const citee = references.find((r) => r.famille === lue.famille && r.cle === lue.cle);
-      if (citee === undefined) continue;
-      const cite = resolution(rootDir, citee, document);
+      // Un document peut citer l'arrêt et les conclusions sous le même numéro : toutes les mentions
+      // sont résolues, et la plus précise est rendue — cibles à la bonne date, puis cibles, puis aucune.
+      const mentions = references.filter((r) => r.famille === lue.famille && r.cle === lue.cle);
+      if (mentions.length === 0) continue;
+      const resolues = mentions.map((mention) => resolution(rootDir, mention, document));
       const unite = etat.premieres.get(document);
-      if (cite === null || unite === undefined) continue;
+      if (resolues.some((r) => r === null) || unite === undefined) continue;
+      const valides = resolues.filter((r) => r !== null);
+      const cite =
+        valides.find((r) => r.cibles.length > 0 && r.date_divergente !== true) ??
+        valides.find((r) => r.cibles.length > 0) ??
+        valides[0];
+      if (cite === undefined) continue;
       citantes.push({
         cite,
         document,

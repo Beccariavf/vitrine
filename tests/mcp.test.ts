@@ -1008,7 +1008,7 @@ describe("le serveur en mémoire", () => {
       assert.match(texte, /Familles exposées : `affaire_ue`, `deliberation_cnil`, `requete_ce`, `pourvoi_cc`/, nom);
       assert.match(texte, /ecli : 34\/55 justes, borne basse 48,6 %/, nom);
       assert.match(texte, /requete_ce : 119\/119 justes/, nom);
-      assert.match(texte, /38 justes sur 51/, nom);
+      assert.match(texte, /deliberation_cnil : 60\/60 justes, dont date divergente 38\/51, borne basse 93,3 %/, nom);
       assert.match(texte, /« cite »/, nom);
       assert.match(texte, /non exhaustive/, nom);
     }

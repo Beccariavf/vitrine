@@ -88,6 +88,14 @@ describe("références de décisions", () => {
     assert.deepEqual(extraireReferences("CE, section de l'intérieur, avis n° 393836"), []);
   });
 
+  it("distingue conclusions et ordonnance de l'arrêt, sans prendre le mot « conclusions » seul", () => {
+    const acte = (t: string) => extraireReferences(t).map((r) => [r.cle, r.acte]);
+    assert.deepEqual(acte("(CJUE, conclusions de l’avocat général M. BOBEK, 13 janvier 2021, C-645/19)"), [["C-645/19", "conclusions"]]);
+    assert.deepEqual(acte("ordonnance du président de la Cour du 29 novembre 2023, C-413/23 P"), [["C-413/23", "ordonnance"]]);
+    assert.deepEqual(acte("pour en tirer des conclusions précises, arrêt du 2 octobre 2018, C-207/16"), [["C-207/16", undefined]]);
+    assert.equal(extraireReferences("conclusions de l’avocat général M. BOBEK, 13 janvier 2021, C-645/19")[0]?.date, "2021-01-13");
+  });
+
   it("ignore un décret dans une délibération et la Communauté européenne", () => {
     assert.deepEqual(extraireReferences("délibération portant avis sur le décret n° 2018-687"), []);
     assert.deepEqual(extraireReferences("directive 95/46/CE, n° 123456"), []);
@@ -209,6 +217,19 @@ describe("decisions_citant_decision", () => {
       ]);
       assert.equal(resultat.total, 2);
       assert.deepEqual(resultat.decisions[0]?.cite.cibles.map((c) => c.document), ["62018CJ0311"]);
+
+      // Des conclusions citées avant l'arrêt ne masquent pas l'arrêt dans l'outil inverse.
+      ecrire(root, "cnil", [
+        unite("cnil", "CNIL3", "2023-001", "CNIL", "2023-01-01",
+          "conclusions de l’avocat général dans l’affaire C-311/18 ; arrêt du 16 juillet 2020, C-311/18"),
+      ]);
+      const direct = decisionsCitees(root, "cnil", "CNIL3", TOUTES);
+      assert.deepEqual(direct.map((c) => [c.acte, c.cibles.length]), [["conclusions", 0], [undefined, 1]]);
+      const inverse = decisionsCitantDecision(root, { reference: "C-311/18" }, TOUTES);
+      assert.deepEqual(
+        inverse.decisions.find((d) => d.document === "CNIL3")?.cite.cibles.map((c) => c.document),
+        ["62018CJ0311"],
+      );
       assert.equal(resultat.par_autorite.length, 2);
       assert.equal(decisionsCitantDecision(root, { reference: "C-311/18", limite: 1 }, TOUTES).tronque, true);
     } finally {

@@ -34,8 +34,8 @@ Chaque échantillon a été régénéré sur le code final et comparé octet par
 
 | Famille | Citations au corpus | Résolues au corpus | Relues | Justes | Borne basse Wilson 95 % | Exposée |
 | --- | --- | --- | --- | --- | --- | --- |
-| `affaire_ue` | 2 841 | 1 138 | 60 (échantillon) | 60 | 94,0 % | oui |
-| `deliberation_cnil` | 2 408 | 1 861 | 60 (échantillon) | 60 | 94,0 % | oui |
+| `affaire_ue` | 2 838 | 1 138 | 60 (échantillon) | 60 | 94,0 % | oui |
+| `deliberation_cnil` | 2 408 | 1 861 | 60 (échantillon) + 51 (strate divergente) | 60 + 38 | 93,3 % (par strate) | oui |
 | `requete_ce` | 119 | 98 | 119 (exhaustif) | 119 | 96,9 % | oui |
 | `pourvoi_cc` | 179 | 75 | 60 (échantillon) | 60 | 94,0 % | oui |
 | `ecli` | 55 | 0 | 55 (exhaustif) | 34 | 48,6 % | non |
@@ -55,8 +55,9 @@ toutes sont rendues avec `date_divergente: true` plutôt qu'une absence fausse.
   séries des années 1980), un organe autre que la CNIL ou un numéro erroné dans la source. Les 38 justes
   sont des coquilles de date, des écarts séance/acte ou des dates d'un autre acte. Cette strate est
   sous le seuil prise seule : le marqueur `date_divergente` dit « à vérifier », et la description des
-  outils publie ce chiffre. Pondérée par strate (97,9 % à 60/60, 2,1 % à 74,5 %), la famille reste au-dessus
-  du seuil.
+  outils publie ce chiffre. L'échantillon de 60 n'en contenait aucune : il mesure l'autre strate. La
+  borne publiée est la somme pondérée des bornes basses des deux strates, 0,979 × 94,0 % + 0,021 ×
+  61,1 % = **93,3 %**, au-dessus du seuil ; `affaire_ue` suit la même règle (1/1 sur 1/2 838).
 - Candidats en trop, comptés justes par la règle (la bonne décision y figure) : quelques requêtes et
   pourvois jugés deux fois (fond et renvoi) quand la date n'est pas donnée ou n'est pas lue.
 - `ecli` : toutes les fautes sont des cibles manquantes — aucune unité ne porte d'ECLI. Non exposée ;
@@ -73,7 +74,8 @@ toutes sont rendues avec `date_divergente: true` plutôt qu'une absence fausse.
    auto-citation décidée avant la date, fenêtre à frontière de mot, date après séparée par une seule
    virgule ou le nom des parties, `date_divergente`, conclusions et ordonnances distinguées de l'arrêt,
    résolution partagée par les deux outils.
-4. Passe finale sur le code final : chiffres ci-dessus.
+4. Seconde revue : outil inverse qui pouvait retenir la mention des conclusions plutôt que l’arrêt, mot « conclusions » seul pris pour des conclusions d’avocat général, `acte` absent de la sortie, borne non stratifiée. Corrigés ; `affaire_ue` relue à nouveau (60/60, 1/1).
+5. Passe finale sur le code final : chiffres ci-dessus.
 
 ## Rappel
 
