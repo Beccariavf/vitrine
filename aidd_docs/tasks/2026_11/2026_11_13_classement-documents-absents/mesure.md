@@ -36,7 +36,7 @@ code pénal (LEGITEXT000006070719) — absent : 63 décision(s) citante(s) — C
 2018/1725 (32018R1725) — absent : 13 décision(s) citante(s) — CJUE 11, CEPD 2
 ```
 
-| Rang | Document | Libellé | Décisions citantes | CNIL | Conseil d'État | Cour de cassation | CJUE | CEPD |
+| Rang | Document | Libellé | Citations rendues | CNIL | Conseil d'État | Cour de cassation | CJUE | CEPD |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | `LEGITEXT000006070987` | CPCE | 130 | 82 | 25 | 21 | 2 | 0 |
 | 2 | `31995L0046` | directive 95/46/CE | 97 | 22 | 22 | 5 | 38 | 10 |
@@ -59,8 +59,27 @@ les mêmes cinq corpus. Les 410 couples (décision, document) comptés ici sont 
 4 459 citations ; les deux mesures restent comparables parce qu'elles comptent la même chose.
 
 Aucun document n'est déclaré `exclu` : le catalogue `INSTRUMENTS` n'exclut aucun de ses huit
-instruments (tous sont au périmètre, #41 et #42). Le statut `exclu` n'est donc prouvé que par la
-fonction pure, sous `tests/hors-corpus.test.ts`, et n'apparaît pas dans ce relevé.
+instruments, tous déclarés au périmètre. Le statut `exclu` n'est donc prouvé que par la fonction
+pure, sous `tests/hors-corpus.test.ts`, et n'apparaît pas dans ce relevé.
+
+## Ce que la feuille de route couvre, et ce qu'elle ne couvre pas
+
+Le classement ne dit pas si un document à ajouter a un ticket. Relevé du 2026-11-13, tickets lus
+depuis #65 :
+
+| Document | Citations rendues | Ticket |
+| --- | --- | --- |
+| CPCE (`LEGITEXT000006070987`) | 130 | #44, pour le seul article L. 34-5 ; les autres articles cités n'ont aucun ticket |
+| directive 95/46/CE (`31995L0046`) | 97 | **aucun ticket**, et le texte est abrogé par l'article 94 du RGPD depuis le 25 mai 2018 |
+| ePrivacy (`32002L0058`) | 73 | #41 |
+| code pénal (`LEGITEXT000006070719`) | 63 | #44, pour les seuls articles 226-16 à 226-24 |
+| 2016/680 (`32016L0680`) | 34 | #41 |
+| 2018/1725 (`32018R1725`) | 13 | #41 |
+
+#42 (clauses contractuelles types, décisions d'adéquation) ne couvre aucun de ces six documents.
+Les documents très cités qu'aucun ticket ne couvre — la directive 95/46, et les articles du CPCE
+hors L. 34-5 — sont signalés à l'utilisateur plutôt que convertis en ticket, comme le demande la
+règle 7 de #65.
 
 ## Ce que le relevé prouve et ne prouve pas
 

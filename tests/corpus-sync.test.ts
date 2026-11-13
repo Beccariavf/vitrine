@@ -11,6 +11,7 @@ import { normaliser } from "../mcp/embed/embedder.ts";
 import { cheminIndex } from "../mcp/index/build.ts";
 import { openIndex } from "../mcp/index/search.ts";
 import { etatCorpus, search } from "../mcp/tools.ts";
+import { rendreClassement } from "../mcp/eval/citations.ts";
 import { agentsParDefaut, syncCorpus } from "../mcp/corpus/sync.ts";
 import type { AgentSync } from "../mcp/corpus/sync.ts";
 import {
@@ -1274,6 +1275,11 @@ describe("classement des documents hors corpus", () => {
         [["32002L0058", 1, [{ autorite: "Conseil d'État", citations: 1 }]]],
         "un corpus lisible doit citer ePrivacy dans le classement",
       );
+
+      // Le relevé texte dit l'unité de chaque ligne et celle du total.
+      const texte = rendreClassement(root, "2026-11-13");
+      assert.match(texte, /au 2026-11-13 : 1 document\(s\), 1 citation\(s\) rendue\(s\)/);
+      assert.match(texte, /ePrivacy \(32002L0058\) — absent : 1 décision\(s\) citante\(s\)/);
 
       // Même corpus, illisible : la passe ne lève pas et le document disparaît.
       writeFileSync(

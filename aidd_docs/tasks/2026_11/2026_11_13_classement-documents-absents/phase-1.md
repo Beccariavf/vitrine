@@ -36,7 +36,7 @@ status: completed
 1. Ajouter `perimetre?: "exclu"` à `Instrument` dans `mcp/corpus/citations.ts` ; l'absence du champ vaut `"couvert"`.
 2. Exporter `documentDeclare(identifiant): { libelle, url } | null` : lecture par `PAR_IDENTIFIANT`, `null` quand l'identifiant est inconnu.
 3. Exporter `documentsExclus(): ReadonlySet<string>` : identifiants normalisés des instruments déclarés `exclu`.
-4. Ne marquer aucun des huit instruments `exclu` : tous sont au périmètre (#41, #42).
+4. Ne marquer aucun des huit instruments `exclu` : tous sont déclarés au périmètre, quelle que soit la couverture des tickets (#41 en ajoute trois, #44 deux partiellement, la directive 95/46 aucun).
 
 ### `2)` Calculer le classement
 
