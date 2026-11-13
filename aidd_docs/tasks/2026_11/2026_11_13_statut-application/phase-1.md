@@ -11,7 +11,7 @@ status: planned
 ├── mcp/corpus/
 │   └── statut.ts          ➕ `StatutApplication`, `statutApplication(corpus, statut, nature?)`
 └── tests/
-    └── statut.test.ts     ➕ les six vocabulaires sources, propose/pendant, inconnu, natures CNIL
+    └── statut.test.ts     ➕ les vocabulaires sources (dont ABROGE, ANNULE, MODIFIE), propose/pendant, inconnu, natures CNIL
 ```
 
 ## Test Scope
@@ -41,7 +41,7 @@ status: planned
 2. Normaliser le statut source : majuscules, diacritiques retirés, espaces et tirets réduits — sans dépendre d'un module de recherche.
 3. Textes (`rgpd`, `aiact`, `lil`) : `EN_VIGUEUR` et `VIGUEUR` → `en_vigueur` ; `ABROGE` → `abroge` ; `PROJET`, `PROPOSE`, `PROPOSITION` → `propose` ; `PENDANT` → `pendant` ; sinon `inconnu`.
 4. Décisions (`ce`, `cc`, `cjue`) : `rendue`, quel que soit le statut source.
-5. Une abrogation déclarée par la source (`ABROGE`) prime sur la nature, pour tous les corpus : une recommandation ou un avis CNIL abrogé rend `abroge`.
+5. Pour `cnil` et `cepd` seulement, un statut sans effet (`ABROGE`, `ANNULE`) prime sur la nature : une recommandation ou un avis CNIL abrogé ou annulé rend `abroge`. Un statut `MODIFIE` rend `inconnu`.
 6. `cnil` : nature normalisée `SANCTION` → `rendue` ; `AVIS`, `RECOMMANDATION`, `RECOMMANDATION/LIGNES DIRECTRICES` → `adoptee` ; nature absente ou inconnue → `inconnu`.
 7. `cepd` : `adoptee`.
 8. Tout autre corpus : `inconnu`.

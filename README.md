@@ -119,13 +119,18 @@ Chaque passage de `search`, chaque article de `get_article` et chaque décision 
 comme `en_vigueur` valant `en_vigueur` et `ABROGE` valant `abroge` ; les décisions du Conseil d'État,
 de la Cour de cassation et de la CJUE sont `rendue` quel que soit leur statut de publication ou leur
 type d'acte ; une sanction CNIL est `rendue`, un avis ou une recommandation `adoptee` ; une ligne
-directrice du CEPD est `adoptee`. `propose` et `pendant` sont déclarés pour les textes proposés et les
-affaires pendantes (#24, #56) ; aucun corpus ne les porte aujourd'hui. Le champ `statut` reste la
-valeur de la source — statut de publication (`Publié au Bulletin · Cassation`), type d'acte
-(`Arrêt de la Cour`) ou statut Légifrance (`VIGUEUR`) — et n'est jamais réécrit : un texte abrogé ou
-proposé est rendu avec son statut, il n'est jamais présenté comme applicable. Une valeur de source non
-reconnue rend `inconnu`, jamais `en_vigueur`. La table ne lit que des champs déjà portés par chaque
-unité : aucun réindex, aucune synchronisation, aucune écriture dans `data/`.
+directrice du CEPD est `adoptee`. Pour la CNIL et le CEPD, un statut de source sans effet — `ABROGE`
+ou `ANNULE` — prime sur la nature : une recommandation abrogée ou annulée rend `abroge`, avec le mot
+exact de la source dans `statut`. Une délibération ou une ligne directrice `MODIFIE` rend `inconnu` :
+la version rendue n'est pas nécessairement celle en vigueur. `propose` et `pendant` sont déclarés pour
+les textes proposés et les affaires pendantes (#24, #56) ; aucun corpus ne les porte aujourd'hui. Le
+champ `statut` reste la valeur de la source — statut de publication
+(`Publié au Bulletin · Cassation`), type d'acte (`Arrêt de la Cour`) ou statut Légifrance
+(`VIGUEUR`) — et n'est jamais réécrit : un texte abrogé ou proposé est rendu avec son statut, il n'est
+jamais présenté comme applicable. Une valeur de source non reconnue rend `inconnu`, jamais
+`en_vigueur`. La table ne lit que des champs déjà portés par chaque unité : aucun réindex, aucune
+synchronisation, aucune écriture dans `data/`. Elle dit la force du document, pas l'applicabilité
+article par article : les dates d'application échelonnées de l'AI Act vivent dans `date_debut`.
 
 Un instrument connu mais absent du corpus — ePrivacy, 95/46, 2016/680, 2018/1725, CPCE, code pénal —
 répond, par `get_article`, `get_decision` et `search` : « absent de mon corpus (périmètre : RGPD,

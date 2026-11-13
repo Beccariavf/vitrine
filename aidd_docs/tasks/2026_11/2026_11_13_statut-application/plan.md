@@ -24,7 +24,7 @@ Source: GitHub issue #33 (epic #25, feuille de route #65), contrat dans `spec.md
 
 | Category | Verdict and evidence | Handled in |
 | -------- | -------------------- | ---------- |
-| runtime | Un appel de fonction pure par passage rendu, sur trois champs déjà chargés (`corpus`, `statut`, `nature`) : aucun accès disque, aucun réseau, aucun réindex. Les huit vocabulaires sources relevés le 2026-11-13 : `en_vigueur` (RGPD, AI Act), `VIGUEUR` (LIL, CNIL), `Publié au recueil` (CE), `Publié au Bulletin · Cassation` (CC), `Arrêt de la Cour` (CJUE), `finale` (CEPD). | 1, 2 |
+| runtime | Un appel de fonction pure par passage rendu, sur trois champs déjà chargés (`corpus`, `statut`, `nature`) : aucun accès disque, aucun réseau, aucun réindex. Les vocabulaires sources relevés le 2026-11-13 : `en_vigueur` (RGPD, AI Act), `VIGUEUR`, `ABROGE`, `ANNULE` et `MODIFIE` (LIL, CNIL), `Publié au recueil` (CE), `Publié au Bulletin · Cassation` (CC), `Arrêt de la Cour` (CJUE), `finale` (CEPD). | 1, 2 |
 | regression | `statut` n'est pas réécrit : les clients qui le lisent déjà voient la même valeur. Trois types de réponse gagnent un champ ; `tests/mcp.test.ts` asserte les descriptions et les formes rendues. Aucun changement d'index, de `data/` ni de schéma SQLite. | 2 |
 | architecture | Un module neuf `mcp/corpus/statut.ts`, pur, sans dépendance. Le rendu reste dans `mcp/tools.ts`, seule couche qui compose les réponses ; l'index ne connaît pas le vocabulaire uniforme. | 1, 2 |
 | documentation | `README.md` (§ réponses des outils), `architecture.md` (statut d'application et table par corpus), `codebase-map.md` (`statut.ts`), `testing.md` (tests de la table et des trois surfaces). | 2 |
