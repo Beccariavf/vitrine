@@ -47,7 +47,7 @@ Chaque passage de `search`, chaque article de `get_article` et chaque décision 
 
 - `en_vigueur` dit la force du document, pas l'applicabilité article par article : l'article 6 de
   l'AI Act porte `en_vigueur` alors que ses obligations s'appliquent à partir du 2027-08-02, une date
-  que le corpus ne porte pas par article. Le champ ne remplace pas `date_debut`, et l'échelonnement
+  que le corpus ne porte pas par article. Ni le champ ni `date_debut` ne portent ces dates : l'échelonnement
   des dates d'application relève d'un ticket suivant (#24).
 - La loi 78-17 n'a qu'une version consolidée : chaque article porte son propre `date_debut` et son
   statut Légifrance, mais lire une version antérieure demanderait un paramètre de date (#46). Les 54

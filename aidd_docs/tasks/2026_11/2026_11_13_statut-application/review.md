@@ -53,3 +53,35 @@
 ### Réparé depuis
 
 Les trois phrases sur `date_debut` sont corrigées (le corpus ne porte pas ces dates), l'inventaire est exact, le test vérifie l'unicité de version, le critère 6 dit « présent au corpus » et nomme les 54 articles écartés sans ticket. Code, tests et build inchangés par ces corrections.
+
+## Round 3 · r-8c4d
+
+- Date: 2026-11-13
+- By: Beccariavf
+- Diff: `9d53291` (réparation des constats du round 2)
+- Axes: code, functional, relevancy, challenge
+- Verdict: approved
+- Score: 8/8 met, 0 unmet, 0 unverified at runtime ; confiance 0,92
+
+### Criteria
+
+- [x] 1. `statut_application` sur les trois sorties, une des sept valeurs — `mcp/tools.ts:82,98,131,136,289,525-531,702-706` ; rendus réels RGPD 17, LIL 1, SAN-2026-015, CNILTEXT000017653821 (`ANNULE` → `abroge`), CNILTEXT000017654669 (`MODIFIE` → `inconnu`).
+- [x] 2. `statut` source jamais réécrit — `VIGUEUR`, `ABROGE`, `ANNULE`, `finale`, `Arrêt de la Cour` restent lisibles.
+- [x] 3. Table par corpus, `ce`/`cc`/`cjue` → `rendue` quel que soit le statut source, priorité du statut sans effet bornée à `cnil`/`cepd` — `mcp/corpus/statut.ts:84-116` ; `tests/statut.test.ts:45-72`.
+- [x] 4. Valeur non reconnue → `inconnu`, dont `MODIFIE` et une ligne directrice CEPD non finale — `tests/statut.test.ts:63-72`.
+- [x] 5. `propose` et `pendant` déclarés et testés sans corpus porteur — `tests/statut.test.ts:74-81`.
+- [x] 6. Article abrogé présent au corpus → `abroge` avec ses dates — `tests/mcp.test.ts:1941-1959` ; les 54 articles abrogés de la LIL, écartés à l'ingestion, sont nommés au contrat et sans ticket.
+- [x] 7. LIL : une seule version consolidée, prouvée sur le corpus réel (unicité de `numero`, statut `VIGUEUR`, aucune date postérieure à la consolidation) — `tests/mcp.test.ts:1921-1947`.
+- [x] 8. Descriptions nommant le champ, l'interdit d'applicabilité et le statut source — `mcp/server.ts:36-44` ; `tests/mcp.test.ts:1001-1017` ; typecheck 0, 814 tests (813 ok, 1 skip), build 3 pages, `data/` intact.
+
+### Challenge
+
+- `en_vigueur` dit la force du document, pas l'applicabilité par disposition : l'article 6 de l'AI Act s'appliquera au 2027-08-02, une date que ni le champ ni `date_debut` ne portent. Limite documentée, ticket suivant sous #24.
+- `rendue` ne dit pas si une décision est définitive ou frappée d'un recours ; la LIL n'a qu'une version (#46) ; `adoptee` ne dit pas si une doctrine a été remplacée.
+
+### Findings restants
+
+- `mcp/tools.ts:113-116` : `normaliserNumero` jette le suffixe (`20-1` rend l'article 20). Pré-existant, ticket suivant.
+- Dates d'application par disposition de l'AI Act (art. 113) : ticket suivant sous #24.
+- Ingestion des articles abrogés de la LIL (54 écartés) : documenté, ticket à ouvrir.
+- Branche empilée sur #32 (PR #73) : la PR de #33 vise `feat/classement-documents-absents` jusqu'à la fusion.
