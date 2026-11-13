@@ -5,7 +5,7 @@ La langue visuelle : jetons, typographie, modules et conventions. Ce que ça res
 ## System
 
 - Tailwind via le plugin Vite d'Astro ; les jetons vivent dans le bloc `@theme` de `src/styles/global.css`.
-- Aucune bibliothèque de composants : les pages et un layout partagé (`src/layouts/Base.astro`).
+- Aucune bibliothèque de composants : les pages, un layout partagé (`src/layouts/Base.astro`) et un seul composant maison (`src/components/Demo.astro`).
 - Aucune web font, aucun JavaScript côté client : le rendu vient du HTML et du CSS seuls.
 
 ## Tokens
@@ -18,7 +18,8 @@ La langue visuelle : jetons, typographie, modules et conventions. Ce que ça res
 ## Modules
 
 - En-tête : wordmark `VITRINE_` en mono, navigation encadrée (« Veille »), page courante en aplat encre.
-- Accueil réorganisé autour du connecteur : hero (promesse « Une IA juridique qui cite ses sources. », sous-titre au vouvoiement, bouton encre « Consulter la veille »), emplacement de démo réservé dans la grille du hero (à droite en `lg`, sous le texte en mobile), bandeau papier « Sources du connecteur » qui liste les collections de `data/corpus/` (lues par `src/lib/corpus.ts`) en pastilles mono à filet 1 px avec « À jour au » (omis sans collection), puis « Dernières publications » : les trois plus récentes de la veille en rangées compactes (jour en mono, source, titre lié en nouvel onglet) et le lien « Toute la veille ». Ni chiffres non mesurés, ni `pipeline.log`, ni cartes produits.
+- Accueil réorganisé autour du connecteur : hero (promesse « Une IA juridique qui cite ses sources. », sous-titre au vouvoiement, bouton encre « Consulter la veille »), démo compacte dans la grille du hero quand elle existe (à droite en `lg`, sous le texte en mobile ; sans démo, aucun emplacement vide), bandeau papier « Sources du connecteur » qui liste les collections de `data/corpus/` (lues par `src/lib/corpus.ts`) en pastilles mono à filet 1 px avec « À jour au » (omis sans collection), puis « Dernières publications » : les trois plus récentes de la veille en rangées compactes (jour en mono, source, titre lié en nouvel onglet) et le lien « Toute la veille ». Ni chiffres non mesurés, ni `pipeline.log`, ni cartes produits.
+- Démo avant / après (`src/components/Demo.astro`, données lues par `src/lib/demo.ts`) : une capture réelle, jamais fictive, rendue seulement si `src/demo/demo.json` existe. En-tête papier avec la question, la date de capture et le modèle en mono ; réponse avec connecteur sur papier à filet rouge gauche, suivie des sources en pastilles mono à filet 1 px liées au texte officiel. Variante compacte dans le hero de l'accueil (question, réponse avec connecteur, sources) ; variante complète en deux colonnes (sans / avec) et mention « Capture réelle, non retouchée. ». Le texte des réponses reste sur papier, garde ses retours à la ligne et se coupe n'importe où plutôt que de déborder.
 - Pied de page signé sur toutes les pages : « Valentin Fouich · Juriste en droit du numérique », la mention « Outil d'aide à la recherche, ne remplace pas l'analyse d'un professionnel du droit », les crédits de sources et le lien GitHub.
 - Veille : bascule grille / liste sans JavaScript, grille par défaut. Grille de cartes sur 3 colonnes ; liste de lecture centrée à 56rem.
 - Un sélecteur compact de cinq matières (pills, toutes actives par défaut) précède la liste et masque les publications des matières décochées, sans JavaScript. Une ligne d'explication avec un « i » rappelle le geste. À 375 px, une media query réduit padding, taille et interlettrage pour tenir sur deux lignes.

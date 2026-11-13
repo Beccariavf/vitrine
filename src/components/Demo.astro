@@ -1,0 +1,65 @@
+---
+import type { Demo } from "../lib/demo.ts";
+
+type Props = {
+  /** Capture lue par `lireDemo`, jamais une démo fictive. */
+  demo: Demo;
+  /** `compacte` sur l'accueil (question, réponse avec connecteur, sources) ; `complete` avant / après. */
+  variante?: "compacte" | "complete";
+};
+
+const { demo, variante = "compacte" } = Astro.props;
+const complete = variante === "complete";
+const dateFormat = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeZone: "UTC" });
+---
+
+<figure class="min-w-0 border-2 border-ink bg-paper shadow-hard">
+  <div class="border-b-2 border-ink p-4 sm:p-5">
+    <p class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted wrap-anywhere">
+      Question · capturée le <time datetime={demo.capturee_le}>{dateFormat.format(new Date(demo.capturee_le))}</time>
+      · {demo.modele}
+    </p>
+    <p class="mt-2 text-lg font-bold leading-snug wrap-anywhere">« {demo.question} »</p>
+  </div>
+
+  <div class:list={[complete && "grid md:grid-cols-2"]}>
+    {
+      complete && (
+        <div class="min-w-0 border-b-2 border-ink p-4 sm:p-5 md:border-r-2 md:border-b-0">
+          <p class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">Sans connecteur</p>
+          <p class="mt-3 whitespace-pre-line wrap-anywhere text-sm leading-relaxed">{demo.sans}</p>
+        </div>
+      )
+    }
+    <div class="min-w-0 border-l-4 border-l-red p-4 sm:p-5">
+      <p class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">Avec connecteur</p>
+      <p class="mt-3 whitespace-pre-line wrap-anywhere text-sm leading-relaxed">{demo.avec}</p>
+      <p class="mt-4 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">Sources</p>
+      <ul class="mt-2 flex flex-wrap gap-1.5">
+        {
+          demo.sources.map((source) => (
+            <li class="border border-ink px-1.5 py-0.5 font-mono text-[0.7rem] leading-snug break-words">
+              <a
+                href={source.url}
+                target="_blank"
+                rel="noopener"
+                class="text-ink no-underline hover:underline hover:decoration-2 hover:underline-offset-2"
+              >
+                {source.libelle} <span aria-hidden="true">→</span>
+                <span class="sr-only"> (nouvel onglet)</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+
+  {
+    complete && (
+      <figcaption class="border-t-2 border-ink px-4 py-2 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted sm:px-5">
+        Capture réelle, non retouchée.
+      </figcaption>
+    )
+  }
+</figure>
