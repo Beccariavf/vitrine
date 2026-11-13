@@ -998,6 +998,25 @@ describe("le serveur en mémoire", () => {
     assert.match(description("etat_corpus"), /exclu/);
   });
 
+  it("nomme statut_application et l'interdit d'applicabilité dans les trois descriptions", async () => {
+    const { tools } = await client.listTools();
+    const description = (nom: string): string =>
+      tools.find((outil) => outil.name === nom)?.description ?? "";
+    const valeurs = ["en_vigueur", "abroge", "propose", "pendant", "rendue", "adoptee", "inconnu"];
+
+    for (const nom of ["search", "get_article", "get_decision"]) {
+      const texte = description(nom);
+      assert.match(texte, /statut_application/, `${nom} nomme statut_application`);
+      for (const valeur of valeurs) {
+        assert.ok(texte.includes(`\`${valeur}\``), `${nom} nomme ${valeur}`);
+      }
+      assert.match(texte, /abrogé ou proposé n'est jamais applicable/, nom);
+      assert.match(texte, /`statut` reste la valeur de la source/, nom);
+      assert.match(texte, /n'est jamais réécrit/, nom);
+    }
+    assert.equal(/statut_application/.test(description("etat_corpus")), false);
+  });
+
   it("rend l'état du corpus sans rapport par etat_corpus", async () => {
     const resultat = await client.callTool({ name: "etat_corpus", arguments: {} });
     const payload = contenu(resultat);
@@ -1856,3 +1875,176 @@ describe("les documents cités absents du corpus", () => {
     }
   });
 });
+
+/** Un fragment d'une décision d'un autre corpus, réduit au strict nécessaire. */
+function uniteDecision(corpus: string, document: string, statut: string, texte: string): Unite {
+  return {
+    ref: `${document}#0`,
+    document,
+    corpus,
+    niveau: "fragment",
+    numero: document,
+    chemin: `${corpus.toUpperCase()} > Décision`,
+    texte,
+    date_acte: "2025-06-12",
+    date_debut: "2025-06-12",
+    date_fin: null,
+    statut,
+    url: `https://example.invalid/${document}`,
+  };
+}
+
+describe("le statut d'application dans les réponses", () => {
+  const SEUILS_LARGES = { bas: -1, haut: 2, marge: 0 };
+
+  it("porte en_vigueur sur un article du RGPD, sans réécrire son statut source", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-statut-"));
+    try {
+      ecrireCorpus(root);
+      const article = getArticle(root, { document: DOCUMENT, numero: "3" });
+      const passage = await search(
+        root,
+        { question: "article 3 du RGPD" },
+        { embedder: EMBEDDER_INTERDIT },
+      );
+
+      assert.equal(article.trouve, true);
+      assert.equal(article.statut_application, "en_vigueur");
+      assert.equal(article.statut, "en_vigueur");
+      assert.equal(passage.passages[0]?.statut_application, "en_vigueur");
+      assert.equal(passage.passages[0]?.statut, "en_vigueur");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("porte en_vigueur sur la version consolidée de la LIL, avec son statut VIGUEUR et sa date", () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-statut-"));
+    try {
+      ecrireCorpus(
+        root,
+        [unitLil(1, "les fichiers doivent être créés dans l'intérêt des personnes")],
+        "lil",
+      );
+      const article = getArticle(root, { document: ECHELLE, numero: "1" });
+
+      assert.equal(article.trouve, true);
+      assert.equal(article.statut_application, "en_vigueur");
+      assert.equal(article.statut, "VIGUEUR");
+      assert.equal(article.date_debut, "2019-06-01");
+      assert.equal(article.date_fin, null);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("rend un article abrogé avec abroge, ses dates et son statut source", () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-statut-"));
+    try {
+      const abroge: Unite = {
+        ...unitLil(7, "article abrogé par une loi postérieure"),
+        statut: "ABROGE",
+        date_fin: "2024-06-01",
+      };
+      ecrireCorpus(root, [abroge], "lil");
+      const article = getArticle(root, { document: ECHELLE, numero: "7" });
+
+      assert.equal(article.trouve, true);
+      assert.equal(article.statut_application, "abroge");
+      assert.equal(article.statut, "ABROGE");
+      assert.equal(article.date_debut, "2019-06-01");
+      assert.equal(article.date_fin, "2024-06-01");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("porte rendue sur une sanction CNIL, avec son statut source intact", () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-statut-"));
+    try {
+      ecrireCorpus(
+        root,
+        [fragment("CNILTEXT000055022778", 0, "la formation restreinte prononce une amende")],
+        "cnil",
+      );
+      const decision = getDecision(root, { document: "CNILTEXT000055022778" }).decisions[0];
+
+      assert.equal(decision?.statut_application, "rendue");
+      assert.equal(decision?.statut, "VIGUEUR");
+      assert.equal(decision?.nature, "Sanction");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("porte rendue sur un passage CJUE et adoptee sur un passage CEPD", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-statut-"));
+    try {
+      ecrireCorpus(
+        root,
+        [
+          uniteDecision(
+            "cjue",
+            "62024CJ0001",
+            "Arrêt de la Cour",
+            "protection des données personnelles et droit à l'effacement",
+          ),
+        ],
+        "cjue",
+      );
+      ecrireCorpus(
+        root,
+        [
+          uniteDecision(
+            "cepd",
+            "lignes-directrices-01-2025",
+            "finale",
+            "lignes directrices sur le consentement et les cookies",
+          ),
+        ],
+        "cepd",
+      );
+      const embedder = embedderFactice();
+      const { chemin } = await buildIndex(root, embedder);
+      const index = openIndex(chemin);
+      try {
+        const cjue = await search(
+          root,
+          { question: "protection des données personnelles", corpus: "cjue", k: 5 },
+          { embedder, index, seuils: SEUILS_LARGES },
+        );
+        const cepd = await search(
+          root,
+          { question: "lignes directrices sur le consentement", corpus: "cepd", k: 5 },
+          { embedder, index, seuils: SEUILS_LARGES },
+        );
+
+        assert.equal(cjue.passages[0]?.statut_application, "rendue");
+        assert.equal(cjue.passages[0]?.statut, "Arrêt de la Cour");
+        assert.equal(cepd.passages[0]?.statut_application, "adoptee");
+        assert.equal(cepd.passages[0]?.statut, "finale");
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("n'invente aucun statut sur une réponse d'absence", () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-statut-"));
+    try {
+      ecrireCorpus(root);
+      const article = getArticle(root, { document: DOCUMENT, numero: "99" });
+      const decision = getDecision(root, { document: "CNILTEXT000000000000" });
+
+      assert.equal(article.trouve, false);
+      assert.equal("statut_application" in article, false);
+      assert.equal(decision.trouve, false);
+      assert.equal("statut_application" in decision, false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
