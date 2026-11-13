@@ -17,6 +17,8 @@ import {
   marquerPresence,
 } from "./corpus/citations.ts";
 import type { Citation, CitationRendue } from "./corpus/citations.ts";
+import { statutApplication } from "./corpus/statut.ts";
+import type { StatutApplication } from "./corpus/statut.ts";
 import { niveauConfiance } from "./confidence.ts";
 import type { NiveauConfiance } from "./confidence.ts";
 import { inventaireCorpus, lireRapport } from "./corpus/sync-rapport.ts";
@@ -77,7 +79,7 @@ export function etatCorpus(rootDir: string): EtatCorpus {
 }
 
 /** Un article trouvé : le texte du corpus, jamais une génération. */
-export type ArticleTrouve = Unite & { trouve: true };
+export type ArticleTrouve = Unite & { trouve: true; statut_application: StatutApplication };
 
 /** Un article absent : la réponse le dit, elle ne rend pas de chaîne vide. */
 export type ArticleAbsent = {
@@ -92,6 +94,8 @@ export type ResultatArticle = ArticleTrouve | ArticleAbsent;
 /** Un passage rendu à la recherche : la distance devient une similarité lisible. */
 export type Passage = ResultatRecherche & {
   similarite: number;
+  /** Vocabulaire uniforme du serveur ; le statut source reste dans `statut`. */
+  statut_application: StatutApplication;
   /** Instruments et articles cités par la décision ; absent hors des cinq corpus de décisions. */
   citations?: CitationRendue[];
 };
@@ -111,8 +115,25 @@ function normaliserNumero(numero: string | number): string | null {
   return chiffres === null ? null : String(Number(chiffres[0]));
 }
 
+/** Ce qu'il faut d'une unité rendue pour lire son statut d'application. */
+type PorteurStatut = { corpus: string; statut: string; nature?: string };
+
+/**
+ * Ajoute le statut d'application à une unité devenue réponse, sans réécrire le
+ * statut source : les deux champs coexistent, la source reste la vérité de la
+ * source. Une valeur non reconnue rend `inconnu` (`mcp/corpus/statut.ts`).
+ */
+function avecStatutApplication<T extends PorteurStatut>(
+  porteur: T,
+): T & { statut_application: StatutApplication } {
+  return {
+    ...porteur,
+    statut_application: statutApplication(porteur.corpus, porteur.statut, porteur.nature),
+  };
+}
+
 function passageExact(unite: Unite): Passage {
-  return { ...unite, distance: 0, similarite: 1 };
+  return { ...avecStatutApplication(unite), distance: 0, similarite: 1 };
 }
 
 /**
@@ -265,7 +286,7 @@ export function getArticle(
   demande: { document: string; numero: string | number },
 ): ResultatArticle {
   const article = trouverArticles(rootDir, { document: demande.document }, demande.numero)[0];
-  if (article !== undefined) return { ...article, trouve: true };
+  if (article !== undefined) return { ...avecStatutApplication(article), trouve: true };
   // Un instrument connu mais absent du corpus est dit absent, jamais « introuvable » ;
   // un identifiant inconnu garde le message d'un article manquant.
   return {
@@ -341,6 +362,8 @@ export type DecisionTrouvee = {
   numero: string;
   date_acte: string;
   statut: string;
+  /** Vocabulaire uniforme du serveur ; le statut source reste dans `statut`. */
+  statut_application: StatutApplication;
   url: string;
   /** `dinum` ou `dila` : d'où vient le découpage des fragments. */
   origine?: string;
@@ -498,11 +521,14 @@ export function getDecision(rootDir: string, demande: DecisionDemande): Resultat
       if (premier === undefined) throw new Error(`Décision vide pour ${identifiant}`);
       const debut = partie === "tous" ? 0 : premierFragmentDuDispositif(premiers);
       const rendus = premiers.slice(debut);
+      // Le statut d'application vient de la même composition que les passages et les articles.
+      const { statut_application } = avecStatutApplication(premier);
       return {
         document: identifiant,
         numero: premier.numero,
         date_acte: premier.date_acte,
         statut: premier.statut,
+        statut_application,
         url: premier.url,
         ...(premier.origine === undefined ? {} : { origine: premier.origine }),
         ...(premier.nature === undefined ? {} : { nature: premier.nature }),
@@ -676,7 +702,9 @@ export async function search(
     passages:
       niveau === "aucun_resultat_fiable"
         ? []
-        : ordre.map((resultat) => ({ ...resultat, similarite: 1 - resultat.distance })),
+        : ordre.map((resultat) =>
+            avecStatutApplication({ ...resultat, similarite: 1 - resultat.distance }),
+          ),
     ...(blocRerank === undefined ? {} : { rerank: blocRerank }),
   });
 }

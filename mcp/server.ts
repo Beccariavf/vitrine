@@ -33,6 +33,16 @@ const CONSIGNE_PROMESSE =
   "recherche sans `corpus` et une recherche qui ne nomme qu'un document suivent le repli " +
   "0,69 / 0,74 / 0,01 et ne portent aucune promesse chiffrée.";
 
+const CONSIGNE_STATUT_APPLICATION =
+  "Chaque passage de `search`, chaque article de `get_article` et chaque décision de " +
+  "`get_decision` porte `statut_application`, le vocabulaire uniforme du serveur : `en_vigueur`, " +
+  "`abroge`, `propose`, `pendant`, `rendue`, `adoptee` ou `inconnu`. `statut` reste la valeur de la " +
+  "source — statut de publication, type d'acte ou statut Légifrance — et n'est jamais réécrit. Un " +
+  "texte abrogé, annulé ou proposé n'est jamais applicable : le dire, ne pas le présenter comme en " +
+  "vigueur. Le champ dit la force du document, pas l'applicabilité article par article : le " +
+  "corpus ne porte pas les dates d'application échelonnées. `inconnu` dit que la source n'a pas été reconnue, ou que le document est modifié et " +
+  "que la version rendue n'est pas nécessairement celle en vigueur ; jamais que le texte s'applique.";
+
 const CONSIGNE_CITATIONS =
   "Chaque décision rendue par `search` et par `get_decision` (corpus `cnil`, `ce`, `cc`, `cjue` et " +
   "`cepd`) porte `citations` : la liste des instruments et articles reconnus dans son texte, non " +
@@ -100,6 +110,7 @@ export function createServer(deps: ServerDeps): McpServer {
         "corpus répond « absent de mon corpus (périmètre : RGPD, AI Act, LIL, CNIL, Conseil " +
         "d'État, CEPD, Cour de cassation, CJUE). », sans rendre de texte ; un identifiant inconnu " +
         "garde la réponse d'un article introuvable. " +
+        `${CONSIGNE_STATUT_APPLICATION} ` +
         CONSIGNE_PROVENANCE,
       inputSchema: {
         document: z
@@ -133,6 +144,7 @@ export function createServer(deps: ServerDeps): McpServer {
         "fragment : une décision absente est dite, avec un message. Un numéro porté par deux " +
         "documents rend les deux, chacun avec son identifiant. " +
         `${CONSIGNE_CITATIONS} ` +
+        `${CONSIGNE_STATUT_APPLICATION} ` +
         CONSIGNE_PROVENANCE,
       inputSchema: {
         document: z
@@ -223,6 +235,7 @@ export function createServer(deps: ServerDeps): McpServer {
         "Si le numéro existe dans plusieurs documents, chaque article est rendu avec sa provenance " +
         "et le niveau est `incertain` ; préciser `document` ou nommer le corpus lève l'ambiguïté. " +
         `${CONSIGNE_CITATIONS} ` +
+        `${CONSIGNE_STATUT_APPLICATION} ` +
         CONSIGNE_PROVENANCE,
       inputSchema: {
         question: z.string().describe("Question en langage naturel, par exemple « effacement et moteurs de recherche »"),
