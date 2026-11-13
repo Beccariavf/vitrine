@@ -1,18 +1,15 @@
 ---
 import Demo from "../components/Demo.astro";
+import PublicationRangee from "../components/PublicationRangee.astro";
 import Facade from "../components/Facade.astro";
 import Base from "../layouts/Base.astro";
 import { sourcesCorpus } from "../lib/corpus.ts";
 import { lireDemo } from "../lib/demo.ts";
-import { familleDeSource } from "../lib/familles.ts";
 import { getVisibleEntries } from "../lib/entries.ts";
-import { sourceLabel } from "../lib/sources.ts";
 
 const sources = sourcesCorpus();
 const publications = getVisibleEntries().slice(0, 3);
 const demo = lireDemo();
-const dayFormat = new Intl.DateTimeFormat("fr-FR", { day: "2-digit", timeZone: "UTC" });
-const shortMonth = new Intl.DateTimeFormat("fr-FR", { month: "short", timeZone: "UTC" });
 ---
 
 <Base
@@ -82,55 +79,7 @@ const shortMonth = new Intl.DateTimeFormat("fr-FR", { month: "short", timeZone: 
       </a>
     </div>
     <ol>
-      {
-        publications.map((entry) => {
-          const date = entry.publishedAt !== null ? new Date(entry.publishedAt) : null;
-          const famille = familleDeSource(entry.source);
-          return (
-            <li data-publication class="border-b-2 border-ink hover:bg-paper">
-              <div class="grid grid-cols-[4rem_1fr] gap-4 py-4 sm:gap-6">
-                <div class="pt-1 font-mono">
-                  {date !== null ? (
-                    <time datetime={entry.publishedAt ?? undefined}>
-                      <span class="block text-2xl font-bold leading-none">{dayFormat.format(date)}</span>
-                      <span class="mt-1 block text-[0.7rem] uppercase tracking-[0.12em] text-muted">
-                        {shortMonth.format(date)}
-                      </span>
-                    </time>
-                  ) : (
-                    <span class="text-xs text-muted">Sans date</span>
-                  )}
-                </div>
-                <div class="min-w-0">
-                  <p
-                    data-source={entry.source}
-                    data-famille={famille.id}
-                    class="flex items-center gap-2 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted"
-                  >
-                    <span
-                      data-pastille
-                      aria-hidden="true"
-                      class:list={["inline-block h-3 w-3 shrink-0 border border-ink", famille.classeFond]}
-                    ></span>
-                    {sourceLabel(entry.source)}
-                  </p>
-                  <h3 class="mt-1 text-lg leading-snug">
-                    <a
-                      href={entry.url}
-                      target="_blank"
-                      rel="noopener"
-                      class="break-words text-ink underline decoration-red decoration-2 underline-offset-4 hover:decoration-4"
-                    >
-                      {entry.title}
-                      <span class="sr-only"> (nouvel onglet)</span>
-                    </a>
-                  </h3>
-                </div>
-              </div>
-            </li>
-          );
-        })
-      }
+      {publications.map((entry) => <PublicationRangee entry={entry} variante="compacte" niveau="h3" />)}
     </ol>
   </section>
 </Base>
