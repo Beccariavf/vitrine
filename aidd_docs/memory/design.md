@@ -5,7 +5,7 @@ La langue visuelle : jetons, typographie, modules et conventions. Ce que ça res
 ## System
 
 - Tailwind via le plugin Vite d'Astro ; les jetons vivent dans le bloc `@theme` de `src/styles/global.css`.
-- Aucune bibliothèque de composants : deux pages et un layout partagé (`src/layouts/Base.astro`).
+- Aucune bibliothèque de composants : les pages et un layout partagé (`src/layouts/Base.astro`).
 - Aucune web font, aucun JavaScript côté client : le rendu vient du HTML et du CSS seuls.
 
 ## Tokens
@@ -17,8 +17,9 @@ La langue visuelle : jetons, typographie, modules et conventions. Ce que ça res
 
 ## Modules
 
-- En-tête : wordmark `VITRINE_` en mono, navigation encadrée, page courante en aplat encre.
-- Accueil « Registre » : grand titre, bloc rouge de dernière publication, bandeau de chiffres, bloc `pipeline.log` en encre, méthode numérotée, produits en cartes avec filet rouge, bleu ou jaune.
+- En-tête : wordmark `VITRINE_` en mono, navigation encadrée (« Veille »), page courante en aplat encre.
+- Accueil réorganisé autour du connecteur : hero (promesse « Une IA juridique qui cite ses sources. », sous-titre au vouvoiement, bouton encre « Consulter la veille »), emplacement de démo réservé dans la grille du hero (à droite en `lg`, sous le texte en mobile), bandeau papier « Sources du connecteur » qui liste les collections de `data/corpus/` (lues par `src/lib/corpus.ts`) en pastilles mono à filet 1 px avec « À jour au » (omis sans collection), puis « Dernières publications » : les trois plus récentes de la veille en rangées compactes (jour en mono, source, titre lié en nouvel onglet) et le lien « Toute la veille ». Ni chiffres non mesurés, ni `pipeline.log`, ni cartes produits.
+- Pied de page signé sur toutes les pages : « Valentin Fouich · Juriste en droit du numérique », la mention « Outil d'aide à la recherche, ne remplace pas l'analyse d'un professionnel du droit », les crédits de sources et le lien GitHub.
 - Veille : bascule grille / liste sans JavaScript, grille par défaut. Grille de cartes sur 3 colonnes ; liste de lecture centrée à 56rem.
 - Un sélecteur compact de cinq matières (pills, toutes actives par défaut) précède la liste et masque les publications des matières décochées, sans JavaScript. Une ligne d'explication avec un « i » rappelle le geste. À 375 px, une media query réduit padding, taille et interlettrage pour tenir sur deux lignes.
 - Chaque publication porte un badge de matière rouge et son label de source.
