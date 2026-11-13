@@ -21,8 +21,6 @@ import type { Reranker } from "../rerank/reranker.ts";
 import { referenceExacte, search } from "../tools.ts";
 import { intervalleWilson } from "../statistiques.ts";
 
-export { intervalleWilson };
-
 const ICI = dirname(fileURLToPath(import.meta.url));
 const QUESTIONS = join(ICI, "questions.csv");
 const RACINE = fileURLToPath(new URL("../..", import.meta.url));
@@ -290,7 +288,6 @@ export function tauxCitationsInvalides(classements: ClassementPiege[]): number {
   if (pieges.length === 0) return 0;
   return pieges.filter((classement) => !classement.refusee).length / pieges.length;
 }
-
 
 /** Une mesure du test, appendue au marqueur v3 : un modèle, ses seuils, ses chiffres. */
 export type MesureMarqueur = {

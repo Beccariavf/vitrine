@@ -88,6 +88,12 @@ describe("références de décisions", () => {
     assert.deepEqual(extraireReferences("CE, section de l'intérieur, avis n° 393836"), []);
   });
 
+  it("ignore un décret dans une délibération et la Communauté européenne", () => {
+    assert.deepEqual(extraireReferences("délibération portant avis sur le décret n° 2018-687"), []);
+    assert.deepEqual(extraireReferences("directive 95/46/CE, n° 123456"), []);
+    assert.deepEqual(extraireReferences("(CE, 21 avril 2021, n° 393099)").map((r) => r.cle), ["393099"]);
+  });
+
   it("ignore un numéro à six chiffres sans Conseil d'État, « Sous le n° » et l'en-tête de pourvoi", () => {
     assert.deepEqual(extraireReferences("déclaration n° 123456 auprès de la CNIL"), []);
     assert.deepEqual(extraireReferences("Conseil d'État. 1° Sous le n° 465652, par un pourvoi"), []);
@@ -99,6 +105,8 @@ describe("références de décisions", () => {
     assert.equal(lireReference("2019-001")?.cle, "2019-001");
     assert.equal(lireReference("SAN-2019-001")?.famille, "deliberation_cnil");
     assert.equal(lireReference("C‑311/18")?.cle, "C-311/18");
+    assert.equal(lireReference("Pourvoi n° Q 19-17.278")?.cle, "19-17.278");
+    assert.equal(lireReference("CE, 353066")?.cle, "353066");
     assert.equal(lireReference("bonjour"), null);
   });
 });
@@ -125,6 +133,34 @@ describe("decisions_citees", () => {
           ["n° 394922", ["CE2021"]],
         ],
       );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("rend les candidats marqués quand la date citée ne correspond à aucun", () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-cit-dec-"));
+    try {
+      ecrire(root, "cjue", [
+        unite("cjue", "62017CJ0673", "entête", "CJUE > Arrêt de la Cour C-673/17 > En-tête", "2019-10-01", "texte"),
+        unite("cjue", "62012CJ0446", "entête", "CJUE > Arrêt de la Cour C-447/12 > En-tête", "2015-04-16",
+          "Dans les affaires jointes C‑446/12 à C‑449/12, ayant pour objet des demandes parvenues à la Cour le 5 octobre 2012, C‑447/12"),
+      ]);
+      ecrire(root, "ce", [
+        unite("ce", "CE1", "451423", "Conseil d'État > Décision 451423", "2022-06-27",
+          "arrêt du 12 septembre 2019, C-673/17"),
+      ]);
+      const citees = decisionsCitees(root, "ce", "CE1", TOUTES);
+      const planet = citees.find((c) => c.reference === "C-673/17");
+      assert.deepEqual(planet?.cibles.map((c) => c.document), ["62017CJ0673"]);
+      assert.equal(planet?.date_divergente, true);
+      assert.equal(planet?.date_citee, "2019-09-12");
+      // Une date proche de son propre numéro ne fait pas revenir l'arrêt comme citation de lui-même.
+      assert.deepEqual(decisionsCitees(root, "cjue", "62012CJ0446", TOUTES), []);
+      // La fenêtre ne coupe jamais un jour : « 12 septembre 2024 », pas « 2 septembre ».
+      assert.equal(extraireReferences(`${"x".repeat(80)} 12 septembre 2024, C-1/24`)[0]?.date, "2024-09-12");
+      // Une parenthèse ou un « et » ouvre la citation suivante : sa date n'est pas celle de C-673/17.
+      assert.equal(extraireReferences("Planet49 (C-673/17) et dans son arrêt du 15 juin 2021")[0]?.date, undefined);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
@@ -172,6 +208,7 @@ describe("decisions_citant_decision", () => {
         ["CNIL1", "CNIL"],
       ]);
       assert.equal(resultat.total, 2);
+      assert.deepEqual(resultat.decisions[0]?.cite.cibles.map((c) => c.document), ["62018CJ0311"]);
       assert.equal(resultat.par_autorite.length, 2);
       assert.equal(decisionsCitantDecision(root, { reference: "C-311/18", limite: 1 }, TOUTES).tronque, true);
     } finally {

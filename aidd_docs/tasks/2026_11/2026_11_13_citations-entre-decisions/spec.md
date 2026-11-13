@@ -27,7 +27,7 @@ Une décision rendue par `search` ou `get_decision` liste les décisions qu'elle
 
 ## Critères d'acceptation
 
-1. Chaque décision rendue par `search` et `get_decision` porte `decisions_citees`, chacune `{ reference, famille, cibles }` ; `cibles` liste `{ document, corpus, intitule, date_acte, url }`, vide quand la décision citée n'est pas au corpus. Seules les familles exposées y figurent.
+1. Chaque décision rendue par `search` et `get_decision` porte `decisions_citees`, chacune `{ reference, famille, cibles }` ; `cibles` liste `{ document, corpus, intitule, date_acte, url }`, vide quand la décision citée n'est pas au corpus. Quand le texte date la décision citée et qu'aucune décision de ce numéro ne porte cette date, toutes sont rendues avec `date_citee` et `date_divergente: true`, jamais une absence. Seules les familles exposées y figurent.
 2. Une référence ambiguë (même clé pour deux documents) rend tous les candidats, jamais un choix silencieux.
 3. Une décision ne se cite pas elle-même : son propre numéro, les numéros joints de son en-tête (« Pourvoi n° … », « Sous le n° … ») et son numéro d'affaire sont exclus.
 4. `decisions_citant_decision({ reference })` rend les décisions du corpus qui citent la référence, triées par date décroissante, avec `{ document, corpus, autorite, intitule, date_acte, url }`, `total`, `par_autorite`, `cibles` de la référence, `limite`/`decalage`/`tronque` ; une référence d'une famille non exposée est refusée avec le chiffre mesuré ; une référence illisible est refusée.
@@ -44,14 +44,16 @@ Une décision rendue par `search` ou `get_decision` liste les décisions qu'elle
 | 3   | Champ `decisions_citees` distinct de `citations`. | `citations` vise des instruments (#28) ; mêler décisions et textes brouillerait `hors_corpus`. |
 | 4   | Outil inverse dédié plutôt qu'un mode de `decisions_citant` (#29). | #29 n'est pas fusionné ; la clé d'entrée est une référence de décision, pas un couple document + article. |
 | 5   | ECLI reconnu, non résolu. | Aucune unité du corpus ne porte d'ECLI ; l'écrire demande une synchronisation réseau (`data/` ne s'édite pas à la main). Mesuré à 34/55 : non exposé. |
-| 6   | Une date donnée par le texte filtre les cibles. | Révisée après la première mesure : un numéro de requête ou de pourvoi porte souvent plusieurs décisions (fond, référé, renvoi) ; la date qui suit la référence prime sur celle qui la précède. |
+| 6   | Une date donnée par le texte filtre les cibles ; si aucune ne la porte, toutes sont rendues avec `date_divergente`. | Révisée deux fois : un numéro porte souvent plusieurs décisions (fond, référé, renvoi), d'où le filtre ; mais une coquille ou un écart séance/acte transformait une décision présente en fausse absence (71 cas au corpus). La date qui suit la référence, séparée par une seule virgule, prime sur celle qui la précède. |
+| 8   | Les deux outils partagent la résolution : chaque décision citante porte `cite`. | Revue : l'outil inverse ne regardait que la clé et pouvait contredire `decisions_citees`. L'auto-citation se décide avant le filtre de date. |
 | 7   | Numéros joints indexés : « Sous le n° » (CE), pourvois de l'en-tête (Cour de cassation), « Dans les affaires jointes » (CJUE). | Révisée après mesure : sans eux, une décision du corpus citée par un numéro joint était dite hors corpus. |
 
 ## Limites assumées
 
 - L'extraction est non exhaustive : une référence sous une forme non reconnue manque.
 - Une décision citée seulement par son nom de partie (« arrêt Google Spain ») n'est pas reconnue.
-- Une date erronée dans le texte citant écarte la bonne décision (une faute mesurée sur 60 en `requete_ce`).
+- Une date erronée dans le texte citant ne fait plus disparaître la décision : elle est rendue avec `date_divergente`, au lecteur de vérifier.
+- La précision publiée est celle de `decisions_citees` ; l'outil inverse en partage la résolution, mais son rappel n'est pas mesuré.
 
 ## Preuve de réussite
 

@@ -2,8 +2,9 @@
  * Échantillonneur des citations entre décisions, pour la relecture de #30.
  *
  * `node mcp/eval/citations-decisions.ts <famille> [--taille <n>]` rend n
- * citations d'une famille, prises à pas régulier dans l'ordre trié (corpus,
- * document, clé) de toutes les citations du corpus, chacune avec l'extrait qui
+ * citations d'une famille, prises à pas régulier dans l'ordre de toutes les
+ * citations du corpus — corpus et documents triés, références dans l'ordre de
+ * rencontre —, chacune avec l'extrait qui
  * la porte et les décisions du corpus qu'elle désigne. Toutes les familles sont
  * lues, exposées ou non. Deux exécutions rendent la même sortie ; seul
  * `data/corpus/` est lu, rien n'est écrit.
@@ -26,6 +27,8 @@ export type Echantillon = {
   reference: string;
   extrait: string;
   cibles: string[];
+  /** Date donnée par le texte, quand aucune décision du corpus de ce numéro ne la porte. */
+  date_divergente?: string;
 };
 
 /** Textes des documents d'un corpus, fragments recollés dans l'ordre du fichier. */
@@ -61,6 +64,9 @@ export function echantillon(rootDir: string, famille: Famille, taille: number): 
           reference: citee.reference,
           extrait: normalise.slice(Math.max(0, position - 220), position + 80).replace(/\s+/g, " "),
           cibles: citee.cibles.map((c) => `${c.document} · ${c.intitule} · ${c.date_acte}`),
+          ...(citee.date_divergente === true && citee.date_citee !== undefined
+            ? { date_divergente: citee.date_citee }
+            : {}),
         });
       }
     }
@@ -86,7 +92,10 @@ function main(): void {
     process.stdout.write(
       `#${e.rang} [${e.corpus}] ${e.document} → ${e.reference}\n` +
         `  extrait : …${e.extrait}…\n` +
-        `  cibles : ${e.cibles.length === 0 ? "(hors corpus)" : e.cibles.join(" | ")}\n\n`,
+        `  cibles : ${e.cibles.length === 0 ? "(hors corpus)" : e.cibles.join(" | ")}\n` +
+        (e.date_divergente === undefined
+          ? "\n"
+          : `  date divergente : le texte date la décision du ${e.date_divergente}\n\n`),
     );
   }
 }

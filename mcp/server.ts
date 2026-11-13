@@ -24,7 +24,8 @@ function chiffresCitationsDecisions(): string {
   return (
     `Familles exposées : ${exposees.length === 0 ? "aucune" : exposees.map((f) => `\`${f}\``).join(", ")}. ` +
     "Précision mesurée sur un échantillon relu, seuil : borne basse de Wilson à 95 % ≥ 90 % — " +
-    `${FAMILLES.map(chiffreFamille).join(" ; ")}.`
+    `${FAMILLES.map(chiffreFamille).join(" ; ")}. Les citations à \`date_divergente\` sont moins sûres : ` +
+    "38 justes sur 51 relues pour les délibérations CNIL — les vérifier avant de s'y appuyer."
   );
 }
 
@@ -80,7 +81,9 @@ const CONSIGNE_DECISIONS_CITEES =
   "qu'elle cite, reconnues par leur référence (numéro d'affaire de l'Union, ECLI, délibération " +
   "CNIL, requête du Conseil d'État, pourvoi), chacune avec `famille` et `cibles`, les décisions du " +
   "corpus qu'elle désigne (vide hors corpus, plusieurs quand la référence est ambiguë : ne pas " +
-  "choisir). Le lien dit seulement « cite » : ne jamais le qualifier (applique, écarte, renverse). " +
+  "choisir). `date_divergente: true` dit que le texte date la décision citée (`date_citee`) " +
+  "autrement que les décisions du corpus de ce numéro : elles sont rendues quand même, à vérifier. " +
+  "Le lien dit seulement « cite » : ne jamais le qualifier (applique, écarte, renverse). " +
   "La liste est non exhaustive : une liste vide ne prouve pas que la décision ne cite rien. " +
   `${chiffresCitationsDecisions()}`;
 
@@ -222,7 +225,9 @@ export function createServer(deps: ServerDeps): McpServer {
         "son autorité, son intitulé, sa date et son lien, triées par date décroissante ; `total` et " +
         "`par_autorite` comptent toutes les décisions, même quand la liste est paginée par " +
         `\`limite\` (${LIMITE_DEFAUT} par défaut, ${LIMITE_MAX} au plus) et \`decalage\` ; ` +
-        "`tronque` dit qu'il en reste. `cibles` donne la ou les décisions du corpus que la référence " +
+        "`tronque` dit qu'il en reste. Chaque décision citante porte `cite`, ce que sa citation " +
+        "désigne selon la même résolution que `decisions_citees` (date du texte, `date_divergente`). " +
+        "`cibles` donne la ou les décisions du corpus que la référence " +
         "désigne : vide hors corpus, plusieurs quand elle est ambiguë, sans choix silencieux. Le lien " +
         "dit seulement « cite », jamais applique, écarte ou renverse. La liste est non exhaustive : " +
         "une liste vide ne prouve pas que la décision n'est jamais citée. Une référence d'une famille " +

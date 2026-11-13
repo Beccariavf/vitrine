@@ -30,34 +30,52 @@ Relecteurs : un agent indépendant de l'implémentation par famille et par passe
 
 ## Résultat (code final)
 
-| Famille | Citations au corpus | Relues | Justes | Fausses | Borne basse Wilson 95 % | Exposée |
-| --- | --- | --- | --- | --- | --- | --- |
-| `affaire_ue` | 2 865 | 60 | 60 | 0 | 94,0 % | oui |
-| `deliberation_cnil` | 2 409 | 60 | 60 | 0 | 94,0 % | oui |
-| `requete_ce` | 121 | 60 | 59 | 1 | 91,1 % | oui |
-| `pourvoi_cc` | 179 | 60 | 60 | 0 | 94,0 % | oui |
-| `ecli` | 55 | 55 | 34 | 21 | 48,6 % | non |
+Chaque échantillon a été régénéré sur le code final et comparé octet par octet au fichier relu.
 
-- `requete_ce` : l'erreur vient de la source (« 21 avril 2011, n° 393099 » pour 2021) ; le filtre de
-  date écarte alors la bonne décision.
-- `ecli` : toutes les fautes sont des cibles manquantes — aucune unité ne porte d'ECLI, la référence
-  n'est jamais résolue. Famille non exposée ; la résoudre demande une synchronisation qui écrive les
-  ECLI de la CJUE. Mesurée en première passe : son extraction et sa résolution n'ont pas changé depuis.
+| Famille | Citations au corpus | Résolues au corpus | Relues | Justes | Borne basse Wilson 95 % | Exposée |
+| --- | --- | --- | --- | --- | --- | --- |
+| `affaire_ue` | 2 841 | 1 138 | 60 (échantillon) | 60 | 94,0 % | oui |
+| `deliberation_cnil` | 2 408 | 1 861 | 60 (échantillon) | 60 | 94,0 % | oui |
+| `requete_ce` | 119 | 98 | 119 (exhaustif) | 119 | 96,9 % | oui |
+| `pourvoi_cc` | 179 | 75 | 60 (échantillon) | 60 | 94,0 % | oui |
+| `ecli` | 55 | 0 | 55 (exhaustif) | 34 | 48,6 % | non |
+
+### Strate « date divergente », relue en entier
+
+Quand le texte date la décision citée et qu'aucune décision du corpus de ce numéro ne porte cette date,
+toutes sont rendues avec `date_divergente: true` plutôt qu'une absence fausse.
+
+| Famille | Citations à date divergente | Justes | Précision |
+| --- | --- | --- | --- |
+| `deliberation_cnil` | 51 (2,1 % de la famille) | 38 | 74,5 % |
+| `requete_ce` | 5 | 5 | 100 % |
+| `affaire_ue` | 1 | 1 | 100 % |
+
+- `deliberation_cnil` : les 13 fautes sont des délibérations différentes sous le même numéro (anciennes
+  séries des années 1980), un organe autre que la CNIL ou un numéro erroné dans la source. Les 38 justes
+  sont des coquilles de date, des écarts séance/acte ou des dates d'un autre acte. Cette strate est
+  sous le seuil prise seule : le marqueur `date_divergente` dit « à vérifier », et la description des
+  outils publie ce chiffre. Pondérée par strate (97,9 % à 60/60, 2,1 % à 74,5 %), la famille reste au-dessus
+  du seuil.
+- Candidats en trop, comptés justes par la règle (la bonne décision y figure) : quelques requêtes et
+  pourvois jugés deux fois (fond et renvoi) quand la date n'est pas donnée ou n'est pas lue.
+- `ecli` : toutes les fautes sont des cibles manquantes — aucune unité ne porte d'ECLI. Non exposée ;
+  la résoudre demande une synchronisation qui écrive les ECLI de la CJUE.
 
 ## Passes
 
-1. Première passe : `affaire_ue` 59/60 (`C-101/2001` mal lu), `deliberation_cnil` 55/60 et
-   `requete_ce` 53/60 (date d'un autre acte prise avant la référence, avis administratifs du Conseil
-   d'État), `pourvoi_cc` 60/60, `ecli` 34/55. Corrigés : date lue après la référence d'abord (« n° 80-20
-   du 24 juin 1980 »), coupures qui ignorent les points d'abréviation, mois abrégés, avis exclus,
-   année d'affaire sur quatre chiffres.
-2. Deuxième passe sur le code corrigé : `deliberation_cnil` 60/60, `requete_ce` 59/60, `pourvoi_cc`
-   60/60, `affaire_ue` 56/60 (affaires jointes de l'en-tête non indexées). Corrigé : l'en-tête CJUE
-   « Dans les affaires jointes … » indexe toutes les affaires, plages « à » comprises.
-3. Troisième passe `affaire_ue` sur le code final : 60/60. Les échantillons des trois autres familles
-   sont identiques sur le code final (vérifié octet par octet).
+1. Passe 1 : `affaire_ue` 59/60, `deliberation_cnil` 55/60, `requete_ce` 53/60, `pourvoi_cc` 60/60,
+   `ecli` 34/55. Corrigés : date lue après la référence, points d'abréviation, mois abrégés, avis du
+   Conseil d'État exclus, année d'affaire sur quatre chiffres.
+2. Passe 2 : `affaire_ue` 56/60 (affaires jointes de l'en-tête). Corrigé : en-tête CJUE indexé.
+3. Revue indépendante : auto-citations revenues par le filtre de date, fenêtre qui coupait un jour,
+   date de la citation suivante prise, fausses absences sur date différente (71 au corpus). Corrigés :
+   auto-citation décidée avant la date, fenêtre à frontière de mot, date après séparée par une seule
+   virgule ou le nom des parties, `date_divergente`, conclusions et ordonnances distinguées de l'arrêt,
+   résolution partagée par les deux outils.
+4. Passe finale sur le code final : chiffres ci-dessus.
 
 ## Rappel
 
-Non mesuré par un seuil. Observé en relecture : des références manquent (pourvois en liste sans « n° »,
+Non mesuré par un seuil. Observé en relecture : références manquantes (pourvois en liste sans « n° »,
 décisions citées par le nom des parties, ECLI).

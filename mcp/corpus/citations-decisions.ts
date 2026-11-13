@@ -38,7 +38,17 @@ export const FAMILLES: readonly Famille[] = [
  * Une référence reconnue dans un texte : sa forme lisible, sa clé de résolution
  * et, quand le texte la donne juste avant, la date de la décision citée.
  */
-export type ReferenceDecision = { famille: Famille; cle: string; reference: string; date?: string };
+export type ReferenceDecision = {
+  famille: Famille;
+  cle: string;
+  reference: string;
+  date?: string;
+  /**
+   * Affaire de l'Union citée par un acte qui n'est pas l'arrêt : des conclusions
+   * d'avocat général ou une ordonnance partagent le numéro de l'affaire.
+   */
+  acte?: "conclusions" | "ordonnance";
+};
 
 /** Une décision du corpus qu'une référence désigne. */
 export type CibleDecision = {
@@ -49,8 +59,19 @@ export type CibleDecision = {
   url: string;
 };
 
-/** Une décision citée, telle que les outils la rendent ; `cibles` vide hors corpus. */
-export type DecisionCitee = { reference: string; famille: Famille; cibles: CibleDecision[] };
+/**
+ * Une décision citée, telle que les outils la rendent ; `cibles` vide hors corpus.
+ * `date_divergente` signale que le texte date la décision citée (`date_citee`)
+ * autrement que toutes les décisions du corpus de ce numéro : elles sont rendues
+ * quand même, à vérifier, plutôt qu'une absence qui serait fausse.
+ */
+export type DecisionCitee = {
+  reference: string;
+  famille: Famille;
+  cibles: CibleDecision[];
+  date_citee?: string;
+  date_divergente?: true;
+};
 
 /**
  * Précision relevée par famille sur l'échantillon relu (`mesure.md`). Une famille
@@ -60,7 +81,7 @@ export const MESURES: Partial<Record<Famille, { justes: number; relues: number }
   affaire_ue: { justes: 60, relues: 60 },
   ecli: { justes: 34, relues: 55 },
   deliberation_cnil: { justes: 60, relues: 60 },
-  requete_ce: { justes: 59, relues: 60 },
+  requete_ce: { justes: 119, relues: 119 },
   pourvoi_cc: { justes: 60, relues: 60 },
 };
 
@@ -91,9 +112,12 @@ function tirets(texte: string): string {
 const AFFAIRE = /\b([CTF])\s?-\s?(\d{1,4})\/(?:\d{2})?(\d{2})(?!\d)(\s?P\b)?/g;
 const ECLI = /\bECLI:[A-Z]{2}:[A-Z]+:\d{4}:[0-9A-Z]+(?:\.[0-9A-Z]+)*/g;
 const SAN = /\bSAN-(\d{4})-(\d{1,3})\b/g;
-const DELIBERATION = /\bdélibération(?:s)?\s+(?:[^.;]{0,40}?\s)?n[°o]s?\s?(\d{2}|\d{4})-(\d{2,3})\b/gi;
+const DELIBERATION = /\bdélibération(?:s)?\s+((?:[^.;]{0,40}?\s)?)n[°o]s?\s?(\d{2}|\d{4})-(\d{2,3})\b/gi;
+/** « délibération portant avis sur le décret n° 2018-687 » : le numéro est celui d'un autre acte. */
+const AUTRE_ACTE = /\b(?:loi|décret|arrêté|ordonnance|directive|règlement)\b/i;
 const REQUETE = /\bn°s?\s?(\d{6})\b/g;
-const CONTEXTE_CE = /Conseil d['’]État|\bCE\b|\bC\.E\.|\breq\.\s?$/;
+/** « /CE » et « (CE) » nomment la Communauté européenne, pas le Conseil d'État. */
+const CONTEXTE_CE = /Conseil d['’]État|(?<!\/)(?<!\()\bCE\b(?!\))|\(CE,|\bC\.E\.|\breq\.\s?$/;
 /** Un avis administratif du Conseil d'État porte un numéro qui n'est pas une requête. */
 const AVIS_CE = /section (?:de l['’]intérieur|des finances|sociale|des travaux publics|de l['’]administration)|Assemblée générale|\bint\.,|\bavis\b/i;
 const SOUS_LE = /Sous les?\s*$/i;
@@ -122,7 +146,7 @@ function iso(trouve: RegExpMatchArray): string {
  * mention « n° ». Un point d'abréviation (« juill. 2022 », « Cass. crim. »)
  * ne coupe pas.
  */
-const COUPURE = /\.\s(?=[A-ZÀ-Ý])|;|\bn°/g;
+const COUPURE = /(?<!\b(?:[A-Z]|Mme|Mlle|MM))\.\s(?=[A-ZÀ-Ý])|;|\bn°/g;
 /** Fin de phrase seule, pour borner le contexte d'une requête du Conseil d'État. */
 const FIN_PHRASE = /\.\s(?=[A-ZÀ-Ý])|;|\n/g;
 
@@ -133,20 +157,45 @@ const FIN_PHRASE = /\.\s(?=[A-ZÀ-Ý])|;|\n/g;
  * une autre mention « n° » : la date d'un autre acte ne date pas la référence.
  */
 function dateDe(texte: string, position: number, longueur: number): string | undefined {
-  const apres = /^[^.;]{0,20}?\b(?:du|en date du)\s+/i.exec(texte.slice(position + longueur, position + longueur + 60));
+  // Seule une virgule sépare la référence de sa date : « n° 80-20 du 24 juin 1980 ».
+  // Une parenthèse ou un « et » ouvrirait la citation suivante.
+  // Le nom des parties peut s'intercaler : « C-212/13, František Ryneš, 11 décembre 2014 ».
+  const apres = new RegExp(
+    `^\\s*(?:,\\s*[^,.;()\\d]{1,80})?,?\\s*(?:du\\s+|en date du\\s+)?${DATE.source}`,
+    "i",
+  ).exec(texte.slice(position + longueur, position + longueur + 140));
   if (apres !== null) {
-    const suite = texte.slice(position + longueur + apres[0].length);
-    const date = new RegExp(`^${DATE.source}`, "i").exec(suite);
+    const date = new RegExp(DATE.source, "i").exec(apres[0]);
     if (date !== null) return iso(date);
   }
   // Le « n° » qui annonce la référence elle-même ne coupe pas.
-  const fenetre = texte.slice(Math.max(0, position - 90), position).replace(/(?:pourvoi\s+)?n°s?\s*$/i, "");
+  // La fenêtre commence à une frontière de mot : « 12 septembre » ne devient jamais « 2 septembre ».
+  let debut = Math.max(0, position - 90);
+  while (debut > 0 && /\S/.test(texte[debut - 1] ?? "")) debut -= 1;
+  const fenetre = texte.slice(debut, position).replace(/(?:pourvoi\s+)?n°s?\s*$/i, "");
   const coupures = [...fenetre.matchAll(COUPURE)];
   const derniere = coupures[coupures.length - 1];
   const proposition = derniere === undefined ? fenetre : fenetre.slice((derniere.index ?? 0) + derniere[0].length);
   const dates = [...proposition.matchAll(DATE)];
   const date = dates[dates.length - 1];
   return date === undefined ? undefined : iso(date);
+}
+
+/**
+ * Acte d'une affaire de l'Union nommé dans la proposition qui précède la
+ * référence : « conclusions de l'avocat général … dans l'affaire C-645/19 »,
+ * « ordonnance du président … C-413/23 P ».
+ */
+function acteAvant(texte: string, position: number): "conclusions" | "ordonnance" | undefined {
+  let debut = Math.max(0, position - 120);
+  while (debut > 0 && /\S/.test(texte[debut - 1] ?? "")) debut -= 1;
+  const fenetre = texte.slice(debut, position);
+  const coupures = [...fenetre.matchAll(COUPURE)];
+  const derniere = coupures[coupures.length - 1];
+  const proposition = derniere === undefined ? fenetre : fenetre.slice((derniere.index ?? 0) + derniere[0].length);
+  if (/\bconclusions\b|\bavocat général\b|\bopinion of advocate general\b/i.test(proposition)) return "conclusions";
+  if (/\bordonnance\b|\border of\b/i.test(proposition)) return "ordonnance";
+  return undefined;
 }
 
 /** Année sur quatre chiffres : `06` devient `2006`, `86` devient `1986`. */
@@ -200,6 +249,9 @@ export function referencesPositionnees(
   for (const m of texte.matchAll(AFFAIRE)) {
     const cle = `${m[1]}-${Number(m[2])}/${m[3]}`;
     pousser(m.index, m[0].length, "affaire_ue", cle, m[4] === undefined ? cle : `${cle} P`);
+    const acte = acteAvant(texte, m.index);
+    const derniere = trouvees[trouvees.length - 1];
+    if (acte !== undefined && derniere !== undefined) derniere.acte = acte;
   }
   for (const m of texte.matchAll(ECLI)) pousser(m.index, m[0].length, "ecli", m[0], m[0]);
   for (const m of texte.matchAll(SAN)) {
@@ -207,7 +259,8 @@ export function referencesPositionnees(
     pousser(m.index, m[0].length, "deliberation_cnil", cle, cle);
   }
   for (const m of texte.matchAll(DELIBERATION)) {
-    const cle = cleDeliberation(`${m[1]}-${m[2]}`);
+    if (AUTRE_ACTE.test(m[1] ?? "")) continue;
+    const cle = cleDeliberation(`${m[2]}-${m[3]}`);
     if (cle !== null) pousser(m.index, m[0].length, "deliberation_cnil", cle, `délibération n° ${cle}`);
   }
   for (const m of texte.matchAll(REQUETE)) {
@@ -228,8 +281,8 @@ export function referencesPositionnees(
   const vues = new Set<string>();
   return trouvees
     .sort((gauche, droite) => gauche.position - droite.position)
-    .filter(({ famille, cle }) => {
-      const clef = `${famille}|${cle}`;
+    .filter(({ famille, cle, acte }) => {
+      const clef = `${famille}|${cle}|${acte ?? ""}`;
       if (vues.has(clef)) return false;
       vues.add(clef);
       return true;
@@ -254,7 +307,12 @@ export function lireReference(saisie: string): ReferenceDecision | null {
       reference: deliberation.startsWith("SAN") ? deliberation : `délibération n° ${deliberation}`,
     };
   }
-  const references = extraireReferences(texte.replace(/^Pourvoi\s+n°\s?/i, ""));
+  // « Pourvoi n° Q 19-17.278 » se copie depuis l'en-tête d'un arrêt ; « CE, 353066 » aussi.
+  const pourvoi = /^(?:Pourvoi\s+n°\s?)?(?:[A-Z]\s)?(\d{2}-\d{2}\.\d{3})$/i.exec(texte);
+  if (pourvoi !== null) return { famille: "pourvoi_cc", cle: pourvoi[1] ?? "", reference: pourvoi[1] ?? "" };
+  const requete = /^(?:CE|Conseil d['’]État)\s*,?\s*(?:n°\s?)?(\d{6})$/i.exec(texte);
+  if (requete !== null) return { famille: "requete_ce", cle: requete[1] ?? "", reference: `n° ${requete[1]}` };
+  const references = extraireReferences(texte);
   return references.length === 1 ? (references[0] ?? null) : null;
 }
 
@@ -308,7 +366,7 @@ function clesPropres(unite: Unite): ReferenceDecision[] {
   }
 }
 
-type EtatCorpus = {
+type CorpusDecisions = {
   signature: string;
   /** Références citées par document, auto-citations comprises : la résolution les retire. */
   references: Map<string, ReferenceDecision[]>;
@@ -318,10 +376,10 @@ type EtatCorpus = {
   premieres: Map<string, Unite>;
 };
 
-const CACHE = new Map<string, EtatCorpus>();
+const CACHE = new Map<string, CorpusDecisions>();
 
 /** Lit un corpus de décisions une fois par modification de son fichier. */
-function etatCorpus(rootDir: string, corpus: string): EtatCorpus {
+function lireCorpusDecisions(rootDir: string, corpus: string): CorpusDecisions {
   const chemin = join(rootDir, "data", "corpus", corpus, "unites.jsonl");
   let signature: string;
   try {
@@ -369,18 +427,39 @@ function etatCorpus(rootDir: string, corpus: string): EtatCorpus {
   return etat;
 }
 
-/**
- * Les décisions du corpus qu'une clé désigne, tous corpus confondus. Quand le
- * texte date la décision citée, seules les décisions de cette date restent : un
- * numéro de requête ou de pourvoi porte souvent plusieurs décisions, et aucune
- * cible ne vaut mieux qu'une décision d'une autre date.
- */
-function resoudre(rootDir: string, reference: ReferenceDecision): CibleDecision[] {
+/** Toutes les décisions du corpus qui portent une clé, sans regarder la date. */
+function candidats(rootDir: string, reference: Pick<ReferenceDecision, "famille" | "cle">): CibleDecision[] {
   const clef = `${reference.famille}|${reference.cle}`;
-  const candidats = CORPUS_DECISIONS.flatMap((corpus) => etatCorpus(rootDir, corpus).cibles.get(clef) ?? []);
-  return reference.date === undefined
-    ? candidats
-    : candidats.filter((cible) => cible.date_acte === reference.date);
+  return CORPUS_DECISIONS.flatMap((corpus) => lireCorpusDecisions(rootDir, corpus).cibles.get(clef) ?? []);
+}
+
+/**
+ * Résolution d'une référence citée par `document`, partagée par les deux outils.
+ * `null` quand elle désigne le document lui-même, décidé avant tout filtre de
+ * date : une date proche de son propre numéro ne doit pas le faire revenir sans
+ * cible. Une date donnée par le texte garde les seules décisions de cette date ;
+ * si aucune ne la porte, toutes sont rendues avec `date_divergente`.
+ */
+function resolution(
+  rootDir: string,
+  reference: ReferenceDecision,
+  document: string,
+): Omit<DecisionCitee, "reference" | "famille"> | null {
+  const numero = candidats(rootDir, reference);
+  // Des conclusions ne sont jamais au corpus ; une ordonnance n'y est que si une ordonnance porte ce numéro.
+  const tous =
+    reference.acte === "conclusions"
+      ? []
+      : reference.acte === "ordonnance"
+        ? numero.filter((cible) => /ordonnance/i.test(cible.intitule))
+        : numero;
+  if (tous.length < numero.length && numero.some((cible) => cible.document === document)) return null;
+  const dates = reference.date === undefined ? tous : tous.filter((c) => c.date_acte === reference.date);
+  if (dates.some((cible) => cible.document === document)) return null;
+  if (dates.length === 0 && tous.some((cible) => cible.document === document)) return null;
+  if (dates.length > 0 || reference.date === undefined) return { cibles: dates };
+  if (tous.length === 0) return { cibles: [], date_citee: reference.date };
+  return { cibles: tous, date_citee: reference.date, date_divergente: true };
 }
 
 /**
@@ -394,13 +473,13 @@ export function decisionsCitees(
   document: string,
   familles: ReadonlySet<Famille> = famillesExposees(),
 ): DecisionCitee[] {
-  const references = etatCorpus(rootDir, corpus).references.get(document) ?? [];
+  const references = lireCorpusDecisions(rootDir, corpus).references.get(document) ?? [];
   const rendues: DecisionCitee[] = [];
   for (const reference of references) {
     if (!familles.has(reference.famille)) continue;
-    const cibles = resoudre(rootDir, reference);
-    if (cibles.some((cible) => cible.document === document)) continue;
-    rendues.push({ reference: reference.reference, famille: reference.famille, cibles });
+    const resolue = resolution(rootDir, reference, document);
+    if (resolue === null) continue;
+    rendues.push({ reference: reference.reference, famille: reference.famille, ...resolue });
   }
   return rendues;
 }
@@ -408,7 +487,14 @@ export function decisionsCitees(
 export const LIMITE_DEFAUT = 50;
 export const LIMITE_MAX = 500;
 
-export type DecisionCitante = CibleDecision & { autorite: string };
+/**
+ * Une décision citante, et ce que sa citation désigne selon la même résolution
+ * que `decisions_citees` : les deux outils ne se contredisent pas.
+ */
+export type DecisionCitante = CibleDecision & {
+  autorite: string;
+  cite: Omit<DecisionCitee, "reference" | "famille">;
+};
 
 export type ResultatCitantsDecision = {
   trouve: boolean;
@@ -478,16 +564,18 @@ export function decisionsCitantDecision(
     };
   }
 
-  const cibles = resoudre(rootDir, lue);
+  const cibles = candidats(rootDir, lue);
   const citantes: DecisionCitante[] = [];
   for (const corpus of CORPUS_DECISIONS) {
-    const etat = etatCorpus(rootDir, corpus);
+    const etat = lireCorpusDecisions(rootDir, corpus);
     for (const [document, references] of etat.references) {
-      if (cibles.some((cible) => cible.document === document)) continue;
-      if (!references.some((r) => r.famille === lue.famille && r.cle === lue.cle)) continue;
+      const citee = references.find((r) => r.famille === lue.famille && r.cle === lue.cle);
+      if (citee === undefined) continue;
+      const cite = resolution(rootDir, citee, document);
       const unite = etat.premieres.get(document);
-      if (unite === undefined) continue;
+      if (cite === null || unite === undefined) continue;
       citantes.push({
+        cite,
         document,
         corpus,
         autorite: autoriteDe(corpus),
