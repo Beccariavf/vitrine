@@ -86,6 +86,8 @@ describe("la lecture de l'archive CONSTIT", () => {
     const unites = unitesConstit(decision, DESCRIPTEUR);
     assert.equal(unites.length, 1);
     assert.equal(unites[0]?.texte.includes("données personnelles"), false);
+    assert.equal(unites[0]?.texte.includes("&nbsp;"), false, "entité double-échappée décodée");
+    assert.match(unites[0]?.texte ?? "", /vie privée sont garantis/);
   });
 
   it("écarte une nature non retenue, un hors filtre, une date invalide et un texte vide", async () => {

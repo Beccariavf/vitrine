@@ -80,7 +80,7 @@ export type ManifesteConstit = {
   licence: string;
   /** Entrées XML lues dans l'archive, toutes natures confondues. */
   documents_lus: number;
-  /** Décisions DC et QPC valablement datées, toutes dates, avant mot-clé. */
+  /** Décisions DC et QPC, toutes dates, avant validation de la date et mot-clé. */
   documents_dc_qpc: number;
   /** Décisions retenues après filtrage et dédoublonnage. */
   documents: number;
@@ -175,7 +175,7 @@ export function empreinteFiltre(descripteur: DescripteurConstit): string {
   return createHash("sha256")
     .update(
       JSON.stringify({
-        version: 1,
+        version: 2, // 2 : décodage des entités double-échappées (texteConstit)
         titre: descripteur.titre,
         natures_retenues: descripteur.natures_retenues,
         mots_cles: descripteur.mots_cles,

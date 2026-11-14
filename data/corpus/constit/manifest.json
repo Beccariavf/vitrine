@@ -33,7 +33,7 @@
   "documents_lus": 7423,
   "documents_dc_qpc": 2045,
   "documents": 108,
-  "fragments": 5797,
+  "fragments": 5775,
   "doublons": 4,
   "ecartes": {
     "nature_ecartee": 5378,
@@ -103,7 +103,7 @@
     },
     "comptes": {
       "documents": 108,
-      "fragments": 5797,
+      "fragments": 5775,
       "doublons": 4
     },
     "par_nature": {

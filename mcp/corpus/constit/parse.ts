@@ -16,7 +16,7 @@
 
 import { XMLParser } from "fast-xml-parser";
 import type { Unite } from "../parse.ts";
-import { texteVisible } from "../parse.ts";
+import { decoderEntites, texteVisible } from "../parse.ts";
 import { decouperParagraphes } from "../cnil/parse.ts";
 import { contientMotCle, normaliserComparaison } from "../texte.ts";
 
@@ -104,26 +104,45 @@ function texteDe(valeur: unknown): string {
   return typeof texte === "string" ? texte.trim() : "";
 }
 
+/**
+ * Texte visible d'un `CONTENU` CONSTIT. La DILA double-échappe parfois les
+ * entités (`&amp;nbsp;`) : une seule passe laisserait `&nbsp;` dans le texte
+ * indexé. Le décodage est répété jusqu'à stabilité, sans jamais réinterpréter
+ * les chevrons déjà décodés.
+ */
+export function texteConstit(fragment: string): string {
+  let texte = texteVisible(fragment);
+  for (let tour = 0; tour < 3 && /&(?:#x[0-9a-f]+|#\d+|[a-z]+);/i.test(texte); tour += 1) {
+    texte = decoderEntites(texte);
+  }
+  return texte.replace(/\s+/g, " ").trim();
+}
+
 /** Paragraphes d'un `CONTENU` : les `<p>` quand il y en a, sinon les `<br/>`. */
 function paragraphesContenu(contenu: string): string[] {
   const avecP = [...contenu.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/gi)]
-    .map((trouve) => texteVisible(trouve[1] ?? ""))
+    .map((trouve) => texteConstit(trouve[1] ?? ""))
     .filter((texte) => texte !== "");
   if (avecP.length > 0) return avecP;
 
   const parBr = contenu
     .split(/<br\s*\/?>/i)
-    .map((segment) => texteVisible(segment))
+    .map((segment) => texteConstit(segment))
     .filter((texte) => texte !== "");
   if (parBr.length > 0) return parBr;
 
-  const entier = texteVisible(contenu);
+  const entier = texteConstit(contenu);
   return entier === "" ? [] : [entier];
 }
 
-/** Contenu textuel d'un bloc `<CONTENU>` d'un `<TEXTE>` CONSTIT. */
-function contenuDe(bloc: Record<string, unknown> | null): string {
+/** Contenu brut d'un bloc `<CONTENU>` : les balises `<p>` restent à découper. */
+function contenuBrut(bloc: Record<string, unknown> | null): string {
   return bloc === null ? "" : texteDe(bloc.CONTENU);
+}
+
+/** Contenu textuel décodé d'un bloc `<CONTENU>`. */
+function contenuDe(bloc: Record<string, unknown> | null): string {
+  return texteConstit(contenuBrut(bloc));
 }
 
 /**
@@ -162,7 +181,7 @@ export function parseDecisionConstit(
   const id = texteDe(commun?.ID);
   if (id === "") throw new Error(`${nomFichier} : META_COMMUN/ID absent`);
 
-  const contenu = contenuDe(bloc);
+  const contenu = contenuBrut(bloc);
   return {
     id,
     nature: texteDe(commun?.NATURE).toUpperCase(),

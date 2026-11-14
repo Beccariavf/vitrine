@@ -15,7 +15,6 @@ import { decouperParagraphes } from "../cnil/parse.ts";
 import { contientExpression, contientMotCle, normaliserComparaison } from "../texte.ts";
 import type { Fonds } from "./archive.ts";
 
-export { contientMotCle, normaliserComparaison } from "../texte.ts";
 
 /** Métadonnées du corpus CE, lues depuis `mcp/corpus/ce/descripteur.json`. */
 export type DescripteurCe = {
