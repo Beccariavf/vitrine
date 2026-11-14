@@ -9,6 +9,7 @@ const SOURCE_LABELS: Record<string, string> = {
   "commission-dma": "Commission européenne — DMA",
   arcom: "ARCOM",
   cetat: "Conseil d'État",
+  constit: "Conseil constitutionnel",
   judilibre: "Cour de cassation",
   legi: "Légifrance",
   eurlex: "EUR-Lex",

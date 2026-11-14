@@ -27,8 +27,12 @@ export type Entry = {
   version?: string;
   /** Nature de la nouveauté détectée ; `eurlex` seulement. */
   categorie?: "consolidation" | "adequation" | "clauses_types" | "modification";
-  /** Date de l'acte ou de la consolidation détectée ; `eurlex` seulement. */
+  /** Date de l'acte, de la consolidation ou de la décision détectée ; `eurlex` et `constit`. */
   date_acte?: string;
+  /** Numéro de la décision, tel que la source l'écrit (`2018-765 DC`) ; `constit` seulement. */
+  numero?: string;
+  /** Nature de la décision (`DC` ou `QPC`) ; `constit` seulement. */
+  nature?: string;
   /** CELEX de la décision abrogée par celle que porte l'entrée ; `eurlex` seulement. */
   abroge?: string;
 };
