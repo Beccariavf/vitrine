@@ -28,18 +28,33 @@ export const DESCRIPTEUR_ADEQUATION = join(DOSSIER_CORPUS, "adequation", "descri
 /** Identifiant de la source de veille. */
 export const SOURCE_ID = "eurlex";
 
-/** Matière unique : tous les actes suivis portent la protection des données. */
+/** Matière unique des actes de protection des données. */
 export const THEME = "donnees-personnelles";
+
+/** Matière d'une consolidation : l'AI Act se rattache à l'IA, les autres aux données. */
+export function themeDeCorpus(corpus: string): string {
+  return corpus === "aiact" ? "ia" : THEME;
+}
 
 /** Point d'accès SPARQL de CELLAR, partagé avec le corpus CJUE. */
 export const ENDPOINT_SPARQL = "https://publications.europa.eu/webapi/rdf/sparql";
 
 /**
- * Début de la veille des nouveaux actes. Les consolidations, elles, se comparent
- * au descripteur : une consolidation plus récente est signalée quelle que soit
- * sa date, parce que le corpus peut avoir été construit longtemps avant.
+ * Début de la veille des nouveaux actes : la date de consultation de la liste
+ * d'adéquation, qui est l'état de référence du corpus. Les consolidations, elles,
+ * se comparent au descripteur : une consolidation plus récente est signalée
+ * quelle que soit sa date, parce que le corpus peut avoir été construit
+ * longtemps avant.
  */
 export const DATE_MIN = "2026-11-14";
+
+/** Borne des nouveaux actes : `consulte_le` du descripteur, sinon `DATE_MIN`. */
+export function dateMinDe(adequation: DescripteurAdequation): string {
+  const date = adequation.consulte_le;
+  return typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date) && !Number.isNaN(Date.parse(date))
+    ? date
+    : DATE_MIN;
+}
 
 /** Actes dont une décision d'adéquation peut être prise : RGPD et 2016/680. */
 export const BASES_ADEQUATION = ["32016R0679", "32016L0680"] as const;
@@ -298,6 +313,7 @@ function entree(params: {
   officialTitle: string;
   version?: string;
   abroge?: string;
+  themes?: string[];
 }): Entry {
   return {
     id: identifiant(params.categorie, params.document, params.reference, params.version ?? null),
@@ -310,7 +326,7 @@ function entree(params: {
     publishedAt: `${params.datePasse}T12:00:00.000Z`,
     summary: null,
     references: [],
-    themes: [THEME],
+    themes: params.themes ?? [THEME],
     source: SOURCE_ID,
     document: params.document,
     categorie: params.categorie,
@@ -344,6 +360,7 @@ export function detecterConsolidations(
         title: `${acte.nom} : nouvelle version consolidée du ${dateFr(derniere.date)}`,
         officialTitle: acte.titre,
         version: derniere.version,
+        themes: [themeDeCorpus(acte.corpus)],
       }),
     );
   }
@@ -436,6 +453,7 @@ export function detecterModifications(
         datePasse,
         title: `${acte.nom} : acte modificatif ${modification.celex} du ${dateFr(modification.date)}`,
         officialTitle: modification.titre ?? acte.titre,
+        themes: [themeDeCorpus(acte.corpus)],
         ...(version === undefined ? {} : { version }),
       }),
     );
@@ -507,7 +525,7 @@ export async function passeEurlex(options: PasseEurlexOptions = {}): Promise<Res
   const actes = actesSuivis(options.dossierCorpus);
   const adequation = lireDescripteurAdequation(options.descripteurAdequation);
   const endpoint = options.endpoint ?? ENDPOINT_SPARQL;
-  const dateMin = options.dateMin ?? DATE_MIN;
+  const dateMin = options.dateMin ?? dateMinDe(adequation);
   const fetchImpl = options.fetchImpl ?? (fetch as unknown as FetchLike);
   const datePasse = (options.maintenant ?? new Date()).toISOString().slice(0, 10);
 

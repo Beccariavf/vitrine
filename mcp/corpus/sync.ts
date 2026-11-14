@@ -28,6 +28,7 @@ import type { ResultatTextesFr } from "./textes-fr/sync.ts";
 import { synchroniserActeUe, synchroniserAdequation } from "./actes-ue.ts";
 import {
   corpusDeLEntree,
+  CORPUS_ACTES,
   documentsDeLEntree,
   documentsEcartes,
   indexerDocumentsCorpus,
@@ -72,7 +73,7 @@ export type SyncCorpusOptions = {
   /** Date de la passe, pour les tests. */
   date?: string;
   dryRun?: boolean;
-  /** Quatre agents injectables ; absent, les synchronisations réelles sont utilisées. */
+  /** Agents injectables ; absent, les synchronisations réelles sont utilisées. */
   agents?: Partial<Record<CorpusVeille, AgentSync>>;
   embedder?: Embedder;
   construireIndex?: (rootDir: string, embedder: Embedder) => Promise<ResultatBuild>;
@@ -104,7 +105,7 @@ function validerDate(date: string, nom: string): void {
   }
 }
 
-/** Les six synchronisations réelles, derrière la même interface que les tests. */
+/** Les synchronisations réelles, derrière la même interface que les tests. */
 export type AgentsParDefautDeps = {
   /** Remplaçable en test : une passe `cc` sans réseau. */
   syncCc?: (options: { rootDir: string }) => Promise<{
@@ -121,7 +122,7 @@ export type AgentsParDefautDeps = {
   flushUsage?: (rootDir: string) => void;
 };
 
-/** Les six synchronisations réelles, derrière la même interface que les tests. */
+/** Les synchronisations réelles, derrière la même interface que les tests. */
 export function agentsParDefaut(
   rootDir: string,
   deps: AgentsParDefautDeps = {},
@@ -481,7 +482,7 @@ export async function syncCorpus(options: SyncCorpusOptions = {}): Promise<Rappo
     const agent = agents[source];
     if (agent === undefined) {
       sources.push({ source, statut: "panne", message: "agent absent" });
-      echec = true;
+      if (!CORPUS_ACTES.includes(source)) echec = true;
       continue;
     }
     try {
@@ -489,7 +490,9 @@ export async function syncCorpus(options: SyncCorpusOptions = {}): Promise<Rappo
       sources.push({ source, statut: "ok", message: resultat.message });
     } catch (error) {
       sources.push({ source, statut: "panne", message: raison(error) });
-      echec = true;
+      // Une construction d'acte en panne (comptes d'un descripteur à arbitrer)
+      // garde sa ligne et sera rejouée, sans figer la fenêtre des autres corpus.
+      if (!CORPUS_ACTES.includes(source)) echec = true;
     }
   }
 

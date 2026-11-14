@@ -24,6 +24,7 @@ import type { ResultatAdequation } from "./adequation/build.ts";
 import {
   compterArticlesDecision,
   paysDeTitre,
+  titreDeCapture,
 } from "./adequation/parse.ts";
 import type { DecisionAdequation, DescripteurAdequation, SourceDecision } from "./adequation/parse.ts";
 import type { Descripteur } from "./parse.ts";
@@ -170,8 +171,13 @@ export async function synchroniserAdequation(
     considerants_attendus: 0,
   };
   const articles = compterArticlesDecision(capture.contenu, source);
+  if (articles < 1) {
+    throw new Error(`décision ${celex} : capture sans article, descripteur inchangé`);
+  }
 
-  const titre = options.entree.officialTitle.trim() === "" ? options.entree.title : options.entree.officialTitle;
+  const titreCapture = titreDeCapture(capture.contenu);
+  const titreOfficiel = options.entree.officialTitle.trim();
+  const titre = titreCapture ?? (titreOfficiel === "" ? options.entree.title : titreOfficiel);
   const decision: DecisionAdequation = {
     cle: cleDecision(celex),
     pays: paysDeTitre(titre) ?? "Pays non déterminé",

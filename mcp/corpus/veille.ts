@@ -36,6 +36,18 @@ const CORPUS_PAR_SOURCE: Record<string, CorpusVeille> = {
   cjeu: "cjue",
 };
 
+/** Corpus d'actes de l'Union : ils ne portent pas la fraîcheur globale. */
+export const CORPUS_ACTES: readonly CorpusVeille[] = [
+  "rgpd",
+  "aiact",
+  "eprivacy",
+  "police",
+  "eudpr",
+  "rgpdproc",
+  "ccs",
+  "adequation",
+];
+
 /** Actes de base suivis par la veille `eurlex` : CELEX → corpus. */
 const CORPUS_ACTES_UE: Record<string, CorpusVeille> = {
   "32016R0679": "rgpd",

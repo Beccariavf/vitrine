@@ -17,6 +17,7 @@ import {
   estClausesTypes,
   lireConsolidations,
   lireDescripteurAdequation,
+  dateMinDe,
   lireModifications,
   lireNouveauxActes,
   passeEurlex,
@@ -27,7 +28,7 @@ import {
 import type { ActeSuivi, Modification } from "../veille/sources/eurlex.ts";
 import type { Descripteur } from "../mcp/corpus/parse.ts";
 import type { DescripteurAdequation } from "../mcp/corpus/adequation/parse.ts";
-import { compterArticlesDecision, paysDeTitre } from "../mcp/corpus/adequation/parse.ts";
+import { compterArticlesDecision, paysDeTitre, titreDeCapture } from "../mcp/corpus/adequation/parse.ts";
 import { synchroniserActeUe, synchroniserAdequation } from "../mcp/corpus/actes-ue.ts";
 import { syncCorpus } from "../mcp/corpus/sync.ts";
 import type { AgentSync } from "../mcp/corpus/sync.ts";
@@ -161,6 +162,12 @@ describe("requêtes CELLAR des actes de l'Union", () => {
     assert.match(modifications, /resource_legal_amends_resource_legal/);
   });
 
+  it("borne les nouveaux actes à la date de consultation de la liste d'adéquation", () => {
+    const adequation = lireDescripteurAdequation();
+    assert.equal(dateMinDe(adequation), "2026-11-14");
+    assert.equal(dateMinDe({ ...adequation, consulte_le: "pas une date" }), DATE_MIN);
+  });
+
   it("lit la dernière consolidation de chaque acte", () => {
     const consolidations = lireConsolidations(CONSOLIDATIONS);
     assert.deepEqual(consolidations.get("32024R1689"), {
@@ -225,6 +232,7 @@ describe("détection des actes de l'Union", () => {
     assert.equal(consolidation?.title, "AI Act : nouvelle version consolidée du 27/07/2026");
     assert.equal(consolidation?.publishedAt, `${DATE_PASSE}T12:00:00.000Z`);
     assert.equal(consolidation?.date_acte, "2026-07-27");
+    assert.deepEqual(consolidation?.themes, ["ia"]);
     assert.match(consolidation?.url ?? "", /CELEX:02024R1689-20260727$/);
   });
 
@@ -496,7 +504,8 @@ describe("raccord eurlex → corpus", () => {
       const nouvelle = relu.decisions.find((decision) => decision.celex === "32026D0401");
       assert.equal(nouvelle?.statut, "en_vigueur");
       assert.equal(nouvelle?.date_acte, "2026-03-01");
-      assert.equal(nouvelle?.pays, "Chile");
+      assert.equal(nouvelle?.pays, "Chili");
+      assert.match(nouvelle?.titre ?? "", /^DÉCISION D’EXÉCUTION \(UE\) 2026\/401/);
       assert.equal(nouvelle?.articles, 3);
       const ancienne = relu.decisions.find((decision) => decision.celex === "32016D1250");
       assert.equal(ancienne?.statut, "ABROGE");
@@ -537,6 +546,50 @@ describe("raccord eurlex → corpus", () => {
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
+  });
+
+  it("refuse une capture sans article et laisse le descripteur intact", async () => {
+    const root = racine();
+    try {
+      const descripteurPath = join(root, "descripteur.json");
+      const avant = `${JSON.stringify({ corpus: "adequation", nom: "Décisions", liste_reference: "x", consulte_le: "2026-11-14", decisions: [] }, null, 2)}\n`;
+      writeFileSync(descripteurPath, avant, "utf8");
+      const fetchImpl: FetchLike = async () => ({
+        ok: true,
+        status: 200,
+        text: async () =>
+          "<html><body><p>DÉCISION D'EXÉCUTION</p><p>A ARRÊTÉ LA PRÉSENTE DÉCISION :</p><p>FAIT À Bruxelles.</p></body></html>",
+      });
+      await assert.rejects(
+        () =>
+          synchroniserAdequation({
+            rootDir: root,
+            descripteurPath,
+            fetchImpl,
+            entree: {
+              document: "32026D0400",
+              title: "Décision d'adéquation : Brazil",
+              officialTitle: "DECISION on the adequate level of protection of personal data by Brazil",
+              url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32026D0400",
+              publishedAt: "2026-11-14T12:00:00.000Z",
+            },
+            construire: async () => {
+              throw new Error("ne doit pas être appelée");
+            },
+          }),
+        /32026D0400 : capture sans article/,
+      );
+      assert.equal(readFileSync(descripteurPath, "utf8"), avant);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("lit le titre français dans la capture et en tire le pays", () => {
+    const titre = titreDeCapture(XHTML);
+    assert.match(titre ?? "", /^DÉCISION D’EXÉCUTION \(UE\) 2026\/401 DE LA COMMISSION du 1er mars 2026 constatant/);
+    assert.equal(paysDeTitre(titre), "Chili");
+    assert.equal(titreDeCapture("<html><body><p>LA COMMISSION</p></body></html>"), null);
   });
 
   it("compte les articles d'une capture sans attendre un compte déclaré", () => {
@@ -584,7 +637,7 @@ describe("corpus:sync et les actes de l'Union", () => {
     }
   });
 
-  it("ne fait pas avancer a_jour_au quand la source échoue", async () => {
+  it("signale la panne d'une construction d'acte sans figer a_jour_au", async () => {
     const root = racine();
     try {
       ecrireUniteAiact(root);
@@ -599,13 +652,86 @@ describe("corpus:sync et les actes de l'Union", () => {
         agents: { aiact },
         embedder: embedderFactice(),
       });
-      assert.equal(rapport.a_jour_au, null);
-      assert.equal(rapport.derniere_tentative, "2026-11-14");
+      assert.equal(rapport.a_jour_au, "2026-11-14");
       assert.equal(rapport.sources.find((source) => source.source === "aiact")?.statut, "panne");
       assert.match(
         rapport.sources.find((source) => source.source === "aiact")?.message ?? "",
         /119 articles/,
       );
+      // Le document reste périmé et sera rejoué à la passe suivante.
+      assert.equal(rapport.documents[0]?.statut, "perime");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("ne fait pas avancer a_jour_au quand une source de veille échoue", async () => {
+    const root = racine();
+    try {
+      ecrireEntree(root, {
+        id: "CETATEXT000000000002",
+        source: "cetat",
+        title: "Décision du Conseil d'État",
+        officialTitle: "Décision du Conseil d'État",
+        url: "https://www.legifrance.gouv.fr/ceta/id/CETATEXT000000000002",
+        publishedAt: "2026-11-14T12:00:00.000Z",
+        summary: null,
+        references: [],
+        themes: ["donnees-personnelles"],
+      });
+      const rapport = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-14",
+        depuis: "2026-11-01",
+        agents: {
+          ce: async () => {
+            throw new Error("CETAT indisponible");
+          },
+        },
+        embedder: embedderFactice(),
+      });
+      assert.equal(rapport.a_jour_au, null);
+      assert.equal(rapport.sources.find((source) => source.source === "ce")?.statut, "panne");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("lance la source adéquation avec l'entrée eurlex détectée", async () => {
+    const root = racine();
+    try {
+      ecrireEntree(root, {
+        id: "eurlex-adequation",
+        source: "eurlex",
+        title: "Décision d'adéquation : Brazil (10/02/2026)",
+        officialTitle:
+          "COMMISSION IMPLEMENTING DECISION pursuant to Regulation (EU) 2016/679 on the adequate level of protection of personal data by Brazil",
+        url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32026D0400",
+        publishedAt: "2026-11-14T12:00:00.000Z",
+        summary: null,
+        references: [],
+        themes: ["donnees-personnelles"],
+        document: "32026D0400",
+        categorie: "adequation",
+        date_acte: "2026-02-10",
+      });
+      const cibles: Array<string | null> = [];
+      const rapport = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-14",
+        depuis: "2026-11-01",
+        agents: {
+          adequation: async (cible) => {
+            cibles.push(cible?.entree?.document ?? null);
+            return { ecrit: true, message: "32026D0400 ajoutée (4 article(s))" };
+          },
+        },
+        embedder: embedderFactice(),
+      });
+      assert.deepEqual(cibles, ["32026D0400"]);
+      assert.equal(rapport.sources.find((source) => source.source === "adequation")?.statut, "ok");
+      assert.equal(rapport.documents[0]?.corpus, "adequation");
+      assert.equal(rapport.documents[0]?.statut, "manquant");
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
