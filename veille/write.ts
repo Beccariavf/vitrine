@@ -3,17 +3,18 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, w
 import { basename, dirname, join } from "node:path";
 import type { Entry } from "./types.ts";
 
-/** Écrit un fichier UTF-8 s'il n'a pas déjà exactement ce contenu. */
-function writeIfChanged(path: string, content: string): string {
+/** Écrit un fichier s'il n'a pas déjà exactement ces octets. */
+function writeIfChanged(path: string, content: string | Uint8Array): string {
+  const octets = typeof content === "string" ? Buffer.from(content, "utf8") : Buffer.from(content);
   try {
-    if (readFileSync(path, "utf8") === content) return path;
+    if (readFileSync(path).equals(octets)) return path;
   } catch {
     // Absent : on l'écrit plus bas.
   }
   mkdirSync(dirname(path), { recursive: true });
   const tmp = `${path}.tmp`;
   try {
-    writeFileSync(tmp, content, "utf8");
+    writeFileSync(tmp, octets);
     renameSync(tmp, path);
   } finally {
     if (existsSync(tmp)) rmSync(tmp, { force: true });
@@ -47,11 +48,20 @@ function removeStaleCopies(rootDir: string, id: string, targetPath: string): voi
 /**
  * Conserve une réponse brute, adressée par son contenu :
  * `data/raw/<2 hex>/<sha256>.<extension>`. Un contenu inchangé réécrit le même chemin.
+ *
+ * Un texte reçoit un saut de ligne final et est haché en UTF-8 ; des octets
+ * binaires (PDF) sont écrits et hachés tels quels.
  */
-export function writeRaw(rootDir: string, content: string, extension = "xml"): string {
-  const body = content.endsWith("\n") ? content : `${content}\n`;
-  const hash = createHash("sha256").update(body, "utf8").digest("hex");
-  return writeIfChanged(join(rootDir, "data", "raw", hash.slice(0, 2), `${hash}.${extension}`), body);
+export function writeRaw(rootDir: string, content: string | Uint8Array, extension = "xml"): string {
+  const octets =
+    typeof content === "string"
+      ? Buffer.from(content.endsWith("\n") ? content : `${content}\n`, "utf8")
+      : Buffer.from(content);
+  const hash = createHash("sha256").update(octets).digest("hex");
+  return writeIfChanged(
+    join(rootDir, "data", "raw", hash.slice(0, 2), `${hash}.${extension}`),
+    octets,
+  );
 }
 
 /** Chemin relatif d'une entrée : année/mois UTC de publication, `unknown/` sinon. */
