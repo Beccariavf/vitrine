@@ -12,7 +12,7 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 | `ce` | 1 594 | 20 774 | 1982-03-12 → 2026-10-27 | DILA — JADE, fonds `publie` et `inedit` | Licence Ouverte 2.0 (Etalab) |
 | `cepd` | 36 | 5 443 | 2018-04-11 → 2025-06-05 | CEPD, sitemap des pages `_fr` et PDF | À vérifier : aucune licence explicite déclarée |
 | `cc` | 403 | 8 194 | 1986-07-21 → 2026-11-10 | PISTE — Judilibre `/search` et `/decision` | Licence Ouverte 2.0 (Etalab) et CGU Judilibre |
-| `cjue` | 248 | 23 188 | 1999-10-14 → 2026-11-05 | CELLAR / EUR-Lex — SPARQL `PDON` + notions `4.11.01` et `2.04` + 1 CELEX, XHTML français puis anglais, repli HTML patrimonial | Décision 2011/833/UE (CC BY 4.0) |
+| `cjue` | 251 | 23 460 | 1999-10-14 → 2026-11-05 | CELLAR / EUR-Lex — SPARQL `PDON` + notions `4.11.01` et `2.04` + 4 CELEX, XHTML français puis anglais, repli HTML patrimonial | Décision 2011/833/UE (CC BY 4.0) |
 
 ## Détail `ce`
 
@@ -38,15 +38,16 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 ## Détail `cjue`
 
 - SPARQL CELLAR, union de la matière `PDON` et de deux notions fines, `fd_578/4.11.01` (« Protection des données à caractère personnel ») et `fd_578/2.04` (« Protection des données à caractère personnel par les institutions de l'Union »), CELEX `6…`, **sans borne de date** ; un CELEX explicite (`62018CJ0746`, Prokuratuur) que CELLAR ne classe pas dans les données personnelles. Types retenus : `CJ`, `TJ`, `CO`, `TO` ; conclusions d'avocat général (`CC`) et autres types écartés et comptés.
-- 361 CELEX listés et 1 complémentaire : 248 retenus, 95 conclusions d'avocat général (`CC`), 5 autres types, 14 sans aucune représentation téléchargeable (404 en XHTML et en HTML, toutes langues) ; `documents_lus` vaut 362, soit exactement les documents retenus plus les exclusions (248 + 95 + 5 + 14).
-- Types des 248 décisions retenues : 167 arrêts de la Cour, 52 arrêts du Tribunal, 14 ordonnances de la Cour, 15 ordonnances du Tribunal.
+- 361 CELEX listés et 4 complémentaires : 251 retenus, 95 conclusions d'avocat général (`CC`), 5 autres types, 14 sans aucune représentation téléchargeable (404 en XHTML et en HTML, toutes langues) ; `documents_lus` vaut 365, soit exactement les documents retenus plus les exclusions (251 + 95 + 5 + 14).
+- Types des 251 décisions retenues : 170 arrêts de la Cour, 52 arrêts du Tribunal, 14 ordonnances de la Cour, 15 ordonnances du Tribunal.
 - Antériorité : 40 décisions sont datées d'avant 2014 (1999-10-14 → 2013-12-12). Les 45 décisions des types retenus que l'ancienne borne comptait à part (`couverture.avant_borne`, supprimé) sont donc au corpus, sauf 5 (`62002TJ0179`, `62007TJ0392`, `62009TJ0241`, `62010TJ0308`, `62011TJ0214`) : CELLAR ne sert pour elles qu'une notice RDF, sans texte. Lindqvist (C-101/01, `62001CJ0101`, 6 novembre 2003) est au corpus avec ses points `#point1` à `#point100`.
 - Deux rendus : le XHTML moderne, puis le HTML patrimonial servi aux arrêts anciens (`data/raw/cjue/<CELEX>.html`, marqueurs `<dt>N</dt>`, ancres `pointN` ou numéro en tête de paragraphe) ; 72 des 86 décisions sans XHTML ont ainsi été récupérées. Le HTML patrimonial porte la date des conclusions avant celle de l'arrêt : la date CELLAR fait foi pour lui, l'en-tête du XHTML pour le rendu moderne.
 - Six décisions (`62004CJ0475`, `62002TJ0320`, `62003TJ0259`, `62004TJ0161`, `62009TJ0082`, `62010TJ0190`) ne sont servies par CELLAR que sous forme de résumé, sans motifs ; elles entrent au corpus pour ce que la source en donne.
-- Langue : un seul rendu par décision, la première servie — français d'abord, anglais après un 404 français. `couverture.langues` = 247 `fra`, 1 `eng` (`62002TJ0320`, arrêt du Tribunal servi seulement en anglais) ; aucune décision du corpus n'existe uniquement en XHTML anglais.
+- Langue : un seul rendu par décision, la première servie — français d'abord, anglais après un 404 français. `couverture.langues` = 250 `fra`, 1 `eng` (`62002TJ0320`, arrêt du Tribunal servi seulement en anglais) ; aucune décision du corpus n'existe uniquement en XHTML anglais.
 - `periode.date_min` est la première date observée (1999-10-14) ; le manifeste ne porte plus ni `date_min` ni `couverture.borne`.
 - La notion `4.11.01` récupère La Quadrature du Net (C-511/18) ; Prokuratuur (C-746/18) est ajouté par la liste explicite. Le manifeste porte `couverture.notions` (deux entrées), `celex_complementaires` et `complementaires_ajoutes`.
 - La notion `4.11.01` est large : six décisions ajoutées (douanes, droit d'auteur, agents FIFA, État de droit, réparation automobile, ne bis in idem) ne traitent les données personnelles que dans une partie de leur raisonnement. Elles restent dans le corpus, la source officielle et son libellé étant déclarés.
+- Le contrôle du 14 novembre 2026 par la fiche thématique Curia « Protection des données à caractère personnel » a fait entrer trois arrêts que le classement CELLAR ne donnait pas : C-461/10 (Bonnier Audio, `62010CJ0461`), C-37/20 et C-601/20 (`62020CJ0037`), C-339/20 et C-397/20 (`62020CJ0339`). Prokuratuur (`62018CJ0746`) était déjà complémentaire.
 
 ## Évaluations `dev`
 
@@ -60,3 +61,13 @@ Mesures du 11 novembre 2026, hors split `test`, sur l'index à huit corpus (74 8
 Les rangs CJUE ont été rejoués le 14 novembre 2026 sur l'index de 83 994 unités (corpus `cjue` de 248 décisions et 23 188 fragments) : mêmes résultats, la calibration `dev` du harnais donne 1 `confiant` et 9 `incertain`. La recherche « Lindqvist diffusion de données personnelles sur une page Internet » (`corpus: "cjue"`, `k: 5`) rend C-101/01 aux rangs 1, 2 et 4 (`62001CJ0101#point14`, similarité 0,726), avec l'URL EUR-Lex française de l'arrêt. La recherche « données pseudonymisées identifiables par le destinataire » rend toujours C-413/23 P au premier rang (`62023CJ0413#point68`, similarité 0,729).
 
 Le détail des rangs et des similarités est dans [`eval.md`](./eval.md). Ces jeux ne calibrent aucun seuil : le produit applique le repli `0,69 / 0,74 / 0,01` à `cc` et `cjue`.
+
+<!-- controle-curia:debut -->
+## Contrôle par la fiche thématique Curia
+
+Contrôle du 2026-11-14 : fiche « Protection des données à caractère personnel » (Juillet 2024), 51 numéros d'affaires pour 43 arrêts — 43 présents, dont 4 entré(s) par la liste complémentaire, 0 absent(s) avec raison, 0 manquant(s) sans raison.
+
+Fiche : <https://curia.europa.eu/site/upload/docs/application/pdf/2018-10/fiche_thematique_-_donnees_personnelles_-_fr.pdf> (page <https://curia.europa.eu/site/jcms/d2_5127/fr/fiches-thematiques>), consultée le 2026-11-14.
+Absents avec raison : aucun.
+Rapport : `data/corpus/cjue/controle-curia.json`.
+<!-- controle-curia:fin -->

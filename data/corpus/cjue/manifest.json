@@ -6,9 +6,9 @@
   "date_extraction": "2026-11-14",
   "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
   "langue": "fra",
-  "documents": 248,
-  "fragments": 23188,
-  "documents_lus": 362,
+  "documents": 251,
+  "fragments": 23460,
+  "documents_lus": 365,
   "exclusions": {
     "date_invalide": 0,
     "avis_avocat_general": 95,
@@ -34,12 +34,15 @@
       }
     ],
     "celex_complementaires": [
-      "62018CJ0746"
+      "62018CJ0746",
+      "62010CJ0461",
+      "62020CJ0037",
+      "62020CJ0339"
     ],
-    "complementaires_ajoutes": 1,
+    "complementaires_ajoutes": 4,
     "langue": "fra",
     "langues": {
-      "fra": 247,
+      "fra": 250,
       "eng": 1
     },
     "documents_langues": {

@@ -6,7 +6,10 @@
   "endpoint_sparql": "https://publications.europa.eu/webapi/rdf/sparql",
   "matiere": "http://publications.europa.eu/resource/authority/subject-matter/PDON",
   "matiere_libelle": "Protection des données personnelles",
-  "langues": ["fra", "eng"],
+  "langues": [
+    "fra",
+    "eng"
+  ],
   "types_retenus": {
     "CJ": "Arrêt de la Cour",
     "TJ": "Arrêt du Tribunal",
@@ -25,6 +28,9 @@
     }
   ],
   "celex_complementaires": [
-    "62018CJ0746"
+    "62018CJ0746",
+    "62010CJ0461",
+    "62020CJ0037",
+    "62020CJ0339"
   ]
 }

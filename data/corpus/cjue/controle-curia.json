@@ -1,0 +1,371 @@
+{
+  "corpus": "cjue",
+  "fiche": {
+    "titre": "Protection des données à caractère personnel",
+    "page": "https://curia.europa.eu/site/jcms/d2_5127/fr/fiches-thematiques",
+    "url": "https://curia.europa.eu/site/upload/docs/application/pdf/2018-10/fiche_thematique_-_donnees_personnelles_-_fr.pdf",
+    "snapshot": "data/raw/9c/9c11ab318ad4690fe252aabe562aed89f4137ed8b8eafe0b7c67cb2571ab5e81.pdf"
+  },
+  "consulte_le": "2026-11-14",
+  "numeros_affaires": 51,
+  "arrets_fiche": 43,
+  "presents": 43,
+  "ajoutes": 4,
+  "absents": [],
+  "manquants_sans_raison": 0,
+  "arrets": [
+    {
+      "celex": "62001CJ0101",
+      "numeros": [
+        "C-101/01"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62004CJ0317",
+      "numeros": [
+        "C-317/04",
+        "C-318/04"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62006CJ0275",
+      "numeros": [
+        "C-275/06"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62006CJ0524",
+      "numeros": [
+        "C-524/06"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62007CJ0518",
+      "numeros": [
+        "C-518/07"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62009CJ0092",
+      "numeros": [
+        "C-92/09",
+        "C-93/09"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62010CJ0461",
+      "numeros": [
+        "C-461/10"
+      ],
+      "resolution": "deduit",
+      "etat": "ajoute"
+    },
+    {
+      "celex": "62010CJ0614",
+      "numeros": [
+        "C-614/10"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62012CJ0131",
+      "numeros": [
+        "C-131/12"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62012CJ0288",
+      "numeros": [
+        "C-288/12"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62012CJ0293",
+      "numeros": [
+        "C-293/12",
+        "C-594/12"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62013CJ0212",
+      "numeros": [
+        "C-212/13"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62014CJ0230",
+      "numeros": [
+        "C-230/14"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62014CJ0362",
+      "numeros": [
+        "C-362/14"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62014CJ0582",
+      "numeros": [
+        "C-582/14"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62015CJ0203",
+      "numeros": [
+        "C-203/15",
+        "C-698/15"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62016CJ0073",
+      "numeros": [
+        "C-73/16"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62016CJ0207",
+      "numeros": [
+        "C-207/16"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62016CJ0210",
+      "numeros": [
+        "C-210/16"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62016CJ0434",
+      "numeros": [
+        "C-434/16"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62017CJ0025",
+      "numeros": [
+        "C-25/17"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62017CJ0040",
+      "numeros": [
+        "C-40/17"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62017CJ0136",
+      "numeros": [
+        "C-136/17"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62017CJ0507",
+      "numeros": [
+        "C-507/17"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62017CJ0623",
+      "numeros": [
+        "C-623/17"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62017CJ0673",
+      "numeros": [
+        "C-673/17"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62018CJ0311",
+      "numeros": [
+        "C-311/18"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62018CJ0511",
+      "numeros": [
+        "C-511/18",
+        "C-512/18",
+        "C-520/18"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62018CJ0746",
+      "numeros": [
+        "C-746/18"
+      ],
+      "resolution": "deduit",
+      "etat": "ajoute"
+    },
+    {
+      "celex": "62019CJ0061",
+      "numeros": [
+        "C-61/19"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62019CJ0439",
+      "numeros": [
+        "C-439/19"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62019CJ0505",
+      "numeros": [
+        "C-505/19"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62019CJ0645",
+      "numeros": [
+        "C-645/19"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62019CJ0817",
+      "numeros": [
+        "C-817/19"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62020CJ0037",
+      "numeros": [
+        "C-37/20",
+        "C-601/20"
+      ],
+      "resolution": "deduit",
+      "etat": "ajoute"
+    },
+    {
+      "celex": "62020CJ0140",
+      "numeros": [
+        "C-140/20"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62020CJ0339",
+      "numeros": [
+        "C-339/20",
+        "C-397/20"
+      ],
+      "resolution": "deduit",
+      "etat": "ajoute"
+    },
+    {
+      "celex": "62020CJ0460",
+      "numeros": [
+        "C-460/20"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62021CJ0252",
+      "numeros": [
+        "C-252/21"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62021CJ0470",
+      "numeros": [
+        "C-470/21"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62021CJ0683",
+      "numeros": [
+        "C-683/21"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62021CJ0807",
+      "numeros": [
+        "C-807/21"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    },
+    {
+      "celex": "62022CJ0033",
+      "numeros": [
+        "C-33/22"
+      ],
+      "resolution": "deduit",
+      "etat": "present"
+    }
+  ],
+  "erreur_sync": null
+}
