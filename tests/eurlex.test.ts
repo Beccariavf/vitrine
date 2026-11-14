@@ -164,7 +164,7 @@ describe("requêtes CELLAR des actes de l'Union", () => {
 
   it("borne les nouveaux actes à la date de consultation de la liste d'adéquation", () => {
     const adequation = lireDescripteurAdequation();
-    assert.equal(dateMinDe(adequation), "2026-11-14");
+    assert.equal(dateMinDe({ ...adequation, consulte_le: "2025-06-01" }), "2025-06-01");
     assert.equal(dateMinDe({ ...adequation, consulte_le: "pas une date" }), DATE_MIN);
   });
 
@@ -660,6 +660,17 @@ describe("corpus:sync et les actes de l'Union", () => {
       );
       // Le document reste périmé et sera rejoué à la passe suivante.
       assert.equal(rapport.documents[0]?.statut, "perime");
+
+      const suivant = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-17",
+        agents: { aiact },
+        embedder: embedderFactice(),
+      });
+      assert.equal(suivant.a_jour_au, "2026-11-17");
+      // La fenêtre avance malgré la panne de l'acte : elle n'est pas épinglée.
+      assert.equal(suivant.depuis, "2026-11-10");
+      assert.equal(suivant.sources.find((source) => source.source === "aiact")?.statut, "panne");
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

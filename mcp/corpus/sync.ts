@@ -433,7 +433,9 @@ export async function syncCorpus(options: SyncCorpusOptions = {}): Promise<Rappo
   // après la passe.
   const echecPrecedent =
     precedent !== null &&
-    (precedent.sources.some((source) => source.statut === "panne") ||
+    (precedent.sources.some(
+      (source) => source.statut === "panne" && !CORPUS_ACTES.includes(source.source),
+    ) ||
       precedent.index.statut === "panne");
   const bornePrecedente =
     precedent === null
@@ -491,7 +493,8 @@ export async function syncCorpus(options: SyncCorpusOptions = {}): Promise<Rappo
     } catch (error) {
       sources.push({ source, statut: "panne", message: raison(error) });
       // Une construction d'acte en panne (comptes d'un descripteur à arbitrer)
-      // garde sa ligne et sera rejouée, sans figer la fenêtre des autres corpus.
+      // garde sa ligne et sera rejouée ; ni la fraîcheur ni la fenêtre des
+      // autres corpus ne sont retenues par elle.
       if (!CORPUS_ACTES.includes(source)) echec = true;
     }
   }
