@@ -27,7 +27,8 @@ import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
 import { niveauConfiance } from "../confidence.ts";
 import { referenceExacte } from "../tools.ts";
-import { intervalleWilson, lireSeuils, refSatisfaite } from "./run.ts";
+import { lireSeuils, refSatisfaite } from "./run.ts";
+import { intervalleWilson } from "../statistiques.ts";
 import type { EntreeQuestionJson, ObjetMesureJson, Seuils } from "./run.ts";
 
 /** Marges balayées : celles que `calibrer` considère aussi. */

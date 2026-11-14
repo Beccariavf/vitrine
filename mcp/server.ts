@@ -10,6 +10,25 @@ import { openIndex } from "./index/search.ts";
 import type { Index } from "./index/search.ts";
 import { getArticle, getDecision, search, etatCorpus } from "./tools.ts";
 import { LIMITE_DEFAUT, LIMITE_MAX, decisionsCitant } from "./corpus/citants.ts";
+import {
+  FAMILLES,
+  LIMITE_DEFAUT as LIMITE_DEFAUT_DECISIONS,
+  LIMITE_MAX as LIMITE_MAX_DECISIONS,
+  chiffreFamille,
+  decisionsCitantDecision,
+  famillesExposees,
+} from "./corpus/citations-decisions.ts";
+
+/** Familles exposées et chiffres mesurés, lus au démarrage : la description publie la mesure. */
+function chiffresCitationsDecisions(): string {
+  const exposees = [...famillesExposees()];
+  return (
+    `Familles exposées : ${exposees.length === 0 ? "aucune" : exposees.map((f) => `\`${f}\``).join(", ")}. ` +
+    "Précision mesurée sur un échantillon relu, seuil : borne basse de Wilson à 95 % ≥ 90 % — " +
+    `${FAMILLES.map(chiffreFamille).join(" ; ")}. Les citations à \`date_divergente\` sont moins sûres : ` +
+    "les vérifier avant de s'y appuyer."
+  );
+}
 
 /** Racine du dépôt, résolue depuis ce fichier et jamais depuis le répertoire courant. */
 export const RACINE = fileURLToPath(new URL("..", import.meta.url));
@@ -71,6 +90,18 @@ const CONSIGNE_PERIMETRE =
   "ou postérieure à la date du corpus. Une recherche `aucun_resultat_fiable` porte " +
   "`perimetre.avertissement`, à transmettre tel quel.";
 
+const CONSIGNE_DECISIONS_CITEES =
+  "Chaque décision rendue par `search` et `get_decision` porte `decisions_citees` : les décisions " +
+  "qu'elle cite, reconnues par leur référence (numéro d'affaire de l'Union, ECLI, délibération " +
+  "CNIL, requête du Conseil d'État, pourvoi), chacune avec `famille` et `cibles`, les décisions du " +
+  "corpus qu'elle désigne (vide hors corpus, plusieurs quand la référence est ambiguë : ne pas " +
+  "choisir). `acte` (`conclusions`, `ordonnance`) dit que le texte cite des conclusions d'avocat " +
+  "général ou une ordonnance, pas l'arrêt : des conclusions ne sont jamais au corpus. `date_divergente: true` dit que le texte date la décision citée (`date_citee`) " +
+  "autrement que les décisions du corpus de ce numéro : elles sont rendues quand même, à vérifier. " +
+  "Le lien dit seulement « cite » : ne jamais le qualifier (applique, écarte, renverse). " +
+  "La liste est non exhaustive : une liste vide ne prouve pas que la décision ne cite rien. " +
+  `${chiffresCitationsDecisions()}`;
+
 const CONSIGNE_SERVEUR =
   "Serveur de lecture et de recherche sur huit corpus juridiques : le RGPD " +
   "(corpus `rgpd`, CELEX 32016R0679), l'AI Act (corpus `aiact`, CELEX 32024R1689), la loi " +
@@ -89,6 +120,7 @@ const CONSIGNE_SERVEUR =
   "local, jamais d'une génération ; l'embedding est local (`leoipulsar/harrier-0.6b` sur Ollama). " +
   "`decisions_citant` rend les décisions qui citent un article, comptées par autorité ; une liste " +
   "vide ne prouve pas qu'aucune ne le cite. " +
+  "`decisions_citant_decision` rend les décisions qui citent une décision donnée par sa référence. " +
   "`etat_corpus` dit à quelle date le corpus a été rafraîchi depuis la veille (`a_jour_au`), " +
   "quels documents manquent, quels documents cités restent hors du corpus avec les autorités " +
   "qui les citent, et quelle source a échoué ; il ne lit ni l'index ni le réseau. " +
@@ -101,7 +133,7 @@ export type ServerDeps = {
   index?: Index;
 };
 
-/** Construit le serveur MCP : cinq outils, aucun accès réseau direct. */
+/** Construit le serveur MCP : six outils, aucun accès réseau direct. */
 export function createServer(deps: ServerDeps): McpServer {
   const { rootDir, embedder } = deps;
   let indexCourant: Index | null = deps.index ?? null;
@@ -161,6 +193,7 @@ export function createServer(deps: ServerDeps): McpServer {
         "fragment : une décision absente est dite, avec un message. Un numéro porté par deux " +
         "documents rend les deux, chacun avec son identifiant. " +
         `${CONSIGNE_CITATIONS} ` +
+        `${CONSIGNE_DECISIONS_CITEES} ` +
         `${CONSIGNE_STATUT_APPLICATION} ` +
         `${CONSIGNE_PERIMETRE} ` +
         CONSIGNE_PROVENANCE,
@@ -258,6 +291,51 @@ export function createServer(deps: ServerDeps): McpServer {
   );
 
   serveur.registerTool(
+    "decisions_citant_decision",
+    {
+      title: "Trouver les décisions qui citent une décision",
+      description:
+        "Rend les décisions du corpus qui citent une décision donnée par sa référence : numéro " +
+        "d'affaire de l'Union (`C-311/18`), ECLI, délibération CNIL (`SAN-2019-001`, `2019-001`), " +
+        "requête du Conseil d'État (`353066`) ou pourvoi (`19-17.278`). Chaque décision citante porte " +
+        "son autorité, son intitulé, sa date et son lien, triées par date décroissante ; `total` et " +
+        "`par_autorite` comptent toutes les décisions, même quand la liste est paginée par " +
+        `\`limite\` (${LIMITE_DEFAUT_DECISIONS} par défaut, ${LIMITE_MAX_DECISIONS} au plus) et \`decalage\` ; ` +
+        "`tronque` dit qu'il en reste. Chaque décision citante porte `cite`, ce que sa citation " +
+        "désigne selon la même résolution que `decisions_citees` (date du texte, `date_divergente`, " +
+        "`acte` quand il cite des conclusions ou une ordonnance). " +
+        "`cibles` donne la ou les décisions du corpus que la référence " +
+        "désigne : vide hors corpus, plusieurs quand elle est ambiguë, sans choix silencieux. Le lien " +
+        "dit seulement « cite », jamais applique, écarte ou renverse. La liste est non exhaustive : " +
+        "une liste vide ne prouve pas que la décision n'est jamais citée. Une référence d'une famille " +
+        "non exposée est refusée avec son chiffre ; une référence illisible est refusée. " +
+        `${chiffresCitationsDecisions()} ` +
+        CONSIGNE_PROVENANCE,
+      inputSchema: {
+        reference: z
+          .string()
+          .describe("Référence de la décision citée : C-311/18, ECLI:EU:C:2020:559, SAN-2019-001, 353066 ou 19-17.278"),
+        limite: z
+          .number()
+          .int()
+          .min(1)
+          .max(LIMITE_MAX_DECISIONS)
+          .optional()
+          .describe(`Nombre de décisions rendues, ${LIMITE_DEFAUT_DECISIONS} par défaut`),
+        decalage: z.number().int().min(0).optional().describe("Nombre de décisions à sauter, 0 par défaut"),
+      },
+    },
+    async ({ reference, limite, decalage }) => {
+      const resultat = decisionsCitantDecision(rootDir, {
+        reference,
+        ...(limite === undefined ? {} : { limite }),
+        ...(decalage === undefined ? {} : { decalage }),
+      });
+      return { content: [{ type: "text", text: JSON.stringify(resultat, null, 2) }] };
+    },
+  );
+
+  serveur.registerTool(
     "etat_corpus",
     {
       title: "Dire à quelle date le corpus est à jour",
@@ -313,6 +391,7 @@ export function createServer(deps: ServerDeps): McpServer {
         "Si le numéro existe dans plusieurs documents, chaque article est rendu avec sa provenance " +
         "et le niveau est `incertain` ; préciser `document` ou nommer le corpus lève l'ambiguïté. " +
         `${CONSIGNE_CITATIONS} ` +
+        `${CONSIGNE_DECISIONS_CITEES} ` +
         `${CONSIGNE_STATUT_APPLICATION} ` +
         `${CONSIGNE_PERIMETRE} ` +
         CONSIGNE_PROVENANCE,
@@ -405,7 +484,7 @@ async function main(): Promise<void> {
   await serveur.connect(transport);
   process.stderr.write(
     "Serveur MCP des huit corpus (RGPD, AI Act, CNIL, LIL, CE, CEPD, CC, CJUE) prêt sur stdio " +
-      "(cinq outils : get_article, get_decision, search, decisions_citant, etat_corpus).\n",
+      "(six outils : get_article, get_decision, search, decisions_citant, decisions_citant_decision, etat_corpus).\n",
   );
 }
 
