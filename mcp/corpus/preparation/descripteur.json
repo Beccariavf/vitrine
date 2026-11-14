@@ -1,0 +1,50 @@
+{
+  "corpus": "preparation",
+  "nom": "Préparation",
+  "titre": "Textes en préparation et affaires pendantes",
+  "endpoint_sparql": "https://publications.europa.eu/webapi/rdf/sparql",
+  "matiere": "http://publications.europa.eu/resource/authority/subject-matter/PDON",
+  "matiere_libelle": "Protection des données personnelles",
+  "actes_du_corpus": [
+    {
+      "celex": "32016R0679",
+      "libelle": "RGPD"
+    },
+    {
+      "celex": "32024R1689",
+      "libelle": "AI Act"
+    },
+    {
+      "celex": "32002L0058",
+      "libelle": "ePrivacy"
+    },
+    {
+      "celex": "32016L0680",
+      "libelle": "directive police-justice"
+    },
+    {
+      "celex": "32018R1725",
+      "libelle": "règlement 2018/1725"
+    },
+    {
+      "celex": "32025R2518",
+      "libelle": "règlement procédural RGPD"
+    },
+    {
+      "celex": "32021D0914",
+      "libelle": "clauses contractuelles types"
+    }
+  ],
+  "eurovoc": [
+    "http://eurovoc.europa.eu/5181",
+    "http://eurovoc.europa.eu/5595"
+  ],
+  "depuis_affaires": "2019-01-01",
+  "presomption_annees": 3,
+  "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+  "url_curia": "https://curia.europa.eu/juris/liste.jsf?num={numero}",
+  "delai_ms": 500,
+  "langues": [
+    "fra"
+  ]
+}

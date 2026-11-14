@@ -22,7 +22,7 @@ import {
 import type { Citation, CitationRendue } from "./corpus/citations.ts";
 import { decisionsCitees } from "./corpus/citations-decisions.ts";
 import type { DecisionCitee } from "./corpus/citations-decisions.ts";
-import { statutApplication } from "./corpus/statut.ts";
+import { statutApplication, mentionPreparation } from "./corpus/statut.ts";
 import type { StatutApplication } from "./corpus/statut.ts";
 import { mentionsDoctrine } from "./corpus/cnil-doctrine/mention.ts";
 import type { MentionDoctrine } from "./corpus/cnil-doctrine/mention.ts";
@@ -236,6 +236,11 @@ export type Passage = ResultatRecherche & {
   similarite: number;
   /** Vocabulaire uniforme du serveur ; le statut source reste dans `statut`. */
   statut_application: StatutApplication;
+  /**
+   * Corpus `preparation` seulement : « Texte non applicable… » ou « Affaire
+   * pendante… », à transmettre avec le passage. Jamais un préfixe du texte.
+   */
+  mention?: string;
   /** Instruments et articles cités par la décision ; absent hors des six corpus de décisions. */
   citations?: CitationRendue[];
   /** Décisions que la décision cite, familles exposées seulement ; absent hors des corpus de décisions. */
@@ -267,10 +272,14 @@ type PorteurStatut = { corpus: string; statut: string; nature?: string };
  */
 function avecStatutApplication<T extends PorteurStatut>(
   porteur: T,
-): T & { statut_application: StatutApplication } {
+): T & { statut_application: StatutApplication; mention?: string } {
+  const statut_application = statutApplication(porteur.corpus, porteur.statut, porteur.nature);
   return {
     ...porteur,
-    statut_application: statutApplication(porteur.corpus, porteur.statut, porteur.nature),
+    statut_application,
+    ...(porteur.corpus === "preparation"
+      ? { mention: mentionPreparation(statut_application) }
+      : {}),
   };
 }
 
@@ -673,7 +682,7 @@ export function corpusDeNiveau(demande: { corpus?: string; document?: string }):
 export type SearchDemande = {
   question: string;
   k?: number;
-  /** Restreint la recherche à une collection : `rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `cnil`, `cnil_doctrine`, `lil`, `textes_fr`, `ce`, `constit`, `cepd`, `cc`, `cjue`. */
+  /** Restreint la recherche à une collection : `rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `cnil`, `cnil_doctrine`, `lil`, `textes_fr`, `preparation`, `ce`, `constit`, `cepd`, `cc`, `cjue`. */
   corpus?: string;
   /** Restreint la recherche à un document précis. */
   document?: string;
@@ -839,7 +848,21 @@ function lireDecision(
   }
 
   // `get_decision` reste réservé aux sanctions : un avis ou une recommandation
-  // se lit par `search`, qui porte le filtre `nature`.
+  // se lit par `search`, qui porte le filtre `nature`. Une affaire pendante ou
+  // une proposition n'est pas une décision : le dire, sans la présenter comme
+  // une sanction manquante.
+  const preparation = trouvees.find((unite) => unite.corpus === "preparation");
+  if (preparation !== undefined && trouvees.every((unite) => unite.corpus === "preparation")) {
+    const etat =
+      preparation.statut === "PENDANT"
+        ? `affaire pendante (${preparation.numero}), aucune décision rendue`
+        : `texte en préparation (${preparation.numero}), non applicable`;
+    return {
+      trouve: false,
+      decisions: [],
+      message: `${quoi} relève du corpus preparation : ${etat}.`,
+    };
+  }
   const unites = trouvees.filter((unite) => estSanction(unite.nature));
   if (unites.length === 0) {
     const natures = [

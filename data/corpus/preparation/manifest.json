@@ -1,0 +1,1254 @@
+{
+  "corpus": "preparation",
+  "nom": "Préparation",
+  "titre": "Textes en préparation et affaires pendantes",
+  "source": "CELLAR / EUR-Lex — SPARQL (dossiers de procédure, affaires pendantes) et communications du Journal officiel en XHTML",
+  "date_extraction": "2026-11-14",
+  "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+  "documents": 128,
+  "unites": 128,
+  "couverture": {
+    "source": "CELLAR / EUR-Lex — SPARQL (dossiers de procédure, affaires pendantes) et communications du Journal officiel en XHTML",
+    "requetes": {
+      "propositions": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT DISTINCT ?dossier ?ref ?statut ?retire ?celex ?date ?titre ?langue ?amendCelex WHERE {\n  { ?celexWork cdm:act_preparatory_initiates_dossier ?dossier }\n  UNION\n  { ?dossier cdm:dossier_contains_work ?celexWork }\n  ?celexWork cdm:resource_legal_type ?type .\n  FILTER(STR(?type) = \"PC\")\n  ?celexWork cdm:resource_legal_id_celex ?celex .\n  ?dossier cdm:procedure_code_interinstitutional_reference_procedure ?ref .\n  OPTIONAL { ?dossier cdm:procedure_code_interinstitutional_has_status_file-status ?statut }\n  OPTIONAL { ?dossier cdm:dossier_withdrawn-proposal ?retire }\n  OPTIONAL { ?celexWork cdm:work_date_document ?date }\n  OPTIONAL { ?celexWork cdm:work_title ?titre . BIND(LANG(?titre) AS ?langue) }\n  OPTIONAL { ?celexWork cdm:resource_legal_proposes_to_amend_resource_legal ?amend . ?amend cdm:resource_legal_id_celex ?amendCelex }\n  BIND(EXISTS { ?celexWork cdm:resource_legal_is_about_subject-matter <http://publications.europa.eu/resource/authority/subject-matter/PDON> } AS ?pdon)\n  FILTER(?pdon = true || STR(?amendCelex) IN (\"32016R0679\",\"32024R1689\",\"32002L0058\",\"32016L0680\",\"32018R1725\",\"32025R2518\",\"32021D0914\"))\n}",
+      "evenements": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT ?dossier ?date ?type WHERE {\n  VALUES ?dossier { <http://publications.europa.eu/resource/cellar/290baa93-c56e-11f0-8da2-01aa75ed71a1> <http://publications.europa.eu/resource/cellar/674c2c05-6f09-11f1-ae88-01aa75ed71a1> <http://publications.europa.eu/resource/cellar/7e717699-f6af-11f0-b9bc-01aa75ed71a1> <http://publications.europa.eu/resource/cellar/81578e29-3639-11f0-8a44-01aa75ed71a1> <http://publications.europa.eu/resource/cellar/917bbca3-f6e3-11f0-b9bc-01aa75ed71a1> <http://publications.europa.eu/resource/cellar/a5deec97-f75b-11f0-b9bc-01aa75ed71a1> <http://publications.europa.eu/resource/cellar/ac3f9aa4-dbdd-11f0-8da2-01aa75ed71a1> <http://publications.europa.eu/resource/cellar/dd597a0b-a9c6-11ec-83e1-01aa75ed71a1> }\n  ?evenement cdm:event_legal_part_of_dossier ?dossier .\n  ?evenement cdm:event_legal_date ?date .\n  OPTIONAL { ?evenement cdm:event_legal_type ?type }\n}",
+      "affaires": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT DISTINCT ?celex ?date ?type ?procedure ?attackedCelex WHERE {\n  ?work cdm:resource_legal_id_celex ?celex .\n  ?work cdm:resource_legal_type ?type .\n  FILTER(STR(?type) = \"CN\" || STR(?type) = \"TN\")\n  ?work cdm:work_date_document ?date .\n  FILTER(STR(?date) >= \"2019-01-01\")\n  ?work cdm:work_is_about_concept_eurovoc ?ev .\n  FILTER(STR(?ev) = \"http://eurovoc.europa.eu/5181\" || STR(?ev) = \"http://eurovoc.europa.eu/5595\")\n  OPTIONAL { ?work cdm:communication_cjeu_has_type_procedure_concept_type_procedure ?procedure }\n  OPTIONAL { ?work cdm:communication_case_new_requests_review_of_decision_case-law ?attacked . ?attacked cdm:resource_legal_id_celex ?attackedCelex }\n}",
+      "decisions": {
+        "2019": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT DISTINCT ?celex ?joined WHERE {\n  ?work cdm:resource_legal_id_celex ?celex .\n  FILTER(REGEX(STR(?celex), \"^62019(CJ|CO|TJ|TO)\"))\n  OPTIONAL { ?work cdm:case-law_joins_case_court ?joined }\n}",
+        "2020": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT DISTINCT ?celex ?joined WHERE {\n  ?work cdm:resource_legal_id_celex ?celex .\n  FILTER(REGEX(STR(?celex), \"^62020(CJ|CO|TJ|TO)\"))\n  OPTIONAL { ?work cdm:case-law_joins_case_court ?joined }\n}",
+        "2021": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT DISTINCT ?celex ?joined WHERE {\n  ?work cdm:resource_legal_id_celex ?celex .\n  FILTER(REGEX(STR(?celex), \"^62021(CJ|CO|TJ|TO)\"))\n  OPTIONAL { ?work cdm:case-law_joins_case_court ?joined }\n}",
+        "2022": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT DISTINCT ?celex ?joined WHERE {\n  ?work cdm:resource_legal_id_celex ?celex .\n  FILTER(REGEX(STR(?celex), \"^62022(CJ|CO|TJ|TO)\"))\n  OPTIONAL { ?work cdm:case-law_joins_case_court ?joined }\n}",
+        "2023": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT DISTINCT ?celex ?joined WHERE {\n  ?work cdm:resource_legal_id_celex ?celex .\n  FILTER(REGEX(STR(?celex), \"^62023(CJ|CO|TJ|TO)\"))\n  OPTIONAL { ?work cdm:case-law_joins_case_court ?joined }\n}",
+        "2024": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT DISTINCT ?celex ?joined WHERE {\n  ?work cdm:resource_legal_id_celex ?celex .\n  FILTER(REGEX(STR(?celex), \"^62024(CJ|CO|TJ|TO)\"))\n  OPTIONAL { ?work cdm:case-law_joins_case_court ?joined }\n}",
+        "2025": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT DISTINCT ?celex ?joined WHERE {\n  ?work cdm:resource_legal_id_celex ?celex .\n  FILTER(REGEX(STR(?celex), \"^62025(CJ|CO|TJ|TO)\"))\n  OPTIONAL { ?work cdm:case-law_joins_case_court ?joined }\n}",
+        "2026": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT DISTINCT ?celex ?joined WHERE {\n  ?work cdm:resource_legal_id_celex ?celex .\n  FILTER(REGEX(STR(?celex), \"^62026(CJ|CO|TJ|TO)\"))\n  OPTIONAL { ?work cdm:case-law_joins_case_court ?joined }\n}"
+      }
+    },
+    "consulte_le": "2026-11-14",
+    "comptes": {
+      "propositions": 8,
+      "affaires": 120,
+      "affaires_presumees": 35
+    },
+    "presomption_annees": 3,
+    "appariement": "juridiction (C/T) + année + numéro CELEX ; affaires jointes résolues par case-law_joins_case_court",
+    "exclusions": {
+      "retiree": 1,
+      "adoptee": 13,
+      "rejetee": 0,
+      "statut_absent": 18,
+      "autre": 0,
+      "decision_rendue": 231,
+      "capture_absente": 0,
+      "date_invalide": 0,
+      "texte_vide": 0
+    },
+    "documents_ecartes": [
+      {
+        "document": "52005PC0438",
+        "motif": "adoptee"
+      },
+      {
+        "document": "52007PC0698",
+        "motif": "adoptee"
+      },
+      {
+        "document": "52016PC0237",
+        "motif": "statut_absent"
+      },
+      {
+        "document": "52016PC0238",
+        "motif": "statut_absent"
+      },
+      {
+        "document": "52017PC0010",
+        "motif": "retiree"
+      },
+      {
+        "document": "52017PC0495",
+        "motif": "adoptee"
+      },
+      {
+        "document": "52018PC0636",
+        "motif": "adoptee"
+      },
+      {
+        "document": "52020PC0568",
+        "motif": "adoptee"
+      },
+      {
+        "document": "52020PC0823",
+        "motif": "adoptee"
+      },
+      {
+        "document": "52022PC0068",
+        "motif": "adoptee"
+      },
+      {
+        "document": "52022PC0197",
+        "motif": "adoptee"
+      },
+      {
+        "document": "52022PC0207",
+        "motif": "statut_absent"
+      },
+      {
+        "document": "52022PC0208",
+        "motif": "statut_absent"
+      },
+      {
+        "document": "52022PC0646",
+        "motif": "statut_absent"
+      },
+      {
+        "document": "52023PC0209",
+        "motif": "adoptee"
+      },
+      {
+        "document": "52023PC0244",
+        "motif": "adoptee"
+      },
+      {
+        "document": "52023PC0773",
+        "motif": "statut_absent"
+      },
+      {
+        "document": "52023PC0774",
+        "motif": "statut_absent"
+      },
+      {
+        "document": "52023PC0777",
+        "motif": "adoptee"
+      },
+      {
+        "document": "52024PC0094",
+        "motif": "statut_absent"
+      },
+      {
+        "document": "52024PC0095",
+        "motif": "statut_absent"
+      },
+      {
+        "document": "52024PC0580",
+        "motif": "statut_absent"
+      },
+      {
+        "document": "52024PC0581",
+        "motif": "statut_absent"
+      },
+      {
+        "document": "52025PC0247",
+        "motif": "statut_absent"
+      },
+      {
+        "document": "52025PC0248",
+        "motif": "statut_absent"
+      },
+      {
+        "document": "52025PC0342",
+        "motif": "statut_absent"
+      },
+      {
+        "document": "52025PC0797",
+        "motif": "adoptee"
+      },
+      {
+        "document": "52025PC0836",
+        "motif": "adoptee"
+      },
+      {
+        "document": "52026PC0239",
+        "motif": "statut_absent"
+      },
+      {
+        "document": "52026PC0280",
+        "motif": "statut_absent"
+      },
+      {
+        "document": "52026PC0558",
+        "motif": "statut_absent"
+      },
+      {
+        "document": "52026PC0559",
+        "motif": "statut_absent"
+      },
+      {
+        "document": "62019CN0061",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62019CN0264",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62019CN0272",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62019CN0439",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62019CN0505",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62019CN0597",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62019CN0615",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62019CN0620",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62019CN0634",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62019CN0645",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62019CN0658",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62019CN0669",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62019CN0793",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62019CN0794",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62019CN0817",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62019CN0853",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62019TN0043",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62019TN0052",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62019TN0272",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62019TN0294",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62019TN0297",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62019TN0360",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62019TN0517",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62019TN0634",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62019TN0728",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62019TN0872",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62020CN0084",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62020CN0102",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62020CN0140",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62020CN0162",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62020CN0171",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62020CN0175",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62020CN0184",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62020CN0245",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62020CN0319",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62020CN0460",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62020CN0520",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62020CN0534",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62020CN0601",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62020TN0080",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62020TN0265",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62020TN0377",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62020TN0384",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62020TN0409",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62020TN0415",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62020TN0452",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62020TN0528",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62020TN0557",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62020TN0573",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62020TN0681",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62020TN0735",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0034",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0054",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0077",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0088",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0129",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0132",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0154",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0180",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0204",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0205",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0252",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0268",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0300",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0306",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0340",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0349",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0350",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0446",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0453",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0470",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0487",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0548",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0560",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0579",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0634",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0667",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0683",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0687",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0741",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0768",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021CN0807",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021TN0081",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021TN0124",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021TN0200",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021TN0377",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021TN0379",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021TN0401",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021TN0434",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021TN0436",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021TN0503",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021TN0603",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021TN0709",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021TN0710",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021TN0711",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021TN0722",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021TN0723",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021TN0724",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62021TN0758",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0017",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0018",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0026",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0033",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0060",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0061",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0064",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0115",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0118",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0162",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0178",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0182",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0189",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0203",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0231",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0307",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0315",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0317",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0319",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0333",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0357",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0444",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0456",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0458",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0461",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0479",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0590",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0604",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0621",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0659",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0740",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0757",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0769",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022TN0266",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022TN0269",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022TN0278",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022TN0279",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022TN0286",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022TN0354",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022TN0578",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022TN0624",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022TN0831",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023CN0004",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023CN0021",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023CN0046",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023CN0057",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023CN0065",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023CN0080",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023CN0097",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023CN0169",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023CN0200",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023CN0209",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023CN0229",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023CN0247",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023CN0313",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023CN0316",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023CN0332",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023CN0383",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023CN0394",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023CN0413",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023CN0416",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023CN0492",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023CN0507",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023CN0529",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023CN0638",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023CN0654",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023CN0655",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023CN0710",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023CN0789",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023TN0070",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023TN0084",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023TN0111",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023TN0183",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023TN0221",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023TN0306",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023TN0553",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023TN0562",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023TN1119",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023TN1138",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023TN1180",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024CN0199",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024CN0312",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024CN0345",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024CN0371",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024CN0414",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024CN0422",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024CN0468",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024CN0474",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024CN0484",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024CN0526",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024CN0541",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024CN0576",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024CN0614",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024CN0632",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024CN0684",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024CN0685",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024CN0798",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024CN0829",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024TN0037",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024TN0084",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024TN0148",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024TN0167",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024TN0173",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024TN0182",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024TN0183",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024TN0314",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024TN0318",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024TN0319",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024TN0349",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024TN0362",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024TN0451",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024TN0452",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024TN0484",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024TN0486",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024TN0506",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024TN0587",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62025CN0070",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62025CN0205",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62025CN0214",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62025CN0306",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62025CN0326",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62025CN0564",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62025CN0565",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62025CN0566",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62025TN0030",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62025TN0144",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62025TN0187",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62025TN0607",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62026TN0071",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62026TN0297",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62026TN0304",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62026TN0305",
+        "motif": "decision_rendue"
+      }
+    ],
+    "presumees": [
+      {
+        "document": "62020CN0148",
+        "numero": "C-148/20"
+      },
+      {
+        "document": "62020CN0149",
+        "numero": "C-149/20"
+      },
+      {
+        "document": "62020CN0150",
+        "numero": "C-150/20"
+      },
+      {
+        "document": "62020CN0215",
+        "numero": "C-215/20"
+      },
+      {
+        "document": "62020CN0222",
+        "numero": "C-222/20"
+      },
+      {
+        "document": "62022CN0280",
+        "numero": "C-280/22"
+      },
+      {
+        "document": "62021CN0334",
+        "numero": "C-334/21"
+      },
+      {
+        "document": "62021CN0481",
+        "numero": "C-481/21"
+      },
+      {
+        "document": "62020CN0486",
+        "numero": "C-486/20"
+      },
+      {
+        "document": "62023CN0496",
+        "numero": "C-496/23 P"
+      },
+      {
+        "document": "62023CN0497",
+        "numero": "C-497/23 P"
+      },
+      {
+        "document": "62021CN0552",
+        "numero": "C-552/21"
+      },
+      {
+        "document": "62023CN0563",
+        "numero": "C-563/23"
+      },
+      {
+        "document": "62022CN0672",
+        "numero": "C-672/22"
+      },
+      {
+        "document": "62022CN0693",
+        "numero": "C-693/22"
+      },
+      {
+        "document": "62020CN0701",
+        "numero": "C-701/20"
+      },
+      {
+        "document": "62019TN0001",
+        "numero": "T-1/19"
+      },
+      {
+        "document": "62023TN0128",
+        "numero": "T-128/23"
+      },
+      {
+        "document": "62023TN0129",
+        "numero": "T-129/23"
+      },
+      {
+        "document": "62023TN0137",
+        "numero": "T-137/23"
+      },
+      {
+        "document": "62023TN0153",
+        "numero": "T-153/23"
+      },
+      {
+        "document": "62020TN0166",
+        "numero": "T-166/20"
+      },
+      {
+        "document": "62022TN0268",
+        "numero": "T-268/22"
+      },
+      {
+        "document": "62019TN0299",
+        "numero": "T-299/19"
+      },
+      {
+        "document": "62023TN0325",
+        "numero": "T-325/23"
+      },
+      {
+        "document": "62022TN0414",
+        "numero": "T-414/22"
+      },
+      {
+        "document": "62020TN0507",
+        "numero": "T-507/20"
+      },
+      {
+        "document": "62019TN0537",
+        "numero": "T-537/19"
+      },
+      {
+        "document": "62023TN0546",
+        "numero": "T-546/23"
+      },
+      {
+        "document": "62019TN0547",
+        "numero": "T-547/19"
+      },
+      {
+        "document": "62023TN0580",
+        "numero": "T-580/23"
+      },
+      {
+        "document": "62022TN0678",
+        "numero": "T-678/22"
+      },
+      {
+        "document": "62022TN0682",
+        "numero": "T-682/22"
+      },
+      {
+        "document": "62021TN0713",
+        "numero": "T-713/21"
+      },
+      {
+        "document": "62023TN1030",
+        "numero": "T-1030/23"
+      }
+    ],
+    "periode": {
+      "propositions": {
+        "min": "2022-03-22",
+        "max": "2026-06-23"
+      },
+      "affaires": {
+        "min": "2019-01-07",
+        "max": "2026-09-25"
+      }
+    },
+    "mention": "Source : CELLAR / EUR-Lex, réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)"
+  }
+}

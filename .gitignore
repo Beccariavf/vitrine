@@ -52,3 +52,6 @@ data/raw/cjue/
 
 # Textes français d'application : snapshots PISTE non commités, récupérés par npm run textes-fr:sync
 data/raw/textes_fr/
+
+# Préparation : communications du Journal officiel non commitées, récupérées par npm run preparation:sync
+data/raw/preparation/
