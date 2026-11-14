@@ -10,7 +10,7 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 | `lil` | 1 | 133 articles en vigueur | version consolidée au 2026-10-01 ; consultée le 2026-11-09 | PISTE — Légifrance `/consult/legiPart` | Licence Ouverte 2.0 (Etalab) |
 | `textes_fr` | 3 | 183 articles en vigueur (décret 2019-536 : 166 ; Code pénal 226-16 à 226-24 : 16 ; CPCE L34-5 : 1) ; 2 abrogés écartés | consultés le 2026-11-14 | PISTE — Légifrance `/consult/legiPart`, `/consult/code`, `/consult/getArticleWithIdAndNum` | Licence Ouverte 2.0 (Etalab) |
 | `ce` | 1 594 | 20 774 | 1982-03-12 → 2026-10-27 | DILA — JADE, fonds `publie` et `inedit` | Licence Ouverte 2.0 (Etalab) |
-| `cepd` | 36 | 5 443 | 2018-04-11 → 2025-06-05 | CEPD, sitemap des pages `_fr` et PDF | À vérifier : aucune licence explicite déclarée |
+| `cepd` | 328 | 20 287 | 2018-04-11 → 2026-11-10 | CEPD, sitemap des pages `_fr` et `_en` et PDF | Régime ouvert (notice de copyright du CEPD) |
 | `cc` | 403 | 8 194 | 1986-07-21 → 2026-11-10 | PISTE — Judilibre `/search` et `/decision` | Licence Ouverte 2.0 (Etalab) et CGU Judilibre |
 | `cjue` | 251 | 23 460 | 1999-10-14 → 2026-11-05 | CELLAR / EUR-Lex — SPARQL `PDON` + notions `4.11.01` et `2.04` + 4 CELEX, XHTML français puis anglais, repli HTML patrimonial | Décision 2011/833/UE (CC BY 4.0) |
 
@@ -49,6 +49,14 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 - La notion `4.11.01` est large : six décisions ajoutées (douanes, droit d'auteur, agents FIFA, État de droit, réparation automobile, ne bis in idem) ne traitent les données personnelles que dans une partie de leur raisonnement. Elles restent dans le corpus, la source officielle et son libellé étant déclarés.
 - Le contrôle du 14 novembre 2026 par la fiche thématique Curia « Protection des données à caractère personnel » a fait entrer trois arrêts que le classement CELLAR ne donnait pas : C-461/10 (Bonnier Audio, `62010CJ0461`), C-37/20 et C-601/20 (`62020CJ0037`), C-339/20 et C-397/20 (`62020CJ0339`). Prokuratuur (`62018CJ0746`) était déjà complémentaire.
 - La synchronisation de ce contrôle s'est faite sans cache `data/raw/cjue/` (non commité) : elle a relu les 251 arrêts, et EUR-Lex a actualisé la graphie « État » dans 287 fragments de 19 décisions. Aucun texte n'a été édité à la main.
+
+## Détail `cepd`
+
+- Sitemap du 14 novembre 2026 (`https://www.edpb.europa.eu/sitemap.xml`, pages 1 à 5), rubriques réelles `guideline`, `opinion-of-the-board-art-64`, `edpb-binding-decisions` et `recommendation`. La page française est retenue quand elle existe, l'anglaise sert de repli ; le PDF français est préféré, puis l'anglais.
+- 341 documents listés, 328 retenus : 263 avis art. 64 (7 770 fragments), 43 lignes directrices (6 914), 12 décisions contraignantes art. 65 (4 571), 9 recommandations (841) et 1 document G29 repris (191, WP260 Transparence). Les documents du G29 sont reconnus à leur titre, à leur slug ou à la phrase d'endossement de la page.
+- Langues des textes retenus : 156 français, 172 anglais. Un PDF sans suffixe de langue suit la langue de sa page ; le manifeste porte `documents_langues` document par document.
+- 13 écartés, tous motivés : 7 sans PDF, 3 versions obsolètes (doublons anglais d'un même numéro), 2 où la page ne sert que l'annexe, 1 PDF sans rapport avec le document (WP242, dont la pièce jointe est une décision danoise). 10 sont comptés `documents_sans_texte_ecartes`.
+- Licence : régime ouvert de la notice de copyright du CEPD ; chaque fragment porte son URL de page et son chemin `CEPD > <type> > <titre>`, et le serveur ne produit aucun résumé.
 
 ## Évaluations `dev`
 
