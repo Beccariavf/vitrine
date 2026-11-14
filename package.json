@@ -21,6 +21,7 @@
     "corpus:index": "node mcp/index/build.ts",
     "corpus:sync": "node mcp/corpus/sync.ts",
     "ce:sync": "node mcp/corpus/ce/sync.ts",
+    "constit:sync": "node mcp/corpus/constit/sync.ts",
     "cc:sync": "node mcp/corpus/cc/sync.ts",
     "cepd:sync": "node mcp/corpus/cepd/sync.ts",
     "cjue:sync": "node mcp/corpus/cjue/sync.ts",

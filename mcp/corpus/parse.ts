@@ -66,7 +66,7 @@ export type Unite = {
   url: string;
   /** Renseigné pour la CNIL seulement : d'où vient le découpage. */
   origine?: Origine;
-  /** Renseigné pour la CNIL seulement : nature de la délibération (sanction, avis, recommandation). */
+  /** Renseigné pour la CNIL (sanction, avis, recommandation) et le Conseil constitutionnel (DC, QPC). */
   nature?: string;
   /** Renseigné pour la CNIL seulement : type de sanction du dispositif. */
   type_sanction?: string;

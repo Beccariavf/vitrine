@@ -27,7 +27,7 @@ after(() => {
 });
 
 describe("sourcesCorpus", () => {
-  it("rend les quinze collections committées dans l'ordre textes, autorités, juridictions", () => {
+  it("rend les seize collections committées dans l'ordre textes, autorités, juridictions", () => {
     const sources = sourcesCorpus(ROOT);
     assert.deepEqual(
       sources.map((source) => source.libelle),
@@ -46,6 +46,7 @@ describe("sourcesCorpus", () => {
         "CEPD",
         "CJUE",
         "Conseil d'État",
+        "Conseil constitutionnel",
         "Cour de cassation",
       ],
     );

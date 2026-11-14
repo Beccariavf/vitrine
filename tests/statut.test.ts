@@ -33,6 +33,8 @@ describe("la table par corpus", () => {
     assert.equal(statutApplication("cjue", "Arrêt de la Cour"), "rendue");
     assert.equal(statutApplication("cjue", "Ordonnance du Tribunal"), "rendue");
     assert.equal(statutApplication("cjue", "n'importe quoi"), "rendue");
+    assert.equal(statutApplication("constit", "Décision DC · Non conformité partielle"), "rendue");
+    assert.equal(statutApplication("constit", "Décision QPC"), "rendue");
   });
 
   it("sépare la sanction CNIL de sa doctrine, et adopte les lignes directrices du CEPD", () => {
@@ -57,6 +59,7 @@ describe("la table par corpus", () => {
     // La priorité est bornée : le statut d'une décision est sa publication, et un
     // corpus inconnu n'affirme rien, même quand la valeur ressemble à une abrogation.
     assert.equal(statutApplication("ce", "ABROGE"), "rendue");
+    assert.equal(statutApplication("constit", "ANNULE"), "rendue");
     assert.equal(statutApplication("cc", "ANNULE"), "rendue");
     assert.equal(statutApplication("inconnu", "ABROGE"), "inconnu");
   });

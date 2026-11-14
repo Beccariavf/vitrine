@@ -25,7 +25,7 @@ export const BANDE_ARTICLE = 0.02;
 export type ResultatRecherche = {
   ref: string;
   document: string;
-  /** Collection d'appartenance : `rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `cnil`, `lil`, `textes_fr`, `ce`, `cepd`, `cc`, `cjue`. */
+  /** Collection d'appartenance : `rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `cnil`, `lil`, `textes_fr`, `ce`, `constit`, `cepd`, `cc`, `cjue`. */
   corpus: string;
   niveau: string;
   numero: string;

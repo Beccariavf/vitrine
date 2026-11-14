@@ -30,6 +30,15 @@ export const INSTRUCTION_AIAct =
 export const INSTRUCTION_CNIL =
   "Instruction : retrouve les passages d'une délibération de sanction de la CNIL qui répondent à la question\nRequête : ";
 
+/**
+ * Instruction de requête du Conseil constitutionnel, de la même forme que les
+ * autres. Le vocabulaire d'une décision DC ou QPC (« considérant », « loi
+ * déférée », « conformité ») diffère de celui du RGPD : sans elle, une question
+ * de fichier de police reste sous le seuil de refus du produit.
+ */
+export const INSTRUCTION_CONSTIT =
+  "Instruction : retrouve les passages d'une décision du Conseil constitutionnel qui répondent à la question\nRequête : ";
+
 /** Instructions connues par identifiant CELEX et par nom de corpus. */
 export const INSTRUCTIONS_REQUETE: Record<string, string> = {
   "32016R0679": INSTRUCTION_REQUETE,
@@ -37,6 +46,7 @@ export const INSTRUCTIONS_REQUETE: Record<string, string> = {
   rgpd: INSTRUCTION_REQUETE,
   aiact: INSTRUCTION_AIAct,
   cnil: INSTRUCTION_CNIL,
+  constit: INSTRUCTION_CONSTIT,
 };
 
 export type OllamaEmbedderOptions = {

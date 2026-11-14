@@ -44,11 +44,11 @@ const ACTES_UE =
 const PERIMETRE_REFUS = `(périmètre : ${PERIMETRE})`;
 
 const CONSIGNE_PROVENANCE =
-  "Le texte rendu vient des quinze corpus locaux (RGPD `32016R0679`, AI Act `32024R1689`, " +
+  "Le texte rendu vient des seize corpus locaux (RGPD `32016R0679`, AI Act `32024R1689`, " +
   "ePrivacy `32002L0058`, directive police-justice `32016L0680`, règlement 2018/1725 " +
   "`32018R1725`, règlement procédural RGPD `32025R2518`, clauses contractuelles types " +
   "`32021D0914`, décisions d'adéquation `adequation`, LIL " +
-  "`LEGITEXT000006068624`, textes français d'application `textes_fr`, délibérations CNIL `cnil`, décisions du Conseil d'État `ce`, lignes " +
+  "`LEGITEXT000006068624`, textes français d'application `textes_fr`, délibérations CNIL `cnil`, décisions du Conseil d'État `ce`, décisions DC et QPC du Conseil constitutionnel `constit`, lignes " +
   "directrices du CEPD `cepd`, décisions de la Cour de cassation `cc` et décisions de la CJUE " +
   "`cjue`), jamais d'une génération. Citer la référence et l'URL rendues. " +
   "Respecter le niveau de confiance : « aucun_resultat_fiable » signifie qu'il faut le dire au " +
@@ -77,8 +77,8 @@ const CONSIGNE_STATUT_APPLICATION =
   "que la version rendue n'est pas nécessairement celle en vigueur ; jamais que le texte s'applique.";
 
 const CONSIGNE_CITATIONS =
-  "Chaque décision rendue par `search` et par `get_decision` (corpus `cnil`, `ce`, `cc`, `cjue` et " +
-  "`cepd`) porte `citations` : la liste des instruments et articles reconnus dans son texte, non " +
+  "Chaque décision rendue par `search` (corpus `cnil`, `ce`, `constit`, `cc`, `cjue` et `cepd`), et " +
+  "par `get_decision` pour la CNIL, porte `citations` : la liste des instruments et articles reconnus dans son texte, non " +
   "exhaustive, chacun avec l'identifiant du document visé (`document`, `32016R0679`…), son lien " +
   "officiel (`url`, `null` quand il est inconnu) et `hors_corpus` (`true` quand ce document n'est " +
   "pas dans le corpus local). Une citation hors corpus garde son lien et ne porte aucun texte ni " +
@@ -96,7 +96,7 @@ const CONSIGNE_PERIMETRE =
   "(`corpus[].couverture`). Chaque corpus dit sa fraîcheur : `veille: true` pour les corpus " +
   "revérifiés par la synchronisation (`cnil`, `ce`, `cc`, `cjue`), avec `a_jour_au`, la dernière " +
   "synchronisation réussie (`null` si aucune) ; `veille: false` pour un instantané fixe jamais " +
-  "revérifié (`rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `lil`, `textes_fr`, `cepd`), daté par `arrete_le` ou non daté (`null`) ; " +
+  "revérifié (`rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `lil`, `textes_fr`, `constit`, `cepd`), daté par `arrete_le` ou non daté (`null`) ; " +
   "`inconnu: true` dit qu'un corpus demandé n'existe pas localement et que rien n'y a été interrogé. Ne " +
   "jamais présenter un instantané fixe comme à jour. Le rappeler au lecteur. Une absence de " +
   "résultat ne prouve jamais que la règle n'existe pas : elle peut être hors du périmètre, exclue " +
@@ -116,7 +116,7 @@ const CONSIGNE_DECISIONS_CITEES =
   `${chiffresCitationsDecisions()}`;
 
 const CONSIGNE_SERVEUR =
-  "Serveur de lecture et de recherche sur quinze corpus juridiques : le RGPD " +
+  "Serveur de lecture et de recherche sur seize corpus juridiques : le RGPD " +
   "(corpus `rgpd`, CELEX 32016R0679), l'AI Act (corpus `aiact`, CELEX 32024R1689), " +
   `${ACTES_UE}` +
   ", les clauses contractuelles types pour les transferts hors UE (corpus `ccs`, CELEX " +
@@ -126,10 +126,10 @@ const CONSIGNE_SERVEUR =
   "LEGITEXT000006070719 articles 226-16 à 226-24, CPCE LEGITEXT000006070987 article L34-5), " +
   "les délibérations de la CNIL " +
   "(corpus `cnil`, natures Sanction, Avis et Recommandation/Lignes directrices), les décisions du " +
-  "Conseil d'État (corpus `ce`), les lignes directrices du CEPD (corpus `cepd`), les décisions de " +
-  "la Cour de cassation sur les données personnelles (corpus `cc`) et celles de la CJUE (corpus " +
-  "`cjue`). Les outils de " +
-  "recherche acceptent les paramètres `corpus` et `nature` ; sans eux, la recherche couvre les quinze " +
+  "Conseil d'État (corpus `ce`), les décisions DC et QPC du Conseil constitutionnel (corpus " +
+  "`constit`), les lignes directrices du CEPD (corpus `cepd`), les décisions de la Cour de cassation " +
+  "sur les données personnelles (corpus `cc`) et celles de la CJUE (corpus `cjue`). Les outils de " +
+  "recherche acceptent les paramètres `corpus` et `nature` ; sans eux, la recherche couvre les seize " +
   "collections et toutes les natures. Un document nommé dans la question (sigle ou nom ordinaire, " +
   "casse et ponctuation indifférentes) est honoré quand `document` et `corpus` sont absents ; sans " +
   "nom, une référence exacte qui n'existe que dans un corpus est `incertain` et le corpus est " +
@@ -386,7 +386,7 @@ export function createServer(deps: ServerDeps): McpServer {
       title: "Dire à quelle date le corpus est à jour",
       description:
         "Rend la date de la dernière synchronisation réussie depuis la veille (`a_jour_au`), " +
-        "la fenêtre de veille, l'inventaire des quinze corpus avec leurs comptes, les documents " +
+        "la fenêtre de veille, l'inventaire des seize corpus avec leurs comptes, les documents " +
         "manquants et l'état des sources et de l'index. Chaque corpus porte `couverture`, le bloc que " +
         "déclare son manifeste — sources, bornes et exclusions — : c'est la cible du renvoi " +
         "`perimetre.exclusions` des autres outils. Les clés d'exclusion varient selon le corpus " +
@@ -408,20 +408,21 @@ export function createServer(deps: ServerDeps): McpServer {
   serveur.registerTool(
     "search",
     {
-      title: "Chercher dans les quinze corpus juridiques",
+      title: "Chercher dans les seize corpus juridiques",
       description:
         "Cherche par le sens dans le RGPD, l'AI Act, la directive ePrivacy, la directive " +
         "police-justice, le règlement 2018/1725, le règlement procédural RGPD, les clauses " +
         "contractuelles types, les décisions d'adéquation, la LIL, les textes français d'application, les délibérations de la CNIL " +
         "(sanctions, avis, recommandations et lignes directrices), les décisions du Conseil d'État, " +
-        "les lignes directrices du CEPD, les décisions de la Cour de cassation sur les données " +
-        "personnelles et celles de la CJUE, et rend les passages les plus proches avec leur " +
+        "les décisions DC et QPC du Conseil constitutionnel, les lignes directrices du CEPD, les " +
+        "décisions de la Cour de cassation sur les données personnelles et celles de la CJUE, et rend " +
+        "les passages les plus proches avec leur " +
         "provenance et un niveau de confiance (confiant, incertain, aucun_resultat_fiable). " +
         "L'article pose la règle et le considérant l'éclaire : à pertinence comparable, l'article passe " +
         "devant, mais aucun considérant n'est retiré du résultat. " +
         "Une question qui cite un article rend cet article exact, sans recherche vectorielle. " +
         "`corpus` borne la recherche à une collection (`rgpd`, `aiact`, `eprivacy`, `police`, " +
-        "`eudpr`, `rgpdproc`, `ccs`, `adequation`, `cnil`, `lil`, `textes_fr`, `ce`, `cepd`, " +
+        "`eudpr`, `rgpdproc`, `ccs`, `adequation`, `cnil`, `lil`, `textes_fr`, `ce`, `constit`, `cepd`, " +
         "`cc`, `cjue`) " +
         "et prime sur tout nom de document présent dans la question. " +
         "`nature` borne une recherche CNIL à une nature (`Sanction`, `Avis`, " +
@@ -452,9 +453,9 @@ export function createServer(deps: ServerDeps): McpServer {
           .optional()
           .describe(
             "Restreint la recherche à une collection : rgpd, aiact, eprivacy, police, eudpr, " +
-              "rgpdproc, ccs, adequation, cnil, lil, textes_fr, ce, cepd, cc ou " +
-              "cjue ; cnil couvre les sanctions, avis, recommandations et lignes directrices ; " +
-              "absent, toutes répondent",
+              "rgpdproc, ccs, adequation, cnil, lil, textes_fr, ce, constit, cepd, cc ou " +
+              "cjue ; cnil couvre les sanctions, avis, recommandations et lignes directrices, " +
+              "constit les décisions DC et QPC ; absent, toutes répondent",
           ),
         document: z
           .string()
@@ -463,15 +464,15 @@ export function createServer(deps: ServerDeps): McpServer {
             "Restreint la recherche à un document : 32016R0679 (RGPD), 32024R1689 (AI Act), " +
               "32002L0058 (ePrivacy), 32016L0680, 32018R1725, 32025R2518, 32021D0914 (clauses " +
               "contractuelles types), " +
-              "LEGITEXT000006068624 (LIL), LEGITEXT000038567662 (décret 2019-536), LEGITEXT000006070719 (Code pénal), LEGITEXT000006070987 (CPCE), un identifiant CNILTEXT, un identifiant Judilibre (cc) " +
+              "LEGITEXT000006068624 (LIL), LEGITEXT000038567662 (décret 2019-536), LEGITEXT000006070719 (Code pénal), LEGITEXT000006070987 (CPCE), un identifiant CNILTEXT, un identifiant CONSTEXT (constit), un identifiant Judilibre (cc) " +
               "ou un CELEX de jurisprudence (cjue) ; absent, tous les corpus répondent",
           ),
         nature: z
           .string()
           .optional()
           .describe(
-            "Restreint une recherche CNIL à une nature : Sanction, Avis ou " +
-              "Recommandation/Lignes directrices ; absent, toutes les natures répondent",
+            "Restreint une recherche à une nature : Sanction, Avis ou Recommandation/Lignes " +
+              "directrices (CNIL), DC ou QPC (constit) ; absent, toutes les natures répondent",
           ),
         date_min: z
           .string()
@@ -535,7 +536,7 @@ async function main(): Promise<void> {
 
   await serveur.connect(transport);
   process.stderr.write(
-    "Serveur MCP des quinze corpus (RGPD, AI Act, ePrivacy, 2016/680, 2018/1725, 2025/2518, CCS, adéquation, CNIL, LIL, textes français, CE, CEPD, CC, CJUE) prêt sur stdio " +
+    "Serveur MCP des seize corpus (RGPD, AI Act, ePrivacy, 2016/680, 2018/1725, 2025/2518, CCS, adéquation, CNIL, LIL, textes français, CE, Conseil constitutionnel, CEPD, CC, CJUE) prêt sur stdio " +
       "(six outils : get_article, get_decision, search, decisions_citant, decisions_citant_decision, etat_corpus).\n",
   );
 }

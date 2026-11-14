@@ -65,6 +65,7 @@ const FAMILLE_DE_SOURCE: Readonly<Record<string, FamilleId>> = {
   cetat: "juridictions",
   judilibre: "juridictions",
   ce: "juridictions",
+  constit: "juridictions",
   cc: "juridictions",
   legi: "textes",
   eurlex: "ue",

@@ -57,6 +57,7 @@ export type CitationsParCorpus = readonly {
 const AUTORITES: Readonly<Record<string, string>> = {
   cnil: "CNIL",
   ce: "Conseil d'État",
+  constit: "Conseil constitutionnel",
   cc: "Cour de cassation",
   cjue: "CJUE",
   cepd: "CEPD",
@@ -151,7 +152,7 @@ function citationsLisibles(
 }
 
 /**
- * Le classement des cinq corpus de décisions, daté. Un corpus sans fichier
+ * Le classement des six corpus de décisions, daté. Un corpus sans fichier
  * lisible est ignoré ; la présence et les exclusions se lisent aux manifestes et
  * au catalogue, comme pour les citations.
  */

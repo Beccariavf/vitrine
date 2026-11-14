@@ -196,12 +196,13 @@ const INSTRUMENTS: readonly Instrument[] = [
 const PAR_LIBELLE = new Map(INSTRUMENTS.map((instrument) => [instrument.libelle, instrument]));
 
 /**
- * Les treize corpus du serveur, dans l'ordre de la phrase de refus. Aucune date de
+ * Les corpus du serveur, dans l'ordre de la phrase de refus. Aucune date de
  * fraîcheur : le refus d'un document absent ne porte que le périmètre.
  */
 export const PERIMETRE =
   "RGPD, AI Act, ePrivacy, directive 2016/680, règlement 2018/1725, règlement procédural RGPD, " +
-  "LIL, textes français d'application, CNIL, Conseil d'État, CEPD, Cour de cassation, CJUE";
+  "LIL, textes français d'application, CNIL, Conseil d'État, Conseil constitutionnel, CEPD, " +
+  "Cour de cassation, CJUE";
 
 /** Forme comparable d'un identifiant : majuscules, sans espace. */
 export function normaliserIdentifiant(identifiant: string): string {
@@ -385,7 +386,7 @@ export function absenceDuDocument(rootDir: string, document: string): string | n
 }
 
 /** Les corpus dont les documents sont des décisions, seuls porteurs de citations. */
-export const CORPUS_DECISIONS: readonly string[] = ["cnil", "ce", "cc", "cjue", "cepd"];
+export const CORPUS_DECISIONS: readonly string[] = ["cnil", "ce", "constit", "cc", "cjue", "cepd"];
 
 /** Vrai si le corpus porte des décisions citant des textes. */
 export function estCorpusDecision(corpus: string): boolean {
