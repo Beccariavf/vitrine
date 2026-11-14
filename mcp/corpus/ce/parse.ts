@@ -3,9 +3,9 @@
  *
  * JADE publie dans le même dossier les décisions du Conseil d'État, des cours
  * administratives d'appel et des tribunaux administratifs. Seules les décisions
- * du Conseil d'État, datées au moins du `date_min` et portant un mot-clé du
- * descripteur, deviennent des unités. Une décision écartée est comptée par
- * motif, jamais devinée.
+ * du Conseil d'État, datées valablement et portant un mot-clé du descripteur,
+ * deviennent des unités. Une décision écartée est comptée par motif, jamais
+ * devinée : aucune borne de date n'écarte une décision.
  */
 
 import { XMLParser } from "fast-xml-parser";
@@ -22,7 +22,6 @@ export type DescripteurCe = {
   url_liste: string;
   motif_archive: string;
   url_texte: string;
-  date_min: string;
   juridiction: string;
   juridictions_exclues: string[];
   mots_cles: string[];
@@ -46,7 +45,6 @@ export type DecisionJade = {
 /** Motif d'écart d'une décision, tel que le manifeste le compte. */
 export type MotifEcart =
   | "autre_juridiction"
-  | "avant_borne"
   | "date_invalide"
   | "sans_mot_cle"
   | "texte_vide";
@@ -55,7 +53,6 @@ export type Ecartes = Record<MotifEcart, number>;
 
 export const ECARTES_VIDES: Ecartes = {
   autre_juridiction: 0,
-  avant_borne: 0,
   date_invalide: 0,
   sans_mot_cle: 0,
   texte_vide: 0,
@@ -185,12 +182,11 @@ export function parseDecisionJade(xml: string, nomFichier = "TEXTE_JURI_ADMIN"):
 /**
  * Classe une décision. L'ordre des motifs est stable : juridiction, date,
  * texte, mots-clés ; une décision n'est comptée que dans la première catégorie
- * qui la concerne.
+ * qui la concerne. Aucune date n'est écartée pour son ancienneté.
  */
 export function classerDecision(
   decision: DecisionJade,
   descripteur: DescripteurCe,
-  dateMin: string = descripteur.date_min,
 ): Verdict {
   if (!estConseilEtat(decision.juridiction, descripteur)) {
     return { retenue: false, motif: "autre_juridiction" };
@@ -198,7 +194,6 @@ export function classerDecision(
   if (!DATE_ISO.test(decision.date) || Number.isNaN(Date.parse(decision.date))) {
     return { retenue: false, motif: "date_invalide" };
   }
-  if (decision.date < dateMin) return { retenue: false, motif: "avant_borne" };
   if (decision.paragraphes.length === 0) return { retenue: false, motif: "texte_vide" };
   if (!contientMotCle(decision.paragraphes.join(" "), descripteur.mots_cles)) {
     return { retenue: false, motif: "sans_mot_cle" };

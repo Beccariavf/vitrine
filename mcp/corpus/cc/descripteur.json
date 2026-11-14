@@ -3,7 +3,6 @@
   "nom": "Cour de cassation",
   "titre": "Décisions de la Cour de cassation relatives aux données personnelles",
   "url_texte": "https://www.courdecassation.fr/decision/{id}",
-  "date_min": "2014-01-01",
   "champs": "text",
   "requetes": [
     "données personnelles",

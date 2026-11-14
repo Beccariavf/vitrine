@@ -88,19 +88,26 @@ describe("le filtre de pertinence de la Cour de cassation", () => {
     assert.equal(verdict.decision.url, `https://www.courdecassation.fr/decision/${ID_PERTINENT}`);
   });
 
-  it("écarte une décision hors sujet, une décision avant 2014 et un texte vide", () => {
+  it("écarte une décision hors sujet et un texte vide", () => {
     assert.deepEqual(classerDecisionCc(HORS_SUJET, DESCRIPTEUR), {
       retenue: false,
       motif: "hors_sujet",
     });
-    assert.deepEqual(
-      classerDecisionCc({ ...PERTINENT, decision_date: "2013-12-31" }, DESCRIPTEUR),
-      { retenue: false, motif: "avant_borne" },
+    assert.deepEqual(classerDecisionCc({ ...PERTINENT, text: "" }, DESCRIPTEUR), {
+      retenue: false,
+      motif: "texte_vide",
+    });
+  });
+
+  it("retient une décision pertinente de 2005, sans borne de date", () => {
+    const verdict = classerDecisionCc(
+      { ...PERTINENT, decision_date: "2005-06-15" },
+      DESCRIPTEUR,
     );
-    assert.deepEqual(
-      classerDecisionCc({ ...PERTINENT, text: "" }, DESCRIPTEUR),
-      { retenue: false, motif: "texte_vide" },
-    );
+    assert.equal(verdict.retenue, true);
+    if (!verdict.retenue) return;
+    assert.equal(verdict.decision.date, "2005-06-15");
+    assert.equal(verdict.decision.visaPertinent, true);
   });
 
   it("rend le visa puis les fragments du texte, tous citables", () => {
@@ -141,7 +148,6 @@ describe("la synchronisation du corpus Cour de cassation", () => {
       assert.equal(resultat.documents, 1);
       assert.equal(resultat.enAttente, 0);
       assert.deepEqual(resultat.ecartes, {
-        avant_borne: 0,
         date_invalide: 0,
         hors_sujet: 1,
         texte_vide: 0,
@@ -378,6 +384,12 @@ describe("la synchronisation du corpus Cour de cassation", () => {
 
     assert.equal(unites.length, manifeste.fragments);
     assert.equal(new Set(unites.map((unite) => unite.document)).size, manifeste.documents);
+    assert.equal("date_min" in manifeste, false, "aucune borne au manifeste");
+    assert.equal("borne" in manifeste.couverture, false, "aucune borne en couverture");
+    const etat = JSON.parse(
+      readFileSync(join(RACINE, "data", "corpus", "cc", "etat.json"), "utf8"),
+    ) as Record<string, unknown>;
+    assert.equal("date_min" in etat, false);
     assert.doesNotThrow(() => validerUnitesCorpus(unites, "Cour de cassation"));
   });
 });

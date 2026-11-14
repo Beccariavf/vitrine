@@ -4,7 +4,8 @@
  * Le filtre de pertinence est déterministe et compté : une décision est retenue
  * quand son visa cite un instrument de protection des données, ou quand son
  * texte porte au moins `occurrences_min` expressions centrales. Une décision
- * antérieure à la borne, hors sujet ou sans texte est écartée avec son motif.
+ * hors sujet, sans texte ou mal datée est écartée avec son motif ; aucune borne
+ * de date n'écarte une décision.
  */
 
 import { texteVisible } from "../parse.ts";
@@ -17,7 +18,6 @@ export type DescripteurCc = {
   nom: string;
   titre: string;
   url_texte: string;
-  date_min: string;
   champs: string;
   /** Phrases exactes envoyées à Judilibre, sans guillemets. */
   requetes: string[];
@@ -47,12 +47,11 @@ export type DecisionJudilibre = {
   visa?: unknown;
 };
 
-export type MotifEcartCc = "avant_borne" | "date_invalide" | "hors_sujet" | "texte_vide";
+export type MotifEcartCc = "date_invalide" | "hors_sujet" | "texte_vide";
 
 export type EcartesCc = Record<MotifEcartCc, number>;
 
 export const ECARTES_CC_VIDES: EcartesCc = {
-  avant_borne: 0,
   date_invalide: 0,
   hors_sujet: 0,
   texte_vide: 0,
@@ -215,13 +214,12 @@ export function paragraphesDecision(texte: string): string[] {
 }
 
 /**
- * Classe une décision : borne de date, texte, puis pertinence. La décision
- * retenue porte son visa, ses paragraphes et le compte qui l'a fait retenir.
+ * Classe une décision : date, texte, puis pertinence. La décision retenue porte
+ * son visa, ses paragraphes et le compte qui l'a fait retenir.
  */
 export function classerDecisionCc(
   brute: DecisionJudilibre,
   descripteur: DescripteurCc,
-  dateMin = descripteur.date_min,
   /** Une décision publiée par la veille est retenue hors filtre de pertinence. */
   forcer = false,
 ): VerdictCc {
@@ -230,7 +228,6 @@ export function classerDecisionCc(
   if (id === "" || !DATE_ISO.test(date) || Number.isNaN(Date.parse(date))) {
     return { retenue: false, motif: "date_invalide" };
   }
-  if (date < dateMin) return { retenue: false, motif: "avant_borne" };
 
   const texte = typeof brute.text === "string" ? brute.text : "";
   const paragraphes = paragraphesDecision(texte);
