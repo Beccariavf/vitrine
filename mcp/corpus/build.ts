@@ -4,7 +4,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { writeRaw } from "../../veille/write.ts";
 import type { FetchLike } from "../../veille/fetch.ts";
 import { fetchCellar } from "./fetch.ts";
-import { estConsolide, compterConsiderantsConsolide, parseCellar, parseConsolide } from "./parse.ts";
+import { estConsolide, compterConsiderantsConsolide, parseCellar, parseConsolide, urlVersion } from "./parse.ts";
 import type { Descripteur, Unite } from "./parse.ts";
 import { parseCcs } from "./ccs/parse.ts";
 import { writeCorpus } from "./write.ts";
@@ -80,7 +80,10 @@ async function construire(
         options.origineFixturePath === undefined
           ? await fetchCellar(descripteur.document, descripteur.langue, options.fetchImpl)
           : readFileSync(options.origineFixturePath, "utf8");
-      const considerants = parseCellar(contenuOrigine, descripteur, "considérants").filter(
+      // Les considérants viennent de l'acte d'origine : leur lien pointe cet acte,
+      // même quand le descripteur sert l'URL de la consolidation.
+      const descripteurOrigine = { ...descripteur, url: urlVersion(descripteur.document) };
+      const considerants = parseCellar(contenuOrigine, descripteurOrigine, "considérants").filter(
         (unite) => unite.niveau === "considérant",
       );
       const articles = parseConsolide(contenu, { ...descripteur, considerants_attendus: 0 });

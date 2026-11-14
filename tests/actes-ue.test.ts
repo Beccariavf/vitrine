@@ -22,6 +22,7 @@ import type { FetchLike } from "../veille/fetch.ts";
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const EPRIVACY_URL = new URL("./fixtures/eurlex/eprivacy-consolide.xhtml", import.meta.url);
 const POLICE_URL = new URL("./fixtures/eurlex/police-consolide.xhtml", import.meta.url);
+const POLICE_ORIGINE_URL = new URL("./fixtures/eurlex/police-origine.xhtml", import.meta.url);
 const EPRIVACY_PATH = fileURLToPath(EPRIVACY_URL);
 
 /** Consolidation synthétique sans préambule : deux articles, aucun considérant. */
@@ -131,7 +132,10 @@ describe("parseConsolide", () => {
   });
 
   it("suit les chapitres de la directive 2016/680 et n'y trouve aucun considérant", () => {
-    const unites = parseConsolide(readFileSync(POLICE_URL, "utf8"), descripteur("police"));
+    const unites = parseConsolide(readFileSync(POLICE_URL, "utf8"), {
+      ...descripteur("police"),
+      considerants_attendus: 0,
+    });
 
     assert.equal(unites.length, 65);
     assert.ok(unites.every((unite) => unite.niveau === "article"));
@@ -162,6 +166,23 @@ describe("parseConsolide", () => {
     assert.match(unites[0]?.texte ?? "", /^Article premier Objet du texte\./);
   });
 
+  it("lit un sous-titre de chapitre porté par un attribut", () => {
+    const xhtml = [
+      '<p class="title-division-1">CHAPITRE I</p>',
+      '<p class="title-division-2" id="id-def">Dispositions générales</p>',
+      '<p class="title-article-norm">Article premier</p>',
+      "<p>Objet du texte.</p>",
+      '<hr class="separator-short"/>',
+    ].join("\n");
+    const unites = parseConsolide(xhtml, {
+      ...descripteur("eprivacy"),
+      version: "02002L0058-20200101",
+      articles_attendus: 1,
+      considerants_attendus: 0,
+    });
+    assert.equal(unites[0]?.chemin, "ePrivacy > Chapitre I > Dispositions générales");
+  });
+
   it("lève quand le compte d'articles diffère du descripteur", () => {
     assert.throws(
       () =>
@@ -172,27 +193,40 @@ describe("parseConsolide", () => {
 });
 
 describe("buildCorpusSet sur une version consolidée", () => {
-  it("demande la version à CELLAR et écrit version, date de consolidation et exclusions au manifeste", async () => {
+  it("demande la version à CELLAR, reprend les considérants de l'origine et l'écrit au manifeste", async () => {
     const root = mkdtempSync(join(tmpdir(), "vitrine-actes-ue-"));
-    let demande = "";
+    const demandes: string[] = [];
     const fetchImpl: FetchLike = async (url) => {
-      demande = url;
-      return { ok: true, status: 200, text: async () => readFileSync(POLICE_URL, "utf8") };
+      demandes.push(url);
+      const contenu = url.endsWith("/02016L0680-20160504")
+        ? readFileSync(POLICE_URL, "utf8")
+        : readFileSync(POLICE_ORIGINE_URL, "utf8");
+      return { ok: true, status: 200, text: async () => contenu };
     };
     try {
-      await buildCorpusSet({ rootDir: root, document: "police", fetchImpl });
+      const resultats = await buildCorpusSet({ rootDir: root, document: "police", fetchImpl });
       const manifeste = JSON.parse(
         readFileSync(join(root, "data", "corpus", "police", "manifest.json"), "utf8"),
       ) as Record<string, unknown> & { couverture: Record<string, unknown> };
 
-      assert.equal(demande, "https://publications.europa.eu/resource/celex/02016L0680-20160504");
+      assert.deepEqual(demandes, [
+        "https://publications.europa.eu/resource/celex/02016L0680-20160504",
+        "https://publications.europa.eu/resource/celex/32016L0680",
+      ]);
+      assert.equal(resultats[0]?.unites.length, 172);
+      const considerant = resultats[0]?.unites.find((unite) => unite.ref === "32016L0680#rct_1");
+      assert.equal(
+        considerant?.url,
+        "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32016L0680#rct_1",
+      );
       assert.equal(manifeste.document, "32016L0680");
       assert.equal(manifeste.version, "02016L0680-20160504");
       assert.equal(manifeste.date_consolidation, "2016-05-04");
-      assert.deepEqual(manifeste.couverture.exclusions, [
-        "considérants : absents de la version consolidée 02016L0680-20160504",
-      ]);
-      assert.deepEqual(manifeste.couverture.types_retenus, ["article"]);
+      assert.equal(manifeste.considerants_source, "32016L0680");
+      assert.match(String(manifeste.snapshot_considerants), /^[0-9a-f]{64}\.xhtml$/);
+      assert.deepEqual(manifeste.couverture.exclusions, []);
+      assert.deepEqual(manifeste.couverture.types_retenus, ["article", "considérant"]);
+      assert.deepEqual(manifeste.couverture.comptes, { articles: 65, considerants: 107 });
       assert.equal(manifeste.couverture.version, "02016L0680-20160504");
       assert.equal(manifeste.couverture.date_consolidation, "2016-05-04");
     } finally {
@@ -272,6 +306,32 @@ describe("fusion avec l'acte d'origine", () => {
         assert.equal(nom, `${hash}.xhtml`);
       }
       assert.deepEqual(manifeste.couverture.comptes, { articles: 2, considerants: 2 });
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("n'écrit rien quand le préambule de l'acte d'origine est incomplet", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-actes-ue-"));
+    try {
+      const consolidePath = join(root, "consolide.xhtml");
+      const originePath = join(root, "origine.xhtml");
+      const descripteurPath = join(root, "descripteur.json");
+      writeFileSync(consolidePath, CONSOLIDE_SANS_PREAMBULE, "utf8");
+      writeFileSync(originePath, ORIGINE_DEUX_ANCRES.replace('id="rct_2"', 'id="rct_inconnu"'), "utf8");
+      writeFileSync(descripteurPath, `${JSON.stringify(DESCRIPTEUR_SYNTHETIQUE, null, 2)}\n`, "utf8");
+
+      await assert.rejects(
+        () =>
+          buildCorpus({
+            rootDir: root,
+            descripteurPath,
+            fixturePath: consolidePath,
+            origineFixturePath: originePath,
+          }),
+        /Capture 32000R0001 incomplète : ancre rct_2 absente/,
+      );
+      assert.equal(existsSync(join(root, "data")), false);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

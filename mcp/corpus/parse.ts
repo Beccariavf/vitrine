@@ -328,7 +328,7 @@ export function numeroArticleConsolide(titre: string): string | null {
 }
 
 /** URL EUR-Lex d'une version servie : une consolidation n'a pas d'ancre ELI. */
-function urlVersion(version: string): string {
+export function urlVersion(version: string): string {
   return `https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:${version}`;
 }
 
@@ -384,7 +384,8 @@ function parcourirArticlesConsolides(
     if (repere.genre === "division") {
       const chapitreTrouve = /^CHAPITRE\s+([IVXLC]+)$/i.exec(titre);
       if (chapitreTrouve?.[1] !== undefined) {
-        const sousTitre = /<p class="title-division-2">([\s\S]*?)<\/p>/.exec(segment);
+        // Les consolidations récentes portent un `id` sur le sous-titre.
+        const sousTitre = /<p class="title-division-2"[^>]*>([\s\S]*?)<\/p>/.exec(segment);
         chapitre = {
           numero: chapitreTrouve[1].toUpperCase(),
           titre: sousTitre?.[1] === undefined ? "" : texteConsolide(sousTitre[1]),

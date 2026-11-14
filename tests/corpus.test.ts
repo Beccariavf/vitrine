@@ -25,6 +25,7 @@ const DESCRIPTEUR_AIAct = JSON.parse(
 ) as Descripteur;
 
 const FIXTURE_POLICE_PATH = fileURLToPath(new URL("./fixtures/eurlex/police-consolide.xhtml", import.meta.url));
+const FIXTURE_POLICE_ORIGINE_PATH = fileURLToPath(new URL("./fixtures/eurlex/police-origine.xhtml", import.meta.url));
 
 function tempRoot(): string {
   return mkdtempSync(join(tmpdir(), "vitrine-corpus-"));
@@ -329,10 +330,11 @@ describe("buildCorpusSet", () => {
         rootDir: root,
         document: "police",
         fixturePath: FIXTURE_POLICE_PATH,
+        origineFixturePath: FIXTURE_POLICE_ORIGINE_PATH,
       });
 
       assert.equal(resultats.length, 1);
-      assert.equal(resultats[0]?.unites.length, 65);
+      assert.equal(resultats[0]?.unites.length, 172);
       assert.ok(existsSync(join(root, "data", "corpus", "police", "unites.jsonl")));
       assert.equal(existsSync(join(root, "data", "corpus", "rgpd")), false);
     } finally {

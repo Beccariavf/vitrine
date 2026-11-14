@@ -12,7 +12,9 @@
   "version": "02016L0680-20160504",
   "date_consolidation": "2016-05-04",
   "snapshot": "1d47f325e999f17c2c2e756ccd37cb980c55e0553ec1c63f8db691b4c937dd3c.xhtml",
-  "unites": 65,
+  "considerants_source": "32016L0680",
+  "snapshot_considerants": "1d8d35ed9d35bc00198f392bc67c71f751cead9cd19e70c2a8f386b61989dc47.xhtml",
+  "unites": 172,
   "couverture": {
     "source": "CELLAR — publications.europa.eu/resource/celex/02016L0680-20160504",
     "date_publication": "2016-05-04",
@@ -22,14 +24,13 @@
     },
     "statut": "en_vigueur",
     "types_retenus": [
-      "article"
+      "article",
+      "considérant"
     ],
-    "exclusions": [
-      "considérants : absents de la version consolidée 02016L0680-20160504"
-    ],
+    "exclusions": [],
     "comptes": {
       "articles": 65,
-      "considerants": 0
+      "considerants": 107
     },
     "version": "02016L0680-20160504",
     "date_consolidation": "2016-05-04"
