@@ -181,9 +181,11 @@ type MarqueurHeritage = { numero: string; position: number; fin: number };
 
 /**
  * Marqueurs de point du HTML patrimonial, dans l'ordre des formes rencontrées :
- * ancre `<a name="pointN">` des rendus OJ des années 2000, puis `<dt>N</dt>`
- * (suivi ou non d'un `<dd>` vide), puis numéro en tête de paragraphe des
- * rendus les plus anciens (`<p>33 Au vu de ces considérations…`).
+ * ancre `<A NAME="pointN">` des rendus OJ (`N` peut être dans l'ancre), puis
+ * `<dt>N</dt>` (suivi ou non d'un `<dd>` vide), puis numéro en tête de
+ * paragraphe des rendus les plus anciens (`<p>33 Au vu de ces considérations…`).
+ * Un paragraphe centré (date, intitulé) ne porte pas de point : son numéro
+ * d'ouverture serait une date.
  */
 function marqueursHeritage(contenu: string): MarqueurHeritage[] {
   const position = (trouve: RegExpMatchArray) => trouve.index ?? 0;
@@ -203,11 +205,13 @@ function marqueursHeritage(contenu: string): MarqueurHeritage[] {
     fin: position(trouve) + trouve[0].length,
   }));
   if (dt.length > 0) return dt;
-  return [...contenu.matchAll(/<p\b[^>]*>\s*(\d{1,3})(?:\s|&nbsp;)+/gi)].map((trouve) => ({
-    numero: trouve[1] ?? "",
-    position: position(trouve),
-    fin: position(trouve) + trouve[0].length,
-  }));
+  return [...contenu.matchAll(/<p\b([^>]*)>\s*(\d{1,3})(?:\s|&nbsp;)+/gi)]
+    .filter((trouve) => !/centre|align\s*=\s*"?cent/i.test(trouve[1] ?? ""))
+    .map((trouve) => ({
+      numero: trouve[2] ?? "",
+      position: position(trouve),
+      fin: position(trouve) + trouve[0].length,
+    }));
 }
 
 /** Fin de bloc d'un HTML patrimonial : frontière de paragraphe pour le texte visible. */

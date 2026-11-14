@@ -220,6 +220,43 @@ describe("le découpage d'une décision CJUE", () => {
     assert.ok(unites.some((unite) => unite.numero === "dispositif"));
   });
 
+  it("ne prend pas une date de paragraphe centré pour un numéro de point", () => {
+    const html = `<html><body>
+      <P class="C19Centre">18 February 2004</P>
+      <p>1 Le traitement est licite.</p>
+      <p>Par ces motifs, la Cour dit pour droit que le traitement est licite.</p>
+    </body></html>`;
+    const unites = unitesCjue(html, "62002TJ0320", "2004-02-18", DESCRIPTEUR);
+    assert.ok(unites.some((unite) => unite.ref === "62002TJ0320#point1"));
+    assert.equal(
+      unites.some((unite) => unite.numero === "18"),
+      false,
+      "le paragraphe centré reste dans l'en-tête",
+    );
+    assert.ok(unites.some((unite) => /18 February 2004/.test(unite.texte)));
+  });
+
+  it("lit les points ancrés du HTML patrimonial des rendus OJ", () => {
+    const html = `<HTML><BODY>
+      <P class="C02AlineaAltA">Dans l'affaire C-350/21,</P>
+      <P class="C01PointnumeroteAltN">
+        <A NAME="point1">1</A>        La demande porte sur la directive 2002/58/CE.
+      </P>
+      <P class="C01PointnumeroteAltN">
+        <A NAME="point2">2</A>        Le cadre juridique est rappelé.
+      </P>
+      <P class="C41DispositifIntroduction">Par ces motifs, la Cour dit pour droit:</P>
+      <P class="C08Dispositif">1) La directive 2002/58/CE s'oppose à cette conservation.</P>
+    </BODY></HTML>`;
+    const unites = unitesCjue(html, "62021CJ0350", "2022-11-17", DESCRIPTEUR);
+    const point1 = unites.find((unite) => unite.ref === "62021CJ0350#point1");
+    assert.ok(point1, "le point 1 est indexé par son ancre");
+    assert.match(point1.texte, /^La demande porte sur la directive 2002\/58/);
+    assert.ok(unites.some((unite) => unite.ref === "62021CJ0350#point2"));
+    assert.ok(unites.some((unite) => unite.numero === "dispositif"));
+    assert.ok(unites.some((unite) => /Dans l'affaire C-350\/21/.test(unite.texte)));
+  });
+
   it("découpe un arrêt anglais : date, numéro d'affaire avec P et dispositif", () => {
     assert.equal(langueCapture(ARRET), "fra");
     assert.equal(
@@ -723,8 +760,9 @@ describe("la synchronisation du corpus CJUE", () => {
           join(racine, "data", "raw", "cjue", `${CELEX_204}.absente.json`),
           "utf8",
         ),
-      ) as { motif: string };
+      ) as { motif: string; formes: string[] };
       assert.equal(marqueur.motif, "xhtml_absent");
+      assert.deepEqual(marqueur.formes, ["application/xhtml+xml", "text/html"]);
 
       const second = await syncCjue({
         rootDir: racine,
@@ -742,7 +780,7 @@ describe("la synchronisation du corpus CJUE", () => {
     }
   });
 
-  it("garde durable un marqueur version_francaise_absente déjà écrit", async () => {
+  it("rejoue un marqueur de refus hérité, écrit avant le repli HTML", async () => {
     const racine = racineTemporaire();
     try {
       ecrire(
@@ -754,17 +792,33 @@ describe("la synchronisation du corpus CJUE", () => {
           date: "2026-11-11",
         }),
       );
+      const html = `<HTML><BODY><center><b>Affaire C-413/23 P</b></center>
+        <dt>1
+          <dd></dd>
+        </dt> Le traitement est licite.
+        <p>Par ces motifs,</p> LA COUR dit pour droit que le traitement est licite.
+      </BODY></HTML>`;
       const resultat = await syncCjue({
         rootDir: racine,
         date: "2026-11-12",
         reponseListe: LISTE_204,
         complementaires: [],
-        fetchImpl: async () => {
-          throw new Error("l'ancien marqueur doit rester durable");
-        },
+        fetchImpl: async (_url, init) =>
+          String(init?.headers?.Accept ?? "") === "text/html"
+            ? reponse(200, html)
+            : reponse(404, ""),
       });
-      assert.equal(resultat.appels.documents, 0);
-      assert.equal(resultat.ecartes.xhtml_absent, 1);
+      assert.equal(resultat.appels.documents, 1, "un marqueur hérité est rejoué");
+      assert.equal(resultat.documents, 1);
+      assert.equal(
+        existsSync(join(racine, "data", "raw", "cjue", `${CELEX_204}.absente.json`)),
+        false,
+        "le marqueur hérité disparaît quand la capture est trouvée",
+      );
+      assert.equal(
+        existsSync(join(racine, "data", "raw", "cjue", `${CELEX_204}.html`)),
+        true,
+      );
     } finally {
       rmSync(racine, { recursive: true, force: true });
     }

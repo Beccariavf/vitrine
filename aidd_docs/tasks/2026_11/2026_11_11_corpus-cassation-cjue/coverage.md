@@ -12,7 +12,7 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 pour la CJUE, du 13 nov
 | `ce` | 1 312 | 17 703 | 2014-01-01 → 2026-10-27 | DILA — JADE, fonds `publie` et `inedit` | Licence Ouverte 2.0 (Etalab) |
 | `cepd` | 36 | 5 443 | 2018-04-11 → 2025-06-05 | CEPD, sitemap des pages `_fr` et PDF | À vérifier : aucune licence explicite déclarée |
 | `cc` | 352 | 7 048 | 2014-01-14 → 2026-11-10 | PISTE — Judilibre `/search` et `/decision` | Licence Ouverte 2.0 (Etalab) et CGU Judilibre |
-| `cjue` | 248 | 23 174 | 1999-10-14 → 2026-11-05 | CELLAR / EUR-Lex — SPARQL `PDON` + notions `4.11.01` et `2.04` + 1 CELEX, XHTML français puis anglais, repli HTML patrimonial | Décision 2011/833/UE (CC BY 4.0) |
+| `cjue` | 248 | 23 188 | 1999-10-14 → 2026-11-05 | CELLAR / EUR-Lex — SPARQL `PDON` + notions `4.11.01` et `2.04` + 1 CELEX, XHTML français puis anglais, repli HTML patrimonial | Décision 2011/833/UE (CC BY 4.0) |
 
 ## Détail `cc`
 
@@ -29,7 +29,8 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 pour la CJUE, du 13 nov
 - 361 CELEX listés et 1 complémentaire : 248 retenus, 95 conclusions d'avocat général (`CC`), 5 autres types, 14 sans aucune représentation téléchargeable (404 en XHTML et en HTML, toutes langues) ; `documents_lus` vaut 362, soit exactement les documents retenus plus les exclusions (248 + 95 + 5 + 14).
 - Types des 248 décisions retenues : 167 arrêts de la Cour, 52 arrêts du Tribunal, 14 ordonnances de la Cour, 15 ordonnances du Tribunal.
 - Antériorité : 40 décisions sont datées d'avant 2014 (1999-10-14 → 2013-12-12). Les 45 décisions des types retenus que l'ancienne borne comptait à part (`couverture.avant_borne`, supprimé) sont donc au corpus, sauf 5 (`62002TJ0179`, `62007TJ0392`, `62009TJ0241`, `62010TJ0308`, `62011TJ0214`) : CELLAR ne sert pour elles qu'une notice RDF, sans texte. Lindqvist (C-101/01, `62001CJ0101`, 6 novembre 2003) est au corpus avec ses points `#point1` à `#point100`.
-- Deux rendus : le XHTML moderne, puis le HTML patrimonial servi aux arrêts anciens (`data/raw/cjue/<CELEX>.html`, marqueurs `<dt>N</dt>`, ancres `pointN` ou numéro en tête de paragraphe) ; 70 des 86 décisions sans XHTML ont ainsi été récupérées. Le HTML patrimonial porte la date des conclusions avant celle de l'arrêt : la date CELLAR fait foi pour lui, l'en-tête du XHTML pour le rendu moderne.
+- Deux rendus : le XHTML moderne, puis le HTML patrimonial servi aux arrêts anciens (`data/raw/cjue/<CELEX>.html`, marqueurs `<dt>N</dt>`, ancres `pointN` ou numéro en tête de paragraphe) ; 72 des 86 décisions sans XHTML ont ainsi été récupérées. Le HTML patrimonial porte la date des conclusions avant celle de l'arrêt : la date CELLAR fait foi pour lui, l'en-tête du XHTML pour le rendu moderne.
+- Cinq décisions (`62002TJ0320`, `62003TJ0259`, `62004TJ0161`, `62009TJ0082`, `62010TJ0190`) ne sont servies par CELLAR que sous forme de résumé, sans motifs ; elles entrent au corpus pour ce que la source en donne.
 - Langue : un seul rendu par décision, la première servie — français d'abord, anglais après un 404 français. `couverture.langues` = 247 `fra`, 1 `eng` (`62002TJ0320`, arrêt du Tribunal servi seulement en anglais) ; aucune décision du corpus n'existe uniquement en XHTML anglais.
 - `periode.date_min` est la première date observée (1999-10-14) ; le manifeste ne porte plus ni `date_min` ni `couverture.borne`.
 - La notion `4.11.01` récupère La Quadrature du Net (C-511/18) ; Prokuratuur (C-746/18) est ajouté par la liste explicite. Le manifeste porte `couverture.notions` (deux entrées), `celex_complementaires` et `complementaires_ajoutes`.
@@ -37,13 +38,13 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 pour la CJUE, du 13 nov
 
 ## Évaluations `dev`
 
-Mesures du 11 novembre 2026, hors split `test`, sur l'index à huit corpus (74 891 unités ; **83 980** depuis l'ouverture de la CJUE aux arrêts antérieurs à 2014, le 14 novembre).
+Mesures du 11 novembre 2026, hors split `test`, sur l'index à huit corpus (74 891 unités ; **83 994** depuis l'ouverture de la CJUE aux arrêts antérieurs à 2014, le 14 novembre).
 
 | Jeu | Résultat |
 |---|---|
 | Cour de cassation, 10 questions | 6/10 au top 5, MRR 0,470, top 1 40,0 % |
 | CJUE, 10 questions | 8/10 au top 5, MRR 0,750, top 1 70,0 % |
 
-Les rangs CJUE ont été rejoués le 14 novembre 2026 sur l'index de 83 980 unités (corpus `cjue` de 248 décisions et 23 174 fragments) : mêmes résultats, la calibration `dev` du harnais donne 1 `confiant` et 9 `incertain`. La recherche « Lindqvist diffusion de données personnelles sur une page Internet » (`corpus: "cjue"`, `k: 5`) rend C-101/01 aux rangs 1, 2 et 4 (`62001CJ0101#point14`, similarité 0,726), avec l'URL EUR-Lex française de l'arrêt. La recherche « données pseudonymisées identifiables par le destinataire » rend toujours C-413/23 P au premier rang (`62023CJ0413#point68`, similarité 0,729).
+Les rangs CJUE ont été rejoués le 14 novembre 2026 sur l'index de 83 994 unités (corpus `cjue` de 248 décisions et 23 188 fragments) : mêmes résultats, la calibration `dev` du harnais donne 1 `confiant` et 9 `incertain`. La recherche « Lindqvist diffusion de données personnelles sur une page Internet » (`corpus: "cjue"`, `k: 5`) rend C-101/01 aux rangs 1, 2 et 4 (`62001CJ0101#point14`, similarité 0,726), avec l'URL EUR-Lex française de l'arrêt. La recherche « données pseudonymisées identifiables par le destinataire » rend toujours C-413/23 P au premier rang (`62023CJ0413#point68`, similarité 0,729).
 
 Le détail des rangs et des similarités est dans [`eval.md`](./eval.md). Ces jeux ne calibrent aucun seuil : le produit applique le repli `0,69 / 0,74 / 0,01` à `cc` et `cjue`.

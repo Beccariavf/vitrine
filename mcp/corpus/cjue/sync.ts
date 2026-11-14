@@ -3,10 +3,11 @@
  *
  * La liste vient d'une requête SPARQL sur la matière « protection des données
  * personnelles » et deux notions fines ; chaque décision est ensuite lue en
- * XHTML, français d'abord puis anglais, et mise en cache sous `data/raw/cjue/`.
- * Un texte absent dans toutes les langues (404) ou vide est écarté et compté ;
- * une panne d'un document n'emporte pas les autres. Le corpus n'est écrit
- * qu'après validation de toutes ses unités.
+ * XHTML, puis en HTML patrimonial pour les arrêts anciens, en français d'abord
+ * puis en anglais, et mise en cache sous `data/raw/cjue/`. Une décision absente
+ * dans toutes les formes et langues (404) ou vide est écartée et comptée ; une
+ * panne d'un document n'emporte pas les autres. Le corpus n'est écrit qu'après
+ * validation de toutes ses unités.
  */
 
 import { createHash } from "node:crypto";
@@ -34,7 +35,7 @@ export const RACINE = fileURLToPath(new URL("../../..", import.meta.url));
 
 /** Dossier du corpus sous `data/corpus/`. */
 export const DOSSIER_CORPUS = join("data", "corpus", "cjue");
-/** Dossier du cache XHTML, non commité. */
+/** Dossier du cache des représentations, non commité. */
 export const DOSSIER_BRUT = join("data", "raw", "cjue");
 
 const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
@@ -99,7 +100,7 @@ export type SyncCjueOptions = {
   fetchImpl?: FetchLike;
   /** Réponse SPARQL déjà lue : les tests remplacent le réseau. */
   reponseListe?: unknown;
-  /** XHTML par CELEX, quand l'appelant connaît déjà les captures. */
+  /** XHTML ou HTML patrimonial par CELEX, quand l'appelant connaît déjà les captures. */
   reponsesXhtml?: Record<string, string>;
   /** Remplace la liste de CELEX complémentaires du descripteur (tests). */
   complementaires?: string[];
@@ -226,18 +227,31 @@ function cheminRefus(rootDir: string, celex: string): string {
   return join(rootDir, DOSSIER_BRUT, `${celex}.absente.json`);
 }
 
+/** Représentations demandées, dans l'ordre : XHTML moderne puis HTML patrimonial. */
+const FORMES = ["application/xhtml+xml", "text/html"] as const;
+
 /** Marqueurs acceptés : `xhtml_absent`, et son ancien nom resté durable. */
 const MOTIFS_REFUS = new Set(["xhtml_absent", "version_francaise_absente"]);
 
-/** Motif d'un refus déjà consigné pour ce CELEX, `null` sinon. */
+/**
+ * Motif d'un refus déjà consigné pour ce CELEX, `null` sinon. Un marqueur écrit
+ * avant le repli HTML ne porte pas les formes demandées : il est rejoué, sans
+ * quoi une décision servie en HTML patrimonial resterait exclue pour toujours.
+ */
 export function lireRefus(rootDir: string, celex: string): "xhtml_absent" | null {
   try {
     const valeur = JSON.parse(readFileSync(cheminRefus(rootDir, celex), "utf8")) as {
       motif?: unknown;
+      formes?: unknown;
     };
-    return typeof valeur.motif === "string" && MOTIFS_REFUS.has(valeur.motif)
-      ? "xhtml_absent"
-      : null;
+    const formes = valeur.formes;
+    const durable =
+      typeof valeur.motif === "string" &&
+      MOTIFS_REFUS.has(valeur.motif) &&
+      Array.isArray(formes) &&
+      formes.length === FORMES.length &&
+      formes.every((forme, index) => forme === FORMES[index]);
+    return durable ? "xhtml_absent" : null;
   } catch {
     return null;
   }
@@ -273,7 +287,7 @@ export async function telechargerCjue(
   | { texte: string; langue: string }
   | { motif: "xhtml_absent" | "echec_telechargement" }
 > {
-  const formes = ["application/xhtml+xml", "text/html"] as const;
+  const formes = FORMES;
   let absences = 0;
   for (const langue of langues) {
     for (const accept of formes) {
@@ -426,7 +440,16 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
         if (resultat.motif === "xhtml_absent") {
           ecrireSiChange(
             cheminRefus(rootDir, entree.celex),
-            `${JSON.stringify({ celex: entree.celex, motif: resultat.motif, date: dateExtraction }, null, 2)}\n`,
+            `${JSON.stringify(
+              {
+                celex: entree.celex,
+                motif: resultat.motif,
+                formes: [...FORMES],
+                date: dateExtraction,
+              },
+              null,
+              2,
+            )}\n`,
           );
         }
         continue;
@@ -437,6 +460,8 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
       cheminCache(rootDir, entree.celex, formatCapture(capture) === "xhtml" ? "xhtml" : "html"),
       capture,
     );
+    // Un marqueur de refus hérité ne doit pas survivre à une capture trouvée.
+    rmSync(cheminRefus(rootDir, entree.celex), { force: true });
   }
 
   const cheminUnites = join(rootDir, DOSSIER_CORPUS, "unites.jsonl");

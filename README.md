@@ -27,7 +27,7 @@ npm run ce:sync                            # archive JADE globale → data/corpu
 npm run ce:sync -- --dry-run               # ce que l'archive produirait, sans écrire
 npm run cc:sync                            # Judilibre → data/corpus/cc/ (budget PISTE, reprise au cache)
 npm run cc:sync -- --max-appels 300        # borne la passe ; s'arrête sans tronquer, reprend au cache ensuite
-npm run cjue:sync                          # CELLAR → data/corpus/cjue/ (SPARQL + XHTML français puis anglais)
+npm run cjue:sync                          # CELLAR → data/corpus/cjue/ (SPARQL + XHTML puis HTML patrimonial, français puis anglais)
 npm run cjue:sync -- --limite 20 --root /tmp/essai   # essai partiel, exclusions sur la liste entière
 npm run cepd:sync                          # lignes directrices du CEPD → data/corpus/cepd/
 npm run cepd:sync -- --dry-run             # ce que la liste produirait, sans écrire
@@ -250,7 +250,7 @@ Prokuratuur C-746/18. Les conclusions d'avocat général (`CC`) et les autres ty
 consignée en `xhtml_absent` pour ne pas être redemandée. Chaque décision rend son en-tête, ses points
 de motivation numérotés (`#pointN`) et son dispositif.
 Mesure du 14 novembre 2026 : 361 CELEX listés et 1 complémentaire, 248 décisions retenues,
-23 174 fragments, 95 conclusions d'avocat général et 5 autres types écartés, 14 décisions sans aucun
+23 188 fragments, 95 conclusions d'avocat général et 5 autres types écartés, 14 décisions sans aucun
 texte téléchargeable ; 40 décisions antérieures à 2014, la plus ancienne du 14 octobre 1999 ;
 période 1999-10-14 → 2026-11-05 ; 247 textes français et 1 anglais (`62002TJ0320`). Des 45 décisions
 que l'ancienne borne comptait à part, 40 sont au corpus ; les 5 autres (T-179/02, T-392/07,
