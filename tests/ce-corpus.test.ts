@@ -1,5 +1,5 @@
 import { strict as assert } from "node:assert";
-import { createReadStream, existsSync, mkdtempSync, readFileSync, rmSync, statSync } from "node:fs";
+import { createReadStream, existsSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -140,7 +140,7 @@ describe("le filtrage des décisions JADE", () => {
       ["CETATEXT000007422412", "retenue"],
       ["CETATEXT000000000002", "sans_mot_cle"],
       ["CETATEXT000000000003", "autre_juridiction"],
-      ["CETATEXT000000000004", "avant_borne"],
+      ["CETATEXT000000000004", "retenue"],
       ["CETATEXT000000000005", "texte_vide"],
       ["CETATEXT000000000006", "date_invalide"],
     ];
@@ -154,6 +154,18 @@ describe("le filtrage des décisions JADE", () => {
         if (!verdict.retenue) assert.equal(verdict.motif, attendu, id);
       }
     }
+  });
+
+  it("retient une décision pertinente de 2005, sans borne de date", async () => {
+    const lues = await entrees();
+    const fonciere = decisionParId(lues, "CETATEXT000000000004");
+
+    assert.equal(fonciere.date, "2013-12-31");
+    assert.equal(classerDecision(fonciere, DESCRIPTEUR).retenue, true);
+    assert.equal(
+      classerDecision({ ...fonciere, date: "2005-03-15" }, DESCRIPTEUR).retenue,
+      true,
+    );
   });
 
   it("reconnaît le Conseil d'État et écarte les autres juridictions", async () => {
@@ -212,13 +224,12 @@ describe("la synchronisation du corpus CE", () => {
       assert.equal(resultat.ignore, false);
       assert.equal(resultat.ecrit, true);
       assert.equal(resultat.documentsLus, 7);
-      assert.equal(resultat.decisionsCeDepuis2014, 4);
-      assert.equal(resultat.documents, 2);
-      assert.equal(resultat.fragments, 3);
+      assert.equal(resultat.decisionsCe, 5);
+      assert.equal(resultat.documents, 3);
+      assert.equal(resultat.fragments, 4);
       assert.equal(resultat.doublons, 0);
       assert.deepEqual(resultat.ecartes, {
         autre_juridiction: 1,
-        avant_borne: 1,
         date_invalide: 1,
         sans_mot_cle: 1,
         texte_vide: 1,
@@ -228,10 +239,14 @@ describe("la synchronisation du corpus CE", () => {
         .split("\n")
         .filter((ligne) => ligne !== "")
         .map((ligne) => JSON.parse(ligne) as Unite);
-      assert.equal(unites.length, 3);
+      assert.equal(unites.length, 4);
       assert.deepEqual(
         [...new Set(unites.map((unite) => unite.document))].sort(),
-        ["CETATEXT000000000007", "CETATEXT000007422412"],
+        [
+          "CETATEXT000000000004",
+          "CETATEXT000000000007",
+          "CETATEXT000007422412",
+        ],
       );
 
       const manifeste = JSON.parse(
@@ -239,19 +254,20 @@ describe("la synchronisation du corpus CE", () => {
       ) as ManifesteCe;
       assert.equal(manifeste.archive, "jade.tar.gz");
       assert.equal(manifeste.date_extraction, DATE);
-      assert.equal(manifeste.date_min, "2014-01-01");
+      assert.equal("date_min" in manifeste, false, "aucune borne au manifeste");
       assert.equal(manifeste.documents_lus, 7);
-      assert.equal(manifeste.decisions_ce_depuis_2014, 4);
-      assert.equal(manifeste.documents, 2);
-      assert.equal(manifeste.fragments, 3);
+      assert.equal(manifeste.decisions_ce, 5);
+      assert.equal(manifeste.documents, 3);
+      assert.equal(manifeste.fragments, 4);
       assert.equal(manifeste.doublons, 0);
       assert.deepEqual(manifeste.ecartes, resultat.ecartes);
       assert.equal(manifeste.couverture.source, "DILA — JADE (OPENDATA), fonds publie et inedit");
+      assert.equal(manifeste.couverture.periode.date_min, "2013-12-31");
       assert.equal(manifeste.couverture.periode.date_max, "2016-07-01");
       assert.deepEqual(manifeste.couverture.exclusions.juridictions, DESCRIPTEUR.juridictions_exclues);
       assert.equal(manifeste.couverture.fonds.publie.documents_lus, 6);
-      assert.equal(manifeste.couverture.fonds.publie.documents, 1);
-      assert.equal(manifeste.couverture.fonds.publie.fragments, 2);
+      assert.equal(manifeste.couverture.fonds.publie.documents, 2);
+      assert.equal(manifeste.couverture.fonds.publie.fragments, 3);
       assert.equal(manifeste.couverture.fonds.publie.doublons, 0);
       assert.equal(manifeste.couverture.fonds.inedit.documents_lus, 1);
       assert.equal(manifeste.couverture.fonds.inedit.documents, 1);
@@ -263,7 +279,7 @@ describe("la synchronisation du corpus CE", () => {
         readFileSync(join(racine, "data", "corpus", "ce", "etat.json"), "utf8"),
       ) as Record<string, unknown>;
       assert.equal(etat.archive, "jade.tar.gz");
-      assert.equal(etat.date_min, "2014-01-01");
+      assert.equal("date_min" in etat, false);
       assert.match(String(etat.sha256), /^[0-9a-f]{64}$/);
       assert.match(String(etat.filtre_sha256), /^[0-9a-f]{64}$/);
     } finally {
@@ -286,13 +302,38 @@ describe("la synchronisation du corpus CE", () => {
 
       assert.equal(second.ignore, true);
       assert.equal(second.ecrit, false);
-      assert.equal(second.documents, 2);
-      assert.equal(second.fragments, 3);
+      assert.equal(second.documents, 3);
+      assert.equal(second.fragments, 4);
       assert.deepEqual(
         chemins.map((chemin) => statSync(chemin).mtimeMs),
         avant,
         "aucun fichier ne doit être réécrit",
       );
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
+  });
+
+  it("relit l'archive quand l'empreinte du filtre change", async () => {
+    const racine = racineTemporaire();
+    try {
+      await syncCe({ rootDir: racine, archive: FIXTURE, date: DATE });
+      const descripteur = join(racine, "descripteur.json");
+      writeFileSync(
+        descripteur,
+        JSON.stringify({ ...DESCRIPTEUR, titre: `${DESCRIPTEUR.titre} (relu)` }),
+        "utf8",
+      );
+
+      const second = await syncCe({
+        rootDir: racine,
+        archive: FIXTURE,
+        date: DATE,
+        descripteurPath: descripteur,
+      });
+
+      assert.equal(second.ignore, false, "un filtre différent force la relecture");
+      assert.equal(second.documentsLus, 7);
     } finally {
       rmSync(racine, { recursive: true, force: true });
     }
@@ -309,7 +350,7 @@ describe("la synchronisation du corpus CE", () => {
       });
 
       assert.equal(resultat.ecrit, false);
-      assert.equal(resultat.documents, 2);
+      assert.equal(resultat.documents, 3);
       assert.equal(existsSync(join(racine, "data")), false);
     } finally {
       rmSync(racine, { recursive: true, force: true });

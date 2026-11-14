@@ -186,24 +186,26 @@ Sur un pilote de 12 cas, le top 5 passe de 7/12 sans filtre à 11/12 avec. Le ca
 décrit l'activité de façon trop vague : il faudrait un `secteur`. Rapport :
 `aidd_docs/tasks/2026_11/2026_11_06_filtres-cnil/eval-filtres.md`.
 
-Le corpus `ce` porte les décisions du Conseil d'État depuis 2014 qui traitent des données
-personnelles. `npm run ce:sync` liste `https://echanges.dila.gouv.fr/OPENDATA/JADE/`, télécharge
+Le corpus `ce` porte les décisions du Conseil d'État qui traitent des données personnelles, de
+1982 à nos jours. `npm run ce:sync` liste `https://echanges.dila.gouv.fr/OPENDATA/JADE/`, télécharge
 l'archive globale `Freemium_jade_global_*.tar.gz` sous `data/raw/ce/` — non commitée, 1,32 Go — puis
 la lit en flux : `fetch` → `Readable.fromWeb` → `createGunzip` → lecteur tar incrémental, sans jamais
 charger l'archive ni son contenu décompressé en mémoire. Les deux fonds `jade/global/publie` et
 `jade/global/inedit` sont lus : une décision inédite au recueil est une décision du Conseil d'État
 comme une autre. JADE mêle le Conseil d'État, les cours administratives d'appel et les tribunaux
 administratifs : seules les décisions dont la `JURIDICTION` normalisée vaut exactement « Conseil
-d'État » sont retenues, les autres sont écartées et comptées. Le filtre porte aussi sur la date
-(`--date-min`, `2014-01-01` par défaut) et sur les mots-clés du descripteur (données personnelles,
-données à caractère personnel, informatique et libertés, protection des données, RGPD, CNIL). Le
+d'État » sont retenues, les autres sont écartées et comptées. Le filtre porte sur cette juridiction
+et sur les mots-clés du descripteur (données personnelles,
+données à caractère personnel, informatique et libertés, protection des données, RGPD, CNIL) ; aucune
+borne de date n'écarte une décision. Le
 manifeste `data/corpus/ce/manifest.json` publie les comptes réels, les exclusions par motif et les
 comptes par fonds ; `--dry-run` n'écrit rien et une seconde passe sur la même archive et la même
-empreinte ne relit rien. Mesure du 9 novembre 2026 : 573 525 entrées lues, 36 191 décisions du
-Conseil d'État depuis 2014, 1 312 retenues après mots-clés et 17 703 fragments (fonds `publie` :
-181 décisions et 3 080 fragments ; fonds `inedit` : 1 131 décisions et 14 623 fragments) ; 62
-doublons entre les deux fonds ; exclusions 399 198 autres juridictions, 138 074 antérieures à 2014,
-34 878 sans mot-clé, 1 texte vide. Les 12 questions `dev` de `mcp/eval/questions-ce.csv` rendent le
+empreinte ne relit rien. Mesure du 14 novembre 2026 : 573 525 entrées lues, 174 265 décisions du
+Conseil d'État toutes dates, 1 594 retenues après mots-clés et 20 774 fragments (fonds `publie` :
+282 décisions et 4 430 fragments ; fonds `inedit` : 1 312 décisions et 16 344 fragments) ; 62
+doublons entre les deux fonds ; exclusions 399 198 autres juridictions, 167 044 sans mot-clé,
+5 627 textes vides, période 1982-03-12 → 2026-10-27. Les 12 questions `dev` de
+`mcp/eval/questions-ce.csv` rendent le
 document attendu au top 5 pour 8 d'entre elles (MRR 0,486, top 1 33,3 %).
 
 Le corpus `cepd` porte les lignes directrices du Comité européen de la protection des données,
@@ -222,15 +224,16 @@ Mesure du 9 novembre 2026 : 42 URL `_fr` dans le sitemap, 5 pages lues, 36 ligne
 de `mcp/eval/questions-cepd.csv` rendent le document attendu au rang 1 pour les 10 (MRR 1,000,
 top 1 100,0 %).
 
-Le corpus `cc` porte les décisions de la Cour de cassation sur les données personnelles depuis
-2014. `npm run cc:sync` interroge Judilibre (PISTE) par les phrases du descripteur
-(`field=text`, `operator=and`), puis lit chaque décision par `/decision` et la met en cache sous
-`data/raw/cc/` — non commité. Le filtre local est déclaré : visa citant un instrument de protection
+Le corpus `cc` porte les décisions de la Cour de cassation sur les données personnelles, de
+1986 à nos jours. `npm run cc:sync` interroge Judilibre (PISTE) par les phrases du descripteur
+(`field=text`, `operator=and`), sans borne de date, puis lit chaque décision par `/decision` et la
+met en cache sous `data/raw/cc/` — non commité. Le filtre local est déclaré : visa citant un instrument de protection
 des données, ou au moins deux occurrences d'une expression centrale. Le budget d'appels
 (`--max-appels`, 1 500 par défaut) est dédié à la collecte ; quand il s'épuise, la passe s'arrête
 sans toucher au corpus existant et la suivante reprend au cache. Les quatre entrées Judilibre de la veille
-sont incluses d'office. Mesure du 11 novembre 2026 : 1 133 décisions lues, 352 retenues,
-7 048 fragments, 781 écartées faute de pertinence, période 2014-01-14 → 2026-11-10. Chaque décision
+sont incluses d'office. Mesure du 14 novembre 2026 : 1 348 décisions lues, 403 retenues,
+8 194 fragments, 945 écartées faute de pertinence, période 1986-07-21 → 2026-11-10, dont 51
+décisions antérieures à 2014. Chaque décision
 indexe son visa quand Judilibre le porte (124 rejets non spécialement motivés n'en ont pas), puis
 regroupe son texte en fragments de 600 à 1 200 caractères — un paragraphe plus long reste entier. Les 10
 questions `dev` rendent le document attendu au top 5 pour 6 d'entre elles (MRR 0,470, top 1

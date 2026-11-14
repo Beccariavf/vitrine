@@ -41,7 +41,6 @@ const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
 const ID_JUDILIBRE = /^[a-z0-9]+$/;
 
 export type EtatCc = {
-  date_min: string;
   filtre_sha256: string;
   lu_le: string | null;
   /** Décisions en cache après la dernière passe. */
@@ -52,7 +51,7 @@ export type EtatCc = {
 
 export type CouvertureCc = {
   source: string;
-  periode: { date_min: string; date_max: string | null };
+  periode: { date_min: string | null; date_max: string | null };
   champs: string;
   requetes: string[];
   filtre: {
@@ -61,8 +60,6 @@ export type CouvertureCc = {
     visa_pertinent: boolean;
   };
   veille: { entrees: number; ajoutees: number; retenues: number };
-  /** Borne demandée ; `periode.date_min` porte la première date observée. */
-  borne: string;
   exclusions: EcartesCc;
   /** Identifiants sélectionnés que Judilibre ne rend pas (HTTP 404). */
   introuvables: string[];
@@ -74,7 +71,6 @@ export type ManifesteCc = {
   nom: string;
   titre: string;
   source: string;
-  date_min: string;
   date_extraction: string;
   licence: string;
   documents: number;
@@ -88,7 +84,6 @@ export type ManifesteCc = {
 export type SyncCcOptions = {
   rootDir?: string;
   descripteurPath?: string;
-  dateMin?: string;
   /** Date d'extraction consignée ; par défaut, le jour courant. */
   date?: string;
   /** Budget d'appels PISTE de cette passe ; par défaut, celui du descripteur. */
@@ -176,12 +171,11 @@ function ecrireSiChange(chemin: string, contenu: string): boolean {
   return true;
 }
 
-/** Empreinte du filtre : borne, requêtes, mots-clés et seuil. */
-export function empreinteFiltre(descripteur: DescripteurCc, dateMin: string): string {
+/** Empreinte du filtre : requêtes, mots-clés et seuil. */
+export function empreinteFiltre(descripteur: DescripteurCc): string {
   return createHash("sha256")
     .update(
       JSON.stringify({
-        date_min: dateMin,
         champs: descripteur.champs,
         requetes: descripteur.requetes,
         mots_cles: descripteur.mots_cles,
@@ -299,10 +293,6 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
   const descripteur = lireDescripteurCc(
     options.descripteurPath ?? join(ICI, "descripteur.json"),
   );
-  const dateMin = options.dateMin ?? descripteur.date_min;
-  if (!DATE_ISO.test(dateMin) || Number.isNaN(Date.parse(dateMin))) {
-    throw new Error(`Borne de date attendue AAAA-MM-JJ ; reçu « ${dateMin} »`);
-  }
   const dateExtraction = options.date ?? dateDuJour();
   if (!DATE_ISO.test(dateExtraction) || Number.isNaN(Date.parse(dateExtraction))) {
     throw new Error(`Date d'extraction attendue AAAA-MM-JJ ; reçue « ${dateExtraction} »`);
@@ -312,7 +302,7 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
   const etatExistant = lireEtatCc(cheminEtat);
   const manifesteExistant = lireManifesteCc(cheminManifeste);
   const budget = options.maxAppels ?? descripteur.max_appels;
-  const filtreSha256 = empreinteFiltre(descripteur, dateMin);
+  const filtreSha256 = empreinteFiltre(descripteur);
 
   const cache = lireCache(rootDir);
   const introuvablesConnus = lireIntrouvables(rootDir);
@@ -359,7 +349,9 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
 
   const selection = new Map<string, string | null>();
   const pageSize = descripteur.taille_page;
-  const maxPages = 40;
+  // Plafond de boucle, pas filtre : le dépassement est signalé et rien n'est
+  // écrit (voir `rechercheIncomplete`), il ne tronque jamais en silence.
+  const maxPages = 200;
   let doublonsRecherche = 0;
 
   let budgetEpuise = false;
@@ -374,8 +366,6 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
         query: `"${requete}"`,
         operator: "and",
         field: descripteur.champs,
-        date_start: dateMin,
-        date_end: dateExtraction,
         sort: "date",
         order: "desc",
         page: String(page),
@@ -493,7 +483,7 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
     const brute = cache.get(id);
     if (brute === undefined) continue;
     documentsLus += 1;
-    const verdict = classerDecisionCc(brute, descripteur, dateMin, veilleIds.has(id));
+    const verdict = classerDecisionCc(brute, descripteur, veilleIds.has(id));
     if (!verdict.retenue) {
       ecartes[verdict.motif] += 1;
       continue;
@@ -532,7 +522,6 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
     nom: descripteur.nom,
     titre: descripteur.titre,
     source: "PISTE — Judilibre /search et /decision",
-    date_min: dateMin,
     date_extraction: dateManifeste,
     licence: descripteur.licence,
     documents,
@@ -542,8 +531,7 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
     exclusions: ecartes,
     couverture: {
       source: "PISTE — Judilibre /search et /decision",
-      periode: { date_min: dateMinObserve ?? dateMin, date_max: dateMax },
-      borne: dateMin,
+      periode: { date_min: dateMinObserve, date_max: dateMax },
       champs: descripteur.champs,
       requetes: descripteur.requetes,
       filtre: {
@@ -574,7 +562,6 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
   );
   const ecritManifeste = ecrireSiChange(cheminManifeste, `${JSON.stringify(manifeste, null, 2)}\n`);
   const etat: EtatCc = {
-    date_min: dateMin,
     filtre_sha256: filtreSha256,
     lu_le:
       ecritUnites || ecritManifeste
@@ -608,7 +595,6 @@ function valeurDe(nom: string, argv: string[]): string | undefined {
 
 async function main(argv: string[]): Promise<void> {
   const dryRun = argv.includes("--dry-run");
-  const dateMin = valeurDe("--date-min", argv);
   const maxAppels = valeurDe("--max-appels", argv);
   const rootDir = valeurDe("--root", argv);
   const descripteur = valeurDe("--descripteur", argv);
@@ -619,7 +605,6 @@ async function main(argv: string[]): Promise<void> {
     resultat = await syncCc({
       ...(rootDir === undefined ? {} : { rootDir }),
       ...(descripteur === undefined ? {} : { descripteurPath: descripteur }),
-      ...(dateMin === undefined ? {} : { dateMin }),
       ...(date === undefined ? {} : { date }),
       ...(maxAppels === undefined ? {} : { maxAppels: Number(maxAppels) }),
       dryRun,
