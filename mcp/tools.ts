@@ -512,19 +512,31 @@ function estDocumentLil(document: string): boolean {
 }
 
 /**
+ * Date `AAAA-MM-JJ` réellement existante : `Date.parse` normalise le 30 février,
+ * l'aller-retour ISO refuse une date décalée en silence.
+ */
+function dateValide(date: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return false;
+  const instant = Date.parse(`${date}T00:00:00Z`);
+  return !Number.isNaN(instant) && new Date(instant).toISOString().slice(0, 10) === date;
+}
+
+/**
  * Lit un article exact dans le corpus de `document`. Avec `date`, réservée à la
  * LIL, rend la version applicable à cette date depuis `versions.jsonl` (hors
- * ligne) ; sans date, le comportement est celui du corpus en vigueur.
+ * ligne) ; sans date, le comportement est celui du corpus en vigueur. Un alias
+ * de la LIL est résolu sur les deux chemins.
  */
 export function getArticle(
   rootDir: string,
   demande: { document: string; numero: string | number; date?: string },
 ): ResultatArticle {
-  if (demande.date === undefined) return articleEnVigueur(rootDir, demande);
-  // Un alias (« LIL », « loi 78-17 ») borne le périmètre au document canonique.
-  const perimetre = perimetreDe(rootDir, {
-    document: estDocumentLil(demande.document) ? LIL : demande.document,
-  });
+  const lil = estDocumentLil(demande.document);
+  const document = lil ? LIL : demande.document;
+  if (demande.date === undefined) {
+    return articleEnVigueur(rootDir, { document, numero: demande.numero });
+  }
+  const perimetre = perimetreDe(rootDir, { document });
   const absent = (message: string): ArticleAbsent => ({
     trouve: false,
     document: demande.document,
@@ -533,10 +545,10 @@ export function getArticle(
     perimetre,
   });
   const date = demande.date;
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date))) {
+  if (!dateValide(date)) {
     return absent(`Date attendue AAAA-MM-JJ ; reçu « ${date} ».`);
   }
-  if (!estDocumentLil(demande.document)) {
+  if (!lil) {
     return absent(
       `Le paramètre date n'est accepté que pour la LIL (${LIL}) ; ` +
         `document reçu : ${demande.document}.`,

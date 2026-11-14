@@ -212,6 +212,20 @@ function datesDeLaReponse(part: LegiPart): Set<string> {
 }
 
 /**
+ * Bornes des versions déjà rangées : une reprise doit pouvoir interroger les
+ * dates découvertes dans une réponse antérieure, pas seulement celles de la
+ * réponse courante.
+ */
+function datesDesVersions(versions: Iterable<VersionArticle>): Set<string> {
+  const dates = new Set<string>();
+  for (const version of versions) {
+    dates.add(version.date_debut);
+    if (version.date_fin !== null) dates.add(version.date_fin);
+  }
+  return dates;
+}
+
+/**
  * Range les articles d'une réponse dans la carte par identifiant. Un article
  * sans contenu visible est ignoré : aucun texte n'est inventé. Une version déjà
  * connue n'est pas remplacée.
@@ -264,7 +278,8 @@ export async function collecterHistorique(
   if (!estDate(dateCourante)) {
     throw new Error(`Date courante attendue AAAA-MM-JJ ; reçu « ${dateCourante} »`);
   }
-  const budget = options.budget ?? HISTORIQUE_BUDGET;
+  // Le plafond de la commande reste 120 : un `--budget` plus haut est ramené.
+  const budget = Math.min(options.budget ?? HISTORIQUE_BUDGET, HISTORIQUE_BUDGET);
   if (!Number.isInteger(budget) || budget <= 0) {
     throw new Error(`Budget attendu entier positif ; reçu « ${budget} »`);
   }
@@ -314,7 +329,10 @@ export async function collecterHistorique(
   }
 
   const dejaLues = new Set(blocPrecedent?.dates_lues ?? []);
-  const seed = courante === null ? new Set<string>() : datesDeLaReponse(courante);
+  const seed =
+    courante === null
+      ? datesDesVersions(versions.values())
+      : new Set([...datesDeLaReponse(courante), ...datesDesVersions(versions.values())]);
   const datesLues = new Set(dejaLues);
   if (courante !== null) datesLues.add(dateCourante);
 
@@ -349,19 +367,38 @@ export async function collecterHistorique(
     );
   }
 
-  for (const date of restantes) {
+  // Point fixe : chaque réponse datée peut révéler des bornes (dateFin d'une
+  // version applicable) absentes de la réponse courante ; elles entrent dans la
+  // file jusqu'à ce qu'aucune date inconnue ne subsiste. Sans cela, une date
+  // tombant dans un trou rendrait un article « inexistant » à tort.
+  const aLire = new Set(restantes);
+  while (aLire.size > 0) {
+    const date = [...aLire].sort(comparer)[0];
+    if (date === undefined) break;
+    aLire.delete(date);
+    if (datesLues.has(date)) continue;
+    let part: LegiPart;
     try {
-      const part = lireLegiPart(
+      part = lireLegiPart(
         await sessionRequise().consultLegiPart(compter, descripteur.textId, date),
       );
-      datesLues.add(date);
-      collecterReponse(part, descripteur, versions);
     } catch (error) {
       if (error instanceof PisteBudgetError) {
         budgetEpuise = true;
         break;
       }
       throw error;
+    }
+    datesLues.add(date);
+    collecterReponse(part, descripteur, versions);
+    for (const decouverte of datesDeLaReponse(part)) {
+      if (
+        decouverte >= depuis &&
+        decouverte !== dateCourante &&
+        !datesLues.has(decouverte)
+      ) {
+        aLire.add(decouverte);
+      }
     }
   }
 
@@ -434,7 +471,7 @@ async function main(argv: string[]): Promise<void> {
     `${resultat.versions} version(s) d'article, ${resultat.datesLues.length} date(s) lue(s), ` +
       `${resultat.appels} appel(s) consommé(s), depuis ${resultat.depuis}` +
       `${resultat.budgetEpuise ? " — budget épuisé, reprise à la prochaine passe" : ""}` +
-      `${dryRun ? " — dry-run, rien n'est écrit" : resultat.ecrit ? " — historique réécrit" : " — historique inchangé"}\n`,
+      `${dryRun ? " — dry-run, corpus et manifeste inchangés" : resultat.ecrit ? " — historique réécrit" : " — historique inchangé"}\n`,
   );
 }
 

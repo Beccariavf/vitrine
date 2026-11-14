@@ -178,6 +178,20 @@ describe("get_article daté pour la LIL", () => {
     assert.equal(article.trouve && article.texte, "Version en vigueur.");
     assert.equal(article.trouve && article.statut, "VIGUEUR");
     assert.equal(article.trouve && article.statut_application, "en_vigueur");
+
+    // L'alias résout le document sur les deux chemins, daté comme non daté.
+    const alias = getArticle(racine, { document: "LIL", numero: "8" });
+    assert.equal(alias.trouve && alias.ref, "LEGIARTI000000003");
+  });
+
+  it("refuse une date calendaire impossible sans la décaler", () => {
+    const racine = creerRacine({ depuis: "2010-01-01", versions: VERSIONS_ARTICLE_8 });
+
+    for (const date of ["2024-02-30", "2023-02-29", "2024-13-01"]) {
+      const absent = getArticle(racine, { document: LIL, numero: "8", date });
+      assert.equal(absent.trouve, false, date);
+      assert.match(absent.message, /Date attendue AAAA-MM-JJ/, date);
+    }
   });
 
   it("refuse le paramètre date sur un autre corpus", () => {
@@ -378,6 +392,49 @@ describe("la collecte de l'historique", () => {
     assert.equal(bloc.versions, 4);
     assert.deepEqual(bloc.dates_lues, ["2019-01-01", "2020-01-01", DATE_COURANTE]);
     assert.equal(bloc.consulte_le, DATE_COURANTE);
+  });
+
+  it("interroge les bornes découvertes jusqu'au point fixe", async () => {
+    const racine = racineTemporaire();
+    const courante = reponsePart("LEGITEXT000006068624_25-05-2018", "2018-05-25", [
+      article("LEGIARTI_ABROGE", "2", "Article 2 abrogé.", "2016-10-09", "2018-05-25"),
+      article("LEGIARTI_13_CUR", "13", "Article 13 en 2018.", "2018-05-25"),
+    ]);
+    const parts = new Map<string, unknown>([
+      [
+        "2016-10-09",
+        reponsePart("LEGITEXT000006068624_09-10-2016", "2016-10-09", [
+          article("LEGIARTI_13_2016", "13", "Article 13 en 2016.", "2016-10-09", "2017-01-22"),
+        ]),
+      ],
+      [
+        "2017-01-22",
+        reponsePart("LEGITEXT000006068624_22-01-2017", "2017-01-22", [
+          article("LEGIARTI_13_2017", "13", "Article 13 de 2017.", "2017-01-22", "2018-05-25"),
+        ]),
+      ],
+      ["2018-05-25", courante],
+    ]);
+    const appelees: string[] = [];
+
+    const resultat = await collecterHistorique({
+      rootDir: racine,
+      dateCourante: DATE_COURANTE,
+      reponseCourante: courante,
+      fetchImpl: fetchParDate(parts, appelees),
+      config: CONFIG,
+    });
+
+    // 2017-01-22 n'est pas dans la graine : il vient de la dateFin vue au
+    // 2016-10-09 et doit être interrogé, sinon l'article 13 serait dit absent.
+    assert.deepEqual(appelees, ["2016-10-09", "2017-01-22", "2018-05-25"]);
+    assert.ok(lireVersionsHistorique(racine).some((v) => v.identifiant === "LEGIARTI_13_2017"));
+    assert.equal(resultat.budgetEpuise, false);
+
+    const rendu = getArticle(racine, { document: LIL, numero: "13", date: "2017-06-01" });
+    assert.equal(rendu.trouve, true);
+    assert.equal(rendu.trouve && rendu.ref, "LEGIARTI_13_2017");
+    assert.equal(rendu.trouve && rendu.texte, "Article 13 de 2017.");
   });
 
   it("rejoue sans nouvel appel grâce aux dates lues", async () => {
