@@ -3,7 +3,7 @@
  * La forme est volontairement plate : un fichier JSON, aucun couplage au flux source.
  */
 export type Entry = {
-  /** `sha256` de l'identité canonique de l'URL, tronqué à 16 hex. Stable d'une exécution à l'autre. */
+  /** Identifiant stable, dérivé de l'identité canonique de la source (URL, document). */
   id: string;
   /** Titre d'affichage, tel que publié par la source ou reconstruit depuis son titre officiel. */
   title: string;
@@ -21,7 +21,7 @@ export type Entry = {
   themes: string[];
   /** Identifiant de la source : `cnil`, `cjeu`, etc. */
   source: string;
-  /** Document du corpus visé, quand la source en désigne un (`legi` : `LEGITEXT…`). */
+  /** Document du corpus visé, quand la source en désigne un (`legi` : `LEGITEXT…`, `constit` : `CONSTEXT…`). */
   document?: string;
   /** Identifiant de la version publiée (`LEGIARTI…`, `LEGITEXT…_JJ-MM-AAAA`, consolidation CELEX) ; `legi` et `eurlex`. */
   version?: string;

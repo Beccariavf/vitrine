@@ -26,7 +26,7 @@ import type { FetchTexte } from "../../mcp/corpus/dila.ts";
 import type { FetchFlux } from "../../mcp/corpus/tar.ts";
 import { listerArchives } from "../../mcp/corpus/dila.ts";
 import { lireEntreesConstit } from "../../mcp/corpus/constit/archive.ts";
-import { classerDecision, parseDecisionConstit } from "../../mcp/corpus/constit/parse.ts";
+import { classerDecision, decisionsUniques, parseDecisionConstit } from "../../mcp/corpus/constit/parse.ts";
 import type { DecisionConstit, DescripteurConstit } from "../../mcp/corpus/constit/parse.ts";
 import { joursEntre } from "../../mcp/corpus/constit/sync.ts";
 import { indexerDocumentsCorpus } from "../../mcp/corpus/veille.ts";
@@ -161,7 +161,7 @@ export type ResultatPasseConstit = {
 };
 
 /** Dernière décision lue dans un manifeste de corpus, ou `null`. */
-export function derniereDecisionDuManifeste(manifeste: ManifesteLu | null): string | null {
+function derniereDecisionDuManifeste(manifeste: ManifesteLu | null): string | null {
   const date = manifeste?.couverture?.archive?.derniere_decision;
   return typeof date === "string" && DATE_ISO.test(date) ? date : null;
 }
@@ -215,8 +215,8 @@ export async function passeConstit(
     throw new Error(`Archive ${archive} sans corps lisible en flux`);
   }
 
-  /** Décisions retenues, par numéro + nature ; l'identifiant le plus récent gagne. */
-  const retenues = new Map<string, DecisionConstit>();
+  /** Décisions retenues de l'archive, avant dédoublonnage par numéro + nature. */
+  const retenues: DecisionConstit[] = [];
   let documentsLus = 0;
   let derniere: string | null = null;
 
@@ -238,13 +238,12 @@ export async function passeConstit(
     }
 
     if (!classerDecision(decision, descripteur).retenue) continue;
-    const cle = `${decision.numero} ${decision.nature}`;
-    const deja = retenues.get(cle);
-    if (deja === undefined || decision.id > deja.id) retenues.set(cle, decision);
+    retenues.push(decision);
   }
 
+  const { decisions } = decisionsUniques(retenues);
   const documents = indexerDocumentsCorpus(rootDir).get("constit") ?? new Set<string>();
-  const entries = [...retenues.values()]
+  const entries = decisions
     .sort((gauche, droite) => gauche.id.localeCompare(droite.id))
     .filter((decision) => !documents.has(decision.id))
     .map((decision) => entreeDeDecision(decision, datePasse));
@@ -256,7 +255,7 @@ export async function passeConstit(
     warnings: rapport.warnings,
     notes: [
       `${SOURCE_ID} : archive ${archive}, ${documentsLus} décision(s) lue(s), ` +
-        `${retenues.size} retenue(s), ${entries.length} entrée(s) de veille`,
+        `${decisions.length} retenue(s), ${entries.length} entrée(s) de veille`,
       ...rapport.notes,
     ],
   };

@@ -26,11 +26,12 @@ import { lireEntreesConstit } from "./archive.ts";
 import {
   ECARTES_VIDES,
   classerDecision,
+  decisionsUniques,
   natureRetenue,
   parseDecisionConstit,
   unitesConstit,
 } from "./parse.ts";
-import type { DescripteurConstit, Ecartes } from "./parse.ts";
+import type { DecisionConstit, DescripteurConstit, Ecartes } from "./parse.ts";
 import type { FetchFlux } from "../tar.ts";
 
 const ICI = dirname(fileURLToPath(import.meta.url));
@@ -394,11 +395,10 @@ export async function syncConstit(
 
   const ecartes: Ecartes = { ...ECARTES_VIDES };
   const naturesEcartees: Comptes = {};
-  /** Décisions retenues, par numéro + nature ; l'identifiant le plus récent gagne. */
-  const retenues = new Map<string, ReturnType<typeof parseDecisionConstit>>();
+  /** Décisions retenues, avant dédoublonnage par numéro + nature. */
+  const retenues: DecisionConstit[] = [];
   let documentsLus = 0;
   let documentsDcQpc = 0;
-  let doublons = 0;
   let derniereDecisionArchive: string | null = null;
 
   for await (const entree of lireEntreesConstit(createReadStream(cheminArchive), {
@@ -427,19 +427,11 @@ export async function syncConstit(
       continue;
     }
 
-    const cle = `${decision.numero} ${decision.nature}`;
-    const deja = retenues.get(cle);
-    if (deja === undefined) {
-      retenues.set(cle, decision);
-    } else {
-      doublons += 1;
-      if (decision.id > deja.id) retenues.set(cle, decision);
-    }
+    retenues.push(decision);
   }
 
-  const retenuesTriees = [...retenues.values()].sort((gauche, droite) =>
-    gauche.id.localeCompare(droite.id),
-  );
+  const { decisions: uniques, doublons } = decisionsUniques(retenues);
+  const retenuesTriees = uniques.sort((gauche, droite) => gauche.id.localeCompare(droite.id));
   const unites: Unite[] = [];
   const parNature: Comptes = {};
   let dateMin: string | null = null;

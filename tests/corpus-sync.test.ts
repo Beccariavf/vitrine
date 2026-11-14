@@ -126,7 +126,8 @@ function uniteConstit(document: string): Unite {
   };
 }
 
-function ecrireCorpus(root: string, corpus: string, unites: Unite[]): void {  const dossier = join(root, "data", "corpus", corpus);
+function ecrireCorpus(root: string, corpus: string, unites: Unite[]): void {
+  const dossier = join(root, "data", "corpus", corpus);
   mkdirSync(dossier, { recursive: true });
   writeFileSync(
     join(dossier, "unites.jsonl"),
@@ -646,7 +647,8 @@ describe("synchronisation du corpus", () => {
     }
   });
 
-  it("ne relance aucune source quand le document est déjà présent", async () => {    const root = racine();
+  it("ne relance aucune source quand le document est déjà présent", async () => {
+    const root = racine();
     try {
       ecrireCorpus(root, "cnil", [uniteCnil("CNILTEXT000000000001")]);
       ecrireEntree(root, entreeCnil("entree-presente", "https://www.cnil.fr/fr/presente"));
