@@ -1,0 +1,34 @@
+{
+  "document": "32025R2518",
+  "titre": "Règlement (UE) 2025/2518 du Parlement européen et du Conseil du 26 novembre 2025 établissant des règles de procédure supplémentaires relatives à l'application du règlement (UE) 2016/679",
+  "langue": "fra",
+  "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32025R2518",
+  "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+  "date_acte": "2025-11-26",
+  "date_publication": "2025-12-12",
+  "date_debut": "2027-04-02",
+  "date_fin": null,
+  "statut": "en_vigueur",
+  "version": "32025R2518",
+  "date_consolidation": null,
+  "snapshot": "aaeefdc7f37f609f319dedf37b357174f7b396b5761575996bcbec1c26e2a936.xhtml",
+  "unites": 105,
+  "couverture": {
+    "source": "CELLAR — publications.europa.eu/resource/celex/32025R2518",
+    "date_publication": "2025-12-12",
+    "bornes": {
+      "debut": "2027-04-02",
+      "fin": null
+    },
+    "statut": "en_vigueur",
+    "types_retenus": [
+      "article",
+      "considérant"
+    ],
+    "exclusions": [],
+    "comptes": {
+      "articles": 37,
+      "considerants": 68
+    }
+  }
+}

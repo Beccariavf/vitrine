@@ -241,10 +241,19 @@ export type ResultatRechercheOutil = {
   perimetre: Perimetre;
 };
 
-/** `Article 17`, `art. 17`, `17` : ne garde que le nombre, sans zéro de tête. */
+/** Suffixes latins d'un article inséré : `15 bis`, `1 ter`. */
+const SUFFIXE_ARTICLE = "bis|ter|quater|quinquies|sexies|septies|octies|nonies|decies";
+
+/**
+ * `Article 17`, `art. 17`, `17` : le nombre, sans zéro de tête, suivi de son
+ * suffixe latin (`15 bis`) ; un article inséré n'est jamais confondu avec
+ * l'article qu'il suit.
+ */
 function normaliserNumero(numero: string | number): string | null {
-  const chiffres = /\d+/.exec(String(numero));
-  return chiffres === null ? null : String(Number(chiffres[0]));
+  const trouve = new RegExp(`(\\d+)(?:\\s*(${SUFFIXE_ARTICLE})\\b)?`, "i").exec(String(numero));
+  if (trouve === null || trouve[1] === undefined) return null;
+  const base = String(Number(trouve[1]));
+  return trouve[2] === undefined ? base : `${base} ${trouve[2].toLowerCase()}`;
 }
 
 /** Ce qu'il faut d'une unité rendue pour lire son statut d'application. */
@@ -293,9 +302,12 @@ function avecCitations(rootDir: string, passages: Passage[]): Passage[] {
   });
 }
 
-/** Numéro cité par « article N », « art. N » ou « art N » ; `null` sinon. */
+/** Numéro cité par « article N », « art. N » ou « art N », suffixe compris (« 15 bis ») ; `null` sinon. */
 export function referenceExacte(question: string): string | null {
-  const reference = /\b(?:article|art\.?)\s*(\d+)/i.exec(question);
+  const reference = new RegExp(
+    `\\b(?:article|art\\.?)\\s*(\\d+(?:\\s*(?:${SUFFIXE_ARTICLE})\\b)?)`,
+    "i",
+  ).exec(question);
   return reference === null ? null : (reference[1] ?? "");
 }
 
@@ -344,11 +356,49 @@ const ALIAS_LIL_TEXTE: readonly RegExp[] = [
   /\bloi (?:n )?78 17\b/,
 ];
 
+/**
+ * Actes de l'Union qui encadrent le RGPD : leurs alias sur la forme normalisée
+ * (jetons) et compacte (CELEX).
+ */
+const ALIAS_ACTES_UE: ReadonlyArray<{ document: string; texte: readonly RegExp[]; compact: readonly RegExp[] }> = [
+  {
+    document: "32002L0058",
+    texte: [
+      /\be ?privacy\b/,
+      /\bdirective vie privee et communications electroniques\b/,
+      /\b2002 58\b/,
+    ],
+    compact: [/32002l0058/],
+  },
+  {
+    document: "32016L0680",
+    texte: [/\bdirective police(?: justice)?\b/, /\b2016 680\b/],
+    compact: [/32016l0680/],
+  },
+  {
+    document: "32018R1725",
+    texte: [/\beudpr\b/, /\b2018 1725\b/],
+    compact: [/32018r1725/],
+  },
+  {
+    document: "32025R2518",
+    texte: [/\breglement procedural\b/, /\b2025 2518\b/],
+    compact: [/32025r2518/],
+  },
+];
+
+/** « règlement procédural RGPD » nomme le règlement 2025/2518, pas le RGPD. */
+const NOM_PROCEDURAL_RGPD = /\breglement procedural (?:du |de l )?(?:rgpd|r g p d)\b/g;
+
 /** Nom lisible d'un corpus connu, pour les messages de refus. */
 const NOMS_DOCUMENTS: Record<string, string> = {
   "32016R0679": "RGPD",
   "32024R1689": "AI Act",
   LEGITEXT000006068624: "LIL",
+  "32002L0058": "ePrivacy",
+  "32016L0680": "directive police-justice",
+  "32018R1725": "règlement 2018/1725",
+  "32025R2518": "règlement procédural RGPD",
 };
 
 function libelleDocument(document: string): string {
@@ -364,10 +414,12 @@ function libelleDocument(document: string): string {
 export function documentsNommes(question: string): string[] {
   const texte = normaliserTexte(question);
   const compact = compacter(texte);
+  const texteRgpd = texte.replace(NOM_PROCEDURAL_RGPD, " ");
+  const compactRgpd = compacter(texteRgpd);
   const documents = new Set<string>();
   if (
-    ALIAS_RGPD_TEXTE.some((alias) => alias.test(texte)) ||
-    ALIAS_RGPD_COMPACT.some((alias) => alias.test(compact))
+    ALIAS_RGPD_TEXTE.some((alias) => alias.test(texteRgpd)) ||
+    ALIAS_RGPD_COMPACT.some((alias) => alias.test(compactRgpd))
   ) {
     documents.add("32016R0679");
   }
@@ -379,6 +431,11 @@ export function documentsNommes(question: string): string[] {
   }
   if (ALIAS_LIL_TEXTE.some((alias) => alias.test(texte))) {
     documents.add("LEGITEXT000006068624");
+  }
+  for (const acte of ALIAS_ACTES_UE) {
+    if (acte.texte.some((alias) => alias.test(texte)) || acte.compact.some((alias) => alias.test(compact))) {
+      documents.add(acte.document);
+    }
   }
   return [...documents];
 }
@@ -465,7 +522,7 @@ export function corpusDeNiveau(demande: { corpus?: string; document?: string }):
 export type SearchDemande = {
   question: string;
   k?: number;
-  /** Restreint la recherche à une collection : `rgpd`, `aiact`, `cnil`, `lil`, `ce`, `cepd`, `cc`, `cjue`. */
+  /** Restreint la recherche à une collection : `rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `cnil`, `lil`, `ce`, `cepd`, `cc`, `cjue`. */
   corpus?: string;
   /** Restreint la recherche à un document précis. */
   document?: string;

@@ -547,12 +547,14 @@ describe("la présence des documents cités", () => {
       assert.equal(absenceDuDocument(root, "LEGITEXT000006068624"), null);
       assert.equal(
         absenceDuDocument(root, "32002L0058"),
-        "ePrivacy (32002L0058) est absent de mon corpus (périmètre : RGPD, AI Act, LIL, CNIL, " +
+        "ePrivacy (32002L0058) est absent de mon corpus (périmètre : RGPD, AI Act, ePrivacy, " +
+    "directive 2016/680, règlement 2018/1725, règlement procédural RGPD, LIL, CNIL, " +
           "Conseil d'État, CEPD, Cour de cassation, CJUE).",
       );
       assert.equal(
         absenceDuDocument(root, " 32002l0058 "),
-        "ePrivacy (32002L0058) est absent de mon corpus (périmètre : RGPD, AI Act, LIL, CNIL, " +
+        "ePrivacy (32002L0058) est absent de mon corpus (périmètre : RGPD, AI Act, ePrivacy, " +
+    "directive 2016/680, règlement 2018/1725, règlement procédural RGPD, LIL, CNIL, " +
           "Conseil d'État, CEPD, Cour de cassation, CJUE).",
       );
     } finally {
@@ -560,17 +562,23 @@ describe("la présence des documents cités", () => {
     }
   });
 
-  it("tient sur le corpus réel : RGPD et LIL présents, les six autres absents", () => {
+  it("tient sur le corpus réel : RGPD, LIL et actes UE présents, les trois autres absents", () => {
     const root = fileURLToPath(new URL("..", import.meta.url));
     const presents = documentsPresents(root);
 
-    assert.equal(presents.has("32016R0679"), true);
-    assert.equal(presents.has("LEGITEXT000006068624"), true);
-    for (const absent of [
-      "31995L0046",
+    for (const present of [
+      "32016R0679",
+      "LEGITEXT000006068624",
       "32002L0058",
       "32016L0680",
       "32018R1725",
+      "32025R2518",
+    ]) {
+      assert.equal(presents.has(present), true, present);
+      assert.equal(absenceDuDocument(root, present), null, present);
+    }
+    for (const absent of [
+      "31995L0046",
       "LEGITEXT000006070987",
       "LEGITEXT000006070719",
     ]) {

@@ -94,6 +94,8 @@ Comment le projet est testé : les couches, les outils et les conventions. Où v
 - Les fixtures de flux sont des captures réelles ; les fixtures HTML sont des captures réduites des pages CNIL, avec leurs classes et guillemets d'origine.
 - Exception : `tests/fixtures/eurlex/rgpd.xhtml` est la capture intégrale du RGPD (876 859 octets, 99 ancres `art_N`, 173 `rct_N`), octet pour octet le snapshot `data/raw/6e/6e6495….xhtml`, sans réduction, parce que le parseur vérifie ces comptes et que le corpus committé doit en sortir à l'identique.
 - Exception : `tests/fixtures/eurlex/aiact.xhtml` est la capture intégrale de l'AI Act (1 383 324 octets, 113 `art_N`, 180 `rct_N`, 13 chapitres), même raison : le parseur vérifie 113/180 et `data/corpus/aiact/` doit en sortir à l'identique.
+- Exception : `tests/fixtures/eurlex/eprivacy-consolide.xhtml` et `police-consolide.xhtml` sont les captures intégrales des versions consolidées `02002L0058-20091219` et `02016L0680-20160504`, octet pour octet les snapshots de `data/raw/`, même raison.
+- Unitaire : actes de l'Union (`tests/actes-ue.test.ts`) : descripteurs version/consolidation, `parseConsolide` (23 + 49 pour ePrivacy, `15 bis`, aucun marqueur ▼►◄, chapitres de 2016/680), manifeste à `version`, `date_consolidation` et exclusions, `get_article` qui distingue `15` de `15 bis`, référence exacte d'un article inséré, alias (le règlement procédural RGPD ne nomme pas le RGPD).
 - L'index vectoriel n'est jamais une fixture : les tests le construisent dans une racine temporaire avec un embedder factice.
 - Un test par comportement observable.
 - Les valeurs figées (identifiants, hashes) sont calculées indépendamment du code testé, jamais comparées à leur propre sortie.
@@ -106,7 +108,7 @@ Comment le projet est testé : les couches, les outils et les conventions. Où v
 
 ## Manuel
 
-- `npm run corpus:build` : lit tous les descripteurs et écrit `data/corpus/{rgpd,aiact}/` (réseau) ; `--document <corpus>` n'en construit qu'un.
+- `npm run corpus:build` : lit tous les descripteurs et écrit `data/corpus/{rgpd,aiact,eprivacy,police,eudpr,rgpdproc}/` (réseau) ; `--document <corpus>` n'en construit qu'un.
 - `npm run corpus:index` : construit ou met à jour `data/corpus/index/index.db` (Ollama et `leoipulsar/harrier-0.6b`) ; un second passage sur un corpus inchangé embarque zéro unité et laisse les vecteurs identiques.
 - `npm run corpus:sync -- --dry-run` : la passe sans écrire ; elle nomme la fraîcheur, les documents manquants et les sources qui seraient lancées. Sans `--dry-run`, la commande appelle le réseau et Ollama, réindexe par delta et écrit `data/corpus/sync.json`.
 - `npm run mcp:smoke` : vérifie 1024 dimensions et la norme 1 auprès du vrai Ollama.

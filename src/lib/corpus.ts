@@ -17,6 +17,10 @@ export type SourceCorpus = {
 const LIBELLES: ReadonlyArray<readonly [string, string]> = [
   ["rgpd", "RGPD"],
   ["aiact", "AI Act"],
+  ["eprivacy", "Directive ePrivacy"],
+  ["police", "Directive police-justice"],
+  ["eudpr", "Règlement 2018/1725"],
+  ["rgpdproc", "Règlement procédural RGPD"],
   ["lil", "Loi Informatique et Libertés"],
   ["cnil", "CNIL"],
   ["cepd", "CEPD"],
