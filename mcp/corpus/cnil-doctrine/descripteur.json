@@ -1,0 +1,40 @@
+{
+  "corpus": "cnil_doctrine",
+  "nom": "Doctrine CNIL",
+  "titre": "Guides, référentiels et listes AIPD de la CNIL",
+  "domaine": "www.cnil.fr",
+  "source": "Source : CNIL – https://www.cnil.fr",
+  "mention": "extrait non modifié · CC BY-ND 4.0",
+  "licence": "CC BY-ND 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+  "tentatives": 3,
+  "delai_ms": 1000,
+  "pages_reference": [
+    {
+      "type": "guide",
+      "url": "https://www.cnil.fr/fr/mediatheque?field_scald_collection_tid=29",
+      "pages_max": 8,
+      "liens": "pdf"
+    },
+    {
+      "type": "guide",
+      "url": "https://www.cnil.fr/fr/guides-aipd",
+      "pages_max": 1,
+      "liens": "pdf"
+    },
+    {
+      "type": "referentiel",
+      "url": "https://www.cnil.fr/fr/autres-referentiels",
+      "pages_max": 10,
+      "liens": "pdf"
+    },
+    {
+      "type": "liste_aipd",
+      "url": "https://www.cnil.fr/fr/listes-des-traitements-pour-lesquels-une-aipd-est-requise-ou-non",
+      "pages_max": 1,
+      "liens": "page",
+      "motif_page": "aipd",
+      "motif_pdf": "liste-traitements-aipd"
+    }
+  ]
+}
