@@ -77,6 +77,8 @@ export type DocumentG29Manifeste = {
   document?: string;
   /** Type du document retenu, quand il l'est. */
   type?: TypeDocument;
+  /** Vrai quand le WP est représenté au corpus par son successeur EDPB. */
+  successeur?: boolean;
   raison?: string;
 };
 
@@ -85,7 +87,7 @@ export type BlocG29 = {
   source: string;
   liste_le: string;
   documents: DocumentG29Manifeste[];
-  comptes: { listes: number; retenus: number; ecartes: number };
+  comptes: { listes: number; retenus: number; successeurs: number; ecartes: number };
   /** Renseigné quand la page n'a pas pu être lue. */
   erreur?: string;
 };
@@ -342,7 +344,14 @@ function rapprocherG29(
         ? undefined
         : parNumero.get(`${famille}|${item.numero}`));
     if (retenu !== undefined) {
-      return { ...item, statut: "retenu", document: retenu.slug, type: retenu.type };
+      const successeur = item.wp !== null && retenu.numero.toUpperCase() !== item.wp.toUpperCase();
+      return {
+        ...item,
+        statut: "retenu",
+        document: retenu.slug,
+        type: retenu.type,
+        ...(successeur ? { successeur: true } : {}),
+      };
     }
     const existant = ecartes.find(
       (ecart) =>
@@ -382,6 +391,7 @@ function rapprocherG29(
       comptes: {
         listes: documents.length,
         retenus: documents.filter((document) => document.statut === "retenu").length,
+        successeurs: documents.filter((document) => document.successeur === true).length,
         ecartes: documents.filter((document) => document.statut === "ecarte").length,
       },
     },
@@ -712,7 +722,7 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
         source: descripteur.url_endossement,
         liste_le: dateListe,
         documents: [],
-        comptes: { listes: 0, retenus: 0, ecartes: 0 },
+        comptes: { listes: 0, retenus: 0, successeurs: 0, ecartes: 0 },
         erreur: messageErreur(error),
       };
     }

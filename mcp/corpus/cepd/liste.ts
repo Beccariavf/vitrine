@@ -661,22 +661,25 @@ export function numeroDepuisUrlG29(url: string): string | null {
  */
 export function listerDocumentsG29(html: string, pageUrl: string): DocumentG29Liste[] {
   const documents = new Map<string, DocumentG29Liste>();
-  const motif = /<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a\s*>/gi;
-  for (let trouve = motif.exec(html); trouve !== null; trouve = motif.exec(html)) {
-    const texte = texteVisible(trouve[2] ?? "").replace(/\s+/g, " ").trim();
-    if (texte === "" || texte.length > 400) continue;
-    if (
-      !/^(?:guidelines?|recommendations?|position paper|working document|adequacy referential|endorsement)\b/i.test(
-        texte,
-      ) &&
-      !/\bwp\s?\d{2,4}\b/i.test(texte)
-    ) {
-      continue;
-    }
-    if (/endorsement of gdpr|legacy|read more|télécharger|download/i.test(texte)) continue;
+  // La page liste chaque document dans un `<li>` ; le numéro WP est parfois
+  // dans un `<strong>` et le lien pointe son successeur EDPB. Lire le bloc
+  // entier garde le numéro WP et la cible réelle.
+  const motif = /<li\b[^>]*>([\s\S]*?)<\/li>/gi;
+  for (const bloc of html.matchAll(motif)) {
+    const contenu = bloc[1] ?? "";
+    const complet = texteVisible(contenu).replace(/\s+/g, " ").trim();
+    if (complet === "" || complet.length > 600) continue;
+    if (/endorsement of gdpr|legacy|read more|télécharger|download/i.test(complet)) continue;
+    const wp = /\bwp\s?(\d{2,4})\b/i.exec(complet)?.[1];
+    const reconnu =
+      /^(?:guidelines?|recommendations?|position paper|working document|adequacy referential)\b/i.test(
+        complet,
+      );
+    if (wp === undefined && !reconnu) continue;
+    const ancre = /<a\b[^>]*href=["']([^"']+)["']/i.exec(contenu);
     let url: URL;
     try {
-      url = new URL(normaliserUrlWayback(trouve[1] ?? ""), pageUrl);
+      url = new URL(normaliserUrlWayback(ancre?.[1] ?? pageUrl), pageUrl);
     } catch {
       continue;
     }
@@ -687,15 +690,15 @@ export function listerDocumentsG29(html: string, pageUrl: string): DocumentG29Li
       : hote.endsWith("ec.europa.eu") || hote.endsWith("europa.eu")
         ? "commission"
         : "autre";
-    const wp = /\bwp\s?(\d{2,4})\b/i.exec(texte)?.[1];
+    const titre = (complet.split(/\bsuperseded by\b/i)[0] ?? complet).trim();
     const document: DocumentG29Liste = {
-      titre: texte,
+      titre,
       url: url.href,
       wp: wp === undefined ? null : `WP${String(Number(wp))}`,
       numero: numeroDepuisUrlG29(url.href),
       hebergement,
     };
-    const cle = `${document.wp ?? ""}|${document.titre.toLowerCase()}`;
+    const cle = document.wp ?? titre.toLowerCase();
     if (!documents.has(cle)) documents.set(cle, document);
   }
   return [...documents.values()];

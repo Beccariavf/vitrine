@@ -126,17 +126,20 @@ export function estG29(titre: string, url: string, html: string): boolean {
 
 /**
  * Vrai quand la page de document porte la mention « Public consultation
- * ongoing/closed » sans « Final version ». La zone lue va du titre au bloc des
- * documents téléchargeables : le pied de page et les documents voisins ne
- * comptent pas. Cette mention est le seul signal de version de consultation
- * pour les pages dont le titre ne le dit pas.
+ * ongoing/closed » sans version finale. La zone lue va du titre au bloc des
+ * documents voisins et comprend donc les PDF téléchargeables : « Version 2.0 »
+ * ou « v2 (final version) » y tranche en faveur d'un texte adopté, tandis
+ * qu'une page de consultation ne sert qu'une v1. Le pied de page ne compte pas.
  */
 export function consultationDepuisPage(html: string): boolean {
   const debut = html.search(/document-full__title|<h1/i);
   if (debut < 0) return false;
-  const fin = html.indexOf("Downloadable documents", debut);
-  const zone = html.slice(debut, fin > debut ? fin : debut + 20_000);
-  if (/Final version|after public consultation/i.test(zone)) return false;
+  const fins = ["Related documents", "All documents"]
+    .map((marqueur) => html.indexOf(marqueur, debut))
+    .filter((index) => index > debut);
+  const fin = fins.length === 0 ? debut + 25_000 : Math.min(...fins);
+  const zone = texteVisible(html.slice(debut, fin));
+  if (/final version|version\s+2(?:\.0)?\b/i.test(zone)) return false;
   return /Public consultation (?:ongoing|closed)/i.test(zone);
 }
 

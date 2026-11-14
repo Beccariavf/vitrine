@@ -224,20 +224,24 @@ describe("la liste CEPD", () => {
 
   it("lit la liste d'endossement du G29 et l'hébergement de chaque document", () => {
     const html = [
-      '<a href="/our-work-tools/our-documents/guidelines/edpb-guidelines-052020-consent-under-regulation-2016679_en">',
-      "Guidelines on consent under Regulation 2016/679, WP259 rev.01</a>",
-      '<a href="http://ec.europa.eu/newsroom/article29/item-detail.cfm?item_id=611236">',
-      "Guidelines on Data Protection Impact Assessment (DPIA), WP248</a>",
-      '<a href="https://www.edpb.europa.eu/system/files/endorsement.pdf">',
-      "Endorsement of GDPR WP29 Documents</a>",
-      '<a href="/about-edpb/legacy-art-29-working-party_en">Legacy: Art. 29 Working Party</a>',
+      "<ul>",
+      '<li><a href="/our-work-tools/our-documents/guidelines/edpb-guidelines-052020-consent-under-regulation-2016679_en">',
+      "Guidelines on consent under Regulation 2016/679, WP259 rev.01</a></li>",
+      '<li><a href="http://ec.europa.eu/newsroom/article29/item-detail.cfm?item_id=611236">',
+      "Guidelines on Data Protection Impact Assessment (DPIA), WP248</a></li>",
+      "<li><strong>Working Document Setting Forth a Co-Operation Procedure, WP 263 rev.01</strong>",
+      " superseded by ",
+      '<a href="https://www.edpb.europa.eu/our-work-tools/our-documents/procedure/edpb-document-cooperation_en">',
+      "EDPB Document Setting Forth a Co-Operation procedure</a></li>",
+      '<li><a href="/about-edpb/legacy-art-29-working-party_en">Legacy: Art. 29 Working Party</a></li>',
+      "</ul>",
     ].join("");
     const items = listerDocumentsG29(
       html,
       "https://www.edpb.europa.eu/endorsed-wp29-guidelines_en",
     );
 
-    assert.equal(items.length, 2);
+    assert.equal(items.length, 3);
     assert.deepEqual(items[0], {
       titre: "Guidelines on consent under Regulation 2016/679, WP259 rev.01",
       url: `${BASE}/our-work-tools/our-documents/guidelines/edpb-guidelines-052020-consent-under-regulation-2016679_en`,
@@ -248,6 +252,9 @@ describe("la liste CEPD", () => {
     assert.equal(items[1]?.wp, "WP248");
     assert.equal(items[1]?.hebergement, "commission");
     assert.equal(items[1]?.numero, null);
+    assert.equal(items[2]?.wp, "WP263");
+    assert.equal(items[2]?.titre.includes("superseded"), false);
+    assert.equal(items[2]?.hebergement, "cepd");
   });
 
   it("ne garde du sitemap que les URL _fr et _en des rubriques retenues", async () => {
@@ -705,8 +712,17 @@ describe("le PDF CEPD", () => {
       "<p>Accéder à la consultation publique correspondante</p>",
       "<h2>Downloadable documents</h2>",
     ].join("");
+    const finaleV2 = [
+      '<h1 id="document-full-title">Guidelines 1/2024</h1>',
+      '<p>Guideline 10 November 2026 Public consultation closed</p>',
+      "<h2>Downloadable documents</h2>",
+      "<p>Guidelines 1/2024 - Version 2.0</p>",
+      '<a href="/system/files/g012024_v2_en.pdf">PDF</a>',
+      "<h2>Related documents</h2>",
+    ].join("");
     assert.equal(consultationDepuisPage(projet), true);
     assert.equal(consultationDepuisPage(finale), false);
+    assert.equal(consultationDepuisPage(finaleV2), false);
 
     const prepare = preparerDocument(
       enrichirDocument(
@@ -928,21 +944,30 @@ describe("la synchronisation CEPD", () => {
     );
     assert.equal(manifeste.documents_sans_texte_ecartes, 10);
     assert.equal(manifeste.versions_ecartees, 3);
-    assert.equal(manifeste.couverture.documents_ecartes.length, 21);
+    assert.equal(manifeste.couverture.documents_ecartes.length, 23);
     assert.equal(
       manifeste.couverture.documents_ecartes.filter(
         (document) => document.source === "endossement",
       ).length,
-      8,
+      10,
     );
     assert.deepEqual(manifeste.langues_pdf, { fr: 154, en: 174, autre: 0 });
     assert.equal(manifeste.couverture.periode.date_min, "2018-04-11");
     assert.equal(manifeste.couverture.periode.date_max, "2026-11-10");
     assert.match(manifeste.licence, /Régime ouvert/);
-    assert.deepEqual(manifeste.g29?.comptes, { listes: 14, retenus: 5, ecartes: 9 });
+    assert.deepEqual(manifeste.g29?.comptes, {
+      listes: 16,
+      retenus: 5,
+      successeurs: 4,
+      ecartes: 11,
+    });
     assert.equal(
       manifeste.g29?.documents.find((document) => document.wp === "WP260")?.type,
       "g29_repris",
+    );
+    assert.equal(
+      manifeste.g29?.documents.find((document) => document.wp === "WP244")?.successeur,
+      true,
     );
     assert.equal(
       manifeste.documents_types["guidelines-052020-on-consent-under-regulation-2016679"],
@@ -950,13 +975,13 @@ describe("la synchronisation CEPD", () => {
     );
     assert.equal(
       unites.filter((unite) => unite.statut === "projet").length,
-      1634,
+      1268,
     );
     assert.equal(
       new Set(
         unites.filter((unite) => unite.statut === "projet").map((unite) => unite.document),
       ).size,
-      9,
+      7,
     );
     assert.ok(
       manifeste.couverture.documents_ecartes.every(
@@ -1030,10 +1055,12 @@ describe("la synchronisation CEPD", () => {
     const avis =
       `${BASE}/documents/opinion-of-the-board-art-64/opinion-052020-on-a-draft-decision_en`;
     const endossement = [
-      '<a href="/our-work-tools/our-documents/guidelines/edpb-guidelines-052020-consent-under-regulation-2016679_en">',
-      "Guidelines on consent under Regulation 2016/679, WP259 rev.01</a>",
-      '<a href="https://ec.europa.eu/newsroom/article29/items/611236">',
-      "Guidelines on Data Protection Impact Assessment (DPIA), WP248</a>",
+      "<ul>",
+      '<li><a href="/our-work-tools/our-documents/guidelines/edpb-guidelines-052020-consent-under-regulation-2016679_en">',
+      "Guidelines on consent under Regulation 2016/679, WP259 rev.01</a></li>",
+      '<li><a href="https://ec.europa.eu/newsroom/article29/items/611236">',
+      "Guidelines on Data Protection Impact Assessment (DPIA), WP248</a></li>",
+      "</ul>",
     ].join("");
     const pages = new Map<string, string>([
       [DESCRIPTEUR.url_sitemap, SITEMAP_INDEX],
@@ -1077,8 +1104,10 @@ describe("la synchronisation CEPD", () => {
 
       assert.equal(manifeste.g29?.comptes.listes, 2);
       assert.equal(manifeste.g29?.comptes.retenus, 1);
+      assert.equal(manifeste.g29?.comptes.successeurs, 1);
       assert.equal(manifeste.g29?.comptes.ecartes, 1);
       assert.equal(manifeste.g29?.documents[0]?.statut, "retenu");
+      assert.equal(manifeste.g29?.documents[0]?.successeur, true);
       assert.equal(
         manifeste.g29?.documents[0]?.document,
         "guidelines-052020-on-consent-under-regulation-2016679",
