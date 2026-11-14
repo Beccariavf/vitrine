@@ -2,25 +2,23 @@
   "corpus": "cjue",
   "nom": "CJUE",
   "titre": "Décisions de la Cour de justice de l'Union européenne sur les données personnelles",
-  "source": "CELLAR / EUR-Lex — SPARQL, rendu XHTML français puis anglais",
-  "date_min": "2014-01-01",
-  "date_extraction": "2026-11-13",
+  "source": "CELLAR / EUR-Lex — SPARQL, rendu XHTML puis HTML patrimonial, français puis anglais",
+  "date_extraction": "2026-11-14",
   "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
   "langue": "fra",
-  "documents": 166,
-  "fragments": 16916,
-  "documents_lus": 296,
+  "documents": 248,
+  "fragments": 23174,
+  "documents_lus": 362,
   "exclusions": {
-    "avant_borne": 0,
     "date_invalide": 0,
-    "avis_avocat_general": 73,
-    "autre_type": 2,
-    "xhtml_absent": 55,
+    "avis_avocat_general": 95,
+    "autre_type": 5,
+    "xhtml_absent": 14,
     "echec_telechargement": 0,
     "texte_vide": 0
   },
   "couverture": {
-    "source": "CELLAR / EUR-Lex — SPARQL, rendu XHTML français puis anglais",
+    "source": "CELLAR / EUR-Lex — SPARQL, rendu XHTML puis HTML patrimonial, français puis anglais",
     "matiere": {
       "uri": "http://publications.europa.eu/resource/authority/subject-matter/PDON",
       "libelle": "Protection des données personnelles"
@@ -41,10 +39,12 @@
     "complementaires_ajoutes": 1,
     "langue": "fra",
     "langues": {
-      "fra": 166,
-      "eng": 0
+      "fra": 247,
+      "eng": 1
     },
-    "documents_langues": {},
+    "documents_langues": {
+      "62002TJ0320": "eng"
+    },
     "types_retenus": {
       "CJ": "Arrêt de la Cour",
       "TJ": "Arrêt du Tribunal",
@@ -52,17 +52,14 @@
       "TO": "Ordonnance du Tribunal"
     },
     "periode": {
-      "date_min": "2014-04-08",
+      "date_min": "1999-10-14",
       "date_max": "2026-11-05"
     },
-    "borne": "2014-01-01",
-    "avant_borne": 45,
     "exclusions": {
-      "avant_borne": 0,
       "date_invalide": 0,
-      "avis_avocat_general": 73,
-      "autre_type": 2,
-      "xhtml_absent": 55,
+      "avis_avocat_general": 95,
+      "autre_type": 5,
+      "xhtml_absent": 14,
       "echec_telechargement": 0,
       "texte_vide": 0
     },
@@ -71,6 +68,106 @@
       "ajoutees": 0
     },
     "documents_ecartes": [
+      {
+        "celex": "61998CC0223",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62000CC0151",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62000CC0465",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62001CC0101",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62002CC0350",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62004CC0317",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62006CC0275",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62006CC0301",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62006CC0524",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62007CC0073",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62007CC0518",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62007CC0553",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62007FJ0130",
+        "motif": "autre_type"
+      },
+      {
+        "celex": "62008CC0028",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62009CC0092",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62009CC0543",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62009FJ0046",
+        "motif": "autre_type"
+      },
+      {
+        "celex": "62010CC0070",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62010CC0614",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62012CC0131",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62012CC0141",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62012CC0288",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62012CC0291",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62012CC0293",
+        "motif": "avis_avocat_general"
+      },
+      {
+        "celex": "62012FJ0084",
+        "motif": "autre_type"
+      },
       {
         "celex": "62013CC0127",
         "motif": "avis_avocat_general"
@@ -372,11 +469,27 @@
         "motif": "avis_avocat_general"
       },
       {
-        "celex": "62012TJ0537",
+        "celex": "62002TJ0179",
         "motif": "xhtml_absent"
       },
       {
-        "celex": "62013CO0683",
+        "celex": "62007TJ0392",
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62009TJ0241",
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62010TJ0308",
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62011TJ0214",
+        "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62012TJ0537",
         "motif": "xhtml_absent"
       },
       {
@@ -388,115 +501,11 @@
         "motif": "xhtml_absent"
       },
       {
-        "celex": "62016CO0508",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62016TJ0604",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62016TJ0652",
-        "motif": "xhtml_absent"
-      },
-      {
         "celex": "62016TO0670",
         "motif": "xhtml_absent"
       },
       {
-        "celex": "62017TJ0039",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62017TJ0399",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62017TJ0461",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62017TO0452",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62018TJ0692",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62019TJ0130",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62020TJ0384",
-        "motif": "xhtml_absent"
-      },
-      {
         "celex": "62020TJ0384(01)",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62020TJ0415",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62020TJ0470",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62020TJ0528",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62020TJ0754",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62021CJ0350",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62021CJ0560",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62021TJ0200",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62021TJ0448",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62021TJ0506",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62021TJ0651",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62021TO0469",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62022CJ0458",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62022CO0357",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62022CO0444",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62022TO0266",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62022TO0286",
         "motif": "xhtml_absent"
       },
       {
@@ -512,83 +521,7 @@
         "motif": "xhtml_absent"
       },
       {
-        "celex": "62023CO0312",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62023CO0599",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62023TJ0110",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62023TJ0291",
-        "motif": "xhtml_absent"
-      },
-      {
         "celex": "62023TO0562(01)",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62023TO1138",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62024CJ0541",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62024CO0534",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62024TJ0084",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62024TJ0167",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62024TJ0235",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62024TJ0318",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62024TJ0529",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62024TO0148",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62024TO0349",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62024TO0484",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62024TO0506",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62024TO0587",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62025TJ0030",
-        "motif": "xhtml_absent"
-      },
-      {
-        "celex": "62026TO0071",
         "motif": "xhtml_absent"
       }
     ],

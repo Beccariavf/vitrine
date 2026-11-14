@@ -6,7 +6,6 @@
   "endpoint_sparql": "https://publications.europa.eu/webapi/rdf/sparql",
   "matiere": "http://publications.europa.eu/resource/authority/subject-matter/PDON",
   "matiere_libelle": "Protection des données personnelles",
-  "date_min": "2014-01-01",
   "langues": ["fra", "eng"],
   "types_retenus": {
     "CJ": "Arrêt de la Cour",

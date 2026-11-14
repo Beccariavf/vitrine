@@ -8,14 +8,12 @@ import type { FetchLike } from "../veille/fetch.ts";
 import {
   classerEntree,
   lireListe,
-  lireNombre,
-  requeteAvantBorne,
   requeteListe,
   typeCelex,
 } from "../mcp/corpus/cjue/liste.ts";
 import type { DescripteurCjue } from "../mcp/corpus/cjue/liste.ts";
-import { dateDecisionCjue, langueCapture, unitesCjue } from "../mcp/corpus/cjue/parse.ts";
-import { empreinteListe, entreesVeilleCjue, lireCapture, syncCjue } from "../mcp/corpus/cjue/sync.ts";
+import { dateDecisionCjue, formatCapture, langueCapture, unitesCjue } from "../mcp/corpus/cjue/parse.ts";
+import { empreinteListe, entreesVeilleCjue, syncCjue } from "../mcp/corpus/cjue/sync.ts";
 import type { ManifesteCjue } from "../mcp/corpus/cjue/sync.ts";
 import { validerUnitesCorpus } from "../mcp/corpus/parse.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";
@@ -65,13 +63,11 @@ describe("la liste CELLAR de la CJUE", () => {
     );
   });
 
-  it("classe les identifiants par type CELEX et compte la matière avant la borne", () => {
+  it("classe les identifiants par type CELEX", () => {
     assert.equal(typeCelex("62012CJ0131"), "CJ");
     assert.equal(typeCelex("62023TO0562(01)"), "TO");
     assert.equal(typeCelex("62014CC0362"), "CC");
     assert.equal(typeCelex("62012AA0001"), "autre");
-    assert.equal(lireNombre({ results: { bindings: [{ n: { value: "42" } }] } }), 42);
-    assert.equal(lireNombre({ results: { bindings: [] } }), 0);
   });
 
   it("expose les deux notions et les deux langues dans l'ordre", () => {
@@ -86,17 +82,13 @@ describe("la liste CELLAR de la CJUE", () => {
     assert.deepEqual(DESCRIPTEUR.langues, ["fra", "eng"]);
   });
 
-  it("réunit la matière PDON et les deux notions fines", () => {
-    const liste = requeteListe(DESCRIPTEUR, "2014-01-01");
+  it("réunit la matière PDON et les deux notions fines, sans borne de date", () => {
+    const liste = requeteListe(DESCRIPTEUR);
     assert.match(liste, /subject-matter\/PDON/);
     assert.match(liste, /fd_578\/4\.11\.01/);
     assert.match(liste, /fd_578\/2\.04/);
     assert.equal(liste.match(/UNION/g)?.length, 2, "une union par notion");
-    const avant = requeteAvantBorne(DESCRIPTEUR, "2014-01-01");
-    assert.match(avant, /subject-matter\/PDON/);
-    assert.match(avant, /fd_578\/4\.11\.01/);
-    assert.match(avant, /fd_578\/2\.04/);
-    assert.match(avant, /CJ\|TJ\|CO\|TO/);
+    assert.doesNotMatch(liste, /2014|FILTER\(\?date/, "aucune borne de date n'est demandée");
   });
 
   it("déduplique et trie les entrées de la réponse SPARQL", () => {
@@ -109,7 +101,7 @@ describe("la liste CELLAR de la CJUE", () => {
     assert.equal(entrees.find((entree) => entree.celex === CELEX_ARRET)?.date, "2014-05-13");
   });
 
-  it("écarte avant la borne, conclusions d'avocat général et types inconnus", () => {
+  it("retient un arrêt de 2003 et écarte conclusions d'avocat général et types inconnus", () => {
     const cas = (celex: string, date: string) => ({
       celex,
       date,
@@ -118,9 +110,8 @@ describe("la liste CELLAR de la CJUE", () => {
     assert.deepEqual(classerEntree(cas("62012CJ0131", "2014-05-13"), DESCRIPTEUR), {
       retenue: true,
     });
-    assert.deepEqual(classerEntree(cas("62013CJ0123", "2013-12-19"), DESCRIPTEUR), {
-      retenue: false,
-      motif: "avant_borne",
+    assert.deepEqual(classerEntree(cas("62001CJ0101", "2003-11-06"), DESCRIPTEUR), {
+      retenue: true,
     });
     assert.deepEqual(classerEntree(cas("62014CC0362", "2015-10-06"), DESCRIPTEUR), {
       retenue: false,
@@ -159,7 +150,7 @@ describe("le découpage d'une décision CJUE", () => {
   });
 
   it("lit les rendus récents, dont les classes portent le préfixe coj-", () => {
-    const xhtml = `<html><body>
+    const xhtml = `<html xmlns="http://www.w3.org/1999/xhtml"><body>
       <p class="coj-sum-title-1">ARRÊT DE LA COUR</p>
       <p class="coj-index">« Protection des données »</p>
       <p class="coj-normal">Dans l’affaire C-42/24,</p>
@@ -173,11 +164,60 @@ describe("le découpage d'une décision CJUE", () => {
   });
 
   it("retombe sur des fragments quand la décision n'a pas de points numérotés", () => {
-    const xhtml = "<html><body><p class=\"sum-title-1\">ORDONNANCE</p><p class=\"normal\">La Cour ordonne que le litige soit rayé.</p></body></html>";
+    const xhtml = `<html xmlns="http://www.w3.org/1999/xhtml"><body><p class="sum-title-1">ORDONNANCE</p><p class="normal">La Cour ordonne que le litige soit rayé.</p></body></html>`;
     const unites = unitesCjue(xhtml, "62015CO0001", "2015-03-01", DESCRIPTEUR);
     assert.ok(unites.length > 0);
     assert.equal(unites[0]?.ref, "62015CO0001#h");
     assert.match(unites[0]?.texte ?? "", /rayé/);
+  });
+
+  it("lit le HTML patrimonial des arrêts anciens", () => {
+    const html = `<HTML><BODY><font face=Arial>
+      <center><b>Affaire C-101/01</b><br>Proc&eacute;dure p&eacute;nale<br>contre<br>Bodil Lindqvist
+      <p>&laquo;Directive 95/46/CE &#8211; Publication des donn&eacute;es &agrave; caract&egrave;re personnel sur Internet&raquo;</p>
+      Arr&ecirc;t de la Cour du 6 novembre 2003</center>
+      <dt>86
+        <dd></dd>
+      </dt> La directive 95/46/CE ne permet pas d&#8217;&eacute;carter les r&egrave;gles nationales de protection.
+      <p></p>
+      <dt>87
+        <dd></dd>
+      </dt> La marge d&#8217;appr&eacute;ciation des &Eacute;tats membres est rappel&eacute;e.
+      <p>Par ces motifs,</p>
+      <P ALIGN="center">LA COUR,</P> dit pour droit que la directive 95/46/CE s&#8217;oppose &agrave; une telle diffusion.
+    </BODY></HTML>`;
+    assert.equal(formatCapture(html), "heritage");
+
+    const unites = unitesCjue(html, "62001CJ0101", "2003-11-06", DESCRIPTEUR);
+    const point86 = unites.find((unite) => unite.ref === "62001CJ0101#point86");
+    assert.ok(point86, "le point 86 est indexé");
+    assert.match(point86.texte, /^La directive 95\/46\/CE ne permet pas/);
+    assert.match(
+      point86.texte,
+      /écarter les règles nationales de protection/,
+      "les entités nominales du HTML patrimonial sont décodées",
+    );
+    assert.match(point86.chemin, /Arrêt de la Cour C-101\/01 > Motifs$/);
+    assert.ok(unites.some((unite) => unite.ref === "62001CJ0101#point87"));
+    assert.ok(unites.some((unite) => /Affaire C-101\/01/.test(unite.texte)));
+    const dispositif = unites.find((unite) => unite.numero === "dispositif");
+    assert.ok(dispositif, "« Par ces motifs » ouvre le dispositif");
+    assert.match(dispositif.texte, /^Par ces motifs, LA COUR, dit pour droit/);
+    assert.doesNotThrow(() => validerUnitesCorpus(unites, "CJUE"));
+  });
+
+  it("retombe sur la numérotation en tête de paragraphe du HTML le plus ancien", () => {
+    const html = `<html><body>
+      <p>32 Un premier considérant.</p>
+      <p>33 Au vu de ces considérations, il y a lieu de répondre que la directive 95/46 s'oppose à cette communication.</p>
+      <p>Par ces motifs, la Cour dit pour droit que la directive 95/46 s'oppose à cette communication.</p>
+    </body></html>`;
+    assert.equal(formatCapture(html), "heritage");
+    const unites = unitesCjue(html, "61998CJ0223", "1998-09-17", DESCRIPTEUR);
+    const point33 = unites.find((unite) => unite.ref === "61998CJ0223#point33");
+    assert.ok(point33, "le point 33 est indexé");
+    assert.match(point33.texte, /^Au vu de ces considérations/);
+    assert.ok(unites.some((unite) => unite.numero === "dispositif"));
   });
 
   it("découpe un arrêt anglais : date, numéro d'affaire avec P et dispositif", () => {
@@ -232,7 +272,7 @@ describe("la synchronisation du corpus CJUE", () => {
     const langues: string[] = [];
     const fetch: FetchLike = async (_url, init) => {
       const langue = init?.headers?.["Accept-Language"] ?? "";
-      langues.push(langue);
+      if (langues.at(-1) !== langue) langues.push(langue);
       const reponseLangue = reponses[langue];
       return reponseLangue === undefined ? reponse(404, "") : reponseLangue();
     };
@@ -259,7 +299,6 @@ describe("la synchronisation du corpus CJUE", () => {
         rootDir: racine,
         date: "2026-11-11",
         reponseListe: LISTE,
-        avantBorne: 42,
         complementaires: [],
         fetchImpl: fetchCaptures({
           [CELEX_ARRET]: ARRET,
@@ -270,15 +309,14 @@ describe("la synchronisation du corpus CJUE", () => {
       assert.equal(resultat.documentsLus, 6);
       assert.equal(resultat.documents, 2);
       assert.deepEqual(resultat.ecartes, {
-        avant_borne: 1,
         date_invalide: 0,
         avis_avocat_general: 1,
         autre_type: 1,
-        xhtml_absent: 1,
+        xhtml_absent: 2,
         echec_telechargement: 0,
         texte_vide: 0,
       });
-      assert.equal(resultat.documentsEcartes.length, 3);
+      assert.equal(resultat.documentsEcartes.length, 4);
 
       const manifeste = JSON.parse(
         readFileSync(join(racine, "data", "corpus", "cjue", "manifest.json"), "utf8"),
@@ -293,7 +331,6 @@ describe("la synchronisation du corpus CJUE", () => {
 
       assert.equal(manifeste.fragments, unites.length);
       assert.equal(manifeste.documents, 2);
-      assert.equal(manifeste.couverture.avant_borne, 42);
       assert.equal(manifeste.couverture.langue, "fra");
       assert.deepEqual(manifeste.couverture.langues, { fra: 2, eng: 0 });
       assert.deepEqual(manifeste.couverture.documents_langues, {});
@@ -311,7 +348,6 @@ describe("la synchronisation du corpus CJUE", () => {
         rootDir: racine,
         date: "2026-11-11",
         reponseListe: LISTE,
-        avantBorne: 42,
         complementaires: [],
         fetchImpl: async () => {
           throw new Error("le cache doit éviter tout téléchargement");
@@ -331,7 +367,6 @@ describe("la synchronisation du corpus CJUE", () => {
         rootDir: racine,
         date: "2026-11-11",
         reponseListe: LISTE,
-        avantBorne: 42,
         complementaires: [],
         fetchImpl: fetchCaptures({ [CELEX_ARRET]: ARRET, "62015CJ0001": ARRET }),
       });
@@ -339,7 +374,6 @@ describe("la synchronisation du corpus CJUE", () => {
         rootDir: racine,
         date: "2026-11-12",
         reponseListe: LISTE,
-        avantBorne: 42,
         complementaires: [],
         fetchImpl: async () => {
           throw new Error("le cache doit éviter tout téléchargement");
@@ -371,7 +405,6 @@ describe("la synchronisation du corpus CJUE", () => {
         rootDir: racine,
         date: "2026-11-11",
         reponseListe: { results: { bindings: [] } },
-        avantBorne: 0,
         complementaires: [],
         fetchImpl: fetchCaptures({ "62016CJ0111": ARRET }),
       });
@@ -404,7 +437,6 @@ describe("la synchronisation du corpus CJUE", () => {
           rootDir: entreeAvis,
           date: "2026-11-11",
           reponseListe: { results: { bindings: [] } },
-          avantBorne: 0,
           complementaires: [],
           fetchImpl: async () => {
             throw new Error("une conclusion d'avocat général ne se télécharge pas");
@@ -427,7 +459,6 @@ describe("la synchronisation du corpus CJUE", () => {
         rootDir: racine,
         date: "2026-11-11",
         reponseListe: { results: { bindings: [] } },
-        avantBorne: 0,
         complementaires: ["62018CC0511"],
         fetchImpl: async () => {
           throw new Error("une conclusion d'avocat général ne se télécharge pas");
@@ -461,7 +492,6 @@ describe("la synchronisation du corpus CJUE", () => {
         rootDir: racine,
         date: "2026-11-11",
         reponseListe: { results: { bindings: [] } },
-        avantBorne: 0,
         complementaires: ["62018CJ0746"],
         reponsesXhtml: { "62018CJ0746": xhtml },
       });
@@ -493,7 +523,6 @@ describe("la synchronisation du corpus CJUE", () => {
         rootDir: racine,
         date: "2026-11-12",
         reponseListe: LISTE_204,
-        avantBorne: 0,
         complementaires: [],
         reponsesXhtml: { [CELEX_204]: ARRET },
       });
@@ -512,29 +541,37 @@ describe("la synchronisation du corpus CJUE", () => {
     }
   });
 
-  it("écarte avant la borne un CELEX 2.04 daté 2013 sans lire sa capture", async () => {
+  it("retient un arrêt de 2003 sur la directive 95/46", async () => {
     const racine = racineTemporaire();
-    let appels = 0;
+    const xhtml = `<html xmlns="http://www.w3.org/1999/xhtml"><body>
+      <p class="sum-title-1">ARRÊT DE LA COUR</p>
+      <p class="sum-title-1">6 novembre 2003</p>
+      <p class="index">« Directive 95/46/CE — Protection des personnes physiques »</p>
+      <p class="normal">Dans l’affaire C-101/01,</p>
+      <table><tr><td><p class="count" id="point1">1</p></td><td><p class="normal">Par sa question, la juridiction de renvoi demande l’interprétation de la directive 95/46/CE.</p></td></tr></table>
+      <p class="normal">Par ces motifs, la Cour dit pour droit que la directive 95/46/CE ne s’oppose pas à la diffusion d’informations personnelles.</p>
+    </body></html>`;
     try {
       const resultat = await syncCjue({
         rootDir: racine,
-        date: "2026-11-12",
+        date: "2026-11-14",
         reponseListe: {
           results: {
-            bindings: [{ celex: { value: CELEX_204 }, date: { value: "2013-09-04" } }],
+            bindings: [{ celex: { value: "62001CJ0101" }, date: { value: "2003-11-06" } }],
           },
         },
-        avantBorne: 0,
         complementaires: [],
-        fetchImpl: async () => {
-          appels += 1;
-          throw new Error("aucune capture ne doit être demandée");
-        },
+        reponsesXhtml: { "62001CJ0101": xhtml },
       });
-      assert.equal(resultat.documents, 0);
-      assert.equal(resultat.ecartes.avant_borne, 1);
-      assert.equal(appels, 0, "une décision hors borne ne se télécharge pas");
-      assert.equal(lireCapture(racine, CELEX_204), null);
+      assert.equal(resultat.documents, 1);
+      assert.equal(resultat.ecartes.date_invalide, 0);
+      const unites = lireUnites(racine);
+      assert.ok(unites.length > 0);
+      assert.ok(unites.every((unite) => unite.document === "62001CJ0101"));
+      assert.equal(unites[0]?.date_acte, "2003-11-06");
+      const point = unites.find((unite) => unite.ref === "62001CJ0101#point1");
+      assert.match(point?.texte ?? "", /directive 95\/46\/CE/);
+      assert.equal(lireManifeste(racine).couverture.periode.date_min, "2003-11-06");
     } finally {
       rmSync(racine, { recursive: true, force: true });
     }
@@ -551,7 +588,6 @@ describe("la synchronisation du corpus CJUE", () => {
         rootDir: racine,
         date: "2026-11-12",
         reponseListe: LISTE_204,
-        avantBorne: 0,
         complementaires: [],
         fetchImpl: fetch,
       });
@@ -581,6 +617,64 @@ describe("la synchronisation du corpus CJUE", () => {
     }
   });
 
+  it("lit le HTML patrimonial quand le XHTML n'est servi dans aucune langue", async () => {
+    const racine = racineTemporaire();
+    const formes = new Set<string>();
+    const html = `<HTML><BODY><center><b>Affaire C-101/01</b><br>Bodil Lindqvist</center>
+      <dt>86
+        <dd></dd>
+      </dt> La directive 95/46/CE s'oppose à la diffusion de données non pertinentes.
+      <p>Par ces motifs,</p> LA COUR dit pour droit que la directive 95/46/CE s'applique.
+    </BODY></HTML>`;
+    const fetch: FetchLike = async (_url, init) => {
+      const accept = String(init?.headers?.Accept ?? "");
+      formes.add(accept);
+      return accept === "text/html" ? reponse(200, html) : reponse(404, "");
+    };
+    try {
+      const premier = await syncCjue({
+        rootDir: racine,
+        date: "2026-11-14",
+        reponseListe: {
+          results: {
+            bindings: [{ celex: { value: "62001CJ0101" }, date: { value: "2003-11-06" } }],
+          },
+        },
+        complementaires: [],
+        fetchImpl: fetch,
+      });
+      assert.deepEqual([...formes], ["application/xhtml+xml", "text/html"]);
+      assert.equal(premier.documents, 1);
+      assert.equal(premier.ecartes.xhtml_absent, 0);
+      assert.equal(
+        existsSync(join(racine, "data", "raw", "cjue", "62001CJ0101.html")),
+        true,
+        "le HTML patrimonial est mis en cache sous .html",
+      );
+      const unites = lireUnites(racine);
+      assert.equal(unites[0]?.date_acte, "2003-11-06", "la date CELLAR fait foi, pas les conclusions");
+      assert.ok(unites.some((unite) => unite.ref === "62001CJ0101#point86"));
+
+      const second = await syncCjue({
+        rootDir: racine,
+        date: "2026-11-14",
+        reponseListe: {
+          results: {
+            bindings: [{ celex: { value: "62001CJ0101" }, date: { value: "2003-11-06" } }],
+          },
+        },
+        complementaires: [],
+        fetchImpl: async () => {
+          throw new Error("une capture en cache ne se redemande pas");
+        },
+      });
+      assert.equal(second.appels.documents, 0);
+      assert.equal(second.ecrit, false);
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
+  });
+
   it("compte un échec de téléchargement quand le français tombe en panne et l'anglais n'est pas essayé", async () => {
     const racine = racineTemporaire();
     try {
@@ -592,7 +686,6 @@ describe("la synchronisation du corpus CJUE", () => {
         rootDir: racine,
         date: "2026-11-12",
         reponseListe: LISTE_204,
-        avantBorne: 0,
         complementaires: [],
         fetchImpl: fetch,
       });
@@ -620,7 +713,6 @@ describe("la synchronisation du corpus CJUE", () => {
         rootDir: racine,
         date: "2026-11-12",
         reponseListe: LISTE_204,
-        avantBorne: 0,
         complementaires: [],
         fetchImpl: fetch,
       });
@@ -638,7 +730,6 @@ describe("la synchronisation du corpus CJUE", () => {
         rootDir: racine,
         date: "2026-11-12",
         reponseListe: LISTE_204,
-        avantBorne: 0,
         complementaires: [],
         fetchImpl: async () => {
           throw new Error("un XHTML absent ne se redemande pas");
@@ -667,7 +758,6 @@ describe("la synchronisation du corpus CJUE", () => {
         rootDir: racine,
         date: "2026-11-12",
         reponseListe: LISTE_204,
-        avantBorne: 0,
         complementaires: [],
         fetchImpl: async () => {
           throw new Error("l'ancien marqueur doit rester durable");
@@ -700,7 +790,6 @@ describe("la synchronisation du corpus CJUE", () => {
         rootDir: racine,
         date: "2026-11-12",
         reponseListe: { results: { bindings: [] } },
-        avantBorne: 0,
         complementaires: [],
         fetchImpl: fetch,
       });
@@ -721,7 +810,6 @@ describe("la synchronisation du corpus CJUE", () => {
         rootDir: racine,
         date: "2026-11-12",
         reponseListe: LISTE_204,
-        avantBorne: 0,
         complementaires: [],
         reponsesXhtml: { [CELEX_204]: ARRET },
       });
@@ -745,7 +833,6 @@ describe("la synchronisation du corpus CJUE", () => {
                 ],
               },
             },
-            avantBorne: 0,
             complementaires: [],
             fetchImpl: async () => reponse(429, ""),
           }),
@@ -773,7 +860,6 @@ describe("la synchronisation du corpus CJUE", () => {
         rootDir: racine,
         date: "2026-11-11",
         reponseListe: LISTE,
-        avantBorne: 42,
         complementaires: [],
         dryRun: true,
       });
