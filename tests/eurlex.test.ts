@@ -1,7 +1,8 @@
 import { strict as assert } from "node:assert";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
 import type { Entry } from "../veille/types.ts";
 import type { FetchLike } from "../veille/fetch.ts";
@@ -45,6 +46,20 @@ const MODIFICATIONS = fixture("./fixtures/eurlex/modifications.json");
 const XHTML = readFileSync(new URL("./fixtures/eurlex/adequation-nouvelle.xhtml", import.meta.url), "utf8");
 
 const DATE_PASSE = "2026-11-14";
+
+/** Consolidation synthétique : deux articles, aucun préambule. */
+const CONSOLIDE_DEUX_ARTICLES = [
+  "<html><body>",
+  '<p class="title-article-norm">Article premier</p>',
+  "<p>Objet de la consolidation.</p>",
+  '<p class="title-article-norm">Article 2</p>',
+  "<p>Champ d'application de la consolidation.</p>",
+  "</body></html>",
+].join("\n");
+
+function fetchConsolide(): FetchLike {
+  return async () => ({ ok: true, status: 200, text: async () => CONSOLIDE_DEUX_ARTICLES });
+}
 
 function acte(surcharge: Partial<ActeSuivi> = {}): ActeSuivi {
   return {
@@ -335,14 +350,32 @@ describe("détection des actes de l'Union", () => {
 
 describe("passe de veille eurlex", () => {
   it("compose les trois catégories hors ligne", async () => {
+    // Le descripteur de l'AI Act est consolidé depuis #86 : ce test copie les
+    // descripteurs réels et ramène l'AI Act à son acte d'origine, pour que la
+    // consolidation de la fixture reste neuve.
+    const dossier = mkdtempSync(join(tmpdir(), "vitrine-eurlex-descripteurs-"));
+    cpSync(fileURLToPath(new URL("../mcp/corpus", import.meta.url)), dossier, { recursive: true });
+    const cheminAiact = join(dossier, "aiact.json");
+    const aiact = JSON.parse(readFileSync(cheminAiact, "utf8")) as Descripteur;
+    writeFileSync(
+      cheminAiact,
+      `${JSON.stringify(
+        { ...aiact, version: "32024R1689", date_consolidation: null },
+        null,
+        2,
+      )}\n`,
+      "utf8",
+    );
     const resultat = await passeEurlex({
       maintenant: new Date(`${DATE_PASSE}T09:00:00Z`),
+      dossierCorpus: dossier,
       reponses: {
         consolidations: CONSOLIDATIONS,
         nouveaux: NOUVEAUX,
         modifications: MODIFICATIONS,
       },
     });
+    rmSync(dossier, { recursive: true, force: true });
     assert.equal(resultat.raw.length, 3);
     assert.equal(resultat.warnings.length, 1);
     const categories = resultat.entries.map((entree) => entree.categorie);
@@ -396,7 +429,7 @@ describe("raccord eurlex → corpus", () => {
         date_debut: "2024-08-01",
         date_fin: null,
         statut: "en_vigueur",
-        articles_attendus: 113,
+        articles_attendus: 2,
         considerants_attendus: 180,
         version: "32024R1689",
         date_consolidation: null,
@@ -409,6 +442,7 @@ describe("raccord eurlex → corpus", () => {
         corpus: "aiact",
         version: "02024R1689-20260727",
         descripteurPath,
+        fetchImpl: fetchConsolide(),
         construire: async (options) => {
           appels.push(options.document);
           const relu = JSON.parse(readFileSync(descripteurPath, "utf8")) as Descripteur;
@@ -429,7 +463,11 @@ describe("raccord eurlex → corpus", () => {
     const root = racine();
     try {
       const descripteurPath = join(root, "aiact.json");
-      const avant = `${JSON.stringify({ document: "32024R1689", corpus: "aiact", version: "32024R1689" }, null, 2)}\n`;
+      const avant = `${JSON.stringify(
+        { document: "32024R1689", corpus: "aiact", version: "32024R1689", articles_attendus: 2 },
+        null,
+        2,
+      )}\n`;
       writeFileSync(descripteurPath, avant, "utf8");
       await assert.rejects(
         () =>
@@ -438,11 +476,78 @@ describe("raccord eurlex → corpus", () => {
             corpus: "aiact",
             version: "02024R1689-20260727",
             descripteurPath,
+            fetchImpl: fetchConsolide(),
             construire: async () => {
               throw new Error("capture incomplète");
             },
           }),
         /construction aiact impossible pour 02024R1689-20260727 \(capture incomplète\)/,
+      );
+      assert.equal(readFileSync(descripteurPath, "utf8"), avant);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("ajuste articles_attendus quand la consolidation sert plus d'articles", async () => {
+    const root = racine();
+    try {
+      const descripteurPath = join(root, "aiact.json");
+      writeFileSync(
+        descripteurPath,
+        `${JSON.stringify(
+          { document: "32024R1689", corpus: "aiact", version: "32024R1689", articles_attendus: 1 },
+          null,
+          2,
+        )}\n`,
+        "utf8",
+      );
+
+      const resultat = await synchroniserActeUe({
+        rootDir: root,
+        corpus: "aiact",
+        version: "02024R1689-20260727",
+        descripteurPath,
+        fetchImpl: fetchConsolide(),
+        construire: async () => {
+          const relu = JSON.parse(readFileSync(descripteurPath, "utf8")) as Descripteur;
+          assert.equal(relu.articles_attendus, 2);
+          return [{ unites: new Array(4).fill(null) } as never];
+        },
+      });
+
+      assert.equal(resultat.ecrit, true);
+      const relu = JSON.parse(readFileSync(descripteurPath, "utf8")) as Descripteur;
+      assert.equal(relu.articles_attendus, 2);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("refuse une baisse du nombre d'articles sans toucher au descripteur", async () => {
+    const root = racine();
+    try {
+      const descripteurPath = join(root, "aiact.json");
+      const avant = `${JSON.stringify(
+        { document: "32024R1689", corpus: "aiact", version: "32024R1689", articles_attendus: 3 },
+        null,
+        2,
+      )}\n`;
+      writeFileSync(descripteurPath, avant, "utf8");
+
+      await assert.rejects(
+        () =>
+          synchroniserActeUe({
+            rootDir: root,
+            corpus: "aiact",
+            version: "02024R1689-20260727",
+            descripteurPath,
+            fetchImpl: fetchConsolide(),
+            construire: async () => {
+              throw new Error("ne doit pas être appelée");
+            },
+          }),
+        /2 articles au lieu de 3.*refusée/,
       );
       assert.equal(readFileSync(descripteurPath, "utf8"), avant);
     } finally {

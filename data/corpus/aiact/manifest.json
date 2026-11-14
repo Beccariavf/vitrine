@@ -9,10 +9,14 @@
   "date_debut": "2024-08-01",
   "date_fin": null,
   "statut": "en_vigueur",
-  "snapshot": "f64452fd45b3fa0a51be546bb2199bea853a30dc6a40c803b8cd48f020ea3f81.xhtml",
-  "unites": 293,
+  "version": "02024R1689-20260727",
+  "date_consolidation": "2026-07-27",
+  "snapshot": "248c47ff5dd6583d98711347541047e7a2b83d5122174312558a8a17d90b81f8.xhtml",
+  "considerants_source": "32024R1689",
+  "snapshot_considerants": "f64452fd45b3fa0a51be546bb2199bea853a30dc6a40c803b8cd48f020ea3f81.xhtml",
+  "unites": 299,
   "couverture": {
-    "source": "CELLAR — publications.europa.eu/resource/celex/32024R1689",
+    "source": "CELLAR — publications.europa.eu/resource/celex/02024R1689-20260727",
     "date_publication": "2024-07-12",
     "bornes": {
       "debut": "2024-08-01",
@@ -25,8 +29,10 @@
     ],
     "exclusions": [],
     "comptes": {
-      "articles": 113,
+      "articles": 119,
       "considerants": 180
-    }
+    },
+    "version": "02024R1689-20260727",
+    "date_consolidation": "2026-07-27"
   }
 }

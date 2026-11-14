@@ -23,6 +23,9 @@ dist/
 # Index vectoriel dérivé, reconstruit par npm run corpus:index
 data/corpus/index/
 
+# Rapport de synchronisation : état d'une machine, réécrit par npm run corpus:sync
+data/corpus/sync.json
+
 # Corpus CNIL : parquet DINUM non commité (334 Mo), récupéré par npm run cnil:sync
 data/raw/cnil/
 

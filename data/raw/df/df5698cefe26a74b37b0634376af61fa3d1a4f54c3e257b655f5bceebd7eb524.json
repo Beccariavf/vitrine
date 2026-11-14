@@ -1,0 +1,17 @@
+{
+  "head": {
+    "link": [],
+    "vars": [
+      "celex",
+      "date",
+      "title",
+      "lang",
+      "repealsCelex"
+    ]
+  },
+  "results": {
+    "distinct": false,
+    "ordered": true,
+    "bindings": []
+  }
+}

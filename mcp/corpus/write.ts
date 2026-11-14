@@ -32,11 +32,18 @@ export type Manifeste = {
   version?: string;
   /** Date de la consolidation rendue ; `null` quand l'acte d'origine est rendu. */
   date_consolidation?: string | null;
+  /** CELEX de l'acte d'origine dont les considérants sont repris, quand la consolidation n'a pas de préambule. */
+  considerants_source?: string;
+  /** Nom du snapshot brut de cet acte d'origine, adressé par son `sha256`. */
+  snapshot_considerants?: string;
   /** Nom du fichier rendu par `writeRaw`, adressé par son `sha256`. */
   snapshot: string;
   unites: number;
   couverture: CouvertureActe;
 };
+
+/** Acte d'origine dont une consolidation sans préambule a laissé les considérants. */
+export type OrigineConsiderants = { document: string; snapshotPath: string };
 
 /** Écrit un fichier UTF-8 s'il n'a pas déjà exactement ce contenu. */
 function writeIfChanged(path: string, content: string): void {
@@ -58,12 +65,15 @@ function writeIfChanged(path: string, content: string): void {
 /**
  * Écrit `manifest.json` puis `unites.jsonl` sous `data/corpus/<document>/`.
  * Deux passes sur le même corpus rendent les mêmes octets et ne réécrivent rien.
+ * Une `origine` déclare l'acte d'origine des considérants quand la consolidation
+ * n'a pas de préambule.
  */
 export function writeCorpus(
   rootDir: string,
   descripteur: Descripteur,
   unites: Unite[],
   snapshotPath: string,
+  origine?: OrigineConsiderants,
 ): { manifestPath: string; unitesPath: string } {
   const dossier = join(rootDir, "data", "corpus", descripteur.corpus);
   const articles = unites.filter((unite) => unite.niveau === "article").length;
@@ -89,6 +99,12 @@ export function writeCorpus(
       ? {}
       : { version: descripteur.version, date_consolidation: descripteur.date_consolidation ?? null }),
     snapshot: basename(snapshotPath),
+    ...(origine === undefined
+      ? {}
+      : {
+          considerants_source: origine.document,
+          snapshot_considerants: basename(origine.snapshotPath),
+        }),
     unites: unites.length,
     couverture: {
       source: `CELLAR — publications.europa.eu/resource/celex/${descripteur.version ?? descripteur.document}`,

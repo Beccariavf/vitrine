@@ -20,10 +20,11 @@ const DESCRIPTEUR = JSON.parse(
 
 const FIXTURE_AIAct_URL = new URL("./fixtures/eurlex/aiact.xhtml", import.meta.url);
 const FIXTURE_AIAct = readFileSync(FIXTURE_AIAct_URL, "utf8");
-const FIXTURE_AIAct_PATH = fileURLToPath(FIXTURE_AIAct_URL);
 const DESCRIPTEUR_AIAct = JSON.parse(
   readFileSync(new URL("../mcp/corpus/aiact.json", import.meta.url), "utf8"),
 ) as Descripteur;
+
+const FIXTURE_POLICE_PATH = fileURLToPath(new URL("./fixtures/eurlex/police-consolide.xhtml", import.meta.url));
 
 function tempRoot(): string {
   return mkdtempSync(join(tmpdir(), "vitrine-corpus-"));
@@ -232,6 +233,8 @@ describe("les descripteurs", () => {
         nom: aiact?.nom,
         articles: aiact?.articles_attendus,
         considerants: aiact?.considerants_attendus,
+        version: aiact?.version,
+        date_consolidation: aiact?.date_consolidation,
         date_acte: aiact?.date_acte,
         date_publication: aiact?.date_publication,
         date_debut: aiact?.date_debut,
@@ -239,8 +242,10 @@ describe("les descripteurs", () => {
       {
         document: "32024R1689",
         nom: "AI Act",
-        articles: 113,
+        articles: 119,
         considerants: 180,
+        version: "02024R1689-20260727",
+        date_consolidation: "2026-07-27",
         date_acte: "2024-06-13",
         date_publication: "2024-07-12",
         date_debut: "2024-08-01",
@@ -250,7 +255,7 @@ describe("les descripteurs", () => {
 });
 
 describe("parseCellar sur l'AI Act", () => {
-  const unites = parseCellar(FIXTURE_AIAct, DESCRIPTEUR_AIAct);
+  const unites = parseCellar(FIXTURE_AIAct, { ...DESCRIPTEUR_AIAct, articles_attendus: 113 });
 
   it("rend 113 articles et 180 considérants", () => {
     assert.equal(unites.filter((unite) => unite.niveau === "article").length, 113);
@@ -322,13 +327,13 @@ describe("buildCorpusSet", () => {
     try {
       const resultats = await buildCorpusSet({
         rootDir: root,
-        document: "aiact",
-        fixturePath: FIXTURE_AIAct_PATH,
+        document: "police",
+        fixturePath: FIXTURE_POLICE_PATH,
       });
 
       assert.equal(resultats.length, 1);
-      assert.equal(resultats[0]?.unites.length, 293);
-      assert.ok(existsSync(join(root, "data", "corpus", "aiact", "unites.jsonl")));
+      assert.equal(resultats[0]?.unites.length, 65);
+      assert.ok(existsSync(join(root, "data", "corpus", "police", "unites.jsonl")));
       assert.equal(existsSync(join(root, "data", "corpus", "rgpd")), false);
     } finally {
       rmSync(root, { recursive: true, force: true });
