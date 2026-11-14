@@ -12,7 +12,10 @@ import { XMLParser } from "fast-xml-parser";
 import { texteVisible } from "../parse.ts";
 import type { Unite } from "../parse.ts";
 import { decouperParagraphes } from "../cnil/parse.ts";
+import { contientExpression, contientMotCle, normaliserComparaison } from "../texte.ts";
 import type { Fonds } from "./archive.ts";
+
+export { contientMotCle, normaliserComparaison } from "../texte.ts";
 
 /** Métadonnées du corpus CE, lues depuis `mcp/corpus/ce/descripteur.json`. */
 export type DescripteurCe = {
@@ -93,25 +96,6 @@ function texteDe(valeur: unknown): string {
   return typeof texte === "string" ? texte.trim() : "";
 }
 
-/**
- * Forme comparable d'une chaîne : minuscules, sans diacritiques, ponctuation
- * ramenée à une espace. « Conseil d'État » y devient « conseil d etat ».
- */
-export function normaliserComparaison(valeur: string): string {
-  return valeur
-    .normalize("NFD")
-    .replace(/\p{M}+/gu, "")
-    .toLowerCase()
-    .replace(/[’‘]/g, "'")
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim()
-    .replace(/\s+/g, " ");
-}
-
-function contientExpression(texte: string, expression: string): boolean {
-  return ` ${texte} `.includes(` ${expression} `);
-}
-
 /** Vrai si la juridiction est exactement le Conseil d'État, exclusions comprises. */
 export function estConseilEtat(juridiction: string, descripteur: DescripteurCe): boolean {
   const forme = normaliserComparaison(juridiction);
@@ -119,15 +103,6 @@ export function estConseilEtat(juridiction: string, descripteur: DescripteurCe):
     if (contientExpression(forme, normaliserComparaison(exclue))) return false;
   }
   return forme === normaliserComparaison(descripteur.juridiction);
-}
-
-/** Vrai si le texte contient au moins un mot-clé, à la casse et aux accents près. */
-export function contientMotCle(texte: string, motsCles: readonly string[]): boolean {
-  const forme = normaliserComparaison(texte);
-  return motsCles.some((motCle) => {
-    const cherche = normaliserComparaison(motCle);
-    return cherche !== "" && forme.includes(cherche);
-  });
 }
 
 /** Paragraphes d'un `CONTENU` : les `<p>` quand il y en a, sinon les `<br/>`. */
@@ -249,7 +224,7 @@ export function unitesJade(
  * Valide un corpus complet avant écriture : références uniques, textes non
  * vides, dates ISO. Lève en nommant les défauts, sans toucher aux fichiers.
  */
-export function validerUnites(unites: readonly Unite[]): void {
+export function validerUnites(unites: readonly Unite[], corpus = "CE"): void {
   const erreurs: string[] = [];
   const vues = new Set<string>();
   for (const unite of unites) {
@@ -269,6 +244,6 @@ export function validerUnites(unites: readonly Unite[]): void {
   if (erreurs.length > 0) {
     const liste = erreurs.slice(0, 10).join(" ; ");
     const reste = erreurs.length > 10 ? ` ; et ${erreurs.length - 10} autre(s)` : "";
-    throw new Error(`Corpus CE invalide, rien n'est écrit : ${liste}${reste}`);
+    throw new Error(`Corpus ${corpus} invalide, rien n'est écrit : ${liste}${reste}`);
   }
 }
