@@ -15,6 +15,7 @@ Le versant données : sources, pipeline et modèles.
 - Conseil d'État via l'API Légifrance (fonds CETAT), fenêtre de 90 jours ; le texte intégral de chaque décision nouvelle est lu par `/consult/juri` pour ses articles appliqués.
 - Cour de cassation via Judilibre, fenêtre de 30 jours ; le visa de la décision fournit les références, la recherche ne les porte pas.
 - `npm run veille:textes-fr` est une passe séparée pour la législation : elle ne lit pas de flux, elle compare les identifiants de version des quatre textes suivis (loi 78-17, décret 2019-536, Code pénal 226-16 à 226-24, CPCE L34-5) à ceux du corpus. `npm run veille` reste sans Légifrance JORF et sans JURI.
+- Actes de l'Union, par SPARQL CELLAR dans `npm run veille` (source `eurlex`) : dernière consolidation de chaque acte du corpus, décisions d'adéquation et clauses types prises sur le fondement du RGPD ou de 2016/680, actes modifiant le RGPD, ePrivacy, 2016/680 ou 2018/1725. Aucun scraping d'EUR-Lex.
 
 ## Pipeline
 
@@ -77,6 +78,15 @@ flowchart LR
 - La détection compare des identifiants de version, jamais des textes : `LEGIARTI…` en vigueur par article dans `data/corpus/lil/` et `data/corpus/textes_fr/`, `LEGITEXT…_JJ-MM-AAAA` pour le décret. Chaque différence écrit une entrée de source `legi` dans `data/entries/` : `document` (le `LEGITEXT…` du texte), `version`, titre lisible (« Code pénal, art. 226-17 : nouvelle version en vigueur au … »), URL Légifrance ; une version inchangée n'écrit rien. `publishedAt` est la date de la passe (la détection), pour que la version entre dans la fenêtre de `corpus:sync` même si sa date d'effet est ancienne ; la date d'effet reste dans le titre.
 - Les réponses brutes sont conservées sous `data/raw/`, adressées par leur hash : l'ancienne version garde sa preuve. `corpus:sync` lit ces entrées, marque le document `perime` tant que la version manque et relance `lil` ou `textes_fr` ; une panne laisse `a_jour_au` inchangé.
 - Limite déclarée : un changement du nombre d'articles en vigueur fait refuser la capture par `lil:sync` ou `textes-fr:sync` (comptes attendus du descripteur) ; l'opérateur met à jour le descripteur. La lecture d'une version à une date passée est #46.
+
+## Veille des actes de l'Union
+
+- Source `eurlex` de `npm run veille`, trois requêtes SPARQL groupées sur `https://publications.europa.eu/webapi/rdf/sparql` : dernières consolidations (`VALUES`, préfixe CELEX `0…`), décisions prises sur le fondement du RGPD (`32016R0679`) ou de 2016/680 (`32016L0680`) depuis le 2026-11-14, actes modifiant le RGPD, ePrivacy, 2016/680 ou 2018/1725 (`resource_legal_amends_resource_legal`).
+- Consolidation : une entrée quand la dernière version (`02024R1689-20260727`) diffère de la `version` du descripteur, ou quand un acte non consolidé reçoit une consolidation postérieure à sa publication — la consolidation du jour de publication n'est pas une nouveauté. L'acte d'origine n'entre pas au corpus par cette voie.
+- Nouveaux actes : une entrée par décision absente des descripteurs et dont le titre constate l'adéquation ou adopte des clauses contractuelles types ; un titre qui « modifie » une décision existante est signalé hors périmètre. Une décision que la nouvelle abroge (relation `resource_legal_repeals_resource_legal`) porte son CELEX dans `abroge`.
+- Entrée : `document` = CELEX visé (acte de base, ou décision), `version` = consolidation quand elle existe, `categorie` (`consolidation`, `adequation`, `clauses_types`, `modification`), titre lisible, URL EUR-Lex, date de l'acte. `publishedAt` est la date de la passe (la détection), comme pour `legi`, pour que l'entrée entre dans la fenêtre de `corpus:sync`.
+- `corpus:sync` met à jour `version` et `date_consolidation` du descripteur de l'acte puis relance `corpus:build --document <corpus>` ; une décision d'adéquation est ajoutée à `adequation/descripteur.json` (clé, pays, date, URL, statut `en_vigueur`, nombre d'articles compté sur la capture) puis `adequation:build` est relancé. Le descripteur est rétabli si la construction échoue, et `a_jour_au` n'avance pas. Une nouvelle décision d'adéquation entre donc au corpus ; un changement de nombre d'articles d'une consolidation fait refuser la capture et demande la mise à jour du descripteur, comme pour `lil` et `textes_fr`.
+- Limite déclarée : des clauses types neuves sont détectées et publiées dans la veille, mais restent `non_mappe` ; le corpus `ccs` ne porte qu'un acte, et leur ajout demande un descripteur dédié.
 
 ## Corpus clauses contractuelles types
 

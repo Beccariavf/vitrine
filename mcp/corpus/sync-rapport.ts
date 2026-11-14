@@ -18,7 +18,22 @@ import type { CorpusVeille } from "./veille.ts";
  * `textes_fr` n'y sont relancés que sur signal de la veille : une entrée `legi`
  * dont la version manque au corpus.
  */
-export const ORDRE_SOURCES: readonly CorpusVeille[] = ["cnil", "ce", "cc", "cjue", "lil", "textes_fr"];
+export const ORDRE_SOURCES: readonly CorpusVeille[] = [
+  "cnil",
+  "ce",
+  "cc",
+  "cjue",
+  "lil",
+  "textes_fr",
+  "rgpd",
+  "aiact",
+  "eprivacy",
+  "police",
+  "eudpr",
+  "rgpdproc",
+  "ccs",
+  "adequation",
+];
 
 /**
  * Corpus dont `a_jour_au` couvre la fraîcheur : chaque passe les revérifie.

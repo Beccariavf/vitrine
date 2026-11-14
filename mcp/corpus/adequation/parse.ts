@@ -74,6 +74,25 @@ const INTITULE_ARTICLE = /^ARTICLE\s+(PREMIER|1ER|\d+)$/;
  * n'entrent dans aucune unité.
  */
 export function parseArticlesDecision(contenu: string, descripteur: SourceDecision): Unite[] {
+  const unites = decouperArticles(contenu, descripteur);
+  if (unites.length !== descripteur.articles_attendus) {
+    throw new Error(
+      `Capture ${descripteur.document} : ${unites.length} articles au lieu de ` +
+        `${descripteur.articles_attendus} attendus`,
+    );
+  }
+  return unites;
+}
+
+/**
+ * Nombre d'articles d'une capture, sans compte attendu : la synchronisation
+ * l'écrit au descripteur avant de relancer la construction.
+ */
+export function compterArticlesDecision(contenu: string, descripteur: SourceDecision): number {
+  return decouperArticles(contenu, descripteur).length;
+}
+
+function decouperArticles(contenu: string, descripteur: SourceDecision): Unite[] {
   const lignes = lignesVisibles(contenu);
   const debut = lignes.findIndex((ligne) =>
     /^A\s+(?:ARR[ÊE]T[ÉE]|ADOPT[ÉE])\s+LA\s+PR[ÉE]SENTE\s+D[ÉE]CISION/.test(ligne.toUpperCase()),
@@ -124,13 +143,15 @@ export function parseArticlesDecision(contenu: string, descripteur: SourceDecisi
   }
   pousser();
 
-  if (unites.length !== descripteur.articles_attendus) {
-    throw new Error(
-      `Capture ${descripteur.document} : ${unites.length} articles au lieu de ` +
-        `${descripteur.articles_attendus} attendus`,
-    );
-  }
   return unites;
+}
+
+/** Pays d'une décision d'adéquation, lu dans la fin de son titre. */
+export function paysDeTitre(titre: string | null): string | null {
+  if (titre === null) return null;
+  const trouve = /\b(?:by|par)\s+(?:la\s+|le\s+|les\s+|l')?(.+?)\.?$/i.exec(titre.trim());
+  const pays = trouve?.[1]?.trim();
+  return pays === undefined || pays === "" ? null : pays;
 }
 
 /** Descripteur d'un acte CELLAR ordinaire, pour réutiliser `texteVisible` sans le parseur d'ancres. */

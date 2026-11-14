@@ -94,6 +94,27 @@ describe("parseConsolide", () => {
     );
   });
 
+  it("lit un titre d'article porté par un attribut, comme dans les consolidations récentes", () => {
+    const xhtml = [
+      "<html><body>",
+      '<p class="title-division-1">CHAPITRE I</p>',
+      '<p class="title-article-norm" id="id-abc">Article premier</p>',
+      "<p>Objet du texte.</p>",
+      '<hr class="separator-short"/>',
+      "</body></html>",
+    ].join("\n");
+    const unites = parseConsolide(xhtml, {
+      ...descripteur("eprivacy"),
+      version: "02002L0058-20200101",
+      date_consolidation: "2020-01-01",
+      articles_attendus: 1,
+      considerants_attendus: 0,
+    });
+    assert.equal(unites.length, 1);
+    assert.equal(unites[0]?.numero, "1");
+    assert.match(unites[0]?.texte ?? "", /^Article premier Objet du texte\./);
+  });
+
   it("lève quand le compte d'articles diffère du descripteur", () => {
     assert.throws(
       () =>

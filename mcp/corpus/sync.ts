@@ -25,6 +25,7 @@ import { syncLil } from "./lil/sync.ts";
 import type { ResultatLil } from "./lil/sync.ts";
 import { syncTextesFr } from "./textes-fr/sync.ts";
 import type { ResultatTextesFr } from "./textes-fr/sync.ts";
+import { synchroniserActeUe, synchroniserAdequation } from "./actes-ue.ts";
 import {
   corpusDeLEntree,
   documentsDeLEntree,
@@ -59,7 +60,10 @@ export const FENETRE_JOURS = 7;
 
 const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
 
-export type AgentSync = () => Promise<{ ecrit: boolean; message: string }>;
+export type AgentSync = (cible?: CibleAgent) => Promise<{ ecrit: boolean; message: string }>;
+
+/** Entrée de veille qui a déclenché la source, quand elle en porte une. */
+export type CibleAgent = { entree: Entry | null };
 
 export type SyncCorpusOptions = {
   rootDir?: string;
@@ -208,7 +212,33 @@ export function agentsParDefaut(
         message: `${resultat.lectures.length} texte(s), ${unites} article(s)${avertissement}`,
       };
     },
+    rgpd: agentActe("rgpd"),
+    aiact: agentActe("aiact"),
+    eprivacy: agentActe("eprivacy"),
+    police: agentActe("police"),
+    eudpr: agentActe("eudpr"),
+    rgpdproc: agentActe("rgpdproc"),
+    ccs: agentActe("ccs"),
+    adequation: async (cible) => {
+      if (cible?.entree === null || cible?.entree === undefined) {
+        throw new Error("entrée eurlex absente : décision d'adéquation inconnue");
+      }
+      const resultat = await synchroniserAdequation({ rootDir, entree: cible.entree });
+      return { ecrit: resultat.ecrit, message: resultat.message };
+    },
   };
+
+  function agentActe(corpus: string): AgentSync {
+    return async (cible) => {
+      const version = cible?.entree?.version;
+      const resultat = await synchroniserActeUe({
+        rootDir,
+        corpus,
+        ...(version === undefined ? {} : { version }),
+      });
+      return { ecrit: resultat.ecrit, message: resultat.message };
+    };
+  }
 }
 
 function classer(
@@ -253,11 +283,12 @@ function classer(
     for (const document of ids) {
       const motif = corpus === "cjue" ? ecartesCjue.get(document) : undefined;
       const present = presents.has(document);
-      // Une entrée `legi` ne dit pas seulement quel document est visé, mais
-      // quelle version : le document présent avec une autre version est périmé.
+      // Une entrée `legi` ou `eurlex` ne dit pas seulement quel document est
+      // visé, mais quelle version : le document présent avec une autre version
+      // est périmé.
       const aJour =
         present &&
-        (entree.source !== "legi" ||
+        ((entree.source !== "legi" && entree.source !== "eurlex") ||
           entree.version === undefined ||
           versionsCorpus.get(document)?.has(entree.version) === true);
       const statut: StatutDocument = !present
@@ -421,6 +452,20 @@ export async function syncCorpus(options: SyncCorpusOptions = {}): Promise<Rappo
 
   const aLancer = sourcesALancer(documents);
   const agents = options.agents ?? agentsParDefaut(rootDir);
+  const entreesParId = new Map(entrees.map((entree) => [entree.id, entree]));
+  const cibles = new Map<CorpusVeille, Entry>();
+  for (const document of documents) {
+    if (document.corpus === null) continue;
+    if (document.statut === "present" || document.statut === "ecarte") continue;
+    const entree = entreesParId.get(document.entree);
+    if (entree === undefined) continue;
+    const existante = cibles.get(document.corpus);
+    // Une entrée qui porte une version dit plus qu'une entrée qui n'en porte
+    // pas : c'est elle qui fixe la version à construire.
+    if (existante === undefined || (existante.version === undefined && entree.version !== undefined)) {
+      cibles.set(document.corpus, entree);
+    }
+  }
   const sources: SourceRapport[] = [];
   let echec = false;
 
@@ -440,7 +485,7 @@ export async function syncCorpus(options: SyncCorpusOptions = {}): Promise<Rappo
       continue;
     }
     try {
-      const resultat = await agent();
+      const resultat = await agent({ entree: cibles.get(source) ?? null });
       sources.push({ source, statut: "ok", message: resultat.message });
     } catch (error) {
       sources.push({ source, statut: "panne", message: raison(error) });

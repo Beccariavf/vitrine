@@ -981,7 +981,22 @@ describe("synchronisation du corpus", () => {
 
       assert.deepEqual(
         rapport.sources.map((source) => source.source),
-        ["cnil", "ce", "cc", "cjue", "lil", "textes_fr"],
+        [
+          "cnil",
+          "ce",
+          "cc",
+          "cjue",
+          "lil",
+          "textes_fr",
+          "rgpd",
+          "aiact",
+          "eprivacy",
+          "police",
+          "eudpr",
+          "rgpdproc",
+          "ccs",
+          "adequation",
+        ],
       );
       assert.equal(rapport.sources[0]?.statut, "panne");
       assert.equal(rapport.sources[1]?.statut, "ok");
@@ -1082,7 +1097,22 @@ describe("synchronisation du corpus", () => {
         throw new Error("disque plein");
       },
     });
-    assert.deepEqual(Object.keys(agents).sort(), ["cc", "ce", "cjue", "cnil", "lil", "textes_fr"]);
+    assert.deepEqual(Object.keys(agents).sort(), [
+      "adequation",
+      "aiact",
+      "cc",
+      "ccs",
+      "ce",
+      "cjue",
+      "cnil",
+      "eprivacy",
+      "eudpr",
+      "lil",
+      "police",
+      "rgpd",
+      "rgpdproc",
+      "textes_fr",
+    ]);
     const resultat = await agents.cc();
     assert.equal(racineVue, "/tmp/depot");
     assert.equal(resultat.ecrit, true);
