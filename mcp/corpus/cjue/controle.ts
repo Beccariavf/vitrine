@@ -72,7 +72,12 @@ const AFFAIRE = /[CT]-\d+\/\d+/g;
 const SEPARATEUR = /^\s*(?:,|et)\s*$/;
 
 /** Un numéro d'affaire de la fiche et les numéros qui lui sont joints. */
-export type AffaireFiche = { numero: string; groupe: string[] };
+export type AffaireFiche = {
+  numero: string;
+  groupe: string[];
+  /** La citation porte un ECLI : la jonction est certaine, même sans CELLAR. */
+  groupeAvecEcli: boolean;
+};
 
 /** CELEX d'arrêt déduit d'un numéro d'affaire : `CJ` pour la Cour, `TJ` pour le Tribunal. */
 export function celexArret(numero: string): string {
@@ -82,13 +87,17 @@ export function celexArret(numero: string): string {
   }
   const [, juridiction, rang, annee] = correspondance;
   const prefixe = juridiction === "C" ? "CJ" : "TJ";
-  return `6${2000 + Number(annee)}${prefixe}${(rang ?? "").padStart(4, "0")}`;
+  // L'année du numéro d'affaire est sur deux chiffres ; les affaires d'avant
+  // 1950 n'existent pas, la pivot à 50 sépare 19xx de 20xx.
+  const siecle = Number(annee) >= 50 ? 1900 : 2000;
+  return `6${siecle + Number(annee)}${prefixe}${(rang ?? "").padStart(4, "0")}`;
 }
 
 /**
  * Numéros d'affaire de la fiche, dans l'ordre de première apparition. Deux
  * numéros voisins séparés par une virgule ou « et » forment une jonction : leur
- * arrêt est unique.
+ * arrêt est unique. Une jonction n'est tenue pour certaine que si la citation
+ * porte un ECLI ; sans lui, le repli hors ligne ne l'utilise pas.
  */
 export function extraireAffaires(texte: string): AffaireFiche[] {
   const apparitions = [...texte.matchAll(AFFAIRE)].map((correspondance) => ({
@@ -96,23 +105,31 @@ export function extraireAffaires(texte: string): AffaireFiche[] {
     debut: correspondance.index ?? 0,
     fin: (correspondance.index ?? 0) + correspondance[0].length,
   }));
-  const groupes: string[][] = [];
-  let groupe: string[] = [];
+  const groupes: Array<{ numeros: string[]; fin: number }> = [];
+  let groupe: { numeros: string[]; fin: number } = { numeros: [], fin: 0 };
   let precedent: (typeof apparitions)[number] | null = null;
   for (const apparition of apparitions) {
     const joint =
       precedent !== null && SEPARATEUR.test(texte.slice(precedent.fin, apparition.debut));
     if (!joint) {
-      groupe = [];
+      groupe = { numeros: [], fin: apparition.fin };
       groupes.push(groupe);
     }
-    if (!groupe.includes(apparition.numero)) groupe.push(apparition.numero);
+    if (!groupe.numeros.includes(apparition.numero)) groupe.numeros.push(apparition.numero);
+    groupe.fin = apparition.fin;
     precedent = apparition;
   }
   const parNumero = new Map<string, AffaireFiche>();
   for (const groupeCourant of groupes) {
-    for (const numero of groupeCourant) {
-      if (!parNumero.has(numero)) parNumero.set(numero, { numero, groupe: groupeCourant });
+    const avecEcli = /^\s*,?\s*EU:[CT]:\d+:\d+/.test(texte.slice(groupeCourant.fin));
+    for (const numero of groupeCourant.numeros) {
+      if (!parNumero.has(numero)) {
+        parNumero.set(numero, {
+          numero,
+          groupe: groupeCourant.numeros,
+          groupeAvecEcli: avecEcli,
+        });
+      }
     }
   }
   return [...parNumero.values()];
@@ -132,6 +149,27 @@ export async function extraireTexteFiche(pdf: Uint8Array): Promise<string> {
   const document = await getDocumentProxy(pdf);
   const { text } = await extractText(document, { mergePages: false });
   return text.join("\n");
+}
+
+const MOIS = [
+  "Janvier",
+  "Février",
+  "Mars",
+  "Avril",
+  "Mai",
+  "Juin",
+  "Juillet",
+  "Août",
+  "Septembre",
+  "Octobre",
+  "Novembre",
+  "Décembre",
+].join("|");
+
+/** Édition imprimée de la fiche (« Juillet 2024 »), `null` quand elle est illisible. */
+export function extraireEdition(texte: string): string | null {
+  const correspondance = new RegExp(`\\b(${MOIS})\\s+(\\d{4})\\b`).exec(texte);
+  return correspondance === null ? null : `${correspondance[1]} ${correspondance[2]}`;
 }
 
 type Binding = { value?: unknown };
@@ -191,7 +229,14 @@ export type ArretControle = {
 
 export type RapportControle = {
   corpus: "cjue";
-  fiche: { titre: string; page: string; url: string; snapshot: string | null };
+  fiche: {
+    titre: string;
+    page: string;
+    url: string;
+    snapshot: string | null;
+    /** Édition imprimée de la fiche, lue dans le PDF ; `null` si illisible. */
+    edition: string | null;
+  };
   consulte_le: string;
   numeros_affaires: number;
   arrets_fiche: number;
@@ -199,6 +244,8 @@ export type RapportControle = {
   presents: number;
   /** Arrêts de la fiche entrés au corpus par les CELEX complémentaires du descripteur. */
   ajoutes: number;
+  /** Part de `ajoutes` entrée lors de cette exécution, zéro sur un corpus déjà complet. */
+  ajoutes_ce_passage: number;
   /** Arrêts absents, chacun avec sa raison durable. */
   absents: Array<{ celex: string; numeros: string[]; motif: MotifEcartCjue }>;
   /** Arrêts absents sans raison : la commande sort en erreur tant qu'il en reste. */
@@ -271,7 +318,11 @@ function motifDurable(
   rootDir: string,
   celex: string,
   motifs: Map<string, MotifEcartCjue>,
+  complementaires: readonly string[],
 ): MotifEcartCjue | null {
+  // Un CELEX ajouté pour la fiche n'a pas de raison durable : une déduction
+  // fausse ne doit pas devenir un « absent expliqué » au passage suivant.
+  if (complementaires.includes(celex)) return null;
   const duManifeste = motifs.get(celex);
   if (duManifeste !== undefined && MOTIFS_DURABLES.has(duManifeste)) return duManifeste;
   const refuse = lireRefus(rootDir, celex);
@@ -321,7 +372,8 @@ export function resumeControle(rapport: RapportControle): string {
     "<!-- controle-curia:debut -->",
     "## Contrôle par la fiche thématique Curia",
     "",
-    `Contrôle du ${rapport.consulte_le} : fiche « ${rapport.fiche.titre} » (Juillet 2024), ` +
+    `Contrôle du ${rapport.consulte_le} : fiche « ${rapport.fiche.titre} »` +
+      `${rapport.fiche.edition === null ? "" : ` (${rapport.fiche.edition})`}, ` +
       `${rapport.numeros_affaires} numéros d'affaires pour ${rapport.arrets_fiche} arrêts — ` +
       `${rapport.presents} présents, dont ${rapport.ajoutes} entré(s) par la liste complémentaire, ` +
       `${rapport.absents.length} absent(s) avec raison, ` +
@@ -377,15 +429,21 @@ export async function controleCuria(options: ControleOptions = {}): Promise<Resu
     texte = await extraireTexteFiche(pdf);
   }
   const affaires = extraireAffaires(texte);
+  const edition = extraireEdition(texte);
   const fetchSparql =
     options.fetchSparql ?? (options.texteFiche === undefined ? fetch : null);
+  const descripteur = JSON.parse(readFileSync(descripteurPath, "utf8")) as DescripteurCjue;
+  const complementaires = descripteur.celex_complementaires ?? [];
 
   const resoudre = async (
     affaire: AffaireFiche,
     corpus: EtatCorpus,
   ): Promise<{ celex: string; resolution: ArretControle["resolution"] }> => {
     const deduit = celexArret(affaire.numero);
-    if (corpus.documents.has(deduit) || motifDurable(rootDir, deduit, corpus.motifs) !== null) {
+    if (
+      corpus.documents.has(deduit) ||
+      motifDurable(rootDir, deduit, corpus.motifs, complementaires) !== null
+    ) {
       return { celex: deduit, resolution: "deduit" };
     }
     const resolue =
@@ -393,7 +451,9 @@ export async function controleCuria(options: ControleOptions = {}): Promise<Resu
         ? null
         : await resoudreArret(affaire.numero, fetchSparql).catch(() => null);
     if (resolue !== null) return { celex: resolue.celex, resolution: resolue.via };
-    if (affaire.groupe.length > 1) {
+    // Le repli par groupe n'est admis que sur une citation qui porte un ECLI :
+    // « les arrêts C-101/01 et C-999/99 » ne prouve pas que le second est joint.
+    if (affaire.groupe.length > 1 && affaire.groupeAvecEcli) {
       const premier = celexArret(affaire.groupe[0] ?? affaire.numero);
       if (corpus.documents.has(premier)) return { celex: premier, resolution: "groupe" };
     }
@@ -426,7 +486,7 @@ export async function controleCuria(options: ControleOptions = {}): Promise<Resu
     for (const entree of entrees) {
       const existant = parCelex.get(entree.celex);
       if (existant === undefined) {
-        const motif = motifDurable(rootDir, entree.celex, corpus.motifs);
+        const motif = motifDurable(rootDir, entree.celex, corpus.motifs, complementaires);
         parCelex.set(entree.celex, {
           celex: entree.celex,
           numeros: [entree.numero],
@@ -447,14 +507,13 @@ export async function controleCuria(options: ControleOptions = {}): Promise<Resu
     );
   };
 
-  const descripteur = JSON.parse(readFileSync(descripteurPath, "utf8")) as DescripteurCjue;
-  const complementaires = descripteur.celex_complementaires ?? [];
   let arrets = grouper(resolutions, etatInitial, complementaires);
   let erreurSync: string | null = null;
 
   const aAjouter = arrets
     .filter((arret) => arret.etat === "absent" && arret.motif === undefined)
     .map((arret) => arret.celex);
+  let ajoutesCePassage = 0;
   if (aAjouter.length > 0) {
     ajouterComplementaires(descripteurPath, aAjouter);
     try {
@@ -468,7 +527,12 @@ export async function controleCuria(options: ControleOptions = {}): Promise<Resu
     }
     const apres = lireEtatCorpus(rootDir);
     const enrichi = JSON.parse(readFileSync(descripteurPath, "utf8")) as DescripteurCjue;
-    arrets = grouper(resolutions, apres, enrichi.celex_complementaires ?? []);
+    const complementairesEnrichis = enrichi.celex_complementaires ?? [];
+    arrets = grouper(resolutions, apres, complementairesEnrichis);
+    ajoutesCePassage = arrets.filter(
+      (arret) =>
+        arret.etat === "ajoute" && !complementaires.includes(arret.celex),
+    ).length;
   }
 
   const presents = arrets.filter((arret) => arret.etat !== "absent").length;
@@ -495,12 +559,14 @@ export async function controleCuria(options: ControleOptions = {}): Promise<Resu
       page: FICHE.page,
       url: FICHE.url,
       snapshot,
+      edition,
     },
     consulte_le: consulteLe,
     numeros_affaires: affaires.length,
     arrets_fiche: arrets.length,
     presents,
     ajoutes,
+    ajoutes_ce_passage: ajoutesCePassage,
     absents: absentsAvecRaison,
     manquants_sans_raison: manquantsSansRaison,
     arrets,
@@ -539,6 +605,12 @@ async function main(argv: string[]): Promise<void> {
       `${rapport.erreur_sync === null ? "" : ` — synchronisation en échec : ${rapport.erreur_sync}`}\n` +
       `rapport : ${relative(process.cwd(), resultat.rapportPath)}\n`,
   );
+  if (rapport.ajoutes_ce_passage > 0) {
+    process.stderr.write(
+      `${rapport.ajoutes_ce_passage} arrêt(s) ajouté(s) : relancez npm run corpus:index (incrémental) ` +
+        "pour les rendre cherchables\n",
+    );
+  }
   if (resultat.code !== 0) process.exitCode = 1;
 }
 

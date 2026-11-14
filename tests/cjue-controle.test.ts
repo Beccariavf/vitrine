@@ -13,6 +13,7 @@ import {
   controleCuria,
   ecrireResume,
   extraireAffaires,
+  extraireEdition,
   resoudreArret,
   resumeControle,
 } from "../mcp/corpus/cjue/controle.ts";
@@ -28,6 +29,7 @@ const TEXTE = [
   "Arrêt du 29 janvier 2008 (grande chambre), Promusicae (C-275/06, EU:C:2008:54).",
   "Renvoi à l'affaire C-511/18 et à l'affaire C-511/18.",
   "Arrêt du Tribunal du 16 juillet 2020, T-307/22, EU:T:2022:1.",
+  "Protection des données à caractère personnel — Juillet 2024.",
 ].join("\n");
 
 /** Documents présents au corpus de test ; C-275/06 est exclu, C-461/10 manque. */
@@ -131,6 +133,13 @@ describe("l'extraction des numéros d'affaire d'une fiche", () => {
     assert.equal(affaires.length, 1);
     assert.deepEqual(affaires[0]?.groupe, ["C-511/18"]);
   });
+
+  it("ne tient une jonction pour certaine que si la citation porte un ECLI", () => {
+    const avec = extraireAffaires("affaires jointes C-511/18 et C-512/18, EU:C:2020:791");
+    assert.equal(avec[0]?.groupeAvecEcli, true);
+    const sans = extraireAffaires("les arrêts C-101/01 et C-999/99 ont été rendus");
+    assert.equal(sans[1]?.groupeAvecEcli, false);
+  });
 });
 
 describe("la conversion d'un numéro en CELEX d'arrêt", () => {
@@ -140,8 +149,21 @@ describe("la conversion d'un numéro en CELEX d'arrêt", () => {
     assert.equal(celexArret("T-307/22"), "62022TJ0307");
   });
 
+  it("sépare les années 1900 des années 2000", () => {
+    assert.equal(celexArret("C-25/62"), "61962CJ0025");
+    assert.equal(celexArret("C-101/99"), "61999CJ0101");
+    assert.equal(celexArret("C-101/01"), "62001CJ0101");
+  });
+
   it("refuse un numéro illisible en le nommant", () => {
     assert.throws(() => celexArret("affaire 12"), /affaire 12/);
+  });
+});
+
+describe("l'édition de la fiche", () => {
+  it("se lit dans le texte, sinon reste nulle", () => {
+    assert.equal(extraireEdition("Protection des données\nJuillet 2024 3 curia.europa.eu"), "Juillet 2024");
+    assert.equal(extraireEdition("Arrêt du 26 juillet 2017"), null);
   });
 });
 
@@ -219,7 +241,9 @@ describe("le contrôle de la fiche contre le corpus", () => {
       assert.equal(resultat.rapport.arrets_fiche, 7);
       assert.equal(resultat.rapport.presents, 6);
       assert.equal(resultat.rapport.ajoutes, 1);
+      assert.equal(resultat.rapport.ajoutes_ce_passage, 1);
       assert.equal(resultat.rapport.manquants_sans_raison, 0);
+      assert.equal(resultat.rapport.fiche.edition, "Juillet 2024");
       assert.deepEqual(resultat.rapport.absents, [
         { celex: "62006CJ0275", numeros: ["C-275/06"], motif: "xhtml_absent" },
       ]);
@@ -242,6 +266,24 @@ describe("le contrôle de la fiche contre le corpus", () => {
       assert.equal(rapport.consulte_le, "2026-11-14");
       assert.ok(rapport.fiche.url.endsWith("fiche_thematique_-_donnees_personnelles_-_fr.pdf"));
       assert.ok(readFileSync(join(racine, COUVERTURE), "utf8").includes("<!-- controle-curia:debut -->"));
+
+      let resynchronise = false;
+      const second = await controleCuria(
+        options(racine, descripteurPath, {
+          syncImpl: async () => {
+            resynchronise = true;
+          },
+        }),
+      );
+      assert.equal(resynchronise, false);
+      assert.equal(second.code, 0);
+      assert.equal(second.rapport.ajoutes, 1);
+      assert.equal(second.rapport.ajoutes_ce_passage, 0);
+      assert.equal(second.rapport.presents, 6);
+      assert.deepEqual(
+        second.rapport.arrets.map((arret) => arret.celex),
+        resultat.rapport.arrets.map((arret) => arret.celex),
+      );
     } finally {
       rmSync(racine, { recursive: true, force: true });
     }
@@ -349,12 +391,14 @@ describe("le résumé du contrôle dans la couverture", () => {
           page: "https://curia.europa.eu/page",
           url: "https://curia.europa.eu/fiche.pdf",
           snapshot: null,
+          edition: "Juillet 2024",
         },
         consulte_le: "2026-11-14",
         numeros_affaires: 51,
         arrets_fiche: 43,
         presents: 42,
-        ajoutes: 1,
+        ajoutes: 4,
+        ajoutes_ce_passage: 0,
         absents: [],
         manquants_sans_raison: 0,
         arrets: [],
