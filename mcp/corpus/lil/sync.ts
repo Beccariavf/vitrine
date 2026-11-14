@@ -125,7 +125,7 @@ export function sansTempsExecution(valeur: unknown): unknown {
 }
 
 /** Écrit un fichier UTF-8 s'il n'a pas déjà exactement ce contenu. */
-function ecrireSiChange(chemin: string, contenu: string): boolean {  try {
+export function ecrireSiChange(chemin: string, contenu: string): boolean {  try {
     if (readFileSync(chemin, "utf8") === contenu) return false;
   } catch {
     // Absent : on l'écrit plus bas.
