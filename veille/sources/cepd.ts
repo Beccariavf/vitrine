@@ -8,12 +8,12 @@ import { canonicalUrl, hashId } from "../normalize.ts";
 import { toSummary } from "../summary.ts";
 import { toIsoUtc } from "./cnil.ts";
 import { chargerTexte, listerDocumentsSitemap } from "../../mcp/corpus/cepd/liste.ts";
-import type { DocumentListe, FetchHtml } from "../../mcp/corpus/cepd/liste.ts";
+import type { FetchHtml } from "../../mcp/corpus/cepd/liste.ts";
 import {
   enrichirDocument,
   signatureVersion,
   slugDe,
-  statutDepuisTitre,
+  statutDocument,
 } from "../../mcp/corpus/cepd/parse.ts";
 import { lireDescripteur } from "../../mcp/corpus/cepd/sync.ts";
 import { statutApplication } from "../../mcp/corpus/statut.ts";
@@ -176,7 +176,13 @@ function carteDeChaines(valeur: unknown): Record<string, string | null> | null {
   return carte;
 }
 
-/** Slugs et URL des documents que le corpus a explicitement écartés. */
+/**
+ * Slugs et URL des documents que le corpus a explicitement écartés. La veille
+ * les ignore **tous**, y compris les écarts transitoires : l'entrée écrite quand
+ * le document était neuf reste dans la fenêtre de `corpus:sync` et suffit à le
+ * faire réessayer, tandis que re-signaler chaque semaine un document que le
+ * corpus a délibérément laissé de côté serait du bruit.
+ */
 function ecartesDuManifeste(manifeste: ManifesteLu | null): Set<string> {
   const ecartes = new Set<string>();
   const tableau = manifeste?.couverture?.documents_ecartes;
@@ -215,14 +221,6 @@ function titreDepuisSlug(slug: string): string {
   return slug.replace(/-/g, " ").trim();
 }
 
-/**
- * Statut publié d'une page : consultation déclarée par la page, sinon le titre
- * qualifie le document de projet ou de version finale.
- */
-function statutDePage(document: DocumentListe): "finale" | "projet" {
-  return document.consultation === true ? "projet" : statutDepuisTitre(document.titre);
-}
-
 export type PasseDocumentsOptions = {
   /** Racine du dépôt : le manifeste du corpus y est lu. */
   rootDir?: string;
@@ -237,8 +235,6 @@ export type PasseDocumentsOptions = {
 };
 
 export type ResultatPasseDocuments = {
-  /** Rien à conserver : le corpus garde les pages et les PDF qu'il a lus. */
-  raw: [];
   entries: Entry[];
   /** Pages illisibles uniquement. */
   warnings: string[];
@@ -335,7 +331,7 @@ export async function passeDocumentsCePd(
     if (delai > 0) await attendre(delai);
 
     const enrichi = enrichirDocument(document, html);
-    const statut = statutDePage(enrichi);
+    const statut = statutDocument(enrichi);
     const signature = signatureVersion({ version: enrichi.version ?? null, statut });
     // Un document déjà au corpus dans le même état n'est pas une nouveauté.
     if (present && versions !== null) {
@@ -377,5 +373,5 @@ export async function passeDocumentsCePd(
     );
   }
 
-  return { raw: [], entries, warnings, notes };
+  return { entries, warnings, notes };
 }

@@ -199,6 +199,13 @@ export function statutDepuisTitre(titre: string): "finale" | "projet" {
   return projet && !finale ? "projet" : "finale";
 }
 
+/** Statut publié d'un document : la page de consultation le fait projet, sinon son titre décide. */
+export function statutDocument(
+  document: Pick<DocumentListe, "consultation" | "titre">,
+): "finale" | "projet" {
+  return document.consultation === true ? "projet" : statutDepuisTitre(document.titre);
+}
+
 /** Complète une entrée de liste avec les métadonnées nécessaires au corpus. */
 export function preparerDocument(document: DocumentListe): DocumentPrepare {
   const source = document.pdfUrl ?? document.url;
@@ -209,7 +216,7 @@ export function preparerDocument(document: DocumentListe): DocumentPrepare {
     date: dateDocument(document),
     // La page de consultation prime sur le titre : un document peut s'appeler
     // « Guidelines 02/2026 » et n'être encore qu'une version de consultation.
-    statut: document.consultation === true ? "projet" : statutDepuisTitre(document.titre),
+    statut: statutDocument(document),
     version: document.version ?? versionDepuisTitre(document.titre, source),
   };
 }

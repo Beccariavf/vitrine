@@ -93,6 +93,32 @@ const MOTIFS_DURABLES = new Set([
   "version_francaise_absente",
 ]);
 
+/**
+ * Motifs d'écart durables du CEPD : une version obsolète, une annexe seule, une
+ * page hors sitemap ou un hébergement hors site ne seront pas réparés par une
+ * passe. Une page illisible, un PDF absent, une date manquante ou une
+ * extraction en échec, eux, peuvent l'être : le document reste manquant.
+ */
+const MOTIFS_DURABLES_CEPD = new Set([
+  "version obsolète",
+  "PDF annexe seulement",
+  "page CEPD sans PDF ou non listée au sitemap",
+]);
+
+/** Motifs CEPD durables dont le message nomme le document : comparaison par préfixe. */
+const PREFIXES_DURABLES_CEPD: readonly string[] = [
+  "PDF sans rapport avec le document",
+  "document hébergé hors du site du CEPD",
+];
+
+/** Vrai quand un motif d'écart CEPD ne sera pas réparé par une nouvelle passe. */
+function motifDurableCePd(motif: string): boolean {
+  return (
+    MOTIFS_DURABLES_CEPD.has(motif) ||
+    PREFIXES_DURABLES_CEPD.some((prefixe) => motif.startsWith(prefixe))
+  );
+}
+
 /** Corpus visé par une source de veille, ou `null` si elle n'alimente aucun corpus. */
 export function corpusDeLEntree(
   entry: Pick<Entry, "source"> & { document?: string; categorie?: Entry["categorie"] },
@@ -385,9 +411,10 @@ export function indexerVersionsCorpus(rootDir: string): Map<string, Set<string>>
 /**
  * Documents explicitement écartés par un corpus, avec leur motif. La CJUE publie
  * une liste par CELEX, dont seuls les motifs durables écartent pour de bon ; le
- * CEPD publie la liste des documents qu'il n'a pas retenus, par slug, et la
- * veille les ignore tous. Les comptes des autres corpus ne disent pas quel
- * document a été écarté.
+ * CEPD publie la liste des documents qu'il n'a pas retenus, par slug, avec la
+ * même distinction : seuls ses motifs durables écartent, un échec transitoire
+ * laisse le document manquant pour qu'une passe le rejoue. Les comptes des
+ * autres corpus ne disent pas quel document a été écarté.
  */
 export function documentsEcartes(rootDir: string, corpus: string): Map<string, string> {
   const ecartes = new Map<string, string>();
@@ -403,8 +430,13 @@ export function documentsEcartes(rootDir: string, corpus: string): Map<string, s
     };
     for (const document of manifeste.couverture?.documents_ecartes ?? []) {
       if (corpus === "cepd") {
-        if (typeof document.slug === "string" && document.slug !== "") {
-          ecartes.set(document.slug, typeof document.raison === "string" ? document.raison : "");
+        if (
+          typeof document.slug === "string" &&
+          document.slug !== "" &&
+          typeof document.raison === "string" &&
+          motifDurableCePd(document.raison)
+        ) {
+          ecartes.set(document.slug, document.raison);
         }
         continue;
       }

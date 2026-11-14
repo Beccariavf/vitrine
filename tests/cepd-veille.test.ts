@@ -4,7 +4,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
-import type { FetchHtml } from "../mcp/corpus/cepd/liste.ts";
+import type { DescripteurCePd, FetchHtml } from "../mcp/corpus/cepd/liste.ts";
+import type { FetchPdf } from "../mcp/corpus/cepd/pdf.ts";
+import { syncCePd } from "../mcp/corpus/cepd/sync.ts";
 import { readThemes } from "../veille/themes.ts";
 import type { Entry } from "../veille/types.ts";
 import { SOURCES, run } from "../veille/main.ts";
@@ -30,6 +32,12 @@ const DOC =
   `${BASE}/documents/guideline/guidelines-062026-on-the-processing-of-personal-data_fr`;
 const SLUG = "guidelines-062026-on-the-processing-of-personal-data";
 const DATE_PASSE = new Date("2026-11-14T09:30:00.000Z");
+const DATE_LISTE = "2026-11-14";
+const PDF = new Uint8Array(readFileSync(new URL("guideline.pdf", FIXTURES)));
+const TEXTE = readFileSync(new URL("guideline.txt", FIXTURES), "utf8");
+const DESCRIPTEUR = JSON.parse(
+  readFileSync(new URL("../mcp/corpus/cepd/descripteur.json", import.meta.url), "utf8"),
+) as DescripteurCePd;
 
 function racine(): string {
   return mkdtempSync(join(tmpdir(), "cepd-veille-"));
@@ -62,6 +70,16 @@ function servir(pages: Map<string, string>): { fetchHtml: FetchHtml; appels: str
     return { ok: true, status: 200, text: async () => corps };
   };
   return { fetchHtml, appels };
+}
+
+/** PDF simulé : la fixture servie pour toute URL. */
+function fauxPdf(octets: Uint8Array): FetchPdf {
+  return async () => ({
+    ok: true,
+    status: 200,
+    arrayBuffer: async () =>
+      octets.buffer.slice(octets.byteOffset, octets.byteOffset + octets.byteLength) as ArrayBuffer,
+  });
 }
 
 /** Carte de pages : index, page 1, puis les pages de documents demandées. */
@@ -135,7 +153,6 @@ describe("la veille des documents du CEPD", () => {
       assert.equal(entree.version, "finale");
       assert.equal(entree.consultation, undefined);
       assert.equal(entree.id, identifiantDeDocument(SLUG, "finale"));
-      assert.deepEqual(resultat.raw, []);
       assert.deepEqual(resultat.warnings, []);
       assert.match(
         resultat.notes.join("\n"),
@@ -546,6 +563,84 @@ describe("la veille des documents du CEPD", () => {
         NEWS.endsWith("\n") ? NEWS : `${NEWS}\n`,
       );
       assert.match(resultat.notes.join("\n"), /cepd : 2 document\(s\) listé\(s\)/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("calcule la même signature des deux côtés, corpus et veille", async () => {
+    const root = racine();
+    const slug = "guidelines-082026-on-anonymisation";
+    const page = `${BASE}/documents/guideline/${slug}_fr`;
+    // Page de consultation : aucun marqueur de version, « Public consultation ongoing ».
+    const consultation = [
+      "<html><body><main>",
+      '<h1 id="document-full-title">Guidelines 08/2026 on Anonymisation</h1>',
+      '<time datetime="2026-07-08T12:00:00Z">8 July 2026</time>',
+      "<p>Guideline 08 July 2026 Public consultation ongoing</p>",
+      '<a href="/system/files/g082026_en.pdf">PDF</a>',
+      "</main></body></html>",
+    ].join("");
+    const finale = [
+      "<html><body><main>",
+      '<h1 id="document-full-title">Guidelines 08/2026 on Anonymisation</h1>',
+      '<time datetime="2026-11-12T12:00:00Z">12 November 2026</time>',
+      '<a href="/system/files/g082026_en.pdf">PDF</a>',
+      "</main></body></html>",
+    ].join("");
+    const pages = new Map<string, string>([
+      [DESCRIPTEUR.url_sitemap, SITEMAP_INDEX],
+      [`${DESCRIPTEUR.url_sitemap}?page=1`, urlset([{ url: page, lastmod: "2026-07-08" }])],
+      [page, consultation],
+    ]);
+    try {
+      const { fetchHtml } = servir(pages);
+      await syncCePd({
+        rootDir: root,
+        date: DATE_LISTE,
+        fetchHtml,
+        fetchPdf: fauxPdf(PDF),
+        extraireTexte: async () => TEXTE,
+        attendre: async () => {},
+        tentatives: 1,
+      });
+      const manifeste = JSON.parse(
+        readFileSync(join(root, "data", "corpus", "cepd", "manifest.json"), "utf8"),
+      ) as {
+        documents_versions: Record<string, string>;
+        documents_lastmod: Record<string, string | null>;
+      };
+      assert.deepEqual(manifeste.documents_versions, { [slug]: "projet" });
+      assert.deepEqual(manifeste.documents_lastmod, { [slug]: "2026-07-08" });
+
+      // Même sitemap : la veille reconnaît la même signature et n'écrit rien.
+      const identique = await passeDocumentsCePd({
+        rootDir: root,
+        fetchImpl: fetchHtml,
+        attendre: async () => {},
+        maintenant: DATE_PASSE,
+      });
+      assert.deepEqual(identique.entries, []);
+
+      // Même slug, page devenue finale sans version explicite : le sitemap l'a datée.
+      pages.set(
+        `${DESCRIPTEUR.url_sitemap}?page=1`,
+        urlset([{ url: page, lastmod: "2026-11-12" }]),
+      );
+      pages.set(page, finale);
+      const changee = await passeDocumentsCePd({
+        rootDir: root,
+        fetchImpl: fetchHtml,
+        attendre: async () => {},
+        maintenant: DATE_PASSE,
+      });
+
+      assert.equal(changee.entries.length, 1);
+      const entree = changee.entries[0];
+      assert.ok(entree);
+      assert.equal(entree.document, slug);
+      assert.equal(entree.version, "finale");
+      assert.equal(entree.consultation, undefined);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

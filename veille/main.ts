@@ -50,7 +50,7 @@ export type Source = {
     parsePage(html: string): string[];
   };
   /** Collecte complémentaire de la même source : documents du corpus, pas des actualités. */
-  documents?: (context: ApiContext) => Promise<ApiResult>;
+  documents?: (context: ApiContext) => Promise<Omit<ApiResult, "raw">>;
 };
 
 /** Ce qu'une source API rend : ses réponses brutes, ses entrées et ses avertissements. */
@@ -125,7 +125,6 @@ export const SOURCES: AnySource[] = [
         ...(context.now === undefined ? {} : { maintenant: context.now }),
       });
       return {
-        raw: resultat.raw,
         entries: resultat.entries,
         warnings: resultat.warnings,
         notes: resultat.notes,

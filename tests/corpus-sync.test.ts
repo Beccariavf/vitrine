@@ -798,7 +798,7 @@ describe("synchronisation du corpus", () => {
                 url: "https://www.edpb.europa.eu/documents/guideline/guidelines-042026_fr",
                 slug: "guidelines-042026",
                 type: "lignes_directrices",
-                raison: "PDF absent",
+                raison: "version obsolète",
               },
             ],
           },
@@ -831,7 +831,64 @@ describe("synchronisation du corpus", () => {
       assert.equal(rapport.comptes.ecartes, 1);
       const document = rapport.documents.find((element) => element.document === "guidelines-042026");
       assert.equal(document?.statut, "ecarte");
-      assert.equal(document?.motif, "PDF absent");
+      assert.equal(document?.motif, "version obsolète");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("laisse manquant un document CEPD dont l'écart tient à un échec transitoire", async () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "cepd", [uniteCePd("guidelines-012023")]);
+      writeFileSync(
+        join(root, "data", "corpus", "cepd", "manifest.json"),
+        `${JSON.stringify({
+          corpus: "cepd",
+          documents: 1,
+          fragments: 1,
+          date_liste: "2026-11-10",
+          couverture: {
+            documents_ecartes: [
+              {
+                url: "https://www.edpb.europa.eu/documents/guideline/guidelines-042026_fr",
+                slug: "guidelines-042026",
+                type: "lignes_directrices",
+                raison: "page illisible : HTTP 503",
+              },
+            ],
+          },
+        })}\n`,
+        "utf8",
+      );
+      ecrireEntree(root, {
+        ...entree(
+          "cepd",
+          "entree-cepd-illisible",
+          "https://www.edpb.europa.eu/documents/guideline/guidelines-042026_fr",
+        ),
+        document: "guidelines-042026",
+      });
+
+      let appels = 0;
+      const cepd: AgentSync = async () => {
+        appels += 1;
+        return { ecrit: false, message: "appelé" };
+      };
+      const rapport = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-14",
+        depuis: "2026-11-07",
+        agents: { cepd },
+        embedder: embedderFactice(),
+      });
+
+      assert.equal(appels, 1, "un échec transitoire laisse le document à rejouer");
+      assert.equal(rapport.comptes.manquants, 1);
+      assert.equal(rapport.comptes.ecartes, 0);
+      const document = rapport.documents.find((element) => element.document === "guidelines-042026");
+      assert.equal(document?.statut, "manquant");
+      assert.equal(document?.motif, undefined);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
