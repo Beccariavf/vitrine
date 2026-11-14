@@ -205,8 +205,9 @@ Conseil d'État toutes dates, 1 594 retenues après mots-clés et 20 774 fragmen
 282 décisions et 4 430 fragments ; fonds `inedit` : 1 312 décisions et 16 344 fragments) ; 62
 doublons entre les deux fonds ; exclusions 399 198 autres juridictions, 167 044 sans mot-clé,
 5 627 textes vides, période 1982-03-12 → 2026-10-27. Les 12 questions `dev` de
-`mcp/eval/questions-ce.csv` rendent le
-document attendu au top 5 pour 8 d'entre elles (MRR 0,486, top 1 33,3 %).
+`mcp/eval/questions-ce.csv`, mesurées le 9 novembre 2026 sur le corpus de 1 312 décisions, rendent le
+document attendu au top 5 pour 8 d'entre elles (MRR 0,486, top 1 33,3 %) ; l'élargissement du
+14 novembre n'a pas été remesuré.
 
 Le corpus `cepd` porte les lignes directrices du Comité européen de la protection des données,
 extraites de leurs PDF. `npm run cepd:sync` lit d'abord l'index de sitemaps puis ses cinq pages,
@@ -234,10 +235,11 @@ sans toucher au corpus existant et la suivante reprend au cache. Les quatre entr
 sont incluses d'office. Mesure du 14 novembre 2026 : 1 348 décisions lues, 403 retenues,
 8 194 fragments, 945 écartées faute de pertinence, période 1986-07-21 → 2026-11-10, dont 51
 décisions antérieures à 2014. Chaque décision
-indexe son visa quand Judilibre le porte (124 rejets non spécialement motivés n'en ont pas), puis
+indexe son visa quand Judilibre le porte (147 décisions n'en ont pas), puis
 regroupe son texte en fragments de 600 à 1 200 caractères — un paragraphe plus long reste entier. Les 10
-questions `dev` rendent le document attendu au top 5 pour 6 d'entre elles (MRR 0,470, top 1
-40,0 %). Licence Ouverte 2.0 (Etalab) et conditions générales d'utilisation Judilibre.
+questions `dev`, mesurées le 11 novembre 2026 sur le corpus de 352 décisions, rendent le document
+attendu au top 5 pour 6 d'entre elles (MRR 0,470, top 1
+40,0 %) ; l'élargissement du 14 novembre n'a pas été remesuré. Licence Ouverte 2.0 (Etalab) et conditions générales d'utilisation Judilibre.
 
 Le corpus `cjue` porte les arrêts et ordonnances de la Cour et du Tribunal sur la protection des
 données personnelles depuis 2014. `npm run cjue:sync` interroge CELLAR en SPARQL en réunissant la

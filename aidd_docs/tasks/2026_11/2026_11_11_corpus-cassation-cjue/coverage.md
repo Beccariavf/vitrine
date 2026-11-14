@@ -18,7 +18,7 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 
 - Archive JADE globale du 8 novembre 2026, fonds `jade/global/publie` et `jade/global/inedit`, lus en flux.
 - 573 525 entrées lues : 1 594 retenues, 399 198 autres juridictions, 167 044 sans mot-clé, 5 627 textes vides, 0 date invalide ; 62 doublons d'identifiant entre les deux fonds.
-- 174 265 décisions du Conseil d'État valablement datées, toutes dates, avant mots-clés (`decisions_ce`) ; aucune borne de date n'est appliquée, ni au descripteur ni au filtrage.
+- 174 265 décisions du Conseil d'État valablement datées, toutes dates, avant mots-clés (`decisions_ce`, doublons de fonds compris) ; aucune borne de date n'est appliquée, ni au descripteur ni au filtrage.
 - Fonds `publie` : 282 décisions / 4 430 fragments ; fonds `inedit` : 1 312 / 16 344.
 - `periode.date_min` et `periode.date_max` sont les premières et dernières dates observées dans le corpus (1982-03-12 → 2026-10-27).
 - Filtre inchangé : juridiction normalisée exactement « Conseil d'État » et au moins un mot-clé du descripteur (`données personnelles`, `données à caractère personnel`, `informatique et libertés`, `protection des données`, `RGPD`, `règlement général sur la protection des données`, `commission nationale de l'informatique et des libertés`, `CNIL`).
@@ -28,7 +28,7 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 - 22 phrases de recherche, `field=text`, `operator=and`, aucune borne de date (ni `date_start` ni `date_end`).
 - 1 348 décisions lues : 403 retenues, 945 écartées `hors_sujet`, 0 `date_invalide`, 0 `texte_vide`.
 - 705 doublons de recherche ; 4 entrées Judilibre de `data/entries/` incluses et retenues (`veille.entrees: 4`, `veille.retenues: 4`) ; une décision de la veille échappe au filtre de pertinence par construction.
-- Filtre : visa citant un instrument de protection des données, ou au moins 2 occurrences d'une expression centrale ; `CNIL` seul ne suffit plus (51 décisions retirées : 36 sans aucune autre expression, 15 avec une seule occurrence). 124 décisions n'ont pas de visa dans Judilibre. Aucun identifiant introuvable.
+- Filtre : visa citant un instrument de protection des données, ou au moins 2 occurrences d'une expression centrale. Au 11 novembre 2026, `CNIL` seul ne suffisait plus (51 décisions retirées par le durcissement du filtre : 36 sans aucune autre expression, 15 avec une seule occurrence). 147 décisions n'ont pas de visa dans Judilibre. 1 535 fragments dépassent 1 200 caractères (un paragraphe long reste entier, maximum 28 852). Aucun identifiant introuvable.
 - 51 décisions retenues sont antérieures à 2014, la plus ancienne au 1986-07-21 : la borne n'existe plus, ni au descripteur ni dans `exclusions`.
 - `periode.date_min` et `periode.date_max` sont les premières et dernières dates observées dans le corpus ; le manifeste ne porte plus de `couverture.borne`.
 - Le corpus n'est pas une collection exhaustive de la Cour de cassation : c'est un sous-ensemble déclaré, borné par 22 phrases et par le filtre de pertinence ; Judilibre ne sert pas le texte de toutes les décisions.
@@ -47,7 +47,7 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 
 ## Évaluations `dev`
 
-Mesures du 11 novembre 2026, hors split `test`, sur l'index à huit corpus (74 891 unités ; **77 107** depuis l'élargissement CJUE du 13 novembre, 2 216 fragments de plus).
+Mesures du 11 novembre 2026, hors split `test`, sur l'index à huit corpus (74 891 unités ; **77 107** depuis l'élargissement CJUE du 13 novembre, 2 216 fragments de plus). Les corpus `ce` et `cc` ont été élargis le 14 novembre (sans borne de date) sans que ces rangs soient remesurés.
 
 | Jeu | Résultat |
 |---|---|

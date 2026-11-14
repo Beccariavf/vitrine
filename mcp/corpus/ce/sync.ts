@@ -91,7 +91,7 @@ export type ManifesteCe = {
   licence: string;
   /** Entrées XML lues dans l'archive, toutes juridictions confondues. */
   documents_lus: number;
-  /** Décisions du Conseil d'État valablement datées, toutes dates, avant mots-clés. */
+  /** Décisions du Conseil d'État valablement datées, toutes dates, avant mots-clés (doublons de fonds compris). */
   decisions_ce: number;
   /** Décisions retenues après filtrage. */
   documents: number;

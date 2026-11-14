@@ -384,6 +384,12 @@ describe("la synchronisation du corpus Cour de cassation", () => {
 
     assert.equal(unites.length, manifeste.fragments);
     assert.equal(new Set(unites.map((unite) => unite.document)).size, manifeste.documents);
+    assert.equal("date_min" in manifeste, false, "aucune borne au manifeste");
+    assert.equal("borne" in manifeste.couverture, false, "aucune borne en couverture");
+    const etat = JSON.parse(
+      readFileSync(join(RACINE, "data", "corpus", "cc", "etat.json"), "utf8"),
+    ) as Record<string, unknown>;
+    assert.equal("date_min" in etat, false);
     assert.doesNotThrow(() => validerUnitesCorpus(unites, "Cour de cassation"));
   });
 });
