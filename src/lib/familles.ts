@@ -45,6 +45,10 @@ export const FAMILLES_LEGENDE: readonly Famille[] = [FAMILLES.textes, FAMILLES.a
 const FAMILLE_DE_SOURCE: Readonly<Record<string, FamilleId>> = {
   rgpd: "textes",
   aiact: "textes",
+  eprivacy: "textes",
+  police: "textes",
+  eudpr: "textes",
+  rgpdproc: "textes",
   lil: "textes",
   textes_fr: "textes",
   cnil: "autorites",

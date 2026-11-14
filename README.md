@@ -21,7 +21,7 @@ npm run dev            # http://localhost:4321
 npm test               # suite hors ligne
 npm run build          # génère dist/
 
-npm run corpus:build   # CELLAR → data/corpus/{rgpd,aiact}/
+npm run corpus:build   # CELLAR → data/corpus/{rgpd,aiact,eprivacy,police,eudpr,rgpdproc}/
 npm run corpus:build -- --document aiact   # un seul descripteur
 npm run ce:sync                            # archive JADE globale → data/corpus/ce/ (1,32 Go, long)
 npm run ce:sync -- --dry-run               # ce que l'archive produirait, sans écrire
@@ -86,7 +86,8 @@ citation) et `dila` pour les incréments (découpage local de 600 à 1 200 carac
 remplacé que si l'archive est plus récente que sa date, sinon il garde sa numérotation publiée.
 `get_decision` rend une décision par identifiant `CNILTEXT…` ou par numéro `SAN-…` — sa partie
 opératoire par défaut, le document entier avec `partie: "tous"` — et `search` accepte un paramètre
-`corpus` (`rgpd`, `aiact`, `cnil`, `lil`, `ce`, `cepd`, `cc`, `cjue`) et un filtre
+`corpus` (`rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `cnil`, `lil`, `ce`, `cepd`,
+`cc`, `cjue`) et un filtre
 `nature` pour les trois natures CNIL. Le filtre est d'abord un choix de corpus, pas de document. La
 route Légifrance `https://www.legifrance.gouv.fr/cnil/id/<id>` est déclarée dans le manifeste mais
 n'a pas été vérifiée : elle répond 403 aux robots.
@@ -115,7 +116,7 @@ relevé du marquage, sur les 4 459 citations des cinq corpus de décisions, est 
 Chaque passage de `search`, chaque article de `get_article` et chaque décision de `get_decision` porte
 `statut_application`, le vocabulaire uniforme du serveur : `en_vigueur`, `abroge`, `propose`,
 `pendant`, `rendue`, `adoptee` ou `inconnu`. Le champ vient d'une table par corpus lue au rendu
-(`mcp/corpus/statut.ts`) : les textes (`rgpd`, `aiact`, `lil`) suivent leur statut source, `VIGUEUR`
+(`mcp/corpus/statut.ts`) : les textes (`rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `lil`) suivent leur statut source, `VIGUEUR`
 comme `en_vigueur` valant `en_vigueur` et `ABROGE` valant `abroge` ; les décisions du Conseil d'État,
 de la Cour de cassation et de la CJUE sont `rendue` quel que soit leur statut de publication ou leur
 type d'acte ; une sanction CNIL est `rendue`, un avis ou une recommandation `adoptee` ; une ligne
@@ -260,7 +261,7 @@ complémentaire est déclarée au manifeste. Réutilisation autorisée par la d�
 (CC BY 4.0).
 
 Chaque `manifest.json` porte un bloc `couverture` émis par sa synchronisation : source, date ou
-archive, bornes, types ou natures retenus, exclusions et comptes. Le tableau des huit corpus
+archive, bornes, types ou natures retenus, exclusions et comptes. Le tableau des treize corpus
 (documents, fragments, période, source, licence) est
 `aidd_docs/tasks/2026_11/2026_11_11_corpus-cassation-cjue/coverage.md` ; il reprend les comptes
 des manifestes, jamais une recopie approximative.
@@ -284,7 +285,7 @@ classement des documents cités par les décisions et absents du corpus, recalcu
 entrée portant son libellé, son lien officiel, son statut (`absent` ou `exclu`), son compte de
 citations et les autorités qui le citent avec leur compte. Un document déclaré `exclu` au catalogue
 d'instruments de `mcp/corpus/citations.ts` est marqué comme tel : il n'est jamais présenté comme un
-trou, et le catalogue n'exclut aucun de ses huit instruments aujourd'hui. `etat_corpus` rend ce bloc
+trou, et le catalogue n'exclut aucun de ses neuf instruments aujourd'hui. `etat_corpus` rend ce bloc
 tel quel, sans le recalculer ; un rapport antérieur au bloc le rend `null`. Le relevé réel du
 2026-11-13 (6 documents, 410 citations) et ses limites sont dans
 `aidd_docs/tasks/2026_11/2026_11_13_classement-documents-absents/mesure.md`. Un document manquant

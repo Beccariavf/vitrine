@@ -10,6 +10,7 @@ import { openIndex } from "./index/search.ts";
 import type { Index } from "./index/search.ts";
 import { getArticle, getDecision, search, etatCorpus } from "./tools.ts";
 import { LIMITE_DEFAUT, LIMITE_MAX, decisionsCitant } from "./corpus/citants.ts";
+import { PERIMETRE } from "./corpus/citations.ts";
 import {
   FAMILLES,
   LIMITE_DEFAUT as LIMITE_DEFAUT_DECISIONS,
@@ -33,8 +34,19 @@ function chiffresCitationsDecisions(): string {
 /** Racine du dépôt, résolue depuis ce fichier et jamais depuis le répertoire courant. */
 export const RACINE = fileURLToPath(new URL("..", import.meta.url));
 
+/** Les quatre actes de l'Union qui encadrent le RGPD, avec leur corpus et leur CELEX. */
+const ACTES_UE =
+  "la directive ePrivacy (corpus `eprivacy`, CELEX 32002L0058), la directive police-justice " +
+  "(corpus `police`, CELEX 32016L0680), le règlement 2018/1725 des institutions de l'Union (corpus " +
+  "`eudpr`, CELEX 32018R1725), le règlement procédural RGPD (corpus `rgpdproc`, CELEX 32025R2518)";
+
+/** Phrase de refus d'un instrument connu absent du corpus, celle que `citations.ts` rend. */
+const PERIMETRE_REFUS = `(périmètre : ${PERIMETRE})`;
+
 const CONSIGNE_PROVENANCE =
-  "Le texte rendu vient des neuf corpus locaux (RGPD `32016R0679`, AI Act `32024R1689`, LIL " +
+  "Le texte rendu vient des treize corpus locaux (RGPD `32016R0679`, AI Act `32024R1689`, " +
+  "ePrivacy `32002L0058`, directive police-justice `32016L0680`, règlement 2018/1725 " +
+  "`32018R1725`, règlement procédural RGPD `32025R2518`, LIL " +
   "`LEGITEXT000006068624`, textes français d'application `textes_fr`, délibérations CNIL `cnil`, décisions du Conseil d'État `ce`, lignes " +
   "directrices du CEPD `cepd`, décisions de la Cour de cassation `cc` et décisions de la CJUE " +
   "`cjue`), jamais d'une génération. Citer la référence et l'URL rendues. " +
@@ -70,8 +82,8 @@ const CONSIGNE_CITATIONS =
   "officiel (`url`, `null` quand il est inconnu) et `hors_corpus` (`true` quand ce document n'est " +
   "pas dans le corpus local). Une citation hors corpus garde son lien et ne porte aucun texte ni " +
   "résumé. Un document qui est un instrument connu absent du corpus répond « absent de mon corpus " +
-  "(périmètre : RGPD, AI Act, LIL, textes français d'application, CNIL, Conseil d'État, CEPD, " +
-  "Cour de cassation, CJUE). », sans rendre de texte ni de passage, quand l'appel le nomme par `document` ; " +
+  `${PERIMETRE_REFUS}. », sans ` +
+  "rendre de texte ni de passage, quand l'appel le nomme par `document` ; " +
   "un identifiant inconnu garde sa réponse actuelle. Une citation " +
   "absente de la liste peut exister dans la décision : ne pas en conclure qu'elle n'y figure pas. " +
   "Citer cette liste telle quelle, sans en déduire d'autres articles. Une liste vide dit qu'aucune " +
@@ -83,7 +95,7 @@ const CONSIGNE_PERIMETRE =
   "(`corpus[].couverture`). Chaque corpus dit sa fraîcheur : `veille: true` pour les corpus " +
   "revérifiés par la synchronisation (`cnil`, `ce`, `cc`, `cjue`), avec `a_jour_au`, la dernière " +
   "synchronisation réussie (`null` si aucune) ; `veille: false` pour un instantané fixe jamais " +
-  "revérifié (`rgpd`, `aiact`, `lil`, `textes_fr`, `cepd`), daté par `arrete_le` ou non daté (`null`) ; " +
+  "revérifié (`rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `lil`, `textes_fr`, `cepd`), daté par `arrete_le` ou non daté (`null`) ; " +
   "`inconnu: true` dit qu'un corpus demandé n'existe pas localement et que rien n'y a été interrogé. Ne " +
   "jamais présenter un instantané fixe comme à jour. Le rappeler au lecteur. Une absence de " +
   "résultat ne prouve jamais que la règle n'existe pas : elle peut être hors du périmètre, exclue " +
@@ -103,8 +115,9 @@ const CONSIGNE_DECISIONS_CITEES =
   `${chiffresCitationsDecisions()}`;
 
 const CONSIGNE_SERVEUR =
-  "Serveur de lecture et de recherche sur neuf corpus juridiques : le RGPD " +
-  "(corpus `rgpd`, CELEX 32016R0679), l'AI Act (corpus `aiact`, CELEX 32024R1689), la loi " +
+  "Serveur de lecture et de recherche sur treize corpus juridiques : le RGPD " +
+  "(corpus `rgpd`, CELEX 32016R0679), l'AI Act (corpus `aiact`, CELEX 32024R1689), " +
+  `${ACTES_UE}, la loi ` +
   "Informatique et Libertés (corpus `lil`, LEGITEXT000006068624), les textes français " +
   "d'application (corpus `textes_fr` : décret 2019-536 LEGITEXT000038567662 en entier, Code pénal " +
   "LEGITEXT000006070719 articles 226-16 à 226-24, CPCE LEGITEXT000006070987 article L34-5), " +
@@ -113,7 +126,7 @@ const CONSIGNE_SERVEUR =
   "Conseil d'État (corpus `ce`), les lignes directrices du CEPD (corpus `cepd`), les décisions de " +
   "la Cour de cassation sur les données personnelles (corpus `cc`) et celles de la CJUE (corpus " +
   "`cjue`). Les outils de " +
-  "recherche acceptent les paramètres `corpus` et `nature` ; sans eux, la recherche couvre les neuf " +
+  "recherche acceptent les paramètres `corpus` et `nature` ; sans eux, la recherche couvre les treize " +
   "collections et toutes les natures. Un document nommé dans la question (sigle ou nom ordinaire, " +
   "casse et ponctuation indifférentes) est honoré quand `document` et `corpus` sont absents ; sans " +
   "nom, une référence exacte qui n'existe que dans un corpus est `incertain` et le corpus est " +
@@ -153,16 +166,20 @@ export function createServer(deps: ServerDeps): McpServer {
   serveur.registerTool(
     "get_article",
     {
-      title: "Lire un article du RGPD, de l'AI Act, de la LIL ou d'un texte français d'application",
+      title: "Lire un article d'un texte du corpus",
       description:
-        "Rend le texte exact d'un article du RGPD, de l'AI Act, de la LIL ou d'un texte français " +
-        "d'application (décret 2019-536, Code pénal 226-16 à 226-24, CPCE L34-5), avec sa référence, " +
-        "son chemin, ses dates et son URL. Répondre « introuvable » quand l'article n'existe pas ; " +
-        "ne jamais compléter un texte absent. Un document qui est un instrument connu absent du " +
-        "corpus répond « absent de mon corpus (périmètre : RGPD, AI Act, LIL, textes français " +
-        "d'application, CNIL, Conseil d'État, CEPD, Cour de cassation, CJUE). », sans rendre de " +
-        "texte ; un article hors de la partie couverte du Code pénal ou du CPCE est dit hors du " +
-        "corpus ; un identifiant inconnu garde la réponse d'un article introuvable. " +
+        "Rend le texte exact d'un article du RGPD, de l'AI Act, de la directive ePrivacy, de la " +
+        "directive police-justice, du règlement 2018/1725, du règlement procédural RGPD, de la " +
+        "LIL ou d'un texte français d'application (décret 2019-536, Code pénal 226-16 à 226-24, CPCE L34-5), avec sa référence, son chemin, ses dates et son URL. ePrivacy et la directive " +
+        "police-justice sont rendues dans leur version consolidée en vigueur ; les règlements " +
+        "2018/1725 et 2025/2518, jamais modifiés, dans leur texte d'origine : `etat_corpus` en " +
+        "donne la version et la date (`corpus[].couverture.version`, `date_consolidation`). Un article " +
+        "inséré se demande avec son suffixe (`15 bis`). Répondre « introuvable » quand l'article " +
+        "n'existe pas ; ne jamais compléter un texte absent. Un document qui est un instrument " +
+        `connu absent du corpus répond « absent de mon corpus ${PERIMETRE_REFUS}. », sans ` +
+        "rendre de texte ; un article hors de la partie couverte du Code pénal ou du CPCE est dit hors du " +
+        "corpus ; un identifiant inconnu " +
+        "garde la réponse d'un article introuvable. " +
         `${CONSIGNE_STATUT_APPLICATION} ` +
         `${CONSIGNE_PERIMETRE} ` +
         CONSIGNE_PROVENANCE,
@@ -170,11 +187,12 @@ export function createServer(deps: ServerDeps): McpServer {
         document: z
           .string()
           .describe(
-            "Identifiant du document : 32016R0679 (RGPD), 32024R1689 (AI Act), " +
-              "LEGITEXT000006068624 (LIL), LEGITEXT000038567662 (décret 2019-536), " +
-              "LEGITEXT000006070719 (Code pénal) ou LEGITEXT000006070987 (CPCE)",
+            "Identifiant du document : 32016R0679 (RGPD), 32024R1689 (AI Act), 32002L0058 " +
+              "(ePrivacy), 32016L0680 (directive police-justice), 32018R1725 (règlement " +
+              "2018/1725), 32025R2518 (règlement procédural RGPD), LEGITEXT000006068624 (LIL), " +
+              "LEGITEXT000038567662 (décret 2019-536), LEGITEXT000006070719 (Code pénal) ou LEGITEXT000006070987 (CPCE)",
           ),
-        numero: z.string().describe("Numéro d'article, par exemple 17, 26-1, 226-16 ou L34-5"),
+        numero: z.string().describe("Numéro d'article, par exemple 17, 15 bis, 26-1, 226-16 ou L34-5"),
       },
     },
     async ({ document, numero }) => {
@@ -347,7 +365,7 @@ export function createServer(deps: ServerDeps): McpServer {
       title: "Dire à quelle date le corpus est à jour",
       description:
         "Rend la date de la dernière synchronisation réussie depuis la veille (`a_jour_au`), " +
-        "la fenêtre de veille, l'inventaire des huit corpus avec leurs comptes, les documents " +
+        "la fenêtre de veille, l'inventaire des treize corpus avec leurs comptes, les documents " +
         "manquants et l'état des sources et de l'index. Chaque corpus porte `couverture`, le bloc que " +
         "déclare son manifeste — sources, bornes et exclusions — : c'est la cible du renvoi " +
         "`perimetre.exclusions` des autres outils. Les clés d'exclusion varient selon le corpus " +
@@ -369,9 +387,10 @@ export function createServer(deps: ServerDeps): McpServer {
   serveur.registerTool(
     "search",
     {
-      title: "Chercher dans les neuf corpus juridiques",
+      title: "Chercher dans les treize corpus juridiques",
       description:
-        "Cherche par le sens dans le RGPD, l'AI Act, la LIL, les textes français d'application, les délibérations de la CNIL " +
+        "Cherche par le sens dans le RGPD, l'AI Act, la directive ePrivacy, la directive " +
+        "police-justice, le règlement 2018/1725, le règlement procédural RGPD, la LIL, les textes français d'application, les délibérations de la CNIL " +
         "(sanctions, avis, recommandations et lignes directrices), les décisions du Conseil d'État, " +
         "les lignes directrices du CEPD, les décisions de la Cour de cassation sur les données " +
         "personnelles et celles de la CJUE, et rend les passages les plus proches avec leur " +
@@ -379,7 +398,8 @@ export function createServer(deps: ServerDeps): McpServer {
         "L'article pose la règle et le considérant l'éclaire : à pertinence comparable, l'article passe " +
         "devant, mais aucun considérant n'est retiré du résultat. " +
         "Une question qui cite un article rend cet article exact, sans recherche vectorielle. " +
-        "`corpus` borne la recherche à une collection (`rgpd`, `aiact`, `cnil`, `lil`, `textes_fr`, `ce`, `cepd`, " +
+        "`corpus` borne la recherche à une collection (`rgpd`, `aiact`, `eprivacy`, `police`, " +
+        "`eudpr`, `rgpdproc`, `cnil`, `lil`, `textes_fr`, `ce`, `cepd`, " +
         "`cc`, `cjue`) " +
         "et prime sur tout nom de document présent dans la question. " +
         "`nature` borne une recherche CNIL à une nature (`Sanction`, `Avis`, " +
@@ -409,7 +429,8 @@ export function createServer(deps: ServerDeps): McpServer {
           .string()
           .optional()
           .describe(
-            "Restreint la recherche à une collection : rgpd, aiact, cnil, lil, textes_fr, ce, cepd, cc ou " +
+            "Restreint la recherche à une collection : rgpd, aiact, eprivacy, police, eudpr, " +
+              "rgpdproc, cnil, lil, textes_fr, ce, cepd, cc ou " +
               "cjue ; cnil couvre les sanctions, avis, recommandations et lignes directrices ; " +
               "absent, toutes répondent",
           ),
@@ -418,8 +439,8 @@ export function createServer(deps: ServerDeps): McpServer {
           .optional()
           .describe(
             "Restreint la recherche à un document : 32016R0679 (RGPD), 32024R1689 (AI Act), " +
-              "LEGITEXT000006068624 (LIL), LEGITEXT000038567662 (décret 2019-536), " +
-              "LEGITEXT000006070719 (Code pénal), LEGITEXT000006070987 (CPCE), un identifiant CNILTEXT, un identifiant Judilibre (cc) " +
+              "32002L0058 (ePrivacy), 32016L0680, 32018R1725, 32025R2518, " +
+              "LEGITEXT000006068624 (LIL), LEGITEXT000038567662 (décret 2019-536), LEGITEXT000006070719 (Code pénal), LEGITEXT000006070987 (CPCE), un identifiant CNILTEXT, un identifiant Judilibre (cc) " +
               "ou un CELEX de jurisprudence (cjue) ; absent, tous les corpus répondent",
           ),
         nature: z
@@ -491,7 +512,7 @@ async function main(): Promise<void> {
 
   await serveur.connect(transport);
   process.stderr.write(
-    "Serveur MCP des neuf corpus (RGPD, AI Act, CNIL, LIL, textes français, CE, CEPD, CC, CJUE) prêt sur stdio " +
+    "Serveur MCP des treize corpus (RGPD, AI Act, ePrivacy, 2016/680, 2018/1725, 2025/2518, CNIL, LIL, textes français, CE, CEPD, CC, CJUE) prêt sur stdio " +
       "(six outils : get_article, get_decision, search, decisions_citant, decisions_citant_decision, etat_corpus).\n",
   );
 }

@@ -1,0 +1,37 @@
+{
+  "document": "32016L0680",
+  "titre": "Directive (UE) 2016/680 du Parlement européen et du Conseil du 27 avril 2016 relative à la protection des personnes physiques à l'égard du traitement des données à caractère personnel par les autorités compétentes à des fins de prévention et de détection des infractions pénales, d'enquêtes et de poursuites en la matière ou d'exécution de sanctions pénales, et à la libre circulation de ces données, et abrogeant la décision-cadre 2008/977/JAI du Conseil",
+  "langue": "fra",
+  "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:02016L0680-20160504",
+  "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+  "date_acte": "2016-04-27",
+  "date_publication": "2016-05-04",
+  "date_debut": "2016-05-05",
+  "date_fin": null,
+  "statut": "en_vigueur",
+  "version": "02016L0680-20160504",
+  "date_consolidation": "2016-05-04",
+  "snapshot": "1d47f325e999f17c2c2e756ccd37cb980c55e0553ec1c63f8db691b4c937dd3c.xhtml",
+  "unites": 65,
+  "couverture": {
+    "source": "CELLAR — publications.europa.eu/resource/celex/02016L0680-20160504",
+    "date_publication": "2016-05-04",
+    "bornes": {
+      "debut": "2016-05-05",
+      "fin": null
+    },
+    "statut": "en_vigueur",
+    "types_retenus": [
+      "article"
+    ],
+    "exclusions": [
+      "considérants : absents de la version consolidée 02016L0680-20160504"
+    ],
+    "comptes": {
+      "articles": 65,
+      "considerants": 0
+    },
+    "version": "02016L0680-20160504",
+    "date_consolidation": "2016-05-04"
+  }
+}

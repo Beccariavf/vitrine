@@ -11,6 +11,9 @@ export type CouvertureActe = {
   types_retenus: string[];
   exclusions: string[];
   comptes: { articles: number; considerants: number };
+  /** CELEX rendu et date de sa consolidation ; présents quand le descripteur les déclare. */
+  version?: string;
+  date_consolidation?: string | null;
 };
 
 /** Métadonnées du corpus, écrites une fois par document. */
@@ -25,6 +28,10 @@ export type Manifeste = {
   date_debut: string;
   date_fin: string | null;
   statut: string;
+  /** CELEX récupéré : version consolidée ou acte d'origine ; absent des manifestes antérieurs. */
+  version?: string;
+  /** Date de la consolidation rendue ; `null` quand l'acte d'origine est rendu. */
+  date_consolidation?: string | null;
   /** Nom du fichier rendu par `writeRaw`, adressé par son `sha256`. */
   snapshot: string;
   unites: number;
@@ -76,16 +83,22 @@ export function writeCorpus(
     date_debut: descripteur.date_debut,
     date_fin: descripteur.date_fin,
     statut: descripteur.statut,
+    ...(descripteur.version === undefined
+      ? {}
+      : { version: descripteur.version, date_consolidation: descripteur.date_consolidation ?? null }),
     snapshot: basename(snapshotPath),
     unites: unites.length,
     couverture: {
-      source: `CELLAR — publications.europa.eu/resource/celex/${descripteur.document}`,
+      source: `CELLAR — publications.europa.eu/resource/celex/${descripteur.version ?? descripteur.document}`,
       date_publication: descripteur.date_publication,
       bornes: { debut: descripteur.date_debut, fin: descripteur.date_fin },
       statut: descripteur.statut,
       types_retenus: types,
-      exclusions: [],
+      exclusions: descripteur.exclusions ?? [],
       comptes: { articles, considerants },
+      ...(descripteur.version === undefined
+        ? {}
+        : { version: descripteur.version, date_consolidation: descripteur.date_consolidation ?? null }),
     },
   };
 

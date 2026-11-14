@@ -206,7 +206,7 @@ export function inventaireCorpus(
       documents:
         typeof manifeste.documents === "number"
           ? manifeste.documents
-          : nom === "rgpd" || nom === "aiact"
+          : typeof manifeste.document === "string" || nom === "rgpd" || nom === "aiact"
             ? 1
             : 0,
       unites: nombre(manifeste.unites, nombre(manifeste.fragments, 0)),
