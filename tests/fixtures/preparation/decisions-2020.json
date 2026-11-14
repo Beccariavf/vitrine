@@ -1,0 +1,6 @@
+{
+  "head": { "vars": ["celex"] },
+  "results": {
+    "bindings": [{ "celex": { "type": "literal", "value": "62020CJ0149" } }]
+  }
+}

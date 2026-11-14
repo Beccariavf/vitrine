@@ -1,0 +1,266 @@
+{
+  "head": {
+    "vars": [
+      "dossier",
+      "ref",
+      "statut",
+      "retire",
+      "celex",
+      "date",
+      "titre",
+      "amendCelex"
+    ]
+  },
+  "results": {
+    "bindings": [
+      {
+        "dossier": {
+          "type": "uri",
+          "value": "http://publications.europa.eu/resource/dossier/2025/0360"
+        },
+        "ref": {
+          "type": "uri",
+          "value": "http://publications.europa.eu/resource/authority/procedure-code/2025/0360/COD"
+        },
+        "statut": {
+          "type": "uri",
+          "value": "http://publications.europa.eu/resource/authority/file-status/PROP_PENDING"
+        },
+        "celex": {
+          "type": "literal",
+          "value": "52025PC0360"
+        },
+        "date": {
+          "type": "date",
+          "value": "2025-09-16"
+        },
+        "titre": {
+          "type": "literal",
+          "value": "Proposition de règlement du Parlement européen et du Conseil modifiant le règlement (UE) 2016/679 en ce qui concerne la coopération entre autorités de contrôle",
+          "xml:lang": "fr"
+        },
+        "amendCelex": {
+          "type": "literal",
+          "value": "32016R0679"
+        }
+      },
+      {
+        "dossier": {
+          "type": "uri",
+          "value": "http://publications.europa.eu/resource/dossier/2025/0360"
+        },
+        "ref": {
+          "type": "uri",
+          "value": "http://publications.europa.eu/resource/authority/procedure-code/2025/0360/COD"
+        },
+        "statut": {
+          "type": "uri",
+          "value": "http://publications.europa.eu/resource/authority/file-status/PROP_PENDING"
+        },
+        "celex": {
+          "type": "literal",
+          "value": "52025PC0360"
+        },
+        "date": {
+          "type": "date",
+          "value": "2025-09-16"
+        },
+        "titre": {
+          "type": "literal",
+          "value": "Proposition de règlement du Parlement européen et du Conseil modifiant le règlement (UE) 2016/679 en ce qui concerne la coopération entre autorités de contrôle",
+          "xml:lang": "fr"
+        },
+        "amendCelex": {
+          "type": "literal",
+          "value": "32002L0058"
+        }
+      },
+      {
+        "dossier": {
+          "type": "uri",
+          "value": "http://publications.europa.eu/resource/dossier/2025/0360"
+        },
+        "ref": {
+          "type": "literal",
+          "value": "2025/0360/COD"
+        },
+        "statut": {
+          "type": "uri",
+          "value": "http://publications.europa.eu/resource/authority/file-status/PROP_PENDING"
+        },
+        "celex": {
+          "type": "literal",
+          "value": "52025PC0360R(01)"
+        },
+        "date": {
+          "type": "date",
+          "value": "2025-10-02"
+        },
+        "titre": {
+          "type": "literal",
+          "value": "Proposition de règlement du Parlement européen et du Conseil modifiant le règlement (UE) 2016/679 en ce qui concerne la coopération entre autorités de contrôle (rectificatif)",
+          "xml:lang": "fr"
+        },
+        "amendCelex": {
+          "type": "literal",
+          "value": "32016R0679"
+        }
+      },
+      {
+        "dossier": {
+          "type": "uri",
+          "value": "http://publications.europa.eu/resource/dossier/2025/0836"
+        },
+        "ref": {
+          "type": "literal",
+          "value": "2025/0836/COD"
+        },
+        "statut": {
+          "type": "uri",
+          "value": "http://publications.europa.eu/resource/authority/file-status/PROP_ADOPTED"
+        },
+        "celex": {
+          "type": "literal",
+          "value": "52025PC0836"
+        },
+        "date": {
+          "type": "date",
+          "value": "2025-11-19"
+        },
+        "titre": {
+          "type": "literal",
+          "value": "Proposition de règlement modifiant le règlement (UE) 2024/1689 en ce qui concerne la simplification des obligations applicables aux systèmes d'intelligence artificielle",
+          "xml:lang": "fr"
+        },
+        "amendCelex": {
+          "type": "literal",
+          "value": "32024R1689"
+        }
+      },
+      {
+        "dossier": {
+          "type": "uri",
+          "value": "http://publications.europa.eu/resource/dossier/2024/0599"
+        },
+        "ref": {
+          "type": "literal",
+          "value": "2024/0599/COD"
+        },
+        "statut": {
+          "type": "uri",
+          "value": "http://publications.europa.eu/resource/authority/file-status/PROP_PENDING"
+        },
+        "retire": {
+          "type": "literal",
+          "value": "1"
+        },
+        "celex": {
+          "type": "literal",
+          "value": "52024PC0599"
+        },
+        "date": {
+          "type": "date",
+          "value": "2024-11-05"
+        },
+        "titre": {
+          "type": "literal",
+          "value": "Proposition de directive relative au traitement des données à caractère personnel par les services répressifs",
+          "xml:lang": "fr"
+        },
+        "amendCelex": {
+          "type": "literal",
+          "value": "32016L0680"
+        }
+      },
+      {
+        "dossier": {
+          "type": "uri",
+          "value": "http://publications.europa.eu/resource/dossier/2025/0401"
+        },
+        "ref": {
+          "type": "literal",
+          "value": "2025/0401/COD"
+        },
+        "statut": {
+          "type": "uri",
+          "value": "http://publications.europa.eu/resource/authority/file-status/PROP_REJECTED"
+        },
+        "celex": {
+          "type": "literal",
+          "value": "52025PC0401"
+        },
+        "date": {
+          "type": "date",
+          "value": "2025-04-10"
+        },
+        "titre": {
+          "type": "literal",
+          "value": "Proposition de règlement relatif à l'échange transfrontalier de données de santé",
+          "xml:lang": "fr"
+        },
+        "amendCelex": {
+          "type": "literal",
+          "value": "32018R1725"
+        }
+      },
+      {
+        "dossier": {
+          "type": "uri",
+          "value": "http://publications.europa.eu/resource/dossier/2025/0500"
+        },
+        "ref": {
+          "type": "literal",
+          "value": "2025/0500/COD"
+        },
+        "celex": {
+          "type": "literal",
+          "value": "52025PC0500"
+        },
+        "date": {
+          "type": "date",
+          "value": "2025-05-20"
+        },
+        "titre": {
+          "type": "literal",
+          "value": "Proposition de règlement relatif à la gouvernance européenne des données",
+          "xml:lang": "fr"
+        },
+        "amendCelex": {
+          "type": "literal",
+          "value": "32016R0679"
+        }
+      },
+      {
+        "dossier": {
+          "type": "uri",
+          "value": "http://publications.europa.eu/resource/dossier/2025/0600"
+        },
+        "ref": {
+          "type": "literal",
+          "value": "2025/0600/COD"
+        },
+        "statut": {
+          "type": "uri",
+          "value": "http://publications.europa.eu/resource/authority/file-status/PROP_PARTIAL_ADOPTION"
+        },
+        "celex": {
+          "type": "literal",
+          "value": "52025PC0600"
+        },
+        "date": {
+          "type": "date",
+          "value": "2025-06-30"
+        },
+        "titre": {
+          "type": "literal",
+          "value": "Proposition de règlement relatif à la protection des données dans le cadre du passeport européen d'identité numérique",
+          "xml:lang": "fr"
+        },
+        "amendCelex": {
+          "type": "literal",
+          "value": "32025R2518"
+        }
+      }
+    ]
+  }
+}

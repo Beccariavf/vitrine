@@ -44,7 +44,7 @@ export type Descripteur = {
 };
 
 /** `fragment` désigne un découpage de texte long, propre à la CNIL ; `clause` l'annexe de 2021/914. */
-export type Niveau = "article" | "considérant" | "fragment" | "clause";
+export type Niveau = "article" | "considérant" | "fragment" | "clause" | "proposition" | "affaire";
 
 /** Origine d'un fragment CNIL : l'historique DINUM ou un incrément DILA. */
 export type Origine = "dinum" | "dila";
@@ -74,6 +74,14 @@ export type Unite = {
   montant?: number | null;
   /** Vrai si le dispositif prononce une injonction. */
   injonction?: boolean;
+  /** Renseigné pour la préparation seulement : titre CELLAR de la proposition. */
+  titre?: string;
+  /** Renseigné pour la préparation seulement : dernière étape du dossier, `<type> — <date>`. */
+  derniere_etape?: string;
+  /** Renseigné pour la préparation seulement : décision attaquée, `<numéro> (<CELEX>)`. */
+  decision_attaquee?: string;
+  /** Renseigné pour la préparation seulement : affaire durant depuis plus que la présomption. */
+  pendant_presume?: boolean;
 };
 
 const ENTITES: Record<string, string> = {

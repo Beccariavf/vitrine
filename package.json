@@ -31,6 +31,7 @@
     "lil:historique": "node mcp/corpus/lil/historique.ts",
     "lil:sync": "node mcp/corpus/lil/sync.ts",
     "textes-fr:sync": "node mcp/corpus/textes-fr/sync.ts",
+    "preparation:sync": "node mcp/corpus/preparation/sync.ts",
     "mcp:smoke": "node mcp/embed/smoke.ts",
     "mcp": "node mcp/server.ts",
     "mcp:eval": "node mcp/eval/run.ts",
