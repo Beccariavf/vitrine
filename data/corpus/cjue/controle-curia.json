@@ -4,13 +4,15 @@
     "titre": "Protection des données à caractère personnel",
     "page": "https://curia.europa.eu/site/jcms/d2_5127/fr/fiches-thematiques",
     "url": "https://curia.europa.eu/site/upload/docs/application/pdf/2018-10/fiche_thematique_-_donnees_personnelles_-_fr.pdf",
-    "snapshot": "data/raw/9c/9c11ab318ad4690fe252aabe562aed89f4137ed8b8eafe0b7c67cb2571ab5e81.pdf"
+    "snapshot": "data/raw/9c/9c11ab318ad4690fe252aabe562aed89f4137ed8b8eafe0b7c67cb2571ab5e81.pdf",
+    "edition": "Juillet 2024"
   },
   "consulte_le": "2026-11-14",
   "numeros_affaires": 51,
   "arrets_fiche": 43,
   "presents": 43,
   "ajoutes": 4,
+  "ajoutes_ce_passage": 0,
   "absents": [],
   "manquants_sans_raison": 0,
   "arrets": [
