@@ -717,14 +717,15 @@
     "liste_le": "2026-11-14",
     "documents": [
       {
-        "titre": "Guidelines 05/2020 on consent under Regulation 2016/679",
+        "titre": "Guidelines on consent under Regulation 2016/679, WP259 rev.01",
         "url": "https://www.edpb.europa.eu/our-work-tools/our-documents/guidelines/edpb-guidelines-052020-consent-under-regulation-2016679_en",
-        "wp": null,
+        "wp": "WP259",
         "numero": "05/2020",
         "hebergement": "cepd",
         "statut": "retenu",
         "document": "guidelines-052020-on-consent-under-regulation-2016679",
-        "type": "lignes_directrices"
+        "type": "lignes_directrices",
+        "successeur": true
       },
       {
         "titre": "Guidelines on transparency under Regulation 2016/679, WP260 rev.01",
@@ -746,14 +747,15 @@
         "raison": "document hébergé hors du site du CEPD (ec.europa.eu)"
       },
       {
-        "titre": "Guidelines 9/2022 on personal data breach notification under GDPR",
+        "titre": "Guidelines on Personal data breach notification under Regulation 2016/679, WP250 rev.01",
         "url": "https://edpb.europa.eu/our-work-tools/documents/public-consultations/2022/guidelines-92022-personal-data-breach_en",
-        "wp": null,
+        "wp": "WP250",
         "numero": "09/2022",
         "hebergement": "cepd",
         "statut": "retenu",
         "document": "guidelines-92022-on-personal-data-breach-notification-under-gdpr",
-        "type": "lignes_directrices"
+        "type": "lignes_directrices",
+        "successeur": true
       },
       {
         "titre": "Guidelines on the right to data portability under Regulation 2016/679, WP242 rev.01",
@@ -783,14 +785,15 @@
         "raison": "document hébergé hors du site du CEPD (ec.europa.eu)"
       },
       {
-        "titre": "Guidelines 8/2022 on identifying a controller or processor’s lead supervisory authority",
+        "titre": "Guidelines for identifying a controller or processor's lead supervisory authority, WP244 rev.01",
         "url": "https://edpb.europa.eu/our-work-tools/documents/public-consultations/2022/guidelines-82022-identifying-controller-or_en",
-        "wp": null,
+        "wp": "WP244",
         "numero": "08/2022",
         "hebergement": "cepd",
         "statut": "retenu",
         "document": "guidelines-82022-on-identifying-a-controller-or-processors-lead-supervisory",
-        "type": "lignes_directrices"
+        "type": "lignes_directrices",
+        "successeur": true
       },
       {
         "titre": "Position Paper on the derogations from the obligation to maintain records of processing activities pursuant to Article 30(5) GDPR",
@@ -802,14 +805,24 @@
         "raison": "document hébergé hors du site du CEPD (ec.europa.eu)"
       },
       {
-        "titre": "Recommendations 1/2022 on the Application for Approval and on the elements and principles to be found in Controller Binding Corporate Rules (Art. 47 GDPR)",
+        "titre": "Working Document Setting Forth a Co-Operation Procedure for the approval of “Binding Corporate Rules” for controllers and processors under the GDPR, WP 263 rev.01",
+        "url": "https://www.edpb.europa.eu/our-work-tools/our-documents/procedure/edpb-document-setting-forth-co-operation-procedure-approval_en",
+        "wp": "WP263",
+        "numero": null,
+        "hebergement": "cepd",
+        "statut": "ecarte",
+        "raison": "page CEPD sans PDF ou non listée au sitemap"
+      },
+      {
+        "titre": "Recommendation on the Standard Application for Approval of Controller Binding Corporate Rules for the Transfer of Personal Data, WP 264",
         "url": "https://edpb.europa.eu/our-work-tools/our-documents/recommendations/recommendations-12022-application-approval-and_en",
-        "wp": null,
+        "wp": "WP264",
         "numero": "01/2022",
         "hebergement": "cepd",
         "statut": "retenu",
         "document": "recommendations-12022-on-the-application-for-approval-and-on-the-elements",
-        "type": "recommandation"
+        "type": "recommandation",
+        "successeur": true
       },
       {
         "titre": "Recommendation on the Standard Application form for Approval of Processor Binding Corporate Rules for the Transfer of Personal Data, WP 265",
@@ -819,6 +832,15 @@
         "hebergement": "commission",
         "statut": "ecarte",
         "raison": "document hébergé hors du site du CEPD (ec.europa.eu)"
+      },
+      {
+        "titre": "Working Document setting up a table with the elements and principles to be found in Binding Corporate Rules, WP 256 rev.01",
+        "url": "https://edpb.europa.eu/our-work-tools/our-documents/recommendations/recommendations-12022-application-approval-and_en",
+        "wp": "WP256",
+        "numero": "01/2022",
+        "hebergement": "cepd",
+        "statut": "ecarte",
+        "raison": "page CEPD sans PDF ou non listée au sitemap"
       },
       {
         "titre": "Working Document setting up a table with the elements and principles to be found in Processor Binding Corporate Rules, WP 257 rev.01",
@@ -849,9 +871,10 @@
       }
     ],
     "comptes": {
-      "listes": 14,
+      "listes": 16,
       "retenus": 5,
-      "ecartes": 9
+      "successeurs": 4,
+      "ecartes": 11
     }
   },
   "licence": "Régime ouvert (notice de copyright du CEPD) : la réutilisation est autorisée à des fins commerciales et non commerciales ; la source est citée, le sens du document n'est pas dénaturé, les mentions d'auteur et de source sont conservées. Aucun résumé n'est produit par le serveur.",
@@ -1571,14 +1594,15 @@
       "liste_le": "2026-11-14",
       "documents": [
         {
-          "titre": "Guidelines 05/2020 on consent under Regulation 2016/679",
+          "titre": "Guidelines on consent under Regulation 2016/679, WP259 rev.01",
           "url": "https://www.edpb.europa.eu/our-work-tools/our-documents/guidelines/edpb-guidelines-052020-consent-under-regulation-2016679_en",
-          "wp": null,
+          "wp": "WP259",
           "numero": "05/2020",
           "hebergement": "cepd",
           "statut": "retenu",
           "document": "guidelines-052020-on-consent-under-regulation-2016679",
-          "type": "lignes_directrices"
+          "type": "lignes_directrices",
+          "successeur": true
         },
         {
           "titre": "Guidelines on transparency under Regulation 2016/679, WP260 rev.01",
@@ -1600,14 +1624,15 @@
           "raison": "document hébergé hors du site du CEPD (ec.europa.eu)"
         },
         {
-          "titre": "Guidelines 9/2022 on personal data breach notification under GDPR",
+          "titre": "Guidelines on Personal data breach notification under Regulation 2016/679, WP250 rev.01",
           "url": "https://edpb.europa.eu/our-work-tools/documents/public-consultations/2022/guidelines-92022-personal-data-breach_en",
-          "wp": null,
+          "wp": "WP250",
           "numero": "09/2022",
           "hebergement": "cepd",
           "statut": "retenu",
           "document": "guidelines-92022-on-personal-data-breach-notification-under-gdpr",
-          "type": "lignes_directrices"
+          "type": "lignes_directrices",
+          "successeur": true
         },
         {
           "titre": "Guidelines on the right to data portability under Regulation 2016/679, WP242 rev.01",
@@ -1637,14 +1662,15 @@
           "raison": "document hébergé hors du site du CEPD (ec.europa.eu)"
         },
         {
-          "titre": "Guidelines 8/2022 on identifying a controller or processor’s lead supervisory authority",
+          "titre": "Guidelines for identifying a controller or processor's lead supervisory authority, WP244 rev.01",
           "url": "https://edpb.europa.eu/our-work-tools/documents/public-consultations/2022/guidelines-82022-identifying-controller-or_en",
-          "wp": null,
+          "wp": "WP244",
           "numero": "08/2022",
           "hebergement": "cepd",
           "statut": "retenu",
           "document": "guidelines-82022-on-identifying-a-controller-or-processors-lead-supervisory",
-          "type": "lignes_directrices"
+          "type": "lignes_directrices",
+          "successeur": true
         },
         {
           "titre": "Position Paper on the derogations from the obligation to maintain records of processing activities pursuant to Article 30(5) GDPR",
@@ -1656,14 +1682,24 @@
           "raison": "document hébergé hors du site du CEPD (ec.europa.eu)"
         },
         {
-          "titre": "Recommendations 1/2022 on the Application for Approval and on the elements and principles to be found in Controller Binding Corporate Rules (Art. 47 GDPR)",
+          "titre": "Working Document Setting Forth a Co-Operation Procedure for the approval of “Binding Corporate Rules” for controllers and processors under the GDPR, WP 263 rev.01",
+          "url": "https://www.edpb.europa.eu/our-work-tools/our-documents/procedure/edpb-document-setting-forth-co-operation-procedure-approval_en",
+          "wp": "WP263",
+          "numero": null,
+          "hebergement": "cepd",
+          "statut": "ecarte",
+          "raison": "page CEPD sans PDF ou non listée au sitemap"
+        },
+        {
+          "titre": "Recommendation on the Standard Application for Approval of Controller Binding Corporate Rules for the Transfer of Personal Data, WP 264",
           "url": "https://edpb.europa.eu/our-work-tools/our-documents/recommendations/recommendations-12022-application-approval-and_en",
-          "wp": null,
+          "wp": "WP264",
           "numero": "01/2022",
           "hebergement": "cepd",
           "statut": "retenu",
           "document": "recommendations-12022-on-the-application-for-approval-and-on-the-elements",
-          "type": "recommandation"
+          "type": "recommandation",
+          "successeur": true
         },
         {
           "titre": "Recommendation on the Standard Application form for Approval of Processor Binding Corporate Rules for the Transfer of Personal Data, WP 265",
@@ -1673,6 +1709,15 @@
           "hebergement": "commission",
           "statut": "ecarte",
           "raison": "document hébergé hors du site du CEPD (ec.europa.eu)"
+        },
+        {
+          "titre": "Working Document setting up a table with the elements and principles to be found in Binding Corporate Rules, WP 256 rev.01",
+          "url": "https://edpb.europa.eu/our-work-tools/our-documents/recommendations/recommendations-12022-application-approval-and_en",
+          "wp": "WP256",
+          "numero": "01/2022",
+          "hebergement": "cepd",
+          "statut": "ecarte",
+          "raison": "page CEPD sans PDF ou non listée au sitemap"
         },
         {
           "titre": "Working Document setting up a table with the elements and principles to be found in Processor Binding Corporate Rules, WP 257 rev.01",
@@ -1703,9 +1748,10 @@
         }
       ],
       "comptes": {
-        "listes": 14,
+        "listes": 16,
         "retenus": 5,
-        "ecartes": 9
+        "successeurs": 4,
+        "ecartes": 11
       }
     },
     "documents_sans_texte_ecartes": 10,
@@ -1818,10 +1864,24 @@
         "source": "endossement"
       },
       {
+        "url": "https://www.edpb.europa.eu/our-work-tools/our-documents/procedure/edpb-document-setting-forth-co-operation-procedure-approval_en",
+        "slug": "wp263",
+        "type": "g29_repris",
+        "raison": "page CEPD sans PDF ou non listée au sitemap",
+        "source": "endossement"
+      },
+      {
         "url": "http://ec.europa.eu/newsroom/article29/item-detail.cfm?item_id=623848",
         "slug": "wp265",
         "type": "g29_repris",
         "raison": "document hébergé hors du site du CEPD (ec.europa.eu)",
+        "source": "endossement"
+      },
+      {
+        "url": "https://edpb.europa.eu/our-work-tools/our-documents/recommendations/recommendations-12022-application-approval-and_en",
+        "slug": "wp256",
+        "type": "g29_repris",
+        "raison": "page CEPD sans PDF ou non listée au sitemap",
         "source": "endossement"
       },
       {
