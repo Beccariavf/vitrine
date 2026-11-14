@@ -38,6 +38,7 @@ import {
   choisirVersions,
   enrichirDocument,
   preparerDocument,
+  signatureVersion,
   slugDe,
   unitesCePd,
   validerUnites,
@@ -124,6 +125,10 @@ export type ManifesteCePd = {
   documents_langues: Record<string, LanguePdf>;
   /** Type de chaque document retenu, document par document. */
   documents_types: Record<string, TypeDocument>;
+  /** Signature de version de chaque document retenu : version explicite (`2.0`, `rev01`), sinon `finale` ou `projet`. */
+  documents_versions: Record<string, string>;
+  /** Dernière modification du sitemap pour chaque document retenu ; `null` hors sitemap. */
+  documents_lastmod: Record<string, string | null>;
   /** Liste d'endossement du G29, rapprochée du corpus ; `null` si non lue. */
   g29: BlocG29 | null;
   licence: string;
@@ -140,6 +145,8 @@ export type ManifesteCePd = {
     langues_pdf: Record<LanguePdf, number>;
     documents_langues: Record<string, LanguePdf>;
     documents_types: Record<string, TypeDocument>;
+    documents_versions: Record<string, string>;
+    documents_lastmod: Record<string, string | null>;
     g29: BlocG29 | null;
     documents_sans_texte_ecartes: number;
     versions_ecartees: number;
@@ -231,6 +238,8 @@ export function manifesteCePd(
     languesPdf: Record<LanguePdf, number>;
     documentsLangues: Record<string, LanguePdf>;
     documentsTypes: Record<string, TypeDocument>;
+    documentsVersions: Record<string, string>;
+    documentsLastmod: Record<string, string | null>;
     g29: BlocG29 | null;
     documentsEcartes: DocumentEcart[];
     dateMin: string | null;
@@ -256,6 +265,8 @@ export function manifesteCePd(
     langues_pdf: comptes.languesPdf,
     documents_langues: comptes.documentsLangues,
     documents_types: comptes.documentsTypes,
+    documents_versions: comptes.documentsVersions,
+    documents_lastmod: comptes.documentsLastmod,
     g29: comptes.g29,
     licence: descripteur.licence,
     couverture: {
@@ -273,6 +284,8 @@ export function manifesteCePd(
       langues_pdf: comptes.languesPdf,
       documents_langues: comptes.documentsLangues,
       documents_types: comptes.documentsTypes,
+      documents_versions: comptes.documentsVersions,
+      documents_lastmod: comptes.documentsLastmod,
       g29: comptes.g29,
       documents_sans_texte_ecartes: comptes.documentsSansTexte,
       versions_ecartees: comptes.versionsEcartees,
@@ -706,6 +719,8 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
   const dates = unites.map((unite) => unite.date_acte).sort();
   const comptesParType = comptesVides();
   const documentsTypes: Record<string, TypeDocument> = {};
+  const documentsVersions: Record<string, string> = {};
+  const documentsLastmod: Record<string, string | null> = {};
   const fragmentsParDocument = new Map<string, number>();
   for (const unite of unites) {
     fragmentsParDocument.set(unite.document, (fragmentsParDocument.get(unite.document) ?? 0) + 1);
@@ -714,6 +729,8 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
     comptesParType[document.type].documents += 1;
     comptesParType[document.type].fragments += fragmentsParDocument.get(document.slug) ?? 0;
     documentsTypes[document.slug] = document.type;
+    documentsVersions[document.slug] = signatureVersion(document);
+    documentsLastmod[document.slug] = document.lastmod ?? null;
   }
   const typesRetenus = TYPES_DOCUMENT.filter((type) => comptesParType[type].documents > 0);
 
@@ -767,6 +784,8 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
       languesPdf,
       documentsLangues,
       documentsTypes,
+      documentsVersions,
+      documentsLastmod,
       g29,
       documentsEcartes,
       dateMin: dates[0] ?? null,

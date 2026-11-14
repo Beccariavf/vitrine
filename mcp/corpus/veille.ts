@@ -19,6 +19,7 @@ export type CorpusVeille =
   | "constit"
   | "cc"
   | "cjue"
+  | "cepd"
   | "lil"
   | "textes_fr"
   | "rgpd"
@@ -36,6 +37,7 @@ const CORPUS_PAR_SOURCE: Record<string, CorpusVeille> = {
   constit: "constit",
   judilibre: "cc",
   cjeu: "cjue",
+  cepd: "cepd",
 };
 
 /** Corpus d'actes de l'Union : ils ne portent pas la fraîcheur globale. */
@@ -72,6 +74,8 @@ const CORPUS_PAR_DOCUMENT: Record<string, CorpusVeille> = {
 const ID_CETAT = /^CETATEXT\d+$/;
 const ID_CONSTIT = /^CONSTEXT\d+$/;
 const ID_JUDILIBRE = /^[0-9a-f]{24}$/;
+/** Slug d'un document CEPD, tel que `slugDe` l'écrit. */
+const SLUG_CEPD = /^[a-z0-9][a-z0-9-]*$/;
 const CELEX = /^6\d{4}[A-Z]{2}\d{1,4}(?:\(\d+\))?$/;
 const LIEN_CNIL = /https?:\/\/www\.legifrance\.gouv\.fr\/cnil\/id\/(CNILTEXT\d+)/g;
 
@@ -89,6 +93,33 @@ const MOTIFS_DURABLES = new Set([
   "version_francaise_absente",
 ]);
 
+/**
+ * Motifs d'écart durables du CEPD : une version obsolète, une annexe seule, une
+ * page hors sitemap ou un hébergement hors site ne seront pas réparés par une
+ * passe. Une page illisible, un PDF absent, une date manquante ou une
+ * extraction en échec, eux, peuvent l'être : le document reste manquant.
+ */
+const MOTIFS_DURABLES_CEPD = new Set([
+  "version obsolète",
+  "PDF annexe seulement",
+  "page CEPD sans PDF ou non listée au sitemap",
+]);
+
+/** Motifs CEPD durables dont le message nomme le document : comparaison par préfixe. */
+const PREFIXES_DURABLES_CEPD: readonly string[] = [
+  "PDF sans rapport avec le document",
+  "document hébergé hors du site du CEPD",
+  "hébergement hors du site du CEPD",
+];
+
+/** Vrai quand un motif d'écart CEPD ne sera pas réparé par une nouvelle passe. */
+function motifDurableCePd(motif: string): boolean {
+  return (
+    MOTIFS_DURABLES_CEPD.has(motif) ||
+    PREFIXES_DURABLES_CEPD.some((prefixe) => motif.startsWith(prefixe))
+  );
+}
+
 /** Corpus visé par une source de veille, ou `null` si elle n'alimente aucun corpus. */
 export function corpusDeLEntree(
   entry: Pick<Entry, "source"> & { document?: string; categorie?: Entry["categorie"] },
@@ -103,6 +134,9 @@ export function corpusDeLEntree(
     if (entry.categorie === "clauses_types") return null;
     return entry.document === undefined ? null : (CORPUS_ACTES_UE[entry.document] ?? null);
   }
+  // Une actualité du flux CEPD ne vise aucun document du corpus ; seule une
+  // entrée qui porte son slug y entre.
+  if (entry.source === "cepd") return entry.document === undefined ? null : "cepd";
   return CORPUS_PAR_SOURCE[entry.source] ?? null;
 }
 
@@ -252,6 +286,8 @@ export function documentsDeLEntree(
       return ID_CETAT.test(entry.id) ? [entry.id] : [];
     case "constit":
       return entry.document !== undefined && ID_CONSTIT.test(entry.document) ? [entry.document] : [];
+    case "cepd":
+      return entry.document !== undefined && SLUG_CEPD.test(entry.document) ? [entry.document] : [];
     case "judilibre":
       return ID_JUDILIBRE.test(entry.id) ? [entry.id] : [];
     case "cjeu": {
@@ -347,6 +383,7 @@ export function indexerVersionsCorpus(rootDir: string): Map<string, Set<string>>
         text_id?: unknown;
         version?: unknown;
         textes?: unknown;
+        documents_versions?: unknown;
       };
       ajouter(manifeste.document, manifeste.version);
       ajouter(manifeste.text_id, manifeste.version);
@@ -357,6 +394,14 @@ export function indexerVersionsCorpus(rootDir: string): Map<string, Set<string>>
           ajouter(texteManifeste.text_id, texteManifeste.version);
         }
       }
+      // Le CEPD porte la version de chaque document à côté de son type : c'est
+      // elle qu'une entrée de veille compare pour dire une nouvelle version.
+      if (dossier.name === "cepd") {
+        const documents = manifeste.documents_versions;
+        if (typeof documents === "object" && documents !== null) {
+          for (const [document, version] of Object.entries(documents)) ajouter(document, version);
+        }
+      }
     } catch {
       // Un manifeste illisible ne masque pas les versions des unités.
     }
@@ -365,21 +410,37 @@ export function indexerVersionsCorpus(rootDir: string): Map<string, Set<string>>
 }
 
 /**
- * Documents explicitement écartés par un corpus, avec leur motif. Seule la CJUE
- * publie une liste par identifiant ; les comptes des autres corpus ne disent pas
- * quel document a été écarté.
+ * Documents explicitement écartés par un corpus, avec leur motif. La CJUE publie
+ * une liste par CELEX, dont seuls les motifs durables écartent pour de bon ; le
+ * CEPD publie la liste des documents qu'il n'a pas retenus, par slug, avec la
+ * même distinction : seuls ses motifs durables écartent, un échec transitoire
+ * laisse le document manquant pour qu'une passe le rejoue. Les comptes des
+ * autres corpus ne disent pas quel document a été écarté.
  */
 export function documentsEcartes(rootDir: string, corpus: string): Map<string, string> {
   const ecartes = new Map<string, string>();
-  if (corpus !== "cjue") return ecartes;
+  if (corpus !== "cjue" && corpus !== "cepd") return ecartes;
   const chemin = join(rootDir, "data", "corpus", corpus, "manifest.json");
   const texte = lireTexte(chemin);
   if (texte === null) return ecartes;
   try {
     const manifeste = JSON.parse(texte) as {
-      couverture?: { documents_ecartes?: { celex?: unknown; motif?: unknown }[] };
+      couverture?: {
+        documents_ecartes?: { celex?: unknown; motif?: unknown; slug?: unknown; raison?: unknown }[];
+      };
     };
     for (const document of manifeste.couverture?.documents_ecartes ?? []) {
+      if (corpus === "cepd") {
+        if (
+          typeof document.slug === "string" &&
+          document.slug !== "" &&
+          typeof document.raison === "string" &&
+          motifDurableCePd(document.raison)
+        ) {
+          ecartes.set(document.slug, document.raison);
+        }
+        continue;
+      }
       if (
         typeof document.celex === "string" &&
         typeof document.motif === "string" &&

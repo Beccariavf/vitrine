@@ -21,9 +21,9 @@ export type Entry = {
   themes: string[];
   /** Identifiant de la source : `cnil`, `cjeu`, etc. */
   source: string;
-  /** Document du corpus visé, quand la source en désigne un (`legi` : `LEGITEXT…`, `constit` : `CONSTEXT…`). */
+  /** Document du corpus visé, quand la source en désigne un (`legi` : `LEGITEXT…`, `constit` : `CONSTEXT…`, `cepd` : slug). */
   document?: string;
-  /** Identifiant de la version publiée (`LEGIARTI…`, `LEGITEXT…_JJ-MM-AAAA`, consolidation CELEX) ; `legi` et `eurlex`. */
+  /** Version publiée (`LEGIARTI…`, `LEGITEXT…_JJ-MM-AAAA`, consolidation CELEX) ou signature CEPD (`2.0`, sinon `finale`/`projet`) ; `legi`, `eurlex` et `cepd`. */
   version?: string;
   /** Nature de la nouveauté détectée ; `eurlex` seulement. */
   categorie?: "consolidation" | "adequation" | "clauses_types" | "modification";
@@ -33,6 +33,10 @@ export type Entry = {
   numero?: string;
   /** Nature de la décision (`DC` ou `QPC`) ; `constit` seulement. */
   nature?: string;
+  /** Type du document CEPD (`lignes_directrices`, `avis_art64`, `decision_art65`, `recommandation`, `g29_repris`) ; `cepd` seulement. */
+  type?: string;
+  /** Vrai quand la version listée est soumise à consultation publique ; `cepd` seulement. */
+  consultation?: boolean;
   /** CELEX de la décision abrogée par celle que porte l'entrée ; `eurlex` seulement. */
   abroge?: string;
 };
