@@ -119,10 +119,21 @@ export type BlocCjue = {
   texte: string;
 };
 
+/**
+ * Forme de la capture : `xhtml` pour le rendu moderne de CELLAR, `heritage`
+ * pour le HTML patrimonial servi aux arrêts anciens (avant 2004 environ), dont
+ * les points ne suivent pas la structure du XHTML (`count`/`pointN`).
+ */
+export function formatCapture(capture: string): "xhtml" | "heritage" {
+  return /<html[^>]*xmlns\s*=\s*"http:\/\/www\.w3\.org\/1999\/xhtml"/i.test(capture)
+    ? "xhtml"
+    : "heritage";
+}
+
 /** Corps du document, sans l'en-tête XHTML ni les scripts. */
 function corps(xhtml: string): string {
-  const debut = xhtml.indexOf("<body");
-  const fin = xhtml.lastIndexOf("</body>");
+  const debut = xhtml.search(/<body\b/i);
+  const fin = xhtml.toLowerCase().lastIndexOf("</body");
   const contenu = debut >= 0 && fin > debut ? xhtml.slice(debut, fin) : xhtml;
   return contenu.replace(/<script\b[\s\S]*?<\/script>/gi, " ");
 }
@@ -145,7 +156,7 @@ export function paragrapheClasse(xhtml: string, classe: string): string | null {
 
 /** Numéro d'affaire (`C-131/12`, `C-413/23 P`, `T-…`) lu dans l'introduction. */
 export function numeroAffaire(texte: string, celex: string): string {
-  const trouve = /(?:dans\s+l['’]affaire|in\s+case|affaire)\s+((?:C|T)[‑–—-]\s?\d+\s*\/\s*\d+(?:\s+P)?(?:\s+et\s+(?:C|T)[‑–—-]\s?\d+\s*\/\s*\d+(?:\s+P)?)*)/i.exec(
+  const trouve = /(?:dans\s+l['’]affaire|in\s+case|affaire)\s+((?:C|T)[‑–—-]\s?\d+\s*\/\s*\d+(?:\s+P\b)?(?:\s+et\s+(?:C|T)[‑–—-]\s?\d+\s*\/\s*\d+(?:\s+P\b)?)*)/i.exec(
     texte,
   );
   if (trouve?.[1] !== undefined) {
@@ -165,12 +176,108 @@ export function libelleType(celex: string, descripteur: DescripteurCjue): string
   return descripteur.types_retenus[suffixe] ?? "Décision";
 }
 
+/** Marqueur d'un point dans le HTML patrimonial. */
+type MarqueurHeritage = { numero: string; position: number; fin: number };
+
+/**
+ * Marqueurs de point du HTML patrimonial, dans l'ordre des formes rencontrées :
+ * ancre `<A NAME="pointN">` des rendus OJ (`N` peut être dans l'ancre), puis
+ * `<dt>N</dt>` (suivi ou non d'un `<dd>` vide), puis numéro en tête de
+ * paragraphe des rendus les plus anciens (`<p>33 Au vu de ces considérations…`).
+ * Un paragraphe centré (date, intitulé) ne porte pas de point : son numéro
+ * d'ouverture serait une date.
+ */
+function marqueursHeritage(contenu: string): MarqueurHeritage[] {
+  const position = (trouve: RegExpMatchArray) => trouve.index ?? 0;
+  const ancre = [...contenu.matchAll(/<a\b[^>]*(?:name|id)\s*=\s*"point(\d+)"[^>]*>/gi)].map(
+    (trouve) => ({
+      numero: trouve[1] ?? "",
+      position: position(trouve),
+      fin: position(trouve) + trouve[0].length,
+    }),
+  );
+  if (ancre.length > 0) return ancre;
+  const dt = [
+    ...contenu.matchAll(/<dt\b[^>]*>\s*(\d+)\s*(?:<dd\b[^>]*>\s*<\/dd\s*>\s*)?<\/dt\s*>/gi),
+  ].map((trouve) => ({
+    numero: trouve[1] ?? "",
+    position: position(trouve),
+    fin: position(trouve) + trouve[0].length,
+  }));
+  if (dt.length > 0) return dt;
+  return [...contenu.matchAll(/<p\b([^>]*)>\s*(\d{1,3})(?:\s|&nbsp;)+/gi)]
+    .filter((trouve) => !/centre|align\s*=\s*"?cent/i.test(trouve[1] ?? ""))
+    .map((trouve) => ({
+      numero: trouve[2] ?? "",
+      position: position(trouve),
+      fin: position(trouve) + trouve[0].length,
+    }));
+}
+
+/** Fin de bloc d'un HTML patrimonial : frontière de paragraphe pour le texte visible. */
+const FIN_BLOC = /<\/p\s*>|<br\b[^>]*>|<\/dd\s*>|<\/dt\s*>|<\/div\s*>|<\/h\d\s*>/i;
+
+/** Texte visible d'un fragment, paragraphes séparés par un saut de ligne. */
+function paragraphesVisibles(fragment: string): string {
+  return fragment
+    .split(FIN_BLOC)
+    .map((morceau) => texteVisible(morceau))
+    .filter((morceau) => morceau !== "")
+    .join("\n");
+}
+
+/**
+ * Blocs d'un HTML patrimonial : en-tête, points numérotés et dispositif. Sans
+ * aucun marqueur, chaque paragraphe devient un fragment d'en-tête plutôt qu'un
+ * seul bloc illisible.
+ */
+function blocsHeritage(contenu: string): BlocCjue[] {
+  const marqueurs = marqueursHeritage(contenu);
+  if (marqueurs.length === 0) {
+    const texte = paragraphesVisibles(contenu);
+    return texte === "" ? [] : [{ genre: "entete", numero: "", texte }];
+  }
+
+  const blocs: BlocCjue[] = [];
+  const entete = paragraphesVisibles(contenu.slice(0, marqueurs[0]?.position ?? contenu.length));
+  if (entete !== "") blocs.push({ genre: "entete", numero: "", texte: entete });
+
+  let dispositif: string | null = null;
+  for (let index = 0; index < marqueurs.length; index += 1) {
+    const marqueur = marqueurs[index];
+    if (marqueur === undefined) continue;
+    const suivant = marqueurs[index + 1]?.position ?? contenu.length;
+    let morceau = contenu.slice(marqueur.position, suivant);
+    if (index === marqueurs.length - 1) {
+      const coupe = DISPOSITIF.exec(morceau);
+      if (coupe !== null) {
+        dispositif = texteVisible(morceau.slice(coupe.index)).trim();
+        morceau = morceau.slice(0, coupe.index);
+      }
+    }
+    const texte = texteVisible(morceau.slice(marqueur.fin - marqueur.position))
+      .replace(/^\d+\s*/, "")
+      .trim();
+    if (texte !== "") blocs.push({ genre: "point", numero: marqueur.numero, texte });
+  }
+  if (dispositif === null) {
+    const coupe = DISPOSITIF.exec(contenu);
+    if (coupe !== null) dispositif = texteVisible(contenu.slice(coupe.index)).trim();
+  }
+  if (dispositif !== null && dispositif !== "") {
+    blocs.push({ genre: "dispositif", numero: "", texte: dispositif });
+  }
+  return blocs;
+}
+
 /**
  * Blocs d'une décision : en-tête (titre, matière, introduction), points
- * numérotés et dispositif. Le découpage suit les ancres `pointN` du XHTML.
+ * numérotés et dispositif. Le découpage suit les ancres `pointN` du XHTML, ou
+ * les marqueurs du HTML patrimonial.
  */
 export function blocsCjue(xhtml: string, celex: string): BlocCjue[] {
   const contenu = corps(xhtml);
+  if (formatCapture(xhtml) === "heritage") return blocsHeritage(contenu);
   const titre = paragrapheClasse(contenu, "sum-title-1");
   const matiere = paragrapheClasse(contenu, "index");
 

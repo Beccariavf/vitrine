@@ -7,6 +7,34 @@
 /** Préfixe de code (`L. `, `R. `, `D. `) et corps d'un numéro d'article. */
 export type Article = { prefixe: string; corps: string };
 
+/** Suffixes latins d'un article inséré : `15 bis`, `1 ter`. */
+export const SUFFIXE_ARTICLE = "bis|ter|quater|quinquies|sexies|septies|octies|nonies|decies";
+
+/**
+ * `Article 17`, `art. 17`, `n° 17`, `L. 34-5`, `226-16` : préfixe de code, nombre
+ * sans zéro de tête, segments à tiret, puis lettre (`226-16-1-A`), suffixe latin
+ * (`15 bis`) ou lettre collée (`15a`, gardée telle quelle : elle ne désigne aucun
+ * article français et rend « introuvable » plutôt que l'article 15). `26-1` reste
+ * distinct de `26`, `9 bis` de `9` ; ce qui suit (paragraphe, sigle) est ignoré.
+ */
+export function normaliserNumero(numero: string | number): string | null {
+  const brut = String(numero)
+    .trim()
+    .replace(/^(?:articles?|art\.?)\s*/i, "")
+    .replace(/^(?:n[°o]|§)\s*/i, "");
+  const trouve = new RegExp(
+    "^(?:([LRD])\\.?\\s*)?(\\d+)(?:er)?((?:-\\d+)*)" +
+      "(?:-([A-Z]{1,2})(?![A-Za-zÀ-ÿ])|([a-z])(?![A-Za-zÀ-ÿ]))?" +
+      `(?:\\s*(${SUFFIXE_ARTICLE})(?![A-Za-zÀ-ÿ]))?`,
+    "i",
+  ).exec(brut);
+  if (trouve === null) return null;
+  const lettre = trouve[4] === undefined ? "" : `-${trouve[4].toUpperCase()}`;
+  const collee = trouve[5] === undefined ? "" : trouve[5].toLowerCase();
+  const latin = trouve[6] === undefined ? "" : ` ${trouve[6].toLowerCase()}`;
+  return `${trouve[1]?.toUpperCase() ?? ""}${Number(trouve[2])}${trouve[3] ?? ""}${lettre}${collee}${latin}`;
+}
+
 /**
  * Forme comparable d'un numéro : sans « article » ni « art. », `1er` devenu `1`,
  * préfixe de code ramené à `L. `. `null` quand rien ne ressemble à un numéro.

@@ -978,6 +978,22 @@ describe("le serveur en mémoire", () => {
     );
   });
 
+  it("décrit et expose la lecture datée de la LIL dans get_article", async () => {
+    const { tools } = await client.listTools();
+    const outil = tools.find((candidat) => candidat.name === "get_article");
+    assert.ok(outil);
+    const texte = outil.description ?? "";
+
+    assert.match(texte, /AAAA-MM-JJ/);
+    assert.match(texte, /date_debut/);
+    assert.match(texte, /date_fin/);
+    assert.match(texte, /inexistant à la date/);
+    assert.match(texte, /historique non couvert avant/);
+    assert.match(texte, /refusé/);
+    const schema = outil.inputSchema as { properties?: Record<string, unknown> };
+    assert.ok(schema.properties !== undefined && "date" in schema.properties);
+  });
+
   it("décrit les citations de search et get_decision, sans toucher à get_article", async () => {
     const { tools } = await client.listTools();
     const description = (nom: string): string =>

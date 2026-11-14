@@ -1,13 +1,14 @@
 /**
- * Liste les décisions CJUE relatives aux données personnelles depuis une borne,
- * par SPARQL sur CELLAR, et lit la réponse en entrées classées.
+ * Liste les décisions CJUE relatives aux données personnelles, par SPARQL sur
+ * CELLAR, et lit la réponse en entrées classées.
  *
  * La matière est un identifiant officiel de CELLAR (`PDON`, protection des
  * données personnelles) ; les notions fines la complètent, `4.11.01` pour la
  * protection des données et `2.04` pour le contentieux des institutions de
- * l'Union (CEPD c. SRB). Le type de décision vient du suffixe CELEX : `CJ` et
- * `TJ` sont des arrêts, `CO` et `TO` des ordonnances, `CC` les conclusions d'un
- * avocat général, qui ne sont pas des décisions de justice.
+ * l'Union (CEPD c. SRB). Aucune borne de date : la jurisprudence fondatrice
+ * (Lindqvist, 2003) reste au corpus. Le type de décision vient du suffixe
+ * CELEX : `CJ` et `TJ` sont des arrêts, `CO` et `TO` des ordonnances, `CC` les
+ * conclusions d'un avocat général, qui ne sont pas des décisions de justice.
  */
 
 import type { FetchLike } from "../../../veille/fetch.ts";
@@ -26,7 +27,6 @@ export type DescripteurCjue = {
   notions: Array<{ uri: string; libelle: string }>;
   /** CELEX ajoutés à la main, hors classement CELLAR. */
   celex_complementaires: string[];
-  date_min: string;
   /** Langues de lecture, dans l'ordre essayé : la première disponible fait foi. */
   langues: string[];
   /** Types CELEX retenus, avec leur libellé. */
@@ -44,7 +44,6 @@ export type EntreeCjue = {
 };
 
 export type MotifEcartCjue =
-  | "avant_borne"
   | "date_invalide"
   | "avis_avocat_general"
   | "autre_type"
@@ -55,7 +54,6 @@ export type MotifEcartCjue =
 export type EcartesCjue = Record<MotifEcartCjue, number>;
 
 export const ECARTES_CJUE_VIDES: EcartesCjue = {
-  avant_borne: 0,
   date_invalide: 0,
   avis_avocat_general: 0,
   autre_type: 0,
@@ -94,30 +92,14 @@ function selection({ matiere, notions }: Selection): string {
   return groupes.join("\n  UNION\n  ");
 }
 
-/** Requête SPARQL des décisions de la matière après la borne. */
-export function requeteListe(descripteur: Selection, dateMin: string): string {
+/** Requête SPARQL des décisions de la matière. */
+export function requeteListe(descripteur: Selection): string {
   return `PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
-PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 SELECT DISTINCT ?celex ?date WHERE {
   ?work cdm:resource_legal_id_celex ?celex .
   ?work cdm:work_date_document ?date .
   ${selection(descripteur)}
   FILTER(STRSTARTS(STR(?celex), "6"))
-  FILTER(?date >= "${dateMin}"^^xsd:date)
-}`;
-}
-
-/** Requête SPARQL du nombre de décisions de la sélection avant la borne. */
-export function requeteAvantBorne(descripteur: Selection, dateMin: string): string {
-  return `PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
-PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-SELECT (COUNT(DISTINCT ?celex) AS ?n) WHERE {
-  ?work cdm:resource_legal_id_celex ?celex .
-  ?work cdm:work_date_document ?date .
-  ${selection(descripteur)}
-  FILTER(STRSTARTS(STR(?celex), "6"))
-  FILTER(REGEX(STR(?celex), "^6[0-9]{4}(CJ|TJ|CO|TO)"))
-  FILTER(?date < "${dateMin}"^^xsd:date)
 }`;
 }
 
@@ -147,26 +129,14 @@ export function lireListe(reponse: unknown): EntreeCjue[] {
   return [...parCelex.values()].sort((gauche, droite) => gauche.celex.localeCompare(droite.celex));
 }
 
-/** Nombre de décisions avant la borne annoncé par la requête de comptage. */
-export function lireNombre(reponse: unknown): number {
-  for (const ligne of bindings(reponse)) {
-    const valeur = ligne.n?.value;
-    const nombre = typeof valeur === "string" ? Number(valeur) : Number.NaN;
-    if (Number.isFinite(nombre)) return nombre;
-  }
-  return 0;
-}
-
-/** Classe une entrée : borne de date, type retenu, ou motif d'écart. */
+/** Classe une entrée : type retenu, ou motif d'écart. */
 export function classerEntree(
   entree: EntreeCjue,
   descripteur: DescripteurCjue,
-  dateMin = descripteur.date_min,
 ): { retenue: true } | { retenue: false; motif: MotifEcartCjue } {
   if (!DATE_ISO.test(entree.date) || Number.isNaN(Date.parse(entree.date))) {
     return { retenue: false, motif: "date_invalide" };
   }
-  if (entree.date < dateMin) return { retenue: false, motif: "avant_borne" };
   if (entree.type === "CC") return { retenue: false, motif: "avis_avocat_general" };
   if (!(entree.type in descripteur.types_retenus)) {
     return { retenue: false, motif: "autre_type" };
@@ -177,7 +147,6 @@ export function classerEntree(
 /** Lit la liste des décisions de la matière par SPARQL. */
 export async function fetchListe(
   descripteur: DescripteurCjue,
-  dateMin: string,
   fetchImpl: FetchLike = fetch,
 ): Promise<unknown> {
   const reponse = await fetchImpl(descripteur.endpoint_sparql, {
@@ -186,7 +155,7 @@ export async function fetchListe(
       Accept: "application/sparql-results+json",
       "content-type": "application/x-www-form-urlencoded",
     },
-    body: new URLSearchParams({ query: requeteListe(descripteur, dateMin) }).toString(),
+    body: new URLSearchParams({ query: requeteListe(descripteur) }).toString(),
   });
   if (!reponse.ok) {
     throw new Error(`CELLAR SPARQL : HTTP ${reponse.status}`);
@@ -197,29 +166,5 @@ export async function fetchListe(
   } catch (error) {
     const raison = error instanceof Error ? error.message : String(error);
     throw new Error(`CELLAR SPARQL : réponse illisible (${raison})`, { cause: error });
-  }
-}
-
-/** Lit le nombre de décisions antérieures à la borne ; une panne rend `null`. */
-export async function fetchAvantBorne(
-  descripteur: DescripteurCjue,
-  dateMin: string,
-  fetchImpl: FetchLike = fetch,
-): Promise<number | null> {
-  try {
-    const reponse = await fetchImpl(descripteur.endpoint_sparql, {
-      method: "POST",
-      headers: {
-        Accept: "application/sparql-results+json",
-        "content-type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        query: requeteAvantBorne(descripteur, dateMin),
-      }).toString(),
-    });
-    if (!reponse.ok) return null;
-    return lireNombre(JSON.parse(await reponse.text()) as unknown);
-  } catch {
-    return null;
   }
 }

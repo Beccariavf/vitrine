@@ -48,6 +48,21 @@ niveaux sémantiques : 1 confiant, 9 incertain, 0 aucun_resultat_fiable (table p
 
 Les deux absences sont des arrêts très cités, dont les points de motivation répètent le vocabulaire d'autres décisions du corpus (conservation, déréférencement). Les rangs ne dépendent pas des seuils. Les niveaux affichés sont ceux de la table produit ; la grille calibrée sur ce `dev` (0,670 / 0,720 / 0,010) donne 2 `confiant` et 8 `incertain`.
 
+## Rejeu du 14 novembre 2026 (corpus CJUE ouvert avant 2014)
+
+Le corpus `cjue` est passé de 166 à 248 décisions (23 188 fragments) et l'index de 77 722 à 83 994 unités. Les 10 questions CJUE `dev`, rejouées avec la même table, rendent les mêmes rangs : 8/10 au top 5, MRR 0,750, top 1 70,0 % ; la grille calibrée sur ce `dev` donne 1 `confiant` et 9 `incertain`. La preuve du critère de #48 est une recherche réelle bornée à `cjue` :
+
+```
+question : « Lindqvist diffusion de données personnelles sur une page Internet »
+62001CJ0101#point14  0,726
+62001CJ0101#point60  0,710
+62004TJ0194#point129 0,699
+62001CJ0101#point2   0,694
+62017CJ0345#point37  0,692
+```
+
+C-101/01 sort aux rangs 1, 2 et 4 avec son URL EUR-Lex française et sa date du 6 novembre 2003.
+
 ## Lecture
 
 Ces deux jeux ne calibrent aucun seuil de production : ils constatent des rangs sur un `dev` de 10 questions, trop court pour fonder une promesse chiffrée. `SEUILS_PAR_CORPUS` ne porte que la CNIL ; `cc` et `cjue` suivent le repli `0,69 / 0,74 / 0,01` dans le produit.
