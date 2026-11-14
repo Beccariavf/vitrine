@@ -781,6 +781,62 @@ describe("synchronisation du corpus", () => {
     }
   });
 
+  it("écarte un document CEPD déclaré par le manifeste sans relancer la source", async () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "cepd", [uniteCePd("guidelines-012023")]);
+      writeFileSync(
+        join(root, "data", "corpus", "cepd", "manifest.json"),
+        `${JSON.stringify({
+          corpus: "cepd",
+          documents: 1,
+          fragments: 1,
+          date_liste: "2026-11-10",
+          couverture: {
+            documents_ecartes: [
+              {
+                url: "https://www.edpb.europa.eu/documents/guideline/guidelines-042026_fr",
+                slug: "guidelines-042026",
+                type: "lignes_directrices",
+                raison: "PDF absent",
+              },
+            ],
+          },
+        })}\n`,
+        "utf8",
+      );
+      ecrireEntree(root, {
+        ...entree(
+          "cepd",
+          "entree-cepd-ecartee",
+          "https://www.edpb.europa.eu/documents/guideline/guidelines-042026_fr",
+        ),
+        document: "guidelines-042026",
+      });
+
+      let appels = 0;
+      const cepd: AgentSync = async () => {
+        appels += 1;
+        return { ecrit: false, message: "appelé" };
+      };
+      const rapport = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-14",
+        depuis: "2026-11-07",
+        agents: { cepd },
+        embedder: embedderFactice(),
+      });
+
+      assert.equal(appels, 0, "un document écarté ne relance pas cepd:sync");
+      assert.equal(rapport.comptes.ecartes, 1);
+      const document = rapport.documents.find((element) => element.document === "guidelines-042026");
+      assert.equal(document?.statut, "ecarte");
+      assert.equal(document?.motif, "PDF absent");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("marque une version de consultation dans le rapport", () => {
     const rapport: RapportSync = {
       version: 1,
@@ -809,6 +865,40 @@ describe("synchronisation du corpus", () => {
       formaterRapport(rapport),
       /Manquants : guidelines-012023 \(cepd\) \[consultation\]/,
     );
+  });
+
+  it("recopie la consultation d'une entrée CEPD dans le rapport", async () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "cepd", [uniteCePd("guidelines-012023")]);
+      ecrireEntree(root, {
+        ...entree(
+          "cepd",
+          "entree-cepd-consultation",
+          "https://www.edpb.europa.eu/documents/guideline/guidelines-042026_fr",
+        ),
+        document: "guidelines-042026",
+        version: "projet",
+        consultation: true,
+      });
+
+      const rapport = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-14",
+        depuis: "2026-11-07",
+        agents: { cepd: INERTE },
+        embedder: embedderFactice(),
+      });
+
+      const document = rapport.documents.find(
+        (element) => element.document === "guidelines-042026",
+      );
+      assert.equal(document?.statut, "manquant");
+      assert.equal(document?.consultation, true);
+      assert.match(formaterRapport(rapport), /guidelines-042026 \(cepd\) \[consultation\]/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 
   it("ne relance aucune source quand le document est déjà présent", async () => {

@@ -11,6 +11,7 @@ import { chargerTexte, listerDocumentsSitemap } from "../../mcp/corpus/cepd/list
 import type { DocumentListe, FetchHtml } from "../../mcp/corpus/cepd/liste.ts";
 import {
   enrichirDocument,
+  signatureVersion,
   slugDe,
   statutDepuisTitre,
 } from "../../mcp/corpus/cepd/parse.ts";
@@ -129,8 +130,10 @@ export function parseFeed(xml: string): Entry[] {
  *
  * Un document absent du corpus est une nouveauté ; un document présent n'est
  * une nouveauté que si le sitemap l'a modifié depuis le corpus et que sa page
- * porte une autre version. Un corpus pas encore resynchronisé (manifeste sans
- * versions ni `lastmod`) n'est pas comparé : la passe le dit et ne devine rien.
+ * porte une autre signature de version (version explicite, sinon `finale` ou
+ * `projet`). Un corpus pas encore resynchronisé (manifeste sans versions ou
+ * sans `lastmod`) n'est pas comparé : la passe le dit et ne devine rien ; un
+ * manifeste absent fait échouer la passe plutôt que de tout dire nouveau.
  */
 
 /** Matière unique : le corpus ne retient que les documents sur les données personnelles. */
@@ -213,14 +216,11 @@ function titreDepuisSlug(slug: string): string {
 }
 
 /**
- * Vrai quand la version listée est soumise à consultation : la page le dit, ou
- * son titre la qualifie de projet. Le statut passe par la table du corpus, qui
- * décide seule qu'un statut CEPD propose ou est adopté.
+ * Statut publié d'une page : consultation déclarée par la page, sinon le titre
+ * qualifie le document de projet ou de version finale.
  */
-function estEnConsultation(document: DocumentListe): boolean {
-  const statut =
-    document.consultation === true ? "projet" : statutDepuisTitre(document.titre);
-  return statutApplication("cepd", statut) === "propose";
+function statutDePage(document: DocumentListe): "finale" | "projet" {
+  return document.consultation === true ? "projet" : statutDepuisTitre(document.titre);
 }
 
 export type PasseDocumentsOptions = {
@@ -256,14 +256,22 @@ export async function passeDocumentsCePd(
   const rootDir = options.rootDir ?? process.cwd();
   const descripteur = lireDescripteur(options.descripteurPath ?? DESCRIPTEUR);
   const datePasse = (options.maintenant ?? new Date()).toISOString().slice(0, 10);
-  const manifeste = lireManifeste(join(rootDir, MANIFESTE));
-  const presents = new Set(Object.keys(carteDeChaines(manifeste?.documents_types) ?? {}));
-  const versions = carteDeChaines(manifeste?.documents_versions);
-  const lastmods = carteDeChaines(manifeste?.documents_lastmod);
+  const cheminManifeste = join(rootDir, MANIFESTE);
+  const manifeste = lireManifeste(cheminManifeste);
+  // Sans manifeste, tous les documents du sitemap seraient « nouveaux » : on
+  // échoue fermé plutôt que de publier 341 faux positifs.
+  if (manifeste === null) {
+    throw new Error(
+      `Manifeste CEPD absent ou illisible : ${cheminManifeste} (lancer cepd:sync)`,
+    );
+  }
+  const presents = new Set(Object.keys(carteDeChaines(manifeste.documents_types) ?? {}));
+  const versions = carteDeChaines(manifeste.documents_versions);
+  const lastmods = carteDeChaines(manifeste.documents_lastmod);
   const ecartes = ecartesDuManifeste(manifeste);
-  // Corpus jamais resynchronisé depuis que le manifeste porte les versions :
-  // aucun document présent n'est comparable, et la passe le dit.
-  const manifesteSansVersions = versions === null && lastmods === null;
+  // Les deux cartes sont écrites ensemble par `cepd:sync` : l'une sans l'autre
+  // dit un corpus pas encore resynchronisé, dont rien n'est comparable.
+  const manifesteSansVersions = versions === null || lastmods === null;
 
   const http = {
     ...(options.fetchImpl === undefined ? {} : { fetchHtml: options.fetchImpl }),
@@ -327,18 +335,19 @@ export async function passeDocumentsCePd(
     if (delai > 0) await attendre(delai);
 
     const enrichi = enrichirDocument(document, html);
-    const version = enrichi.version ?? null;
-    // Un document déjà au corpus dans la même version n'est pas une nouveauté.
+    const statut = statutDePage(enrichi);
+    const signature = signatureVersion({ version: enrichi.version ?? null, statut });
+    // Un document déjà au corpus dans le même état n'est pas une nouveauté.
     if (present && versions !== null) {
       const versionCorpus = versions[slug];
-      if (versionCorpus !== undefined && versionCorpus === version) continue;
+      if (versionCorpus !== undefined && versionCorpus === signature) continue;
     }
 
-    const consultation = estEnConsultation(enrichi);
+    const consultation = statutApplication("cepd", statut) === "propose";
     if (consultation) enConsultation += 1;
     const titre = enrichi.titre === "" ? titreDepuisSlug(slug) : enrichi.titre;
     entries.push({
-      id: identifiantDeDocument(slug, version),
+      id: identifiantDeDocument(slug, signature),
       title: titre,
       officialTitle: titre,
       url: document.url,
@@ -350,7 +359,7 @@ export async function passeDocumentsCePd(
       document: slug,
       type: enrichi.type,
       ...(enrichi.date === null ? {} : { date_acte: enrichi.date }),
-      ...(version === null ? {} : { version }),
+      version: signature,
       ...(consultation ? { consultation: true } : {}),
     });
   }

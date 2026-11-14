@@ -32,6 +32,7 @@ import {
   estG29,
   numeroDepuisTitre,
   preparerDocument,
+  signatureVersion,
   slugDe,
   statutDepuisTitre,
   titreDepuisPage,
@@ -598,6 +599,14 @@ describe("le parse CEPD", () => {
     );
   });
 
+  it("donne une signature de version explicite, sinon l'état publié", () => {
+    assert.equal(signatureVersion({ version: "2.0", statut: "finale" }), "2.0");
+    assert.equal(signatureVersion({ version: "rev01", statut: "projet" }), "rev01");
+    assert.equal(signatureVersion({ version: null, statut: "finale" }), "finale");
+    assert.equal(signatureVersion({ version: null, statut: "projet" }), "projet");
+    assert.equal(signatureVersion({ version: "", statut: "finale" }), "finale");
+  });
+
   it("écarte le projet quand une version finale porte le même numéro", () => {
     const finale = documentPrepare("Lignes directrices 01/2023 sur l'article 37", "2023-09-15");
     const projet = documentPrepare(
@@ -940,8 +949,8 @@ describe("la synchronisation CEPD", () => {
         "guidelines-032021-application-article-651a-gdpr",
         "recommendation-012024",
       ]);
-      // Le sitemap de la fixture ne porte ni version ni lastmod : les cartes
-      // existent, avec `null`, pour les mêmes slugs que les types.
+      // Le sitemap de la fixture ne porte pas de lastmod ; les cartes existent
+      // pour les mêmes slugs que les types, et la signature y est l'état publié.
       assert.deepEqual(
         Object.keys(manifeste.documents_versions).sort(),
         Object.keys(manifeste.documents_types).sort(),
@@ -951,7 +960,7 @@ describe("la synchronisation CEPD", () => {
         Object.keys(manifeste.documents_types).sort(),
       );
       assert.equal(
-        Object.values(manifeste.documents_versions).every((version) => version === null),
+        Object.values(manifeste.documents_versions).every((signature) => signature === "finale"),
         true,
       );
       assert.equal(

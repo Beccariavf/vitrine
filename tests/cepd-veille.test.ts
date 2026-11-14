@@ -95,6 +95,12 @@ describe("la veille des documents du CEPD", () => {
   it("rend une entrée typée pour un document absent du corpus", async () => {
     const root = racine();
     try {
+      ecrireManifeste(root, {
+        documents: 0,
+        documents_types: {},
+        documents_versions: {},
+        documents_lastmod: {},
+      });
       const { fetchHtml } = servir(pagesDeDocument(DOC));
 
       const resultat = await passeDocumentsCePd({
@@ -125,9 +131,10 @@ describe("la veille des documents du CEPD", () => {
       );
       assert.deepEqual(entree.references, []);
       assert.deepEqual(entree.themes, ["donnees-personnelles"]);
-      assert.equal(entree.version, undefined);
+      // Aucune version explicite : la signature est l'état publié.
+      assert.equal(entree.version, "finale");
       assert.equal(entree.consultation, undefined);
-      assert.equal(entree.id, identifiantDeDocument(SLUG, null));
+      assert.equal(entree.id, identifiantDeDocument(SLUG, "finale"));
       assert.deepEqual(resultat.raw, []);
       assert.deepEqual(resultat.warnings, []);
       assert.match(
@@ -238,6 +245,78 @@ describe("la veille des documents du CEPD", () => {
     }
   });
 
+  it("signale un projet devenu version finale sans version explicite", async () => {
+    const root = racine();
+    try {
+      ecrireManifeste(root, {
+        documents_types: { [SLUG]: "lignes_directrices" },
+        documents_versions: { [SLUG]: "projet" },
+        documents_lastmod: { [SLUG]: "2026-01-01" },
+      });
+      // La page était un projet de consultation ; elle est devenue la version
+      // finale, sans nommer de version : seul l'état publié a changé.
+      const page = [
+        "<html><body><main>",
+        '<h1 id="document-full-title">Guidelines 08/2026 on Anonymisation</h1>',
+        '<time datetime="2026-11-12T12:00:00Z">12 November 2026</time>',
+        "</main></body></html>",
+      ].join("");
+      const { fetchHtml } = servir(
+        pagesSitemap([{ url: DOC, lastmod: "2026-11-12", page }]),
+      );
+
+      const resultat = await passeDocumentsCePd({
+        rootDir: root,
+        fetchImpl: fetchHtml,
+        attendre: async () => {},
+        maintenant: DATE_PASSE,
+      });
+
+      assert.equal(resultat.entries.length, 1);
+      const entree = resultat.entries[0];
+      assert.ok(entree);
+      assert.equal(entree.version, "finale");
+      assert.equal(entree.consultation, undefined);
+      assert.equal(entree.id, identifiantDeDocument(SLUG, "finale"));
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("ne signale rien quand le statut publié n'a pas changé", async () => {
+    const root = racine();
+    try {
+      ecrireManifeste(root, {
+        documents_types: { [SLUG]: "lignes_directrices" },
+        documents_versions: { [SLUG]: "projet" },
+        documents_lastmod: { [SLUG]: "2026-01-01" },
+      });
+      const page = [
+        "<html><body><main>",
+        '<h1 id="document-full-title">Guidelines 08/2026 on Anonymisation</h1>',
+        '<time datetime="2026-11-12T12:00:00Z">12 November 2026</time>',
+        "<p>Public consultation ongoing</p>",
+        "</main></body></html>",
+      ].join("");
+      const { fetchHtml, appels } = servir(
+        pagesSitemap([{ url: DOC, lastmod: "2026-11-12", page }]),
+      );
+
+      const resultat = await passeDocumentsCePd({
+        rootDir: root,
+        fetchImpl: fetchHtml,
+        attendre: async () => {},
+        maintenant: DATE_PASSE,
+      });
+
+      assert.deepEqual(resultat.entries, []);
+      assert.equal(appels.includes(DOC), true, "la page modifiée est relue une fois");
+      assert.match(resultat.notes.join("\n"), /1 candidat\(s\), 0 entrée\(s\) de veille/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("marque une version de consultation, par la page ou par son titre", async () => {
     const root = racine();
     const parPage =
@@ -259,6 +338,11 @@ describe("la veille des documents du CEPD", () => {
       "</main></body></html>",
     ].join("");
     try {
+      ecrireManifeste(root, {
+        documents_types: {},
+        documents_versions: {},
+        documents_lastmod: {},
+      });
       const { fetchHtml } = servir(
         pagesSitemap([
           { url: parPage, lastmod: "2026-07-08", page: pageConsultation },
@@ -275,7 +359,40 @@ describe("la veille des documents du CEPD", () => {
 
       assert.equal(resultat.entries.length, 2);
       assert.equal(resultat.entries.every((entree) => entree.consultation === true), true);
+      assert.equal(resultat.entries.every((entree) => entree.version === "projet"), true);
       assert.match(resultat.notes.join("\n"), /2 entrée\(s\) de veille, 2 en consultation/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("échoue fermé quand le manifeste du corpus manque", async () => {
+    const root = racine();
+    try {
+      const { fetchHtml, appels } = servir(pagesDeDocument(DOC));
+
+      await assert.rejects(
+        passeDocumentsCePd({
+          rootDir: root,
+          fetchImpl: fetchHtml,
+          attendre: async () => {},
+          maintenant: DATE_PASSE,
+        }),
+        /Manifeste CEPD absent ou illisible : .*manifest\.json \(lancer cepd:sync\)/,
+      );
+      assert.deepEqual(appels, [], "aucune requête sans manifeste : tout serait « nouveau »");
+
+      mkdirSync(join(root, "data", "corpus", "cepd"), { recursive: true });
+      writeFileSync(join(root, "data", "corpus", "cepd", "manifest.json"), "{", "utf8");
+      await assert.rejects(
+        passeDocumentsCePd({
+          rootDir: root,
+          fetchImpl: fetchHtml,
+          attendre: async () => {},
+          maintenant: DATE_PASSE,
+        }),
+        /Manifeste CEPD absent ou illisible/,
+      );
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
@@ -286,6 +403,8 @@ describe("la veille des documents du CEPD", () => {
     try {
       ecrireManifeste(root, {
         documents_types: {},
+        documents_versions: {},
+        documents_lastmod: {},
         couverture: {
           documents_ecartes: [
             { url: DOC, slug: SLUG, type: "lignes_directrices", raison: "version obsolète" },
@@ -348,6 +467,11 @@ describe("la veille des documents du CEPD", () => {
   it("avertit et continue quand la page d'un document est illisible", async () => {
     const root = racine();
     try {
+      ecrireManifeste(root, {
+        documents_types: {},
+        documents_versions: {},
+        documents_lastmod: {},
+      });
       const { fetchHtml } = servir(pagesSitemap([{ url: DOC, lastmod: "2026-11-12" }]));
 
       const resultat = await passeDocumentsCePd({
@@ -370,6 +494,11 @@ describe("la veille des documents du CEPD", () => {
   it("ajoute les documents aux entrées du flux dans la passe", async () => {
     const root = racine();
     try {
+      ecrireManifeste(root, {
+        documents_types: {},
+        documents_versions: {},
+        documents_lastmod: {},
+      });
       const pages = new Map<string, string>([
         [FEED_URL, NEWS],
         [SITEMAP, SITEMAP_INDEX],

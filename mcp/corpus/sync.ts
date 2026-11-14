@@ -263,11 +263,24 @@ export function agentsParDefaut(
   }
 }
 
+/** Corpus qui publient la liste de leurs documents écartés. */
+const CORPUS_A_ECARTES: readonly CorpusVeille[] = ["cjue", "cepd"];
+
+/** Documents écartés, corpus par corpus ; seuls ceux qui publient la liste en ont une. */
+function ecartesDesCorpus(rootDir: string): Map<string, Map<string, string>> {
+  const ecartes = new Map<string, Map<string, string>>();
+  for (const corpus of CORPUS_A_ECARTES) {
+    const documents = documentsEcartes(rootDir, corpus);
+    if (documents.size > 0) ecartes.set(corpus, documents);
+  }
+  return ecartes;
+}
+
 function classer(
   entrees: Entry[],
   snapshots: Map<string, string[]>,
   documentsCorpus: Map<string, Set<string>>,
-  ecartesCjue: Map<string, string>,
+  ecartes: ReadonlyMap<string, Map<string, string>>,
   versionsCorpus: Map<string, Set<string>>,
 ): DocumentRapport[] {
   const documents: DocumentRapport[] = [];
@@ -303,7 +316,7 @@ function classer(
 
     const presents = documentsCorpus.get(corpus) ?? new Set<string>();
     for (const document of ids) {
-      const motif = corpus === "cjue" ? ecartesCjue.get(document) : undefined;
+      const motif = ecartes.get(corpus)?.get(document);
       const present = presents.has(document);
       // Une entrée versionnée ne dit pas seulement quel document est visé,
       // mais quelle version : le document présent avec une autre version est
@@ -409,7 +422,7 @@ function fusionnerManquants(
   precedent: RapportSync | null,
   documentsCorpus: Map<string, Set<string>>,
   versionsCorpus: Map<string, Set<string>>,
-  ecartes: Map<string, string>,
+  ecartes: ReadonlyMap<string, Map<string, string>>,
 ): DocumentRapport[] {
   if (precedent === null) return courants;
   const vus = new Set(
@@ -434,7 +447,7 @@ function fusionnerManquants(
       resultat.push(ancien);
       continue;
     }
-    if (ancien.corpus === "cjue" && ecartes.has(ancien.document)) continue;
+    if (ecartes.get(ancien.corpus)?.has(ancien.document) === true) continue;
     resultat.push(ancien);
   }
   return resultat;
@@ -471,7 +484,7 @@ export async function syncCorpus(options: SyncCorpusOptions = {}): Promise<Rappo
   const entrees = lireEntrees(rootDir, depuis);
   const snapshots = indexerSnapshots(rootDir);
   let documentsCorpus = indexerDocumentsCorpus(rootDir);
-  let ecartes = documentsEcartes(rootDir, "cjue");
+  let ecartes = ecartesDesCorpus(rootDir);
   let versionsCorpus = indexerVersionsCorpus(rootDir);
   let documents = classer(entrees, snapshots, documentsCorpus, ecartes, versionsCorpus);
 
@@ -523,7 +536,7 @@ export async function syncCorpus(options: SyncCorpusOptions = {}): Promise<Rappo
 
   // Relire le corpus après les écritures : le statut du rapport est celui d'après.
   documentsCorpus = indexerDocumentsCorpus(rootDir);
-  ecartes = documentsEcartes(rootDir, "cjue");
+  ecartes = ecartesDesCorpus(rootDir);
   versionsCorpus = indexerVersionsCorpus(rootDir);
   documents = classer(entrees, snapshots, documentsCorpus, ecartes, versionsCorpus);
   documents = fusionnerManquants(documents, precedent, documentsCorpus, versionsCorpus, ecartes);

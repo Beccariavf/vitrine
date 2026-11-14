@@ -383,21 +383,31 @@ export function indexerVersionsCorpus(rootDir: string): Map<string, Set<string>>
 }
 
 /**
- * Documents explicitement écartés par un corpus, avec leur motif. Seule la CJUE
- * publie une liste par identifiant ; les comptes des autres corpus ne disent pas
- * quel document a été écarté.
+ * Documents explicitement écartés par un corpus, avec leur motif. La CJUE publie
+ * une liste par CELEX, dont seuls les motifs durables écartent pour de bon ; le
+ * CEPD publie la liste des documents qu'il n'a pas retenus, par slug, et la
+ * veille les ignore tous. Les comptes des autres corpus ne disent pas quel
+ * document a été écarté.
  */
 export function documentsEcartes(rootDir: string, corpus: string): Map<string, string> {
   const ecartes = new Map<string, string>();
-  if (corpus !== "cjue") return ecartes;
+  if (corpus !== "cjue" && corpus !== "cepd") return ecartes;
   const chemin = join(rootDir, "data", "corpus", corpus, "manifest.json");
   const texte = lireTexte(chemin);
   if (texte === null) return ecartes;
   try {
     const manifeste = JSON.parse(texte) as {
-      couverture?: { documents_ecartes?: { celex?: unknown; motif?: unknown }[] };
+      couverture?: {
+        documents_ecartes?: { celex?: unknown; motif?: unknown; slug?: unknown; raison?: unknown }[];
+      };
     };
     for (const document of manifeste.couverture?.documents_ecartes ?? []) {
+      if (corpus === "cepd") {
+        if (typeof document.slug === "string" && document.slug !== "") {
+          ecartes.set(document.slug, typeof document.raison === "string" ? document.raison : "");
+        }
+        continue;
+      }
       if (
         typeof document.celex === "string" &&
         typeof document.motif === "string" &&

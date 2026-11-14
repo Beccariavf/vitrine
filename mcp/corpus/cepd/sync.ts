@@ -38,6 +38,7 @@ import {
   choisirVersions,
   enrichirDocument,
   preparerDocument,
+  signatureVersion,
   slugDe,
   unitesCePd,
   validerUnites,
@@ -124,8 +125,8 @@ export type ManifesteCePd = {
   documents_langues: Record<string, LanguePdf>;
   /** Type de chaque document retenu, document par document. */
   documents_types: Record<string, TypeDocument>;
-  /** Version de chaque document retenu (`2.0`, `rev01`, …) ; `null` quand la page n'en porte pas. */
-  documents_versions: Record<string, string | null>;
+  /** Signature de version de chaque document retenu : version explicite (`2.0`, `rev01`), sinon `finale` ou `projet`. */
+  documents_versions: Record<string, string>;
   /** Dernière modification du sitemap pour chaque document retenu ; `null` hors sitemap. */
   documents_lastmod: Record<string, string | null>;
   /** Liste d'endossement du G29, rapprochée du corpus ; `null` si non lue. */
@@ -144,7 +145,7 @@ export type ManifesteCePd = {
     langues_pdf: Record<LanguePdf, number>;
     documents_langues: Record<string, LanguePdf>;
     documents_types: Record<string, TypeDocument>;
-    documents_versions: Record<string, string | null>;
+    documents_versions: Record<string, string>;
     documents_lastmod: Record<string, string | null>;
     g29: BlocG29 | null;
     documents_sans_texte_ecartes: number;
@@ -237,7 +238,7 @@ export function manifesteCePd(
     languesPdf: Record<LanguePdf, number>;
     documentsLangues: Record<string, LanguePdf>;
     documentsTypes: Record<string, TypeDocument>;
-    documentsVersions: Record<string, string | null>;
+    documentsVersions: Record<string, string>;
     documentsLastmod: Record<string, string | null>;
     g29: BlocG29 | null;
     documentsEcartes: DocumentEcart[];
@@ -718,7 +719,7 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
   const dates = unites.map((unite) => unite.date_acte).sort();
   const comptesParType = comptesVides();
   const documentsTypes: Record<string, TypeDocument> = {};
-  const documentsVersions: Record<string, string | null> = {};
+  const documentsVersions: Record<string, string> = {};
   const documentsLastmod: Record<string, string | null> = {};
   const fragmentsParDocument = new Map<string, number>();
   for (const unite of unites) {
@@ -728,7 +729,7 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
     comptesParType[document.type].documents += 1;
     comptesParType[document.type].fragments += fragmentsParDocument.get(document.slug) ?? 0;
     documentsTypes[document.slug] = document.type;
-    documentsVersions[document.slug] = document.version;
+    documentsVersions[document.slug] = signatureVersion(document);
     documentsLastmod[document.slug] = document.lastmod ?? null;
   }
   const typesRetenus = TYPES_DOCUMENT.filter((type) => comptesParType[type].documents > 0);

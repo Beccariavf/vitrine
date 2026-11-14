@@ -21,9 +21,9 @@ export type Entry = {
   themes: string[];
   /** Identifiant de la source : `cnil`, `cjeu`, etc. */
   source: string;
-  /** Document du corpus visé, quand la source en désigne un (`legi` : `LEGITEXT…`, `constit` : `CONSTEXT…`). */
+  /** Document du corpus visé, quand la source en désigne un (`legi` : `LEGITEXT…`, `constit` : `CONSTEXT…`, `cepd` : slug). */
   document?: string;
-  /** Identifiant de la version publiée (`LEGIARTI…`, `LEGITEXT…_JJ-MM-AAAA`, consolidation CELEX) ; `legi` et `eurlex`. */
+  /** Version publiée (`LEGIARTI…`, `LEGITEXT…_JJ-MM-AAAA`, consolidation CELEX) ou signature CEPD (`2.0`, sinon `finale`/`projet`) ; `legi`, `eurlex` et `cepd`. */
   version?: string;
   /** Nature de la nouveauté détectée ; `eurlex` seulement. */
   categorie?: "consolidation" | "adequation" | "clauses_types" | "modification";

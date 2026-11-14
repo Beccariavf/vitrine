@@ -214,6 +214,17 @@ export function preparerDocument(document: DocumentListe): DocumentPrepare {
   };
 }
 
+/**
+ * Signature de version d'un document : sa version explicite (`2.0`, `rev01`),
+ * sinon son état publié (`finale`, `projet`). L'état tranche quand la page ne
+ * nomme aucune version, ce qui est le cas de la plupart des documents : une
+ * bascule « projet » → « finale » reste ainsi une nouveauté détectable.
+ */
+export function signatureVersion(document: Pick<DocumentPrepare, "version" | "statut">): string {
+  const version = document.version ?? "";
+  return version.trim() === "" ? document.statut : version;
+}
+
 function versionNumerique(version: string | null): number {
   if (version === null) return 0;
   const valeur = Number.parseFloat(version);

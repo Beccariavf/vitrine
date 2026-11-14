@@ -411,8 +411,8 @@ export async function run({
       }
 
       // Collecte complémentaire de la même source : ses entrées s'ajoutent à
-      // celles du flux, qui gardent leur snapshot et leurs entrées.
-      const extraRaw: string[] = [];
+      // celles du flux, qui gardent leur snapshot et leurs entrées. La source ne
+      // conserve aucune réponse brute : le corpus garde les pages qu'il a lues.
       let documentsError: string | null = null;
       if (source.documents) {
         try {
@@ -423,7 +423,6 @@ export async function run({
             rootDir,
             ...(now === undefined ? {} : { now }),
           });
-          for (const body of result.raw) extraRaw.push(writeRaw(rootDir, body, "json"));
           warnings.push(...result.warnings);
           notes.push(...(result.notes ?? []));
           entries.push(...result.entries);
@@ -436,13 +435,7 @@ export async function run({
 
       const entryPaths = writeEntries(rootDir, assignThemes(entries, catalog));
 
-      results.push({
-        source: source.id,
-        rawPath,
-        rawPaths: [rawPath, ...extraRaw],
-        pagePaths,
-        entryPaths,
-      });
+      results.push({ source: source.id, rawPath, rawPaths: [rawPath], pagePaths, entryPaths });
       if (documentsError !== null) errors.push(`${source.id} documents: ${documentsError}`);
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
