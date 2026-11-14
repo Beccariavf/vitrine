@@ -24,6 +24,8 @@ import { decisionsCitees } from "./corpus/citations-decisions.ts";
 import type { DecisionCitee } from "./corpus/citations-decisions.ts";
 import { statutApplication } from "./corpus/statut.ts";
 import type { StatutApplication } from "./corpus/statut.ts";
+import { mentionsDoctrine } from "./corpus/cnil-doctrine/mention.ts";
+import type { MentionDoctrine } from "./corpus/cnil-doctrine/mention.ts";
 import { SUFFIXE_ARTICLE, normaliserNumero } from "./corpus/articles.ts";
 import { niveauConfiance } from "./confidence.ts";
 import type { NiveauConfiance } from "./confidence.ts";
@@ -238,6 +240,11 @@ export type Passage = ResultatRecherche & {
   citations?: CitationRendue[];
   /** Décisions que la décision cite, familles exposées seulement ; absent hors des corpus de décisions. */
   decisions_citees?: DecisionCitee[];
+  /**
+   * Corpus `cnil_doctrine` seulement : la ligne de licence et le crédit exigés
+   * par la CC BY-ND 4.0, à afficher avant l'extrait. Le texte reste mot pour mot.
+   */
+  marquage?: MentionDoctrine;
 };
 
 export type ResultatRechercheOutil = {
@@ -295,6 +302,27 @@ function avecCitations(rootDir: string, passages: Passage[]): Passage[] {
       citations: marquerPresence(presents, corpus.get(passage.document) ?? [], couverts),
       decisions_citees: decisionsCitees(rootDir, passage.corpus, passage.document),
     };
+  });
+}
+
+/**
+ * Ajoute le marquage de licence aux passages de doctrine. Un passage du corpus
+ * `cnil_doctrine` sans marquage au manifeste lève : mieux vaut une réponse en
+ * erreur qu'un extrait partagé sans attribution.
+ */
+export function avecMarquageDoctrine(rootDir: string, passages: Passage[]): Passage[] {
+  if (!passages.some((passage) => passage.corpus === "cnil_doctrine")) return passages;
+  const mentions = mentionsDoctrine(rootDir);
+  return passages.map((passage) => {
+    if (passage.corpus !== "cnil_doctrine") return passage;
+    const marquage = mentions.get(passage.document);
+    if (marquage === undefined) {
+      throw new Error(
+        `Marquage de licence introuvable pour ${passage.document} : ` +
+          "le manifeste de data/corpus/cnil_doctrine ne le porte pas. Lancez « npm run cnil-doctrine:sync ».",
+      );
+    }
+    return { ...passage, marquage };
   });
 }
 
@@ -645,7 +673,7 @@ export function corpusDeNiveau(demande: { corpus?: string; document?: string }):
 export type SearchDemande = {
   question: string;
   k?: number;
-  /** Restreint la recherche à une collection : `rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `cnil`, `lil`, `textes_fr`, `ce`, `constit`, `cepd`, `cc`, `cjue`. */
+  /** Restreint la recherche à une collection : `rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `cnil`, `cnil_doctrine`, `lil`, `textes_fr`, `ce`, `constit`, `cepd`, `cc`, `cjue`. */
   corpus?: string;
   /** Restreint la recherche à un document précis. */
   document?: string;
@@ -934,10 +962,13 @@ async function chercher(
   if (absence !== null) {
     return { niveau_confiance: "aucun_resultat_fiable", passages: [], message: absence };
   }
-  /** Enrichit les passages rendus de leurs citations, sans toucher au reste. */
+  /** Enrichit les passages rendus de leurs citations et du marquage de doctrine. */
   const rendre = (resultat: RechercheBrute): RechercheBrute => ({
     ...resultat,
-    passages: avecCitations(rootDir, resultat.passages),
+    passages: avecMarquageDoctrine(
+      rootDir,
+      avecCitations(rootDir, resultat.passages),
+    ),
   });
   // Un corpus de décisions ne porte aucun article : une question qui y cite
   // « l'article L. 34-5 » cherche des décisions, par le sens.
