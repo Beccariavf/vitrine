@@ -48,7 +48,7 @@ const CORPUS_TEXTES: readonly string[] = [
 ];
 
 /** Corpus dont chaque unité est une décision rendue, quel que soit le statut source. */
-const CORPUS_JURIDICTIONNELS: readonly string[] = ["ce", "cc", "cjue"];
+const CORPUS_JURIDICTIONNELS: readonly string[] = ["ce", "constit", "cc", "cjue"];
 
 /** Statuts de source d'un texte, ramenés au vocabulaire uniforme. */
 const STATUTS_TEXTES = new Map<string, StatutApplication>([

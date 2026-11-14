@@ -3,11 +3,11 @@ import { describe, it } from "node:test";
 import { FAMILLES, FAMILLES_LEGENDE, familleDeSource } from "../src/lib/familles.ts";
 import { AUTORISEES } from "./contrastes.ts";
 
-const SOURCES_VEILLE = ["cnil", "cjeu", "anssi", "cepd", "arcep", "commission", "commission-dma", "arcom", "cetat", "judilibre", "legi", "eurlex"];
-const CORPUS = ["rgpd", "aiact", "eprivacy", "police", "eudpr", "rgpdproc", "ccs", "lil", "textes_fr", "adequation", "cnil", "cepd", "cjue", "ce", "cc"];
+const SOURCES_VEILLE = ["cnil", "cjeu", "anssi", "cepd", "arcep", "commission", "commission-dma", "arcom", "cetat", "constit", "judilibre", "legi", "eurlex"];
+const CORPUS = ["rgpd", "aiact", "eprivacy", "police", "eudpr", "rgpdproc", "ccs", "lil", "textes_fr", "adequation", "cnil", "cepd", "cjue", "ce", "constit", "cc"];
 
 describe("familleDeSource", () => {
-  it("range les onze sources de veille et les quinze corpus dans une famille nommée", () => {
+  it("range les sources de veille et les seize corpus dans une famille nommée", () => {
     const attendu: Record<string, string> = {
       cnil: "autorites",
       anssi: "autorites",
@@ -23,6 +23,7 @@ describe("familleDeSource", () => {
       legi: "textes",
       eurlex: "ue",
       ce: "juridictions",
+      constit: "juridictions",
       cc: "juridictions",
       rgpd: "textes",
       aiact: "textes",

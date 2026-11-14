@@ -234,7 +234,7 @@ export type Passage = ResultatRecherche & {
   similarite: number;
   /** Vocabulaire uniforme du serveur ; le statut source reste dans `statut`. */
   statut_application: StatutApplication;
-  /** Instruments et articles cités par la décision ; absent hors des cinq corpus de décisions. */
+  /** Instruments et articles cités par la décision ; absent hors des six corpus de décisions. */
   citations?: CitationRendue[];
   /** Décisions que la décision cite, familles exposées seulement ; absent hors des corpus de décisions. */
   decisions_citees?: DecisionCitee[];
@@ -274,7 +274,7 @@ function passageExact(unite: Unite): Passage {
 /**
  * Recopie les citations du document sur ses passages : une décision garde sa
  * base juridique entière, même quand le passage rendu ne la nomme pas. Hors des
- * cinq corpus de décisions, le champ reste absent.
+ * six corpus de décisions, le champ reste absent.
  */
 function avecCitations(rootDir: string, passages: Passage[]): Passage[] {
   const parCorpus = new Map<string, ReadonlyMap<string, Citation[]>>();
@@ -645,11 +645,11 @@ export function corpusDeNiveau(demande: { corpus?: string; document?: string }):
 export type SearchDemande = {
   question: string;
   k?: number;
-  /** Restreint la recherche à une collection : `rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `cnil`, `lil`, `textes_fr`, `ce`, `cepd`, `cc`, `cjue`. */
+  /** Restreint la recherche à une collection : `rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `cnil`, `lil`, `textes_fr`, `ce`, `constit`, `cepd`, `cc`, `cjue`. */
   corpus?: string;
   /** Restreint la recherche à un document précis. */
   document?: string;
-  /** Restreint à une nature CNIL : Sanction, Avis ou Recommandation/Lignes directrices. */
+  /** Restreint à une nature : Sanction, Avis ou Recommandation/Lignes directrices (CNIL), DC ou QPC (constit). */
   nature?: string;
   /** Date ISO minimale de la décision. */
   date_min?: string;

@@ -1,0 +1,156 @@
+{
+  "corpus": "constit",
+  "nom": "Conseil constitutionnel",
+  "titre": "Décisions DC et QPC du Conseil constitutionnel (archive CONSTIT)",
+  "archive": "Freemium_constit_global_20261108-140000.tar.gz",
+  "archive_sha256": "5b918b5a6648f8dbd18f00f4ee0b873b955b1fdb56fa240dbb8de3058a4d116f",
+  "archive_url": "https://echanges.dila.gouv.fr/OPENDATA/CONSTIT/Freemium_constit_global_20261108-140000.tar.gz",
+  "date_extraction": "2026-11-14",
+  "natures_retenues": [
+    "DC",
+    "QPC"
+  ],
+  "mots_cles": [
+    "données personnelles",
+    "données à caractère personnel",
+    "informatique et libertés",
+    "protection des données",
+    "RGPD",
+    "règlement général sur la protection des données",
+    "commission nationale de l'informatique et des libertés",
+    "CNIL"
+  ],
+  "terme_vie_privee": "vie privée",
+  "expressions_vie_privee": [
+    "données de connexion",
+    "traitement automatisé",
+    "traitements automatisés",
+    "traitement de données",
+    "traitements de données",
+    "fichier automatisé"
+  ],
+  "licence": "Licence Ouverte 2.0 (Etalab)",
+  "documents_lus": 7423,
+  "documents_dc_qpc": 2045,
+  "documents": 108,
+  "fragments": 5775,
+  "doublons": 4,
+  "ecartes": {
+    "nature_ecartee": 5378,
+    "date_invalide": 0,
+    "texte_vide": 0,
+    "sans_mot_cle": 1933
+  },
+  "natures_ecartees": {
+    "AN": 4171,
+    "PDR": 198,
+    "ORGA": 169,
+    "SEN": 306,
+    "ELEC": 38,
+    "L": 338,
+    "I": 40,
+    "REF": 38,
+    "D": 27,
+    "LP": 9,
+    "LOM": 17,
+    "AR16": 1,
+    "FNR": 14,
+    "AUTR": 2,
+    "RIP": 9,
+    "OF": 1
+  },
+  "couverture": {
+    "source": "DILA — CONSTIT (OPENDATA), XML Légifrance",
+    "archive": {
+      "nom": "Freemium_constit_global_20261108-140000.tar.gz",
+      "sha256": "5b918b5a6648f8dbd18f00f4ee0b873b955b1fdb56fa240dbb8de3058a4d116f",
+      "url": "https://echanges.dila.gouv.fr/OPENDATA/CONSTIT/Freemium_constit_global_20261108-140000.tar.gz",
+      "date": "2026-11-08",
+      "derniere_decision": "2026-10-16"
+    },
+    "stock": {
+      "documents_lus": 7423,
+      "documents_dc_qpc": 2045
+    },
+    "lecture": {
+      "filtre": "TEXTE (BLOC_TEXTUEL, saisines, observations)",
+      "unites": "BLOC_TEXTUEL (décision seule)"
+    },
+    "filtre": {
+      "natures_retenues": [
+        "DC",
+        "QPC"
+      ],
+      "mots_cles": [
+        "données personnelles",
+        "données à caractère personnel",
+        "informatique et libertés",
+        "protection des données",
+        "RGPD",
+        "règlement général sur la protection des données",
+        "commission nationale de l'informatique et des libertés",
+        "CNIL"
+      ],
+      "terme_vie_privee": "vie privée",
+      "expressions_vie_privee": [
+        "données de connexion",
+        "traitement automatisé",
+        "traitements automatisés",
+        "traitement de données",
+        "traitements de données",
+        "fichier automatisé"
+      ]
+    },
+    "comptes": {
+      "documents": 108,
+      "fragments": 5775,
+      "doublons": 4
+    },
+    "par_nature": {
+      "DC": 77,
+      "QPC": 31
+    },
+    "periode": {
+      "date_min": "1982-12-14",
+      "date_max": "2026-08-14"
+    },
+    "retard_archive": {
+      "derniere_decision": "2026-10-16",
+      "archive_date": "2026-11-08",
+      "jours_au": 29
+    },
+    "exclusions": {
+      "natures": {
+        "motif": "hors périmètre : seules les natures DC et QPC entrent au corpus (contentieux électoral, lois organiques, lois et autres natures écartés)",
+        "comptes": {
+          "AN": 4171,
+          "PDR": 198,
+          "ORGA": 169,
+          "SEN": 306,
+          "ELEC": 38,
+          "L": 338,
+          "I": 40,
+          "REF": 38,
+          "D": 27,
+          "LP": 9,
+          "LOM": 17,
+          "AR16": 1,
+          "FNR": 14,
+          "AUTR": 2,
+          "RIP": 9,
+          "OF": 1
+        }
+      },
+      "motifs": {
+        "nature_ecartee": 5378,
+        "date_invalide": 0,
+        "texte_vide": 0,
+        "sans_mot_cle": 1933
+      }
+    },
+    "licence": {
+      "nom": "Licence Ouverte 2.0 (Etalab)",
+      "source": "https://echanges.dila.gouv.fr/OPENDATA/CONSTIT/DILA_CONSTIT_Presentation_20170824.pdf"
+    }
+  }
+}

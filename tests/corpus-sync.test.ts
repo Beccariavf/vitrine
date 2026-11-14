@@ -108,6 +108,24 @@ function uniteCnil(document: string, texte = "sanction relative aux cookies trac
   };
 }
 
+function uniteConstit(document: string): Unite {
+  return {
+    ref: `${document}#f0`,
+    document,
+    corpus: "constit",
+    niveau: "fragment",
+    numero: "2003-467 DC",
+    chemin: "Conseil constitutionnel > Décision 2003-467 DC",
+    texte: "Considérant que la protection des données à caractère personnel s'impose au législateur.",
+    date_acte: "2003-03-13",
+    date_debut: "2003-03-13",
+    date_fin: null,
+    statut: "Décision DC · Non conformité partielle",
+    url: "https://www.conseil-constitutionnel.fr/decision/2003/2003467DC.htm",
+    nature: "DC",
+  };
+}
+
 function ecrireCorpus(root: string, corpus: string, unites: Unite[]): void {
   const dossier = join(root, "data", "corpus", corpus);
   mkdirSync(dossier, { recursive: true });
@@ -244,10 +262,11 @@ describe("correspondance veille → corpus", () => {
     }
   });
 
-  it("mappe les quatre sources et laisse les autres hors corpus", () => {
+  it("mappe les cinq sources et laisse les autres hors corpus", () => {
     const snapshots = new Map([["https://www.cnil.fr/fr/sanction", ["CNILTEXT000000000001"]]]);
     assert.equal(corpusDeLEntree({ source: "cnil" }), "cnil");
     assert.equal(corpusDeLEntree({ source: "cetat" }), "ce");
+    assert.equal(corpusDeLEntree({ source: "constit" }), "constit");
     assert.equal(corpusDeLEntree({ source: "judilibre" }), "cc");
     assert.equal(corpusDeLEntree({ source: "cjeu" }), "cjue");
     assert.equal(corpusDeLEntree({ source: "anssi" }), null);
@@ -266,6 +285,18 @@ describe("correspondance veille → corpus", () => {
     assert.deepEqual(
       documentsDeLEntree({ source: "judilibre", id: "6ac6079ec27382d099f5a06e", url: "" }, snapshots),
       ["6ac6079ec27382d099f5a06e"],
+    );
+    assert.deepEqual(
+      documentsDeLEntree(
+        { source: "constit", id: "CONSTEXT000000000002", url: "", document: "CONSTEXT000000000002" },
+        snapshots,
+      ),
+      ["CONSTEXT000000000002"],
+    );
+    assert.deepEqual(
+      documentsDeLEntree({ source: "constit", id: "CONSTEXT000000000002", url: "" }, snapshots),
+      [],
+      "un identifiant CONSTIT hors du champ document ne mappe rien",
     );
     assert.deepEqual(
       documentsDeLEntree(
@@ -574,6 +605,43 @@ describe("synchronisation du corpus", () => {
       } finally {
         index.db.close();
       }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("ajoute une décision du Conseil constitutionnel absente au corpus", async () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "constit", [uniteConstit("CONSTEXT000000000002")]);
+      ecrireEntree(root, {
+        ...entree("constit", "entree-constit", "https://www.conseil-constitutionnel.fr/decision/2003/2003467DC.htm"),
+        document: "CONSTEXT000000000005",
+      });
+
+      const appels = { n: 0 };
+      const constit: AgentSync = async () => {
+        appels.n += 1;
+        ajouterUnite(root, "constit", uniteConstit("CONSTEXT000000000005"));
+        return { ecrit: true, message: "archive nouvelle, 109 document(s)" };
+      };
+      const rapport = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-11",
+        depuis: "2026-11-01",
+        agents: { ...agents(INERTE, INERTE, INERTE, INERTE), constit },
+        embedder: embedderFactice(),
+      });
+
+      assert.equal(appels.n, 1, "un document manquant relance constit:sync");
+      assert.equal(rapport.comptes.manquants, 0);
+      assert.equal(rapport.comptes.presents, 1);
+      assert.equal(
+        rapport.documents.find((document) => document.document === "CONSTEXT000000000005")?.statut,
+        "present",
+      );
+      assert.equal(rapport.sources.find((source) => source.source === "constit")?.statut, "ok");
+      assert.equal(rapport.a_jour_au, "2026-11-11");
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
@@ -984,6 +1052,7 @@ describe("synchronisation du corpus", () => {
         [
           "cnil",
           "ce",
+          "constit",
           "cc",
           "cjue",
           "lil",
@@ -1105,6 +1174,7 @@ describe("synchronisation du corpus", () => {
       "ce",
       "cjue",
       "cnil",
+      "constit",
       "eprivacy",
       "eudpr",
       "lil",

@@ -35,6 +35,9 @@ data/raw/lil/
 # Corpus CE : archive JADE globale (1,32 Go) non commitée, récupérée par npm run ce:sync
 data/raw/ce/
 
+# Corpus Conseil constitutionnel : archive CONSTIT (13 Mo) non commitée, récupérée par npm run constit:sync
+data/raw/constit/
+
 # Corpus CEPD : PDF téléchargés non commités, récupérés par npm run cepd:sync
 data/raw/cepd/
 
