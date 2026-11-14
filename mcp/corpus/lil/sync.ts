@@ -16,6 +16,8 @@ import { PisteSession, flushUsage, readPisteConfig } from "../../../veille/piste
 import type { PisteConfig } from "../../../veille/piste.ts";
 import { lireLegiPart, unitesLil, validerCapture } from "./parse.ts";
 import type { DescripteurLil } from "./parse.ts";
+import { historiqueVersions, lireManifeste } from "../versions.ts";
+import type { VersionRemplacee } from "../versions.ts";
 
 const ICI = dirname(fileURLToPath(import.meta.url));
 
@@ -48,6 +50,8 @@ export type ManifesteLil = {
   date_debut_version: string | null;
   documents: number;
   unites: number;
+  /** Versions remplacées, de la plus ancienne à la plus récente. */
+  versions_remplacees: VersionRemplacee[];
   couverture: CouvertureLil;
   /** Nom du snapshot sous `data/raw/lil/`, adressé par son empreinte. */
   snapshot: string;
@@ -150,6 +154,7 @@ export function manifesteLil(
   comptes: CouvertureLil,
   snapshot: string,
   snapshotSha256: string,
+  versionsRemplacees: VersionRemplacee[] = [],
 ): ManifesteLil {
   return {
     corpus: descripteur.corpus,
@@ -163,6 +168,7 @@ export function manifesteLil(
     date_debut_version: dateDebutVersion,
     documents: 1,
     unites: comptes.articles_en_vigueur,
+    versions_remplacees: versionsRemplacees,
     couverture: comptes,
     snapshot,
     snapshot_sha256: snapshotSha256,
@@ -222,6 +228,12 @@ export async function syncLil(options: SyncLilOptions = {}): Promise<ResultatLil
     articles_en_vigueur: unites.length,
     articles_abroges_ecartes: abroges,
   };
+  const unitesPath = join(rootDir, DOSSIER_CORPUS, "unites.jsonl");
+  const manifestPath = join(rootDir, DOSSIER_CORPUS, "manifest.json");
+  const versionsRemplacees = historiqueVersions(lireManifeste(manifestPath), {
+    version: part.version,
+    dateDebutVersion: part.dateDebutVersion,
+  });
   const manifeste = manifesteLil(
     descripteur,
     part.version,
@@ -230,9 +242,8 @@ export async function syncLil(options: SyncLilOptions = {}): Promise<ResultatLil
     comptes,
     basename(snapshotPath),
     snapshotSha256,
+    versionsRemplacees,
   );
-  const unitesPath = join(rootDir, DOSSIER_CORPUS, "unites.jsonl");
-  const manifestPath = join(rootDir, DOSSIER_CORPUS, "manifest.json");
 
   let ecrit = false;
   if (options.dryRun !== true) {

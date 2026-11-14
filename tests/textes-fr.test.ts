@@ -149,6 +149,51 @@ describe("la synchronisation des textes français d'application", () => {
     }
   });
 
+  it("garde l'historique des versions remplacées du décret", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-textes-fr-"));
+    try {
+      await syncTextesFr({
+        rootDir: root,
+        descripteurPath: descripteurReduit(root),
+        date: "2026-11-14",
+        reponses: REPONSES,
+        config: null,
+      });
+      const nouveau = structuredClone(REPONSES) as unknown as Record<
+        string,
+        { id: string; dateDebutVersion: string }
+      >;
+      const decret = nouveau["decret-2019-536"];
+      assert.ok(decret !== undefined);
+      decret.id = "LEGITEXT000038567662_01-01-2026";
+      decret.dateDebutVersion = "2026-01-01";
+
+      await syncTextesFr({
+        rootDir: root,
+        descripteurPath: descripteurReduit(root),
+        date: "2026-11-20",
+        reponses: nouveau,
+        config: null,
+      });
+
+      const manifeste = JSON.parse(
+        readFileSync(join(root, "data", "corpus", "textes_fr", "manifest.json"), "utf8"),
+      ) as ManifesteTextesFr;
+      const texteFr = manifeste.textes.find((texte) => texte.text_id === DECRET);
+      assert.ok(texteFr !== undefined);
+      assert.equal(texteFr.version, "LEGITEXT000038567662_01-01-2026");
+      assert.deepEqual(texteFr.versions_remplacees, [
+        {
+          identifiant: "LEGITEXT000038567662_07-09-2025",
+          date_debut: "2025-09-07",
+          date_fin: "2025-12-31",
+        },
+      ]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("relit le cache du jour sans appel réseau", async () => {
     const root = mkdtempSync(join(tmpdir(), "vitrine-textes-fr-"));
     try {

@@ -26,7 +26,7 @@ import { statutApplication } from "./corpus/statut.ts";
 import type { StatutApplication } from "./corpus/statut.ts";
 import { niveauConfiance } from "./confidence.ts";
 import type { NiveauConfiance } from "./confidence.ts";
-import { ORDRE_SOURCES, inventaireCorpus, lireManifestes, lireRapport } from "./corpus/sync-rapport.ts";
+import { SOURCES_SOUS_VEILLE, inventaireCorpus, lireManifestes, lireRapport } from "./corpus/sync-rapport.ts";
 import type {
   CorpusRapport,
   DocumentRapport,
@@ -119,7 +119,7 @@ export function perimetreDe(
   const noms = cible === null ? inventaire.map((entree) => entree.corpus) : [cible];
   const corpus: CorpusInterroge[] = noms.map((nom) => {
     const inventorie = inventaire.find((entree) => entree.corpus === nom);
-    const veille = inventorie !== undefined && (ORDRE_SOURCES as readonly string[]).includes(nom);
+    const veille = inventorie !== undefined && (SOURCES_SOUS_VEILLE as readonly string[]).includes(nom);
     return {
       corpus: nom,
       veille,

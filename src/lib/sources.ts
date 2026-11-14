@@ -10,6 +10,7 @@ const SOURCE_LABELS: Record<string, string> = {
   arcom: "ARCOM",
   cetat: "Conseil d'État",
   judilibre: "Cour de cassation",
+  legi: "Légifrance",
 };
 
 export function sourceLabel(source: string): string {

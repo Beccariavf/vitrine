@@ -21,12 +21,17 @@ import { syncIncrements } from "./cnil/sync.ts";
 import { syncCe } from "./ce/sync.ts";
 import { syncCc } from "./cc/sync.ts";
 import { syncCjue } from "./cjue/sync.ts";
+import { syncLil } from "./lil/sync.ts";
+import type { ResultatLil } from "./lil/sync.ts";
+import { syncTextesFr } from "./textes-fr/sync.ts";
+import type { ResultatTextesFr } from "./textes-fr/sync.ts";
 import {
   corpusDeLEntree,
   documentsDeLEntree,
   documentsEcartes,
   indexerDocumentsCorpus,
   indexerSnapshots,
+  indexerVersionsCorpus,
   lireEntrees,
 } from "./veille.ts";
 import type { CorpusVeille } from "./veille.ts";
@@ -42,6 +47,7 @@ import type {
   IndexRapport,
   RapportSync,
   SourceRapport,
+  StatutDocument,
 } from "./sync-rapport.ts";
 import { commandesLaunchctl, installerPlanificateur } from "./sync-planificateur.ts";
 
@@ -94,7 +100,7 @@ function validerDate(date: string, nom: string): void {
   }
 }
 
-/** Les quatre synchronisations réelles, derrière la même interface que les tests. */
+/** Les six synchronisations réelles, derrière la même interface que les tests. */
 export type AgentsParDefautDeps = {
   /** Remplaçable en test : une passe `cc` sans réseau. */
   syncCc?: (options: { rootDir: string }) => Promise<{
@@ -103,16 +109,22 @@ export type AgentsParDefautDeps = {
     documents: number;
     enAttente: number;
   }>;
+  /** Remplaçable en test : une passe LIL sans réseau. */
+  syncLil?: (options: { rootDir: string }) => Promise<ResultatLil>;
+  /** Remplaçable en test : une passe des textes français sans réseau. */
+  syncTextesFr?: (options: { rootDir: string }) => Promise<ResultatTextesFr>;
   /** Remplaçable en test : journal d'usage en panne. */
   flushUsage?: (rootDir: string) => void;
 };
 
-/** Les quatre synchronisations réelles, derrière la même interface que les tests. */
+/** Les six synchronisations réelles, derrière la même interface que les tests. */
 export function agentsParDefaut(
   rootDir: string,
   deps: AgentsParDefautDeps = {},
 ): Record<CorpusVeille, AgentSync> {
   const synchroniserCc = deps.syncCc ?? syncCc;
+  const synchroniserLil = deps.syncLil ?? syncLil;
+  const synchroniserTextesFr = deps.syncTextesFr ?? syncTextesFr;
   const journal = deps.flushUsage ?? flushUsage;
   return {
     cnil: async () => {
@@ -161,6 +173,41 @@ export function agentsParDefaut(
         message: `${resultat.documentsLus} décision(s) lue(s), ${resultat.documents} retenue(s)`,
       };
     },
+    lil: async () => {
+      let resultat: Awaited<ReturnType<typeof synchroniserLil>>;
+      let avertissement = "";
+      try {
+        resultat = await synchroniserLil({ rootDir });
+      } finally {
+        try {
+          journal(rootDir);
+        } catch (error) {
+          avertissement = ` ; journal d'usage non écrit (${raison(error)})`;
+        }
+      }
+      return {
+        ecrit: resultat.ecrit,
+        message: `${resultat.version} au ${resultat.date}, ${resultat.unites} article(s)${avertissement}`,
+      };
+    },
+    textes_fr: async () => {
+      let resultat: Awaited<ReturnType<typeof synchroniserTextesFr>>;
+      let avertissement = "";
+      try {
+        resultat = await synchroniserTextesFr({ rootDir });
+      } finally {
+        try {
+          journal(rootDir);
+        } catch (error) {
+          avertissement = ` ; journal d'usage non écrit (${raison(error)})`;
+        }
+      }
+      const unites = resultat.lectures.reduce((total, lecture) => total + lecture.unites.length, 0);
+      return {
+        ecrit: resultat.ecrit,
+        message: `${resultat.lectures.length} texte(s), ${unites} article(s)${avertissement}`,
+      };
+    },
   };
 }
 
@@ -169,6 +216,7 @@ function classer(
   snapshots: Map<string, string[]>,
   documentsCorpus: Map<string, Set<string>>,
   ecartesCjue: Map<string, string>,
+  versionsCorpus: Map<string, Set<string>>,
 ): DocumentRapport[] {
   const documents: DocumentRapport[] = [];
   for (const entree of entrees) {
@@ -204,13 +252,30 @@ function classer(
     const presents = documentsCorpus.get(corpus) ?? new Set<string>();
     for (const document of ids) {
       const motif = corpus === "cjue" ? ecartesCjue.get(document) : undefined;
+      const present = presents.has(document);
+      // Une entrée `legi` ne dit pas seulement quel document est visé, mais
+      // quelle version : le document présent avec une autre version est périmé.
+      const aJour =
+        present &&
+        (entree.source !== "legi" ||
+          entree.version === undefined ||
+          versionsCorpus.get(document)?.has(entree.version) === true);
+      const statut: StatutDocument = !present
+        ? motif === undefined
+          ? "manquant"
+          : "ecarte"
+        : aJour
+          ? "present"
+          : "perime";
       documents.push({
         entree: entree.id,
         source: entree.source,
         document,
         corpus,
-        statut: presents.has(document) ? "present" : motif === undefined ? "manquant" : "ecarte",
+        statut,
         ...(motif === undefined ? {} : { motif }),
+        ...(statut === "perime" ? { motif: "version du corpus antérieure" } : {}),
+        ...(entree.version === undefined ? {} : { version: entree.version }),
       });
     }
   }
@@ -218,7 +283,7 @@ function classer(
 }
 
 function compter(documents: DocumentRapport[]): RapportSync["comptes"] {
-  const comptes = { presents: 0, manquants: 0, ecartes: 0, non_mappes: 0 };
+  const comptes = { presents: 0, manquants: 0, ecartes: 0, non_mappes: 0, perimes: 0 };
   for (const document of documents) {
     switch (document.statut) {
       case "present":
@@ -233,6 +298,9 @@ function compter(documents: DocumentRapport[]): RapportSync["comptes"] {
       case "non_mappe":
         comptes.non_mappes += 1;
         break;
+      case "perime":
+        comptes.perimes += 1;
+        break;
     }
   }
   return comptes;
@@ -242,6 +310,9 @@ function sourcesALancer(documents: DocumentRapport[]): Set<CorpusVeille> {
   const aLancer = new Set<CorpusVeille>();
   for (const document of documents) {
     if (document.statut === "manquant" && document.corpus !== null) aLancer.add(document.corpus);
+    // Un document périmé est présent mais dans une version antérieure : la
+    // source doit être relancée comme pour un document manquant.
+    if (document.statut === "perime" && document.corpus !== null) aLancer.add(document.corpus);
     // Une sanction CNIL non mappée peut être portée par un nouvel incrément DILA.
     if (document.statut === "non_mappe" && document.source === "cnil") aLancer.add("cnil");
   }
@@ -273,16 +344,17 @@ function corpusPresent(rootDir: string): boolean {
 }
 
 /**
- * Conserve les documents encore manquants d'une passe antérieure. Le rapport ne
- * décrit que la dernière fenêtre ; sans cette fusion, un document absent
- * disparaîtrait de `etat_corpus` dès que la fenêtre avance, alors qu'il manque
- * toujours. Une ligne redevient courante dès que le document entre au corpus ou
- * est déclaré écarté.
+ * Conserve les documents encore en attente d'une passe antérieure : manquants
+ * et périmés. Le rapport ne décrit que la dernière fenêtre ; sans cette fusion,
+ * un document en attente disparaîtrait de `etat_corpus` dès que la fenêtre
+ * avance, alors qu'il manque toujours. Une ligne redevient courante dès que le
+ * document entre au corpus dans la bonne version ou est déclaré écarté.
  */
 function fusionnerManquants(
   courants: DocumentRapport[],
   precedent: RapportSync | null,
   documentsCorpus: Map<string, Set<string>>,
+  versionsCorpus: Map<string, Set<string>>,
   ecartes: Map<string, string>,
 ): DocumentRapport[] {
   if (precedent === null) return courants;
@@ -293,10 +365,21 @@ function fusionnerManquants(
   );
   const resultat = [...courants];
   for (const ancien of precedent.documents ?? []) {
-    if (ancien.statut !== "manquant" || ancien.document === null || ancien.corpus === null) continue;
+    if (ancien.statut !== "manquant" && ancien.statut !== "perime") continue;
+    if (ancien.document === null || ancien.corpus === null) continue;
     const cle = `${ancien.corpus}:${ancien.document}`;
     if (vus.has(cle)) continue;
-    if (documentsCorpus.get(ancien.corpus)?.has(ancien.document) === true) continue;
+    if (documentsCorpus.get(ancien.corpus)?.has(ancien.document) === true) {
+      // Un document présent clôt un manquant ; une ligne périmée ne se clôt que
+      // si la version qu'elle nomme est entrée au corpus.
+      if (ancien.statut === "manquant") continue;
+      const version = ancien.version;
+      if (version !== undefined && versionsCorpus.get(ancien.document)?.has(version) === true) {
+        continue;
+      }
+      resultat.push(ancien);
+      continue;
+    }
     if (ancien.corpus === "cjue" && ecartes.has(ancien.document)) continue;
     resultat.push(ancien);
   }
@@ -333,7 +416,8 @@ export async function syncCorpus(options: SyncCorpusOptions = {}): Promise<Rappo
   const snapshots = indexerSnapshots(rootDir);
   let documentsCorpus = indexerDocumentsCorpus(rootDir);
   let ecartes = documentsEcartes(rootDir, "cjue");
-  let documents = classer(entrees, snapshots, documentsCorpus, ecartes);
+  let versionsCorpus = indexerVersionsCorpus(rootDir);
+  let documents = classer(entrees, snapshots, documentsCorpus, ecartes, versionsCorpus);
 
   const aLancer = sourcesALancer(documents);
   const agents = options.agents ?? agentsParDefaut(rootDir);
@@ -367,8 +451,9 @@ export async function syncCorpus(options: SyncCorpusOptions = {}): Promise<Rappo
   // Relire le corpus après les écritures : le statut du rapport est celui d'après.
   documentsCorpus = indexerDocumentsCorpus(rootDir);
   ecartes = documentsEcartes(rootDir, "cjue");
-  documents = classer(entrees, snapshots, documentsCorpus, ecartes);
-  documents = fusionnerManquants(documents, precedent, documentsCorpus, ecartes);
+  versionsCorpus = indexerVersionsCorpus(rootDir);
+  documents = classer(entrees, snapshots, documentsCorpus, ecartes, versionsCorpus);
+  documents = fusionnerManquants(documents, precedent, documentsCorpus, versionsCorpus, ecartes);
 
   let index: IndexRapport;
   if (options.dryRun === true) {

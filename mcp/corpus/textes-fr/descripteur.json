@@ -13,6 +13,7 @@
       "perimetre": "texte entier",
       "date_texte": "2019-05-29",
       "route": { "type": "legiPart" },
+      "detection": { "fond": "LODA_DATE", "num": "2019-536" },
       "attendus": { "articles": 166 }
     },
     {
