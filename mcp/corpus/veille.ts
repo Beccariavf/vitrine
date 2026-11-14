@@ -15,6 +15,7 @@ import type { Entry } from "../../veille/types.ts";
 /** Sources de veille dont l'identifiant désigne un document du corpus. */
 export type CorpusVeille =
   | "cnil"
+  | "cnil_doctrine"
   | "ce"
   | "constit"
   | "cc"
@@ -32,6 +33,7 @@ export type CorpusVeille =
 
 const CORPUS_PAR_SOURCE: Record<string, CorpusVeille> = {
   cnil: "cnil",
+  cnil_doctrine: "cnil_doctrine",
   cetat: "ce",
   constit: "constit",
   judilibre: "cc",
@@ -72,6 +74,8 @@ const CORPUS_PAR_DOCUMENT: Record<string, CorpusVeille> = {
 const ID_CETAT = /^CETATEXT\d+$/;
 const ID_CONSTIT = /^CONSTEXT\d+$/;
 const ID_JUDILIBRE = /^[0-9a-f]{24}$/;
+/** Slug d'un document de doctrine : dernier segment du nom de fichier, normalisé. */
+const SLUG_DOCTRINE = /^[a-z0-9][a-z0-9-]*$/;
 const CELEX = /^6\d{4}[A-Z]{2}\d{1,4}(?:\(\d+\))?$/;
 const LIEN_CNIL = /https?:\/\/www\.legifrance\.gouv\.fr\/cnil\/id\/(CNILTEXT\d+)/g;
 
@@ -248,6 +252,10 @@ export function documentsDeLEntree(
   switch (entry.source) {
     case "cnil":
       return snapshots.get(normaliserUrl(entry.url)) ?? [];
+    case "cnil_doctrine":
+      return entry.document !== undefined && SLUG_DOCTRINE.test(entry.document)
+        ? [entry.document]
+        : [];
     case "cetat":
       return ID_CETAT.test(entry.id) ? [entry.id] : [];
     case "constit":
@@ -307,7 +315,8 @@ export function indexerDocumentsCorpus(rootDir: string): Map<string, Set<string>
  * Versions présentes dans chaque corpus, par document : les `ref` des unités
  * (`LEGIARTI…` d'un article) et la version consolidée déclarée au manifeste
  * (`LEGITEXT…_JJ-MM-AAAA`, `legiPart`). Sert à distinguer un document présent
- * mais périmé d'un document déjà à jour.
+ * mais périmé d'un document déjà à jour. La doctrine CNIL déclare l'URL de son
+ * PDF : une réédition sous le même identifiant porte une autre URL.
  */
 export function indexerVersionsCorpus(rootDir: string): Map<string, Set<string>> {
   const versions = new Map<string, Set<string>>();
@@ -347,6 +356,7 @@ export function indexerVersionsCorpus(rootDir: string): Map<string, Set<string>>
         text_id?: unknown;
         version?: unknown;
         textes?: unknown;
+        documents_par_type?: unknown;
       };
       ajouter(manifeste.document, manifeste.version);
       ajouter(manifeste.text_id, manifeste.version);
@@ -355,6 +365,19 @@ export function indexerVersionsCorpus(rootDir: string): Map<string, Set<string>>
           if (typeof element !== "object" || element === null) continue;
           const texteManifeste = element as { text_id?: unknown; version?: unknown };
           ajouter(texteManifeste.text_id, texteManifeste.version);
+        }
+      }
+      if (
+        typeof manifeste.documents_par_type === "object" &&
+        manifeste.documents_par_type !== null
+      ) {
+        for (const liste of Object.values(manifeste.documents_par_type)) {
+          if (!Array.isArray(liste)) continue;
+          for (const element of liste) {
+            if (typeof element !== "object" || element === null) continue;
+            const document = element as { slug?: unknown; url?: unknown };
+            ajouter(document.slug, document.url);
+          }
         }
       }
     } catch {

@@ -35,4 +35,8 @@ export type Entry = {
   nature?: string;
   /** CELEX de la décision abrogée par celle que porte l'entrée ; `eurlex` seulement. */
   abroge?: string;
+  /** Type de doctrine (`guide`, `referentiel`, `liste_aipd`) ; `cnil_doctrine` seulement. */
+  type?: "guide" | "referentiel" | "liste_aipd";
+  /** Nature de la nouveauté détectée (`nouveau`, `modifie`) ; `cnil_doctrine` seulement. */
+  motif?: "nouveau" | "modifie";
 };

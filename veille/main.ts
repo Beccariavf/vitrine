@@ -16,12 +16,13 @@ import { fetchEntries as fetchCetatEntries } from "./sources/cetat.ts";
 import { fetchEntries as fetchJudilibreEntries } from "./sources/judilibre.ts";
 import { passeEurlex } from "./sources/eurlex.ts";
 import { passeConstit } from "./sources/constit.ts";
+import { passeDoctrine } from "./sources/cnil-doctrine.ts";
 import { flushUsage } from "./piste.ts";
 import { assignThemes, readThemes } from "./themes.ts";
 import type { Theme } from "./themes.ts";
 import type { Entry } from "./types.ts";
 import { readEntryById, writeEntries, writeRaw } from "./write.ts";
-import type { FetchLike } from "./fetch.ts";
+import type { FetchInit, FetchLike } from "./fetch.ts";
 import type { FetchFlux } from "../mcp/corpus/tar.ts";
 
 export type { FetchLike } from "./fetch.ts";
@@ -172,6 +173,23 @@ export const SOURCES: AnySource[] = [
         rootDir: context.rootDir,
         fetchImpl: context.fetchImpl,
         fetchFlux: context.fetchFlux,
+        ...(context.now === undefined ? {} : { maintenant: context.now }),
+      });
+      return {
+        raw: resultat.raw,
+        entries: resultat.entries,
+        warnings: resultat.warnings,
+        notes: resultat.notes,
+      };
+    },
+  },
+  {
+    kind: "api",
+    id: "cnil_doctrine",
+    fetchEntries: async (context) => {
+      const resultat = await passeDoctrine({
+        rootDir: context.rootDir,
+        fetchHtml: (url, init) => context.fetchImpl(url, init as FetchInit),
         ...(context.now === undefined ? {} : { maintenant: context.now }),
       });
       return {

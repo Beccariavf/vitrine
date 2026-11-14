@@ -18,6 +18,7 @@ import { createOllamaEmbedder } from "../embed/embedder.ts";
 import type { Embedder } from "../embed/embedder.ts";
 import { classementHorsCorpus } from "./hors-corpus.ts";
 import { syncIncrements } from "./cnil/sync.ts";
+import { syncDoctrine } from "./cnil-doctrine/sync.ts";
 import { syncCe } from "./ce/sync.ts";
 import { syncConstit } from "./constit/sync.ts";
 import { syncCc } from "./cc/sync.ts";
@@ -142,6 +143,15 @@ export function agentsParDefaut(
           `${resultat.documents_retenus} document(s) retenu(s)`,
       };
     },
+    cnil_doctrine: async () => {
+      const resultat = await syncDoctrine({ rootDir });
+      return {
+        ecrit: resultat.ecrit,
+        message:
+          `${resultat.documents} document(s), ${resultat.fragments} fragment(s), ` +
+          `${resultat.couverts} couvert(s) par le corpus CNIL, ${resultat.ecartes} écarté(s)`,
+      };
+    },
     ce: async () => {
       const resultat = await syncCe({ rootDir });
       return {
@@ -252,6 +262,14 @@ export function agentsParDefaut(
   }
 }
 
+/**
+ * Sources dont une entrée ne dit pas seulement quel document est visé, mais
+ * quelle version : un document présent dans une autre version est périmé.
+ * `legi` et `eurlex` portent un identifiant de version, `cnil_doctrine` l'URL
+ * du PDF (une réédition change de fichier).
+ */
+const SOURCES_A_VERSION: ReadonlySet<string> = new Set(["legi", "eurlex", "cnil_doctrine"]);
+
 function classer(
   entrees: Entry[],
   snapshots: Map<string, string[]>,
@@ -294,14 +312,15 @@ function classer(
     for (const document of ids) {
       const motif = corpus === "cjue" ? ecartesCjue.get(document) : undefined;
       const present = presents.has(document);
-      // Une entrée `legi` ou `eurlex` ne dit pas seulement quel document est
-      // visé, mais quelle version : le document présent avec une autre version
-      // est périmé.
+      // Une entrée `legi`, `eurlex` ou `cnil_doctrine` ne dit pas seulement quel
+      // document est visé, mais quelle version : le document présent avec une
+      // autre version est périmé.
+      const version = entree.version;
       const aJour =
         present &&
-        ((entree.source !== "legi" && entree.source !== "eurlex") ||
-          entree.version === undefined ||
-          versionsCorpus.get(document)?.has(entree.version) === true);
+        (!SOURCES_A_VERSION.has(entree.source) ||
+          version === undefined ||
+          versionsCorpus.get(document)?.has(version) === true);
       const statut: StatutDocument = !present
         ? motif === undefined
           ? "manquant"

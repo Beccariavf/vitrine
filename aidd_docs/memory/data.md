@@ -67,6 +67,14 @@ flowchart LR
 - `date_acte` : date déclarée dans l'en-tête (« Adopté le … », « Publié le … »), sinon date d'extraction avec `date_source: "extraction"` (47 sur 56). Les PDF et leur cache vivent sous `data/raw/cnil-doctrine/`, adressés par leur `sha256` ; le cache vaut sept jours (`validite_jours`), `--refresh` le force, et les pages de référence sont relues à chaque passe pour que la liste ne se fige pas.
 - Requêtes polies : un appel à la fois, 1 s d'attente lue au descripteur (`delai_ms`), `User-Agent` générique, reprise sur 429 et 503. Les pages de référence et de document ne sont jamais servies par le cache ; seuls les PDF le sont, sept jours. Le corpus n'est écrit qu'après validation de tous les fragments.
 
+## Veille de la doctrine CNIL
+
+- `veille/sources/cnil_doctrine`, branchée dans `npm run veille` : la source relit les pages de référence déclarées au descripteur avec la reconnaissance du corpus (`mcp/corpus/cnil-doctrine/liste.ts`, `parcourirReference` et `extraireDocuments`), dans le même ordre et avec le même dédoublonnage par URL, puis compare au manifeste `data/corpus/cnil_doctrine/manifest.json`. Aucun PDF n'est téléchargé.
+- Une entrée par document absent du manifeste (`motif: "nouveau"`) ou dont l'intitulé et le type existent mais dont l'URL du PDF a changé (`motif: "modifie"`). L'intitulé est comparé sans casse, diacritiques ni ponctuation ; l'URL sans `www`, fragment ni requête. Entrée : `document` (le slug du corpus, calculé par la même règle), `type`, `motif`, `version` (URL du PDF), titre seul — `summary: null`, aucune reformulation sous CC BY-ND. `publishedAt` est la date de la passe, les pages de référence ne datant pas leurs documents.
+- Aucune entrée pour un document listé au `couverts_par_cnil` du manifeste (listes AIPD portées par les délibérations 2018-327 et 2019-118) ni pour un document de `documents_ecartes`. Un manifeste absent rend tous les documents listés nouveaux.
+- Raccord : `CORPUS_PAR_SOURCE.cnil_doctrine = "cnil_doctrine"`, `documentsDeLEntree` rend le slug, `indexerVersionsCorpus` lit l'URL de chaque document du manifeste ; un document manquant relance `cnil-doctrine:sync`, et un document présent avec une autre URL de PDF est `perime` et le relance aussi. Passe réelle du 2026-11-14 : 58 documents listés, 0 nouveau, 0 modifié, 56 inchangés, 2 couverts par le corpus `cnil`.
+- Limite déclarée : une réédition servie sous la même URL de PDF n'est pas détectable par la veille, qui ne lit pas les PDF ; `cnil-doctrine:sync` la voit à la synchronisation suivante par le contenu. Un intitulé qui change en même temps que le fichier apparaît comme nouveau.
+
 ## Corpus LIL
 
 - `data/corpus/lil/` : la loi n° 78-17 dans sa version consolidée, 1 document et 133 articles en vigueur ; 54 articles abrogés sont écartés et 50 sections parcourues. `ref` = `LEGIARTI…`, `niveau` = `article`, `document` = `LEGITEXT000006068624`.
