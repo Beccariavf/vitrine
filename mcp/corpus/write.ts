@@ -10,7 +10,7 @@ export type CouvertureActe = {
   statut: string;
   types_retenus: string[];
   exclusions: string[];
-  comptes: { articles: number; considerants: number };
+  comptes: { articles: number; considerants: number; clauses?: number };
   /** CELEX rendu et date de sa consolidation ; présents quand le descripteur les déclare. */
   version?: string;
   date_consolidation?: string | null;
@@ -68,9 +68,11 @@ export function writeCorpus(
   const dossier = join(rootDir, "data", "corpus", descripteur.corpus);
   const articles = unites.filter((unite) => unite.niveau === "article").length;
   const considerants = unites.filter((unite) => unite.niveau === "considérant").length;
+  const clauses = unites.filter((unite) => unite.niveau === "clause").length;
   const types = [
     ...(articles > 0 ? ["article"] : []),
     ...(considerants > 0 ? ["considérant"] : []),
+    ...(clauses > 0 ? ["clause"] : []),
   ];
   const manifeste: Manifeste = {
     document: descripteur.document,
@@ -95,7 +97,11 @@ export function writeCorpus(
       statut: descripteur.statut,
       types_retenus: types,
       exclusions: descripteur.exclusions ?? [],
-      comptes: { articles, considerants },
+      comptes: {
+        articles,
+        considerants,
+        ...(clauses > 0 ? { clauses } : {}),
+      },
       ...(descripteur.version === undefined
         ? {}
         : { version: descripteur.version, date_consolidation: descripteur.date_consolidation ?? null }),
