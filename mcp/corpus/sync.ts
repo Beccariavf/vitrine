@@ -275,6 +275,7 @@ function classer(
   snapshots: Map<string, string[]>,
   documentsCorpus: Map<string, Set<string>>,
   ecartesCjue: Map<string, string>,
+  ecartesDoctrine: Map<string, string>,
   versionsCorpus: Map<string, Set<string>>,
 ): DocumentRapport[] {
   const documents: DocumentRapport[] = [];
@@ -310,7 +311,12 @@ function classer(
 
     const presents = documentsCorpus.get(corpus) ?? new Set<string>();
     for (const document of ids) {
-      const motif = corpus === "cjue" ? ecartesCjue.get(document) : undefined;
+      const motif =
+        corpus === "cjue"
+          ? ecartesCjue.get(document)
+          : corpus === "cnil_doctrine"
+            ? ecartesDoctrine.get(document)
+            : undefined;
       const present = presents.has(document);
       // Une entrée `legi`, `eurlex` ou `cnil_doctrine` ne dit pas seulement quel
       // document est visé, mais quelle version : le document présent avec une
@@ -417,6 +423,7 @@ function fusionnerManquants(
   documentsCorpus: Map<string, Set<string>>,
   versionsCorpus: Map<string, Set<string>>,
   ecartes: Map<string, string>,
+  ecartesDoctrine: Map<string, string>,
 ): DocumentRapport[] {
   if (precedent === null) return courants;
   const vus = new Set(
@@ -442,6 +449,7 @@ function fusionnerManquants(
       continue;
     }
     if (ancien.corpus === "cjue" && ecartes.has(ancien.document)) continue;
+    if (ancien.corpus === "cnil_doctrine" && ecartesDoctrine.has(ancien.document)) continue;
     resultat.push(ancien);
   }
   return resultat;
@@ -479,8 +487,16 @@ export async function syncCorpus(options: SyncCorpusOptions = {}): Promise<Rappo
   const snapshots = indexerSnapshots(rootDir);
   let documentsCorpus = indexerDocumentsCorpus(rootDir);
   let ecartes = documentsEcartes(rootDir, "cjue");
+  let ecartesDoctrine = documentsEcartes(rootDir, "cnil_doctrine");
   let versionsCorpus = indexerVersionsCorpus(rootDir);
-  let documents = classer(entrees, snapshots, documentsCorpus, ecartes, versionsCorpus);
+  let documents = classer(
+    entrees,
+    snapshots,
+    documentsCorpus,
+    ecartes,
+    ecartesDoctrine,
+    versionsCorpus,
+  );
 
   const aLancer = sourcesALancer(documents);
   const agents = options.agents ?? agentsParDefaut(rootDir);
@@ -531,9 +547,24 @@ export async function syncCorpus(options: SyncCorpusOptions = {}): Promise<Rappo
   // Relire le corpus après les écritures : le statut du rapport est celui d'après.
   documentsCorpus = indexerDocumentsCorpus(rootDir);
   ecartes = documentsEcartes(rootDir, "cjue");
+  ecartesDoctrine = documentsEcartes(rootDir, "cnil_doctrine");
   versionsCorpus = indexerVersionsCorpus(rootDir);
-  documents = classer(entrees, snapshots, documentsCorpus, ecartes, versionsCorpus);
-  documents = fusionnerManquants(documents, precedent, documentsCorpus, versionsCorpus, ecartes);
+  documents = classer(
+    entrees,
+    snapshots,
+    documentsCorpus,
+    ecartes,
+    ecartesDoctrine,
+    versionsCorpus,
+  );
+  documents = fusionnerManquants(
+    documents,
+    precedent,
+    documentsCorpus,
+    versionsCorpus,
+    ecartes,
+    ecartesDoctrine,
+  );
 
   let index: IndexRapport;
   if (options.dryRun === true) {

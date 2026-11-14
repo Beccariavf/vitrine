@@ -23,7 +23,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { chargerTexte, extraireDocuments, parcourirReference } from "../../mcp/corpus/cnil-doctrine/liste.ts";
+import { chargerTexte, extraireDocuments, lireDescripteur, parcourirReference } from "../../mcp/corpus/cnil-doctrine/liste.ts";
 import type {
   DescripteurDoctrine,
   FetchHtml,
@@ -99,33 +99,42 @@ export type ResultatPasseDoctrine = {
   notes: string[];
 };
 
-/** Lit le descripteur de la doctrine CNIL. */
-export function lireDescripteur(chemin: string = DESCRIPTEUR): DescripteurDoctrine {
-  return JSON.parse(readFileSync(chemin, "utf8")) as DescripteurDoctrine;
-}
+/** Lecteur du descripteur : celui de `liste.ts`, partagé avec `cnil-doctrine:sync`. */
+export { lireDescripteur };
 
-/** Lit le manifeste du corpus ; `null` s'il est absent ou illisible. */
+/** Lit le manifeste du corpus ; `null` s'il est absent, une erreur de lecture s'il est illisible. */
 export function lireManifeste(chemin: string): ManifesteDoctrineLu | null {
   if (!existsSync(chemin)) return null;
+  let texte: string;
   try {
-    const valeur: unknown = JSON.parse(readFileSync(chemin, "utf8"));
-    if (typeof valeur !== "object" || valeur === null || Array.isArray(valeur)) return null;
-    const manifeste = valeur as ManifesteDoctrineLu;
-    return {
-      ...(typeof manifeste.documents_par_type === "object" &&
-      manifeste.documents_par_type !== null
-        ? { documents_par_type: manifeste.documents_par_type }
-        : {}),
-      ...(Array.isArray(manifeste.couverts_par_cnil)
-        ? { couverts_par_cnil: manifeste.couverts_par_cnil }
-        : {}),
-      ...(Array.isArray(manifeste.documents_ecartes)
-        ? { documents_ecartes: manifeste.documents_ecartes }
-        : {}),
-    };
-  } catch {
-    return null;
+    texte = readFileSync(chemin, "utf8");
+  } catch (error) {
+    throw new Error(`Manifeste illisible ${chemin} : ${error instanceof Error ? error.message : String(error)}`);
   }
+  let valeur: unknown;
+  try {
+    valeur = JSON.parse(texte);
+  } catch (error) {
+    throw new Error(
+      `Manifeste illisible ${chemin} : ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+  if (typeof valeur !== "object" || valeur === null || Array.isArray(valeur)) {
+    throw new Error(`Manifeste illisible ${chemin} : objet attendu`);
+  }
+  const manifeste = valeur as ManifesteDoctrineLu;
+  return {
+    ...(typeof manifeste.documents_par_type === "object" &&
+    manifeste.documents_par_type !== null
+      ? { documents_par_type: manifeste.documents_par_type }
+      : {}),
+    ...(Array.isArray(manifeste.couverts_par_cnil)
+      ? { couverts_par_cnil: manifeste.couverts_par_cnil }
+      : {}),
+    ...(Array.isArray(manifeste.documents_ecartes)
+      ? { documents_ecartes: manifeste.documents_ecartes }
+      : {}),
+  };
 }
 
 /**
@@ -293,7 +302,7 @@ export async function documentsListes(
 export async function passeDoctrine(
   options: PasseDoctrineOptions = {},
 ): Promise<ResultatPasseDoctrine> {
-  const descripteur = options.descripteur ?? lireDescripteur();
+  const descripteur = options.descripteur ?? lireDescripteur(DESCRIPTEUR);
   const rootDir = options.rootDir ?? process.cwd();
   const instant = options.maintenant ?? new Date();
   const datePasse = Number.isNaN(instant.getTime()) ? "" : instant.toISOString().slice(0, 10);

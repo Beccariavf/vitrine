@@ -209,6 +209,24 @@ describe("veille de la doctrine CNIL", () => {
     assert.ok(resultat.entries.every((entree) => entree.motif === "nouveau"));
   });
 
+  it("signale un manifeste illisible plutôt que d'annoncer tout le corpus comme nouveau", async () => {
+    const racine = mkdtempSync(join(tmpdir(), "cnil-doctrine-veille-"));
+    racines.push(racine);
+    mkdirSync(join(racine, "data", "corpus", "cnil_doctrine"), { recursive: true });
+    writeFileSync(
+      join(racine, "data", "corpus", "cnil_doctrine", "manifest.json"),
+      "{ pas du json",
+      "utf8",
+    );
+
+    await assert.rejects(
+      passe(racine, descripteur(REFERENCE_GUIDES), {
+        [URL_GUIDES]: fixture("mediatheque-guides.html"),
+      }),
+      /Manifeste illisible/,
+    );
+  });
+
   it("rejette une date de passe hors ISO", async () => {
     const racine = racineAvecManifeste(null);
     await assert.rejects(

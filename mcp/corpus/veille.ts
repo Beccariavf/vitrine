@@ -11,6 +11,7 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import type { Entry } from "../../veille/types.ts";
+import { slugDe } from "./cnil-doctrine/parse.ts";
 
 /** Sources de veille dont l'identifiant désigne un document du corpus. */
 export type CorpusVeille =
@@ -388,20 +389,43 @@ export function indexerVersionsCorpus(rootDir: string): Map<string, Set<string>>
 }
 
 /**
- * Documents explicitement écartés par un corpus, avec leur motif. Seule la CJUE
- * publie une liste par identifiant ; les comptes des autres corpus ne disent pas
- * quel document a été écarté.
+ * Documents explicitement écartés par un corpus, avec leur motif durable. La
+ * CJUE publie une liste par identifiant, la doctrine CNIL une liste par URL ;
+ * les comptes des autres corpus ne disent pas quel document a été écarté.
+ *
+ * Un écart durable ne sera pas réparé par une passe : une mention contraire à
+ * la licence, un avis d'avocat général, un XHTML absent. Un échec de
+ * téléchargement ou d'extraction reste transitoire chez la doctrine, dont la
+ * synchronisation rejoue les documents écartés : il n'est donc pas classé, et
+ * l'entrée reste `manquant` pour relancer la source.
  */
 export function documentsEcartes(rootDir: string, corpus: string): Map<string, string> {
-  const ecartes = new Map<string, string>();
-  if (corpus !== "cjue") return ecartes;
+  if (corpus !== "cjue" && corpus !== "cnil_doctrine") return new Map<string, string>();
   const chemin = join(rootDir, "data", "corpus", corpus, "manifest.json");
   const texte = lireTexte(chemin);
-  if (texte === null) return ecartes;
+  if (texte === null) return new Map<string, string>();
+  const ecartes = new Map<string, string>();
   try {
     const manifeste = JSON.parse(texte) as {
       couverture?: { documents_ecartes?: { celex?: unknown; motif?: unknown }[] };
+      documents_ecartes?: { url?: unknown; raison?: unknown }[];
     };
+    if (corpus === "cnil_doctrine") {
+      // La doctrine écarte par URL ; l'entrée de veille désigne le document par
+      // son slug, celui que la synchronisation lui aurait donné. Seule une
+      // mention contraire est durable : un PDF en échec est rejoué par
+      // `cnil-doctrine:sync`, donc l'entrée doit rester manquante.
+      for (const document of manifeste.documents_ecartes ?? []) {
+        if (typeof document.url !== "string" || typeof document.raison !== "string") continue;
+        if (!document.raison.startsWith("mention contraire")) continue;
+        try {
+          ecartes.set(slugDe(document.url), document.raison);
+        } catch {
+          // Une URL sans slug exploitable ne désigne aucun document.
+        }
+      }
+      return ecartes;
+    }
     for (const document of manifeste.couverture?.documents_ecartes ?? []) {
       if (
         typeof document.celex === "string" &&

@@ -393,6 +393,41 @@ describe("correspondance veille → corpus", () => {
       rmSync(root, { recursive: true, force: true });
     }
   });
+
+  it("lit les documents écartés par la doctrine CNIL par leur slug", () => {
+    const root = racine();
+    try {
+      mkdirSync(join(root, "data", "corpus", "cnil_doctrine"), { recursive: true });
+      writeFileSync(
+        join(root, "data", "corpus", "cnil_doctrine", "manifest.json"),
+        JSON.stringify({
+          documents_ecartes: [
+            {
+              url: "https://www.cnil.fr/sites/default/files/2026-11/guide-sous-droits.pdf",
+              titre: "Guide sous droits",
+              raison: "mention contraire : tous droits réservés",
+            },
+            {
+              url: "https://www.cnil.fr/sites/default/files/2026-11/guide-sans-texte.pdf",
+              titre: "Guide sans texte",
+              raison: "PDF sans texte",
+            },
+          ],
+        }),
+        "utf8",
+      );
+      const ecartes = documentsEcartes(root, "cnil_doctrine");
+      assert.equal(ecartes.get("guide-sous-droits"), "mention contraire : tous droits réservés");
+      assert.equal(
+        ecartes.has("guide-sans-texte"),
+        false,
+        "un échec d'extraction est rejoué, il ne classe pas le document",
+      );
+      assert.equal(ecartes.size, 1);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
 });
 
 describe("rapport de synchronisation", () => {
@@ -864,6 +899,123 @@ describe("synchronisation du corpus", () => {
         rapport.documents.find((document) => document.document === "guide-a-jour")?.statut,
         "present",
       );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("classe écarté un document de doctrine que la synchronisation a refusé, sans la relancer", async () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "cnil_doctrine", []);
+      mkdirSync(join(root, "data", "corpus", "cnil_doctrine"), { recursive: true });
+      writeFileSync(
+        join(root, "data", "corpus", "cnil_doctrine", "manifest.json"),
+        `${JSON.stringify(
+          {
+            corpus: "cnil_doctrine",
+            documents_ecartes: [
+              {
+                url: "https://www.cnil.fr/sites/default/files/2026-11/guide-refuse.pdf",
+                titre: "Guide refusé",
+                raison: "mention contraire : tous droits réservés",
+              },
+            ],
+          },
+          null,
+          2,
+        )}\n`,
+        "utf8",
+      );
+      ecrireEntree(root, {
+        ...entree(
+          "cnil_doctrine",
+          "entree-refusee",
+          "https://www.cnil.fr/sites/default/files/2026-11/guide-refuse.pdf",
+        ),
+        document: "guide-refuse",
+        version: "https://www.cnil.fr/sites/default/files/2026-11/guide-refuse.pdf",
+        type: "guide" as const,
+        motif: "nouveau" as const,
+      });
+
+      const appels = { n: 0 };
+      const doctrine: AgentSync = async () => {
+        appels.n += 1;
+        return { ecrit: false, message: "appelé" };
+      };
+      const rapport = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-11",
+        depuis: "2026-11-01",
+        agents: { ...agents(INERTE, INERTE, INERTE, INERTE), cnil_doctrine: doctrine },
+        embedder: embedderFactice(),
+      });
+
+      const document = rapport.documents.find(
+        (candidat) => candidat.document === "guide-refuse",
+      );
+      assert.equal(document?.statut, "ecarte");
+      assert.match(document?.motif ?? "", /tous droits réservés/);
+      assert.equal(appels.n, 0, "un document écarté ne relance pas la synchronisation");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("relance la doctrine CNIL sur un écart transitoire", async () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "cnil_doctrine", []);
+      mkdirSync(join(root, "data", "corpus", "cnil_doctrine"), { recursive: true });
+      writeFileSync(
+        join(root, "data", "corpus", "cnil_doctrine", "manifest.json"),
+        `${JSON.stringify(
+          {
+            corpus: "cnil_doctrine",
+            documents_ecartes: [
+              {
+                url: "https://www.cnil.fr/sites/default/files/2026-11/guide-en-echec.pdf",
+                titre: "Guide en échec",
+                raison: "PDF sans texte",
+              },
+            ],
+          },
+          null,
+          2,
+        )}\n`,
+        "utf8",
+      );
+      ecrireEntree(root, {
+        ...entree(
+          "cnil_doctrine",
+          "entree-en-echec",
+          "https://www.cnil.fr/sites/default/files/2026-11/guide-en-echec.pdf",
+        ),
+        document: "guide-en-echec",
+        version: "https://www.cnil.fr/sites/default/files/2026-11/guide-en-echec.pdf",
+        type: "guide" as const,
+        motif: "nouveau" as const,
+      });
+
+      const appels = { n: 0 };
+      const doctrine: AgentSync = async () => {
+        appels.n += 1;
+        return { ecrit: false, message: "appelé" };
+      };
+      const rapport = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-11",
+        depuis: "2026-11-01",
+        agents: { ...agents(INERTE, INERTE, INERTE, INERTE), cnil_doctrine: doctrine },
+        embedder: embedderFactice(),
+      });
+
+      const document = rapport.documents.find(
+        (candidat) => candidat.document === "guide-en-echec",
+      );
+      assert.equal(document?.statut, "manquant");
+      assert.equal(appels.n, 1, "un échec transitoire relance la synchronisation");
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
