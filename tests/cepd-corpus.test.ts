@@ -229,6 +229,8 @@ describe("la liste CEPD", () => {
       "Guidelines on consent under Regulation 2016/679, WP259 rev.01</a></li>",
       '<li><a href="http://ec.europa.eu/newsroom/article29/item-detail.cfm?item_id=611236">',
       "Guidelines on Data Protection Impact Assessment (DPIA), WP248</a></li>",
+      '<li><a href="http://ec.europa.eu/newsroom/article29/item-detail.cfm?item_id=612053">',
+      "Guidelines on Automated individual decision-making, WP251rev.01</a></li>",
       "<li><strong>Working Document Setting Forth a Co-Operation Procedure, WP 263 rev.01</strong>",
       " superseded by ",
       '<a href="https://www.edpb.europa.eu/our-work-tools/our-documents/procedure/edpb-document-cooperation_en">',
@@ -241,7 +243,7 @@ describe("la liste CEPD", () => {
       "https://www.edpb.europa.eu/endorsed-wp29-guidelines_en",
     );
 
-    assert.equal(items.length, 3);
+    assert.equal(items.length, 4);
     assert.deepEqual(items[0], {
       titre: "Guidelines on consent under Regulation 2016/679, WP259 rev.01",
       url: `${BASE}/our-work-tools/our-documents/guidelines/edpb-guidelines-052020-consent-under-regulation-2016679_en`,
@@ -252,9 +254,11 @@ describe("la liste CEPD", () => {
     assert.equal(items[1]?.wp, "WP248");
     assert.equal(items[1]?.hebergement, "commission");
     assert.equal(items[1]?.numero, null);
-    assert.equal(items[2]?.wp, "WP263");
-    assert.equal(items[2]?.titre.includes("superseded"), false);
-    assert.equal(items[2]?.hebergement, "cepd");
+    // `WP251rev.01` n'a pas de frontière après les chiffres.
+    assert.equal(items[2]?.wp, "WP251");
+    assert.equal(items[3]?.wp, "WP263");
+    assert.equal(items[3]?.titre.includes("superseded"), false);
+    assert.equal(items[3]?.hebergement, "cepd");
   });
 
   it("ne garde du sitemap que les URL _fr et _en des rubriques retenues", async () => {
@@ -944,12 +948,12 @@ describe("la synchronisation CEPD", () => {
     );
     assert.equal(manifeste.documents_sans_texte_ecartes, 10);
     assert.equal(manifeste.versions_ecartees, 3);
-    assert.equal(manifeste.couverture.documents_ecartes.length, 23);
+    assert.equal(manifeste.couverture.documents_ecartes.length, 22);
     assert.equal(
       manifeste.couverture.documents_ecartes.filter(
         (document) => document.source === "endossement",
       ).length,
-      10,
+      9,
     );
     assert.deepEqual(manifeste.langues_pdf, { fr: 154, en: 174, autre: 0 });
     assert.equal(manifeste.couverture.periode.date_min, "2018-04-11");
@@ -957,10 +961,14 @@ describe("la synchronisation CEPD", () => {
     assert.match(manifeste.licence, /Régime ouvert/);
     assert.deepEqual(manifeste.g29?.comptes, {
       listes: 16,
-      retenus: 5,
-      successeurs: 4,
-      ecartes: 11,
+      retenus: 6,
+      successeurs: 5,
+      ecartes: 10,
     });
+    assert.equal(
+      manifeste.g29?.documents.find((document) => document.wp === "WP256")?.document,
+      "recommendations-12022-on-the-application-for-approval-and-on-the-elements",
+    );
     assert.equal(
       manifeste.g29?.documents.find((document) => document.wp === "WP260")?.type,
       "g29_repris",

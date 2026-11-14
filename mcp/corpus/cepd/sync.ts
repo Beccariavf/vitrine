@@ -309,6 +309,19 @@ function familleG29(titre: string): "guidelines" | "recommandation" | "autre" {
   return "autre";
 }
 
+/** Famille déduite du lien de successeur, quand le titre est un « Working Document ». */
+function familleDepuisUrlG29(url: string): "guidelines" | "recommandation" | "autre" {
+  let chemin: string;
+  try {
+    chemin = new URL(url).pathname;
+  } catch {
+    return "autre";
+  }
+  if (/\/recommendations?\//i.test(chemin)) return "recommandation";
+  if (/\/guidelines?\//i.test(chemin)) return "guidelines";
+  return "autre";
+}
+
 /**
  * Rapproche la liste d'endossement du G29 du corpus : un document dont le
  * numéro EDPB ou WP est déjà retenu est `retenu` ; un document déjà écarté
@@ -337,7 +350,12 @@ function rapprocherG29(
 
   const ajouts: DocumentEcart[] = [];
   const documents = items.map((item, index): DocumentG29Manifeste => {
-    const famille = familleG29(item.titre);
+    // « Working Document … WP256 » pointe Recommandations 1/2022 : la famille
+    // se lit alors dans le lien du successeur, pas dans le titre.
+    const famille =
+      familleG29(item.titre) === "autre"
+        ? familleDepuisUrlG29(item.url)
+        : familleG29(item.titre);
     const retenu =
       (item.wp === null ? undefined : parWp.get(item.wp.toUpperCase())) ??
       (item.numero === null || famille === "autre"
@@ -373,9 +391,12 @@ function rapprocherG29(
         : item.hebergement === "cepd"
           ? "page CEPD sans PDF ou non listée au sitemap"
           : `hébergement hors du site du CEPD (${hote})`;
+    const slug =
+      item.wp?.toLowerCase() ??
+      (/^position paper/i.test(item.titre) ? "position-paper" : `g29-${index + 1}`);
     ajouts.push({
       url: item.url,
-      slug: item.wp?.toLowerCase() ?? `g29-${index + 1}`,
+      slug,
       type: "g29_repris",
       raison,
       source: "endossement",

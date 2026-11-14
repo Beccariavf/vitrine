@@ -670,7 +670,8 @@ export function listerDocumentsG29(html: string, pageUrl: string): DocumentG29Li
     const complet = texteVisible(contenu).replace(/\s+/g, " ").trim();
     if (complet === "" || complet.length > 600) continue;
     if (/endorsement of gdpr|legacy|read more|télécharger|download/i.test(complet)) continue;
-    const wp = /\bwp\s?(\d{2,4})\b/i.exec(complet)?.[1];
+    // `WP251rev.01` n'a pas de frontière après les chiffres.
+    const wp = /\bwp\s?(\d{2,4})(?!\d)/i.exec(complet)?.[1];
     const reconnu =
       /^(?:guidelines?|recommendations?|position paper|working document|adequacy referential)\b/i.test(
         complet,
