@@ -349,7 +349,7 @@ export function parseConsolide(xhtml: string, descripteur: Descripteur): Unite[]
   const fin = xhtml.search(/<[a-z]+ class="(?:separator-short|title-annex|doc-annex)/);
   const finArticles = fin < 0 ? xhtml.length : fin;
   const reperes: Array<{ genre: "article" | "division"; position: number }> = [];
-  const motif = /<p class="(title-article-norm|title-division-1)">/g;
+  const motif = /<p class="(title-article-norm|title-division-1)(?=[">\s])/g;
   for (let trouve = motif.exec(xhtml); trouve !== null && trouve.index < finArticles; trouve = motif.exec(xhtml)) {
     reperes.push({ genre: trouve[1] === "title-article-norm" ? "article" : "division", position: trouve.index });
   }

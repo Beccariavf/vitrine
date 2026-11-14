@@ -22,6 +22,33 @@ export type VersionRemplacee = {
 
 const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
 
+/**
+ * Date `AAAA-MM-JJ` portée par un CELEX de version consolidée
+ * (`02016R0679-20180525`), ou `null` si l'identifiant n'en est pas une.
+ */
+export function dateDeConsolidation(celex: string): string | null {
+  const trouve = /^0\d{4}[A-Z]\d+-(\d{4})(\d{2})(\d{2})$/.exec(celex);
+  if (trouve === null) return null;
+  const [, annee, mois, jour] = trouve;
+  if (annee === undefined || mois === undefined || jour === undefined) return null;
+  const date = new Date(Date.UTC(Number(annee), Number(mois) - 1, Number(jour)));
+  if (
+    date.getUTCFullYear() !== Number(annee) ||
+    date.getUTCMonth() !== Number(mois) - 1 ||
+    date.getUTCDate() !== Number(jour)
+  ) {
+    return null;
+  }
+  return date.toISOString().slice(0, 10);
+}
+
+/** CELEX de base d'une version consolidée : `02016R0679-20180525` → `32016R0679`. */
+export function celexDeBase(version: string): string | null {
+  const tiret = version.indexOf("-");
+  if (tiret < 0 || !version.startsWith("0")) return null;
+  return `3${version.slice(1, tiret)}`;
+}
+
 /** Manifeste déjà écrit, ou `null` s'il est absent ou illisible. */
 export function lireManifeste(chemin: string): Record<string, unknown> | null {
   if (!existsSync(chemin)) return null;

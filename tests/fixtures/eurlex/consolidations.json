@@ -1,0 +1,15 @@
+{
+  "head": { "vars": ["celex"] },
+  "results": {
+    "bindings": [
+      { "celex": { "type": "literal", "value": "02002L0058-20060503" } },
+      { "celex": { "type": "literal", "value": "02002L0058-20091219" } },
+      { "celex": { "type": "literal", "value": "02016L0680-20160504" } },
+      { "celex": { "type": "literal", "value": "02016R0679-20160504" } },
+      { "celex": { "type": "literal", "value": "02018R1725-20181121" } },
+      { "celex": { "type": "literal", "value": "02021D0914-20210607" } },
+      { "celex": { "type": "literal", "value": "02024R1689-20240712" } },
+      { "celex": { "type": "literal", "value": "02024R1689-20260727" } }
+    ]
+  }
+}

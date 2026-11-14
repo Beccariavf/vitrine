@@ -23,6 +23,12 @@ export type Entry = {
   source: string;
   /** Document du corpus visé, quand la source en désigne un (`legi` : `LEGITEXT…`). */
   document?: string;
-  /** Identifiant de la version publiée (`LEGIARTI…`, `LEGITEXT…_JJ-MM-AAAA`) ; `legi` seulement. */
+  /** Identifiant de la version publiée (`LEGIARTI…`, `LEGITEXT…_JJ-MM-AAAA`, consolidation CELEX) ; `legi` et `eurlex`. */
   version?: string;
+  /** Nature de la nouveauté détectée ; `eurlex` seulement. */
+  categorie?: "consolidation" | "adequation" | "clauses_types" | "modification";
+  /** Date de l'acte ou de la consolidation détectée ; `eurlex` seulement. */
+  date_acte?: string;
+  /** CELEX de la décision abrogée par celle que porte l'entrée ; `eurlex` seulement. */
+  abroge?: string;
 };

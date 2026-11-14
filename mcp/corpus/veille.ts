@@ -13,13 +13,50 @@ import { join } from "node:path";
 import type { Entry } from "../../veille/types.ts";
 
 /** Sources de veille dont l'identifiant désigne un document du corpus. */
-export type CorpusVeille = "cnil" | "ce" | "cc" | "cjue" | "lil" | "textes_fr";
+export type CorpusVeille =
+  | "cnil"
+  | "ce"
+  | "cc"
+  | "cjue"
+  | "lil"
+  | "textes_fr"
+  | "rgpd"
+  | "aiact"
+  | "eprivacy"
+  | "police"
+  | "eudpr"
+  | "rgpdproc"
+  | "ccs"
+  | "adequation";
 
 const CORPUS_PAR_SOURCE: Record<string, CorpusVeille> = {
   cnil: "cnil",
   cetat: "ce",
   judilibre: "cc",
   cjeu: "cjue",
+};
+
+/** Corpus d'actes de l'Union : ils ne portent pas la fraîcheur globale. */
+export const CORPUS_ACTES: readonly CorpusVeille[] = [
+  "rgpd",
+  "aiact",
+  "eprivacy",
+  "police",
+  "eudpr",
+  "rgpdproc",
+  "ccs",
+  "adequation",
+];
+
+/** Actes de base suivis par la veille `eurlex` : CELEX → corpus. */
+const CORPUS_ACTES_UE: Record<string, CorpusVeille> = {
+  "32016R0679": "rgpd",
+  "32024R1689": "aiact",
+  "32002L0058": "eprivacy",
+  "32016L0680": "police",
+  "32018R1725": "eudpr",
+  "32025R2518": "rgpdproc",
+  "32021D0914": "ccs",
 };
 
 /** Une entrée `legi` vise le corpus du texte qu'elle porte. */
@@ -50,9 +87,18 @@ const MOTIFS_DURABLES = new Set([
 ]);
 
 /** Corpus visé par une source de veille, ou `null` si elle n'alimente aucun corpus. */
-export function corpusDeLEntree(entry: Pick<Entry, "source"> & { document?: string }): CorpusVeille | null {
+export function corpusDeLEntree(
+  entry: Pick<Entry, "source"> & { document?: string; categorie?: Entry["categorie"] },
+): CorpusVeille | null {
   if (entry.source === "legi") {
     return entry.document === undefined ? null : (CORPUS_PAR_DOCUMENT[entry.document] ?? null);
+  }
+  if (entry.source === "eurlex") {
+    if (entry.categorie === "adequation") return "adequation";
+    // Des clauses types neuves n'ont pas encore de corpus : l'entrée le dit sans
+    // faire relancer une construction qui ne pourrait pas les accueillir.
+    if (entry.categorie === "clauses_types") return null;
+    return entry.document === undefined ? null : (CORPUS_ACTES_UE[entry.document] ?? null);
   }
   return CORPUS_PAR_SOURCE[entry.source] ?? null;
 }
@@ -218,6 +264,10 @@ export function documentsDeLEntree(
       return entry.document !== undefined && /^LEGITEXT\d+$/.test(entry.document)
         ? [entry.document]
         : [];
+    case "eurlex":
+      return entry.document !== undefined && /^3\d{4}[A-Z]\d/.test(entry.document)
+        ? [entry.document]
+        : [];
     default:
       return [];
   }
@@ -288,10 +338,12 @@ export function indexerVersionsCorpus(rootDir: string): Map<string, Set<string>>
     if (texte === null) continue;
     try {
       const manifeste = JSON.parse(texte) as {
+        document?: unknown;
         text_id?: unknown;
         version?: unknown;
         textes?: unknown;
       };
+      ajouter(manifeste.document, manifeste.version);
       ajouter(manifeste.text_id, manifeste.version);
       if (Array.isArray(manifeste.textes)) {
         for (const element of manifeste.textes) {
