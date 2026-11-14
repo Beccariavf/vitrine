@@ -387,7 +387,7 @@ La règle de choix, les mesures et ce qui invaliderait la promesse sont dans
 ## Démonstration
 
 `npm run mcp:demo` lance `mcp/server.ts` comme le ferait un client, s'y connecte sur stdio et
-appelle trois des quatre outils sur cinq questions : article exact, recherche RGPD, recherche AI Act,
+appelle trois des cinq outils sur cinq questions : article exact, recherche RGPD, recherche AI Act,
 filtres CNIL, décision par son numéro. Sortie réelle, Ollama requis :
 
 ```
@@ -400,7 +400,7 @@ filtres CNIL, décision par son numéro. Sortie réelle, Ollama requis :
 ```
 
 Ce n'est pas un test : la suite couvre le protocole en mémoire et le calcul hors ligne, et
-`tests/server-stdio.test.ts` vérifie que le point d'entrée démarre et expose les quatre outils sans
+`tests/server-stdio.test.ts` vérifie que le point d'entrée démarre et expose les cinq outils sans
 Ollama. La démonstration prouve le chemin complet — entrée stdio, embeddings, index construit — et
 affiche la provenance de chaque passage.
 

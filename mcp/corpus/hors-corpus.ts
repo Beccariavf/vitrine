@@ -61,7 +61,7 @@ const AUTORITES: Readonly<Record<string, string>> = {
 };
 
 /** Libellé d'une autorité ; un corpus inconnu garde son identifiant. */
-function autoriteDe(corpus: string): string {
+export function autoriteDe(corpus: string): string {
   return AUTORITES[corpus] ?? corpus;
 }
 
