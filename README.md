@@ -204,7 +204,10 @@ empreinte ne relit rien. Mesure du 14 novembre 2026 : 573 525 entrées lues, 174
 Conseil d'État toutes dates, 1 594 retenues après mots-clés et 20 774 fragments (fonds `publie` :
 282 décisions et 4 430 fragments ; fonds `inedit` : 1 312 décisions et 16 344 fragments) ; 62
 doublons entre les deux fonds ; exclusions 399 198 autres juridictions, 167 044 sans mot-clé,
-5 627 textes vides, période 1982-03-12 → 2026-10-27. Les 12 questions `dev` de
+5 627 textes vides, période 1982-03-12 → 2026-10-27. Le filtre n'a pas été durci : un seul mot-clé
+suffit, donc le corpus porte des faux positifs (une décision de la Cour des comptes où la CNIL n'est
+que créancière, par exemple), et 132 166 des 167 044 entrées sans mot-clé sont antérieures à 2014 —
+« toutes dates » ne veut pas dire « toute la jurisprudence ». Les 12 questions `dev` de
 `mcp/eval/questions-ce.csv`, mesurées le 9 novembre 2026 sur le corpus de 1 312 décisions, rendent le
 document attendu au top 5 pour 8 d'entre elles (MRR 0,486, top 1 33,3 %) ; l'élargissement du
 14 novembre n'a pas été remesuré.
@@ -234,7 +237,9 @@ des données, ou au moins deux occurrences d'une expression centrale. Le budget 
 sans toucher au corpus existant et la suivante reprend au cache. Les quatre entrées Judilibre de la veille
 sont incluses d'office. Mesure du 14 novembre 2026 : 1 348 décisions lues, 403 retenues,
 8 194 fragments, 945 écartées faute de pertinence, période 1986-07-21 → 2026-11-10, dont 51
-décisions antérieures à 2014. Chaque décision
+décisions antérieures à 2014. Le filtre n'a pas été durci : l'élargissement laisse entrer des faux
+positifs (« protection des données confidentielles » pour le secret des affaires, un disque nommé
+« D:/données personnelles »), et Judilibre ne sert pas le texte de toutes ses décisions. Chaque décision
 indexe son visa quand Judilibre le porte (147 décisions n'en ont pas), puis
 regroupe son texte en fragments de 600 à 1 200 caractères — un paragraphe plus long reste entier. Les 10
 questions `dev`, mesurées le 11 novembre 2026 sur le corpus de 352 décisions, rendent le document

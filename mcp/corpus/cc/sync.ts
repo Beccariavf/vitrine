@@ -362,6 +362,8 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
       break;
     }
     for (let page = 0; page < maxPages; page += 1) {
+      // Aucune borne de date : Judilibre rend toutes les décisions de sa base
+      // pour la phrase, sans filtre bas ni haut.
       const params = new URLSearchParams({
         query: `"${requete}"`,
         operator: "and",
@@ -411,7 +413,8 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
   if (rechercheIncomplete) {
     throw new Error(
       "Recherche Judilibre interrompue ou tronquée (429, budget ou plafond de pages) : " +
-        "le corpus existant reste intact. Relancez avec un budget plus large.",
+        "le corpus existant reste intact. Relancez avec un budget plus large ; " +
+        "si le plafond de pages est atteint, une requête dépasse 10 000 résultats.",
     );
   }
 
