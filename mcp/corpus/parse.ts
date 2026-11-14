@@ -27,6 +27,10 @@ export type Descripteur = {
   articles_attendus: number;
   /** Nombre de considérants que la capture doit porter. */
   considerants_attendus: number;
+  /** Nombre de clauses que l'annexe doit porter ; seule la décision 2021/914 en déclare. */
+  clauses_attendues?: number;
+  /** Parseur dédié, quand le corpus n'est pas un acte CELLAR ordinaire. */
+  parseur?: "ccs";
   /**
    * CELEX effectivement récupéré : une version consolidée (`0…-AAAAMMJJ`) ou
    * l'acte d'origine quand aucune consolidation française n'existe. Absent :
@@ -39,8 +43,8 @@ export type Descripteur = {
   exclusions?: string[];
 };
 
-/** `fragment` désigne un découpage de texte long, propre à la CNIL. */
-export type Niveau = "article" | "considérant" | "fragment";
+/** `fragment` désigne un découpage de texte long, propre à la CNIL ; `clause` l'annexe de 2021/914. */
+export type Niveau = "article" | "considérant" | "fragment" | "clause";
 
 /** Origine d'un fragment CNIL : l'historique DINUM ou un incrément DILA. */
 export type Origine = "dinum" | "dila";
@@ -81,6 +85,16 @@ const ENTITES: Record<string, string> = {
   nbsp: " ",
   laquo: "«",
   raquo: "»",
+  eacute: "é",
+  egrave: "è",
+  agrave: "à",
+  Eacute: "É",
+  ecirc: "ê",
+  deg: "°",
+  rsquo: "’",
+  ndash: "–",
+  mdash: "—",
+  hellip: "…",
 };
 
 /** Décode les entités nominales et numériques d'un fragment XHTML. */
@@ -91,7 +105,7 @@ export function decoderEntites(fragment: string): string {
       const valeur = Number.parseInt(hexadecimal ? code.slice(2) : code.slice(1), hexadecimal ? 16 : 10);
       return Number.isFinite(valeur) ? String.fromCodePoint(valeur) : entier;
     }
-    return ENTITES[code.toLowerCase()] ?? entier;
+    return ENTITES[code] ?? ENTITES[code.toLowerCase()] ?? entier;
   });
 }
 

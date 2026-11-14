@@ -4,10 +4,10 @@ import { FAMILLES, FAMILLES_LEGENDE, familleDeSource } from "../src/lib/familles
 import { AUTORISEES } from "./contrastes.ts";
 
 const SOURCES_VEILLE = ["cnil", "cjeu", "anssi", "cepd", "arcep", "commission", "commission-dma", "arcom", "cetat", "judilibre", "legi"];
-const CORPUS = ["rgpd", "aiact", "lil", "cnil", "cepd", "cjue", "ce", "cc"];
+const CORPUS = ["rgpd", "aiact", "eprivacy", "police", "eudpr", "rgpdproc", "ccs", "lil", "textes_fr", "adequation", "cnil", "cepd", "cjue", "ce", "cc"];
 
 describe("familleDeSource", () => {
-  it("range les onze sources de veille et les huit corpus dans une famille nommée", () => {
+  it("range les onze sources de veille et les quinze corpus dans une famille nommée", () => {
     const attendu: Record<string, string> = {
       cnil: "autorites",
       anssi: "autorites",
@@ -25,7 +25,14 @@ describe("familleDeSource", () => {
       cc: "juridictions",
       rgpd: "textes",
       aiact: "textes",
+      eprivacy: "textes",
+      police: "textes",
+      eudpr: "textes",
+      rgpdproc: "textes",
+      ccs: "textes",
       lil: "textes",
+      textes_fr: "textes",
+      adequation: "ue",
     };
     for (const id of [...SOURCES_VEILLE, ...CORPUS]) {
       assert.equal(familleDeSource(id).id, attendu[id], id);
