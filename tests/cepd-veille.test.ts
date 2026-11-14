@@ -594,7 +594,7 @@ describe("la veille des documents du CEPD", () => {
       [page, consultation],
     ]);
     try {
-      const { fetchHtml } = servir(pages);
+      const { fetchHtml, appels } = servir(pages);
       await syncCePd({
         rootDir: root,
         date: DATE_LISTE,
@@ -613,13 +613,20 @@ describe("la veille des documents du CEPD", () => {
       assert.deepEqual(manifeste.documents_versions, { [slug]: "projet" });
       assert.deepEqual(manifeste.documents_lastmod, { [slug]: "2026-07-08" });
 
-      // Même sitemap : la veille reconnaît la même signature et n'écrit rien.
+      // Le sitemap a bougé, la page est donc relue, mais elle porte encore le
+      // statut de consultation : la veille recalcule la même signature et n'écrit rien.
+      pages.set(
+        `${DESCRIPTEUR.url_sitemap}?page=1`,
+        urlset([{ url: page, lastmod: "2026-09-01" }]),
+      );
+      const avant = appels.length;
       const identique = await passeDocumentsCePd({
         rootDir: root,
         fetchImpl: fetchHtml,
         attendre: async () => {},
         maintenant: DATE_PASSE,
       });
+      assert.equal(appels.slice(avant).includes(page), true, "la page déplacée doit être relue");
       assert.deepEqual(identique.entries, []);
 
       // Même slug, page devenue finale sans version explicite : le sitemap l'a datée.

@@ -393,7 +393,48 @@ describe("correspondance veille → corpus", () => {
       assert.equal(documentsEcartes(root, "cjue").get("62024CJ0002"), "xhtml_absent");
       assert.equal(documentsEcartes(root, "cjue").has("62024CJ0001"), false);
       assert.equal(documentsEcartes(root, "cnil").size, 0);
+      assert.equal(documentsEcartes(root, "cepd").size, 0);
       assert.equal(normaliserUrl("https://www.cnil.fr/fr/x/?q=1#a"), "https://www.cnil.fr/fr/x");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("ne retient du CEPD que les écarts durables", () => {
+    const root = racine();
+    try {
+      mkdirSync(join(root, "data", "corpus", "cepd"), { recursive: true });
+      writeFileSync(
+        join(root, "data", "corpus", "cepd", "manifest.json"),
+        JSON.stringify({
+          couverture: {
+            documents_ecartes: [
+              { slug: "version-obsolete", raison: "version obsolète" },
+              { slug: "annexe-seule", raison: "PDF annexe seulement" },
+              { slug: "pdf-sans-rapport", raison: "PDF sans rapport avec le document (WP242 absent du nom du fichier)" },
+              { slug: "hebergement-cepd", raison: "document hébergé hors du site du CEPD (ec.europa.eu)" },
+              { slug: "hebergement-tiers", raison: "hébergement hors du site du CEPD (exemple.org)" },
+              { slug: "pdf-absent", raison: "PDF absent" },
+              { slug: "page-illisible", raison: "page illisible : HTTP 503" },
+              { slug: "sans-raison" },
+            ],
+          },
+        }),
+        "utf8",
+      );
+
+      const ecartes = documentsEcartes(root, "cepd");
+      assert.deepEqual(
+        [...ecartes.keys()].sort(),
+        [
+          "annexe-seule",
+          "hebergement-cepd",
+          "hebergement-tiers",
+          "pdf-sans-rapport",
+          "version-obsolete",
+        ],
+      );
+      assert.equal(ecartes.get("version-obsolete"), "version obsolète");
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

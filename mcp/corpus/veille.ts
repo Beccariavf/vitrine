@@ -109,6 +109,7 @@ const MOTIFS_DURABLES_CEPD = new Set([
 const PREFIXES_DURABLES_CEPD: readonly string[] = [
   "PDF sans rapport avec le document",
   "document hébergé hors du site du CEPD",
+  "hébergement hors du site du CEPD",
 ];
 
 /** Vrai quand un motif d'écart CEPD ne sera pas réparé par une nouvelle passe. */
