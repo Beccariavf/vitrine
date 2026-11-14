@@ -49,8 +49,8 @@ const CONSIGNE_PROVENANCE =
   "`32018R1725`, règlement procédural RGPD `32025R2518`, clauses contractuelles types " +
   "`32021D0914`, décisions d'adéquation `adequation`, LIL " +
   "`LEGITEXT000006068624`, textes français d'application `textes_fr`, délibérations CNIL `cnil`, " +
-  "doctrine CNIL `cnil_doctrine`, décisions du Conseil d'État `ce`, décisions DC et QPC du Conseil constitutionnel `constit`, lignes " +
-  "directrices du CEPD `cepd`, décisions de la Cour de cassation `cc` et décisions de la CJUE " +
+  "doctrine CNIL `cnil_doctrine`, décisions du Conseil d'État `ce`, décisions DC et QPC du Conseil constitutionnel `constit`, documents " +
+  "du CEPD `cepd` (lignes directrices, avis art. 64, décisions art. 65, recommandations, G29 repris), décisions de la Cour de cassation `cc` et décisions de la CJUE " +
   "`cjue`), jamais d'une génération. Citer la référence et l'URL rendues. " +
   "Respecter le niveau de confiance : « aucun_resultat_fiable » signifie qu'il faut le dire au " +
   "lecteur, pas inventer un passage.";
@@ -138,7 +138,7 @@ const CONSIGNE_SERVEUR =
   "référentiels et listes AIPD de la CNIL (corpus `cnil_doctrine`, extraits non modifiés sous " +
   "CC BY-ND 4.0), les décisions du " +
   "Conseil d'État (corpus `ce`), les décisions DC et QPC du Conseil constitutionnel (corpus " +
-  "`constit`), les lignes directrices du CEPD (corpus `cepd`), les décisions de la Cour de cassation " +
+  "`constit`), les documents du CEPD (corpus `cepd` : lignes directrices, avis art. 64, décisions art. 65, recommandations), les décisions de la Cour de cassation " +
   "sur les données personnelles (corpus `cc`) et celles de la CJUE (corpus `cjue`). Les outils de " +
   "recherche acceptent les paramètres `corpus` et `nature` ; sans eux, la recherche couvre les dix-sept " +
   "collections et toutes les natures. Un document nommé dans la question (sigle ou nom ordinaire, " +
@@ -295,7 +295,7 @@ export function createServer(deps: ServerDeps): McpServer {
       title: "Trouver les décisions qui citent un article",
       description:
         "Rend les décisions du corpus qui citent un article (`document` + `numero`) : CNIL, Conseil " +
-        "d'État, Cour de cassation, CJUE et lignes directrices du CEPD, chacune avec son autorité, " +
+        "d'État, Cour de cassation, CJUE et documents du CEPD, chacune avec son autorité, " +
         "son intitulé, sa date, son lien et la citation qui vise l'instrument (`reference`), triées " +
         "par date décroissante. `total` et `par_autorite` comptent toutes les décisions citantes, " +
         `même quand la liste est paginée par \`limite\` (${LIMITE_DEFAUT} par défaut, ${LIMITE_MAX} au plus) ` +
@@ -426,7 +426,7 @@ export function createServer(deps: ServerDeps): McpServer {
         "contractuelles types, les décisions d'adéquation, la LIL, les textes français d'application, les délibérations de la CNIL " +
         "(sanctions, avis, recommandations et lignes directrices), les guides, référentiels et listes " +
         "AIPD de la CNIL (corpus `cnil_doctrine`), les décisions du Conseil d'État, " +
-        "les décisions DC et QPC du Conseil constitutionnel, les lignes directrices du CEPD, les " +
+        "les décisions DC et QPC du Conseil constitutionnel, les documents du CEPD, les " +
         "décisions de la Cour de cassation sur les données personnelles et celles de la CJUE, et rend " +
         "les passages les plus proches avec leur " +
         "provenance et un niveau de confiance (confiant, incertain, aucun_resultat_fiable). " +

@@ -1,19 +1,85 @@
 /**
- * Liste paginée des lignes directrices du CEPD.
+ * Liste les documents du CEPD : lignes directrices, avis art. 64, décisions
+ * contraignantes art. 65, recommandations et documents du G29 repris.
  *
  * Le site répond parfois 429 ou 503 : chaque requête est retentée trois fois
  * avec un délai croissant. Si la liste directe reste indisponible, l'appelant
- * peut demander la même liste par le Wayback Machine. Seul le type `guideline`
- * est retenu par le descripteur ; une page de consultation publique est
- * ignorée. Les recommandations sont un incrément ultérieur, hors de ce corpus.
+ * peut demander la même liste par le Wayback Machine. Le sitemap porte les
+ * versions `_fr` et `_en` : la version française est préférée, l'anglaise sert
+ * de repli. Une page de consultation publique est ignorée.
  */
 
 import { texteVisible } from "../parse.ts";
 
-/** Type de document retenu. */
-export type TypeDocument = "guideline" | "recommendation";
+/** User-agent générique des requêtes du corpus, sans identité personnelle. */
+export const AGENT = "vitrine/1.0 (+https://github.com/Beccariavf/vitrine)";
 
-/** Une ligne directrice listée ; le type reste ouvert pour un incrément futur. */
+/** `fetch` par défaut, avec le user-agent du corpus. */
+function fetchAgent(url: string, accept: string): ReturnType<typeof fetch> {
+  return fetch(url, { headers: { "user-agent": AGENT, accept } });
+}
+
+/** Type de document retenu, tel qu'il paraît au manifeste et dans le chemin. */
+export type TypeDocument =
+  | "lignes_directrices"
+  | "avis_art64"
+  | "decision_art65"
+  | "recommandation"
+  | "g29_repris";
+
+/** Les cinq types, dans l'ordre du corpus. */
+export const TYPES_DOCUMENT: readonly TypeDocument[] = [
+  "lignes_directrices",
+  "avis_art64",
+  "decision_art65",
+  "recommandation",
+  "g29_repris",
+];
+
+/** Libellé du type, premier étage du `chemin` d'un fragment. */
+export const LIBELLES_TYPE: Record<TypeDocument, string> = {
+  lignes_directrices: "Lignes directrices",
+  avis_art64: "Avis art. 64",
+  decision_art65: "Décisions contraignantes art. 65",
+  recommandation: "Recommandations",
+  g29_repris: "G29 repris",
+};
+
+/** Rubriques réelles du sitemap, ramenées à un type de corpus. */
+const TYPE_PAR_RUBRIQUE: Record<string, TypeDocument> = {
+  guideline: "lignes_directrices",
+  guidelines: "lignes_directrices",
+  recommendation: "recommandation",
+  recommendations: "recommandation",
+  "opinion-of-the-board-art-64": "avis_art64",
+  "edpb-binding-decisions": "decision_art65",
+};
+
+/** Type d'un document d'après sa rubrique dans l'URL ; `null` hors corpus. */
+export function typeDepuisChemin(pathname: string): TypeDocument | null {
+  const rubrique = /\/(?:our-work-tools\/)?(?:our-)?documents\/([^/]+)\//.exec(pathname)?.[1];
+  if (rubrique === undefined) return null;
+  return TYPE_PAR_RUBRIQUE[rubrique.toLowerCase()] ?? null;
+}
+
+/** Langue d'une page de sitemap, lue sur son suffixe. */
+export type LanguePage = "fr" | "en";
+
+/** Hébergement d'un document de la liste d'endossement du G29. */
+export type HebergementG29 = "cepd" | "commission" | "autre";
+
+/** Un document de la liste d'endossement du G29, avant rapprochement au corpus. */
+export type DocumentG29Liste = {
+  titre: string;
+  url: string;
+  /** Numéro WP quand le titre le porte, par exemple `WP260`. */
+  wp: string | null;
+  /** Numéro EDPB déduit de l'URL liée, par exemple `05/2020`. */
+  numero: string | null;
+  hebergement: HebergementG29;
+};
+
+/** Un document listé, avant enrichissement depuis sa page. */
 export type DocumentListe = {
   type: TypeDocument;
   /** URL de la page du document, sur `edpb.europa.eu`. */
@@ -25,6 +91,10 @@ export type DocumentListe = {
   pdfUrl: string | null;
   /** Version explicite lue sur la page, quand elle en porte une. */
   version?: string | null;
+  /** Langue de la page retenue, quand la liste la connaît. */
+  langue?: LanguePage;
+  /** Vrai quand la page sert une version soumise à consultation publique. */
+  consultation?: boolean;
 };
 
 /** Une tentative HTTP, consignée pour le rapport de blocage. */
@@ -55,14 +125,18 @@ export type DescripteurCePd = {
   nom: string;
   titre: string;
   url_liste: string;
-  /** Index des sitemaps ; source primaire des pages `_fr`. */
+  /** Index des sitemaps ; source primaire des pages `_fr` et `_en`. */
   url_sitemap: string;
+  /** Page d'endossement des documents du G29 par le CEPD. */
+  url_endossement?: string;
   /** Nombre de pages de sitemap essayées si l'index est illisible. */
   pages_sitemap: number;
-  /** Langue des pages retenues, `fr` pour le corpus français. */
+  /** Langue préférée des pages retenues ; l'autre langue sert de repli. */
   langue: string;
-  motif_document: string;
+  /** Types retenus depuis le sitemap. */
   types: TypeDocument[];
+  /** Délai de politesse entre deux documents, en millisecondes. */
+  delai_entre_requetes_ms?: number;
   page_debut: number;
   page_max: number;
   domaine: string;
@@ -273,14 +347,12 @@ export function trouverLienPdf(html: string, pageUrl: string): string | null {
 }
 
 export type OptionsExtraction = {
-  /** Motif de chemin déclaré par le descripteur. */
-  motifDocument?: string;
-  /** Types retenus ; `guideline` seul pour le corpus actuel. */
+  /** Types retenus ; les cinq types du corpus par défaut. */
   types?: readonly TypeDocument[];
 };
 
 /**
- * Extrait les documents d'une page de liste. Le motif et les types viennent du
+ * Extrait les documents d'une page de liste. Les types viennent du
  * descripteur ; une page de consultation publique est ignorée.
  */
 export function extraireDocuments(
@@ -289,11 +361,7 @@ export function extraireDocuments(
   options: OptionsExtraction = {},
 ): DocumentListe[] {
   const documents = new Map<string, DocumentListe>();
-  const types = new Set(options.types ?? ["guideline"]);
-  const motifDocument = new RegExp(
-    options.motifDocument ?? "/(?:our-)?documents/guidelines?/",
-    "i",
-  );
+  const types = new Set(options.types ?? TYPES_DOCUMENT);
   const motif = /<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a\s*>/gi;
   for (let trouve = motif.exec(html); trouve !== null; trouve = motif.exec(html)) {
     const href = normaliserUrlWayback(trouve[1] ?? "");
@@ -304,21 +372,10 @@ export function extraireDocuments(
     } catch {
       continue;
     }
-    const type = /\/(?:our-)?documents\/(guideline|recommendation)s?\//i.exec(url.pathname)?.[1];
-    if (
-      (type !== "guideline" && type !== "recommendation") ||
-      !types.has(type) ||
-      !motifDocument.test(url.pathname)
-    ) {
-      continue;
-    }
-    const segment = url.pathname.split("/").filter(Boolean).at(-1) ?? "";
-    const slug = decodeURIComponent(segment).replace(/_(en|fr)$/i, "");
-    if (
-      !/^(?:guidelines?|recommendations?)[-_](?:\d{1,2}[-_]?\d{4}|\d{4}[-_]?\d{1,2})/i.test(slug)
-    ) {
-      continue;
-    }
+    const type = typeDepuisChemin(url.pathname);
+    if (type === null || !types.has(type)) continue;
+    const suffixe = /_(fr|en)$/i.exec(url.pathname)?.[1]?.toLowerCase();
+    if (suffixe !== "fr" && suffixe !== "en") continue;
     url.hash = "";
     const bloc = blocAutour(html, trouve.index);
     const titre = titreLisible(trouve[2] ?? "", trouve[0], bloc) || titreDepuisUrl(url);
@@ -331,17 +388,21 @@ export function extraireDocuments(
       titre,
       date: dateDansTexte(bloc),
       pdfUrl,
+      langue: suffixe,
     };
-    const existant = documents.get(document.url);
+    // Une même ligne peut être liée en français et en anglais : le français gagne.
+    const cle = `${type}|${url.pathname.replace(/_(fr|en)$/i, "")}`;
+    const existant = documents.get(cle);
+    if (existant !== undefined && (existant.langue === "fr" || suffixe === "en")) continue;
     documents.set(
-      document.url,
+      cle,
       existant === undefined
         ? document
         : {
-            ...existant,
-            titre: existant.titre === "" ? document.titre : existant.titre,
-            date: existant.date ?? document.date,
-            pdfUrl: existant.pdfUrl ?? document.pdfUrl,
+            ...document,
+            titre: document.titre === "" ? existant.titre : document.titre,
+            date: document.date ?? existant.date,
+            pdfUrl: document.pdfUrl ?? existant.pdfUrl,
           },
     );
   }
@@ -355,7 +416,12 @@ function attendreMs(ms: number): Promise<void> {
 
 /** Requête texte avec trois tentatives sur 429 et 503. */
 export async function chargerTexte(url: string, options: OptionsHttp = {}): Promise<string> {
-  const fetchImpl = options.fetchHtml ?? (fetch as unknown as FetchHtml);
+  const fetchImpl =
+    options.fetchHtml ??
+    ((adresse: string) =>
+      fetchAgent(adresse, "text/html,application/xml;q=0.9,*/*;q=0.8") as unknown as ReturnType<
+        FetchHtml
+      >);
   const tentatives = options.tentatives ?? 3;
   const delai = options.delaiMs ?? 2000;
   const attendre = options.attendre ?? attendreMs;
@@ -377,7 +443,10 @@ export async function chargerTexte(url: string, options: OptionsHttp = {}): Prom
 
 /** Requête JSON avec trois tentatives sur 429 et 503. */
 async function chargerJson(url: string, options: OptionsHttp = {}): Promise<unknown> {
-  const fetchImpl = options.fetchJson ?? (fetch as unknown as FetchJson);
+  const fetchImpl =
+    options.fetchJson ??
+    ((adresse: string) =>
+      fetchAgent(adresse, "application/json") as unknown as ReturnType<FetchJson>);
   const tentatives = options.tentatives ?? 3;
   const delai = options.delaiMs ?? 2000;
   const attendre = options.attendre ?? attendreMs;
@@ -466,7 +535,7 @@ export async function listerDocuments(
   const journal = options.journal ?? [];
   const documents = new Map<string, DocumentListe>();
   const pageMax = options.pageMax ?? descripteur.page_max;
-  const extraction = { motifDocument: descripteur.motif_document, types: descripteur.types };
+  const extraction = { types: descripteur.types };
   let pages = 0;
 
   for (let page = descripteur.page_debut; page <= pageMax; page += 1) {
@@ -510,7 +579,7 @@ export async function listerDocumentsWayback(
   const journal = options.journal ?? [];
   const documents = new Map<string, DocumentListe>();
   const pageMax = options.pageMax ?? descripteur.page_max;
-  const extraction = { motifDocument: descripteur.motif_document, types: descripteur.types };
+  const extraction = { types: descripteur.types };
   let pages = 0;
 
   for (let page = descripteur.page_debut; page <= pageMax; page += 1) {
@@ -571,11 +640,77 @@ function locs(xml: string): string[] {
   return [...xml.matchAll(/<loc>([^<]+)<\/loc>/gi)].map((trouve) => (trouve[1] ?? "").trim());
 }
 
+/** Numéro EDPB porté par une URL liée, par exemple `guidelines-052020` → `05/2020`. */
+export function numeroDepuisUrlG29(url: string): string | null {
+  let chemin: string;
+  try {
+    chemin = new URL(url).pathname;
+  } catch {
+    return null;
+  }
+  const trouve = /(?:guidelines?|recommendations?)[-_]?(\d{1,2})[-_]?(\d{4})/i.exec(chemin);
+  if (trouve?.[1] === undefined || trouve[2] === undefined) return null;
+  return `${String(Number(trouve[1])).padStart(2, "0")}/${trouve[2]}`;
+}
+
 /**
- * Source primaire : l'index de sitemaps, puis ses pages 1 à 5. Seules les URL
- * `/documents/guideline/..._fr` sont retenues ; les traductions `_en`, `_de`,
- * etc. et les autres types sont écartés. Les pages n'ont ni titre ni date : le
- * document est enrichi ensuite depuis sa page.
+ * Lit la page d'endossement du G29 : chaque ligne nomme un document du groupe
+ * Article 29 et pointe la page du CEPD ou l'archive de la Commission. Le
+ * corpus ne reprend que les documents servis par le CEPD ; les autres sont
+ * consignés avec leur hébergement.
+ */
+export function listerDocumentsG29(html: string, pageUrl: string): DocumentG29Liste[] {
+  const documents = new Map<string, DocumentG29Liste>();
+  // La page liste chaque document dans un `<li>` ; le numéro WP est parfois
+  // dans un `<strong>` et le lien pointe son successeur EDPB. Lire le bloc
+  // entier garde le numéro WP et la cible réelle.
+  const motif = /<li\b[^>]*>([\s\S]*?)<\/li>/gi;
+  for (const bloc of html.matchAll(motif)) {
+    const contenu = bloc[1] ?? "";
+    const complet = texteVisible(contenu).replace(/\s+/g, " ").trim();
+    if (complet === "" || complet.length > 600) continue;
+    if (/endorsement of gdpr|legacy|read more|télécharger|download/i.test(complet)) continue;
+    // `WP251rev.01` n'a pas de frontière après les chiffres.
+    const wp = /\bwp\s?(\d{2,4})(?!\d)/i.exec(complet)?.[1];
+    const reconnu =
+      /^(?:guidelines?|recommendations?|position paper|working document|adequacy referential)\b/i.test(
+        complet,
+      );
+    if (wp === undefined && !reconnu) continue;
+    const ancre = /<a\b[^>]*href=["']([^"']+)["']/i.exec(contenu);
+    let url: URL;
+    try {
+      url = new URL(normaliserUrlWayback(ancre?.[1] ?? pageUrl), pageUrl);
+    } catch {
+      continue;
+    }
+    if (url.protocol !== "https:" && url.protocol !== "http:") continue;
+    const hote = url.hostname.toLowerCase();
+    const hebergement: HebergementG29 = hote.endsWith("edpb.europa.eu")
+      ? "cepd"
+      : hote.endsWith("ec.europa.eu") || hote.endsWith("europa.eu")
+        ? "commission"
+        : "autre";
+    const titre = (complet.split(/\bsuperseded by\b/i)[0] ?? complet).trim();
+    const document: DocumentG29Liste = {
+      titre,
+      url: url.href,
+      wp: wp === undefined ? null : `WP${String(Number(wp))}`,
+      numero: numeroDepuisUrlG29(url.href),
+      hebergement,
+    };
+    const cle = document.wp ?? titre.toLowerCase();
+    if (!documents.has(cle)) documents.set(cle, document);
+  }
+  return [...documents.values()];
+}
+
+/**
+ * Source primaire : l'index de sitemaps, puis ses pages 1 à 5. Les URL `_fr`
+ * et `_en` des quatre rubriques retenues sont lues, regroupées par document :
+ * la page française gagne quand elle existe, l'anglaise sert de repli. Les
+ * autres langues et les autres rubriques sont écartées. Les pages n'ont ni
+ * titre ni date : le document est enrichi ensuite depuis sa page.
  */
 export async function listerDocumentsSitemap(
   descripteur: DescripteurCePd,
@@ -602,10 +737,8 @@ export async function listerDocumentsSitemap(
     );
   }
 
-  const documents = new Map<string, DocumentListe>();
-  const motif = new RegExp(descripteur.motif_document, "i");
   const types = new Set(descripteur.types);
-  const suffixe = `_${descripteur.langue.toLowerCase()}`;
+  const groupes = new Map<string, { url: string; type: TypeDocument; langue: LanguePage }>();
   for (const pageUrl of pagesSitemap) {
     const xml = await chargerTexte(pageUrl, { ...options, journal, via: "direct" });
     for (const loc of locs(xml)) {
@@ -615,31 +748,36 @@ export async function listerDocumentsSitemap(
       } catch {
         continue;
       }
-      const type = /\/(?:our-)?documents\/(guideline|recommendation)s?\//i.exec(
-        url.pathname,
-      )?.[1];
+      const type = typeDepuisChemin(url.pathname);
+      const langue = /_(fr|en)$/i.exec(url.pathname)?.[1]?.toLowerCase();
       if (
-        type === undefined ||
-        !types.has(type as TypeDocument) ||
-        !motif.test(url.pathname) ||
-        !url.pathname.toLowerCase().endsWith(suffixe)
+        type === null ||
+        !types.has(type) ||
+        (langue !== "fr" && langue !== "en")
       ) {
         continue;
       }
       url.hash = "";
-      if (documents.has(url.href)) continue;
-      documents.set(url.href, {
-        type: type as TypeDocument,
-        url: url.href,
-        titre: "",
-        date: null,
-        pdfUrl: null,
-      });
+      const base = url.pathname.replace(/_(fr|en)$/i, "");
+      const cle = `${type}|${base}`;
+      const existant = groupes.get(cle);
+      // La version française gagne ; une `_en` déjà vue ne la remplace pas.
+      if (existant !== undefined && (existant.langue === "fr" || langue === "en")) continue;
+      groupes.set(cle, { url: url.href, type, langue });
     }
   }
 
+  const documents = new Map<string, DocumentListe>();
+  for (const { url, type, langue } of groupes.values()) {
+    documents.set(url, { type, url, titre: "", date: null, pdfUrl: null, langue });
+  }
+
   if (documents.size === 0) {
-    throw new ErreurHttp(descripteur.url_sitemap, `aucun document ${suffixe}`, 0);
+    throw new ErreurHttp(
+      descripteur.url_sitemap,
+      `aucun document ${descripteur.langue.toLowerCase()} ou en`,
+      0,
+    );
   }
   return {
     documents: [...documents.values()],
