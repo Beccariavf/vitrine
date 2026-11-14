@@ -74,6 +74,25 @@ const INTITULE_ARTICLE = /^ARTICLE\s+(PREMIER|1ER|\d+)$/;
  * n'entrent dans aucune unité.
  */
 export function parseArticlesDecision(contenu: string, descripteur: SourceDecision): Unite[] {
+  const unites = decouperArticles(contenu, descripteur);
+  if (unites.length !== descripteur.articles_attendus) {
+    throw new Error(
+      `Capture ${descripteur.document} : ${unites.length} articles au lieu de ` +
+        `${descripteur.articles_attendus} attendus`,
+    );
+  }
+  return unites;
+}
+
+/**
+ * Nombre d'articles d'une capture, sans compte attendu : la synchronisation
+ * l'écrit au descripteur avant de relancer la construction.
+ */
+export function compterArticlesDecision(contenu: string, descripteur: SourceDecision): number {
+  return decouperArticles(contenu, descripteur).length;
+}
+
+function decouperArticles(contenu: string, descripteur: SourceDecision): Unite[] {
   const lignes = lignesVisibles(contenu);
   const debut = lignes.findIndex((ligne) =>
     /^A\s+(?:ARR[ÊE]T[ÉE]|ADOPT[ÉE])\s+LA\s+PR[ÉE]SENTE\s+D[ÉE]CISION/.test(ligne.toUpperCase()),
@@ -124,13 +143,36 @@ export function parseArticlesDecision(contenu: string, descripteur: SourceDecisi
   }
   pousser();
 
-  if (unites.length !== descripteur.articles_attendus) {
-    throw new Error(
-      `Capture ${descripteur.document} : ${unites.length} articles au lieu de ` +
-        `${descripteur.articles_attendus} attendus`,
-    );
-  }
   return unites;
+}
+
+/** Pays d'une décision d'adéquation, lu dans la fin de son titre. */
+export function paysDeTitre(titre: string | null): string | null {
+  if (titre === null) return null;
+  const trouve = /\b(?:by|par)\s+(?:la\s+|le\s+|les\s+|l[’'])?(.+?)\.?$/i.exec(titre.trim());
+  const pays = trouve?.[1]?.trim();
+  return pays === undefined || pays === "" ? null : pays;
+}
+
+const DEBUT_TITRE = /^(D[ÉE]CISION|R[ÈE]GLEMENT|DIRECTIVE)\b/;
+const FIN_TITRE = /^(?:\[|\(|LA COMMISSION|LE CONSEIL|LE PARLEMENT|VU\b)/;
+
+/**
+ * Titre du document lu dans la capture, qui est en français : CELLAR étiquette
+ * parfois un titre anglais `fr`, et le descripteur doit garder des libellés
+ * français comme les autres décisions. `null` quand la forme est inconnue.
+ */
+export function titreDeCapture(contenu: string): string | null {
+  const lignes = lignesVisibles(contenu);
+  const debut = lignes.findIndex((ligne) => DEBUT_TITRE.test(ligne));
+  if (debut < 0) return null;
+  const morceaux: string[] = [];
+  for (const ligne of lignes.slice(debut, debut + 4)) {
+    if (morceaux.length > 0 && FIN_TITRE.test(ligne)) break;
+    morceaux.push(ligne);
+  }
+  const titre = morceaux.join(" ").replace(/\s+/g, " ").trim();
+  return titre === "" ? null : titre;
 }
 
 /** Descripteur d'un acte CELLAR ordinaire, pour réutiliser `texteVisible` sans le parseur d'ancres. */

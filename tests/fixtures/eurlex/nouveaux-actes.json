@@ -1,0 +1,53 @@
+{
+  "head": { "vars": ["celex", "date", "title", "lang", "repealsCelex"] },
+  "results": {
+    "bindings": [
+      {
+        "celex": { "type": "literal", "value": "32026D0400" },
+        "date": { "type": "literal", "value": "2026-02-10" },
+        "title": {
+          "type": "literal",
+          "value": "COMMISSION IMPLEMENTING DECISION pursuant to Regulation (EU) 2016/679 of the European Parliament and of the Council on the adequate level of protection of personal data by Brazil"
+        },
+        "lang": { "type": "literal", "value": "fr" }
+      },
+      {
+        "celex": { "type": "literal", "value": "32026D0401" },
+        "date": { "type": "literal", "value": "2026-03-01" },
+        "title": {
+          "type": "literal",
+          "value": "COMMISSION IMPLEMENTING DECISION pursuant to Regulation (EU) 2016/679 of the European Parliament and of the Council on the adequate level of protection of personal data by Chile"
+        },
+        "lang": { "type": "literal", "value": "fr" },
+        "repealsCelex": { "type": "literal", "value": "32016D1250" }
+      },
+      {
+        "celex": { "type": "literal", "value": "32026D0402" },
+        "date": { "type": "literal", "value": "2026-04-02" },
+        "title": {
+          "type": "literal",
+          "value": "COMMISSION IMPLEMENTING DECISION on standard contractual clauses for the transfer of personal data to third countries pursuant to Regulation (EU) 2016/679 of the European Parliament and of the Council"
+        },
+        "lang": { "type": "literal", "value": "fr" }
+      },
+      {
+        "celex": { "type": "literal", "value": "32025D2571" },
+        "date": { "type": "literal", "value": "2025-12-19" },
+        "title": {
+          "type": "literal",
+          "value": "COMMISSION IMPLEMENTING DECISION amending Commission Implementing Decision (EU) 2021/1773 on the adequate protection of personal data by the United Kingdom"
+        },
+        "lang": { "type": "literal", "value": "fr" }
+      },
+      {
+        "celex": { "type": "literal", "value": "32026D0403" },
+        "date": { "type": "literal", "value": "2026-05-05" },
+        "title": {
+          "type": "literal",
+          "value": "DECISION (EU) of the European Central Bank on the processing of personal data by the ECB"
+        },
+        "lang": { "type": "literal", "value": "fr" }
+      }
+    ]
+  }
+}

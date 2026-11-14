@@ -1,4 +1,4 @@
-import { resolve } from "node:path";
+import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import {
   FEED_URL as CNIL_FEED_URL,
@@ -14,6 +14,7 @@ import { FEED_URL as COMMISSION_DMA_FEED_URL, parseFeed as parseCommissionDmaFee
 import { FEED_URL as ARCOM_FEED_URL, PAGE as ARCOM_PAGE, parseFeed as parseArcomFeed } from "./sources/arcom.ts";
 import { fetchEntries as fetchCetatEntries } from "./sources/cetat.ts";
 import { fetchEntries as fetchJudilibreEntries } from "./sources/judilibre.ts";
+import { passeEurlex } from "./sources/eurlex.ts";
 import { flushUsage } from "./piste.ts";
 import { assignThemes, readThemes } from "./themes.ts";
 import type { Theme } from "./themes.ts";
@@ -66,6 +67,8 @@ export type ApiContext = {
   fetchImpl: FetchLike;
   themes: Theme[];
   now?: Date;
+  /** Racine du dépôt : une source peut y lire les descripteurs et le corpus. */
+  rootDir: string;
 };
 
 /** Une source API : elle interroge un service et rend des entrées normalisées. */
@@ -142,6 +145,19 @@ export const SOURCES: AnySource[] = [
     id: "judilibre",
     fetchEntries: (context) => fetchJudilibreEntries(context),
   },
+  {
+    kind: "api",
+    id: "eurlex",
+    fetchEntries: async (context) => {
+      const resultat = await passeEurlex({
+        fetchImpl: context.fetchImpl,
+        ...(context.now === undefined ? {} : { maintenant: context.now }),
+        dossierCorpus: join(context.rootDir, "mcp", "corpus"),
+        descripteurAdequation: join(context.rootDir, "mcp", "corpus", "adequation", "descripteur.json"),
+      });
+      return { raw: resultat.raw, entries: resultat.entries, warnings: resultat.warnings };
+    },
+  },
 ];
 
 export type RunOptions = {
@@ -152,6 +168,8 @@ export type RunOptions = {
   sources?: AnySource[];
   /** Catalogue déjà chargé, utile aux tests hors d'un dépôt complet. */
   themes?: Theme[];
+  /** Date de la passe, pour les sources qui en dépendent. */
+  now?: Date;
 };
 
 export type SourceRun = {
@@ -220,6 +238,7 @@ export async function run({
   rootDir,
   sources = SOURCES,
   themes,
+  now,
 }: RunOptions): Promise<RunResult> {
   const catalog = themes ?? readThemes(rootDir);
 
@@ -230,7 +249,12 @@ export async function run({
   for (const source of sources) {
     try {
       if (source.kind === "api") {
-        const result = await source.fetchEntries({ fetchImpl, themes: catalog });
+        const result = await source.fetchEntries({
+          fetchImpl,
+          themes: catalog,
+          rootDir,
+          ...(now === undefined ? {} : { now }),
+        });
         let assigned = assignThemes(result.entries, catalog);
 
         if (result.enrich) {

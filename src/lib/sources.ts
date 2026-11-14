@@ -11,6 +11,7 @@ const SOURCE_LABELS: Record<string, string> = {
   cetat: "Conseil d'État",
   judilibre: "Cour de cassation",
   legi: "Légifrance",
+  eurlex: "EUR-Lex",
 };
 
 export function sourceLabel(source: string): string {

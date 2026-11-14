@@ -13,12 +13,27 @@ import type { ClassementHorsCorpus } from "./hors-corpus.ts";
 import type { CorpusVeille } from "./veille.ts";
 
 /**
- * Sources que `npm run corpus:sync` revérifie, dans leur ordre d'exécution. Les
- * corpus statiques (`rgpd`, `aiact`, `cepd`) n'y figurent pas. `lil` et
- * `textes_fr` n'y sont relancés que sur signal de la veille : une entrée `legi`
- * dont la version manque au corpus.
+ * Sources que `npm run corpus:sync` revérifie sur signal, dans leur ordre
+ * d'exécution. Les quatre corpus de veille (`cnil`, `ce`, `cc`, `cjue`) le sont
+ * à chaque passe et portent la fraîcheur ; `lil`, `textes_fr` et les corpus
+ * d'actes n'y entrent que sur une entrée de veille.
  */
-export const ORDRE_SOURCES: readonly CorpusVeille[] = ["cnil", "ce", "cc", "cjue", "lil", "textes_fr"];
+export const ORDRE_SOURCES: readonly CorpusVeille[] = [
+  "cnil",
+  "ce",
+  "cc",
+  "cjue",
+  "lil",
+  "textes_fr",
+  "rgpd",
+  "aiact",
+  "eprivacy",
+  "police",
+  "eudpr",
+  "rgpdproc",
+  "ccs",
+  "adequation",
+];
 
 /**
  * Corpus dont `a_jour_au` couvre la fraîcheur : chaque passe les revérifie.

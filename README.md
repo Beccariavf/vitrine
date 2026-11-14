@@ -285,8 +285,8 @@ ouverte — et fait correspondre celles qui visent un document : `CNILTEXT…` p
 snapshot HTML de `data/raw/<2 hex>/` puis ses liens `legifrance.gouv.fr/cnil/id/…`, `CETATEXT…` pour
 le Conseil d'État, l'identifiant Judilibre pour la Cour de cassation, le CELEX de l'URL pour la CJUE.
 Seules les sources concernées sont lancées (`cnil` incréments DILA, `ce` archive JADE, `cc`
-Judilibre, `cjue` CELLAR) ; un document déjà présent ne relance rien, et les corpus `rgpd`, `aiact`,
-`lil` et `cepd` ne sont pas rafraîchis.
+Judilibre, `cjue` CELLAR) ; un document déjà présent ne relance rien. Une entrée `eurlex` lance la
+reconstruction du seul corpus d'acte concerné ou du corpus `adequation` ; `cepd` n'est pas rafraîchi.
 
 La passe écrit `data/corpus/sync.json` (sauf en `--dry-run`) : `a_jour_au`, `derniere_tentative`,
 fenêtre `depuis`, comptes, une ligne par document (`present`, `manquant`, `ecarte`, `non_mappe`),
@@ -454,7 +454,7 @@ les expose comme outils directs.
 
 ## Comment ça marche
 
-- `veille/` — le pipeline : dix adaptateurs (neuf autorités, la Commission a deux flux) → normalisation → rattachement aux matières → `data/`.
+- `veille/` — le pipeline : onze adaptateurs (neuf autorités, la Commission a deux flux, EUR-Lex pour les actes de l'Union) → normalisation → rattachement aux matières → `data/`.
 - `src/` — les pages Astro, qui lisent `data/` au build et filtrent les matières actives.
 - `mcp/` — les corpus RGPD, AI Act, LIL, CNIL, Conseil d'État, CEPD, Cour de cassation et CJUE,
   l'index vectoriel et lexical, le serveur MCP stdio (`get_article`, `get_decision`, `search`,
