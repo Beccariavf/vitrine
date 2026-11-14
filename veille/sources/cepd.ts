@@ -1,8 +1,21 @@
 import { XMLParser, XMLValidator } from "fast-xml-parser";
+import { createHash } from "node:crypto";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { Entry } from "../types.ts";
 import { canonicalUrl, hashId } from "../normalize.ts";
 import { toSummary } from "../summary.ts";
 import { toIsoUtc } from "./cnil.ts";
+import { chargerTexte, listerDocumentsSitemap } from "../../mcp/corpus/cepd/liste.ts";
+import type { DocumentListe, FetchHtml } from "../../mcp/corpus/cepd/liste.ts";
+import {
+  enrichirDocument,
+  slugDe,
+  statutDepuisTitre,
+} from "../../mcp/corpus/cepd/parse.ts";
+import { lireDescripteur } from "../../mcp/corpus/cepd/sync.ts";
+import { statutApplication } from "../../mcp/corpus/statut.ts";
 
 /** Identifiant stable de la source, écrit dans chaque entrée. */
 export const SOURCE_ID = "cepd";
@@ -103,4 +116,257 @@ export function parseFeed(xml: string): Entry[] {
   });
 
   return entries;
+}
+
+/**
+ * Veille des documents du CEPD, en plus du flux d'actualités.
+ *
+ * La liste, la reconnaissance des rubriques et l'enrichissement de page sont
+ * ceux du corpus (#52) : `listerDocumentsSitemap` lit le sitemap, `slugDe` fixe
+ * l'identité du document et `enrichirDocument` lit titre, date, version, PDF et
+ * mention de consultation. Aucun PDF n'est téléchargé : le corpus reste la
+ * source des textes, la veille ne fait que signaler ce qui n'y est pas encore.
+ *
+ * Un document absent du corpus est une nouveauté ; un document présent n'est
+ * une nouveauté que si le sitemap l'a modifié depuis le corpus et que sa page
+ * porte une autre version. Un corpus pas encore resynchronisé (manifeste sans
+ * versions ni `lastmod`) n'est pas comparé : la passe le dit et ne devine rien.
+ */
+
+/** Matière unique : le corpus ne retient que les documents sur les données personnelles. */
+export const THEME = "donnees-personnelles";
+
+/** Manifeste du corpus : il dit quels documents sont déjà entrés, dans quelle version. */
+export const MANIFESTE = join("data", "corpus", "cepd", "manifest.json");
+
+/** Descripteur du corpus, partagé avec `cepd:sync`. */
+export const DESCRIPTEUR = fileURLToPath(
+  new URL("../../mcp/corpus/cepd/descripteur.json", import.meta.url),
+);
+
+/** Lu du manifeste : les cartes par document, et les écarts déclarés au corpus. */
+type ManifesteLu = {
+  documents_types?: unknown;
+  documents_versions?: unknown;
+  documents_lastmod?: unknown;
+  couverture?: { documents_ecartes?: unknown };
+};
+
+/** Lit le manifeste du corpus ; `null` s'il est absent ou illisible. */
+export function lireManifeste(chemin: string): ManifesteLu | null {
+  if (!existsSync(chemin)) return null;
+  try {
+    const valeur: unknown = JSON.parse(readFileSync(chemin, "utf8"));
+    return typeof valeur === "object" && valeur !== null ? (valeur as ManifesteLu) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Carte `document → chaîne ou null` d'un manifeste ; `null` quand la carte manque. */
+function carteDeChaines(valeur: unknown): Record<string, string | null> | null {
+  if (typeof valeur !== "object" || valeur === null || Array.isArray(valeur)) return null;
+  const carte: Record<string, string | null> = {};
+  for (const [cle, element] of Object.entries(valeur)) {
+    carte[cle] = typeof element === "string" ? element : null;
+  }
+  return carte;
+}
+
+/** Slugs et URL des documents que le corpus a explicitement écartés. */
+function ecartesDuManifeste(manifeste: ManifesteLu | null): Set<string> {
+  const ecartes = new Set<string>();
+  const tableau = manifeste?.couverture?.documents_ecartes;
+  if (!Array.isArray(tableau)) return ecartes;
+  for (const element of tableau) {
+    if (typeof element !== "object" || element === null) continue;
+    const { url, slug } = element as { url?: unknown; slug?: unknown };
+    if (typeof slug === "string" && slug !== "") ecartes.add(slug);
+    if (typeof url === "string" && url !== "") ecartes.add(url);
+  }
+  return ecartes;
+}
+
+/** Identifiant stable d'une entrée : adressé par le document et sa version. */
+export function identifiantDeDocument(slug: string, version: string | null): string {
+  return createHash("sha256")
+    .update(`${SOURCE_ID}|${slug}|${version ?? ""}`, "utf8")
+    .digest("hex")
+    .slice(0, 16);
+}
+
+/** `<meta name="description">` de la page, nettoyée ; `null` si elle n'en porte pas. */
+export function resumeDepuisPage(html: string): string | null {
+  for (const balise of html.matchAll(/<meta\b[^>]*>/gi)) {
+    const texte = balise[0];
+    if (!/\bname\s*=\s*["']description["']/i.test(texte)) continue;
+    const contenu = /\bcontent\s*=\s*["']([^"']*)["']/i.exec(texte)?.[1];
+    if (contenu === undefined || contenu.trim() === "") return null;
+    return toSummary(contenu);
+  }
+  return null;
+}
+
+/** Titre de repli, lisible, déduit du slug quand la page n'en donne aucun. */
+function titreDepuisSlug(slug: string): string {
+  return slug.replace(/-/g, " ").trim();
+}
+
+/**
+ * Vrai quand la version listée est soumise à consultation : la page le dit, ou
+ * son titre la qualifie de projet. Le statut passe par la table du corpus, qui
+ * décide seule qu'un statut CEPD propose ou est adopté.
+ */
+function estEnConsultation(document: DocumentListe): boolean {
+  const statut =
+    document.consultation === true ? "projet" : statutDepuisTitre(document.titre);
+  return statutApplication("cepd", statut) === "propose";
+}
+
+export type PasseDocumentsOptions = {
+  /** Racine du dépôt : le manifeste du corpus y est lu. */
+  rootDir?: string;
+  /** `fetch` de la veille, injectable ; le corpus fournit son user-agent par défaut. */
+  fetchImpl?: FetchHtml;
+  /** Attente injectable entre deux pages. */
+  attendre?: (ms: number) => Promise<void>;
+  /** Date de la passe : `publishedAt` des entrées. */
+  maintenant?: Date;
+  /** Descripteur injectable, utile aux tests hors d'un dépôt complet. */
+  descripteurPath?: string;
+};
+
+export type ResultatPasseDocuments = {
+  /** Rien à conserver : le corpus garde les pages et les PDF qu'il a lus. */
+  raw: [];
+  entries: Entry[];
+  /** Pages illisibles uniquement. */
+  warnings: string[];
+  /** Lignes informatives, imprimées sans préfixe d'avertissement. */
+  notes: string[];
+};
+
+/**
+ * Une passe : le sitemap donne les documents, le manifeste du corpus dit
+ * lesquels y sont déjà. Chaque candidat est lu une fois à sa page, sans PDF.
+ */
+export async function passeDocumentsCePd(
+  options: PasseDocumentsOptions = {},
+): Promise<ResultatPasseDocuments> {
+  const rootDir = options.rootDir ?? process.cwd();
+  const descripteur = lireDescripteur(options.descripteurPath ?? DESCRIPTEUR);
+  const datePasse = (options.maintenant ?? new Date()).toISOString().slice(0, 10);
+  const manifeste = lireManifeste(join(rootDir, MANIFESTE));
+  const presents = new Set(Object.keys(carteDeChaines(manifeste?.documents_types) ?? {}));
+  const versions = carteDeChaines(manifeste?.documents_versions);
+  const lastmods = carteDeChaines(manifeste?.documents_lastmod);
+  const ecartes = ecartesDuManifeste(manifeste);
+  // Corpus jamais resynchronisé depuis que le manifeste porte les versions :
+  // aucun document présent n'est comparable, et la passe le dit.
+  const manifesteSansVersions = versions === null && lastmods === null;
+
+  const http = {
+    ...(options.fetchImpl === undefined ? {} : { fetchHtml: options.fetchImpl }),
+    ...(options.attendre === undefined ? {} : { attendre: options.attendre }),
+    tentatives: descripteur.tentatives,
+    delaiMs: descripteur.delai_ms,
+  };
+  const liste = await listerDocumentsSitemap(descripteur, http);
+  const delai = descripteur.delai_entre_requetes_ms ?? 0;
+  const attendre =
+    options.attendre ??
+    ((ms: number): Promise<void> => new Promise((reussir) => setTimeout(reussir, ms)));
+
+  const entries: Entry[] = [];
+  const warnings: string[] = [];
+  const notes: string[] = [];
+  let candidats = 0;
+  let ecartesCorpus = 0;
+  let enConsultation = 0;
+  let nonVerifies = 0;
+
+  for (const document of liste.documents) {
+    let slug: string;
+    try {
+      slug = slugDe(document.url);
+    } catch {
+      // Une URL sans slug n'a pas d'identité au corpus : elle ne peut rien produire.
+      continue;
+    }
+    // Un document écarté par le corpus n'est pas une nouveauté : il ne revient
+    // pas à chaque passe.
+    if (ecartes.has(slug) || ecartes.has(document.url)) {
+      ecartesCorpus += 1;
+      continue;
+    }
+
+    const present = presents.has(slug);
+    if (present) {
+      if (manifesteSansVersions) {
+        nonVerifies += 1;
+        continue;
+      }
+      const lastmodManifeste = lastmods === null ? undefined : lastmods[slug];
+      // Sans `lastmod` au manifeste, la page n'est pas relue : seule une
+      // modification déclarée par le sitemap peut annoncer une nouvelle version.
+      if (lastmodManifeste === undefined || lastmodManifeste === (document.lastmod ?? null)) {
+        continue;
+      }
+    }
+
+    candidats += 1;
+    let html: string;
+    try {
+      html = await chargerTexte(document.url, http);
+    } catch (error) {
+      const raison = error instanceof Error ? error.message : String(error);
+      warnings.push(`${SOURCE_ID} page ${document.url}: ${raison}`);
+      if (delai > 0) await attendre(delai);
+      continue;
+    }
+    if (delai > 0) await attendre(delai);
+
+    const enrichi = enrichirDocument(document, html);
+    const version = enrichi.version ?? null;
+    // Un document déjà au corpus dans la même version n'est pas une nouveauté.
+    if (present && versions !== null) {
+      const versionCorpus = versions[slug];
+      if (versionCorpus !== undefined && versionCorpus === version) continue;
+    }
+
+    const consultation = estEnConsultation(enrichi);
+    if (consultation) enConsultation += 1;
+    const titre = enrichi.titre === "" ? titreDepuisSlug(slug) : enrichi.titre;
+    entries.push({
+      id: identifiantDeDocument(slug, version),
+      title: titre,
+      officialTitle: titre,
+      url: document.url,
+      publishedAt: `${datePasse}T12:00:00.000Z`,
+      summary: resumeDepuisPage(html),
+      references: [],
+      themes: [THEME],
+      source: SOURCE_ID,
+      document: slug,
+      type: enrichi.type,
+      ...(enrichi.date === null ? {} : { date_acte: enrichi.date }),
+      ...(version === null ? {} : { version }),
+      ...(consultation ? { consultation: true } : {}),
+    });
+  }
+
+  notes.push(
+    `${SOURCE_ID} : ${liste.documents.length} document(s) listé(s), ` +
+      (ecartesCorpus > 0 ? `${ecartesCorpus} écarté(s) par le corpus, ` : "") +
+      `${candidats} candidat(s), ${entries.length} entrée(s) de veille, ` +
+      `${enConsultation} en consultation`,
+  );
+  if (manifesteSansVersions && nonVerifies > 0) {
+    notes.push(
+      `${SOURCE_ID} : manifeste sans versions (relancer cepd:sync), ` +
+        `${nonVerifies} document(s) non vérifié(s)`,
+    );
+  }
+
+  return { raw: [], entries, warnings, notes };
 }

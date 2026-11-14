@@ -108,6 +108,23 @@ function uniteCnil(document: string, texte = "sanction relative aux cookies trac
   };
 }
 
+function uniteCePd(document: string): Unite {
+  return {
+    ref: `${document}#f0`,
+    document,
+    corpus: "cepd",
+    niveau: "fragment",
+    numero: "Guidelines 01/2023",
+    chemin: "CEPD > Lignes directrices > Test",
+    texte: "Lignes directrices sur la protection des données à caractère personnel.",
+    date_acte: "2023-09-15",
+    date_debut: "2023-09-15",
+    date_fin: null,
+    statut: "finale",
+    url: `https://www.edpb.europa.eu/documents/guideline/${document}_fr`,
+  };
+}
+
 function uniteConstit(document: string): Unite {
   return {
     ref: `${document}#f0`,
@@ -270,6 +287,29 @@ describe("correspondance veille → corpus", () => {
     assert.equal(corpusDeLEntree({ source: "judilibre" }), "cc");
     assert.equal(corpusDeLEntree({ source: "cjeu" }), "cjue");
     assert.equal(corpusDeLEntree({ source: "anssi" }), null);
+    // Une actualité du flux CEPD ne vise aucun document ; seule une entrée qui
+    // porte son slug entre au corpus.
+    assert.equal(corpusDeLEntree({ source: "cepd" }), null);
+    assert.equal(corpusDeLEntree({ source: "cepd", document: "guidelines-012023" }), "cepd");
+    assert.deepEqual(
+      documentsDeLEntree(
+        {
+          source: "cepd",
+          id: "x",
+          url: "https://www.edpb.europa.eu/documents/guideline/guidelines-012023_fr",
+          document: "guidelines-012023",
+        },
+        snapshots,
+      ),
+      ["guidelines-012023"],
+    );
+    assert.deepEqual(
+      documentsDeLEntree(
+        { source: "cepd", id: "x", url: "", document: "Pas un slug" },
+        snapshots,
+      ),
+      [],
+    );
 
     assert.deepEqual(
       documentsDeLEntree(
@@ -645,6 +685,130 @@ describe("synchronisation du corpus", () => {
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
+  });
+
+  it("relance la synchronisation CEPD pour un document absent du corpus", async () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "cepd", [uniteCePd("guidelines-012023")]);
+      ecrireEntree(root, {
+        ...entree(
+          "cepd",
+          "entree-cepd",
+          "https://www.edpb.europa.eu/documents/guideline/guidelines-022024_fr",
+        ),
+        document: "guidelines-022024",
+        type: "lignes_directrices",
+      });
+
+      const appels = { n: 0 };
+      const cepd: AgentSync = async () => {
+        appels.n += 1;
+        ajouterUnite(root, "cepd", uniteCePd("guidelines-022024"));
+        return { ecrit: true, message: "329 document(s), 20295 fragment(s)" };
+      };
+      const rapport = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-14",
+        depuis: "2026-11-07",
+        agents: { cepd },
+        embedder: embedderFactice(),
+      });
+
+      assert.equal(appels.n, 1, "un document CEPD manquant relance cepd:sync");
+      assert.equal(rapport.comptes.manquants, 0);
+      assert.equal(rapport.comptes.presents, 1);
+      assert.equal(
+        rapport.documents.find((document) => document.document === "guidelines-022024")?.statut,
+        "present",
+      );
+      assert.equal(rapport.sources.find((source) => source.source === "cepd")?.statut, "ok");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("classe une version CEPD postérieure au corpus en périmé et relance la source", async () => {
+    const root = racine();
+    const slug = "guidelines-012023";
+    try {
+      ecrireCorpus(root, "cepd", [uniteCePd(slug)]);
+      writeFileSync(
+        join(root, "data", "corpus", "cepd", "manifest.json"),
+        `${JSON.stringify({
+          corpus: "cepd",
+          documents: 1,
+          fragments: 1,
+          date_liste: "2026-10-01",
+          documents_types: { [slug]: "lignes_directrices" },
+          documents_versions: { [slug]: "1.0" },
+        })}\n`,
+        "utf8",
+      );
+      ecrireEntree(root, {
+        ...entree(
+          "cepd",
+          "entree-cepd-version",
+          "https://www.edpb.europa.eu/documents/guideline/guidelines-012023_fr",
+        ),
+        document: slug,
+        version: "2.0",
+        type: "lignes_directrices",
+      });
+
+      let appels = 0;
+      const cepd: AgentSync = async () => {
+        appels += 1;
+        return { ecrit: false, message: "version non écrite" };
+      };
+      const rapport = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-14",
+        depuis: "2026-11-07",
+        agents: { cepd },
+        embedder: embedderFactice(),
+      });
+
+      assert.equal(appels, 1, "une version plus récente relance cepd:sync");
+      assert.equal(rapport.comptes.perimes, 1);
+      assert.equal(
+        rapport.documents.find((document) => document.document === slug)?.statut,
+        "perime",
+      );
+      assert.match(formaterRapport(rapport), /Périmés : .*version du corpus antérieure/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("marque une version de consultation dans le rapport", () => {
+    const rapport: RapportSync = {
+      version: 1,
+      a_jour_au: "2026-11-14",
+      derniere_tentative: "2026-11-14",
+      depuis: "2026-11-07",
+      entrees_lues: 1,
+      comptes: { presents: 0, manquants: 1, ecartes: 0, non_mappes: 0, perimes: 0 },
+      documents: [
+        {
+          entree: "x",
+          source: "cepd",
+          document: "guidelines-012023",
+          corpus: "cepd",
+          statut: "manquant",
+          version: "2.0",
+          consultation: true,
+        },
+      ],
+      corpus: [],
+      sources: [],
+      index: { statut: "ignoree" },
+    };
+
+    assert.match(
+      formaterRapport(rapport),
+      /Manquants : guidelines-012023 \(cepd\) \[consultation\]/,
+    );
   });
 
   it("ne relance aucune source quand le document est déjà présent", async () => {
@@ -1055,6 +1219,7 @@ describe("synchronisation du corpus", () => {
           "constit",
           "cc",
           "cjue",
+          "cepd",
           "lil",
           "textes_fr",
           "rgpd",
@@ -1172,6 +1337,7 @@ describe("synchronisation du corpus", () => {
       "cc",
       "ccs",
       "ce",
+      "cepd",
       "cjue",
       "cnil",
       "constit",

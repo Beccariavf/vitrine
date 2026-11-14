@@ -19,6 +19,7 @@ import type { Embedder } from "../embed/embedder.ts";
 import { classementHorsCorpus } from "./hors-corpus.ts";
 import { syncIncrements } from "./cnil/sync.ts";
 import { syncCe } from "./ce/sync.ts";
+import { syncCePd } from "./cepd/sync.ts";
 import { syncConstit } from "./constit/sync.ts";
 import { syncCc } from "./cc/sync.ts";
 import { syncCjue } from "./cjue/sync.ts";
@@ -61,6 +62,9 @@ export const RACINE = fileURLToPath(new URL("../..", import.meta.url));
 export const FENETRE_JOURS = 7;
 
 const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Sources dont l'entrée porte une version : un document présent dans une autre version est périmé. */
+const SOURCES_A_VERSION = new Set(["legi", "eurlex", "cepd"]);
 
 export type AgentSync = (cible?: CibleAgent) => Promise<{ ecrit: boolean; message: string }>;
 
@@ -188,6 +192,13 @@ export function agentsParDefaut(
         message: `${resultat.documentsLus} décision(s) lue(s), ${resultat.documents} retenue(s)`,
       };
     },
+    cepd: async () => {
+      const resultat = await syncCePd({ rootDir });
+      return {
+        ecrit: resultat.ecrit,
+        message: `${resultat.documents} document(s), ${resultat.fragments} fragment(s)`,
+      };
+    },
     lil: async () => {
       let resultat: Awaited<ReturnType<typeof synchroniserLil>>;
       let avertissement = "";
@@ -294,12 +305,12 @@ function classer(
     for (const document of ids) {
       const motif = corpus === "cjue" ? ecartesCjue.get(document) : undefined;
       const present = presents.has(document);
-      // Une entrée `legi` ou `eurlex` ne dit pas seulement quel document est
-      // visé, mais quelle version : le document présent avec une autre version
-      // est périmé.
+      // Une entrée versionnée ne dit pas seulement quel document est visé,
+      // mais quelle version : le document présent avec une autre version est
+      // périmé.
       const aJour =
         present &&
-        ((entree.source !== "legi" && entree.source !== "eurlex") ||
+        (!SOURCES_A_VERSION.has(entree.source) ||
           entree.version === undefined ||
           versionsCorpus.get(document)?.has(entree.version) === true);
       const statut: StatutDocument = !present
@@ -318,6 +329,7 @@ function classer(
         ...(motif === undefined ? {} : { motif }),
         ...(statut === "perime" ? { motif: "version du corpus antérieure" } : {}),
         ...(entree.version === undefined ? {} : { version: entree.version }),
+        ...(entree.consultation === true ? { consultation: true } : {}),
       });
     }
   }
