@@ -1018,6 +1018,23 @@ describe("le serveur en mémoire", () => {
     assert.equal(/statut_application/.test(description("etat_corpus")), false);
   });
 
+  it("nomme perimetre et interdit de conclure à l'inexistence dans les trois descriptions", async () => {
+    const { tools } = await client.listTools();
+    const description = (nom: string): string =>
+      tools.find((outil) => outil.name === nom)?.description ?? "";
+
+    for (const nom of ["search", "get_article", "get_decision"]) {
+      const texte = description(nom);
+      assert.match(texte, /`perimetre`/, nom);
+      assert.match(texte, /`a_jour_au`/, nom);
+      assert.match(texte, /corpus\[\]\.couverture/, nom);
+      assert.match(texte, /ne prouve jamais que la règle n'existe pas/, nom);
+      assert.match(texte, /perimetre\.avertissement/, nom);
+    }
+    assert.match(description("etat_corpus"), /`couverture`/);
+    assert.match(description("etat_corpus"), /perimetre\.exclusions/);
+  });
+
   it("rend l'état du corpus sans rapport par etat_corpus", async () => {
     const resultat = await client.callTool({ name: "etat_corpus", arguments: {} });
     const payload = contenu(resultat);
