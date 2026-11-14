@@ -29,6 +29,6 @@ Ce que ce projet est, le problème qu'il résout et son vocabulaire métier. Le 
 ## Key features
 
 - Veille sélectionnable par matière : données personnelles, IA, cybersécurité, données non personnelles, plateformes.
-- Neuf autorités officielles et EUR-Lex, onze adaptateurs : CNIL, CJUE, ANSSI, CEPD, ARCEP, Commission (numérique et DMA), ARCOM, Conseil d'État, Cour de cassation, actes de l'Union (EUR-Lex par CELLAR).
+- Dix autorités officielles et EUR-Lex, douze adaptateurs : CNIL, CJUE, ANSSI, CEPD, ARCEP, Commission (numérique et DMA), ARCOM, Conseil d'État, Conseil constitutionnel, Cour de cassation, actes de l'Union (EUR-Lex par CELLAR).
 - MCP juridique sur sources officielles.
 - Mode « Explique-moi » : chaque livraison explique le code et les choix.
