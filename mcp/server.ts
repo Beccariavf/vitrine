@@ -184,6 +184,11 @@ export function createServer(deps: ServerDeps): McpServer {
         "rendre de texte ; un article hors de la partie couverte du Code pénal ou du CPCE est dit hors du " +
         "corpus ; un identifiant inconnu " +
         "garde la réponse d'un article introuvable. " +
+        "Un paramètre `date` (AAAA-MM-JJ), accepté pour la LIL seule, rend la version applicable " +
+        "à cette date avec `date_debut` et `date_fin` ; un article absent à cette date est dit " +
+        "« inexistant à la date … », une date antérieure à la collecte répond « historique non " +
+        "couvert avant … », et tout autre corpus est refusé. L'historique se collecte par " +
+        "`npm run lil:historique`. " +
         `${CONSIGNE_STATUT_APPLICATION} ` +
         `${CONSIGNE_PERIMETRE} ` +
         CONSIGNE_PROVENANCE,
@@ -198,10 +203,21 @@ export function createServer(deps: ServerDeps): McpServer {
               "LEGITEXT000038567662 (décret 2019-536), LEGITEXT000006070719 (Code pénal) ou LEGITEXT000006070987 (CPCE)",
           ),
         numero: z.string().describe("Numéro d'article, par exemple 17, 15 bis, 26-1, 226-16 ou L34-5"),
+        date: z
+          .string()
+          .optional()
+          .describe(
+            "Date AAAA-MM-JJ ; LIL seulement : rend la version applicable à cette date " +
+              "(`date_debut`, `date_fin`). Sans date, la version en vigueur du corpus",
+          ),
       },
     },
-    async ({ document, numero }) => {
-      const resultat = getArticle(rootDir, { document, numero });
+    async ({ document, numero, date }) => {
+      const resultat = getArticle(rootDir, {
+        document,
+        numero,
+        ...(date === undefined ? {} : { date }),
+      });
       return { content: [{ type: "text", text: JSON.stringify(resultat, null, 2) }] };
     },
   );

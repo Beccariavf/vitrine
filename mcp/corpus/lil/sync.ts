@@ -56,6 +56,8 @@ export type ManifesteLil = {
   /** Nom du snapshot sous `data/raw/lil/`, adressé par son empreinte. */
   snapshot: string;
   snapshot_sha256: string;
+  /** Collecte par date (`npm run lil:historique`), reportée telle quelle par `lil:sync`. */
+  historique?: Record<string, unknown>;
 };
 
 export type SyncLilOptions = {
@@ -155,6 +157,7 @@ export function manifesteLil(
   snapshot: string,
   snapshotSha256: string,
   versionsRemplacees: VersionRemplacee[] = [],
+  historique?: Record<string, unknown>,
 ): ManifesteLil {
   return {
     corpus: descripteur.corpus,
@@ -172,6 +175,7 @@ export function manifesteLil(
     couverture: comptes,
     snapshot,
     snapshot_sha256: snapshotSha256,
+    ...(historique === undefined ? {} : { historique }),
   };
 }
 
@@ -230,10 +234,12 @@ export async function syncLil(options: SyncLilOptions = {}): Promise<ResultatLil
   };
   const unitesPath = join(rootDir, DOSSIER_CORPUS, "unites.jsonl");
   const manifestPath = join(rootDir, DOSSIER_CORPUS, "manifest.json");
-  const versionsRemplacees = historiqueVersions(lireManifeste(manifestPath), {
+  const precedent = lireManifeste(manifestPath);
+  const versionsRemplacees = historiqueVersions(precedent, {
     version: part.version,
     dateDebutVersion: part.dateDebutVersion,
   });
+  const historiquePrecedent = precedent?.historique;
   const manifeste = manifesteLil(
     descripteur,
     part.version,
@@ -243,6 +249,11 @@ export async function syncLil(options: SyncLilOptions = {}): Promise<ResultatLil
     basename(snapshotPath),
     snapshotSha256,
     versionsRemplacees,
+    typeof historiquePrecedent === "object" &&
+      historiquePrecedent !== null &&
+      !Array.isArray(historiquePrecedent)
+      ? (historiquePrecedent as Record<string, unknown>)
+      : undefined,
   );
 
   let ecrit = false;

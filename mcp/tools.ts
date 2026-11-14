@@ -24,6 +24,7 @@ import { decisionsCitees } from "./corpus/citations-decisions.ts";
 import type { DecisionCitee } from "./corpus/citations-decisions.ts";
 import { statutApplication } from "./corpus/statut.ts";
 import type { StatutApplication } from "./corpus/statut.ts";
+import { SUFFIXE_ARTICLE, normaliserNumero } from "./corpus/articles.ts";
 import { niveauConfiance } from "./confidence.ts";
 import type { NiveauConfiance } from "./confidence.ts";
 import { SOURCES_SOUS_VEILLE, inventaireCorpus, lireManifestes, lireRapport } from "./corpus/sync-rapport.ts";
@@ -36,6 +37,11 @@ import type {
 import type { ClassementHorsCorpus } from "./corpus/hors-corpus.ts";
 import { normaliserIdentifiant } from "./corpus/citations.ts";
 import type { ArticlesCouverts } from "./corpus/citations.ts";
+import {
+  lireBlocHistorique,
+  lireVersionsHistorique,
+  versionApplicable,
+} from "./corpus/lil/historique.ts";
 
 /** Où lire les exclusions déclarées : le bloc `couverture` de chaque corpus, rendu par `etat_corpus`. */
 export const RENVOI_EXCLUSIONS = "etat_corpus → corpus[].couverture";
@@ -243,34 +249,6 @@ export type ResultatRechercheOutil = {
   rerank?: { modele: string; duree_ms: number };
   perimetre: Perimetre;
 };
-
-/** Suffixes latins d'un article inséré : `15 bis`, `1 ter`. */
-const SUFFIXE_ARTICLE = "bis|ter|quater|quinquies|sexies|septies|octies|nonies|decies";
-
-/**
- * `Article 17`, `art. 17`, `n° 17`, `L. 34-5`, `226-16` : préfixe de code, nombre
- * sans zéro de tête, segments à tiret, puis lettre (`226-16-1-A`), suffixe latin
- * (`15 bis`) ou lettre collée (`15a`, gardée telle quelle : elle ne désigne aucun
- * article français et rend « introuvable » plutôt que l'article 15). `26-1` reste
- * distinct de `26`, `9 bis` de `9` ; ce qui suit (paragraphe, sigle) est ignoré.
- */
-function normaliserNumero(numero: string | number): string | null {
-  const brut = String(numero)
-    .trim()
-    .replace(/^(?:articles?|art\.?)\s*/i, "")
-    .replace(/^(?:n[°o]|§)\s*/i, "");
-  const trouve = new RegExp(
-    "^(?:([LRD])\\.?\\s*)?(\\d+)(?:er)?((?:-\\d+)*)" +
-      "(?:-([A-Z]{1,2})(?![A-Za-zÀ-ÿ])|([a-z])(?![A-Za-zÀ-ÿ]))?" +
-      `(?:\\s*(${SUFFIXE_ARTICLE})(?![A-Za-zÀ-ÿ]))?`,
-    "i",
-  ).exec(brut);
-  if (trouve === null) return null;
-  const lettre = trouve[4] === undefined ? "" : `-${trouve[4].toUpperCase()}`;
-  const collee = trouve[5] === undefined ? "" : trouve[5].toLowerCase();
-  const latin = trouve[6] === undefined ? "" : ` ${trouve[6].toLowerCase()}`;
-  return `${trouve[1]?.toUpperCase() ?? ""}${Number(trouve[2])}${trouve[3] ?? ""}${lettre}${collee}${latin}`;
-}
 
 /** Ce qu'il faut d'une unité rendue pour lire son statut d'application. */
 type PorteurStatut = { corpus: string; statut: string; nature?: string };
@@ -523,8 +501,82 @@ function trouverArticles(
   );
 }
 
-/** Lit un article exact dans le corpus de `document`, avec le périmètre interrogé. */
+/** Identifiant de la LIL, seul document à accepter une lecture datée. */
+const LIL = "LEGITEXT000006068624";
+
+/** Vrai si `document` désigne la LIL, par identifiant ou par un de ses alias. */
+function estDocumentLil(document: string): boolean {
+  if (normaliserIdentifiant(document) === LIL) return true;
+  const nommes = documentsNommes(document);
+  return nommes.length === 1 && nommes[0] === LIL;
+}
+
+/**
+ * Lit un article exact dans le corpus de `document`. Avec `date`, réservée à la
+ * LIL, rend la version applicable à cette date depuis `versions.jsonl` (hors
+ * ligne) ; sans date, le comportement est celui du corpus en vigueur.
+ */
 export function getArticle(
+  rootDir: string,
+  demande: { document: string; numero: string | number; date?: string },
+): ResultatArticle {
+  if (demande.date === undefined) return articleEnVigueur(rootDir, demande);
+  // Un alias (« LIL », « loi 78-17 ») borne le périmètre au document canonique.
+  const perimetre = perimetreDe(rootDir, {
+    document: estDocumentLil(demande.document) ? LIL : demande.document,
+  });
+  const absent = (message: string): ArticleAbsent => ({
+    trouve: false,
+    document: demande.document,
+    numero: String(demande.numero),
+    message,
+    perimetre,
+  });
+  const date = demande.date;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date))) {
+    return absent(`Date attendue AAAA-MM-JJ ; reçu « ${date} ».`);
+  }
+  if (!estDocumentLil(demande.document)) {
+    return absent(
+      `Le paramètre date n'est accepté que pour la LIL (${LIL}) ; ` +
+        `document reçu : ${demande.document}.`,
+    );
+  }
+  const historique = lireBlocHistorique(rootDir);
+  if (historique === null) {
+    return absent(
+      "Historique non collecté pour la LIL : lancez « npm run lil:historique ».",
+    );
+  }
+  if (date < historique.depuis) {
+    return absent(
+      `Article ${demande.numero} : historique non couvert avant ${historique.depuis} ` +
+        `(date demandée ${date}).`,
+    );
+  }
+  const version = versionApplicable(lireVersionsHistorique(rootDir), demande.numero, date);
+  if (version === null) {
+    return absent(`Article ${demande.numero} inexistant à la date ${date}.`);
+  }
+  const article: Unite = {
+    ref: version.identifiant,
+    document: LIL,
+    corpus: "lil",
+    niveau: "article",
+    numero: version.numero,
+    chemin: "LIL",
+    texte: version.texte,
+    date_acte: version.date_debut,
+    date_debut: version.date_debut,
+    date_fin: version.date_fin,
+    statut: "HISTORIQUE",
+    url: version.url,
+  };
+  return { ...avecStatutApplication(article), trouve: true, perimetre };
+}
+
+/** Chemin sans date : l'article du corpus en vigueur, strictement comme avant. */
+function articleEnVigueur(
   rootDir: string,
   demande: { document: string; numero: string | number },
 ): ResultatArticle {
