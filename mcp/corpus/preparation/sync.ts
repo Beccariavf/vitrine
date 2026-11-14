@@ -120,6 +120,8 @@ export type CouverturePreparation = {
   consulte_le: string;
   comptes: ComptesPreparation;
   presomption_annees: number;
+  /** Règle d'appariement affaire → décision, pour l'audit du manifeste. */
+  appariement: string;
   exclusions: EcartesPreparation;
   documents_ecartes: DocumentEcartPreparation[];
   /** Affaires sans décision depuis plus de `presomption_annees`, dites présumées. */
@@ -263,7 +265,7 @@ function objetProposition(
   proposition: PropositionListee,
   descripteur: DescripteurPreparation,
 ): string {
-  const matiere = `Objet : ${minusculeInitiale(descripteur.matiere_libelle)}.`;
+  const matiere = `Matière CELLAR : ${minusculeInitiale(descripteur.matiere_libelle)}.`;
   const vises = descripteur.actes_du_corpus.filter((acte) =>
     proposition.actesVises.includes(acte.celex),
   );
@@ -387,18 +389,42 @@ export async function syncPreparation(
   const reponses = options.reponses ?? {};
   const fetchImpl = options.fetchImpl ?? fetch;
 
-  const exclusions: EcartesPreparation = { ...ECARTES_PREPARATION_VIDES };
   const documentsEcartes: DocumentEcartPreparation[] = [];
   const ecarter = (document: string, motif: MotifEcartPreparation): void => {
-    exclusions[motif] += 1;
     documentsEcartes.push({ document, motif });
   };
+  /**
+   * Un même document peut apparaître dans deux dossiers (par exemple
+   * `52018PC0636`) : les exclusions sont comptées et listées par document, une
+   * seule fois, pour que les comptes du manifeste se recoupent.
+   */
+  const bilan = (): {
+    documentsEcartes: DocumentEcartPreparation[];
+    exclusions: EcartesPreparation;
+  } => {
+    const parDocument = new Map<string, DocumentEcartPreparation>();
+    for (const ecarte of documentsEcartes) {
+      if (!parDocument.has(ecarte.document)) parDocument.set(ecarte.document, ecarte);
+    }
+    const liste = [...parDocument.values()].sort(
+      (gauche, droite) =>
+        gauche.document.localeCompare(droite.document) || gauche.motif.localeCompare(droite.motif),
+    );
+    const comptes: EcartesPreparation = { ...ECARTES_PREPARATION_VIDES };
+    for (const ecarte of liste) comptes[ecarte.motif] += 1;
+    return { documentsEcartes: liste, exclusions: comptes };
+  };
 
-  // 1. Propositions : une seule par dossier, puis classement.
+  // 1. Propositions : une seule par dossier, puis classement. Les dossiers sont
+  // parcourus dans un ordre stable pour que deux passes rendent les mêmes octets.
   const requeteP = requetePropositions(descripteur);
   const reponseP = reponses.propositions ?? (await posterSparql(descripteur, requeteP, fetchImpl));
   const retenues: PropositionListee[] = [];
-  for (const candidats of regrouperParDossier(lirePropositions(reponseP)).values()) {
+  const celexRetenus = new Set<string>();
+  const groupes = [...regrouperParDossier(lirePropositions(reponseP)).entries()].sort(
+    (gauche, droite) => gauche[0].localeCompare(droite[0]),
+  );
+  for (const [, candidats] of groupes) {
     const proposition = choisirProposition(candidats);
     const verdict = classerProposition(proposition);
     if (!verdict.retenue) {
@@ -409,6 +435,9 @@ export async function syncPreparation(
       ecarter(proposition.celex, "date_invalide");
       continue;
     }
+    // Deux dossiers peuvent porter la même proposition : elle n'entre qu'une fois.
+    if (celexRetenus.has(proposition.celex)) continue;
+    celexRetenus.add(proposition.celex);
     retenues.push(proposition);
   }
 
@@ -452,13 +481,16 @@ export async function syncPreparation(
   const manifestPath = join(rootDir, DOSSIER_CORPUS, "manifest.json");
 
   if (options.dryRun === true) {
+    const etat = bilan();
     return {
       propositions: retenues.length,
       affaires: pendantes.length,
-      affairesPresumees: 0,
+      affairesPresumees: pendantes.filter((affaire) =>
+        pendantPresume(affaire.date, datePasse, descripteur.presomption_annees),
+      ).length,
       unites: 0,
-      exclusions,
-      documentsEcartes,
+      exclusions: etat.exclusions,
+      documentsEcartes: etat.documentsEcartes,
       telechargements: 0,
       ecrit: false,
       manifestPath,
@@ -508,10 +540,7 @@ export async function syncPreparation(
     );
   }
 
-  documentsEcartes.sort(
-    (gauche, droite) =>
-      gauche.document.localeCompare(droite.document) || gauche.motif.localeCompare(droite.motif),
-  );
+  const etat = bilan();
   const propositionsUnites = ordonnees.filter((unite) => unite.niveau === "proposition");
   const affairesUnites = ordonnees.filter((unite) => unite.niveau === "affaire");
   const manifeste: ManifestePreparation = {
@@ -539,8 +568,10 @@ export async function syncPreparation(
           .length,
       },
       presomption_annees: descripteur.presomption_annees,
-      exclusions,
-      documents_ecartes: documentsEcartes,
+      appariement:
+        "juridiction (C/T) + année + numéro CELEX ; affaires jointes résolues par case-law_joins_case_court",
+      exclusions: etat.exclusions,
+      documents_ecartes: etat.documentsEcartes,
       presumees: affairesUnites
         .filter((unite) => unite.pendant_presume === true)
         .map((unite) => ({ document: unite.document, numero: unite.numero })),
@@ -565,8 +596,8 @@ export async function syncPreparation(
     affaires: affairesUnites.length,
     affairesPresumees: manifeste.couverture.comptes.affaires_presumees,
     unites: ordonnees.length,
-    exclusions,
-    documentsEcartes,
+    exclusions: etat.exclusions,
+    documentsEcartes: etat.documentsEcartes,
     telechargements,
     ecrit: ecritUnites || ecritManifeste,
     manifestPath,

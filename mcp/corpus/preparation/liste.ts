@@ -215,12 +215,18 @@ SELECT DISTINCT ?celex ?date ?type ?procedure ?attackedCelex WHERE {
 }`;
 }
 
-/** Requête SPARQL des décisions rendues une année donnée, pour apparier les affaires. */
+/**
+ * Requête SPARQL des décisions rendues une année donnée, pour apparier les
+ * affaires. Les affaires jointes portent le CELEX de leur premier numéro : la
+ * propriété `case-law_joins_case_court` rend les autres numéros de la jonction,
+ * sans quoi une affaire jointe resterait faussement pendante.
+ */
 export function requeteDecisions(annee: string): string {
   return `PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
-SELECT DISTINCT ?celex WHERE {
+SELECT DISTINCT ?celex ?joined WHERE {
   ?work cdm:resource_legal_id_celex ?celex .
   FILTER(REGEX(STR(?celex), "^6${annee}(CJ|CO|TJ|TO)"))
+  OPTIONAL { ?work cdm:case-law_joins_case_court ?joined }
 }`;
 }
 
@@ -368,9 +374,13 @@ export function lireAffaires(reponse: unknown): AffaireListee[] {
 
     const procedureBrut = valeur(ligne, "procedure");
     const attaque = valeur(ligne, "attackedCelex");
-    const connue = parCle.get(celex);
+    // Une communication peut être publiée en version corrigée (`(01)`) ou avec
+    // une note (`_INF`) : la clé normalisée garde une seule affaire par
+    // juridiction, année et numéro, et le CELEX de base l'emporte.
+    const cle = cleAffaire(celex) ?? celex;
+    const connue = parCle.get(cle);
     if (connue === undefined) {
-      parCle.set(celex, {
+      parCle.set(cle, {
         celex,
         date,
         type,
@@ -385,6 +395,7 @@ export function lireAffaires(reponse: unknown): AffaireListee[] {
       connue.procedures.push(procedureBrut);
     }
     connue.attackedCelex ??= attaque;
+    if (celex < connue.celex) connue.celex = celex;
   }
   return [...parCle.values()];
 }
@@ -438,14 +449,29 @@ export function cleAffaire(celex: string): string | null {
   return lettre === undefined ? null : `${lettre}${annee}${numero}`;
 }
 
-/** Clés des décisions rendues (`CJ`, `CO`, `TJ`, `TO`), appareillables aux affaires. */
+/**
+ * CELEX porté par une URI de jonction CELLAR, ou `null`. La ressource est
+ * écrite `case/celex%3A62020CJ0601`, parfois `case/62023TJ0084` ou
+ * `case/celex:…` ; les URI `case/C-601%2F20` ne portent pas de CELEX.
+ */
+export function celexDeJonction(valeurBrute: string): string | null {
+  const trouve = /\/case\/(?:celex(?:%3A|:))?(6\d{4}[A-Z]{2}\d{4})/i.exec(valeurBrute);
+  return trouve?.[1] ?? null;
+}
+
+/** Clés des décisions rendues (`CJ`, `CO`, `TJ`, `TO`) et de leurs affaires jointes. */
 export function clesDecisions(reponse: unknown): Set<string> {
   const cles = new Set<string>();
   for (const ligne of lignesSparql(reponse)) {
     const celex = valeur(ligne, "celex");
-    if (celex === null) continue;
-    const cle = cleAffaire(celex);
-    if (cle !== null) cles.add(cle);
+    if (celex !== null) {
+      const cle = cleAffaire(celex);
+      if (cle !== null) cles.add(cle);
+    }
+    const joined = valeur(ligne, "joined");
+    const joint = joined === null ? null : celexDeJonction(joined);
+    const cleJointe = joint === null ? null : cleAffaire(joint);
+    if (cleJointe !== null) cles.add(cleJointe);
   }
   return cles;
 }

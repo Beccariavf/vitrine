@@ -848,7 +848,21 @@ function lireDecision(
   }
 
   // `get_decision` reste réservé aux sanctions : un avis ou une recommandation
-  // se lit par `search`, qui porte le filtre `nature`.
+  // se lit par `search`, qui porte le filtre `nature`. Une affaire pendante ou
+  // une proposition n'est pas une décision : le dire, sans la présenter comme
+  // une sanction manquante.
+  const preparation = trouvees.find((unite) => unite.corpus === "preparation");
+  if (preparation !== undefined && trouvees.every((unite) => unite.corpus === "preparation")) {
+    const etat =
+      preparation.statut === "PENDANT"
+        ? `affaire pendante (${preparation.numero}), aucune décision rendue`
+        : `texte en préparation (${preparation.numero}), non applicable`;
+    return {
+      trouve: false,
+      decisions: [],
+      message: `${quoi} relève du corpus preparation : ${etat}.`,
+    };
+  }
   const unites = trouvees.filter((unite) => estSanction(unite.nature));
   if (unites.length === 0) {
     const natures = [

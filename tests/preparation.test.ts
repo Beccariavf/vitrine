@@ -26,6 +26,7 @@ import type { AffaireListee, DescripteurPreparation } from "../mcp/corpus/prepar
 import { extraireCommunication, nomFichierCache } from "../mcp/corpus/preparation/parse.ts";
 import { syncPreparation } from "../mcp/corpus/preparation/sync.ts";
 import type { ManifestePreparation } from "../mcp/corpus/preparation/sync.ts";
+import { getDecision } from "../mcp/tools.ts";
 
 const FIXTURES = new URL("./fixtures/preparation/", import.meta.url);
 const DESCRIPTEUR = JSON.parse(
@@ -174,6 +175,52 @@ describe("les affaires pendantes", () => {
   it("présume pendante une affaire ouverte depuis plus de trois ans", () => {
     assert.equal(pendantPresume(affaire("62019TN0001").date, DATE_PASSE, 3), true);
     assert.equal(pendantPresume(affaire("62025CN0703").date, DATE_PASSE, 3), false);
+  });
+
+  it("ferme une affaire jointe par le CELEX de l'arrêt", () => {
+    const affaireJointe = (celex: string, type: "CN" | "TN"): AffaireListee => ({
+      celex,
+      date: "2020-01-01",
+      type,
+      procedures: [],
+      attackedCelex: null,
+    });
+    const jonction = clesDecisions({
+      results: {
+        bindings: [
+          {
+            celex: { value: "62020CJ0037" },
+            joined: {
+              value: "http://publications.europa.eu/resource/case/celex%3A62020CJ0601",
+            },
+          },
+        ],
+      },
+    });
+    assert.equal(decisionRendue(affaireJointe("62020CN0601", "CN"), jonction), true);
+
+    const tribunal = clesDecisions({
+      results: {
+        bindings: [
+          {
+            celex: { value: "62023TJ0070" },
+            joined: { value: "http://publications.europa.eu/resource/case/62023TJ0084" },
+          },
+        ],
+      },
+    });
+    assert.equal(decisionRendue(affaireJointe("62023TN0084", "TN"), tribunal), true);
+  });
+
+  it("reconnaît une ordonnance et un CELEX corrigé", () => {
+    const ordonnance = clesDecisions({
+      results: { bindings: [{ celex: { value: "62020CO0149" } }] },
+    });
+    assert.equal(decisionRendue(affaire("62020CN0149"), ordonnance), true);
+    const corrige = clesDecisions({
+      results: { bindings: [{ celex: { value: "62020CJ0149(01)" } }] },
+    });
+    assert.equal(decisionRendue(affaire("62020CN0149"), corrige), true);
   });
 });
 
@@ -367,5 +414,14 @@ describe("la passe de préparation", () => {
     assert.equal(seconde.ecrit, false, "une passe identique ne réécrit rien");
     assert.equal(readFileSync(unitesPath, "utf8"), octetsUnites);
     assert.equal(readFileSync(manifestPath, "utf8"), octetsManifeste);
+  });
+
+  it("dit qu'une affaire pendante n'est pas une décision rendue", async () => {
+    const racine = racineTemporaire();
+    await passe(racine);
+    const resultat = getDecision(racine, { document: "62025CN0703" });
+    assert.equal(resultat.trouve, false);
+    assert.match(resultat.message ?? "", /affaire pendante/);
+    assert.match(resultat.message ?? "", /aucune décision rendue/);
   });
 });
