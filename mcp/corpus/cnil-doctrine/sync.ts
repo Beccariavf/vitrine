@@ -387,7 +387,7 @@ export async function syncDoctrine(
   const telechargeur = creerTelechargeur(
     brutDir,
     cache,
-    { ...options, ...optionsHttp, validite_jours: descripteur.validite_jours },
+    { ...options, ...optionsHttp, validite_jours: options.validite_jours ?? descripteur.validite_jours },
     ecrire,
   );
   // Les pages de référence et de document sont relues à chaque passe : c'est
