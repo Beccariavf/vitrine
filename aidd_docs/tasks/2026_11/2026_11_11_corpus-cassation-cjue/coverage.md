@@ -12,7 +12,7 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 | `ce` | 1 594 | 20 774 | 1982-03-12 → 2026-10-27 | DILA — JADE, fonds `publie` et `inedit` | Licence Ouverte 2.0 (Etalab) |
 | `cepd` | 36 | 5 443 | 2018-04-11 → 2025-06-05 | CEPD, sitemap des pages `_fr` et PDF | À vérifier : aucune licence explicite déclarée |
 | `cc` | 403 | 8 194 | 1986-07-21 → 2026-11-10 | PISTE — Judilibre `/search` et `/decision` | Licence Ouverte 2.0 (Etalab) et CGU Judilibre |
-| `cjue` | 166 | 16 916 | 2014-04-08 → 2026-11-05 | CELLAR / EUR-Lex — SPARQL `PDON` + notions `4.11.01` et `2.04` + 1 CELEX, XHTML français puis anglais | Décision 2011/833/UE (CC BY 4.0) |
+| `cjue` | 248 | 23 188 | 1999-10-14 → 2026-11-05 | CELLAR / EUR-Lex — SPARQL `PDON` + notions `4.11.01` et `2.04` + 1 CELEX, XHTML français puis anglais, repli HTML patrimonial | Décision 2011/833/UE (CC BY 4.0) |
 
 ## Détail `ce`
 
@@ -37,25 +37,26 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 
 ## Détail `cjue`
 
-- SPARQL CELLAR, union de la matière `PDON` et de deux notions fines, `fd_578/4.11.01` (« Protection des données à caractère personnel ») et `fd_578/2.04` (« Protection des données à caractère personnel par les institutions de l'Union »), CELEX `6…`, date ≥ `2014-01-01` ; un CELEX explicite (`62018CJ0746`, Prokuratuur) que CELLAR ne classe pas dans les données personnelles.
-- 295 CELEX listés et 1 complémentaire : 166 retenus, 73 conclusions d'avocat général (`CC`), 2 autres types, 55 XHTML absents dans toutes les langues (404 consignés en `xhtml_absent`) ; `documents_lus` vaut 296, soit exactement les documents retenus plus les exclusions (166 + 73 + 2 + 55).
-- Types retenus par suffixe CELEX : `CJ`, `TJ`, `CO`, `TO` ; 55 décisions ne sont servies dans aucune langue et 166 ont produit des unités. La notion `2.04` apporte 15 décisions joignables, dont C-413/23 P (EDPS c. SRB, 4 septembre 2025) ; sur les 32 absences classées `2.04`, 4 étaient déjà écartées avant l'élargissement, donc 28 des 55 exclusions sont nouvelles.
-- Langue : un seul XHTML par décision, la première servie — français d'abord, anglais après un 404 français. Le texte capturé est classé par son contenu (`langueCapture`) : `couverture.langues` = 166 `fra`, 0 `eng`, `couverture.documents_langues` vide. Aucune décision du corpus n'existe uniquement en anglais. Les 55 absences sont des 404 bilingues : 28 demandées en `fra` puis `eng` par la passe du 13 novembre, 27 héritées dont le 404 bilingue vient de la sonde du 2026-11-12 (hors dépôt) et que la passe ne redemande pas. Une panne (5xx, réseau) ne crée aucun marqueur durable : la décision est redemandée à la passe suivante plutôt que lue en anglais.
-- 45 décisions des types retenus, de la même sélection et antérieures à 2014, sont comptées à part (`couverture.avant_borne`) ; l'élargissement à `2.04` en ajoute une aux 44 précédentes.
-- La borne 2014 inclut la fin de la directive 95/46 et la préparation du RGPD ; elle exclut la jurisprudence antérieure, comptée mais non collectée.
-- `periode.date_min` est la première date observée (2014-04-08) ; `couverture.borne` porte la borne demandée (2014-01-01).
+- SPARQL CELLAR, union de la matière `PDON` et de deux notions fines, `fd_578/4.11.01` (« Protection des données à caractère personnel ») et `fd_578/2.04` (« Protection des données à caractère personnel par les institutions de l'Union »), CELEX `6…`, **sans borne de date** ; un CELEX explicite (`62018CJ0746`, Prokuratuur) que CELLAR ne classe pas dans les données personnelles. Types retenus : `CJ`, `TJ`, `CO`, `TO` ; conclusions d'avocat général (`CC`) et autres types écartés et comptés.
+- 361 CELEX listés et 1 complémentaire : 248 retenus, 95 conclusions d'avocat général (`CC`), 5 autres types, 14 sans aucune représentation téléchargeable (404 en XHTML et en HTML, toutes langues) ; `documents_lus` vaut 362, soit exactement les documents retenus plus les exclusions (248 + 95 + 5 + 14).
+- Types des 248 décisions retenues : 167 arrêts de la Cour, 52 arrêts du Tribunal, 14 ordonnances de la Cour, 15 ordonnances du Tribunal.
+- Antériorité : 40 décisions sont datées d'avant 2014 (1999-10-14 → 2013-12-12). Les 45 décisions des types retenus que l'ancienne borne comptait à part (`couverture.avant_borne`, supprimé) sont donc au corpus, sauf 5 (`62002TJ0179`, `62007TJ0392`, `62009TJ0241`, `62010TJ0308`, `62011TJ0214`) : CELLAR ne sert pour elles qu'une notice RDF, sans texte. Lindqvist (C-101/01, `62001CJ0101`, 6 novembre 2003) est au corpus avec ses points `#point1` à `#point100`.
+- Deux rendus : le XHTML moderne, puis le HTML patrimonial servi aux arrêts anciens (`data/raw/cjue/<CELEX>.html`, marqueurs `<dt>N</dt>`, ancres `pointN` ou numéro en tête de paragraphe) ; 72 des 86 décisions sans XHTML ont ainsi été récupérées. Le HTML patrimonial porte la date des conclusions avant celle de l'arrêt : la date CELLAR fait foi pour lui, l'en-tête du XHTML pour le rendu moderne.
+- Six décisions (`62004CJ0475`, `62002TJ0320`, `62003TJ0259`, `62004TJ0161`, `62009TJ0082`, `62010TJ0190`) ne sont servies par CELLAR que sous forme de résumé, sans motifs ; elles entrent au corpus pour ce que la source en donne.
+- Langue : un seul rendu par décision, la première servie — français d'abord, anglais après un 404 français. `couverture.langues` = 247 `fra`, 1 `eng` (`62002TJ0320`, arrêt du Tribunal servi seulement en anglais) ; aucune décision du corpus n'existe uniquement en XHTML anglais.
+- `periode.date_min` est la première date observée (1999-10-14) ; le manifeste ne porte plus ni `date_min` ni `couverture.borne`.
 - La notion `4.11.01` récupère La Quadrature du Net (C-511/18) ; Prokuratuur (C-746/18) est ajouté par la liste explicite. Le manifeste porte `couverture.notions` (deux entrées), `celex_complementaires` et `complementaires_ajoutes`.
 - La notion `4.11.01` est large : six décisions ajoutées (douanes, droit d'auteur, agents FIFA, État de droit, réparation automobile, ne bis in idem) ne traitent les données personnelles que dans une partie de leur raisonnement. Elles restent dans le corpus, la source officielle et son libellé étant déclarés.
 
 ## Évaluations `dev`
 
-Mesures du 11 novembre 2026, hors split `test`, sur l'index à huit corpus (74 891 unités ; **77 107** depuis l'élargissement CJUE du 13 novembre, 2 216 fragments de plus). Les corpus `ce` et `cc` ont été élargis le 14 novembre (sans borne de date) sans que ces rangs soient remesurés.
+Mesures du 11 novembre 2026, hors split `test`, sur l'index à huit corpus (74 891 unités). Les corpus `cjue`, `ce` et `cc` ont été élargis les 13 et 14 novembre (sans borne de date) sans que ces rangs soient remesurés.
 
 | Jeu | Résultat |
 |---|---|
 | Cour de cassation, 10 questions | 6/10 au top 5, MRR 0,470, top 1 40,0 % |
 | CJUE, 10 questions | 8/10 au top 5, MRR 0,750, top 1 70,0 % |
 
-Les rangs CJUE ont été rejoués le 13 novembre 2026 sur l'index élargi (77 107 unités) : mêmes résultats, 1 `confiant` et 9 `incertain` aux seuils produit (0,69 / 0,74 / 0,01) ; la calibration `dev` du harnais donne 2 et 8. La recherche « données pseudonymisées identifiables par le destinataire » (`corpus: "cjue"`, `k: 5`) rend C-413/23 P au premier rang (`62023CJ0413#point68`, similarité 0,729), avec l'URL EUR-Lex française de l'arrêt.
+Les rangs CJUE ont été rejoués le 14 novembre 2026 sur l'index de 83 994 unités (corpus `cjue` de 248 décisions et 23 188 fragments) : mêmes résultats, la calibration `dev` du harnais donne 1 `confiant` et 9 `incertain`. La recherche « Lindqvist diffusion de données personnelles sur une page Internet » (`corpus: "cjue"`, `k: 5`) rend C-101/01 aux rangs 1, 2 et 4 (`62001CJ0101#point14`, similarité 0,726), avec l'URL EUR-Lex française de l'arrêt. La recherche « données pseudonymisées identifiables par le destinataire » rend toujours C-413/23 P au premier rang (`62023CJ0413#point68`, similarité 0,729).
 
 Le détail des rangs et des similarités est dans [`eval.md`](./eval.md). Ces jeux ne calibrent aucun seuil : le produit applique le repli `0,69 / 0,74 / 0,01` à `cc` et `cjue`.
