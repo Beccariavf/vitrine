@@ -9,6 +9,7 @@
  * vérifié contre le corpus (voir `sync.ts`).
  */
 
+import { createHash } from "node:crypto";
 import { decouperParagraphes } from "../cnil/parse.ts";
 import type { Unite } from "../parse.ts";
 import { paragraphesDepuisTexte } from "../cepd/pdf.ts";
@@ -233,6 +234,22 @@ export function slugDe(url: string): string {
     .toLowerCase();
   if (slug === "") throw new Error(`Slug introuvable pour « ${url} »`);
   return slug;
+}
+
+/**
+ * Slug unique : un doublon de nom de fichier reçoit un suffixe d'URL. La veille
+ * applique la même règle, dans le même ordre, pour désigner le même document.
+ */
+export function slugUnique(url: string, pris: Set<string>): string {
+  const base = slugDe(url);
+  if (!pris.has(base)) {
+    pris.add(base);
+    return base;
+  }
+  const suffixe = createHash("sha256").update(url, "utf8").digest("hex").slice(0, 8);
+  const unique = `${base}-${suffixe}`;
+  pris.add(unique);
+  return unique;
 }
 
 /** Document prêt à produire des unités. */

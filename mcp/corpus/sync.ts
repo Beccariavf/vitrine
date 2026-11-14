@@ -18,6 +18,7 @@ import { createOllamaEmbedder } from "../embed/embedder.ts";
 import type { Embedder } from "../embed/embedder.ts";
 import { classementHorsCorpus } from "./hors-corpus.ts";
 import { syncIncrements } from "./cnil/sync.ts";
+import { syncDoctrine } from "./cnil-doctrine/sync.ts";
 import { syncCe } from "./ce/sync.ts";
 import { syncCePd } from "./cepd/sync.ts";
 import { syncConstit } from "./constit/sync.ts";
@@ -64,7 +65,7 @@ export const FENETRE_JOURS = 7;
 const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Sources dont l'entrée porte une version : un document présent dans une autre version est périmé. */
-const SOURCES_A_VERSION = new Set(["legi", "eurlex", "cepd"]);
+const SOURCES_A_VERSION = new Set(["legi", "eurlex", "cepd", "cnil_doctrine"]);
 
 export type AgentSync = (cible?: CibleAgent) => Promise<{ ecrit: boolean; message: string }>;
 
@@ -144,6 +145,15 @@ export function agentsParDefaut(
         message:
           `${resultat.archives.length} archive(s) lue(s), ` +
           `${resultat.documents_retenus} document(s) retenu(s)`,
+      };
+    },
+    cnil_doctrine: async () => {
+      const resultat = await syncDoctrine({ rootDir });
+      return {
+        ecrit: resultat.ecrit,
+        message:
+          `${resultat.documents} document(s), ${resultat.fragments} fragment(s), ` +
+          `${resultat.couverts} couvert(s) par le corpus CNIL, ${resultat.ecartes} écarté(s)`,
       };
     },
     ce: async () => {
@@ -264,7 +274,7 @@ export function agentsParDefaut(
 }
 
 /** Corpus qui publient la liste de leurs documents écartés. */
-const CORPUS_A_ECARTES: readonly CorpusVeille[] = ["cjue", "cepd"];
+const CORPUS_A_ECARTES: readonly CorpusVeille[] = ["cjue", "cepd", "cnil_doctrine"];
 
 /** Documents écartés, corpus par corpus ; seuls ceux qui publient la liste en ont une. */
 function ecartesDesCorpus(rootDir: string): Map<string, Map<string, string>> {

@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 import { FAMILLES, FAMILLES_LEGENDE, familleDeSource } from "../src/lib/familles.ts";
 import { AUTORISEES } from "./contrastes.ts";
 
-const SOURCES_VEILLE = ["cnil", "cjeu", "anssi", "cepd", "arcep", "commission", "commission-dma", "arcom", "cetat", "constit", "judilibre", "legi", "eurlex"];
+const SOURCES_VEILLE = ["cnil", "cnil_doctrine", "cjeu", "anssi", "cepd", "arcep", "commission", "commission-dma", "arcom", "cetat", "constit", "judilibre", "legi", "eurlex"];
 const CORPUS = ["rgpd", "aiact", "eprivacy", "police", "eudpr", "rgpdproc", "ccs", "lil", "textes_fr", "adequation", "cnil", "cnil_doctrine", "cepd", "cjue", "ce", "constit", "cc"];
 
 describe("familleDeSource", () => {

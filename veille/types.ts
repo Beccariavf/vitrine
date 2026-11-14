@@ -33,10 +33,16 @@ export type Entry = {
   numero?: string;
   /** Nature de la décision (`DC` ou `QPC`) ; `constit` seulement. */
   nature?: string;
-  /** Type du document CEPD (`lignes_directrices`, `avis_art64`, `decision_art65`, `recommandation`, `g29_repris`) ; `cepd` seulement. */
+  /**
+   * Type du document quand la source le distingue : CEPD (`lignes_directrices`,
+   * `avis_art64`, `decision_art65`, `recommandation`, `g29_repris`) ou doctrine
+   * CNIL (`guide`, `referentiel`, `liste_aipd`) ; `cepd` et `cnil_doctrine`.
+   */
   type?: string;
   /** Vrai quand la version listée est soumise à consultation publique ; `cepd` seulement. */
   consultation?: boolean;
   /** CELEX de la décision abrogée par celle que porte l'entrée ; `eurlex` seulement. */
   abroge?: string;
+  /** Nature de la nouveauté détectée (`nouveau`, `modifie`) ; `cnil_doctrine` seulement. */
+  motif?: "nouveau" | "modifie";
 };

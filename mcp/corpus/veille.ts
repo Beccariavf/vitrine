@@ -11,10 +11,12 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import type { Entry } from "../../veille/types.ts";
+import { slugDe } from "./cnil-doctrine/parse.ts";
 
 /** Sources de veille dont l'identifiant désigne un document du corpus. */
 export type CorpusVeille =
   | "cnil"
+  | "cnil_doctrine"
   | "ce"
   | "constit"
   | "cc"
@@ -33,6 +35,7 @@ export type CorpusVeille =
 
 const CORPUS_PAR_SOURCE: Record<string, CorpusVeille> = {
   cnil: "cnil",
+  cnil_doctrine: "cnil_doctrine",
   cetat: "ce",
   constit: "constit",
   judilibre: "cc",
@@ -74,8 +77,8 @@ const CORPUS_PAR_DOCUMENT: Record<string, CorpusVeille> = {
 const ID_CETAT = /^CETATEXT\d+$/;
 const ID_CONSTIT = /^CONSTEXT\d+$/;
 const ID_JUDILIBRE = /^[0-9a-f]{24}$/;
-/** Slug d'un document CEPD, tel que `slugDe` l'écrit. */
-const SLUG_CEPD = /^[a-z0-9][a-z0-9-]*$/;
+/** Slug d'un document CEPD ou de doctrine CNIL, tel que `slugDe` l'écrit. */
+const SLUG_DOCUMENT = /^[a-z0-9][a-z0-9-]*$/;
 const CELEX = /^6\d{4}[A-Z]{2}\d{1,4}(?:\(\d+\))?$/;
 const LIEN_CNIL = /https?:\/\/www\.legifrance\.gouv\.fr\/cnil\/id\/(CNILTEXT\d+)/g;
 
@@ -282,12 +285,18 @@ export function documentsDeLEntree(
   switch (entry.source) {
     case "cnil":
       return snapshots.get(normaliserUrl(entry.url)) ?? [];
+    case "cnil_doctrine":
+      return entry.document !== undefined && SLUG_DOCUMENT.test(entry.document)
+        ? [entry.document]
+        : [];
     case "cetat":
       return ID_CETAT.test(entry.id) ? [entry.id] : [];
     case "constit":
       return entry.document !== undefined && ID_CONSTIT.test(entry.document) ? [entry.document] : [];
     case "cepd":
-      return entry.document !== undefined && SLUG_CEPD.test(entry.document) ? [entry.document] : [];
+      return entry.document !== undefined && SLUG_DOCUMENT.test(entry.document)
+        ? [entry.document]
+        : [];
     case "judilibre":
       return ID_JUDILIBRE.test(entry.id) ? [entry.id] : [];
     case "cjeu": {
@@ -343,7 +352,9 @@ export function indexerDocumentsCorpus(rootDir: string): Map<string, Set<string>
  * Versions présentes dans chaque corpus, par document : les `ref` des unités
  * (`LEGIARTI…` d'un article) et la version consolidée déclarée au manifeste
  * (`LEGITEXT…_JJ-MM-AAAA`, `legiPart`). Sert à distinguer un document présent
- * mais périmé d'un document déjà à jour.
+ * mais périmé d'un document déjà à jour. Le CEPD et la doctrine CNIL déclarent
+ * aussi la version de chaque document au manifeste : la `documents_versions` du
+ * CEPD, l'URL du PDF pour la doctrine, dont une réédition change de fichier.
  */
 export function indexerVersionsCorpus(rootDir: string): Map<string, Set<string>> {
   const versions = new Map<string, Set<string>>();
@@ -384,6 +395,7 @@ export function indexerVersionsCorpus(rootDir: string): Map<string, Set<string>>
         version?: unknown;
         textes?: unknown;
         documents_versions?: unknown;
+        documents_par_type?: unknown;
       };
       ajouter(manifeste.document, manifeste.version);
       ajouter(manifeste.text_id, manifeste.version);
@@ -402,6 +414,22 @@ export function indexerVersionsCorpus(rootDir: string): Map<string, Set<string>>
           for (const [document, version] of Object.entries(documents)) ajouter(document, version);
         }
       }
+      // La doctrine CNIL déclare l'URL de son PDF : une réédition sous le même
+      // identifiant porte une autre URL.
+      if (
+        dossier.name === "cnil_doctrine" &&
+        typeof manifeste.documents_par_type === "object" &&
+        manifeste.documents_par_type !== null
+      ) {
+        for (const liste of Object.values(manifeste.documents_par_type)) {
+          if (!Array.isArray(liste)) continue;
+          for (const element of liste) {
+            if (typeof element !== "object" || element === null) continue;
+            const document = element as { slug?: unknown; url?: unknown };
+            ajouter(document.slug, document.url);
+          }
+        }
+      }
     } catch {
       // Un manifeste illisible ne masque pas les versions des unités.
     }
@@ -411,15 +439,17 @@ export function indexerVersionsCorpus(rootDir: string): Map<string, Set<string>>
 
 /**
  * Documents explicitement écartés par un corpus, avec leur motif. La CJUE publie
- * une liste par CELEX, dont seuls les motifs durables écartent pour de bon ; le
- * CEPD publie la liste des documents qu'il n'a pas retenus, par slug, avec la
- * même distinction : seuls ses motifs durables écartent, un échec transitoire
+ * une liste par CELEX, le CEPD une liste par slug, la doctrine CNIL une liste
+ * par URL ; seuls les motifs durables écartent pour de bon, un échec transitoire
  * laisse le document manquant pour qu'une passe le rejoue. Les comptes des
  * autres corpus ne disent pas quel document a été écarté.
+ *
+ * Un écart durable ne sera pas réparé par une passe : une mention contraire à
+ * la licence, un avis d'avocat général, un XHTML absent.
  */
 export function documentsEcartes(rootDir: string, corpus: string): Map<string, string> {
   const ecartes = new Map<string, string>();
-  if (corpus !== "cjue" && corpus !== "cepd") return ecartes;
+  if (corpus !== "cjue" && corpus !== "cepd" && corpus !== "cnil_doctrine") return ecartes;
   const chemin = join(rootDir, "data", "corpus", corpus, "manifest.json");
   const texte = lireTexte(chemin);
   if (texte === null) return ecartes;
@@ -428,7 +458,24 @@ export function documentsEcartes(rootDir: string, corpus: string): Map<string, s
       couverture?: {
         documents_ecartes?: { celex?: unknown; motif?: unknown; slug?: unknown; raison?: unknown }[];
       };
+      documents_ecartes?: { url?: unknown; raison?: unknown }[];
     };
+    if (corpus === "cnil_doctrine") {
+      // La doctrine écarte par URL ; l'entrée de veille désigne le document par
+      // son slug, celui que la synchronisation lui aurait donné. Seule une
+      // mention contraire est durable : un PDF en échec est rejoué par
+      // `cnil-doctrine:sync`, donc l'entrée doit rester manquante.
+      for (const document of manifeste.documents_ecartes ?? []) {
+        if (typeof document.url !== "string" || typeof document.raison !== "string") continue;
+        if (!document.raison.startsWith("mention contraire")) continue;
+        try {
+          ecartes.set(slugDe(document.url), document.raison);
+        } catch {
+          // Une URL sans slug exploitable ne désigne aucun document.
+        }
+      }
+      return ecartes;
+    }
     for (const document of manifeste.couverture?.documents_ecartes ?? []) {
       if (corpus === "cepd") {
         if (
