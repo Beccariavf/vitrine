@@ -261,7 +261,7 @@ complémentaire est déclarée au manifeste. Réutilisation autorisée par la d�
 (CC BY 4.0).
 
 Chaque `manifest.json` porte un bloc `couverture` émis par sa synchronisation : source, date ou
-archive, bornes, types ou natures retenus, exclusions et comptes. Le tableau des huit corpus
+archive, bornes, types ou natures retenus, exclusions et comptes. Le tableau des douze corpus
 (documents, fragments, période, source, licence) est
 `aidd_docs/tasks/2026_11/2026_11_11_corpus-cassation-cjue/coverage.md` ; il reprend les comptes
 des manifestes, jamais une recopie approximative.
@@ -285,7 +285,7 @@ classement des documents cités par les décisions et absents du corpus, recalcu
 entrée portant son libellé, son lien officiel, son statut (`absent` ou `exclu`), son compte de
 citations et les autorités qui le citent avec leur compte. Un document déclaré `exclu` au catalogue
 d'instruments de `mcp/corpus/citations.ts` est marqué comme tel : il n'est jamais présenté comme un
-trou, et le catalogue n'exclut aucun de ses huit instruments aujourd'hui. `etat_corpus` rend ce bloc
+trou, et le catalogue n'exclut aucun de ses neuf instruments aujourd'hui. `etat_corpus` rend ce bloc
 tel quel, sans le recalculer ; un rapport antérieur au bloc le rend `null`. Le relevé réel du
 2026-11-13 (6 documents, 410 citations) et ses limites sont dans
 `aidd_docs/tasks/2026_11/2026_11_13_classement-documents-absents/mesure.md`. Un document manquant

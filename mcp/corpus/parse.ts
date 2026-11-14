@@ -261,9 +261,12 @@ function sansMarqueurs(texte: string): string {
     .trim();
 }
 
-/** Texte visible d'un fragment consolidé, sans renvois de modification. */
+/**
+ * Texte visible d'un fragment consolidé, sans renvois de modification ; la
+ * marque d'un passage supprimé (`—————`) reste.
+ */
 function texteConsolide(fragment: string): string {
-  return sansMarqueurs(texteVisible(fragment.replace(/<p class="modref">[\s\S]*?<\/p>/g, " ")));
+  return sansMarqueurs(texteVisible(fragment));
 }
 
 /** `Article premier` → `1`, `Article 15 bis` → `15 bis` ; `null` si le titre n'est pas un article. */
@@ -313,7 +316,7 @@ export function parseConsolide(xhtml: string, descripteur: Descripteur): Unite[]
 
   let chapitre: { numero: string; titre: string } | null = null;
   const vus = new Set<string>();
-  reperes.forEach((repere, index) => {
+  for (const [index, repere] of reperes.entries()) {
     const fin = reperes[index + 1]?.position ?? finArticles;
     const segment = xhtml.slice(repere.position, fin);
     const finTitre = segment.indexOf("</p>");
@@ -327,24 +330,23 @@ export function parseConsolide(xhtml: string, descripteur: Descripteur): Unite[]
           titre: sousTitre?.[1] === undefined ? "" : texteConsolide(sousTitre[1]),
         };
       }
-      return;
+      continue;
     }
     const numero = numeroArticleConsolide(titre);
     if (numero === null) throw new Error(`Titre d'article illisible : « ${titre} »`);
     if (vus.has(numero)) throw new Error(`Article ${numero} en double dans ${descripteur.version ?? descripteur.document}`);
     vus.add(numero);
     const texte = texteConsolide(segment);
-    const courant = chapitre as { numero: string; titre: string } | null;
     const chemin =
-      courant === null
+      chapitre === null
         ? descripteur.nom
-        : [descripteur.nom, `Chapitre ${courant.numero}`, courant.titre].filter((element) => element !== "").join(" > ");
+        : [descripteur.nom, `Chapitre ${chapitre.numero}`, chapitre.titre].filter((element) => element !== "").join(" > ");
     unites.push({
       ...uniteDe(descripteur, "article", numero.replace(" ", ""), chemin, texte),
       numero,
       url: descripteur.url,
     });
-  });
+  }
 
   const articles = unites.filter((unite) => unite.niveau === "article").length;
   const considerants = unites.length - articles;

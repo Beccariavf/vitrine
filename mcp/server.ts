@@ -10,6 +10,7 @@ import { openIndex } from "./index/search.ts";
 import type { Index } from "./index/search.ts";
 import { getArticle, getDecision, search, etatCorpus } from "./tools.ts";
 import { LIMITE_DEFAUT, LIMITE_MAX, decisionsCitant } from "./corpus/citants.ts";
+import { PERIMETRE } from "./corpus/citations.ts";
 import {
   FAMILLES,
   LIMITE_DEFAUT as LIMITE_DEFAUT_DECISIONS,
@@ -39,10 +40,8 @@ const ACTES_UE =
   "(corpus `police`, CELEX 32016L0680), le règlement 2018/1725 des institutions de l'Union (corpus " +
   "`eudpr`, CELEX 32018R1725), le règlement procédural RGPD (corpus `rgpdproc`, CELEX 32025R2518)";
 
-/** Phrase de refus d'un instrument connu absent du corpus, telle que `citations.ts` la rend. */
-const PERIMETRE_REFUS =
-  "(périmètre : RGPD, AI Act, ePrivacy, directive 2016/680, règlement 2018/1725, règlement " +
-  "procédural RGPD, LIL, CNIL, Conseil d'État, CEPD, Cour de cassation, CJUE)";
+/** Phrase de refus d'un instrument connu absent du corpus, celle que `citations.ts` rend. */
+const PERIMETRE_REFUS = `(périmètre : ${PERIMETRE})`;
 
 const CONSIGNE_PROVENANCE =
   "Le texte rendu vient des douze corpus locaux (RGPD `32016R0679`, AI Act `32024R1689`, " +
@@ -168,8 +167,10 @@ export function createServer(deps: ServerDeps): McpServer {
       description:
         "Rend le texte exact d'un article du RGPD, de l'AI Act, de la directive ePrivacy, de la " +
         "directive police-justice, du règlement 2018/1725, du règlement procédural RGPD ou de la " +
-        "LIL, avec sa référence, son chemin, ses dates et son URL ; un acte de l'Union est rendu " +
-        "dans sa version consolidée en vigueur, dont `etat_corpus` donne la date. Un article " +
+        "LIL, avec sa référence, son chemin, ses dates et son URL. ePrivacy et la directive " +
+        "police-justice sont rendues dans leur version consolidée en vigueur ; les règlements " +
+        "2018/1725 et 2025/2518, jamais modifiés, dans leur texte d'origine : `etat_corpus` en " +
+        "donne la version et la date (`corpus[].couverture.version`, `date_consolidation`). Un article " +
         "inséré se demande avec son suffixe (`15 bis`). Répondre « introuvable » quand l'article " +
         "n'existe pas ; ne jamais compléter un texte absent. Un document qui est un instrument " +
         `connu absent du corpus répond « absent de mon corpus ${PERIMETRE_REFUS}. », sans ` +

@@ -29,6 +29,8 @@
     "comptes": {
       "articles": 101,
       "considerants": 89
-    }
+    },
+    "version": "32018R1725",
+    "date_consolidation": null
   }
 }

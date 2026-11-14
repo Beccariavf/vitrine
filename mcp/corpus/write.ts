@@ -11,6 +11,9 @@ export type CouvertureActe = {
   types_retenus: string[];
   exclusions: string[];
   comptes: { articles: number; considerants: number };
+  /** CELEX rendu et date de sa consolidation ; présents quand le descripteur les déclare. */
+  version?: string;
+  date_consolidation?: string | null;
 };
 
 /** Métadonnées du corpus, écrites une fois par document. */
@@ -93,6 +96,9 @@ export function writeCorpus(
       types_retenus: types,
       exclusions: descripteur.exclusions ?? [],
       comptes: { articles, considerants },
+      ...(descripteur.version === undefined
+        ? {}
+        : { version: descripteur.version, date_consolidation: descripteur.date_consolidation ?? null }),
     },
   };
 

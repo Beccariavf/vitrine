@@ -197,7 +197,7 @@ const PAR_LIBELLE = new Map(INSTRUMENTS.map((instrument) => [instrument.libelle,
  * Les douze corpus du serveur, dans l'ordre de la phrase de refus. Aucune date de
  * fraîcheur : le refus d'un document absent ne porte que le périmètre.
  */
-const PERIMETRE =
+export const PERIMETRE =
   "RGPD, AI Act, ePrivacy, directive 2016/680, règlement 2018/1725, règlement procédural RGPD, " +
   "LIL, CNIL, Conseil d'État, CEPD, Cour de cassation, CJUE";
 

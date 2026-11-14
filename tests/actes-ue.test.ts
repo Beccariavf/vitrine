@@ -78,6 +78,8 @@ describe("parseConsolide", () => {
     const cinq = articles.find((unite) => unite.numero === "5");
     assert.match(cinq?.texte ?? "", /ait donné son accord/);
     assert.equal(cinq?.url, "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:02002L0058-20091219");
+    // Le point e) de l'article 2, supprimé par 2009/136, garde sa marque de suppression.
+    assert.match(articles.find((unite) => unite.numero === "2")?.texte ?? "", /la reçoit; —————/);
     assert.equal(articles.at(-1)?.texte, "Article 21 Destinataires Les États membres sont destinataires de la présente directive.");
   });
 
@@ -123,6 +125,8 @@ describe("buildCorpusSet sur une version consolidée", () => {
         "considérants : absents de la version consolidée 02016L0680-20160504",
       ]);
       assert.deepEqual(manifeste.couverture.types_retenus, ["article"]);
+      assert.equal(manifeste.couverture.version, "02016L0680-20160504");
+      assert.equal(manifeste.couverture.date_consolidation, "2016-05-04");
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
@@ -137,6 +141,7 @@ describe("lecture des actes de l'Union sur le corpus réel", () => {
     assert.equal(quinze.trouve && quinze.ref, "32002L0058#art_15");
     assert.equal(quinzeBis.trouve && quinzeBis.ref, "32002L0058#art_15bis");
     assert.equal(getArticle(ROOT, { document: "32016R0679", numero: "17 bis" }).trouve, false);
+    assert.equal(getArticle(ROOT, { document: "32002L0058", numero: "15a" }).trouve, false);
   });
 
   it("rend un article de chaque acte avec sa date, son lien EUR-Lex et son statut", () => {
@@ -174,6 +179,14 @@ describe("noms des actes de l'Union", () => {
     assert.deepEqual(documentsNommes("règlement (UE) 2018/1725"), ["32018R1725"]);
     assert.deepEqual(documentsNommes("le règlement procédural RGPD"), ["32025R2518"]);
     assert.deepEqual(documentsNommes("le RGPD et le règlement 2025/2518").sort(), ["32016R0679", "32025R2518"]);
+    assert.deepEqual(documentsNommes("corpus rgpdproc"), ["32025R2518"]);
+  });
+
+  it("ne prend pas un numéro ou un règlement procédural quelconque pour un acte", () => {
+    assert.deepEqual(documentsNommes("le règlement de procédure de la Cour de justice"), []);
+    assert.deepEqual(documentsNommes("le règlement procédural de la Cour de justice"), []);
+    assert.deepEqual(documentsNommes("la loi n° 2002-58"), []);
+    assert.deepEqual(documentsNommes("en 2016, 680 dossiers"), []);
   });
 
   it("referenceExacte garde le suffixe latin", () => {

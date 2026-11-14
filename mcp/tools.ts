@@ -246,14 +246,16 @@ const SUFFIXE_ARTICLE = "bis|ter|quater|quinquies|sexies|septies|octies|nonies|d
 
 /**
  * `Article 17`, `art. 17`, `17` : le nombre, sans zéro de tête, suivi de son
- * suffixe latin (`15 bis`) ; un article inséré n'est jamais confondu avec
- * l'article qu'il suit.
+ * suffixe latin (`15 bis`) ou d'une lettre collée (`15a`, gardée telle quelle :
+ * elle ne désigne aucun article français et rend « introuvable » plutôt que
+ * l'article 15). Les subdivisions `-N` restent ignorées (`20-1` → `20`).
  */
 function normaliserNumero(numero: string | number): string | null {
-  const trouve = new RegExp(`(\\d+)(?:\\s*(${SUFFIXE_ARTICLE})\\b)?`, "i").exec(String(numero));
+  const trouve = new RegExp(`(\\d+)(?:\\s*(${SUFFIXE_ARTICLE})\\b|([a-z])\\b)?`, "i").exec(String(numero));
   if (trouve === null || trouve[1] === undefined) return null;
   const base = String(Number(trouve[1]));
-  return trouve[2] === undefined ? base : `${base} ${trouve[2].toLowerCase()}`;
+  if (trouve[2] !== undefined) return `${base} ${trouve[2].toLowerCase()}`;
+  return trouve[3] === undefined ? base : `${base}${trouve[3].toLowerCase()}`;
 }
 
 /** Ce qu'il faut d'une unité rendue pour lire son statut d'application. */
@@ -366,29 +368,33 @@ const ALIAS_ACTES_UE: ReadonlyArray<{ document: string; texte: readonly RegExp[]
     texte: [
       /\be ?privacy\b/,
       /\bdirective vie privee et communications electroniques\b/,
-      /\b2002 58\b/,
+      /\bdirective (?:ce )?(?:n )?2002 58\b/,
     ],
     compact: [/32002l0058/],
   },
   {
     document: "32016L0680",
-    texte: [/\bdirective police(?: justice)?\b/, /\b2016 680\b/],
+    texte: [/\bdirective police(?: justice)?\b/, /\bdirective (?:ue )?(?:n )?2016 680\b/],
     compact: [/32016l0680/],
   },
   {
     document: "32018R1725",
-    texte: [/\beudpr\b/, /\b2018 1725\b/],
+    texte: [/\beudpr\b/, /\breglement (?:ue )?(?:n )?2018 1725\b/],
     compact: [/32018r1725/],
   },
   {
     document: "32025R2518",
-    texte: [/\breglement procedural\b/, /\b2025 2518\b/],
+    texte: [
+      /\breglement procedural (?:du |de l )?(?:rgpd|r g p d)\b/,
+      /\breglement (?:ue )?(?:n )?2025 2518\b/,
+      /\brgpdproc\b/,
+    ],
     compact: [/32025r2518/],
   },
 ];
 
-/** « règlement procédural RGPD » nomme le règlement 2025/2518, pas le RGPD. */
-const NOM_PROCEDURAL_RGPD = /\breglement procedural (?:du |de l )?(?:rgpd|r g p d)\b/g;
+/** « règlement procédural RGPD » et `rgpdproc` nomment le règlement 2025/2518, pas le RGPD. */
+const NOM_PROCEDURAL_RGPD = /\breglement procedural (?:du |de l )?(?:rgpd|r g p d)\b|\brgpdproc\b/g;
 
 /** Nom lisible d'un corpus connu, pour les messages de refus. */
 const NOMS_DOCUMENTS: Record<string, string> = {
