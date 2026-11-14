@@ -26,6 +26,7 @@ const LIBELLES: ReadonlyArray<readonly [string, string]> = [
   ["textes_fr", "Textes français d'application"],
   ["adequation", "Décisions d'adéquation"],
   ["cnil", "CNIL"],
+  ["cnil_doctrine", "Doctrine CNIL"],
   ["cepd", "CEPD"],
   ["cjue", "CJUE"],
   ["ce", "Conseil d'État"],

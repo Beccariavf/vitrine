@@ -4,12 +4,13 @@ import { FAMILLES, FAMILLES_LEGENDE, familleDeSource } from "../src/lib/familles
 import { AUTORISEES } from "./contrastes.ts";
 
 const SOURCES_VEILLE = ["cnil", "cjeu", "anssi", "cepd", "arcep", "commission", "commission-dma", "arcom", "cetat", "constit", "judilibre", "legi", "eurlex"];
-const CORPUS = ["rgpd", "aiact", "eprivacy", "police", "eudpr", "rgpdproc", "ccs", "lil", "textes_fr", "adequation", "cnil", "cepd", "cjue", "ce", "constit", "cc"];
+const CORPUS = ["rgpd", "aiact", "eprivacy", "police", "eudpr", "rgpdproc", "ccs", "lil", "textes_fr", "adequation", "cnil", "cnil_doctrine", "cepd", "cjue", "ce", "constit", "cc"];
 
 describe("familleDeSource", () => {
-  it("range les sources de veille et les seize corpus dans une famille nommée", () => {
+  it("range les sources de veille et les dix-sept corpus dans une famille nommée", () => {
     const attendu: Record<string, string> = {
       cnil: "autorites",
+      cnil_doctrine: "autorites",
       anssi: "autorites",
       arcep: "autorites",
       arcom: "autorites",
