@@ -25,6 +25,7 @@
     "cepd:sync": "node mcp/corpus/cepd/sync.ts",
     "cjue:sync": "node mcp/corpus/cjue/sync.ts",
     "cnil:sync": "node mcp/corpus/cnil/sync.ts",
+    "lil:historique": "node mcp/corpus/lil/historique.ts",
     "lil:sync": "node mcp/corpus/lil/sync.ts",
     "textes-fr:sync": "node mcp/corpus/textes-fr/sync.ts",
     "mcp:smoke": "node mcp/embed/smoke.ts",
