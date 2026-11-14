@@ -7,6 +7,7 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 | `rgpd` | 1 acte | 272 (99 articles + 173 considérants) | publication 2016-05-04 ; applicable depuis 2018-05-25 | CELLAR / EUR-Lex, CELEX `32016R0679` | Décision 2011/833/UE (CC BY 4.0) |
 | `aiact` | 1 acte | 299 (119 articles de la consolidation `02024R1689-20260727` + 180 considérants de l'acte d'origine) | publication 2024-07-12 ; en vigueur depuis 2024-08-01 | CELLAR / EUR-Lex, CELEX `32024R1689` | Décision 2011/833/UE (CC BY 4.0) |
 | `cnil` | 3 245 | 29 299 | arrêté au 2026-10-30 | DINUM (historique) + DILA (incréments) | DINUM : `etalab-2.0` et `lov2`, écart déclaré ; DILA : Licence Ouverte 2.0 |
+| `cnil_doctrine` | 56 (30 guides, 26 référentiels) | 4 461 | documents datés de 2019-11-21 à 2026-11-14 ; 2 listes AIPD laissées au corpus `cnil` | cnil.fr — pages de référence (guides, référentiels, listes AIPD) | CC BY-ND 4.0, marquage par fragment ; listes AIPD en Licence Ouverte via `cnil` |
 | `lil` | 1 | 133 articles en vigueur | version consolidée au 2026-10-01 ; consultée le 2026-11-09 | PISTE — Légifrance `/consult/legiPart` | Licence Ouverte 2.0 (Etalab) |
 | `textes_fr` | 3 | 183 articles en vigueur (décret 2019-536 : 166 ; Code pénal 226-16 à 226-24 : 16 ; CPCE L34-5 : 1) ; 2 abrogés écartés | consultés le 2026-11-14 | PISTE — Légifrance `/consult/legiPart`, `/consult/code`, `/consult/getArticleWithIdAndNum` | Licence Ouverte 2.0 (Etalab) |
 | `ce` | 1 594 | 20 774 | 1982-03-12 → 2026-10-27 | DILA — JADE, fonds `publie` et `inedit` | Licence Ouverte 2.0 (Etalab) |
@@ -59,6 +60,14 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 - La notion `4.11.01` est large : six décisions ajoutées (douanes, droit d'auteur, agents FIFA, État de droit, réparation automobile, ne bis in idem) ne traitent les données personnelles que dans une partie de leur raisonnement. Elles restent dans le corpus, la source officielle et son libellé étant déclarés.
 - Le contrôle du 14 novembre 2026 par la fiche thématique Curia « Protection des données à caractère personnel » a fait entrer trois arrêts que le classement CELLAR ne donnait pas : C-461/10 (Bonnier Audio, `62010CJ0461`), C-37/20 et C-601/20 (`62020CJ0037`), C-339/20 et C-397/20 (`62020CJ0339`). Prokuratuur (`62018CJ0746`) était déjà complémentaire.
 - La synchronisation de ce contrôle s'est faite sans cache `data/raw/cjue/` (non commité) : elle a relu les 251 arrêts, et EUR-Lex a actualisé la graphie « État » dans 287 fragments de 19 décisions. Aucun texte n'a été édité à la main.
+
+## Détail `cnil_doctrine`
+
+- Synchronisation du 2026-11-14 : quatre pages de référence — guides (`fr/mediatheque?field_scald_collection_tid=29`, 26 PDF), guides AIPD (`fr/guides-aipd`, 4 PDF), référentiels (`fr/autres-referentiels`, 26 PDF), listes AIPD (`fr/listes-des-traitements-pour-lesquels-une-aipd-est-requise-ou-non`, 2 pages → 2 PDF).
+- 56 documents ingérés (30 guides, 26 référentiels), 4 461 fragments. Les deux listes AIPD ne sont pas dupliquées : la liste requise est la délibération 2018-327 (`CNILTEXT000037560659`), la liste non requise la 2019-118 (`CNILTEXT000039249797`), toutes deux déjà au corpus `cnil` (Licence Ouverte) ; le manifeste les porte dans `couverts_par_cnil`.
+- Aucun document écarté : l'heuristique de « mention contraire » (`tous droits réservés`, `reproduction interdite`, `all rights reserved`, `sous réserve de droits d'auteur`) n'a rien trouvé sur les 58 PDF.
+- Les guides et référentiels sont sous CC BY-ND 4.0 : chaque fragment rendu porte « extrait non modifié · CC BY-ND 4.0 · lien », le titre, « Source : CNIL – https://www.cnil.fr » et la date d'extraction. Le serveur ne produit ni résumé ni reformulation.
+- Les PDF bruts et le cache vivent sous `data/raw/cnil-doctrine/` (non commité), adressés par leur `sha256` ; une relance ne redemande rien. 18 documents sur 56 ne déclarent pas de date dans leur en-tête : leur `date_acte` est la date d'extraction, et le manifeste porte `date_source: "extraction"`.
 
 ## Évaluations `dev`
 
