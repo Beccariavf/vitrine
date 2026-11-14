@@ -100,6 +100,32 @@ function options(racine: string, descripteurPath: string, extra: Partial<Control
   };
 }
 
+/** Jonctions réelles de l'extrait de fiche, pour un CELLAR simulé. */
+const JONCTIONS: Record<string, string> = {
+  "62012CJ0594": "62012CJ0293",
+  "62009CJ0093": "62009CJ0092",
+  "62015CJ0698": "62015CJ0203",
+  "62004CJ0318": "62004CJ0317",
+  "62018CJ0512": "62018CJ0511",
+  "62018CJ0520": "62018CJ0511",
+};
+
+/** Réponse SPARQL d'un CELEX confirmé, ou vide quand CELLAR ne le connaît pas. */
+function sparqlFiche(joint: Record<string, string> = JONCTIONS): FetchLike {
+  return async (_url, init) => {
+    const deduit = /6\d{4}[A-Z]{2}\d{4}/.exec(init?.body ?? "")?.[0];
+    const celex = deduit === undefined ? undefined : (joint[deduit] ?? deduit);
+    return {
+      ok: true,
+      status: 200,
+      text: async () =>
+        JSON.stringify({
+          results: { bindings: celex === undefined ? [] : [{ celex: { value: celex } }] },
+        }),
+    };
+  };
+}
+
 describe("l'extraction des numéros d'affaire d'une fiche", () => {
   it("lit un arrêt simple, un arrêt du Tribunal et une jonction", () => {
     const affaires = extraireAffaires(TEXTE);
@@ -223,6 +249,7 @@ describe("le contrôle de la fiche contre le corpus", () => {
       let synchronise = false;
       const resultat = await controleCuria(
         options(racine, descripteurPath, {
+          fetchSparql: sparqlFiche(),
           syncImpl: async (_options: SyncCjueOptions) => {
             synchronise = true;
             const unites = readFileSync(join(racine, "data", "corpus", "cjue", "unites.jsonl"), "utf8");
@@ -270,6 +297,7 @@ describe("le contrôle de la fiche contre le corpus", () => {
       let resynchronise = false;
       const second = await controleCuria(
         options(racine, descripteurPath, {
+          fetchSparql: sparqlFiche(),
           syncImpl: async () => {
             resynchronise = true;
           },
@@ -357,6 +385,64 @@ describe("le contrôle de la fiche contre le corpus", () => {
     }
   });
 
+  it("n'ajoute pas un CELEX que CELLAR ne confirme pas", async () => {
+    const racine = racineTemporaire();
+    try {
+      ecrireCorpus(racine, PRESENTS, [{ celex: "62006CJ0275", motif: "xhtml_absent" }]);
+      const descripteurPath = ecrireDescripteur(racine, []);
+      let synchronise = false;
+      const resultat = await controleCuria(
+        options(racine, descripteurPath, {
+          fetchSparql: async () => ({
+            ok: true,
+            status: 200,
+            text: async () => JSON.stringify({ results: { bindings: [] } }),
+          }),
+          syncImpl: async () => {
+            synchronise = true;
+          },
+        }),
+      );
+      assert.equal(synchronise, false);
+      assert.equal(resultat.code, 1);
+      assert.equal(resultat.rapport.manquants_sans_raison, 1);
+      assert.deepEqual(
+        JSON.parse(readFileSync(descripteurPath, "utf8")).celex_complementaires,
+        [],
+      );
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
+  });
+
+  it("accepte la raison durable d'un CELEX déjà complémentaire", async () => {
+    const racine = racineTemporaire();
+    try {
+      ecrireCorpus(racine, PRESENTS, [
+        { celex: "62006CJ0275", motif: "xhtml_absent" },
+        { celex: "62010CJ0461", motif: "xhtml_absent" },
+      ]);
+      const descripteurPath = ecrireDescripteur(racine, ["62010CJ0461"]);
+      let synchronise = false;
+      const resultat = await controleCuria(
+        options(racine, descripteurPath, {
+          syncImpl: async () => {
+            synchronise = true;
+          },
+        }),
+      );
+      assert.equal(synchronise, false);
+      assert.equal(resultat.code, 0);
+      assert.equal(resultat.rapport.absents.length, 2);
+      assert.deepEqual(
+        resultat.rapport.absents.find((absent) => absent.celex === "62010CJ0461")?.motif,
+        "xhtml_absent",
+      );
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
+  });
+
   it("signale l'échec de synchronisation sans compter l'absence comme expliquée", async () => {
     const racine = racineTemporaire();
     try {
@@ -364,6 +450,7 @@ describe("le contrôle de la fiche contre le corpus", () => {
       const descripteurPath = ecrireDescripteur(racine, []);
       const resultat = await controleCuria(
         options(racine, descripteurPath, {
+          fetchSparql: sparqlFiche(),
           syncImpl: async () => {
             throw new Error("CELLAR indisponible");
           },

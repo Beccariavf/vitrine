@@ -318,11 +318,7 @@ function motifDurable(
   rootDir: string,
   celex: string,
   motifs: Map<string, MotifEcartCjue>,
-  complementaires: readonly string[],
 ): MotifEcartCjue | null {
-  // Un CELEX ajouté pour la fiche n'a pas de raison durable : une déduction
-  // fausse ne doit pas devenir un « absent expliqué » au passage suivant.
-  if (complementaires.includes(celex)) return null;
   const duManifeste = motifs.get(celex);
   if (duManifeste !== undefined && MOTIFS_DURABLES.has(duManifeste)) return duManifeste;
   const refuse = lireRefus(rootDir, celex);
@@ -440,10 +436,7 @@ export async function controleCuria(options: ControleOptions = {}): Promise<Resu
     corpus: EtatCorpus,
   ): Promise<{ celex: string; resolution: ArretControle["resolution"] }> => {
     const deduit = celexArret(affaire.numero);
-    if (
-      corpus.documents.has(deduit) ||
-      motifDurable(rootDir, deduit, corpus.motifs, complementaires) !== null
-    ) {
+    if (corpus.documents.has(deduit) || motifDurable(rootDir, deduit, corpus.motifs) !== null) {
       return { celex: deduit, resolution: "deduit" };
     }
     const resolue =
@@ -486,7 +479,7 @@ export async function controleCuria(options: ControleOptions = {}): Promise<Resu
     for (const entree of entrees) {
       const existant = parCelex.get(entree.celex);
       if (existant === undefined) {
-        const motif = motifDurable(rootDir, entree.celex, corpus.motifs, complementaires);
+        const motif = motifDurable(rootDir, entree.celex, corpus.motifs);
         parCelex.set(entree.celex, {
           celex: entree.celex,
           numeros: [entree.numero],
@@ -511,7 +504,14 @@ export async function controleCuria(options: ControleOptions = {}): Promise<Resu
   let erreurSync: string | null = null;
 
   const aAjouter = arrets
-    .filter((arret) => arret.etat === "absent" && arret.motif === undefined)
+    .filter(
+      (arret) =>
+        arret.etat === "absent" &&
+        arret.motif === undefined &&
+        // Seul un CELEX confirmé par CELLAR est ajouté : une déduction non
+        // vérifiée ne doit pas devenir une raison durable au passage suivant.
+        arret.resolution !== "deduit",
+    )
     .map((arret) => arret.celex);
   let ajoutesCePassage = 0;
   if (aAjouter.length > 0) {
