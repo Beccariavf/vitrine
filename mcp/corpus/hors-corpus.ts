@@ -152,7 +152,7 @@ function citationsLisibles(
 }
 
 /**
- * Le classement des cinq corpus de décisions, daté. Un corpus sans fichier
+ * Le classement des six corpus de décisions, daté. Un corpus sans fichier
  * lisible est ignoré ; la présence et les exclusions se lisent aux manifestes et
  * au catalogue, comme pour les citations.
  */

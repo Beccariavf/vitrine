@@ -246,7 +246,7 @@ async function main(argv: string[]): Promise<void> {
     const corpus = positionnels(argv)[0];
     if (corpus !== undefined) {
       throw new Error(
-        `--classement couvre les cinq corpus de décisions : aucun corpus positionnel, reçu « ${corpus} ».`,
+        `--classement couvre les six corpus de décisions : aucun corpus positionnel, reçu « ${corpus} ».`,
       );
     }
     process.stdout.write(rendreClassement(rootDir, dateDuJour()));

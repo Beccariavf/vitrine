@@ -234,7 +234,7 @@ export type Passage = ResultatRecherche & {
   similarite: number;
   /** Vocabulaire uniforme du serveur ; le statut source reste dans `statut`. */
   statut_application: StatutApplication;
-  /** Instruments et articles cités par la décision ; absent hors des cinq corpus de décisions. */
+  /** Instruments et articles cités par la décision ; absent hors des six corpus de décisions. */
   citations?: CitationRendue[];
   /** Décisions que la décision cite, familles exposées seulement ; absent hors des corpus de décisions. */
   decisions_citees?: DecisionCitee[];
@@ -274,7 +274,7 @@ function passageExact(unite: Unite): Passage {
 /**
  * Recopie les citations du document sur ses passages : une décision garde sa
  * base juridique entière, même quand le passage rendu ne la nomme pas. Hors des
- * cinq corpus de décisions, le champ reste absent.
+ * six corpus de décisions, le champ reste absent.
  */
 function avecCitations(rootDir: string, passages: Passage[]): Passage[] {
   const parCorpus = new Map<string, ReadonlyMap<string, Citation[]>>();

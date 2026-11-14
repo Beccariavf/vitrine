@@ -77,8 +77,8 @@ const CONSIGNE_STATUT_APPLICATION =
   "que la version rendue n'est pas nécessairement celle en vigueur ; jamais que le texte s'applique.";
 
 const CONSIGNE_CITATIONS =
-  "Chaque décision rendue par `search` et par `get_decision` (corpus `cnil`, `ce`, `constit`, `cc`, " +
-  "`cjue` et `cepd`) porte `citations` : la liste des instruments et articles reconnus dans son texte, non " +
+  "Chaque décision rendue par `search` (corpus `cnil`, `ce`, `constit`, `cc`, `cjue` et `cepd`), et " +
+  "par `get_decision` pour la CNIL, porte `citations` : la liste des instruments et articles reconnus dans son texte, non " +
   "exhaustive, chacun avec l'identifiant du document visé (`document`, `32016R0679`…), son lien " +
   "officiel (`url`, `null` quand il est inconnu) et `hors_corpus` (`true` quand ce document n'est " +
   "pas dans le corpus local). Une citation hors corpus garde son lien et ne porte aucun texte ni " +
