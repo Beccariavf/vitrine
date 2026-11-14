@@ -46,6 +46,7 @@ const FAMILLE_DE_SOURCE: Readonly<Record<string, FamilleId>> = {
   rgpd: "textes",
   aiact: "textes",
   lil: "textes",
+  textes_fr: "textes",
   cnil: "autorites",
   anssi: "autorites",
   arcep: "autorites",

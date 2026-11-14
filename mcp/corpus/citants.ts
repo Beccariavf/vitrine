@@ -16,6 +16,7 @@ import {
   citationsDuCorpus,
   documentDeclare,
   documentsPresents,
+  identifiantsDuManifeste,
   normaliserIdentifiant,
 } from "./citations.ts";
 import type { Citation } from "./citations.ts";
@@ -85,7 +86,7 @@ function lireJsonl(chemin: string): Unite[] {
 
 /**
  * Vrai quand un article de ce numéro existe dans le corpus qui déclare le
- * document (champ `document` ou `text_id` de son manifeste). Seul ce corpus est
+ * document (`document`, `text_id` ou `textes[].text_id` de son manifeste). Seul ce corpus est
  * lu.
  */
 function articleAuCorpus(rootDir: string, document: string, demande: Article): boolean {
@@ -99,10 +100,8 @@ function articleAuCorpus(rootDir: string, document: string, demande: Article): b
     let declare = false;
     try {
       const valeur = JSON.parse(readFileSync(manifeste, "utf8")) as Record<string, unknown>;
-      declare = ["document", "text_id"].some(
-        (champ) =>
-          typeof valeur[champ] === "string" &&
-          normaliserIdentifiant(valeur[champ] as string) === cherche,
+      declare = identifiantsDuManifeste(valeur).some(
+        (identifiant) => normaliserIdentifiant(identifiant) === cherche,
       );
     } catch {
       // Un manifeste illisible ne déclare rien.

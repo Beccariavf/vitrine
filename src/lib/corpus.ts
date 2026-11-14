@@ -18,6 +18,7 @@ const LIBELLES: ReadonlyArray<readonly [string, string]> = [
   ["rgpd", "RGPD"],
   ["aiact", "AI Act"],
   ["lil", "Loi Informatique et Libertés"],
+  ["textes_fr", "Textes français d'application"],
   ["cnil", "CNIL"],
   ["cepd", "CEPD"],
   ["cjue", "CJUE"],

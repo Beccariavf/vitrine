@@ -6,7 +6,9 @@ import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
 import {
   absenceDuDocument,
+  articlesCouverts,
   avecPresence,
+  citationAuCorpus,
   citationsDesUnites,
   citationsDuCorpus,
   documentsPresents,
@@ -547,12 +549,12 @@ describe("la présence des documents cités", () => {
       assert.equal(absenceDuDocument(root, "LEGITEXT000006068624"), null);
       assert.equal(
         absenceDuDocument(root, "32002L0058"),
-        "ePrivacy (32002L0058) est absent de mon corpus (périmètre : RGPD, AI Act, LIL, CNIL, " +
+        "ePrivacy (32002L0058) est absent de mon corpus (périmètre : RGPD, AI Act, LIL, textes français d'application, CNIL, " +
           "Conseil d'État, CEPD, Cour de cassation, CJUE).",
       );
       assert.equal(
         absenceDuDocument(root, " 32002l0058 "),
-        "ePrivacy (32002L0058) est absent de mon corpus (périmètre : RGPD, AI Act, LIL, CNIL, " +
+        "ePrivacy (32002L0058) est absent de mon corpus (périmètre : RGPD, AI Act, LIL, textes français d'application, CNIL, " +
           "Conseil d'État, CEPD, Cour de cassation, CJUE).",
       );
     } finally {
@@ -560,20 +562,26 @@ describe("la présence des documents cités", () => {
     }
   });
 
-  it("tient sur le corpus réel : RGPD et LIL présents, les six autres absents", () => {
+  it("tient sur le corpus réel : RGPD, LIL, décret 2019-536, Code pénal et CPCE présents, les quatre autres absents", () => {
     const root = fileURLToPath(new URL("..", import.meta.url));
     const presents = documentsPresents(root);
 
-    assert.equal(presents.has("32016R0679"), true);
-    assert.equal(presents.has("LEGITEXT000006068624"), true);
-    for (const absent of [
-      "31995L0046",
-      "32002L0058",
-      "32016L0680",
-      "32018R1725",
-      "LEGITEXT000006070987",
+    for (const present of [
+      "32016R0679",
+      "LEGITEXT000006068624",
+      "LEGITEXT000038567662",
       "LEGITEXT000006070719",
+      "LEGITEXT000006070987",
     ]) {
+      assert.equal(presents.has(present), true, present);
+      assert.equal(absenceDuDocument(root, present), null, present);
+    }
+    // Code pénal et CPCE ne sont couverts qu'en partie : le corpus le dit.
+    const couverts = articlesCouverts(root);
+    assert.deepEqual(couverts.get("LEGITEXT000006070987"), ["L34-5"]);
+    assert.equal(couverts.get("LEGITEXT000006070719")?.[0], "226-16");
+    assert.equal(couverts.has("LEGITEXT000038567662"), false);
+    for (const absent of ["31995L0046", "32002L0058", "32016L0680", "32018R1725"]) {
       assert.equal(presents.has(absent), false, absent);
       assert.match(absenceDuDocument(root, absent) ?? "", /absent de mon corpus/);
     }

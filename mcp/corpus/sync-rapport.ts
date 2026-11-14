@@ -14,7 +14,7 @@ import type { CorpusVeille } from "./veille.ts";
 
 /**
  * Sources que `npm run corpus:sync` revérifie, dans leur ordre d'exécution. Les
- * corpus statiques (`rgpd`, `aiact`, `lil`, `cepd`) n'y figurent pas : `a_jour_au`
+ * corpus statiques (`rgpd`, `aiact`, `lil`, `textes_fr`, `cepd`) n'y figurent pas : `a_jour_au`
  * ne les couvre pas.
  */
 export const ORDRE_SOURCES: readonly CorpusVeille[] = ["cnil", "ce", "cc", "cjue"];

@@ -34,7 +34,7 @@ export const STATUTS_APPLICATION: readonly StatutApplication[] = [
 ];
 
 /** Corpus dont le statut source dit l'applicabilité du texte. */
-const CORPUS_TEXTES: readonly string[] = ["rgpd", "aiact", "lil"];
+const CORPUS_TEXTES: readonly string[] = ["rgpd", "aiact", "lil", "textes_fr"];
 
 /** Corpus dont chaque unité est une décision rendue, quel que soit le statut source. */
 const CORPUS_JURIDICTIONNELS: readonly string[] = ["ce", "cc", "cjue"];

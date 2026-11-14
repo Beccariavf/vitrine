@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-14",
+  "calls": [
+    {
+      "source": "piste",
+      "endpoint": "oauth",
+      "status": 200,
+      "durationMs": 183,
+      "at": "2026-11-14T14:16:20.037Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "legiPart",
+      "status": 200,
+      "durationMs": 423,
+      "at": "2026-11-14T14:16:20.461Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 316,
+      "at": "2026-11-14T14:16:20.972Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 136,
+      "at": "2026-11-14T14:16:21.877Z"
+    }
+  ]
+}

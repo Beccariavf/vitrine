@@ -1751,7 +1751,7 @@ describe("la recherche restreinte à un corpus", () => {
 describe("les documents cités absents du corpus", () => {
   const EPRIVACY = "32002L0058";
   const MESSAGE_EPRIVACY =
-    "ePrivacy (32002L0058) est absent de mon corpus (périmètre : RGPD, AI Act, LIL, CNIL, " +
+    "ePrivacy (32002L0058) est absent de mon corpus (périmètre : RGPD, AI Act, LIL, textes français d'application, CNIL, " +
     "Conseil d'État, CEPD, Cour de cassation, CJUE).";
 
   /** Décision citant le RGPD, la LIL et l'ePrivacy, sous une racine qui ne porte que les deux premiers. */

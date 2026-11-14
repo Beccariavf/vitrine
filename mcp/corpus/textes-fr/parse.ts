@@ -64,14 +64,63 @@ function texte(valeur: unknown): string {
   return typeof valeur === "string" ? valeur.trim() : "";
 }
 
-/** Vrai quand le numéro tombe dans la plage `[premier, dernier]` du même code. */
+/**
+ * Vrai quand le numéro tombe dans la plage `[premier, dernier]` du même code.
+ * Un suffixe de lettre (`226-16-1-A`) est comparé par son corps numérique.
+ */
 export function dansPlage(num: string, premier: string, dernier: string): boolean {
-  const article = formeArticle(num);
+  const article = formeArticle(num.trim().replace(/-[A-Z]+$/i, ""));
   const debut = formeArticle(premier);
   const fin = formeArticle(dernier);
   if (article === null || debut === null || fin === null) return false;
   if (article.prefixe !== debut.prefixe || article.prefixe !== fin.prefixe) return false;
   return comparerCorps(debut.corps, article.corps) <= 0 && comparerCorps(article.corps, fin.corps) <= 0;
+}
+
+/** Titre de section nettoyé des espaces de la DILA. */
+function titreSection(valeur: unknown): string {
+  return texte(valeur).replace(/\s+/g, " ");
+}
+
+/**
+ * La section `sctCid` de la réponse `/consult/code` et les titres qui y mènent.
+ * Seule cette section porte le texte de ses articles ; le reste de l'arbre du
+ * code n'a que des numéros.
+ */
+function sectionCiblee(
+  sections: unknown,
+  sctCid: string,
+  chemin: string[] = [],
+): { section: Record<string, unknown>; titres: string[] } | null {
+  if (!Array.isArray(sections)) return null;
+  for (const valeur of sections) {
+    const section = objet(valeur);
+    if (section === null) continue;
+    const titres = [...chemin, titreSection(section.title)].filter((titre) => titre !== "");
+    if (texte(section.cid) === sctCid || texte(section.id) === sctCid) return { section, titres };
+    const trouvee = sectionCiblee(section.sections, sctCid, titres);
+    if (trouvee !== null) return trouvee;
+  }
+  return null;
+}
+
+/**
+ * Lit la réponse `/consult/code` réduite à la section `sctCid` : ses articles,
+ * tous états confondus, portent le chemin de la section.
+ */
+export function lireSectionDeCode(brut: unknown, sctCid: string): LegiPart {
+  const racine = objet(brut);
+  if (racine === null) throw new Error("Réponse code illisible : objet attendu");
+  const trouvee = sectionCiblee(racine.sections, sctCid);
+  if (trouvee === null) throw new Error(`Réponse code sans la section ${sctCid}`);
+  const part = lireLegiPart({ ...racine, articles: [], sections: [trouvee.section] });
+  return {
+    ...part,
+    articles: part.articles.map((article) => ({
+      ...article,
+      pathTitle: article.pathTitle.length > 0 ? article.pathTitle : trouvee.titres,
+    })),
+  };
 }
 
 /** Sentinelle DILA d'une date de fin ouverte, en millisecondes (an 2999). */
@@ -98,8 +147,10 @@ export function lireArticleParNumero(brut: unknown): LegiPart {
   }
   const id = texte(article.id);
   if (id === "") throw new Error("Réponse getArticleWithIdAndNum sans identifiant d'article");
-  const contexte = objet(article.context);
-  const titres = Array.isArray(objet(contexte?.titreTxt)?.titres) ? [] : [];
+  const titresTM = objet(article.context)?.titresTM;
+  const titres = Array.isArray(titresTM)
+    ? titresTM.map((titre) => titreSection(objet(titre)?.titre)).filter((titre) => titre !== "")
+    : [];
   const lu: ArticleLil = {
     id,
     num: texte(article.num),
@@ -132,14 +183,10 @@ export function lireTexte(
   let part: LegiPart;
   if (route.type === "article") {
     part = lireArticleParNumero(reponse);
+  } else if (route.type === "code") {
+    part = lireSectionDeCode(reponse, route.sctCid);
   } else {
     part = lireLegiPart(reponse);
-    if (route.type === "code") {
-      part = {
-        ...part,
-        articles: part.articles.filter((article) => dansPlage(article.num, route.premier, route.dernier)),
-      };
-    }
   }
   const { unites, abroges } = unitesLil(part, {
     textId: texteFr.textId,
@@ -171,6 +218,14 @@ export function validerLectures(lectures: readonly LectureTexte[]): void {
       vues.add(unite.ref);
       if (!/^\d{4}-\d{2}-\d{2}$/.test(unite.date_acte)) {
         erreurs.push(`date non ISO : ${unite.ref} (${unite.date_acte || "vide"})`);
+      }
+    }
+    const route = texteFr.route;
+    if (route.type === "code") {
+      for (const unite of unites) {
+        if (!dansPlage(unite.numero, route.premier, route.dernier)) {
+          erreurs.push(`${texteFr.nom} : article ${unite.numero} hors de ${route.premier} à ${route.dernier}`);
+        }
       }
     }
     if (texteFr.route.type === "article") {

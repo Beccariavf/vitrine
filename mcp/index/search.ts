@@ -25,7 +25,7 @@ export const BANDE_ARTICLE = 0.02;
 export type ResultatRecherche = {
   ref: string;
   document: string;
-  /** Collection d'appartenance : `rgpd`, `aiact`, `cnil`, `lil`, `ce`, `cepd`, `cc`, `cjue`. */
+  /** Collection d'appartenance : `rgpd`, `aiact`, `cnil`, `lil`, `textes_fr`, `ce`, `cepd`, `cc`, `cjue`. */
   corpus: string;
   niveau: string;
   numero: string;
@@ -51,7 +51,7 @@ export type ResultatRecherche = {
 export type SearchOptions = {
   k: number;
   /**
-   * Restreint à une collection (`rgpd`, `aiact`, `cnil`, `lil`, `ce`, `cepd`, `cc`, `cjue`) ;
+   * Restreint à une collection (`rgpd`, `aiact`, `cnil`, `lil`, `textes_fr`, `ce`, `cepd`, `cc`, `cjue`) ;
    * absent, tous les corpus répondent.
    */
   corpus?: string;

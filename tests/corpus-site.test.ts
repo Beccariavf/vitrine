@@ -27,7 +27,7 @@ after(() => {
 });
 
 describe("sourcesCorpus", () => {
-  it("rend les huit collections committées dans l'ordre textes, autorités, juridictions", () => {
+  it("rend les neuf collections committées dans l'ordre textes, autorités, juridictions", () => {
     const sources = sourcesCorpus(ROOT);
     assert.deepEqual(
       sources.map((source) => source.libelle),
@@ -35,6 +35,7 @@ describe("sourcesCorpus", () => {
         "RGPD",
         "AI Act",
         "Loi Informatique et Libertés",
+        "Textes français d'application",
         "CNIL",
         "CEPD",
         "CJUE",

@@ -23,6 +23,8 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import type { Unite } from "./parse.ts";
+import { citeArticle, formeArticle } from "./articles.ts";
+import type { Article } from "./articles.ts";
 
 /** Un instrument cité, avec ses articles et son lien officiel. */
 export type Citation = {
@@ -187,7 +189,8 @@ const PAR_LIBELLE = new Map(INSTRUMENTS.map((instrument) => [instrument.libelle,
  * Les huit corpus du serveur, dans l'ordre de la phrase de refus. Aucune date de
  * fraîcheur : le refus d'un document absent ne porte que le périmètre.
  */
-const PERIMETRE = "RGPD, AI Act, LIL, CNIL, Conseil d'État, CEPD, Cour de cassation, CJUE";
+const PERIMETRE =
+  "RGPD, AI Act, LIL, textes français d'application, CNIL, Conseil d'État, CEPD, Cour de cassation, CJUE";
 
 /** Forme comparable d'un identifiant : majuscules, sans espace. */
 export function normaliserIdentifiant(identifiant: string): string {
@@ -234,49 +237,117 @@ export function documentsExclus(): ReadonlySet<string> {
 }
 
 /**
- * Identifiants des documents présents au corpus, lus dans les manifestes
- * `data/corpus/<corpus>/manifest.json` (champs `document` et `text_id`). Un manifeste
- * illisible ne masque pas les autres corpus ; une racine sans manifeste rend
- * l'ensemble vide.
+ * Identifiants qu'un manifeste déclare : `document`, `text_id`, et
+ * `textes[].text_id` pour un corpus de plusieurs textes.
  */
-export function documentsPresents(rootDir: string): ReadonlySet<string> {
-  const presents = new Set<string>();
-  const racine = join(rootDir, "data", "corpus");
-  if (!existsSync(racine)) return presents;
+export function identifiantsDuManifeste(manifeste: Record<string, unknown>): string[] {
+  const identifiants: string[] = [];
+  for (const champ of ["document", "text_id"]) {
+    const valeur = manifeste[champ];
+    if (typeof valeur === "string" && valeur.trim() !== "") identifiants.push(valeur);
+  }
+  if (Array.isArray(manifeste.textes)) {
+    for (const texte of manifeste.textes) {
+      const valeur = (texte as { text_id?: unknown } | null)?.text_id;
+      if (typeof valeur === "string" && valeur.trim() !== "") identifiants.push(valeur);
+    }
+  }
+  return identifiants;
+}
 
+/** Manifestes lisibles sous `data/corpus/` ; un manifeste illisible est ignoré. */
+function manifestesLisibles(rootDir: string): Record<string, unknown>[] {
+  const racine = join(rootDir, "data", "corpus");
+  if (!existsSync(racine)) return [];
+  const manifestes: Record<string, unknown>[] = [];
   for (const entree of readdirSync(racine, { withFileTypes: true })) {
     if (!entree.isDirectory()) continue;
     const chemin = join(racine, entree.name, "manifest.json");
     if (!existsSync(chemin)) continue;
     try {
-      const manifeste = JSON.parse(readFileSync(chemin, "utf8")) as Record<string, unknown>;
-      for (const champ of ["document", "text_id"]) {
-        const valeur = manifeste[champ];
-        if (typeof valeur === "string" && valeur.trim() !== "") {
-          presents.add(normaliserIdentifiant(valeur));
-        }
+      const valeur: unknown = JSON.parse(readFileSync(chemin, "utf8"));
+      if (typeof valeur === "object" && valeur !== null && !Array.isArray(valeur)) {
+        manifestes.push(valeur as Record<string, unknown>);
       }
     } catch {
       // Un manifeste illisible ne déclare aucun document.
     }
   }
+  return manifestes;
+}
+
+/**
+ * Identifiants des documents présents au corpus, lus dans les manifestes
+ * `data/corpus/<corpus>/manifest.json` (`document`, `text_id`, `textes[].text_id`).
+ * Un texte couvert en partie y figure : `articlesCouverts()` dit lesquels de ses
+ * articles. Un manifeste illisible ne masque pas les autres corpus ; une racine
+ * sans manifeste rend l'ensemble vide.
+ */
+export function documentsPresents(rootDir: string): ReadonlySet<string> {
+  const presents = new Set<string>();
+  for (const manifeste of manifestesLisibles(rootDir)) {
+    for (const identifiant of identifiantsDuManifeste(manifeste)) {
+      presents.add(normaliserIdentifiant(identifiant));
+    }
+  }
   return presents;
+}
+
+/** Articles couverts des textes présents en partie, par identifiant normalisé. */
+export type ArticlesCouverts = ReadonlyMap<string, readonly string[]>;
+
+/**
+ * Textes que le corpus ne porte qu'en partie (`textes[].articles_couverts`) et
+ * leurs numéros couverts. Un texte entier n'y figure pas.
+ */
+export function articlesCouverts(rootDir: string): ArticlesCouverts {
+  const couverts = new Map<string, string[]>();
+  for (const manifeste of manifestesLisibles(rootDir)) {
+    if (!Array.isArray(manifeste.textes)) continue;
+    for (const texte of manifeste.textes as { text_id?: unknown; articles_couverts?: unknown }[]) {
+      if (typeof texte?.text_id !== "string" || !Array.isArray(texte.articles_couverts)) continue;
+      couverts.set(
+        normaliserIdentifiant(texte.text_id),
+        texte.articles_couverts.filter((numero): numero is string => typeof numero === "string"),
+      );
+    }
+  }
+  return couverts;
+}
+
+/**
+ * Vrai quand la citation vise un document du corpus : document présent et, s'il
+ * n'est couvert qu'en partie, au moins un article cité (ou une plage) couvert.
+ * Une citation sans article d'un texte partiel reste hors corpus.
+ */
+export function citationAuCorpus(
+  presents: ReadonlySet<string>,
+  citation: Pick<Citation, "document" | "articles">,
+  couverts: ArticlesCouverts = new Map(),
+): boolean {
+  const document = normaliserIdentifiant(citation.document);
+  if (!presents.has(document)) return false;
+  const numeros = couverts.get(document);
+  if (numeros === undefined) return true;
+  const formes = numeros.map(formeArticle).filter((forme): forme is Article => forme !== null);
+  return citation.articles.some((article) => formes.some((forme) => citeArticle(article, forme)));
 }
 
 /** Marque des citations déjà extraites avec une présence calculée une seule fois. */
 export function marquerPresence(
   presents: ReadonlySet<string>,
   citations: readonly Citation[],
+  couverts: ArticlesCouverts = new Map(),
 ): CitationRendue[] {
   return citations.map((citation) => ({
     ...citation,
-    hors_corpus: !presents.has(normaliserIdentifiant(citation.document)),
+    hors_corpus: !citationAuCorpus(presents, citation, couverts),
   }));
 }
 
 /** Marque des citations d'après les manifestes du corpus, relus à chaque appel. */
 export function avecPresence(rootDir: string, citations: readonly Citation[]): CitationRendue[] {
-  return marquerPresence(documentsPresents(rootDir), citations);
+  return marquerPresence(documentsPresents(rootDir), citations, articlesCouverts(rootDir));
 }
 
 /**

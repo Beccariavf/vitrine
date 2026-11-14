@@ -10,10 +10,13 @@ import { debutDispositif, numeroIndex } from "./corpus/cnil/meta.ts";
 import { estSanction } from "./corpus/cnil/nature.ts";
 import {
   absenceDuDocument,
+  articlesCouverts,
   citationsDesUnites,
   citationsDuCorpus,
   documentsPresents,
+  documentDeclare,
   estCorpusDecision,
+  identifiantsDuManifeste,
   marquerPresence,
 } from "./corpus/citations.ts";
 import type { Citation, CitationRendue } from "./corpus/citations.ts";
@@ -32,6 +35,7 @@ import type {
 } from "./corpus/sync-rapport.ts";
 import type { ClassementHorsCorpus } from "./corpus/hors-corpus.ts";
 import { normaliserIdentifiant } from "./corpus/citations.ts";
+import type { ArticlesCouverts } from "./corpus/citations.ts";
 
 /** Où lire les exclusions déclarées : le bloc `couverture` de chaque corpus, rendu par `etat_corpus`. */
 export const RENVOI_EXCLUSIONS = "etat_corpus → corpus[].couverture";
@@ -67,16 +71,15 @@ export type Perimetre = {
   avertissement?: string;
 };
 
-/** Corpus dont le manifeste déclare ce document (`document` ou `text_id`) ; `null` sinon. */
+/** Corpus dont le manifeste déclare ce document (`document`, `text_id`, `textes[].text_id`) ; `null` sinon. */
 function corpusDuDocument(
   manifestes: ReadonlyMap<string, Record<string, unknown>>,
   document: string,
 ): string | null {
   const cherche = normaliserIdentifiant(document);
   for (const [corpus, manifeste] of manifestes) {
-    for (const champ of ["document", "text_id"]) {
-      const valeur = manifeste[champ];
-      if (typeof valeur === "string" && normaliserIdentifiant(valeur) === cherche) return corpus;
+    if (identifiantsDuManifeste(manifeste).some((valeur) => normaliserIdentifiant(valeur) === cherche)) {
+      return corpus;
     }
   }
   return null;
@@ -241,10 +244,18 @@ export type ResultatRechercheOutil = {
   perimetre: Perimetre;
 };
 
-/** `Article 17`, `art. 17`, `17` : ne garde que le nombre, sans zéro de tête. */
+/**
+ * `Article 17`, `art. 17`, `17`, `L. 34-5`, `226-16` : préfixe de code, nombre
+ * sans zéro de tête et segments à tiret. `26-1` reste distinct de `26` ; ce qui
+ * suit le numéro (paragraphe, sigle) est ignoré.
+ */
 function normaliserNumero(numero: string | number): string | null {
-  const chiffres = /\d+/.exec(String(numero));
-  return chiffres === null ? null : String(Number(chiffres[0]));
+  const brut = String(numero)
+    .trim()
+    .replace(/^(?:articles?|art\.?)\s*/i, "");
+  const trouve = /^(?:([LRD])\.?\s*)?(\d+)(?:er)?((?:-\d+)*)/i.exec(brut);
+  if (trouve === null) return null;
+  return `${trouve[1]?.toUpperCase() ?? ""}${Number(trouve[2])}${trouve[3] ?? ""}`;
 }
 
 /** Ce qu'il faut d'une unité rendue pour lire son statut d'application. */
@@ -277,9 +288,11 @@ function avecCitations(rootDir: string, passages: Passage[]): Passage[] {
   const parCorpus = new Map<string, ReadonlyMap<string, Citation[]>>();
   // La présence est lue une fois par réponse : huit manifestes, jamais par passage.
   let presents: ReadonlySet<string> | undefined;
+  let couverts: ArticlesCouverts | undefined;
   return passages.map((passage) => {
     if (!estCorpusDecision(passage.corpus)) return passage;
     presents ??= documentsPresents(rootDir);
+    couverts ??= articlesCouverts(rootDir);
     let corpus = parCorpus.get(passage.corpus);
     if (corpus === undefined) {
       corpus = citationsDuCorpus(rootDir, passage.corpus);
@@ -287,15 +300,15 @@ function avecCitations(rootDir: string, passages: Passage[]): Passage[] {
     }
     return {
       ...passage,
-      citations: marquerPresence(presents, corpus.get(passage.document) ?? []),
+      citations: marquerPresence(presents, corpus.get(passage.document) ?? [], couverts),
       decisions_citees: decisionsCitees(rootDir, passage.corpus, passage.document),
     };
   });
 }
 
-/** Numéro cité par « article N », « art. N » ou « art N » ; `null` sinon. */
+/** Numéro cité par « article N », « art. N », « article L. 34-5 », « article 226-16 » ; `null` sinon. */
 export function referenceExacte(question: string): string | null {
-  const reference = /\b(?:article|art\.?)\s*(\d+)/i.exec(question);
+  const reference = /\b(?:article|art\.?)\s*((?:[LRD]\.?\s*)?\d+(?:-\d+)*)/i.exec(question);
   return reference === null ? null : (reference[1] ?? "");
 }
 
@@ -344,11 +357,21 @@ const ALIAS_LIL_TEXTE: readonly RegExp[] = [
   /\bloi (?:n )?78 17\b/,
 ];
 
+const ALIAS_DECRET_2019_536: readonly RegExp[] = [/\bdecret (?:n )?2019 536\b/];
+const ALIAS_CPCE_TEXTE: readonly RegExp[] = [
+  /\bcpce\b/,
+  /\bcode des postes et (?:des )?communications electroniques\b/,
+];
+const ALIAS_CODE_PENAL: readonly RegExp[] = [/\bcode penal\b/];
+
 /** Nom lisible d'un corpus connu, pour les messages de refus. */
 const NOMS_DOCUMENTS: Record<string, string> = {
   "32016R0679": "RGPD",
   "32024R1689": "AI Act",
   LEGITEXT000006068624: "LIL",
+  LEGITEXT000038567662: "décret 2019-536",
+  LEGITEXT000006070719: "Code pénal",
+  LEGITEXT000006070987: "CPCE",
 };
 
 function libelleDocument(document: string): string {
@@ -380,6 +403,9 @@ export function documentsNommes(question: string): string[] {
   if (ALIAS_LIL_TEXTE.some((alias) => alias.test(texte))) {
     documents.add("LEGITEXT000006068624");
   }
+  if (ALIAS_DECRET_2019_536.some((alias) => alias.test(texte))) documents.add("LEGITEXT000038567662");
+  if (ALIAS_CPCE_TEXTE.some((alias) => alias.test(texte))) documents.add("LEGITEXT000006070987");
+  if (ALIAS_CODE_PENAL.some((alias) => alias.test(texte))) documents.add("LEGITEXT000006070719");
   return [...documents];
 }
 
@@ -424,14 +450,20 @@ export function getArticle(
     return { ...avecStatutApplication(article), trouve: true, perimetre };
   }
   // Un instrument connu mais absent du corpus est dit absent, jamais « introuvable » ;
-  // un identifiant inconnu garde le message d'un article manquant.
+  // un texte couvert en partie dit ce qu'il couvre ; un identifiant inconnu garde
+  // le message d'un article manquant.
+  const couverts = articlesCouverts(rootDir).get(normaliserIdentifiant(demande.document));
+  const libelle = documentDeclare(demande.document)?.libelle ?? demande.document;
   return {
     trouve: false,
     document: demande.document,
     numero: String(demande.numero),
     message:
       absenceDuDocument(rootDir, demande.document) ??
-      `Article ${demande.numero} introuvable dans le document ${demande.document}.`,
+      (couverts === undefined
+        ? `Article ${demande.numero} introuvable dans le document ${demande.document}.`
+        : `Article ${demande.numero} hors du corpus : seuls les articles ${couverts.join(", ")} ` +
+          `du ${libelle} (${demande.document}) y figurent.`),
     perimetre,
   };
 }
@@ -465,7 +497,7 @@ export function corpusDeNiveau(demande: { corpus?: string; document?: string }):
 export type SearchDemande = {
   question: string;
   k?: number;
-  /** Restreint la recherche à une collection : `rgpd`, `aiact`, `cnil`, `lil`, `ce`, `cepd`, `cc`, `cjue`. */
+  /** Restreint la recherche à une collection : `rgpd`, `aiact`, `cnil`, `lil`, `textes_fr`, `ce`, `cepd`, `cc`, `cjue`. */
   corpus?: string;
   /** Restreint la recherche à un document précis. */
   document?: string;
@@ -662,6 +694,7 @@ function lireDecision(
   }
 
   const presents = documentsPresents(rootDir);
+  const couverts = articlesCouverts(rootDir);
   const decisions: DecisionTrouvee[] = [...parDocument.entries()]
     .sort((gauche, droite) => gauche[0].localeCompare(droite[0]))
     .map(([identifiant, fragments]) => {
@@ -690,7 +723,7 @@ function lireDecision(
         ...(premier.injonction === undefined ? {} : { injonction: premier.injonction }),
         fragments_total: premiers.length,
         partie,
-        citations: marquerPresence(presents, citationsDesUnites(premiers)),
+        citations: marquerPresence(presents, citationsDesUnites(premiers), couverts),
         decisions_citees: decisionsCitees(rootDir, premier.corpus, identifiant),
         fragments: rendus.map((unite) => ({
           ref: unite.ref,
