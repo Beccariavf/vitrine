@@ -230,7 +230,7 @@ function cheminRefus(rootDir: string, celex: string): string {
 /** Représentations demandées, dans l'ordre : XHTML moderne puis HTML patrimonial. */
 const FORMES = ["application/xhtml+xml", "text/html"] as const;
 
-/** Marqueurs acceptés : `xhtml_absent`, et son ancien nom resté durable. */
+/** Marqueurs acceptés : `xhtml_absent`, et son ancien nom, rejoué s'il est antérieur au repli HTML. */
 const MOTIFS_REFUS = new Set(["xhtml_absent", "version_francaise_absente"]);
 
 /**
@@ -412,7 +412,12 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
 
   let appelsDocuments = 0;
   for (const entree of lues) {
-    if (lireCapture(rootDir, entree.celex) !== null) continue;
+    if (lireCapture(rootDir, entree.celex) !== null) {
+      // Une capture en cache rend caduc un marqueur de refus laissé par une
+      // passe antérieure.
+      rmSync(cheminRefus(rootDir, entree.celex), { force: true });
+      continue;
+    }
     if (lireRefus(rootDir, entree.celex) !== null) {
       ecartes.xhtml_absent += 1;
       documentsEcartes.push({ celex: entree.celex, motif: "xhtml_absent" });

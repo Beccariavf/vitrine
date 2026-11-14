@@ -824,6 +824,41 @@ describe("la synchronisation du corpus CJUE", () => {
     }
   });
 
+  it("efface un marqueur de refus laissé auprès d'une capture en cache", async () => {
+    const racine = racineTemporaire();
+    try {
+      ecrire(racine, `data/raw/cjue/${CELEX_204}.html`, ARRET);
+      ecrire(
+        racine,
+        `data/raw/cjue/${CELEX_204}.absente.json`,
+        JSON.stringify({
+          celex: CELEX_204,
+          motif: "xhtml_absent",
+          formes: ["application/xhtml+xml", "text/html"],
+          date: "2026-11-14",
+        }),
+      );
+      const resultat = await syncCjue({
+        rootDir: racine,
+        date: "2026-11-14",
+        reponseListe: LISTE_204,
+        complementaires: [],
+        fetchImpl: async () => {
+          throw new Error("la capture en cache évite tout téléchargement");
+        },
+      });
+      assert.equal(resultat.appels.documents, 0);
+      assert.equal(resultat.ecartes.xhtml_absent, 0);
+      assert.equal(
+        existsSync(join(racine, "data", "raw", "cjue", `${CELEX_204}.absente.json`)),
+        false,
+        "aucun marqueur orphelin ne survit à une capture",
+      );
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
+  });
+
   it("inclut en anglais une décision de la veille absente de CELLAR", async () => {
     const racine = racineTemporaire();
     try {
