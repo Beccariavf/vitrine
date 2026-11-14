@@ -5,39 +5,40 @@
   "source": "CELLAR / EUR-Lex — SPARQL (dossiers de procédure, affaires pendantes) et communications du Journal officiel en XHTML",
   "date_extraction": "2026-11-14",
   "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
-  "documents": 140,
-  "unites": 140,
+  "documents": 128,
+  "unites": 128,
   "couverture": {
     "source": "CELLAR / EUR-Lex — SPARQL (dossiers de procédure, affaires pendantes) et communications du Journal officiel en XHTML",
     "requetes": {
       "propositions": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT DISTINCT ?dossier ?ref ?statut ?retire ?celex ?date ?titre ?langue ?amendCelex WHERE {\n  { ?celexWork cdm:act_preparatory_initiates_dossier ?dossier }\n  UNION\n  { ?dossier cdm:dossier_contains_work ?celexWork }\n  ?celexWork cdm:resource_legal_type ?type .\n  FILTER(STR(?type) = \"PC\")\n  ?celexWork cdm:resource_legal_id_celex ?celex .\n  ?dossier cdm:procedure_code_interinstitutional_reference_procedure ?ref .\n  OPTIONAL { ?dossier cdm:procedure_code_interinstitutional_has_status_file-status ?statut }\n  OPTIONAL { ?dossier cdm:dossier_withdrawn-proposal ?retire }\n  OPTIONAL { ?celexWork cdm:work_date_document ?date }\n  OPTIONAL { ?celexWork cdm:work_title ?titre . BIND(LANG(?titre) AS ?langue) }\n  OPTIONAL { ?celexWork cdm:resource_legal_proposes_to_amend_resource_legal ?amend . ?amend cdm:resource_legal_id_celex ?amendCelex }\n  BIND(EXISTS { ?celexWork cdm:resource_legal_is_about_subject-matter <http://publications.europa.eu/resource/authority/subject-matter/PDON> } AS ?pdon)\n  FILTER(?pdon = true || STR(?amendCelex) IN (\"32016R0679\",\"32024R1689\",\"32002L0058\",\"32016L0680\",\"32018R1725\",\"32025R2518\",\"32021D0914\"))\n}",
-      "evenements": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT ?dossier ?date ?type WHERE {\n  VALUES ?dossier { <http://publications.europa.eu/resource/cellar/81578e29-3639-11f0-8a44-01aa75ed71a1> <http://publications.europa.eu/resource/cellar/290baa93-c56e-11f0-8da2-01aa75ed71a1> <http://publications.europa.eu/resource/cellar/a5deec97-f75b-11f0-b9bc-01aa75ed71a1> <http://publications.europa.eu/resource/cellar/7e717699-f6af-11f0-b9bc-01aa75ed71a1> <http://publications.europa.eu/resource/cellar/917bbca3-f6e3-11f0-b9bc-01aa75ed71a1> <http://publications.europa.eu/resource/cellar/ac3f9aa4-dbdd-11f0-8da2-01aa75ed71a1> <http://publications.europa.eu/resource/cellar/674c2c05-6f09-11f1-ae88-01aa75ed71a1> <http://publications.europa.eu/resource/cellar/dd597a0b-a9c6-11ec-83e1-01aa75ed71a1> }\n  ?evenement cdm:event_legal_part_of_dossier ?dossier .\n  ?evenement cdm:event_legal_date ?date .\n  OPTIONAL { ?evenement cdm:event_legal_type ?type }\n}",
+      "evenements": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT ?dossier ?date ?type WHERE {\n  VALUES ?dossier { <http://publications.europa.eu/resource/cellar/290baa93-c56e-11f0-8da2-01aa75ed71a1> <http://publications.europa.eu/resource/cellar/674c2c05-6f09-11f1-ae88-01aa75ed71a1> <http://publications.europa.eu/resource/cellar/7e717699-f6af-11f0-b9bc-01aa75ed71a1> <http://publications.europa.eu/resource/cellar/81578e29-3639-11f0-8a44-01aa75ed71a1> <http://publications.europa.eu/resource/cellar/917bbca3-f6e3-11f0-b9bc-01aa75ed71a1> <http://publications.europa.eu/resource/cellar/a5deec97-f75b-11f0-b9bc-01aa75ed71a1> <http://publications.europa.eu/resource/cellar/ac3f9aa4-dbdd-11f0-8da2-01aa75ed71a1> <http://publications.europa.eu/resource/cellar/dd597a0b-a9c6-11ec-83e1-01aa75ed71a1> }\n  ?evenement cdm:event_legal_part_of_dossier ?dossier .\n  ?evenement cdm:event_legal_date ?date .\n  OPTIONAL { ?evenement cdm:event_legal_type ?type }\n}",
       "affaires": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT DISTINCT ?celex ?date ?type ?procedure ?attackedCelex WHERE {\n  ?work cdm:resource_legal_id_celex ?celex .\n  ?work cdm:resource_legal_type ?type .\n  FILTER(STR(?type) = \"CN\" || STR(?type) = \"TN\")\n  ?work cdm:work_date_document ?date .\n  FILTER(STR(?date) >= \"2019-01-01\")\n  ?work cdm:work_is_about_concept_eurovoc ?ev .\n  FILTER(STR(?ev) = \"http://eurovoc.europa.eu/5181\" || STR(?ev) = \"http://eurovoc.europa.eu/5595\")\n  OPTIONAL { ?work cdm:communication_cjeu_has_type_procedure_concept_type_procedure ?procedure }\n  OPTIONAL { ?work cdm:communication_case_new_requests_review_of_decision_case-law ?attacked . ?attacked cdm:resource_legal_id_celex ?attackedCelex }\n}",
       "decisions": {
-        "2019": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT DISTINCT ?celex WHERE {\n  ?work cdm:resource_legal_id_celex ?celex .\n  FILTER(REGEX(STR(?celex), \"^62019(CJ|CO|TJ|TO)\"))\n}",
-        "2020": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT DISTINCT ?celex WHERE {\n  ?work cdm:resource_legal_id_celex ?celex .\n  FILTER(REGEX(STR(?celex), \"^62020(CJ|CO|TJ|TO)\"))\n}",
-        "2021": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT DISTINCT ?celex WHERE {\n  ?work cdm:resource_legal_id_celex ?celex .\n  FILTER(REGEX(STR(?celex), \"^62021(CJ|CO|TJ|TO)\"))\n}",
-        "2022": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT DISTINCT ?celex WHERE {\n  ?work cdm:resource_legal_id_celex ?celex .\n  FILTER(REGEX(STR(?celex), \"^62022(CJ|CO|TJ|TO)\"))\n}",
-        "2023": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT DISTINCT ?celex WHERE {\n  ?work cdm:resource_legal_id_celex ?celex .\n  FILTER(REGEX(STR(?celex), \"^62023(CJ|CO|TJ|TO)\"))\n}",
-        "2024": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT DISTINCT ?celex WHERE {\n  ?work cdm:resource_legal_id_celex ?celex .\n  FILTER(REGEX(STR(?celex), \"^62024(CJ|CO|TJ|TO)\"))\n}",
-        "2025": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT DISTINCT ?celex WHERE {\n  ?work cdm:resource_legal_id_celex ?celex .\n  FILTER(REGEX(STR(?celex), \"^62025(CJ|CO|TJ|TO)\"))\n}",
-        "2026": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT DISTINCT ?celex WHERE {\n  ?work cdm:resource_legal_id_celex ?celex .\n  FILTER(REGEX(STR(?celex), \"^62026(CJ|CO|TJ|TO)\"))\n}"
+        "2019": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT DISTINCT ?celex ?joined WHERE {\n  ?work cdm:resource_legal_id_celex ?celex .\n  FILTER(REGEX(STR(?celex), \"^62019(CJ|CO|TJ|TO)\"))\n  OPTIONAL { ?work cdm:case-law_joins_case_court ?joined }\n}",
+        "2020": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT DISTINCT ?celex ?joined WHERE {\n  ?work cdm:resource_legal_id_celex ?celex .\n  FILTER(REGEX(STR(?celex), \"^62020(CJ|CO|TJ|TO)\"))\n  OPTIONAL { ?work cdm:case-law_joins_case_court ?joined }\n}",
+        "2021": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT DISTINCT ?celex ?joined WHERE {\n  ?work cdm:resource_legal_id_celex ?celex .\n  FILTER(REGEX(STR(?celex), \"^62021(CJ|CO|TJ|TO)\"))\n  OPTIONAL { ?work cdm:case-law_joins_case_court ?joined }\n}",
+        "2022": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT DISTINCT ?celex ?joined WHERE {\n  ?work cdm:resource_legal_id_celex ?celex .\n  FILTER(REGEX(STR(?celex), \"^62022(CJ|CO|TJ|TO)\"))\n  OPTIONAL { ?work cdm:case-law_joins_case_court ?joined }\n}",
+        "2023": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT DISTINCT ?celex ?joined WHERE {\n  ?work cdm:resource_legal_id_celex ?celex .\n  FILTER(REGEX(STR(?celex), \"^62023(CJ|CO|TJ|TO)\"))\n  OPTIONAL { ?work cdm:case-law_joins_case_court ?joined }\n}",
+        "2024": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT DISTINCT ?celex ?joined WHERE {\n  ?work cdm:resource_legal_id_celex ?celex .\n  FILTER(REGEX(STR(?celex), \"^62024(CJ|CO|TJ|TO)\"))\n  OPTIONAL { ?work cdm:case-law_joins_case_court ?joined }\n}",
+        "2025": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT DISTINCT ?celex ?joined WHERE {\n  ?work cdm:resource_legal_id_celex ?celex .\n  FILTER(REGEX(STR(?celex), \"^62025(CJ|CO|TJ|TO)\"))\n  OPTIONAL { ?work cdm:case-law_joins_case_court ?joined }\n}",
+        "2026": "PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>\nSELECT DISTINCT ?celex ?joined WHERE {\n  ?work cdm:resource_legal_id_celex ?celex .\n  FILTER(REGEX(STR(?celex), \"^62026(CJ|CO|TJ|TO)\"))\n  OPTIONAL { ?work cdm:case-law_joins_case_court ?joined }\n}"
       }
     },
     "consulte_le": "2026-11-14",
     "comptes": {
       "propositions": 8,
-      "affaires": 132,
-      "affaires_presumees": 44
+      "affaires": 120,
+      "affaires_presumees": 35
     },
     "presomption_annees": 3,
+    "appariement": "juridiction (C/T) + année + numéro CELEX ; affaires jointes résolues par case-law_joins_case_court",
     "exclusions": {
       "retiree": 1,
-      "adoptee": 14,
+      "adoptee": 13,
       "rejetee": 0,
       "statut_absent": 18,
       "autre": 0,
-      "decision_rendue": 219,
+      "decision_rendue": 231,
       "capture_absente": 0,
       "date_invalide": 0,
       "texte_vide": 0
@@ -65,10 +66,6 @@
       },
       {
         "document": "52017PC0495",
-        "motif": "adoptee"
-      },
-      {
-        "document": "52018PC0636",
         "motif": "adoptee"
       },
       {
@@ -228,6 +225,10 @@
         "motif": "decision_rendue"
       },
       {
+        "document": "62019CN0794",
+        "motif": "decision_rendue"
+      },
+      {
         "document": "62019CN0817",
         "motif": "decision_rendue"
       },
@@ -321,6 +322,10 @@
       },
       {
         "document": "62020CN0534",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62020CN0601",
         "motif": "decision_rendue"
       },
       {
@@ -568,6 +573,10 @@
         "motif": "decision_rendue"
       },
       {
+        "document": "62022CN0018",
+        "motif": "decision_rendue"
+      },
+      {
         "document": "62022CN0026",
         "motif": "decision_rendue"
       },
@@ -581,6 +590,10 @@
       },
       {
         "document": "62022CN0061",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0064",
         "motif": "decision_rendue"
       },
       {
@@ -601,6 +614,10 @@
       },
       {
         "document": "62022CN0182",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62022CN0189",
         "motif": "decision_rendue"
       },
       {
@@ -772,6 +789,14 @@
         "motif": "decision_rendue"
       },
       {
+        "document": "62023CN0316",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023CN0332",
+        "motif": "decision_rendue"
+      },
+      {
         "document": "62023CN0383",
         "motif": "decision_rendue"
       },
@@ -821,6 +846,14 @@
       },
       {
         "document": "62023TN0070",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023TN0084",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62023TN0111",
         "motif": "decision_rendue"
       },
       {
@@ -916,6 +949,10 @@
         "motif": "decision_rendue"
       },
       {
+        "document": "62024CN0685",
+        "motif": "decision_rendue"
+      },
+      {
         "document": "62024CN0798",
         "motif": "decision_rendue"
       },
@@ -965,6 +1002,10 @@
       },
       {
         "document": "62024TN0349",
+        "motif": "decision_rendue"
+      },
+      {
+        "document": "62024TN0362",
         "motif": "decision_rendue"
       },
       {
@@ -1036,6 +1077,10 @@
         "motif": "decision_rendue"
       },
       {
+        "document": "62025TN0607",
+        "motif": "decision_rendue"
+      },
+      {
         "document": "62026TN0071",
         "motif": "decision_rendue"
       },
@@ -1054,14 +1099,6 @@
     ],
     "presumees": [
       {
-        "document": "62022CN0018",
-        "numero": "C-18/22"
-      },
-      {
-        "document": "62022CN0064",
-        "numero": "C-64/22"
-      },
-      {
         "document": "62020CN0148",
         "numero": "C-148/20"
       },
@@ -1074,10 +1111,6 @@
         "numero": "C-150/20"
       },
       {
-        "document": "62022CN0189",
-        "numero": "C-189/22"
-      },
-      {
         "document": "62020CN0215",
         "numero": "C-215/20"
       },
@@ -1088,14 +1121,6 @@
       {
         "document": "62022CN0280",
         "numero": "C-280/22"
-      },
-      {
-        "document": "62023CN0316",
-        "numero": "C-316/23"
-      },
-      {
-        "document": "62023CN0332",
-        "numero": "C-332/23"
       },
       {
         "document": "62021CN0334",
@@ -1126,10 +1151,6 @@
         "numero": "C-563/23"
       },
       {
-        "document": "62020CN0601",
-        "numero": "C-601/20"
-      },
-      {
         "document": "62022CN0672",
         "numero": "C-672/22"
       },
@@ -1142,20 +1163,8 @@
         "numero": "C-701/20"
       },
       {
-        "document": "62019CN0794",
-        "numero": "C-794/19"
-      },
-      {
         "document": "62019TN0001",
         "numero": "T-1/19"
-      },
-      {
-        "document": "62023TN0084",
-        "numero": "T-84/23"
-      },
-      {
-        "document": "62023TN0111",
-        "numero": "T-111/23"
       },
       {
         "document": "62023TN0128",
