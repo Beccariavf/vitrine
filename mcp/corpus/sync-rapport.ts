@@ -14,13 +14,14 @@ import type { CorpusVeille } from "./veille.ts";
 
 /**
  * Sources que `npm run corpus:sync` revérifie sur signal, dans leur ordre
- * d'exécution. Les quatre corpus de veille (`cnil`, `ce`, `cc`, `cjue`) le sont
- * à chaque passe et portent la fraîcheur ; `lil`, `textes_fr` et les corpus
- * d'actes n'y entrent que sur une entrée de veille.
+ * d'exécution. `cnil`, `ce`, `cc` et `cjue` le sont à chaque passe et portent la
+ * fraîcheur ; `constit`, `lil`, `textes_fr` et les corpus d'actes n'y entrent que
+ * sur une entrée de veille.
  */
 export const ORDRE_SOURCES: readonly CorpusVeille[] = [
   "cnil",
   "ce",
+  "constit",
   "cc",
   "cjue",
   "lil",

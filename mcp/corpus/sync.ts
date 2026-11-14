@@ -19,6 +19,7 @@ import type { Embedder } from "../embed/embedder.ts";
 import { classementHorsCorpus } from "./hors-corpus.ts";
 import { syncIncrements } from "./cnil/sync.ts";
 import { syncCe } from "./ce/sync.ts";
+import { syncConstit } from "./constit/sync.ts";
 import { syncCc } from "./cc/sync.ts";
 import { syncCjue } from "./cjue/sync.ts";
 import { syncLil } from "./lil/sync.ts";
@@ -143,6 +144,15 @@ export function agentsParDefaut(
     },
     ce: async () => {
       const resultat = await syncCe({ rootDir });
+      return {
+        ecrit: resultat.ecrit,
+        message: resultat.ignore
+          ? `archive ${resultat.archive} inchangée`
+          : `archive ${resultat.archive}, ${resultat.documents} document(s)`,
+      };
+    },
+    constit: async () => {
+      const resultat = await syncConstit({ rootDir });
       return {
         ecrit: resultat.ecrit,
         message: resultat.ignore
