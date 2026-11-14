@@ -125,6 +125,22 @@ export function estG29(titre: string, url: string, html: string): boolean {
 }
 
 /**
+ * Vrai quand la page de document porte la mention « Public consultation
+ * ongoing/closed » sans « Final version ». La zone lue va du titre au bloc des
+ * documents téléchargeables : le pied de page et les documents voisins ne
+ * comptent pas. Cette mention est le seul signal de version de consultation
+ * pour les pages dont le titre ne le dit pas.
+ */
+export function consultationDepuisPage(html: string): boolean {
+  const debut = html.search(/document-full__title|<h1/i);
+  if (debut < 0) return false;
+  const fin = html.indexOf("Downloadable documents", debut);
+  const zone = html.slice(debut, fin > debut ? fin : debut + 20_000);
+  if (/Final version|after public consultation/i.test(zone)) return false;
+  return /Public consultation (?:ongoing|closed)/i.test(zone);
+}
+
+/**
  * Enrichit une entrée de sitemap avec le titre, la date, le PDF courant et la
  * version lus sur sa page. Le PDF français est préféré ; les PDF de
  * consultation sont écartés dès qu'un PDF courant existe. Une ligne directrice
@@ -140,7 +156,15 @@ export function enrichirDocument(document: DocumentListe, html: string): Documen
     document.type === "lignes_directrices" && estG29(titre, document.url, html)
       ? "g29_repris"
       : document.type;
-  return { ...document, type, titre, date, pdfUrl, version };
+  return {
+    ...document,
+    type,
+    titre,
+    date,
+    pdfUrl,
+    version,
+    consultation: consultationDepuisPage(html),
+  };
 }
 
 /** Version explicite du titre ou du nom de PDF, par exemple `2.0` ou `rev01`. */
@@ -180,7 +204,9 @@ export function preparerDocument(document: DocumentListe): DocumentPrepare {
     slug: slugDe(document.url),
     numero: numeroDepuisTitre(document.titre, document.type, source),
     date: dateDocument(document),
-    statut: statutDepuisTitre(document.titre),
+    // La page de consultation prime sur le titre : un document peut s'appeler
+    // « Guidelines 02/2026 » et n'être encore qu'une version de consultation.
+    statut: document.consultation === true ? "projet" : statutDepuisTitre(document.titre),
     version: document.version ?? versionDepuisTitre(document.titre, source),
   };
 }

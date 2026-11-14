@@ -9,6 +9,7 @@ import {
   chargerTexte,
   extraireDocuments,
   listerDocuments,
+  listerDocumentsG29,
   listerDocumentsSitemap,
   listerDocumentsWayback,
   normaliserUrlWayback,
@@ -24,6 +25,7 @@ import type {
 } from "../mcp/corpus/cepd/liste.ts";
 import {
   choisirVersions,
+  consultationDepuisPage,
   dateDocument,
   enrichirDocument,
   estG29,
@@ -218,6 +220,34 @@ describe("la liste CEPD", () => {
     assert.equal(parType.get("avis_art64")?.url.endsWith("_fr"), true);
     assert.equal(parType.get("decision_art65")?.langue, "en");
     assert.equal(parType.get("recommandation")?.langue, "fr");
+  });
+
+  it("lit la liste d'endossement du G29 et l'hébergement de chaque document", () => {
+    const html = [
+      '<a href="/our-work-tools/our-documents/guidelines/edpb-guidelines-052020-consent-under-regulation-2016679_en">',
+      "Guidelines on consent under Regulation 2016/679, WP259 rev.01</a>",
+      '<a href="http://ec.europa.eu/newsroom/article29/item-detail.cfm?item_id=611236">',
+      "Guidelines on Data Protection Impact Assessment (DPIA), WP248</a>",
+      '<a href="https://www.edpb.europa.eu/system/files/endorsement.pdf">',
+      "Endorsement of GDPR WP29 Documents</a>",
+      '<a href="/about-edpb/legacy-art-29-working-party_en">Legacy: Art. 29 Working Party</a>',
+    ].join("");
+    const items = listerDocumentsG29(
+      html,
+      "https://www.edpb.europa.eu/endorsed-wp29-guidelines_en",
+    );
+
+    assert.equal(items.length, 2);
+    assert.deepEqual(items[0], {
+      titre: "Guidelines on consent under Regulation 2016/679, WP259 rev.01",
+      url: `${BASE}/our-work-tools/our-documents/guidelines/edpb-guidelines-052020-consent-under-regulation-2016679_en`,
+      wp: "WP259",
+      numero: "05/2020",
+      hebergement: "cepd",
+    });
+    assert.equal(items[1]?.wp, "WP248");
+    assert.equal(items[1]?.hebergement, "commission");
+    assert.equal(items[1]?.numero, null);
   });
 
   it("ne garde du sitemap que les URL _fr et _en des rubriques retenues", async () => {
@@ -585,6 +615,23 @@ describe("le PDF CEPD", () => {
     assert.equal(languePdf(`${BASE}/system/files/documents/x_en_0.pdf`), "en");
     assert.equal(languePdf(`${BASE}/system/files/documents/x_fr_0.pdf`), "fr");
     assert.equal(languePdf(`${BASE}/system/files/documents/x.pdf`), "autre");
+    // Le code pays `_fr_` avant le marqueur terminal ne fait pas la langue.
+    assert.equal(
+      languePdf(`${BASE}/system/files/edpb_opinion_242026_fr_sa_michelin_bcr-c_en_0.pdf`),
+      "en",
+    );
+    assert.equal(
+      languePdf(`${BASE}/system/files/edpb_opinion_201913_fr_35.5_dpia_list_en.pdf`),
+      "en",
+    );
+    assert.equal(
+      languePdf(`${BASE}/system/files/2026-06/edpb-opinion-202327-tessi-bcr-p-fr.pdf`),
+      "fr",
+    );
+    assert.equal(
+      languePdf(`${BASE}/system/files/2021-07/edpb_opinion_cgi_bcr-p_en_0.pdf`),
+      "en",
+    );
   });
 
   it("enrichit une page de sitemap avec titre, date, version et PDF", () => {
@@ -642,6 +689,38 @@ describe("le PDF CEPD", () => {
       `${piedDePage}<h1>Article 29 Working Party - Guidelines on transparency</h1>`,
     );
     assert.equal(enrichi.type, "g29_repris");
+  });
+
+  it("lit la mention de consultation de la page, pas le titre seul", () => {
+    const projet = [
+      '<h1 id="document-full-title">Guidelines 02/2026 on Anonymisation</h1>',
+      '<time datetime="2026-07-08T12:00:00Z">8 July 2026</time>',
+      '<p>Guideline 08 July 2026 Public consultation closed</p>',
+      "<h2>Downloadable documents</h2>",
+      '<a href="/system/files/g022026_en.pdf">PDF</a>',
+    ].join("");
+    const finale = [
+      '<h1 id="document-full-title">Lignes directrices 9/2022</h1>',
+      "<p>Directives 04 avril 2023 Final version</p>",
+      "<p>Accéder à la consultation publique correspondante</p>",
+      "<h2>Downloadable documents</h2>",
+    ].join("");
+    assert.equal(consultationDepuisPage(projet), true);
+    assert.equal(consultationDepuisPage(finale), false);
+
+    const prepare = preparerDocument(
+      enrichirDocument(
+        {
+          type: "lignes_directrices",
+          url: `${BASE}/documents/guideline/guidelines-022026-on-anonymisation_en`,
+          titre: "",
+          date: null,
+          pdfUrl: null,
+        },
+        projet,
+      ),
+    );
+    assert.equal(prepare.statut, "projet");
   });
 
   it("donne à chaque type son étage de chemin", () => {
@@ -849,11 +928,36 @@ describe("la synchronisation CEPD", () => {
     );
     assert.equal(manifeste.documents_sans_texte_ecartes, 10);
     assert.equal(manifeste.versions_ecartees, 3);
-    assert.equal(manifeste.couverture.documents_ecartes.length, 13);
-    assert.deepEqual(manifeste.langues_pdf, { fr: 156, en: 172, autre: 0 });
+    assert.equal(manifeste.couverture.documents_ecartes.length, 21);
+    assert.equal(
+      manifeste.couverture.documents_ecartes.filter(
+        (document) => document.source === "endossement",
+      ).length,
+      8,
+    );
+    assert.deepEqual(manifeste.langues_pdf, { fr: 154, en: 174, autre: 0 });
     assert.equal(manifeste.couverture.periode.date_min, "2018-04-11");
     assert.equal(manifeste.couverture.periode.date_max, "2026-11-10");
     assert.match(manifeste.licence, /Régime ouvert/);
+    assert.deepEqual(manifeste.g29?.comptes, { listes: 14, retenus: 5, ecartes: 9 });
+    assert.equal(
+      manifeste.g29?.documents.find((document) => document.wp === "WP260")?.type,
+      "g29_repris",
+    );
+    assert.equal(
+      manifeste.documents_types["guidelines-052020-on-consent-under-regulation-2016679"],
+      "lignes_directrices",
+    );
+    assert.equal(
+      unites.filter((unite) => unite.statut === "projet").length,
+      1634,
+    );
+    assert.equal(
+      new Set(
+        unites.filter((unite) => unite.statut === "projet").map((unite) => unite.document),
+      ).size,
+      9,
+    );
     assert.ok(
       manifeste.couverture.documents_ecartes.every(
         (document) => document.raison.trim() !== "",
@@ -913,6 +1017,84 @@ describe("la synchronisation CEPD", () => {
       });
       assert.equal(manifeste.types_retenus.includes("avis_art64"), true);
       assert.match(unites[0]?.chemin ?? "", /^CEPD > Avis art\. 64 > /);
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
+  });
+
+  it("rapproche la liste d'endossement du G29 et consigne les documents hors site", async () => {
+    const racine = racineTemporaire();
+    const consentement =
+      `${BASE}/documents/guideline/guidelines-052020-on-consent-under-regulation-2016679_fr`;
+    // Un avis homonyme 05/2020 ne doit pas capter le document du G29.
+    const avis =
+      `${BASE}/documents/opinion-of-the-board-art-64/opinion-052020-on-a-draft-decision_en`;
+    const endossement = [
+      '<a href="/our-work-tools/our-documents/guidelines/edpb-guidelines-052020-consent-under-regulation-2016679_en">',
+      "Guidelines on consent under Regulation 2016/679, WP259 rev.01</a>",
+      '<a href="https://ec.europa.eu/newsroom/article29/items/611236">',
+      "Guidelines on Data Protection Impact Assessment (DPIA), WP248</a>",
+    ].join("");
+    const pages = new Map<string, string>([
+      [DESCRIPTEUR.url_sitemap, SITEMAP_INDEX],
+      [
+        `${DESCRIPTEUR.url_sitemap}?page=1`,
+        `<urlset><url><loc>${consentement}</loc></url><url><loc>${avis}</loc></url></urlset>`,
+      ],
+      [
+        consentement,
+        pageDocumentHtml(
+          "05/2020 sur le consentement",
+          "2020-05-04",
+          "/system/files/documents/2020/g052020_fr.pdf",
+        ),
+      ],
+      [
+        avis,
+        [
+          "<html><body><main>",
+          "<h1>Opinion 05/2020 on a draft decision</h1>",
+          '<time datetime="2020-05-04T12:00:00Z">4 May 2020</time>',
+          '<a href="/system/files/documents/2020/opinion_052020_en.pdf">Download</a>',
+          "</main></body></html>",
+        ].join(""),
+      ],
+      [DESCRIPTEUR.url_endossement ?? "", endossement],
+    ]);
+    try {
+      await syncCePd({
+        rootDir: racine,
+        date: DATE,
+        fetchHtml: fauxHtml(pages),
+        fetchPdf: fauxPdf(PDF),
+        extraireTexte: async () => TEXTE,
+        attendre: async () => {},
+        tentatives: 1,
+      });
+      const manifeste = JSON.parse(
+        readFileSync(join(racine, "data", "corpus", "cepd", "manifest.json"), "utf8"),
+      ) as ManifesteCePd;
+
+      assert.equal(manifeste.g29?.comptes.listes, 2);
+      assert.equal(manifeste.g29?.comptes.retenus, 1);
+      assert.equal(manifeste.g29?.comptes.ecartes, 1);
+      assert.equal(manifeste.g29?.documents[0]?.statut, "retenu");
+      assert.equal(
+        manifeste.g29?.documents[0]?.document,
+        "guidelines-052020-on-consent-under-regulation-2016679",
+      );
+      assert.equal(manifeste.g29?.documents[1]?.statut, "ecarte");
+      assert.match(manifeste.g29?.documents[1]?.raison ?? "", /hors du site du CEPD/);
+      const wp248 = manifeste.couverture.documents_ecartes.find(
+        (document) => document.slug === "wp248",
+      );
+      assert.equal(wp248?.source, "endossement");
+      assert.equal(wp248?.type, "g29_repris");
+      assert.equal(manifeste.documents, 2);
+      assert.deepEqual(manifeste.documents_types, {
+        "guidelines-052020-on-consent-under-regulation-2016679": "lignes_directrices",
+        "opinion-052020-on-a-draft-decision": "avis_art64",
+      });
     } finally {
       rmSync(racine, { recursive: true, force: true });
     }

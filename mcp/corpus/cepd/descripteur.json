@@ -4,6 +4,7 @@
   "titre": "Documents du Comité européen de la protection des données",
   "url_liste": "https://www.edpb.europa.eu/our-work-tools/our-documents/publication-type/guidelines_fr",
   "url_sitemap": "https://www.edpb.europa.eu/sitemap.xml",
+  "url_endossement": "https://www.edpb.europa.eu/endorsed-wp29-guidelines_en",
   "pages_sitemap": 5,
   "langue": "fr",
   "types": ["lignes_directrices", "avis_art64", "decision_art65", "recommandation"],

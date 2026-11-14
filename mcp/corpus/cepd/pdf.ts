@@ -10,7 +10,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, statSync, writ
 import { dirname } from "node:path";
 import { extractText } from "unpdf";
 import { MAX_FRAGMENT } from "../cnil/parse.ts";
-import { ErreurHttp, normaliserUrlWayback } from "./liste.ts";
+import { AGENT, ErreurHttp, normaliserUrlWayback } from "./liste.ts";
 import type { OptionsHttp } from "./liste.ts";
 
 /** Réponse binaire minimale d'un `fetch`, injectable en test. */
@@ -48,7 +48,11 @@ export class ErreurPdf extends Error {
 /** Langue d'un PDF, lue sur son nom de fichier. */
 export type LanguePdf = "fr" | "en" | "autre";
 
-/** Langue d'un PDF : `fr`, `en` ou `autre`. */
+/**
+ * Langue d'un PDF : `fr`, `en` ou `autre`. Seul le marqueur terminal compte :
+ * `edpb_opinion_242026_fr_sa_michelin_bcr-c_en_0.pdf` est anglais, malgré le
+ * `_fr_` qui désigne le pays de l'autorité et non la langue du document.
+ */
 export function languePdf(url: string): LanguePdf {
   let chemin: string;
   try {
@@ -56,9 +60,11 @@ export function languePdf(url: string): LanguePdf {
   } catch {
     return "autre";
   }
-  const nom = chemin.split("/").at(-1) ?? "";
-  if (/[_-]fr(?:[_-]|\.pdf$)/i.test(nom)) return "fr";
-  if (/[_-]en(?:[_-]|\.pdf$)/i.test(nom)) return "en";
+  const nom = (chemin.split("/").at(-1) ?? "")
+    .replace(/\.pdf$/i, "")
+    .replace(/_\d+$/i, "");
+  if (/(?:^|[_-])fr$/i.test(nom)) return "fr";
+  if (/(?:^|[_-])en$/i.test(nom)) return "en";
   return "autre";
 }
 
@@ -152,7 +158,12 @@ export async function telechargerPdf(
     return new Uint8Array(readFileSync(chemin));
   }
 
-  const fetchImpl = options.fetchPdf ?? (fetch as unknown as FetchPdf);
+  const fetchImpl =
+    options.fetchPdf ??
+    ((adresse: string) =>
+      fetch(adresse, {
+        headers: { "user-agent": AGENT, accept: "application/pdf" },
+      }) as unknown as ReturnType<FetchPdf>);
   const tentatives = options.tentatives ?? 3;
   const delai = options.delaiMs ?? 2000;
   const attendre = options.attendre ?? attendreMs;

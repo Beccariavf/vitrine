@@ -11,6 +11,14 @@
 
 import { texteVisible } from "../parse.ts";
 
+/** User-agent générique des requêtes du corpus, sans identité personnelle. */
+export const AGENT = "vitrine/1.0 (+https://github.com/Beccariavf/vitrine)";
+
+/** `fetch` par défaut, avec le user-agent du corpus. */
+function fetchAgent(url: string, accept: string): ReturnType<typeof fetch> {
+  return fetch(url, { headers: { "user-agent": AGENT, accept } });
+}
+
 /** Type de document retenu, tel qu'il paraît au manifeste et dans le chemin. */
 export type TypeDocument =
   | "lignes_directrices"
@@ -57,6 +65,20 @@ export function typeDepuisChemin(pathname: string): TypeDocument | null {
 /** Langue d'une page de sitemap, lue sur son suffixe. */
 export type LanguePage = "fr" | "en";
 
+/** Hébergement d'un document de la liste d'endossement du G29. */
+export type HebergementG29 = "cepd" | "commission" | "autre";
+
+/** Un document de la liste d'endossement du G29, avant rapprochement au corpus. */
+export type DocumentG29Liste = {
+  titre: string;
+  url: string;
+  /** Numéro WP quand le titre le porte, par exemple `WP260`. */
+  wp: string | null;
+  /** Numéro EDPB déduit de l'URL liée, par exemple `05/2020`. */
+  numero: string | null;
+  hebergement: HebergementG29;
+};
+
 /** Un document listé, avant enrichissement depuis sa page. */
 export type DocumentListe = {
   type: TypeDocument;
@@ -71,6 +93,8 @@ export type DocumentListe = {
   version?: string | null;
   /** Langue de la page retenue, quand la liste la connaît. */
   langue?: LanguePage;
+  /** Vrai quand la page sert une version soumise à consultation publique. */
+  consultation?: boolean;
 };
 
 /** Une tentative HTTP, consignée pour le rapport de blocage. */
@@ -103,6 +127,8 @@ export type DescripteurCePd = {
   url_liste: string;
   /** Index des sitemaps ; source primaire des pages `_fr` et `_en`. */
   url_sitemap: string;
+  /** Page d'endossement des documents du G29 par le CEPD. */
+  url_endossement?: string;
   /** Nombre de pages de sitemap essayées si l'index est illisible. */
   pages_sitemap: number;
   /** Langue préférée des pages retenues ; l'autre langue sert de repli. */
@@ -390,7 +416,12 @@ function attendreMs(ms: number): Promise<void> {
 
 /** Requête texte avec trois tentatives sur 429 et 503. */
 export async function chargerTexte(url: string, options: OptionsHttp = {}): Promise<string> {
-  const fetchImpl = options.fetchHtml ?? (fetch as unknown as FetchHtml);
+  const fetchImpl =
+    options.fetchHtml ??
+    ((adresse: string) =>
+      fetchAgent(adresse, "text/html,application/xml;q=0.9,*/*;q=0.8") as unknown as ReturnType<
+        FetchHtml
+      >);
   const tentatives = options.tentatives ?? 3;
   const delai = options.delaiMs ?? 2000;
   const attendre = options.attendre ?? attendreMs;
@@ -412,7 +443,10 @@ export async function chargerTexte(url: string, options: OptionsHttp = {}): Prom
 
 /** Requête JSON avec trois tentatives sur 429 et 503. */
 async function chargerJson(url: string, options: OptionsHttp = {}): Promise<unknown> {
-  const fetchImpl = options.fetchJson ?? (fetch as unknown as FetchJson);
+  const fetchImpl =
+    options.fetchJson ??
+    ((adresse: string) =>
+      fetchAgent(adresse, "application/json") as unknown as ReturnType<FetchJson>);
   const tentatives = options.tentatives ?? 3;
   const delai = options.delaiMs ?? 2000;
   const attendre = options.attendre ?? attendreMs;
@@ -604,6 +638,67 @@ export async function listerDocumentsWayback(
 
 function locs(xml: string): string[] {
   return [...xml.matchAll(/<loc>([^<]+)<\/loc>/gi)].map((trouve) => (trouve[1] ?? "").trim());
+}
+
+/** Numéro EDPB porté par une URL liée, par exemple `guidelines-052020` → `05/2020`. */
+export function numeroDepuisUrlG29(url: string): string | null {
+  let chemin: string;
+  try {
+    chemin = new URL(url).pathname;
+  } catch {
+    return null;
+  }
+  const trouve = /(?:guidelines?|recommendations?)[-_]?(\d{1,2})[-_]?(\d{4})/i.exec(chemin);
+  if (trouve?.[1] === undefined || trouve[2] === undefined) return null;
+  return `${String(Number(trouve[1])).padStart(2, "0")}/${trouve[2]}`;
+}
+
+/**
+ * Lit la page d'endossement du G29 : chaque ligne nomme un document du groupe
+ * Article 29 et pointe la page du CEPD ou l'archive de la Commission. Le
+ * corpus ne reprend que les documents servis par le CEPD ; les autres sont
+ * consignés avec leur hébergement.
+ */
+export function listerDocumentsG29(html: string, pageUrl: string): DocumentG29Liste[] {
+  const documents = new Map<string, DocumentG29Liste>();
+  const motif = /<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a\s*>/gi;
+  for (let trouve = motif.exec(html); trouve !== null; trouve = motif.exec(html)) {
+    const texte = texteVisible(trouve[2] ?? "").replace(/\s+/g, " ").trim();
+    if (texte === "" || texte.length > 400) continue;
+    if (
+      !/^(?:guidelines?|recommendations?|position paper|working document|adequacy referential|endorsement)\b/i.test(
+        texte,
+      ) &&
+      !/\bwp\s?\d{2,4}\b/i.test(texte)
+    ) {
+      continue;
+    }
+    if (/endorsement of gdpr|legacy|read more|télécharger|download/i.test(texte)) continue;
+    let url: URL;
+    try {
+      url = new URL(normaliserUrlWayback(trouve[1] ?? ""), pageUrl);
+    } catch {
+      continue;
+    }
+    if (url.protocol !== "https:" && url.protocol !== "http:") continue;
+    const hote = url.hostname.toLowerCase();
+    const hebergement: HebergementG29 = hote.endsWith("edpb.europa.eu")
+      ? "cepd"
+      : hote.endsWith("ec.europa.eu") || hote.endsWith("europa.eu")
+        ? "commission"
+        : "autre";
+    const wp = /\bwp\s?(\d{2,4})\b/i.exec(texte)?.[1];
+    const document: DocumentG29Liste = {
+      titre: texte,
+      url: url.href,
+      wp: wp === undefined ? null : `WP${String(Number(wp))}`,
+      numero: numeroDepuisUrlG29(url.href),
+      hebergement,
+    };
+    const cle = `${document.wp ?? ""}|${document.titre.toLowerCase()}`;
+    if (!documents.has(cle)) documents.set(cle, document);
+  }
+  return [...documents.values()];
 }
 
 /**
