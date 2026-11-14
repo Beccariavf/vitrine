@@ -50,8 +50,7 @@ export type EtatCe = {
   archive: string | null;
   sha256: string | null;
   lu_le: string | null;
-  date_min: string | null;
-  /** Empreinte du filtre (borne, juridiction, exclusions, mots-clés). */
+  /** Empreinte du filtre (juridiction, exclusions, mots-clés). */
   filtre_sha256: string | null;
 };
 
@@ -59,7 +58,6 @@ export const ETAT_VIDE: EtatCe = {
   archive: null,
   sha256: null,
   lu_le: null,
-  date_min: null,
   filtre_sha256: null,
 };
 
@@ -71,7 +69,7 @@ export type Exclusions = {
 /** Comptes d'un fonds JADE : publié au recueil ou inédit. */
 export type CompteFonds = {
   documents_lus: number;
-  decisions_ce_depuis_2014: number;
+  decisions_ce: number;
   documents: number;
   fragments: number;
   /** Entrées dont l'identifiant avait déjà été lu dans l'autre fonds. */
@@ -88,14 +86,13 @@ export type ManifesteCe = {
   archive_sha256: string;
   archive_url: string;
   date_extraction: string;
-  date_min: string;
   mots_cles: string[];
   juridiction: string;
   licence: string;
   /** Entrées XML lues dans l'archive, toutes juridictions confondues. */
   documents_lus: number;
-  /** Décisions du Conseil d'État datées au moins du `date_min`, avant mots-clés. */
-  decisions_ce_depuis_2014: number;
+  /** Décisions du Conseil d'État valablement datées, toutes dates, avant mots-clés (doublons de fonds compris). */
+  decisions_ce: number;
   /** Décisions retenues après filtrage. */
   documents: number;
   fragments: number;
@@ -105,7 +102,7 @@ export type ManifesteCe = {
   couverture: {
     source: string;
     archive: string;
-    periode: { date_min: string; date_max: string | null };
+    periode: { date_min: string | null; date_max: string | null };
     juridiction: string;
     mots_cles: string[];
     /** Comptes par fonds : `publie` et `inedit`. */
@@ -119,7 +116,6 @@ export type SyncCeOptions = {
   descripteurPath?: string;
   /** Archive locale ; par défaut, la plus récente de la liste DILA est téléchargée. */
   archive?: string;
-  dateMin?: string;
   dryRun?: boolean;
   /** Date d'extraction consignée ; par défaut, le jour courant. */
   date?: string;
@@ -137,7 +133,7 @@ export type ResultatCe = {
   ignore: boolean;
   ecrit: boolean;
   documentsLus: number;
-  decisionsCeDepuis2014: number;
+  decisionsCe: number;
   documents: number;
   fragments: number;
   doublons: number;
@@ -243,15 +239,14 @@ export function dateDuJour(instant = new Date()): string {
   return instant.toISOString().slice(0, 10);
 }
 
-/** Empreinte de la configuration : changer un fonds, un titre, un mot-clé ou la borne force une relecture. */
-export function empreinteFiltre(descripteur: DescripteurCe, dateMin: string): string {
+/** Empreinte de la configuration : changer un fonds, un titre ou un mot-clé force une relecture. */
+export function empreinteFiltre(descripteur: DescripteurCe): string {
   return createHash("sha256")
     .update(
       JSON.stringify({
-        version: 3,
+        version: 4,
         fonds: ["publie", "inedit"],
         titre: descripteur.titre,
-        date_min: dateMin,
         juridiction: descripteur.juridiction,
         juridictions_exclues: descripteur.juridictions_exclues,
         mots_cles: descripteur.mots_cles,
@@ -265,7 +260,7 @@ export function empreinteFiltre(descripteur: DescripteurCe, dateMin: string): st
 export function compteFondsVide(): CompteFonds {
   return {
     documents_lus: 0,
-    decisions_ce_depuis_2014: 0,
+    decisions_ce: 0,
     documents: 0,
     fragments: 0,
     doublons: 0,
@@ -280,15 +275,15 @@ export function manifesteCe(
   archiveUrl: string,
   sha256: string,
   dateExtraction: string,
-  dateMin: string,
   comptes: {
     documentsLus: number;
-    decisionsCeDepuis2014: number;
+    decisionsCe: number;
     documents: number;
     fragments: number;
     doublons: number;
     ecartes: Ecartes;
     parFonds: Record<Fonds, CompteFonds>;
+    dateMin: string | null;
     dateMax: string | null;
   },
 ): ManifesteCe {
@@ -300,12 +295,11 @@ export function manifesteCe(
     archive_sha256: sha256,
     archive_url: archiveUrl,
     date_extraction: dateExtraction,
-    date_min: dateMin,
     mots_cles: descripteur.mots_cles,
     juridiction: descripteur.juridiction,
     licence: descripteur.licence,
     documents_lus: comptes.documentsLus,
-    decisions_ce_depuis_2014: comptes.decisionsCeDepuis2014,
+    decisions_ce: comptes.decisionsCe,
     documents: comptes.documents,
     fragments: comptes.fragments,
     doublons: comptes.doublons,
@@ -313,7 +307,7 @@ export function manifesteCe(
     couverture: {
       source: "DILA — JADE (OPENDATA), fonds publie et inedit",
       archive,
-      periode: { date_min: dateMin, date_max: comptes.dateMax },
+      periode: { date_min: comptes.dateMin, date_max: comptes.dateMax },
       juridiction: descripteur.juridiction,
       mots_cles: descripteur.mots_cles,
       fonds: comptes.parFonds,
@@ -336,24 +330,21 @@ function lireManifeste(chemin: string): ManifesteCe | null {
 }
 
 /**
- * Synchronise le corpus CE. Une archive identique (nom, empreinte et borne) est
+ * Synchronise le corpus CE. Une archive identique (nom et empreinte) est
  * ignorée ; sinon l'archive est lue en flux, les décisions sont filtrées, puis
- * le corpus est validé et écrit. Un `--dry-run` ne crée aucun fichier.
+ * le corpus est validé et écrit. Aucune borne de date n'est appliquée. Un
+ * `--dry-run` ne crée aucun fichier.
  */
 export async function syncCe(options: SyncCeOptions = {}): Promise<ResultatCe> {
   const rootDir = options.rootDir ?? RACINE;
   const descripteur = lireDescripteurCe(
     options.descripteurPath ?? join(ICI, "descripteur.json"),
   );
-  const dateMin = options.dateMin ?? descripteur.date_min;
-  if (!DATE_ISO.test(dateMin) || Number.isNaN(Date.parse(dateMin))) {
-    throw new Error(`Borne de date attendue AAAA-MM-JJ ; reçu « ${dateMin} »`);
-  }
   const dateExtraction = options.date ?? dateDuJour();
   if (!DATE_ISO.test(dateExtraction) || Number.isNaN(Date.parse(dateExtraction))) {
     throw new Error(`Date d'extraction attendue AAAA-MM-JJ ; reçue « ${dateExtraction} »`);
   }
-  const filtreSha256 = empreinteFiltre(descripteur, dateMin);
+  const filtreSha256 = empreinteFiltre(descripteur);
 
   const cheminEtat = join(rootDir, DOSSIER_CORPUS, "etat.json");
   const cheminUnites = join(rootDir, DOSSIER_CORPUS, "unites.jsonl");
@@ -402,7 +393,6 @@ export async function syncCe(options: SyncCeOptions = {}): Promise<ResultatCe> {
   if (
     etat.archive === archive &&
     etat.sha256 === sha256 &&
-    etat.date_min === dateMin &&
     etat.filtre_sha256 === filtreSha256 &&
     manifesteExistant !== null &&
     existsSync(cheminUnites)
@@ -414,7 +404,7 @@ export async function syncCe(options: SyncCeOptions = {}): Promise<ResultatCe> {
       ignore: true,
       ecrit: false,
       documentsLus: manifesteExistant.documents_lus,
-      decisionsCeDepuis2014: manifesteExistant.decisions_ce_depuis_2014,
+      decisionsCe: manifesteExistant.decisions_ce,
       documents: manifesteExistant.documents,
       fragments: manifesteExistant.fragments,
       doublons: manifesteExistant.doublons,
@@ -431,8 +421,9 @@ export async function syncCe(options: SyncCeOptions = {}): Promise<ResultatCe> {
   const unites: Unite[] = [];
   const identifiantsVus = new Set<string>();
   let documentsLus = 0;
-  let decisionsCeDepuis2014 = 0;
+  let decisionsCe = 0;
   let doublons = 0;
+  let dateMin: string | null = null;
   let dateMax: string | null = null;
 
   for await (const entree of lireEntreesJade(createReadStream(cheminArchive), {
@@ -456,14 +447,13 @@ export async function syncCe(options: SyncCeOptions = {}): Promise<ResultatCe> {
     if (
       estConseilEtat(decision.juridiction, descripteur) &&
       DATE_ISO.test(decision.date) &&
-      !Number.isNaN(Date.parse(decision.date)) &&
-      decision.date >= dateMin
+      !Number.isNaN(Date.parse(decision.date))
     ) {
-      decisionsCeDepuis2014 += 1;
-      compte.decisions_ce_depuis_2014 += 1;
+      decisionsCe += 1;
+      compte.decisions_ce += 1;
     }
 
-    const verdict = classerDecision(decision, descripteur, dateMin);
+    const verdict = classerDecision(decision, descripteur);
     if (!verdict.retenue) {
       ecartes[verdict.motif] += 1;
       compte.ecartes[verdict.motif] += 1;
@@ -475,6 +465,7 @@ export async function syncCe(options: SyncCeOptions = {}): Promise<ResultatCe> {
     for (const unite of nouvelles) {
       unites.push(unite);
       if (dateMax === null || unite.date_acte > dateMax) dateMax = unite.date_acte;
+      if (dateMin === null || unite.date_acte < dateMin) dateMin = unite.date_acte;
     }
   }
 
@@ -487,15 +478,15 @@ export async function syncCe(options: SyncCeOptions = {}): Promise<ResultatCe> {
     archiveUrl,
     sha256,
     dateExtraction,
-    dateMin,
     {
       documentsLus,
-      decisionsCeDepuis2014,
+      decisionsCe,
       documents,
       fragments: unites.length,
       doublons,
       ecartes,
       parFonds,
+      dateMin,
       dateMax,
     },
   );
@@ -503,7 +494,6 @@ export async function syncCe(options: SyncCeOptions = {}): Promise<ResultatCe> {
     archive,
     sha256,
     lu_le: dateExtraction,
-    date_min: dateMin,
     filtre_sha256: filtreSha256,
   };
 
@@ -528,7 +518,7 @@ export async function syncCe(options: SyncCeOptions = {}): Promise<ResultatCe> {
     ignore: false,
     ecrit,
     documentsLus,
-    decisionsCeDepuis2014,
+    decisionsCe,
     documents,
     fragments: unites.length,
     doublons,
@@ -546,7 +536,6 @@ function valeurDe(nom: string, argv: string[]): string | undefined {
 async function main(argv: string[]): Promise<void> {
   const dryRun = argv.includes("--dry-run");
   const archive = valeurDe("--archive", argv);
-  const dateMin = valeurDe("--date-min", argv);
   const rootDir = valeurDe("--root", argv);
   const descripteur = valeurDe("--descripteur", argv);
   const date = valeurDe("--date", argv);
@@ -555,7 +544,6 @@ async function main(argv: string[]): Promise<void> {
     ...(rootDir === undefined ? {} : { rootDir }),
     ...(descripteur === undefined ? {} : { descripteurPath: descripteur }),
     ...(archive === undefined ? {} : { archive }),
-    ...(dateMin === undefined ? {} : { dateMin }),
     ...(date === undefined ? {} : { date }),
     dryRun,
   });
@@ -564,7 +552,7 @@ async function main(argv: string[]): Promise<void> {
     ? `archive déjà lue, rien relu (${resultat.documents} décisions, ` +
       `${resultat.fragments} fragments au manifeste)`
     : `${resultat.documentsLus} entrées lues, ` +
-      `${resultat.decisionsCeDepuis2014} décisions CE depuis la borne, ` +
+      `${resultat.decisionsCe} décisions CE toutes dates, ` +
       `${resultat.documents} retenues, ${resultat.fragments} fragments ; ` +
       `fonds ${Object.entries(resultat.parFonds)
         .map(([fonds, compte]) => `${fonds}=${compte.documents}/${compte.fragments}`)

@@ -5,8 +5,7 @@
   "archive": "Freemium_jade_global_20261108-140000.tar.gz",
   "archive_sha256": "87ab671358a374b4380e203d51418450e46935ea11f16439445b52b2f9c25297",
   "archive_url": "https://echanges.dila.gouv.fr/OPENDATA/JADE/Freemium_jade_global_20261108-140000.tar.gz",
-  "date_extraction": "2026-11-09",
-  "date_min": "2014-01-01",
+  "date_extraction": "2026-11-14",
   "mots_cles": [
     "données personnelles",
     "données à caractère personnel",
@@ -20,22 +19,21 @@
   "juridiction": "Conseil d'État",
   "licence": "Licence Ouverte 2.0 (Etalab)",
   "documents_lus": 573525,
-  "decisions_ce_depuis_2014": 36191,
-  "documents": 1312,
-  "fragments": 17703,
+  "decisions_ce": 174265,
+  "documents": 1594,
+  "fragments": 20774,
   "doublons": 62,
   "ecartes": {
     "autre_juridiction": 399198,
-    "avant_borne": 138074,
     "date_invalide": 0,
-    "sans_mot_cle": 34878,
-    "texte_vide": 1
+    "sans_mot_cle": 167044,
+    "texte_vide": 5627
   },
   "couverture": {
     "source": "DILA — JADE (OPENDATA), fonds publie et inedit",
     "archive": "Freemium_jade_global_20261108-140000.tar.gz",
     "periode": {
-      "date_min": "2014-01-01",
+      "date_min": "1982-03-12",
       "date_max": "2026-10-27"
     },
     "juridiction": "Conseil d'État",
@@ -52,30 +50,28 @@
     "fonds": {
       "publie": {
         "documents_lus": 61200,
-        "decisions_ce_depuis_2014": 8010,
-        "documents": 181,
-        "fragments": 3080,
+        "decisions_ce": 51732,
+        "documents": 282,
+        "fragments": 4430,
         "doublons": 0,
         "ecartes": {
           "autre_juridiction": 9468,
-          "avant_borne": 43722,
           "date_invalide": 0,
-          "sans_mot_cle": 7828,
-          "texte_vide": 1
+          "sans_mot_cle": 45826,
+          "texte_vide": 5624
         }
       },
       "inedit": {
         "documents_lus": 512325,
-        "decisions_ce_depuis_2014": 28181,
-        "documents": 1131,
-        "fragments": 14623,
+        "decisions_ce": 122533,
+        "documents": 1312,
+        "fragments": 16344,
         "doublons": 62,
         "ecartes": {
           "autre_juridiction": 389730,
-          "avant_borne": 94352,
           "date_invalide": 0,
-          "sans_mot_cle": 27050,
-          "texte_vide": 0
+          "sans_mot_cle": 121218,
+          "texte_vide": 3
         }
       }
     },
@@ -87,10 +83,9 @@
       ],
       "motifs": {
         "autre_juridiction": 399198,
-        "avant_borne": 138074,
         "date_invalide": 0,
-        "sans_mot_cle": 34878,
-        "texte_vide": 1
+        "sans_mot_cle": 167044,
+        "texte_vide": 5627
       }
     }
   }

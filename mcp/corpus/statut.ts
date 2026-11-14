@@ -43,6 +43,8 @@ const CORPUS_TEXTES: readonly string[] = [
   "eudpr",
   "rgpdproc",
   "textes_fr",
+  "ccs",
+  "adequation",
 ];
 
 /** Corpus dont chaque unité est une décision rendue, quel que soit le statut source. */

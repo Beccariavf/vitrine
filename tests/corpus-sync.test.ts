@@ -179,8 +179,10 @@ function agents(
   ce: AgentSync,
   cc: AgentSync,
   cjue: AgentSync,
-): Record<"cnil" | "ce" | "cc" | "cjue", AgentSync> {
-  return { cnil, ce, cc, cjue };
+  lil: AgentSync = INERTE,
+  textesFr: AgentSync = INERTE,
+): Record<"cnil" | "ce" | "cc" | "cjue" | "lil" | "textes_fr", AgentSync> {
+  return { cnil, ce, cc, cjue, lil, textes_fr: textesFr };
 }
 
 const INERTE: AgentSync = async () => ({ ecrit: false, message: "inactif" });
@@ -376,7 +378,7 @@ describe("rapport de synchronisation", () => {
         derniere_tentative: "2026-11-11",
         depuis: "2026-11-04",
         entrees_lues: 1,
-        comptes: { presents: 0, manquants: 1, ecartes: 0, non_mappes: 0 },
+        comptes: { presents: 0, manquants: 1, ecartes: 0, non_mappes: 0, perimes: 0 },
         documents: [
           {
             entree: "x",
@@ -409,7 +411,7 @@ describe("rapport de synchronisation", () => {
       derniere_tentative: "2026-11-13",
       depuis: "2026-11-06",
       entrees_lues: 0,
-      comptes: { presents: 0, manquants: 0, ecartes: 0, non_mappes: 0 },
+      comptes: { presents: 0, manquants: 0, ecartes: 0, non_mappes: 0, perimes: 0 },
       documents: [],
       corpus: [],
       sources: [],
@@ -448,7 +450,7 @@ describe("rapport de synchronisation", () => {
       derniere_tentative: "2026-11-13",
       depuis: "2026-11-06",
       entrees_lues: 0,
-      comptes: { presents: 0, manquants: 0, ecartes: 0, non_mappes: 0 },
+      comptes: { presents: 0, manquants: 0, ecartes: 0, non_mappes: 0, perimes: 0 },
       documents: [],
       corpus: [],
       sources: [],
@@ -979,7 +981,7 @@ describe("synchronisation du corpus", () => {
 
       assert.deepEqual(
         rapport.sources.map((source) => source.source),
-        ["cnil", "ce", "cc", "cjue"],
+        ["cnil", "ce", "cc", "cjue", "lil", "textes_fr"],
       );
       assert.equal(rapport.sources[0]?.statut, "panne");
       assert.equal(rapport.sources[1]?.statut, "ok");
@@ -1080,11 +1082,51 @@ describe("synchronisation du corpus", () => {
         throw new Error("disque plein");
       },
     });
-    assert.deepEqual(Object.keys(agents).sort(), ["cc", "ce", "cjue", "cnil"]);
+    assert.deepEqual(Object.keys(agents).sort(), ["cc", "ce", "cjue", "cnil", "lil", "textes_fr"]);
     const resultat = await agents.cc();
     assert.equal(racineVue, "/tmp/depot");
     assert.equal(resultat.ecrit, true);
     assert.match(resultat.message, /journal d'usage non écrit \(disque plein\)/);
+  });
+
+  it("branche les synchronisations LIL et textes français sur leurs agents", async () => {
+    let racineLil = "";
+    let racineTextes = "";
+    const agents = agentsParDefaut("/tmp/depot", {
+      syncLil: async (options) => {
+        racineLil = options.rootDir;
+        return {
+          version: "LEGITEXT000006068624_01-10-2026",
+          date: "2026-11-14",
+          unites: 133,
+          sections: 50,
+          abroges: 54,
+          ecrit: false,
+          snapshotPath: "",
+          unitesPath: "",
+          manifestPath: "",
+        };
+      },
+      syncTextesFr: async (options) => {
+        racineTextes = options.rootDir;
+        return {
+          date: "2026-11-14",
+          lectures: [],
+          appeles: [],
+          ecrit: false,
+          unitesPath: "",
+          manifestPath: "",
+        };
+      },
+      flushUsage: () => {},
+    });
+
+    const lil = await agents.lil();
+    const textes = await agents.textes_fr();
+    assert.equal(racineLil, "/tmp/depot");
+    assert.equal(racineTextes, "/tmp/depot");
+    assert.match(lil.message, /133 article\(s\)/);
+    assert.match(textes.message, /0 texte\(s\), 0 article\(s\)/);
   });
 
   it("écrit un rapport vide et avance quand aucune entrée n'est dans la fenêtre", async () => {
@@ -1182,7 +1224,7 @@ describe("classement des documents hors corpus", () => {
         derniere_tentative: "2026-11-12",
         depuis: "2026-11-05",
         entrees_lues: 0,
-        comptes: { presents: 0, manquants: 0, ecartes: 0, non_mappes: 0 },
+        comptes: { presents: 0, manquants: 0, ecartes: 0, non_mappes: 0, perimes: 0 },
         documents: [],
         corpus: [],
         sources: [],

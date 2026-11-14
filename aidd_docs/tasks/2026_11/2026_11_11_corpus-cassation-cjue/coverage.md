@@ -1,6 +1,6 @@
 # Couverture des huit corpus
 
-Comptes lus dans les `manifest.json` du 14 novembre 2026 pour la CJUE, du 13 novembre pour les autres corpus (11 novembre pour les corpus inchangés), jamais recopiés depuis un autre rapport.
+Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les corpus inchangés), jamais recopiés depuis un autre rapport.
 
 | Corpus | Documents | Fragments | Période | Source | Licence |
 |---|---:|---:|---|---|---|
@@ -9,19 +9,31 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 pour la CJUE, du 13 nov
 | `cnil` | 3 245 | 29 299 | arrêté au 2026-10-30 | DINUM (historique) + DILA (incréments) | DINUM : `etalab-2.0` et `lov2`, écart déclaré ; DILA : Licence Ouverte 2.0 |
 | `lil` | 1 | 133 articles en vigueur | version consolidée au 2026-10-01 ; consultée le 2026-11-09 | PISTE — Légifrance `/consult/legiPart` | Licence Ouverte 2.0 (Etalab) |
 | `textes_fr` | 3 | 183 articles en vigueur (décret 2019-536 : 166 ; Code pénal 226-16 à 226-24 : 16 ; CPCE L34-5 : 1) ; 2 abrogés écartés | consultés le 2026-11-14 | PISTE — Légifrance `/consult/legiPart`, `/consult/code`, `/consult/getArticleWithIdAndNum` | Licence Ouverte 2.0 (Etalab) |
-| `ce` | 1 312 | 17 703 | 2014-01-01 → 2026-10-27 | DILA — JADE, fonds `publie` et `inedit` | Licence Ouverte 2.0 (Etalab) |
+| `ce` | 1 594 | 20 774 | 1982-03-12 → 2026-10-27 | DILA — JADE, fonds `publie` et `inedit` | Licence Ouverte 2.0 (Etalab) |
 | `cepd` | 36 | 5 443 | 2018-04-11 → 2025-06-05 | CEPD, sitemap des pages `_fr` et PDF | À vérifier : aucune licence explicite déclarée |
-| `cc` | 352 | 7 048 | 2014-01-14 → 2026-11-10 | PISTE — Judilibre `/search` et `/decision` | Licence Ouverte 2.0 (Etalab) et CGU Judilibre |
+| `cc` | 403 | 8 194 | 1986-07-21 → 2026-11-10 | PISTE — Judilibre `/search` et `/decision` | Licence Ouverte 2.0 (Etalab) et CGU Judilibre |
 | `cjue` | 248 | 23 188 | 1999-10-14 → 2026-11-05 | CELLAR / EUR-Lex — SPARQL `PDON` + notions `4.11.01` et `2.04` + 1 CELEX, XHTML français puis anglais, repli HTML patrimonial | Décision 2011/833/UE (CC BY 4.0) |
+
+## Détail `ce`
+
+- Archive JADE globale du 8 novembre 2026, fonds `jade/global/publie` et `jade/global/inedit`, lus en flux.
+- 573 525 entrées lues : 1 594 retenues, 399 198 autres juridictions, 167 044 sans mot-clé, 5 627 textes vides, 0 date invalide ; 62 doublons d'identifiant entre les deux fonds.
+- 174 265 décisions du Conseil d'État valablement datées, toutes dates, avant mots-clés (`decisions_ce`, doublons de fonds compris) ; aucune borne de date n'est appliquée, ni au descripteur ni au filtrage.
+- Fonds `publie` : 282 décisions / 4 430 fragments ; fonds `inedit` : 1 312 / 16 344.
+- `periode.date_min` et `periode.date_max` sont les premières et dernières dates observées dans le corpus (1982-03-12 → 2026-10-27).
+- Filtre inchangé : juridiction normalisée exactement « Conseil d'État » et au moins un mot-clé du descripteur (`données personnelles`, `données à caractère personnel`, `informatique et libertés`, `protection des données`, `RGPD`, `règlement général sur la protection des données`, `commission nationale de l'informatique et des libertés`, `CNIL`). Un seul mot-clé suffit : le corpus contient des faux positifs (par exemple `CETATEXT000028411879`, où la CNIL n'est que créancière de frais), et 132 166 des 167 044 exclusions sans mot-clé sont antérieures à 2014 — « toutes dates » ne veut pas dire « toute la jurisprudence ».
+- 282 décisions sur les 138 074 décisions du Conseil d'État antérieures à 2014 sont retenues. Les 5 627 entrées sans texte intégral (`BLOC_TEXTUEL/CONTENU` vide) n'ont qu'un sommaire dans l'archive, que le parseur ne lit pas : une partie de la jurisprudence ancienne reste donc hors d'atteinte, même sans borne.
 
 ## Détail `cc`
 
-- 22 phrases de recherche, `field=text`, `operator=and`, borne `2014-01-01`.
-- 1 133 décisions lues : 352 retenues, 781 écartées `hors_sujet`, 0 `avant_borne` (l'API filtre la date ; le parseur compte quand même toute décision antérieure), 0 `date_invalide`, 0 `texte_vide`.
-- 641 doublons de recherche ; 4 entrées Judilibre de `data/entries/` incluses et retenues (`veille.entrees: 4`, `veille.retenues: 4`) ; une décision de la veille échappe au filtre de pertinence par construction.
-- Filtre : visa citant un instrument de protection des données, ou au moins 2 occurrences d'une expression centrale ; `CNIL` seul ne suffit plus (51 décisions retirées : 36 sans aucune autre expression, 15 avec une seule occurrence). 124 décisions n'ont pas de visa dans Judilibre. 1 333 fragments dépassent 1 200 caractères (un paragraphe long reste entier, maximum 28 852). Aucun identifiant introuvable.
-- `periode.date_min` est la première date observée (2014-01-14) ; `couverture.borne` porte la borne demandée (2014-01-01).
-- Le corpus n'est pas une collection exhaustive de la Cour de cassation : c'est un sous-ensemble déclaré, borné par 22 phrases et par le filtre de pertinence.
+- 22 phrases de recherche, `field=text`, `operator=and`, aucune borne de date (ni `date_start` ni `date_end`).
+- 1 348 décisions lues : 403 retenues, 945 écartées `hors_sujet`, 0 `date_invalide`, 0 `texte_vide`.
+- 705 doublons de recherche ; 4 entrées Judilibre de `data/entries/` incluses et retenues (`veille.entrees: 4`, `veille.retenues: 4`) ; une décision de la veille échappe au filtre de pertinence par construction.
+- Filtre : visa citant un instrument de protection des données, ou au moins 2 occurrences d'une expression centrale. Au 11 novembre 2026, `CNIL` seul ne suffisait plus (51 décisions retirées par le durcissement du filtre : 36 sans aucune autre expression, 15 avec une seule occurrence). 147 décisions n'ont pas de visa dans Judilibre. 1 535 fragments dépassent 1 200 caractères (un paragraphe long reste entier, maximum 28 852). Aucun identifiant introuvable.
+- 51 décisions retenues sont antérieures à 2014, la plus ancienne au 1986-07-21 : la borne n'existe plus, ni au descripteur ni dans `exclusions`.
+- Le filtre de pertinence est resté celui du ticket précédent, comme le plan l'imposait ; l'élargissement laisse donc entrer des faux positifs que le corpus de 2014 ne rencontrait guère. Relevé sur les 51 nouvelles décisions : « protection des données confidentielles » (secret des affaires, `613727efcd5801467742e936`), nom de disque « D:/données personnelles » (`61372838cd580146774300a0`), contentieux électoral où la loi 78-17 n'apparaît qu'au troisième moyen (`6079b1019ba5988459c50e9a`). Côté Conseil d'État, un seul mot-clé suffit : la Cour des comptes y rend deux agents débiteurs de la CNIL (`CETATEXT000028411879`), et la jurisprudence fondatrice voisine avec des moyens incidents. Durcir ce filtre est hors de ce ticket.
+- `periode.date_min` et `periode.date_max` sont les premières et dernières dates observées dans le corpus ; le manifeste ne porte plus de `couverture.borne`.
+- Le corpus n'est pas une collection exhaustive de la Cour de cassation : c'est un sous-ensemble déclaré, borné par 22 phrases et par le filtre de pertinence ; Judilibre ne sert pas le texte de toutes les décisions.
 
 ## Détail `cjue`
 
@@ -38,7 +50,7 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 pour la CJUE, du 13 nov
 
 ## Évaluations `dev`
 
-Mesures du 11 novembre 2026, hors split `test`, sur l'index à huit corpus (74 891 unités ; **83 994** depuis l'ouverture de la CJUE aux arrêts antérieurs à 2014, le 14 novembre).
+Mesures du 11 novembre 2026, hors split `test`, sur l'index à huit corpus (74 891 unités). Les corpus `cjue`, `ce` et `cc` ont été élargis les 13 et 14 novembre (sans borne de date) sans que ces rangs soient remesurés.
 
 | Jeu | Résultat |
 |---|---|

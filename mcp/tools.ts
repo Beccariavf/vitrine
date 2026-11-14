@@ -26,7 +26,7 @@ import { statutApplication } from "./corpus/statut.ts";
 import type { StatutApplication } from "./corpus/statut.ts";
 import { niveauConfiance } from "./confidence.ts";
 import type { NiveauConfiance } from "./confidence.ts";
-import { ORDRE_SOURCES, inventaireCorpus, lireManifestes, lireRapport } from "./corpus/sync-rapport.ts";
+import { SOURCES_SOUS_VEILLE, inventaireCorpus, lireManifestes, lireRapport } from "./corpus/sync-rapport.ts";
 import type {
   CorpusRapport,
   DocumentRapport,
@@ -119,7 +119,7 @@ export function perimetreDe(
   const noms = cible === null ? inventaire.map((entree) => entree.corpus) : [cible];
   const corpus: CorpusInterroge[] = noms.map((nom) => {
     const inventorie = inventaire.find((entree) => entree.corpus === nom);
-    const veille = inventorie !== undefined && (ORDRE_SOURCES as readonly string[]).includes(nom);
+    const veille = inventorie !== undefined && (SOURCES_SOUS_VEILLE as readonly string[]).includes(nom);
     return {
       corpus: nom,
       veille,
@@ -410,6 +410,16 @@ const ALIAS_ACTES_UE: ReadonlyArray<{ document: string; texte: readonly RegExp[]
     ],
     compact: [/32025r2518/],
   },
+  {
+    document: "32021D0914",
+    texte: [
+      /\bclauses contractuelles types\b/,
+      /\bccs\b/,
+      /\bdecision d execution (?:ue )?(?:n )?2021 914\b/,
+      /\b2021 914\b/,
+    ],
+    compact: [/32021d0914/],
+  },
 ];
 
 /** « règlement procédural RGPD » et `rgpdproc` nomment le règlement 2025/2518, pas le RGPD. */
@@ -433,6 +443,7 @@ const NOMS_DOCUMENTS: Record<string, string> = {
   "32016L0680": "directive police-justice",
   "32018R1725": "règlement 2018/1725",
   "32025R2518": "règlement procédural RGPD",
+  "32021D0914": "clauses contractuelles types",
   LEGITEXT000038567662: "décret 2019-536",
   LEGITEXT000006070719: "Code pénal",
   LEGITEXT000006070987: "CPCE",
@@ -570,7 +581,7 @@ export function corpusDeNiveau(demande: { corpus?: string; document?: string }):
 export type SearchDemande = {
   question: string;
   k?: number;
-  /** Restreint la recherche à une collection : `rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `cnil`, `lil`, `textes_fr`, `ce`, `cepd`, `cc`, `cjue`. */
+  /** Restreint la recherche à une collection : `rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `cnil`, `lil`, `textes_fr`, `ce`, `cepd`, `cc`, `cjue`. */
   corpus?: string;
   /** Restreint la recherche à un document précis. */
   document?: string;
