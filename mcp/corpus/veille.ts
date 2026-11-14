@@ -13,13 +13,21 @@ import { join } from "node:path";
 import type { Entry } from "../../veille/types.ts";
 
 /** Sources de veille dont l'identifiant désigne un document du corpus. */
-export type CorpusVeille = "cnil" | "ce" | "cc" | "cjue";
+export type CorpusVeille = "cnil" | "ce" | "cc" | "cjue" | "lil" | "textes_fr";
 
 const CORPUS_PAR_SOURCE: Record<string, CorpusVeille> = {
   cnil: "cnil",
   cetat: "ce",
   judilibre: "cc",
   cjeu: "cjue",
+};
+
+/** Une entrée `legi` vise le corpus du texte qu'elle porte. */
+const CORPUS_PAR_DOCUMENT: Record<string, CorpusVeille> = {
+  LEGITEXT000006068624: "lil",
+  LEGITEXT000038567662: "textes_fr",
+  LEGITEXT000006070719: "textes_fr",
+  LEGITEXT000006070987: "textes_fr",
 };
 
 const ID_CETAT = /^CETATEXT\d+$/;
@@ -42,7 +50,10 @@ const MOTIFS_DURABLES = new Set([
 ]);
 
 /** Corpus visé par une source de veille, ou `null` si elle n'alimente aucun corpus. */
-export function corpusDeLEntree(entry: Pick<Entry, "source">): CorpusVeille | null {
+export function corpusDeLEntree(entry: Pick<Entry, "source"> & { document?: string }): CorpusVeille | null {
+  if (entry.source === "legi") {
+    return entry.document === undefined ? null : (CORPUS_PAR_DOCUMENT[entry.document] ?? null);
+  }
   return CORPUS_PAR_SOURCE[entry.source] ?? null;
 }
 
@@ -182,7 +193,7 @@ export function indexerSnapshots(rootDir: string): Map<string, string[]> {
 
 /** Identifiants de documents d'une entrée, dans la forme du corpus. */
 export function documentsDeLEntree(
-  entry: Pick<Entry, "source" | "id" | "url">,
+  entry: Pick<Entry, "source" | "id" | "url"> & { document?: string },
   snapshots: Map<string, string[]>,
 ): string[] {
   switch (entry.source) {
@@ -203,6 +214,10 @@ export function documentsDeLEntree(
       }
       return CELEX.test(decode) ? [decode] : [];
     }
+    case "legi":
+      return entry.document !== undefined && /^LEGITEXT\d+$/.test(entry.document)
+        ? [entry.document]
+        : [];
     default:
       return [];
   }
@@ -231,6 +246,65 @@ export function indexerDocumentsCorpus(rootDir: string): Map<string, Set<string>
     documents.set(dossier.name, ensemble);
   }
   return documents;
+}
+
+/**
+ * Versions présentes dans chaque corpus, par document : les `ref` des unités
+ * (`LEGIARTI…` d'un article) et la version consolidée déclarée au manifeste
+ * (`LEGITEXT…_JJ-MM-AAAA`, `legiPart`). Sert à distinguer un document présent
+ * mais périmé d'un document déjà à jour.
+ */
+export function indexerVersionsCorpus(rootDir: string): Map<string, Set<string>> {
+  const versions = new Map<string, Set<string>>();
+  const racine = join(rootDir, "data", "corpus");
+  if (!existsSync(racine)) return versions;
+
+  const ajouter = (document: unknown, version: unknown): void => {
+    if (typeof document !== "string" || document === "") return;
+    if (typeof version !== "string" || version === "") return;
+    const connues = versions.get(document) ?? new Set<string>();
+    connues.add(version);
+    versions.set(document, connues);
+  };
+
+  for (const dossier of readdirSync(racine, { withFileTypes: true })) {
+    if (!dossier.isDirectory()) continue;
+    const dossierCorpus = join(racine, dossier.name);
+
+    const chemin = join(dossierCorpus, "unites.jsonl");
+    if (existsSync(chemin)) {
+      for (const ligne of (lireTexte(chemin) ?? "").split("\n")) {
+        if (ligne.trim() === "") continue;
+        try {
+          const unite = JSON.parse(ligne) as { document?: unknown; ref?: unknown };
+          ajouter(unite.document, unite.ref);
+        } catch {
+          // Une ligne illisible ne masque pas les versions des autres.
+        }
+      }
+    }
+
+    const texte = lireTexte(join(dossierCorpus, "manifest.json"));
+    if (texte === null) continue;
+    try {
+      const manifeste = JSON.parse(texte) as {
+        text_id?: unknown;
+        version?: unknown;
+        textes?: unknown;
+      };
+      ajouter(manifeste.text_id, manifeste.version);
+      if (Array.isArray(manifeste.textes)) {
+        for (const element of manifeste.textes) {
+          if (typeof element !== "object" || element === null) continue;
+          const texteManifeste = element as { text_id?: unknown; version?: unknown };
+          ajouter(texteManifeste.text_id, texteManifeste.version);
+        }
+      }
+    } catch {
+      // Un manifeste illisible ne masque pas les versions des unités.
+    }
+  }
+  return versions;
 }
 
 /**

@@ -49,8 +49,10 @@ const FAMILLE_DE_SOURCE: Readonly<Record<string, FamilleId>> = {
   police: "textes",
   eudpr: "textes",
   rgpdproc: "textes",
+  ccs: "textes",
   lil: "textes",
   textes_fr: "textes",
+  adequation: "ue",
   cnil: "autorites",
   anssi: "autorites",
   arcep: "autorites",
@@ -64,6 +66,7 @@ const FAMILLE_DE_SOURCE: Readonly<Record<string, FamilleId>> = {
   judilibre: "juridictions",
   ce: "juridictions",
   cc: "juridictions",
+  legi: "textes",
 };
 
 /** Famille d'une source de veille ou d'un corpus ; un identifiant inconnu rend `autre`. */

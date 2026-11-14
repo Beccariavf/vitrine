@@ -36,6 +36,12 @@ export type TexteFr = {
   perimetre: string;
   route: RouteTexte;
   /**
+   * Route de détection de nouvelle version, quand elle diffère de `route` : la
+   * recherche `LODA_DATE` ne rend que l'identifiant de la version consolidée,
+   * là où `legiPart` rend le texte entier.
+   */
+  detection?: { fond: string; num: string };
+  /**
    * Date du texte `AAAA-MM-JJ` : `date_acte` d'un article dont la DILA ne donne
    * pas la date de début (date ouverte). Sa `date_debut` reste alors vide :
    * jamais la date de la version consolidée.

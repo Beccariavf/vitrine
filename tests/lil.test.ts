@@ -219,6 +219,56 @@ describe("la synchronisation LIL", () => {
     }
   });
 
+  it("garde l'historique des versions remplacées et le snapshot de l'ancienne", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-lil-"));
+    try {
+      await syncLil({ rootDir: root, reponse: fixture, date: DATE, attendus: ATTENDUS });
+      const nouveau = structuredClone(fixture) as {
+        id: string;
+        dateDebutVersion: string;
+      };
+      nouveau.id = "LEGITEXT000006068624_01-11-2026";
+      nouveau.dateDebutVersion = "2026-11-01";
+
+      const seconde = await syncLil({
+        rootDir: root,
+        reponse: nouveau,
+        date: "2026-11-20",
+        attendus: ATTENDUS,
+      });
+      assert.equal(seconde.ecrit, true);
+
+      const manifeste = JSON.parse(
+        readFileSync(join(root, "data", "corpus", "lil", "manifest.json"), "utf8"),
+      ) as ManifesteLil;
+      assert.equal(manifeste.version, "LEGITEXT000006068624_01-11-2026");
+      assert.deepEqual(manifeste.versions_remplacees, [
+        {
+          identifiant: "LEGITEXT000006068624_01-10-2026",
+          date_debut: "2026-10-01",
+          date_fin: "2026-10-31",
+        },
+      ]);
+      // L'ancienne version n'est pas perdue : son snapshot et celui de la nouvelle coexistent.
+      assert.equal(existsSync(join(root, "data", "raw", "lil", `legi-part-${DATE}.json`)), true);
+      assert.equal(existsSync(join(root, "data", "raw", "lil", "legi-part-2026-11-20.json")), true);
+
+      const troisieme = await syncLil({
+        rootDir: root,
+        reponse: nouveau,
+        date: "2026-11-20",
+        attendus: ATTENDUS,
+      });
+      assert.equal(troisieme.ecrit, false);
+      const relu = JSON.parse(
+        readFileSync(join(root, "data", "corpus", "lil", "manifest.json"), "utf8"),
+      ) as ManifesteLil;
+      assert.deepEqual(relu.versions_remplacees, manifeste.versions_remplacees);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("--dry-run ne crée aucun fichier mais compte", async () => {
     const root = mkdtempSync(join(tmpdir(), "vitrine-lil-"));
     try {

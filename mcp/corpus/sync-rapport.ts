@@ -14,10 +14,18 @@ import type { CorpusVeille } from "./veille.ts";
 
 /**
  * Sources que `npm run corpus:sync` revérifie, dans leur ordre d'exécution. Les
- * corpus statiques (`rgpd`, `aiact`, `lil`, `textes_fr`, `cepd`) n'y figurent pas : `a_jour_au`
- * ne les couvre pas.
+ * corpus statiques (`rgpd`, `aiact`, `cepd`) n'y figurent pas. `lil` et
+ * `textes_fr` n'y sont relancés que sur signal de la veille : une entrée `legi`
+ * dont la version manque au corpus.
  */
-export const ORDRE_SOURCES: readonly CorpusVeille[] = ["cnil", "ce", "cc", "cjue"];
+export const ORDRE_SOURCES: readonly CorpusVeille[] = ["cnil", "ce", "cc", "cjue", "lil", "textes_fr"];
+
+/**
+ * Corpus dont `a_jour_au` couvre la fraîcheur : chaque passe les revérifie.
+ * `lil` et `textes_fr` en sont exclus, leur synchronisation attendant le signal
+ * de `npm run veille:textes-fr`.
+ */
+export const SOURCES_SOUS_VEILLE: readonly CorpusVeille[] = ["cnil", "ce", "cc", "cjue"];
 
 /** Manifestes lisibles sous `data/corpus/`, par nom de corpus ; un manifeste illisible est ignoré. */
 export function lireManifestes(rootDir: string): Map<string, Record<string, unknown>> {
@@ -43,7 +51,7 @@ export function lireManifestes(rootDir: string): Map<string, Record<string, unkn
 /** Chemin du rapport, relatif à la racine du dépôt. */
 export const CHEMIN_RAPPORT = join("data", "corpus", "sync.json");
 
-export type StatutDocument = "present" | "manquant" | "ecarte" | "non_mappe";
+export type StatutDocument = "present" | "manquant" | "ecarte" | "non_mappe" | "perime";
 
 export type DocumentRapport = {
   /** Identifiant de l'entrée de veille d'origine. */
@@ -52,8 +60,10 @@ export type DocumentRapport = {
   document: string | null;
   corpus: CorpusVeille | null;
   statut: StatutDocument;
-  /** Motif d'un document écarté ou non mappé. */
+  /** Motif d'un document écarté, non mappé ou périmé. */
   motif?: string;
+  /** Version visée par une entrée `legi` ; permet de clore un document périmé. */
+  version?: string;
 };
 
 export type SourceRapport = {
@@ -88,7 +98,7 @@ export type RapportSync = {
   /** Borne basse de la fenêtre de veille, incluse. */
   depuis: string;
   entrees_lues: number;
-  comptes: { presents: number; manquants: number; ecartes: number; non_mappes: number };
+  comptes: { presents: number; manquants: number; ecartes: number; non_mappes: number; perimes: number };
   documents: DocumentRapport[];
   corpus: CorpusRapport[];
   sources: SourceRapport[];
@@ -234,12 +244,20 @@ export function formaterRapport(rapport: RapportSync): string {
     `${fraicheur} (fenêtre depuis ${rapport.depuis}${tentative})`,
     `${rapport.entrees_lues} entrée(s) de veille ; ${rapport.comptes.presents} document(s) présent(s), ` +
       `${rapport.comptes.manquants} manquant(s), ${rapport.comptes.ecartes} écarté(s), ` +
-      `${rapport.comptes.non_mappes} entrée(s) non mappée(s)`,
+      `${rapport.comptes.non_mappes} entrée(s) non mappée(s), ${rapport.comptes.perimes ?? 0} périmé(s)`,
   ];
 
   const manquants = rapport.documents.filter((document) => document.statut === "manquant");
   if (manquants.length > 0) {
     lignes.push(`Manquants : ${manquants.map(ligneManquant).join(", ")}`);
+  }
+  const perimes = rapport.documents.filter((document) => document.statut === "perime");
+  if (perimes.length > 0) {
+    lignes.push(
+      `Périmés : ${perimes
+        .map((document) => `${ligneManquant(document)} — ${document.motif ?? "version du corpus antérieure"}`)
+        .join(", ")}`,
+    );
   }
   const ecartes = rapport.documents.filter((document) => document.statut === "ecarte");
   if (ecartes.length > 0) {

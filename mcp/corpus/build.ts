@@ -6,6 +6,7 @@ import type { FetchLike } from "../../veille/fetch.ts";
 import { fetchCellar } from "./fetch.ts";
 import { estConsolide, parseCellar, parseConsolide } from "./parse.ts";
 import type { Descripteur, Unite } from "./parse.ts";
+import { parseCcs } from "./ccs/parse.ts";
 import { writeCorpus } from "./write.ts";
 
 const ICI = dirname(fileURLToPath(import.meta.url));
@@ -59,9 +60,12 @@ async function construire(
       ? await fetchCellar(descripteur.version ?? descripteur.document, descripteur.langue, options.fetchImpl)
       : readFileSync(options.fixturePath, "utf8");
 
-  const unites = estConsolide(descripteur)
-    ? parseConsolide(contenu, descripteur)
-    : parseCellar(contenu, descripteur);
+  const unites =
+    descripteur.parseur === "ccs"
+      ? parseCcs(contenu, descripteur)
+      : estConsolide(descripteur)
+        ? parseConsolide(contenu, descripteur)
+        : parseCellar(contenu, descripteur);
   const snapshotPath = writeRaw(rootDir, contenu, "xhtml");
   const { manifestPath, unitesPath } = writeCorpus(rootDir, descripteur, unites, snapshotPath);
 

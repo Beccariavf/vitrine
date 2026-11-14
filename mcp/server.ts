@@ -44,9 +44,10 @@ const ACTES_UE =
 const PERIMETRE_REFUS = `(périmètre : ${PERIMETRE})`;
 
 const CONSIGNE_PROVENANCE =
-  "Le texte rendu vient des treize corpus locaux (RGPD `32016R0679`, AI Act `32024R1689`, " +
+  "Le texte rendu vient des quinze corpus locaux (RGPD `32016R0679`, AI Act `32024R1689`, " +
   "ePrivacy `32002L0058`, directive police-justice `32016L0680`, règlement 2018/1725 " +
-  "`32018R1725`, règlement procédural RGPD `32025R2518`, LIL " +
+  "`32018R1725`, règlement procédural RGPD `32025R2518`, clauses contractuelles types " +
+  "`32021D0914`, décisions d'adéquation `adequation`, LIL " +
   "`LEGITEXT000006068624`, textes français d'application `textes_fr`, délibérations CNIL `cnil`, décisions du Conseil d'État `ce`, lignes " +
   "directrices du CEPD `cepd`, décisions de la Cour de cassation `cc` et décisions de la CJUE " +
   "`cjue`), jamais d'une génération. Citer la référence et l'URL rendues. " +
@@ -95,7 +96,7 @@ const CONSIGNE_PERIMETRE =
   "(`corpus[].couverture`). Chaque corpus dit sa fraîcheur : `veille: true` pour les corpus " +
   "revérifiés par la synchronisation (`cnil`, `ce`, `cc`, `cjue`), avec `a_jour_au`, la dernière " +
   "synchronisation réussie (`null` si aucune) ; `veille: false` pour un instantané fixe jamais " +
-  "revérifié (`rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `lil`, `textes_fr`, `cepd`), daté par `arrete_le` ou non daté (`null`) ; " +
+  "revérifié (`rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `lil`, `textes_fr`, `cepd`), daté par `arrete_le` ou non daté (`null`) ; " +
   "`inconnu: true` dit qu'un corpus demandé n'existe pas localement et que rien n'y a été interrogé. Ne " +
   "jamais présenter un instantané fixe comme à jour. Le rappeler au lecteur. Une absence de " +
   "résultat ne prouve jamais que la règle n'existe pas : elle peut être hors du périmètre, exclue " +
@@ -115,9 +116,11 @@ const CONSIGNE_DECISIONS_CITEES =
   `${chiffresCitationsDecisions()}`;
 
 const CONSIGNE_SERVEUR =
-  "Serveur de lecture et de recherche sur treize corpus juridiques : le RGPD " +
+  "Serveur de lecture et de recherche sur quinze corpus juridiques : le RGPD " +
   "(corpus `rgpd`, CELEX 32016R0679), l'AI Act (corpus `aiact`, CELEX 32024R1689), " +
-  `${ACTES_UE}, la loi ` +
+  `${ACTES_UE}` +
+  ", les clauses contractuelles types pour les transferts hors UE (corpus `ccs`, CELEX " +
+  "32021D0914) et les décisions d'adéquation, en vigueur et abrogées (corpus `adequation`), la loi " +
   "Informatique et Libertés (corpus `lil`, LEGITEXT000006068624), les textes français " +
   "d'application (corpus `textes_fr` : décret 2019-536 LEGITEXT000038567662 en entier, Code pénal " +
   "LEGITEXT000006070719 articles 226-16 à 226-24, CPCE LEGITEXT000006070987 article L34-5), " +
@@ -126,7 +129,7 @@ const CONSIGNE_SERVEUR =
   "Conseil d'État (corpus `ce`), les lignes directrices du CEPD (corpus `cepd`), les décisions de " +
   "la Cour de cassation sur les données personnelles (corpus `cc`) et celles de la CJUE (corpus " +
   "`cjue`). Les outils de " +
-  "recherche acceptent les paramètres `corpus` et `nature` ; sans eux, la recherche couvre les treize " +
+  "recherche acceptent les paramètres `corpus` et `nature` ; sans eux, la recherche couvre les quinze " +
   "collections et toutes les natures. Un document nommé dans la question (sigle ou nom ordinaire, " +
   "casse et ponctuation indifférentes) est honoré quand `document` et `corpus` sont absents ; sans " +
   "nom, une référence exacte qui n'existe que dans un corpus est `incertain` et le corpus est " +
@@ -170,6 +173,7 @@ export function createServer(deps: ServerDeps): McpServer {
       description:
         "Rend le texte exact d'un article du RGPD, de l'AI Act, de la directive ePrivacy, de la " +
         "directive police-justice, du règlement 2018/1725, du règlement procédural RGPD, de la " +
+        "décision 2021/914 sur les clauses contractuelles types, de la " +
         "LIL ou d'un texte français d'application (décret 2019-536, Code pénal 226-16 à 226-24, CPCE L34-5), avec sa référence, son chemin, ses dates et son URL. ePrivacy et la directive " +
         "police-justice sont rendues dans leur version consolidée en vigueur ; les règlements " +
         "2018/1725 et 2025/2518, jamais modifiés, dans leur texte d'origine : `etat_corpus` en " +
@@ -189,7 +193,8 @@ export function createServer(deps: ServerDeps): McpServer {
           .describe(
             "Identifiant du document : 32016R0679 (RGPD), 32024R1689 (AI Act), 32002L0058 " +
               "(ePrivacy), 32016L0680 (directive police-justice), 32018R1725 (règlement " +
-              "2018/1725), 32025R2518 (règlement procédural RGPD), LEGITEXT000006068624 (LIL), " +
+              "2018/1725), 32025R2518 (règlement procédural RGPD), 32021D0914 (clauses contractuelles " +
+              "types), LEGITEXT000006068624 (LIL), " +
               "LEGITEXT000038567662 (décret 2019-536), LEGITEXT000006070719 (Code pénal) ou LEGITEXT000006070987 (CPCE)",
           ),
         numero: z.string().describe("Numéro d'article, par exemple 17, 15 bis, 26-1, 226-16 ou L34-5"),
@@ -365,7 +370,7 @@ export function createServer(deps: ServerDeps): McpServer {
       title: "Dire à quelle date le corpus est à jour",
       description:
         "Rend la date de la dernière synchronisation réussie depuis la veille (`a_jour_au`), " +
-        "la fenêtre de veille, l'inventaire des treize corpus avec leurs comptes, les documents " +
+        "la fenêtre de veille, l'inventaire des quinze corpus avec leurs comptes, les documents " +
         "manquants et l'état des sources et de l'index. Chaque corpus porte `couverture`, le bloc que " +
         "déclare son manifeste — sources, bornes et exclusions — : c'est la cible du renvoi " +
         "`perimetre.exclusions` des autres outils. Les clés d'exclusion varient selon le corpus " +
@@ -387,10 +392,11 @@ export function createServer(deps: ServerDeps): McpServer {
   serveur.registerTool(
     "search",
     {
-      title: "Chercher dans les treize corpus juridiques",
+      title: "Chercher dans les quinze corpus juridiques",
       description:
         "Cherche par le sens dans le RGPD, l'AI Act, la directive ePrivacy, la directive " +
-        "police-justice, le règlement 2018/1725, le règlement procédural RGPD, la LIL, les textes français d'application, les délibérations de la CNIL " +
+        "police-justice, le règlement 2018/1725, le règlement procédural RGPD, les clauses " +
+        "contractuelles types, les décisions d'adéquation, la LIL, les textes français d'application, les délibérations de la CNIL " +
         "(sanctions, avis, recommandations et lignes directrices), les décisions du Conseil d'État, " +
         "les lignes directrices du CEPD, les décisions de la Cour de cassation sur les données " +
         "personnelles et celles de la CJUE, et rend les passages les plus proches avec leur " +
@@ -399,7 +405,7 @@ export function createServer(deps: ServerDeps): McpServer {
         "devant, mais aucun considérant n'est retiré du résultat. " +
         "Une question qui cite un article rend cet article exact, sans recherche vectorielle. " +
         "`corpus` borne la recherche à une collection (`rgpd`, `aiact`, `eprivacy`, `police`, " +
-        "`eudpr`, `rgpdproc`, `cnil`, `lil`, `textes_fr`, `ce`, `cepd`, " +
+        "`eudpr`, `rgpdproc`, `ccs`, `adequation`, `cnil`, `lil`, `textes_fr`, `ce`, `cepd`, " +
         "`cc`, `cjue`) " +
         "et prime sur tout nom de document présent dans la question. " +
         "`nature` borne une recherche CNIL à une nature (`Sanction`, `Avis`, " +
@@ -430,7 +436,7 @@ export function createServer(deps: ServerDeps): McpServer {
           .optional()
           .describe(
             "Restreint la recherche à une collection : rgpd, aiact, eprivacy, police, eudpr, " +
-              "rgpdproc, cnil, lil, textes_fr, ce, cepd, cc ou " +
+              "rgpdproc, ccs, adequation, cnil, lil, textes_fr, ce, cepd, cc ou " +
               "cjue ; cnil couvre les sanctions, avis, recommandations et lignes directrices ; " +
               "absent, toutes répondent",
           ),
@@ -439,7 +445,8 @@ export function createServer(deps: ServerDeps): McpServer {
           .optional()
           .describe(
             "Restreint la recherche à un document : 32016R0679 (RGPD), 32024R1689 (AI Act), " +
-              "32002L0058 (ePrivacy), 32016L0680, 32018R1725, 32025R2518, " +
+              "32002L0058 (ePrivacy), 32016L0680, 32018R1725, 32025R2518, 32021D0914 (clauses " +
+              "contractuelles types), " +
               "LEGITEXT000006068624 (LIL), LEGITEXT000038567662 (décret 2019-536), LEGITEXT000006070719 (Code pénal), LEGITEXT000006070987 (CPCE), un identifiant CNILTEXT, un identifiant Judilibre (cc) " +
               "ou un CELEX de jurisprudence (cjue) ; absent, tous les corpus répondent",
           ),
@@ -512,7 +519,7 @@ async function main(): Promise<void> {
 
   await serveur.connect(transport);
   process.stderr.write(
-    "Serveur MCP des treize corpus (RGPD, AI Act, ePrivacy, 2016/680, 2018/1725, 2025/2518, CNIL, LIL, textes français, CE, CEPD, CC, CJUE) prêt sur stdio " +
+    "Serveur MCP des quinze corpus (RGPD, AI Act, ePrivacy, 2016/680, 2018/1725, 2025/2518, CCS, adéquation, CNIL, LIL, textes français, CE, CEPD, CC, CJUE) prêt sur stdio " +
       "(six outils : get_article, get_decision, search, decisions_citant, decisions_citant_decision, etat_corpus).\n",
   );
 }
