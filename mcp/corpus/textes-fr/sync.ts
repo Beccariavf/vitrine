@@ -19,6 +19,8 @@ import type { PisteConfig } from "../../../veille/piste.ts";
 import { configPiste, dateDuJour, ecrireSiChange, sansTempsExecution } from "../lil/sync.ts";
 import { lireTexte, validerLectures } from "./parse.ts";
 import type { DescripteurTextesFr, LectureTexte, TexteFr } from "./parse.ts";
+import type { VersionRemplacee } from "../versions.ts";
+import { historiqueVersions, lireManifeste } from "../versions.ts";
 
 const ICI = dirname(fileURLToPath(import.meta.url));
 
@@ -46,6 +48,8 @@ export type TexteManifeste = {
   articles_couverts: string[] | null;
   articles_en_vigueur: number;
   articles_abroges_ecartes: number;
+  /** Versions remplacées, de la plus ancienne à la plus récente. */
+  versions_remplacees: VersionRemplacee[];
   snapshot: string;
   snapshot_sha256: string;
 };
@@ -126,6 +130,7 @@ export function manifesteTextesFr(
   date: string,
   lectures: readonly LectureTexte[],
   snapshots: ReadonlyMap<string, { nom: string; sha256: string }>,
+  historiques: ReadonlyMap<string, VersionRemplacee[]> = new Map(),
 ): ManifesteTextesFr {
   const textes = lectures.map((lecture): TexteManifeste => {
     const snapshot = snapshots.get(lecture.texte.cle);
@@ -141,6 +146,7 @@ export function manifesteTextesFr(
         lecture.texte.route.type === "legiPart" ? null : lecture.unites.map((unite) => unite.numero),
       articles_en_vigueur: lecture.unites.length,
       articles_abroges_ecartes: lecture.abroges,
+      versions_remplacees: historiques.get(lecture.texte.textId) ?? [],
       snapshot: snapshot?.nom ?? "",
       snapshot_sha256: snapshot?.sha256 ?? "",
     };
@@ -217,9 +223,30 @@ export async function syncTextesFr(options: SyncTextesFrOptions = {}): Promise<R
   }
 
   validerLectures(lectures);
-  const manifeste = manifesteTextesFr(descripteur, date, lectures, snapshots);
   const unitesPath = join(rootDir, DOSSIER_CORPUS, "unites.jsonl");
   const manifestPath = join(rootDir, DOSSIER_CORPUS, "manifest.json");
+  // L'historique des versions remplacées se lit dans le manifeste précédent :
+  // une version qui cède la place garde son identifiant et ses dates.
+  const precedent = lireManifeste(manifestPath);
+  const historiques = new Map<string, VersionRemplacee[]>();
+  if (precedent !== null && Array.isArray(precedent.textes)) {
+    for (const valeur of precedent.textes) {
+      if (typeof valeur !== "object" || valeur === null) continue;
+      const texteManifeste = valeur as Record<string, unknown>;
+      const textId = texteManifeste.text_id;
+      if (typeof textId !== "string") continue;
+      const lecture = lectures.find((element) => element.texte.textId === textId);
+      if (lecture === undefined) continue;
+      historiques.set(
+        textId,
+        historiqueVersions(texteManifeste, {
+          version: lecture.version,
+          dateDebutVersion: lecture.dateDebutVersion,
+        }),
+      );
+    }
+  }
+  const manifeste = manifesteTextesFr(descripteur, date, lectures, snapshots, historiques);
 
   let ecrit = false;
   if (options.dryRun !== true) {

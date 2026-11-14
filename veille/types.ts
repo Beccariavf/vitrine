@@ -21,4 +21,8 @@ export type Entry = {
   themes: string[];
   /** Identifiant de la source : `cnil`, `cjeu`, etc. */
   source: string;
+  /** Document du corpus visé, quand la source en désigne un (`legi` : `LEGITEXT…`). */
+  document?: string;
+  /** Identifiant de la version publiée (`LEGIARTI…`, `LEGITEXT…_JJ-MM-AAAA`) ; `legi` seulement. */
+  version?: string;
 };
