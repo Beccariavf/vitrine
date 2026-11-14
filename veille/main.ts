@@ -7,7 +7,7 @@ import {
 } from "./sources/cnil.ts";
 import { FEED_URL as CJEU_FEED_URL, parseFeed as parseCjeuFeed } from "./sources/cjeu.ts";
 import { FEED_URL as ANSSI_FEED_URL, parseFeed as parseAnssiFeed } from "./sources/anssi.ts";
-import { FEED_URL as CEPD_FEED_URL, parseFeed as parseCepdFeed } from "./sources/cepd.ts";
+import { FEED_URL as CEPD_FEED_URL, parseFeed as parseCepdFeed, passeDocumentsCePd } from "./sources/cepd.ts";
 import { FEED_URL as ARCEP_FEED_URL, parseFeed as parseArcepFeed } from "./sources/arcep.ts";
 import { FEED_URL as COMMISSION_FEED_URL, PAGE as COMMISSION_PAGE, parseFeed as parseCommissionFeed } from "./sources/commission.ts";
 import { FEED_URL as COMMISSION_DMA_FEED_URL, parseFeed as parseCommissionDmaFeed } from "./sources/commission-dma.ts";
@@ -50,6 +50,8 @@ export type Source = {
     pageUrl(entry: Entry): string;
     parsePage(html: string): string[];
   };
+  /** Collecte complémentaire de la même source : documents du corpus, pas des actualités. */
+  documents?: (context: ApiContext) => Promise<Omit<ApiResult, "raw">>;
 };
 
 /** Ce qu'une source API rend : ses réponses brutes, ses entrées et ses avertissements. */
@@ -115,6 +117,20 @@ export const SOURCES: AnySource[] = [
     id: "cepd",
     feedUrl: CEPD_FEED_URL,
     parse: (xml) => parseCepdFeed(xml),
+    // Les documents du corpus ne sont pas des actualités : la même source les
+    // ajoute à ses entrées, sans PDF et sans écriture dans `data/`.
+    documents: async (context) => {
+      const resultat = await passeDocumentsCePd({
+        rootDir: context.rootDir,
+        fetchImpl: context.fetchImpl,
+        ...(context.now === undefined ? {} : { maintenant: context.now }),
+      });
+      return {
+        entries: resultat.entries,
+        warnings: resultat.warnings,
+        notes: resultat.notes,
+      };
+    },
   },
   {
     kind: "rss",
@@ -411,9 +427,33 @@ export async function run({
         entries = enriched;
       }
 
+      // Collecte complémentaire de la même source : ses entrées s'ajoutent à
+      // celles du flux, qui gardent leur snapshot et leurs entrées. La source ne
+      // conserve aucune réponse brute : le corpus garde les pages qu'il a lues.
+      let documentsError: string | null = null;
+      if (source.documents) {
+        try {
+          const result = await source.documents({
+            fetchImpl,
+            fetchFlux: archiveFetch,
+            themes: catalog,
+            rootDir,
+            ...(now === undefined ? {} : { now }),
+          });
+          warnings.push(...result.warnings);
+          notes.push(...(result.notes ?? []));
+          entries.push(...result.entries);
+        } catch (error) {
+          // Le flux a déjà réussi : ses entrées sont écrites. La passe échoue
+          // avec un message qui nomme la source, la collecte sera rejouée.
+          documentsError = error instanceof Error ? error.message : String(error);
+        }
+      }
+
       const entryPaths = writeEntries(rootDir, assignThemes(entries, catalog));
 
       results.push({ source: source.id, rawPath, rawPaths: [rawPath], pagePaths, entryPaths });
+      if (documentsError !== null) errors.push(`${source.id} documents: ${documentsError}`);
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
       errors.push(`${source.id}: ${reason}`);

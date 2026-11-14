@@ -199,6 +199,13 @@ export function statutDepuisTitre(titre: string): "finale" | "projet" {
   return projet && !finale ? "projet" : "finale";
 }
 
+/** Statut publié d'un document : la page de consultation le fait projet, sinon son titre décide. */
+export function statutDocument(
+  document: Pick<DocumentListe, "consultation" | "titre">,
+): "finale" | "projet" {
+  return document.consultation === true ? "projet" : statutDepuisTitre(document.titre);
+}
+
 /** Complète une entrée de liste avec les métadonnées nécessaires au corpus. */
 export function preparerDocument(document: DocumentListe): DocumentPrepare {
   const source = document.pdfUrl ?? document.url;
@@ -209,9 +216,20 @@ export function preparerDocument(document: DocumentListe): DocumentPrepare {
     date: dateDocument(document),
     // La page de consultation prime sur le titre : un document peut s'appeler
     // « Guidelines 02/2026 » et n'être encore qu'une version de consultation.
-    statut: document.consultation === true ? "projet" : statutDepuisTitre(document.titre),
+    statut: statutDocument(document),
     version: document.version ?? versionDepuisTitre(document.titre, source),
   };
+}
+
+/**
+ * Signature de version d'un document : sa version explicite (`2.0`, `rev01`),
+ * sinon son état publié (`finale`, `projet`). L'état tranche quand la page ne
+ * nomme aucune version, ce qui est le cas de la plupart des documents : une
+ * bascule « projet » → « finale » reste ainsi une nouveauté détectable.
+ */
+export function signatureVersion(document: Pick<DocumentPrepare, "version" | "statut">): string {
+  const version = document.version ?? "";
+  return version.trim() === "" ? document.statut : version;
 }
 
 function versionNumerique(version: string | null): number {
