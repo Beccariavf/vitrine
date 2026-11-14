@@ -41,7 +41,7 @@ import {
   deliberationDuDocument,
   deliberationsCitees,
   mentionContraire,
-  slugDe,
+  slugUnique,
   unitesDoctrine,
   validerUnites,
 } from "./parse.ts";
@@ -340,19 +340,6 @@ type DocumentLu = {
   snapshot: string;
   texte: string;
 };
-
-/** Slug unique : un doublon de nom de fichier reçoit un suffixe d'URL. */
-function slugUnique(url: string, pris: Set<string>): string {
-  const base = slugDe(url);
-  if (!pris.has(base)) {
-    pris.add(base);
-    return base;
-  }
-  const suffixe = sha256(url).slice(0, 8);
-  const unique = `${base}-${suffixe}`;
-  pris.add(unique);
-  return unique;
-}
 
 /**
  * Synchronise la doctrine CNIL. Les candidats sont lus sur chaque page de

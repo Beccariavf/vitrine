@@ -108,6 +108,23 @@ function uniteCnil(document: string, texte = "sanction relative aux cookies trac
   };
 }
 
+function uniteCePd(document: string): Unite {
+  return {
+    ref: `${document}#f0`,
+    document,
+    corpus: "cepd",
+    niveau: "fragment",
+    numero: "Guidelines 01/2023",
+    chemin: "CEPD > Lignes directrices > Test",
+    texte: "Lignes directrices sur la protection des données à caractère personnel.",
+    date_acte: "2023-09-15",
+    date_debut: "2023-09-15",
+    date_fin: null,
+    statut: "finale",
+    url: `https://www.edpb.europa.eu/documents/guideline/${document}_fr`,
+  };
+}
+
 function uniteConstit(document: string): Unite {
   return {
     ref: `${document}#f0`,
@@ -149,6 +166,23 @@ function ecrireCorpus(root: string, corpus: string, unites: Unite[]): void {
     )}\n`,
     "utf8",
   );
+}
+
+function uniteDoctrine(document: string): Unite {
+  return {
+    ref: `${document}#f0`,
+    document,
+    corpus: "cnil_doctrine",
+    niveau: "fragment",
+    numero: document,
+    chemin: "Doctrine CNIL > Guides > Guide",
+    texte: "Un extrait copié mot pour mot du guide.",
+    date_acte: "2026-11-14",
+    date_debut: "2026-11-14",
+    date_fin: null,
+    statut: "Publié",
+    url: `https://www.cnil.fr/sites/default/files/${document}.pdf`,
+  };
 }
 
 function ajouterUnite(root: string, corpus: string, unite: Unite): void {
@@ -265,11 +299,35 @@ describe("correspondance veille → corpus", () => {
   it("mappe les cinq sources et laisse les autres hors corpus", () => {
     const snapshots = new Map([["https://www.cnil.fr/fr/sanction", ["CNILTEXT000000000001"]]]);
     assert.equal(corpusDeLEntree({ source: "cnil" }), "cnil");
+    assert.equal(corpusDeLEntree({ source: "cnil_doctrine" }), "cnil_doctrine");
     assert.equal(corpusDeLEntree({ source: "cetat" }), "ce");
     assert.equal(corpusDeLEntree({ source: "constit" }), "constit");
     assert.equal(corpusDeLEntree({ source: "judilibre" }), "cc");
     assert.equal(corpusDeLEntree({ source: "cjeu" }), "cjue");
     assert.equal(corpusDeLEntree({ source: "anssi" }), null);
+    // Une actualité du flux CEPD ne vise aucun document ; seule une entrée qui
+    // porte son slug entre au corpus.
+    assert.equal(corpusDeLEntree({ source: "cepd" }), null);
+    assert.equal(corpusDeLEntree({ source: "cepd", document: "guidelines-012023" }), "cepd");
+    assert.deepEqual(
+      documentsDeLEntree(
+        {
+          source: "cepd",
+          id: "x",
+          url: "https://www.edpb.europa.eu/documents/guideline/guidelines-012023_fr",
+          document: "guidelines-012023",
+        },
+        snapshots,
+      ),
+      ["guidelines-012023"],
+    );
+    assert.deepEqual(
+      documentsDeLEntree(
+        { source: "cepd", id: "x", url: "", document: "Pas un slug" },
+        snapshots,
+      ),
+      [],
+    );
 
     assert.deepEqual(
       documentsDeLEntree(
@@ -281,6 +339,23 @@ describe("correspondance veille → corpus", () => {
     assert.deepEqual(
       documentsDeLEntree({ source: "cetat", id: "CETATEXT000000000001", url: "" }, snapshots),
       ["CETATEXT000000000001"],
+    );
+    assert.deepEqual(
+      documentsDeLEntree(
+        {
+          source: "cnil_doctrine",
+          id: "x",
+          url: "https://www.cnil.fr/sites/default/files/2026-11/guide.pdf",
+          document: "guide-pratique",
+        },
+        snapshots,
+      ),
+      ["guide-pratique"],
+    );
+    assert.deepEqual(
+      documentsDeLEntree({ source: "cnil_doctrine", id: "x", url: "" }, snapshots),
+      [],
+      "une entrée de doctrine sans slug ne mappe rien",
     );
     assert.deepEqual(
       documentsDeLEntree({ source: "judilibre", id: "6ac6079ec27382d099f5a06e", url: "" }, snapshots),
@@ -353,7 +428,83 @@ describe("correspondance veille → corpus", () => {
       assert.equal(documentsEcartes(root, "cjue").get("62024CJ0002"), "xhtml_absent");
       assert.equal(documentsEcartes(root, "cjue").has("62024CJ0001"), false);
       assert.equal(documentsEcartes(root, "cnil").size, 0);
+      assert.equal(documentsEcartes(root, "cepd").size, 0);
       assert.equal(normaliserUrl("https://www.cnil.fr/fr/x/?q=1#a"), "https://www.cnil.fr/fr/x");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("lit les documents écartés par la doctrine CNIL par leur slug", () => {
+    const root = racine();
+    try {
+      mkdirSync(join(root, "data", "corpus", "cnil_doctrine"), { recursive: true });
+      writeFileSync(
+        join(root, "data", "corpus", "cnil_doctrine", "manifest.json"),
+        JSON.stringify({
+          documents_ecartes: [
+            {
+              url: "https://www.cnil.fr/sites/default/files/2026-11/guide-sous-droits.pdf",
+              titre: "Guide sous droits",
+              raison: "mention contraire : tous droits réservés",
+            },
+            {
+              url: "https://www.cnil.fr/sites/default/files/2026-11/guide-sans-texte.pdf",
+              titre: "Guide sans texte",
+              raison: "PDF sans texte",
+            },
+          ],
+        }),
+        "utf8",
+      );
+      const ecartes = documentsEcartes(root, "cnil_doctrine");
+      assert.equal(ecartes.get("guide-sous-droits"), "mention contraire : tous droits réservés");
+      assert.equal(
+        ecartes.has("guide-sans-texte"),
+        false,
+        "un échec d'extraction est rejoué, il ne classe pas le document",
+      );
+      assert.equal(ecartes.size, 1);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("ne retient du CEPD que les écarts durables", () => {
+    const root = racine();
+    try {
+      mkdirSync(join(root, "data", "corpus", "cepd"), { recursive: true });
+      writeFileSync(
+        join(root, "data", "corpus", "cepd", "manifest.json"),
+        JSON.stringify({
+          couverture: {
+            documents_ecartes: [
+              { slug: "version-obsolete", raison: "version obsolète" },
+              { slug: "annexe-seule", raison: "PDF annexe seulement" },
+              { slug: "pdf-sans-rapport", raison: "PDF sans rapport avec le document (WP242 absent du nom du fichier)" },
+              { slug: "hebergement-cepd", raison: "document hébergé hors du site du CEPD (ec.europa.eu)" },
+              { slug: "hebergement-tiers", raison: "hébergement hors du site du CEPD (exemple.org)" },
+              { slug: "pdf-absent", raison: "PDF absent" },
+              { slug: "page-illisible", raison: "page illisible : HTTP 503" },
+              { slug: "sans-raison" },
+            ],
+          },
+        }),
+        "utf8",
+      );
+
+      const ecartes = documentsEcartes(root, "cepd");
+      assert.deepEqual(
+        [...ecartes.keys()].sort(),
+        [
+          "annexe-seule",
+          "hebergement-cepd",
+          "hebergement-tiers",
+          "pdf-sans-rapport",
+          "version-obsolete",
+        ],
+      );
+      assert.equal(ecartes.get("version-obsolete"), "version obsolète");
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
@@ -646,6 +797,583 @@ describe("synchronisation du corpus", () => {
       rmSync(root, { recursive: true, force: true });
     }
   });
+
+  it("relance la doctrine CNIL quand le document manque au corpus", async () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "cnil_doctrine", []);
+      ecrireEntree(root, {
+        ...entree(
+          "cnil_doctrine",
+          "entree-doctrine",
+          "https://www.cnil.fr/sites/default/files/2026-11/guide-nouveau.pdf",
+        ),
+        document: "guide-nouveau",
+        version: "https://www.cnil.fr/sites/default/files/2026-11/guide-nouveau.pdf",
+        type: "guide" as const,
+        motif: "nouveau" as const,
+      });
+
+      const appels = { n: 0 };
+      const doctrine: AgentSync = async () => {
+        appels.n += 1;
+        ajouterUnite(root, "cnil_doctrine", uniteDoctrine("guide-nouveau"));
+        writeFileSync(
+          join(root, "data", "corpus", "cnil_doctrine", "manifest.json"),
+          `${JSON.stringify(
+            {
+              corpus: "cnil_doctrine",
+              documents_par_type: {
+                guide: [
+                  {
+                    slug: "guide-nouveau",
+                    type: "guide",
+                    titre: "Guide nouveau",
+                    url: "https://www.cnil.fr/sites/default/files/2026-11/guide-nouveau.pdf",
+                  },
+                ],
+              },
+            },
+            null,
+            2,
+          )}\n`,
+          "utf8",
+        );
+        return { ecrit: true, message: "1 document(s), 12 fragment(s)" };
+      };
+      const rapport = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-11",
+        depuis: "2026-11-01",
+        agents: { ...agents(INERTE, INERTE, INERTE, INERTE), cnil_doctrine: doctrine },
+        embedder: embedderFactice(),
+      });
+
+      assert.equal(appels.n, 1, "un document manquant relance cnil-doctrine:sync");
+      assert.equal(
+        rapport.documents.find((document) => document.document === "guide-nouveau")?.statut,
+        "present",
+        "le document entre au corpus à la synchronisation suivante",
+      );
+      assert.equal(
+        rapport.sources.find((source) => source.source === "cnil_doctrine")?.statut,
+        "ok",
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("relance la doctrine CNIL quand son PDF a changé sous le même document", async () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "cnil_doctrine", [uniteDoctrine("guide-reeedit")]);
+      writeFileSync(
+        join(root, "data", "corpus", "cnil_doctrine", "manifest.json"),
+        `${JSON.stringify(
+          {
+            corpus: "cnil_doctrine",
+            documents_par_type: {
+              guide: [
+                {
+                  slug: "guide-reeedit",
+                  type: "guide",
+                  titre: "Guide réédité",
+                  url: "https://www.cnil.fr/sites/default/files/2025-01/guide-reeedit.pdf",
+                },
+              ],
+            },
+          },
+          null,
+          2,
+        )}\n`,
+        "utf8",
+      );
+      ecrireEntree(root, {
+        ...entree(
+          "cnil_doctrine",
+          "entree-reeedition",
+          "https://www.cnil.fr/sites/default/files/2026-11/guide-reeedit.pdf",
+        ),
+        document: "guide-reeedit",
+        version: "https://www.cnil.fr/sites/default/files/2026-11/guide-reeedit.pdf",
+        type: "guide" as const,
+        motif: "modifie" as const,
+      });
+
+      const appels = { n: 0 };
+      const doctrine: AgentSync = async () => {
+        appels.n += 1;
+        return { ecrit: false, message: "document déjà au corpus" };
+      };
+      const rapport = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-11",
+        depuis: "2026-11-01",
+        agents: { ...agents(INERTE, INERTE, INERTE, INERTE), cnil_doctrine: doctrine },
+        embedder: embedderFactice(),
+      });
+
+      const document = rapport.documents.find(
+        (candidat) => candidat.document === "guide-reeedit",
+      );
+      assert.equal(document?.statut, "perime");
+      assert.equal(document?.version, "https://www.cnil.fr/sites/default/files/2026-11/guide-reeedit.pdf");
+      assert.equal(appels.n, 1, "un PDF changé relance cnil-doctrine:sync");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("ne relance pas la doctrine CNIL quand le PDF est celui du manifeste", async () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "cnil_doctrine", [uniteDoctrine("guide-a-jour")]);
+      writeFileSync(
+        join(root, "data", "corpus", "cnil_doctrine", "manifest.json"),
+        `${JSON.stringify(
+          {
+            corpus: "cnil_doctrine",
+            documents_par_type: {
+              guide: [
+                {
+                  slug: "guide-a-jour",
+                  type: "guide",
+                  titre: "Guide à jour",
+                  url: "https://www.cnil.fr/sites/default/files/2026-11/guide-a-jour.pdf",
+                },
+              ],
+            },
+          },
+          null,
+          2,
+        )}\n`,
+        "utf8",
+      );
+      ecrireEntree(root, {
+        ...entree(
+          "cnil_doctrine",
+          "entree-a-jour",
+          "https://www.cnil.fr/sites/default/files/2026-11/guide-a-jour.pdf",
+        ),
+        document: "guide-a-jour",
+        version: "https://www.cnil.fr/sites/default/files/2026-11/guide-a-jour.pdf",
+        type: "guide" as const,
+        motif: "nouveau" as const,
+      });
+
+      const appels = { n: 0 };
+      const doctrine: AgentSync = async () => {
+        appels.n += 1;
+        return { ecrit: false, message: "appelé" };
+      };
+      const rapport = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-11",
+        depuis: "2026-11-01",
+        agents: { ...agents(INERTE, INERTE, INERTE, INERTE), cnil_doctrine: doctrine },
+        embedder: embedderFactice(),
+      });
+
+      assert.equal(appels.n, 0);
+      assert.equal(
+        rapport.documents.find((document) => document.document === "guide-a-jour")?.statut,
+        "present",
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("classe écarté un document de doctrine que la synchronisation a refusé, sans la relancer", async () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "cnil_doctrine", []);
+      mkdirSync(join(root, "data", "corpus", "cnil_doctrine"), { recursive: true });
+      writeFileSync(
+        join(root, "data", "corpus", "cnil_doctrine", "manifest.json"),
+        `${JSON.stringify(
+          {
+            corpus: "cnil_doctrine",
+            documents_ecartes: [
+              {
+                url: "https://www.cnil.fr/sites/default/files/2026-11/guide-refuse.pdf",
+                titre: "Guide refusé",
+                raison: "mention contraire : tous droits réservés",
+              },
+            ],
+          },
+          null,
+          2,
+        )}\n`,
+        "utf8",
+      );
+      ecrireEntree(root, {
+        ...entree(
+          "cnil_doctrine",
+          "entree-refusee",
+          "https://www.cnil.fr/sites/default/files/2026-11/guide-refuse.pdf",
+        ),
+        document: "guide-refuse",
+        version: "https://www.cnil.fr/sites/default/files/2026-11/guide-refuse.pdf",
+        type: "guide" as const,
+        motif: "nouveau" as const,
+      });
+
+      const appels = { n: 0 };
+      const doctrine: AgentSync = async () => {
+        appels.n += 1;
+        return { ecrit: false, message: "appelé" };
+      };
+      const rapport = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-11",
+        depuis: "2026-11-01",
+        agents: { ...agents(INERTE, INERTE, INERTE, INERTE), cnil_doctrine: doctrine },
+        embedder: embedderFactice(),
+      });
+
+      const document = rapport.documents.find(
+        (candidat) => candidat.document === "guide-refuse",
+      );
+      assert.equal(document?.statut, "ecarte");
+      assert.match(document?.motif ?? "", /tous droits réservés/);
+      assert.equal(appels.n, 0, "un document écarté ne relance pas la synchronisation");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("relance la doctrine CNIL sur un écart transitoire", async () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "cnil_doctrine", []);
+      mkdirSync(join(root, "data", "corpus", "cnil_doctrine"), { recursive: true });
+      writeFileSync(
+        join(root, "data", "corpus", "cnil_doctrine", "manifest.json"),
+        `${JSON.stringify(
+          {
+            corpus: "cnil_doctrine",
+            documents_ecartes: [
+              {
+                url: "https://www.cnil.fr/sites/default/files/2026-11/guide-en-echec.pdf",
+                titre: "Guide en échec",
+                raison: "PDF sans texte",
+              },
+            ],
+          },
+          null,
+          2,
+        )}\n`,
+        "utf8",
+      );
+      ecrireEntree(root, {
+        ...entree(
+          "cnil_doctrine",
+          "entree-en-echec",
+          "https://www.cnil.fr/sites/default/files/2026-11/guide-en-echec.pdf",
+        ),
+        document: "guide-en-echec",
+        version: "https://www.cnil.fr/sites/default/files/2026-11/guide-en-echec.pdf",
+        type: "guide" as const,
+        motif: "nouveau" as const,
+      });
+
+      const appels = { n: 0 };
+      const doctrine: AgentSync = async () => {
+        appels.n += 1;
+        return { ecrit: false, message: "appelé" };
+      };
+      const rapport = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-11",
+        depuis: "2026-11-01",
+        agents: { ...agents(INERTE, INERTE, INERTE, INERTE), cnil_doctrine: doctrine },
+        embedder: embedderFactice(),
+      });
+
+      const document = rapport.documents.find(
+        (candidat) => candidat.document === "guide-en-echec",
+      );
+      assert.equal(document?.statut, "manquant");
+      assert.equal(appels.n, 1, "un échec transitoire relance la synchronisation");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+
+  it("relance la synchronisation CEPD pour un document absent du corpus", async () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "cepd", [uniteCePd("guidelines-012023")]);
+      ecrireEntree(root, {
+        ...entree(
+          "cepd",
+          "entree-cepd",
+          "https://www.edpb.europa.eu/documents/guideline/guidelines-022024_fr",
+        ),
+        document: "guidelines-022024",
+        type: "lignes_directrices",
+      });
+
+      const appels = { n: 0 };
+      const cepd: AgentSync = async () => {
+        appels.n += 1;
+        ajouterUnite(root, "cepd", uniteCePd("guidelines-022024"));
+        return { ecrit: true, message: "329 document(s), 20295 fragment(s)" };
+      };
+      const rapport = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-14",
+        depuis: "2026-11-07",
+        agents: { cepd },
+        embedder: embedderFactice(),
+      });
+
+      assert.equal(appels.n, 1, "un document CEPD manquant relance cepd:sync");
+      assert.equal(rapport.comptes.manquants, 0);
+      assert.equal(rapport.comptes.presents, 1);
+      assert.equal(
+        rapport.documents.find((document) => document.document === "guidelines-022024")?.statut,
+        "present",
+      );
+      assert.equal(rapport.sources.find((source) => source.source === "cepd")?.statut, "ok");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("classe une version CEPD postérieure au corpus en périmé et relance la source", async () => {
+    const root = racine();
+    const slug = "guidelines-012023";
+    try {
+      ecrireCorpus(root, "cepd", [uniteCePd(slug)]);
+      writeFileSync(
+        join(root, "data", "corpus", "cepd", "manifest.json"),
+        `${JSON.stringify({
+          corpus: "cepd",
+          documents: 1,
+          fragments: 1,
+          date_liste: "2026-10-01",
+          documents_types: { [slug]: "lignes_directrices" },
+          documents_versions: { [slug]: "1.0" },
+        })}\n`,
+        "utf8",
+      );
+      ecrireEntree(root, {
+        ...entree(
+          "cepd",
+          "entree-cepd-version",
+          "https://www.edpb.europa.eu/documents/guideline/guidelines-012023_fr",
+        ),
+        document: slug,
+        version: "2.0",
+        type: "lignes_directrices",
+      });
+
+      let appels = 0;
+      const cepd: AgentSync = async () => {
+        appels += 1;
+        return { ecrit: false, message: "version non écrite" };
+      };
+      const rapport = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-14",
+        depuis: "2026-11-07",
+        agents: { cepd },
+        embedder: embedderFactice(),
+      });
+
+      assert.equal(appels, 1, "une version plus récente relance cepd:sync");
+      assert.equal(rapport.comptes.perimes, 1);
+      assert.equal(
+        rapport.documents.find((document) => document.document === slug)?.statut,
+        "perime",
+      );
+      assert.match(formaterRapport(rapport), /Périmés : .*version du corpus antérieure/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("écarte un document CEPD déclaré par le manifeste sans relancer la source", async () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "cepd", [uniteCePd("guidelines-012023")]);
+      writeFileSync(
+        join(root, "data", "corpus", "cepd", "manifest.json"),
+        `${JSON.stringify({
+          corpus: "cepd",
+          documents: 1,
+          fragments: 1,
+          date_liste: "2026-11-10",
+          couverture: {
+            documents_ecartes: [
+              {
+                url: "https://www.edpb.europa.eu/documents/guideline/guidelines-042026_fr",
+                slug: "guidelines-042026",
+                type: "lignes_directrices",
+                raison: "version obsolète",
+              },
+            ],
+          },
+        })}\n`,
+        "utf8",
+      );
+      ecrireEntree(root, {
+        ...entree(
+          "cepd",
+          "entree-cepd-ecartee",
+          "https://www.edpb.europa.eu/documents/guideline/guidelines-042026_fr",
+        ),
+        document: "guidelines-042026",
+      });
+
+      let appels = 0;
+      const cepd: AgentSync = async () => {
+        appels += 1;
+        return { ecrit: false, message: "appelé" };
+      };
+      const rapport = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-14",
+        depuis: "2026-11-07",
+        agents: { cepd },
+        embedder: embedderFactice(),
+      });
+
+      assert.equal(appels, 0, "un document écarté ne relance pas cepd:sync");
+      assert.equal(rapport.comptes.ecartes, 1);
+      const document = rapport.documents.find((element) => element.document === "guidelines-042026");
+      assert.equal(document?.statut, "ecarte");
+      assert.equal(document?.motif, "version obsolète");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("laisse manquant un document CEPD dont l'écart tient à un échec transitoire", async () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "cepd", [uniteCePd("guidelines-012023")]);
+      writeFileSync(
+        join(root, "data", "corpus", "cepd", "manifest.json"),
+        `${JSON.stringify({
+          corpus: "cepd",
+          documents: 1,
+          fragments: 1,
+          date_liste: "2026-11-10",
+          couverture: {
+            documents_ecartes: [
+              {
+                url: "https://www.edpb.europa.eu/documents/guideline/guidelines-042026_fr",
+                slug: "guidelines-042026",
+                type: "lignes_directrices",
+                raison: "page illisible : HTTP 503",
+              },
+            ],
+          },
+        })}\n`,
+        "utf8",
+      );
+      ecrireEntree(root, {
+        ...entree(
+          "cepd",
+          "entree-cepd-illisible",
+          "https://www.edpb.europa.eu/documents/guideline/guidelines-042026_fr",
+        ),
+        document: "guidelines-042026",
+      });
+
+      let appels = 0;
+      const cepd: AgentSync = async () => {
+        appels += 1;
+        return { ecrit: false, message: "appelé" };
+      };
+      const rapport = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-14",
+        depuis: "2026-11-07",
+        agents: { cepd },
+        embedder: embedderFactice(),
+      });
+
+      assert.equal(appels, 1, "un échec transitoire laisse le document à rejouer");
+      assert.equal(rapport.comptes.manquants, 1);
+      assert.equal(rapport.comptes.ecartes, 0);
+      const document = rapport.documents.find((element) => element.document === "guidelines-042026");
+      assert.equal(document?.statut, "manquant");
+      assert.equal(document?.motif, undefined);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("marque une version de consultation dans le rapport", () => {
+    const rapport: RapportSync = {
+      version: 1,
+      a_jour_au: "2026-11-14",
+      derniere_tentative: "2026-11-14",
+      depuis: "2026-11-07",
+      entrees_lues: 1,
+      comptes: { presents: 0, manquants: 1, ecartes: 0, non_mappes: 0, perimes: 0 },
+      documents: [
+        {
+          entree: "x",
+          source: "cepd",
+          document: "guidelines-012023",
+          corpus: "cepd",
+          statut: "manquant",
+          version: "2.0",
+          consultation: true,
+        },
+      ],
+      corpus: [],
+      sources: [],
+      index: { statut: "ignoree" },
+    };
+
+    assert.match(
+      formaterRapport(rapport),
+      /Manquants : guidelines-012023 \(cepd\) \[consultation\]/,
+    );
+  });
+
+  it("recopie la consultation d'une entrée CEPD dans le rapport", async () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "cepd", [uniteCePd("guidelines-012023")]);
+      ecrireEntree(root, {
+        ...entree(
+          "cepd",
+          "entree-cepd-consultation",
+          "https://www.edpb.europa.eu/documents/guideline/guidelines-042026_fr",
+        ),
+        document: "guidelines-042026",
+        version: "projet",
+        consultation: true,
+      });
+
+      const rapport = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-14",
+        depuis: "2026-11-07",
+        agents: { cepd: INERTE },
+        embedder: embedderFactice(),
+      });
+
+      const document = rapport.documents.find(
+        (element) => element.document === "guidelines-042026",
+      );
+      assert.equal(document?.statut, "manquant");
+      assert.equal(document?.consultation, true);
+      assert.match(formaterRapport(rapport), /guidelines-042026 \(cepd\) \[consultation\]/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
 
   it("ne relance aucune source quand le document est déjà présent", async () => {
     const root = racine();
@@ -1051,10 +1779,12 @@ describe("synchronisation du corpus", () => {
         rapport.sources.map((source) => source.source),
         [
           "cnil",
+          "cnil_doctrine",
           "ce",
           "constit",
           "cc",
           "cjue",
+          "cepd",
           "lil",
           "textes_fr",
           "rgpd",
@@ -1068,7 +1798,7 @@ describe("synchronisation du corpus", () => {
         ],
       );
       assert.equal(rapport.sources[0]?.statut, "panne");
-      assert.equal(rapport.sources[1]?.statut, "ok");
+      assert.equal(rapport.sources.find((source) => source.source === "ce")?.statut, "ok");
       assert.equal(ce.appels.n, 1);
     } finally {
       rmSync(root, { recursive: true, force: true });
@@ -1172,8 +1902,10 @@ describe("synchronisation du corpus", () => {
       "cc",
       "ccs",
       "ce",
+      "cepd",
       "cjue",
       "cnil",
+      "cnil_doctrine",
       "constit",
       "eprivacy",
       "eudpr",

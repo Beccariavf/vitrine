@@ -1,6 +1,7 @@
 /** Libellés lisibles des sources ; l'identifiant reste dans les données. */
 const SOURCE_LABELS: Record<string, string> = {
   cnil: "CNIL",
+  cnil_doctrine: "CNIL — doctrine",
   cjeu: "CJUE",
   anssi: "ANSSI",
   cepd: "CEPD",

@@ -7,6 +7,7 @@ import { describe, it } from "node:test";
 import {
   ErreurHttp,
   chargerTexte,
+  entreesSitemap,
   extraireDocuments,
   listerDocuments,
   listerDocumentsG29,
@@ -31,6 +32,7 @@ import {
   estG29,
   numeroDepuisTitre,
   preparerDocument,
+  signatureVersion,
   slugDe,
   statutDepuisTitre,
   titreDepuisPage,
@@ -292,6 +294,58 @@ describe("la liste CEPD", () => {
     );
   });
 
+  it("lit un bloc <url> et retombe sur les <loc> plats", () => {
+    assert.deepEqual(
+      entreesSitemap(
+        "<urlset><url><loc>https://www.edpb.europa.eu/documents/guideline/a_fr</loc>" +
+          "<lastmod>2026-11-12</lastmod></url></urlset>",
+      ),
+      [{ loc: "https://www.edpb.europa.eu/documents/guideline/a_fr", lastmod: "2026-11-12" }],
+    );
+    assert.deepEqual(
+      entreesSitemap(
+        "<sitemapindex><sitemap><loc>https://www.edpb.europa.eu/sitemap.xml?page=1</loc></sitemap></sitemapindex>",
+      ),
+      [{ loc: "https://www.edpb.europa.eu/sitemap.xml?page=1", lastmod: null }],
+    );
+  });
+
+  it("porte le lastmod du bloc <url>, le plus récent des deux langues", async () => {
+    const fetchHtml: FetchHtml = async (url) => {
+      if (url === DESCRIPTEUR.url_sitemap) {
+        return { ok: true, status: 200, text: async () => SITEMAP_INDEX };
+      }
+      return {
+        ok: true,
+        status: 200,
+        text: async () =>
+          "<urlset>" +
+          `<url><loc>${BASE}/documents/guideline/guidelines-012023_fr</loc>` +
+          "<lastmod>2026-01-01</lastmod></url>" +
+          `<url><loc>${BASE}/documents/guideline/guidelines-012023_en</loc>` +
+          "<lastmod>2026-03-01</lastmod></url>" +
+          `<url><loc>${BASE}/documents/guideline/guidelines-sans-date_fr</loc></url>` +
+          "</urlset>",
+      };
+    };
+    const liste = await listerDocumentsSitemap(DESCRIPTEUR, {
+      fetchHtml,
+      attendre: async () => {},
+      tentatives: 1,
+    });
+
+    const parUrl = new Map(
+      liste.documents.map((document) => [document.url, document.lastmod]),
+    );
+    // Le groupe garde l'URL française et la modification anglaise, plus récente.
+    assert.equal(parUrl.get(`${BASE}/documents/guideline/guidelines-012023_fr`), "2026-03-01");
+    assert.equal(
+      parUrl.has(`${BASE}/documents/guideline/guidelines-012023_en`),
+      false,
+    );
+    assert.equal(parUrl.get(`${BASE}/documents/guideline/guidelines-sans-date_fr`), null);
+  });
+
   it("garde une page _fr sans numéro, comme la transparence", async () => {
     const fetchHtml: FetchHtml = async (url) => {
       if (url === DESCRIPTEUR.url_sitemap) {
@@ -543,6 +597,14 @@ describe("le parse CEPD", () => {
       }),
       "2023-09-15",
     );
+  });
+
+  it("donne une signature de version explicite, sinon l'état publié", () => {
+    assert.equal(signatureVersion({ version: "2.0", statut: "finale" }), "2.0");
+    assert.equal(signatureVersion({ version: "rev01", statut: "projet" }), "rev01");
+    assert.equal(signatureVersion({ version: null, statut: "finale" }), "finale");
+    assert.equal(signatureVersion({ version: null, statut: "projet" }), "projet");
+    assert.equal(signatureVersion({ version: "", statut: "finale" }), "finale");
   });
 
   it("écarte le projet quand une version finale porte le même numéro", () => {
@@ -887,6 +949,24 @@ describe("la synchronisation CEPD", () => {
         "guidelines-032021-application-article-651a-gdpr",
         "recommendation-012024",
       ]);
+      // Le sitemap de la fixture ne porte pas de lastmod ; les cartes existent
+      // pour les mêmes slugs que les types, et la signature y est l'état publié.
+      assert.deepEqual(
+        Object.keys(manifeste.documents_versions).sort(),
+        Object.keys(manifeste.documents_types).sort(),
+      );
+      assert.deepEqual(
+        Object.keys(manifeste.couverture.documents_lastmod).sort(),
+        Object.keys(manifeste.documents_types).sort(),
+      );
+      assert.equal(
+        Object.values(manifeste.documents_versions).every((signature) => signature === "finale"),
+        true,
+      );
+      assert.equal(
+        Object.values(manifeste.documents_lastmod).every((lastmod) => lastmod === null),
+        true,
+      );
       assert.equal(manifeste.couverture.pages_lues, 1);
       assert.equal(manifeste.couverture.periode.date_min, "2021-05-01");
       assert.equal(manifeste.couverture.periode.date_max, "2024-06-20");
@@ -902,6 +982,49 @@ describe("la synchronisation CEPD", () => {
       assert.equal(unites.length, parDocument * 4);
       assert.equal(new Set(unites.map((unite) => unite.document)).size, 4);
       assert.equal(existsSync(join(racine, "data", "raw", "cepd")), true);
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
+  });
+
+  it("consigne la version et le lastmod de chaque document retenu", async () => {
+    const racine = racineTemporaire();
+    const slug = "guidelines-012023-article-37-law-enforcement-directive";
+    const pages = new Map<string, string>([
+      [DESCRIPTEUR.url_sitemap, SITEMAP_INDEX],
+      [
+        `${DESCRIPTEUR.url_sitemap}?page=1`,
+        `<urlset><url><loc>${SITEMAP_DOC_01}</loc>` +
+          "<lastmod>2026-11-12</lastmod></url></urlset>",
+      ],
+      [
+        SITEMAP_DOC_01,
+        pageDocumentHtml(
+          "01/2023 sur l'article 37 - Version 2.0",
+          "2023-09-15",
+          "/system/files/documents/2023/g012023_fr.pdf",
+        ),
+      ],
+    ]);
+    try {
+      await syncCePd({
+        rootDir: racine,
+        date: DATE,
+        fetchHtml: fauxHtml(pages),
+        fetchPdf: fauxPdf(PDF),
+        extraireTexte: async () => TEXTE,
+        attendre: async () => {},
+        tentatives: 1,
+      });
+      const manifeste = JSON.parse(
+        readFileSync(join(racine, "data", "corpus", "cepd", "manifest.json"), "utf8"),
+      ) as ManifesteCePd;
+
+      assert.deepEqual(manifeste.documents_types, { [slug]: "lignes_directrices" });
+      assert.deepEqual(manifeste.documents_versions, { [slug]: "2.0" });
+      assert.deepEqual(manifeste.documents_lastmod, { [slug]: "2026-11-12" });
+      assert.deepEqual(manifeste.couverture.documents_versions, { [slug]: "2.0" });
+      assert.deepEqual(manifeste.couverture.documents_lastmod, { [slug]: "2026-11-12" });
     } finally {
       rmSync(racine, { recursive: true, force: true });
     }

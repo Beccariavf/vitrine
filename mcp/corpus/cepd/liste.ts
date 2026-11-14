@@ -91,6 +91,8 @@ export type DocumentListe = {
   pdfUrl: string | null;
   /** Version explicite lue sur la page, quand elle en porte une. */
   version?: string | null;
+  /** Dernière modification déclarée par le sitemap, quand la liste en vient. */
+  lastmod?: string | null;
   /** Langue de la page retenue, quand la liste la connaît. */
   langue?: LanguePage;
   /** Vrai quand la page sert une version soumise à consultation publique. */
@@ -640,6 +642,40 @@ function locs(xml: string): string[] {
   return [...xml.matchAll(/<loc>([^<]+)<\/loc>/gi)].map((trouve) => (trouve[1] ?? "").trim());
 }
 
+/** Une entrée de page de sitemap : son URL et sa dernière modification. */
+export type EntreeSitemap = {
+  loc: string;
+  /** Texte de `<lastmod>`, ou `null` quand le bloc n'en porte pas. */
+  lastmod: string | null;
+};
+
+/**
+ * Entrées d'une page de sitemap : un bloc `<url>…</url>` par entrée, avec son
+ * `<lastmod>`. Un XML sans bloc `<url>` — un index de sitemaps, ou une liste
+ * plate de `<loc>` — est lu comme une suite d'URL sans date.
+ */
+export function entreesSitemap(xml: string): EntreeSitemap[] {
+  const blocs = [...xml.matchAll(/<url\b[^>]*>([\s\S]*?)<\/url>/gi)];
+  if (blocs.length === 0) return locs(xml).map((loc) => ({ loc, lastmod: null }));
+
+  const entrees: EntreeSitemap[] = [];
+  for (const bloc of blocs) {
+    const contenu = bloc[1] ?? "";
+    const loc = (/<loc>([^<]+)<\/loc>/i.exec(contenu)?.[1] ?? "").trim();
+    if (loc === "") continue;
+    const lastmod = (/<lastmod>([^<]+)<\/lastmod>/i.exec(contenu)?.[1] ?? "").trim();
+    entrees.push({ loc, lastmod: lastmod === "" ? null : lastmod });
+  }
+  return entrees;
+}
+
+/** Le plus récent des deux `lastmod` ; `null` quand aucun n'est connu. */
+function lastmodRecent(gauche: string | null, droite: string | null): string | null {
+  if (gauche === null) return droite;
+  if (droite === null) return gauche;
+  return gauche >= droite ? gauche : droite;
+}
+
 /** Numéro EDPB porté par une URL liée, par exemple `guidelines-052020` → `05/2020`. */
 export function numeroDepuisUrlG29(url: string): string | null {
   let chemin: string;
@@ -710,7 +746,8 @@ export function listerDocumentsG29(html: string, pageUrl: string): DocumentG29Li
  * et `_en` des quatre rubriques retenues sont lues, regroupées par document :
  * la page française gagne quand elle existe, l'anglaise sert de repli. Les
  * autres langues et les autres rubriques sont écartées. Les pages n'ont ni
- * titre ni date : le document est enrichi ensuite depuis sa page.
+ * titre ni date : le document est enrichi ensuite depuis sa page, et son
+ * `<lastmod>` de sitemap reste la seule date que la liste porte.
  */
 export async function listerDocumentsSitemap(
   descripteur: DescripteurCePd,
@@ -738,13 +775,16 @@ export async function listerDocumentsSitemap(
   }
 
   const types = new Set(descripteur.types);
-  const groupes = new Map<string, { url: string; type: TypeDocument; langue: LanguePage }>();
+  const groupes = new Map<
+    string,
+    { url: string; type: TypeDocument; langue: LanguePage; lastmod: string | null }
+  >();
   for (const pageUrl of pagesSitemap) {
     const xml = await chargerTexte(pageUrl, { ...options, journal, via: "direct" });
-    for (const loc of locs(xml)) {
+    for (const entree of entreesSitemap(xml)) {
       let url: URL;
       try {
-        url = new URL(loc);
+        url = new URL(entree.loc);
       } catch {
         continue;
       }
@@ -761,15 +801,21 @@ export async function listerDocumentsSitemap(
       const base = url.pathname.replace(/_(fr|en)$/i, "");
       const cle = `${type}|${base}`;
       const existant = groupes.get(cle);
+      // Le groupe garde la modification la plus récente des deux langues, même
+      // quand c'est l'URL écartée qui la porte.
+      const lastmod = lastmodRecent(existant?.lastmod ?? null, entree.lastmod);
       // La version française gagne ; une `_en` déjà vue ne la remplace pas.
-      if (existant !== undefined && (existant.langue === "fr" || langue === "en")) continue;
-      groupes.set(cle, { url: url.href, type, langue });
+      if (existant !== undefined && (existant.langue === "fr" || langue === "en")) {
+        groupes.set(cle, { ...existant, lastmod });
+        continue;
+      }
+      groupes.set(cle, { url: url.href, type, langue, lastmod });
     }
   }
 
   const documents = new Map<string, DocumentListe>();
-  for (const { url, type, langue } of groupes.values()) {
-    documents.set(url, { type, url, titre: "", date: null, pdfUrl: null, langue });
+  for (const { url, type, langue, lastmod } of groupes.values()) {
+    documents.set(url, { type, url, titre: "", date: null, pdfUrl: null, langue, lastmod });
   }
 
   if (documents.size === 0) {

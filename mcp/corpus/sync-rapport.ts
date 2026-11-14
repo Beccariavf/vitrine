@@ -15,15 +15,17 @@ import type { CorpusVeille } from "./veille.ts";
 /**
  * Sources que `npm run corpus:sync` revérifie sur signal, dans leur ordre
  * d'exécution. `cnil`, `ce`, `cc` et `cjue` le sont à chaque passe et portent la
- * fraîcheur ; `constit`, `lil`, `textes_fr` et les corpus d'actes n'y entrent que
- * sur une entrée de veille.
+ * fraîcheur ; `cnil_doctrine`, `cepd`, `constit`, `lil`, `textes_fr` et les
+ * corpus d'actes n'y entrent que sur une entrée de veille.
  */
 export const ORDRE_SOURCES: readonly CorpusVeille[] = [
   "cnil",
+  "cnil_doctrine",
   "ce",
   "constit",
   "cc",
   "cjue",
+  "cepd",
   "lil",
   "textes_fr",
   "rgpd",
@@ -80,6 +82,8 @@ export type DocumentRapport = {
   motif?: string;
   /** Version visée par une entrée `legi` ; permet de clore un document périmé. */
   version?: string;
+  /** Vrai quand la version visée est soumise à consultation publique (`cepd`). */
+  consultation?: boolean;
 };
 
 export type SourceRapport = {
@@ -243,9 +247,11 @@ export function inventaireCorpus(
 }
 
 function ligneManquant(document: DocumentRapport): string {
-  return document.document === null
-    ? `${document.entree} (${document.source})`
-    : `${document.document} (${document.corpus ?? document.source})`;
+  const ligne =
+    document.document === null
+      ? `${document.entree} (${document.source})`
+      : `${document.document} (${document.corpus ?? document.source})`;
+  return document.consultation === true ? `${ligne} [consultation]` : ligne;
 }
 
 /** Texte court : fraîcheur, fenêtre, comptes, manquants, hors corpus, sources et index. */
