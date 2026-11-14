@@ -740,7 +740,7 @@
       {
         "titre": "Guidelines on Automated individual decision-making and Profiling for the purposes of Regulation 2016/679, WP251rev.01",
         "url": "http://ec.europa.eu/newsroom/article29/item-detail.cfm?item_id=612053",
-        "wp": null,
+        "wp": "WP251",
         "numero": null,
         "hebergement": "commission",
         "statut": "ecarte",
@@ -839,8 +839,10 @@
         "wp": "WP256",
         "numero": "01/2022",
         "hebergement": "cepd",
-        "statut": "ecarte",
-        "raison": "page CEPD sans PDF ou non listée au sitemap"
+        "statut": "retenu",
+        "document": "recommendations-12022-on-the-application-for-approval-and-on-the-elements",
+        "type": "recommandation",
+        "successeur": true
       },
       {
         "titre": "Working Document setting up a table with the elements and principles to be found in Processor Binding Corporate Rules, WP 257 rev.01",
@@ -872,9 +874,9 @@
     ],
     "comptes": {
       "listes": 16,
-      "retenus": 5,
-      "successeurs": 4,
-      "ecartes": 11
+      "retenus": 6,
+      "successeurs": 5,
+      "ecartes": 10
     }
   },
   "licence": "Régime ouvert (notice de copyright du CEPD) : la réutilisation est autorisée à des fins commerciales et non commerciales ; la source est citée, le sens du document n'est pas dénaturé, les mentions d'auteur et de source sont conservées. Aucun résumé n'est produit par le serveur.",
@@ -1617,7 +1619,7 @@
         {
           "titre": "Guidelines on Automated individual decision-making and Profiling for the purposes of Regulation 2016/679, WP251rev.01",
           "url": "http://ec.europa.eu/newsroom/article29/item-detail.cfm?item_id=612053",
-          "wp": null,
+          "wp": "WP251",
           "numero": null,
           "hebergement": "commission",
           "statut": "ecarte",
@@ -1716,8 +1718,10 @@
           "wp": "WP256",
           "numero": "01/2022",
           "hebergement": "cepd",
-          "statut": "ecarte",
-          "raison": "page CEPD sans PDF ou non listée au sitemap"
+          "statut": "retenu",
+          "document": "recommendations-12022-on-the-application-for-approval-and-on-the-elements",
+          "type": "recommandation",
+          "successeur": true
         },
         {
           "titre": "Working Document setting up a table with the elements and principles to be found in Processor Binding Corporate Rules, WP 257 rev.01",
@@ -1749,9 +1753,9 @@
       ],
       "comptes": {
         "listes": 16,
-        "retenus": 5,
-        "successeurs": 4,
-        "ecartes": 11
+        "retenus": 6,
+        "successeurs": 5,
+        "ecartes": 10
       }
     },
     "documents_sans_texte_ecartes": 10,
@@ -1837,7 +1841,7 @@
       },
       {
         "url": "http://ec.europa.eu/newsroom/article29/item-detail.cfm?item_id=612053",
-        "slug": "g29-3",
+        "slug": "wp251",
         "type": "g29_repris",
         "raison": "document hébergé hors du site du CEPD (ec.europa.eu)",
         "source": "endossement"
@@ -1858,7 +1862,7 @@
       },
       {
         "url": "http://ec.europa.eu/newsroom/article29/item-detail.cfm?item_id=624045",
-        "slug": "g29-9",
+        "slug": "position-paper",
         "type": "g29_repris",
         "raison": "document hébergé hors du site du CEPD (ec.europa.eu)",
         "source": "endossement"
@@ -1875,13 +1879,6 @@
         "slug": "wp265",
         "type": "g29_repris",
         "raison": "document hébergé hors du site du CEPD (ec.europa.eu)",
-        "source": "endossement"
-      },
-      {
-        "url": "https://edpb.europa.eu/our-work-tools/our-documents/recommendations/recommendations-12022-application-approval-and_en",
-        "slug": "wp256",
-        "type": "g29_repris",
-        "raison": "page CEPD sans PDF ou non listée au sitemap",
         "source": "endossement"
       },
       {
