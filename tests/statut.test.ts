@@ -65,11 +65,25 @@ describe("la table par corpus", () => {
     // 26 unités CNIL MODIFIE (2 recommandations) : la version rendue n'est pas
     // nécessairement celle en vigueur.
     assert.equal(statutApplication("cnil", "MODIFIE", "Recommandation/Lignes directrices"), "inconnu");
-    assert.equal(statutApplication("cepd", "projet"), "inconnu");
-    assert.equal(statutApplication("cepd", "EN_CONSULTATION"), "inconnu");
+    assert.equal(statutApplication("cepd", "MODIFIE"), "inconnu");
+    assert.equal(statutApplication("cepd", "valeur inconnue"), "inconnu");
   });
 
-  it("atteint propose et pendant, qu'aucun corpus ne porte aujourd'hui", () => {
+  it("adopte les avis, décisions et recommandations du CEPD, et propose les projets", () => {
+    // Le statut source du corpus est `finale` ; les synonymes restent lus pour
+    // une source qui écrirait l'état du document autrement.
+    assert.equal(statutApplication("cepd", "finale"), "adoptee");
+    assert.equal(statutApplication("cepd", "adoptée"), "adoptee");
+    assert.equal(statutApplication("cepd", "adopted"), "adoptee");
+    assert.equal(statutApplication("cepd", "endorsed"), "adoptee");
+    assert.equal(statutApplication("cepd", "projet"), "propose");
+    assert.equal(statutApplication("cepd", "EN_CONSULTATION"), "propose");
+    // Une décision contraignante et un avis adopté passent par le même statut.
+    assert.equal(statutApplication("cepd", "finale", "Décision contraignante"), "adoptee");
+    assert.equal(statutApplication("cepd", "finale", "Avis art. 64"), "adoptee");
+  });
+
+  it("atteint propose par les textes et les projets CEPD, pendant par les affaires", () => {
     assert.equal(statutApplication("lil", "PROJET"), "propose");
     assert.equal(statutApplication("lil", "PROPOSE"), "propose");
     assert.equal(statutApplication("lil", "PROPOSITION"), "propose");

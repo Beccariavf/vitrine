@@ -101,7 +101,8 @@ export function trouverPdfDocument(
   );
   const candidats = courants.length > 0 ? courants : uniques;
   const francais = candidats.find((url) => languePdf(url) === "fr");
-  const choisi = francais ?? candidats[0];
+  const anglais = candidats.find((url) => languePdf(url) === "en");
+  const choisi = francais ?? anglais ?? candidats[0];
   return choisi === undefined ? null : { url: choisi, langue: languePdf(choisi) };
 }
 

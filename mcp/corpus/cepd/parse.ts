@@ -9,7 +9,7 @@
 import { decouperParagraphes } from "../cnil/parse.ts";
 import { texteVisible } from "../parse.ts";
 import type { Unite } from "../parse.ts";
-import { dateDansTexte } from "./liste.ts";
+import { LIBELLES_TYPE, dateDansTexte } from "./liste.ts";
 import type { DescripteurCePd, DocumentListe, TypeDocument } from "./liste.ts";
 import { paragraphesDepuisTexte, trouverPdfDocument } from "./pdf.ts";
 
@@ -43,21 +43,40 @@ export function slugDe(url: string): string {
   return slug;
 }
 
+/** Préfixe canonique du numéro, par type de document. */
+export function prefixeNumero(titre: string, type: TypeDocument): string {
+  if (type === "avis_art64") return "Avis";
+  if (type === "decision_art65") {
+    return /\b(?:urgent|urgence|d['’]urgence)\b/i.test(titre)
+      ? "Décision contraignante d'urgence"
+      : "Décision contraignante";
+  }
+  if (type === "recommandation") return "Recommandation";
+  return "Guidelines";
+}
+
 /**
- * Numéro canonique, par exemple `Guidelines 05/2022`, `Recommendation 01/2022`
- * ou `WP260` pour une ligne directrice du groupe Article 29 qui n'a pas de
- * numéro EDPB. Le numéro WP vient du nom du PDF quand le titre est muet.
+ * Numéro canonique, par exemple `Guidelines 05/2022`, `Avis 28/2022`,
+ * `Décision contraignante 1/2021` ou `WP260` pour un document du groupe
+ * Article 29. Le numéro WP vient du nom du PDF quand le titre est muet.
  */
 export function numeroDepuisTitre(titre: string, type: TypeDocument, url?: string): string {
-  const trouve =
-    /\b(?:guidelines?|lignes?\s+directrices?|recommendations?|recommandations?)\s+(?:n[°o]\s*)?(\d{1,2})\s*\/\s*(\d{4})\b/i.exec(
-      titre,
-    );
+  const wp = /\bwp[-_ ]?(\d{2,4})/i.exec(`${titre} ${url ?? ""}`);
+  if (wp?.[1] !== undefined && type !== "avis_art64" && type !== "decision_art65") {
+    return `WP${String(Number(wp[1]))}`;
+  }
+  const rubrique =
+    type === "decision_art65"
+      ? "(?:d[ée]cisions?(?:\\s+contraignantes?)?(?:\\s+d['’]urgence)?|binding\\s+decisions?|urgent\\s+binding\\s+decisions?)"
+      : "(?:guidelines?|lignes?\\s+directrices?|recommendations?|recommandations?|avis|opinions?|d[ée]cisions?\\s+contraignantes?(?:\\s+d['’]urgence)?|binding\\s+decisions?|urgent\\s+binding\\s+decisions?)";
+  const trouve = new RegExp(
+    `\\b${rubrique}\\s+(?:n[°ºo]\\s*)?(\\d{1,2})\\s*\\/\\s*(\\d{4})\\b`,
+    "i",
+  ).exec(titre);
   if (trouve !== null) {
-    const prefixe = type === "recommendation" ? "Recommendation" : "Guidelines";
+    const prefixe = prefixeNumero(titre, type);
     return `${prefixe} ${String(Number(trouve[1])).padStart(2, "0")}/${trouve[2]}`;
   }
-  const wp = /\bwp[-_ ]?(\d{2,4})/i.exec(`${titre} ${url ?? ""}`);
   if (wp?.[1] !== undefined) return `WP${String(Number(wp[1]))}`;
   const slug = slugDe(url ?? titre);
   return slug.replace(/-/g, " ").replace(/\b\w/g, (caractere) => caractere.toUpperCase());
@@ -94,9 +113,22 @@ export function titreDepuisPage(html: string): string {
 }
 
 /**
+ * Vrai pour un document du groupe Article 29 que le CEPD a repris. Le titre ou
+ * le slug portent le numéro WP, ou la page dit l'endossement ; le pied de page
+ * du site nomme « Article 29 » partout et ne compte donc pas.
+ */
+export function estG29(titre: string, url: string, html: string): boolean {
+  const endossement = /endorsed the GDPR[- ]related WP29 Guidelines/i.test(html);
+  const marque =
+    /\barticle[\s-]29\s+(?:working party|data protection working party)\b|\bwp[-_ ]?\d{2,4}(?!\d)|\bworking party\b/i;
+  return endossement || marque.test(`${titre} ${url}`);
+}
+
+/**
  * Enrichit une entrée de sitemap avec le titre, la date, le PDF courant et la
  * version lus sur sa page. Le PDF français est préféré ; les PDF de
- * consultation sont écartés dès qu'un PDF courant existe.
+ * consultation sont écartés dès qu'un PDF courant existe. Une ligne directrice
+ * du G29 reprise par le CEPD prend son type propre.
  */
 export function enrichirDocument(document: DocumentListe, html: string): DocumentListe {
   const titre = titreDepuisPage(html) || document.titre;
@@ -104,7 +136,11 @@ export function enrichirDocument(document: DocumentListe, html: string): Documen
   const pdf = trouverPdfDocument(html, document.url);
   const pdfUrl = pdf?.url ?? document.pdfUrl;
   const version = versionDepuisTitre(titre, pdfUrl ?? document.url) ?? document.version ?? null;
-  return { ...document, titre, date, pdfUrl, version };
+  const type =
+    document.type === "lignes_directrices" && estG29(titre, document.url, html)
+      ? "g29_repris"
+      : document.type;
+  return { ...document, type, titre, date, pdfUrl, version };
 }
 
 /** Version explicite du titre ou du nom de PDF, par exemple `2.0` ou `rev01`. */
@@ -118,13 +154,21 @@ export function versionDepuisTitre(titre: string, url?: string): string | null {
   return rev?.[1] === undefined ? null : `rev${rev[1]}`;
 }
 
-/** Une version finale est retenue ; un projet ou une consultation est signalé. */
+/**
+ * Une version finale est retenue ; un projet ou une consultation est signalé.
+ * Le titre d'un avis porte souvent « projet de décision » : c'est l'objet de
+ * l'avis, pas son état. Seuls les libellés qui qualifient le document lui-même
+ * (« draft guidelines », « projet d'avis », « for public consultation ») en
+ * font un projet.
+ */
 export function statutDepuisTitre(titre: string): "finale" | "projet" {
   const projet =
-    /\b(?:draft|projet|consultation|public consultation|for public consultation|version provisoire)\b/i.test(
+    /\b(?:draft\s+(?:guidelines?|opinion|recommendation)|projet\s+(?:de\s+|d['’])?(?:lignes?\s+directrices?|directives?|avis|opinion|recommandations?)|for\s+(?:a\s+)?public\s+consultation|public\s+consultation\s+draft|consultation\s+draft|version\s+provisoire)\b/i.test(
       titre,
     );
-  const finale = /\b(?:final|finale|adopted|adoptée|adoptee|endorsed)\b/i.test(titre);
+  const finale = /\b(?:final|finale|adopted|adoptée|adoptee|endorsed|endossé|approved|approuvé)\b/i.test(
+    titre,
+  );
   return projet && !finale ? "projet" : "finale";
 }
 
@@ -157,9 +201,12 @@ export function choisirVersions(documents: DocumentPrepare[]): {
 } {
   const groupes = new Map<string, DocumentPrepare[]>();
   for (const document of documents) {
-    const groupe = groupes.get(document.numero) ?? [];
+    // Le type départage deux documents qui portent le même numéro : un avis
+    // 01/2022 et une ligne directrice 01/2022 ne sont pas deux versions.
+    const cle = `${document.type}|${document.numero}`;
+    const groupe = groupes.get(cle) ?? [];
     groupe.push(document);
-    groupes.set(document.numero, groupe);
+    groupes.set(cle, groupe);
   }
 
   const retenus: DocumentPrepare[] = [];
@@ -169,6 +216,9 @@ export function choisirVersions(documents: DocumentPrepare[]): {
       (gauche, droite) =>
         droite.date.localeCompare(gauche.date) ||
         versionNumerique(droite.version) - versionNumerique(gauche.version) ||
+        // À version égale, la page française gagne : le corpus préfère le
+        // français quand il existe.
+        Number(droite.langue === "fr") - Number(gauche.langue === "fr") ||
         gauche.slug.localeCompare(droite.slug),
     );
     const finales = tries.filter((document) => document.statut === "finale");
@@ -201,7 +251,7 @@ export function unitesCePd(
     corpus: descripteur.corpus,
     niveau: "fragment",
     numero: document.numero,
-    chemin: `CEPD > Lignes directrices > ${document.titre}`,
+    chemin: `CEPD > ${LIBELLES_TYPE[document.type]} > ${document.titre}`,
     texte: fragment,
     date_acte: document.date,
     date_debut: document.date,

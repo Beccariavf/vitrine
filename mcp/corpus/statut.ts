@@ -8,8 +8,8 @@
  * jamais réécrit — un statut de publication, un type d'acte ou un statut
  * Légifrance restent lisibles à côté —, et une valeur non reconnue rend
  * `inconnu`, jamais `en_vigueur` : le serveur n'affirme pas ce qu'il n'a pas
- * vérifié. `propose` et `pendant` sont déclarés sans porteur aujourd'hui ; les
- * textes proposés et les affaires pendantes les alimenteront (#24, #56).
+ * vérifié. `propose` porte les documents CEPD soumis à consultation ;
+ * `pendant` attend les affaires pendantes (#24, #56).
  */
 
 /** Vocabulaire uniforme du statut d'application, sans accents comme les autres valeurs du serveur. */
@@ -88,6 +88,28 @@ function formeComparable(valeur: string | null | undefined): string {
 /** Statuts de source qui disent qu'une unité ne s'applique plus. */
 const STATUTS_SANS_EFFET: readonly string[] = ["ABROGE", "ANNULE"];
 
+/** Statuts d'un document CEPD adopté : ligne directrice, avis, décision, recommandation. */
+const STATUTS_CEPD_ADOPTES: readonly string[] = [
+  "FINALE",
+  "ADOPTE",
+  "ADOPTEE",
+  "ADOPTED",
+  "ENDOSSE",
+  "ENDORSED",
+  "APPROUVE",
+  "APPROVED",
+];
+
+/** Statuts d'un document CEPD encore soumis à consultation. */
+const STATUTS_CEPD_CONSULTATION: readonly string[] = [
+  "PROJET",
+  "PROJET_DE_CONSULTATION",
+  "DRAFT",
+  "CONSULTATION",
+  "PUBLIC_CONSULTATION",
+  "EN_CONSULTATION",
+];
+
 /**
  * Statut d'application d'une unité. Le corpus décide d'abord : les textes
  * suivent leur statut source, les décisions juridictionnelles sont rendues. Pour
@@ -122,7 +144,11 @@ export function statutApplication(
   }
   if (collection === "cepd") {
     if (STATUTS_SANS_EFFET.includes(source)) return "abroge";
-    return source === "FINALE" ? "adoptee" : "inconnu";
+    // Un avis art. 64, une décision art. 65, une recommandation ou une ligne
+    // directrice adoptés sont adoptés ; un texte en consultation n'est pas adopté.
+    if (STATUTS_CEPD_ADOPTES.includes(source)) return "adoptee";
+    if (STATUTS_CEPD_CONSULTATION.includes(source)) return "propose";
+    return "inconnu";
   }
   return "inconnu";
 }

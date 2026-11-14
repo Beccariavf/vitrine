@@ -14,6 +14,7 @@ import {
   normaliserUrlWayback,
   snapshotWayback,
   trouverLienPdf,
+  typeDepuisChemin,
 } from "../mcp/corpus/cepd/liste.ts";
 import type {
   DescripteurCePd,
@@ -25,6 +26,7 @@ import {
   choisirVersions,
   dateDocument,
   enrichirDocument,
+  estG29,
   numeroDepuisTitre,
   preparerDocument,
   slugDe,
@@ -78,6 +80,8 @@ const SITEMAP_DOC_01 = `${BASE}/documents/guideline/guidelines-012023-article-37
 const SITEMAP_DOC_02 = `${BASE}/documents/guideline/guidelines-022024-article-48-gdpr_fr`;
 const SITEMAP_DOC_03 = `${BASE}/documents/guideline/guidelines-032021-application-article-651a-gdpr_fr`;
 const SITEMAP_DOC_04 = `${BASE}/documents/guideline/guidelines-042025-pseudonymisation_fr`;
+const SITEMAP_RECO =
+  `${BASE}/documents/recommendation/recommendation-012024_fr`;
 
 /** Page de document minimale : titre, date, PDF courant et PDF de consultation. */
 function pageDocumentHtml(
@@ -116,6 +120,10 @@ const SITEMAP_DOC_PAGES = new Map<string, string>([
     pageDocumentHtml("03/2021 sur l'article 65", "2021-05-01", "/system/files/documents/2021/g032021_fr.pdf"),
   ],
   [SITEMAP_DOC_04, pageDocumentHtml("04/2025 sur la pseudonymisation", "2025-02-20", null)],
+  [
+    SITEMAP_RECO,
+    pageDocumentHtml("01/2024 sur un référentiel", "2024-02-01", "/system/files/2024/r012024_fr.pdf"),
+  ],
 ]);
 
 const SYNC_PAGES = new Map<string, string>([
@@ -159,7 +167,7 @@ function racineTemporaire(): string {
 
 function documentPrepare(titre: string, date = "2023-09-15") {
   return preparerDocument({
-    type: "guideline",
+    type: "lignes_directrices",
     url: DOC_01,
     titre,
     date,
@@ -168,11 +176,11 @@ function documentPrepare(titre: string, date = "2023-09-15") {
 }
 
 describe("la liste CEPD", () => {
-  it("extrait les lignes directrices et ignore consultations et autres types", () => {
+  it("extrait les lignes directrices et ignore les pages de consultation publique", () => {
     const documents = extraireDocuments(PAGE0, URL_LISTE);
 
     assert.equal(documents.length, 5);
-    assert.equal(documents.every((document) => document.type === "guideline"), true);
+    assert.equal(documents.every((document) => document.type === "lignes_directrices"), true);
     assert.equal(
       documents.some((document) => document.url.includes("public-consultations")),
       false,
@@ -188,17 +196,31 @@ describe("la liste CEPD", () => {
     assert.equal(premier.date, "2023-09-15");
   });
 
-  it("ne revendique pas les recommandations", () => {
-    assert.deepEqual(DESCRIPTEUR.types, ["guideline"]);
-    assert.match(DESCRIPTEUR.titre, /^Lignes directrices/);
-    assert.doesNotMatch(DESCRIPTEUR.titre, /recommandation/i);
-    const html =
-      `<a href="${BASE}/documents/recommendation/recommendation-012024_fr">` +
-      "Recommendation 01/2024</a>";
-    assert.equal(extraireDocuments(html, URL_LISTE).length, 0);
+  it("reconnaît les quatre rubriques du sitemap et la version française d'abord", async () => {
+    assert.deepEqual(DESCRIPTEUR.types, [
+      "lignes_directrices",
+      "avis_art64",
+      "decision_art65",
+      "recommandation",
+    ]);
+    const html = [
+      `<a href="${BASE}/documents/guideline/guidelines-012024_fr">Lignes directrices 01/2024</a>`,
+      `<a href="${BASE}/documents/opinion-of-the-board-art-64/opinion-012024_en">Opinion 01/2024</a>`,
+      `<a href="${BASE}/documents/opinion-of-the-board-art-64/opinion-012024_fr">Avis 01/2024</a>`,
+      `<a href="${BASE}/documents/edpb-binding-decisions/binding-decision-12021_en">Binding decision 1/2021</a>`,
+      `<a href="${BASE}/documents/recommendation/recommendation-012024_fr">Recommendation 01/2024</a>`,
+    ].join("");
+    const documents = extraireDocuments(html, URL_LISTE);
+    const parType = new Map(documents.map((document) => [document.type, document]));
+
+    assert.equal(documents.length, 4);
+    assert.equal(parType.get("lignes_directrices")?.url.endsWith("_fr"), true);
+    assert.equal(parType.get("avis_art64")?.url.endsWith("_fr"), true);
+    assert.equal(parType.get("decision_art65")?.langue, "en");
+    assert.equal(parType.get("recommandation")?.langue, "fr");
   });
 
-  it("ne garde du sitemap que les URL _fr de documents/guideline", async () => {
+  it("ne garde du sitemap que les URL _fr et _en des rubriques retenues", async () => {
     const pages = new Map<string, string>([
       [DESCRIPTEUR.url_sitemap, SITEMAP_INDEX],
       [`${DESCRIPTEUR.url_sitemap}?page=1`, SITEMAP_PAGE1],
@@ -212,17 +234,20 @@ describe("la liste CEPD", () => {
     assert.equal(liste.via, "sitemap");
     assert.equal(liste.pages, 1);
     assert.equal(liste.sitemapPages.length, 1);
-    assert.equal(liste.documents.length, 4);
-    assert.equal(liste.documents.every((document) => document.url.endsWith("_fr")), true);
+    assert.equal(liste.documents.length, 5);
     assert.equal(
-      liste.documents.some(
-        (document) => document.url.endsWith("_en") || document.url.endsWith("_de"),
+      liste.documents.every(
+        (document) => document.url.endsWith("_fr") || document.url.endsWith("_en"),
       ),
-      false,
+      true,
     );
     assert.equal(
-      liste.documents.some((document) => document.url.includes("/opinion/")),
+      liste.documents.some((document) => document.url.endsWith("_de")),
       false,
+    );
+    assert.deepEqual(
+      [...new Set(liste.documents.map((document) => document.type))].sort(),
+      ["lignes_directrices", "recommandation"],
     );
   });
 
@@ -419,18 +444,38 @@ describe("le parse CEPD", () => {
   it("déduit le slug, le numéro, la date et la version", () => {
     assert.equal(slugDe(DOC_01), "guidelines-012023-article-37-law-enforcement-directive");
     assert.equal(
-      numeroDepuisTitre("Lignes directrices 01/2023 sur l'article 37", "guideline"),
+      numeroDepuisTitre("Lignes directrices 01/2023 sur l'article 37", "lignes_directrices"),
       "Guidelines 01/2023",
     );
     assert.equal(
-      numeroDepuisTitre("Recommendation 02/2020 on the European Essential Guarantees", "recommendation"),
-      "Recommendation 02/2020",
+      numeroDepuisTitre("Recommandation 02/2021 sur la base juridique", "recommandation"),
+      "Recommandation 02/2021",
+    );
+    assert.equal(
+      numeroDepuisTitre("Avis nº 32/2023 sur le projet de décision", "avis_art64"),
+      "Avis 32/2023",
+    );
+    assert.equal(
+      numeroDepuisTitre("Décision contraignante 1/2021 concernant WhatsApp", "decision_art65"),
+      "Décision contraignante 01/2021",
+    );
+    assert.equal(
+      numeroDepuisTitre("Décision contraignante d'urgence 01/2021", "decision_art65"),
+      "Décision contraignante d'urgence 01/2021",
+    );
+    assert.equal(
+      numeroDepuisTitre("Décision 01/2020 concernant le litige", "decision_art65"),
+      "Décision contraignante 01/2020",
+    );
+    assert.equal(
+      numeroDepuisTitre("Recommendation 02/2020 on the European Essential Guarantees", "recommandation"),
+      "Recommandation 02/2020",
     );
     assert.equal(versionDepuisTitre("Guidelines 01/2023 - Version 2.1"), "2.1");
     assert.equal(
       numeroDepuisTitre(
         "Transparence",
-        "guideline",
+        "g29_repris",
         `${BASE}/system/files/documents/2023-09/wp260rev01_fr.pdf`,
       ),
       "WP260",
@@ -444,9 +489,12 @@ describe("le parse CEPD", () => {
     );
     assert.equal(statutDepuisTitre("Guidelines 01/2023 - draft for public consultation"), "projet");
     assert.equal(statutDepuisTitre("Guidelines 01/2023 - final version"), "finale");
+    assert.equal(statutDepuisTitre("Projet de lignes directrices 01/2023"), "projet");
+    assert.equal(statutDepuisTitre("Avis 24/2020 relatif au projet de décision de l'autorité"), "finale");
+    assert.equal(statutDepuisTitre("Décision contraignante 1/2021 concernant le litige"), "finale");
     assert.equal(
       dateDocument({
-        type: "guideline",
+        type: "lignes_directrices",
         url: DOC_01,
         titre: "Lignes directrices 01/2023 du 15 septembre 2023",
         date: null,
@@ -541,7 +589,7 @@ describe("le PDF CEPD", () => {
 
   it("enrichit une page de sitemap avec titre, date, version et PDF", () => {
     const document = {
-      type: "guideline" as const,
+      type: "lignes_directrices" as const,
       url: SITEMAP_DOC_01,
       titre: "",
       date: null,
@@ -553,6 +601,91 @@ describe("le PDF CEPD", () => {
     assert.equal(enrichi.date, "2023-09-15");
     assert.match(enrichi.pdfUrl ?? "", /g012023_fr\.pdf$/);
     assert.equal(titreDepuisPage(SITEMAP_DOC_PAGES.get(SITEMAP_DOC_01) ?? ""), enrichi.titre);
+  });
+
+  it("reconnaît un document du G29 repris sans confondre le pied de page", () => {
+    const piedDePage =
+      "<footer><a href=\"/about-edpb/legacy-art-29-working-party_fr\">" +
+      "Historique : groupe de travail « Article 29 »</a></footer>";
+    assert.equal(
+      estG29(
+        "Article 29 Working Party - Guidelines on transparency",
+        "https://www.edpb.europa.eu/documents/guideline/article-29-working-party-guidelines_fr",
+        piedDePage,
+      ),
+      true,
+    );
+    assert.equal(
+      estG29(
+        "Lignes directrices 01/2023 sur l'article 37",
+        "https://www.edpb.europa.eu/documents/guideline/guidelines-012023_fr",
+        piedDePage,
+      ),
+      false,
+    );
+    assert.equal(
+      estG29(
+        "Guidelines on the right to data portability",
+        "https://www.edpb.europa.eu/documents/guideline/guidelines-on-the-right-to-data-portability-wp242_en",
+        piedDePage,
+      ),
+      true,
+    );
+    const enrichi = enrichirDocument(
+      {
+        type: "lignes_directrices",
+        url: "https://www.edpb.europa.eu/documents/guideline/article-29-working-party-guidelines_fr",
+        titre: "",
+        date: null,
+        pdfUrl: null,
+      },
+      `${piedDePage}<h1>Article 29 Working Party - Guidelines on transparency</h1>`,
+    );
+    assert.equal(enrichi.type, "g29_repris");
+  });
+
+  it("donne à chaque type son étage de chemin", () => {
+    for (const [type, libelle] of [
+      ["lignes_directrices", "Lignes directrices"],
+      ["avis_art64", "Avis art. 64"],
+      ["decision_art65", "Décisions contraignantes art. 65"],
+      ["recommandation", "Recommandations"],
+      ["g29_repris", "G29 repris"],
+    ] as const) {
+      const document = preparerDocument({
+        type,
+        url: DOC_01,
+        titre: "Avis 01/2024 sur un projet",
+        date: "2024-01-15",
+        pdfUrl: null,
+      });
+      const unites = unitesCePd(document, TEXTE, DESCRIPTEUR);
+      assert.match(unites[0]?.chemin ?? "", new RegExp(`^CEPD > ${libelle} > `));
+    }
+  });
+
+  it("ne confond pas deux types qui portent le même numéro", () => {
+    const avis = preparerDocument({
+      type: "avis_art64",
+      url: `${BASE}/documents/opinion-of-the-board-art-64/opinion-012024_fr`,
+      titre: "Avis 01/2024 sur un projet de décision",
+      date: "2024-01-15",
+      pdfUrl: null,
+    });
+    const decision = preparerDocument({
+      type: "decision_art65",
+      url: `${BASE}/documents/edpb-binding-decisions/binding-decision-12024_fr`,
+      titre: "Décision contraignante 01/2024 sur un litige",
+      date: "2024-01-15",
+      pdfUrl: null,
+    });
+    const { retenus } = choisirVersions([avis, decision]);
+
+    assert.equal(retenus.length, 2);
+    assert.deepEqual(
+      retenus.map((document) => document.type).sort(),
+      ["avis_art64", "decision_art65"],
+    );
   });
 
   it("refuse un fichier qui n'est pas un PDF en nommant l'URL", async () => {
@@ -613,8 +746,8 @@ describe("la synchronisation CEPD", () => {
       });
 
       assert.equal(resultat.pages, 1);
-      assert.equal(resultat.documents, 3);
-      assert.equal(resultat.fragments, parDocument * 3);
+      assert.equal(resultat.documents, 4);
+      assert.equal(resultat.fragments, parDocument * 4);
       assert.equal(resultat.versionsEcartees, 0);
       assert.equal(resultat.documentsSansTexte, 1);
       assert.equal(resultat.ecrit, true);
@@ -625,25 +758,40 @@ describe("la synchronisation CEPD", () => {
       assert.equal(manifeste.corpus, "cepd");
       assert.equal(manifeste.via, "sitemap");
       assert.deepEqual(manifeste.sitemap_pages, [`${DESCRIPTEUR.url_sitemap}?page=1`]);
-      assert.equal(manifeste.documents, 3);
-      assert.equal(manifeste.fragments, parDocument * 3);
+      assert.equal(manifeste.documents, 4);
+      assert.equal(manifeste.fragments, parDocument * 4);
       assert.equal(manifeste.versions_ecartees, 0);
       assert.equal(manifeste.documents_sans_texte_ecartes, 1);
       assert.deepEqual(manifeste.couverture.documents_ecartes, [
         {
           url: SITEMAP_DOC_04,
           slug: "guidelines-042025-pseudonymisation",
+          type: "lignes_directrices",
           raison: "PDF absent",
         },
       ]);
-      assert.deepEqual(manifeste.types_retenus, ["guideline"]);
-      assert.equal(manifeste.langues_pdf.fr, 3);
+      assert.deepEqual(manifeste.types_retenus, ["lignes_directrices", "recommandation"]);
+      assert.equal(manifeste.comptes_par_type.lignes_directrices.documents, 3);
+      assert.equal(
+        manifeste.comptes_par_type.lignes_directrices.fragments,
+        parDocument * 3,
+      );
+      assert.equal(manifeste.comptes_par_type.recommandation.documents, 1);
+      assert.equal(manifeste.comptes_par_type.recommandation.fragments, parDocument);
+      assert.equal(manifeste.comptes_par_type.avis_art64.documents, 0);
+      assert.equal(manifeste.langues_pdf.fr, 4);
       assert.equal(manifeste.langues_pdf.en, 0);
       assert.equal(manifeste.langues_pdf.autre, 0);
+      assert.deepEqual(Object.keys(manifeste.documents_langues).sort(), [
+        "guidelines-012023-article-37-law-enforcement-directive",
+        "guidelines-022024-article-48-gdpr",
+        "guidelines-032021-application-article-651a-gdpr",
+        "recommendation-012024",
+      ]);
       assert.equal(manifeste.couverture.pages_lues, 1);
       assert.equal(manifeste.couverture.periode.date_min, "2021-05-01");
       assert.equal(manifeste.couverture.periode.date_max, "2024-06-20");
-      assert.match(manifeste.licence, /À vérifier/);
+      assert.match(manifeste.licence, /Régime ouvert/);
 
       const unites = readFileSync(
         join(racine, "data", "corpus", "cepd", "unites.jsonl"),
@@ -652,8 +800,8 @@ describe("la synchronisation CEPD", () => {
         .split("\n")
         .filter((ligne) => ligne !== "")
         .map((ligne) => JSON.parse(ligne) as Unite);
-      assert.equal(unites.length, parDocument * 3);
-      assert.equal(new Set(unites.map((unite) => unite.document)).size, 3);
+      assert.equal(unites.length, parDocument * 4);
+      assert.equal(new Set(unites.map((unite) => unite.document)).size, 4);
       assert.equal(existsSync(join(racine, "data", "raw", "cepd")), true);
     } finally {
       rmSync(racine, { recursive: true, force: true });
@@ -675,10 +823,154 @@ describe("la synchronisation CEPD", () => {
     assert.equal(manifeste.via, "sitemap");
     assert.equal(manifeste.couverture.via, "sitemap");
     assert.equal(manifeste.sitemap_pages.length, 5);
-    assert.equal(manifeste.documents_sans_texte_ecartes, 6);
-    assert.deepEqual(manifeste.langues_pdf, { fr: 36, en: 0, autre: 0 });
-    assert.deepEqual(manifeste.types_retenus, ["guideline"]);
+    assert.equal(manifeste.documents, 328);
+    assert.equal(manifeste.fragments, 20287);
+    assert.deepEqual(manifeste.types_retenus, [
+      "lignes_directrices",
+      "avis_art64",
+      "decision_art65",
+      "recommandation",
+      "g29_repris",
+    ]);
+    assert.deepEqual(
+      Object.fromEntries(
+        Object.entries(manifeste.comptes_par_type).map(([type, compte]) => [
+          type,
+          [compte.documents, compte.fragments],
+        ]),
+      ),
+      {
+        lignes_directrices: [43, 6914],
+        avis_art64: [263, 7770],
+        decision_art65: [12, 4571],
+        recommandation: [9, 841],
+        g29_repris: [1, 191],
+      },
+    );
+    assert.equal(manifeste.documents_sans_texte_ecartes, 10);
+    assert.equal(manifeste.versions_ecartees, 3);
+    assert.equal(manifeste.couverture.documents_ecartes.length, 13);
+    assert.deepEqual(manifeste.langues_pdf, { fr: 156, en: 172, autre: 0 });
+    assert.equal(manifeste.couverture.periode.date_min, "2018-04-11");
+    assert.equal(manifeste.couverture.periode.date_max, "2026-11-10");
+    assert.match(manifeste.licence, /Régime ouvert/);
+    assert.ok(
+      manifeste.couverture.documents_ecartes.every(
+        (document) => document.raison.trim() !== "",
+      ),
+    );
     assert.doesNotThrow(() => validerUnites(unites));
+  });
+
+  it("retient le texte anglais quand la page française n'existe pas", async () => {
+    const racine = racineTemporaire();
+    const avisEn =
+      `${BASE}/documents/opinion-of-the-board-art-64/opinion-012024-on-a-draft-decision_en`;
+    const page = [
+      "<html><body><main>",
+      "<h1>Opinion 01/2024 on a draft decision</h1>",
+      '<time datetime="2024-01-15T12:00:00Z">15 January 2024</time>',
+      // PDF sans suffixe de langue : la page anglaise décide du repli.
+      '<a href="/system/files/documents/2024/opinion_012024.pdf">Download</a>',
+      "</main></body></html>",
+    ].join("");
+    const pages = new Map<string, string>([
+      [DESCRIPTEUR.url_sitemap, SITEMAP_INDEX],
+      [
+        `${DESCRIPTEUR.url_sitemap}?page=1`,
+        "<urlset>" +
+          `<url><loc>${avisEn}</loc></url>` +
+          "</urlset>",
+      ],
+      [avisEn, page],
+    ]);
+    try {
+      await syncCePd({
+        rootDir: racine,
+        date: DATE,
+        fetchHtml: fauxHtml(pages),
+        fetchPdf: fauxPdf(PDF),
+        extraireTexte: async () => TEXTE,
+        attendre: async () => {},
+        tentatives: 1,
+      });
+      const manifeste = JSON.parse(
+        readFileSync(join(racine, "data", "corpus", "cepd", "manifest.json"), "utf8"),
+      ) as ManifesteCePd;
+      const unites = readFileSync(
+        join(racine, "data", "corpus", "cepd", "unites.jsonl"),
+        "utf8",
+      )
+        .split("\n")
+        .filter((ligne) => ligne !== "")
+        .map((ligne) => JSON.parse(ligne) as Unite);
+
+      assert.equal(manifeste.documents, 1);
+      assert.equal(manifeste.comptes_par_type.avis_art64.documents, 1);
+      assert.deepEqual(manifeste.langues_pdf, { fr: 0, en: 1, autre: 0 });
+      assert.deepEqual(manifeste.documents_langues, {
+        "opinion-012024-on-a-draft-decision": "en",
+      });
+      assert.equal(manifeste.types_retenus.includes("avis_art64"), true);
+      assert.match(unites[0]?.chemin ?? "", /^CEPD > Avis art\. 64 > /);
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
+  });
+
+  it("écarte une page illisible et un PDF absent sans perdre les autres", async () => {
+    const racine = racineTemporaire();
+    const lisible = `${BASE}/documents/recommendation/recommendation-012024_fr`;
+    const illisible = `${BASE}/documents/recommendation/recommendation-022024_fr`;
+    const sansPdf = `${BASE}/documents/recommendation/recommendation-032024_fr`;
+    const pages = new Map<string, string>([
+      [DESCRIPTEUR.url_sitemap, SITEMAP_INDEX],
+      [
+        `${DESCRIPTEUR.url_sitemap}?page=1`,
+        "<urlset>" +
+          `<url><loc>${lisible}</loc></url>` +
+          `<url><loc>${illisible}</loc></url>` +
+          `<url><loc>${sansPdf}</loc></url>` +
+          "</urlset>",
+      ],
+      [
+        lisible,
+        pageDocumentHtml("01/2024 sur un référentiel", "2024-02-01", "/system/files/2024/r012024_fr.pdf"),
+      ],
+      [sansPdf, pageDocumentHtml("03/2024 sur un référentiel", "2024-03-01", null)],
+    ]);
+    try {
+      const resultat = await syncCePd({
+        rootDir: racine,
+        date: DATE,
+        fetchHtml: fauxHtml(pages),
+        fetchPdf: fauxPdf(PDF),
+        extraireTexte: async () => TEXTE,
+        attendre: async () => {},
+        tentatives: 1,
+      });
+      const manifeste = JSON.parse(
+        readFileSync(join(racine, "data", "corpus", "cepd", "manifest.json"), "utf8"),
+      ) as ManifesteCePd;
+
+      assert.equal(resultat.documents, 1);
+      assert.equal(resultat.documentsSansTexte, 2);
+      const raisons = new Map(
+        manifeste.couverture.documents_ecartes.map((document) => [
+          document.slug,
+          document.raison,
+        ]),
+      );
+      assert.match(raisons.get("recommendation-022024") ?? "", /page illisible/);
+      assert.equal(raisons.get("recommendation-032024"), "PDF absent");
+      assert.ok(
+        manifeste.couverture.documents_ecartes.every(
+          (document) => document.type === "recommandation",
+        ),
+      );
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
   });
 
   it("applique --limite après la sélection des versions", async () => {
@@ -725,8 +1017,8 @@ describe("la synchronisation CEPD", () => {
         tentatives: 1,
       });
 
-      assert.equal(resultat.documents, 1);
-      assert.equal(resultat.fragments, parDocument);
+      assert.equal(resultat.documents, 2);
+      assert.equal(resultat.fragments, parDocument * 2);
       assert.equal(resultat.documentsSansTexte, 1);
       const manifeste = JSON.parse(
         readFileSync(join(racine, "data", "corpus", "cepd", "manifest.json"), "utf8"),
@@ -839,7 +1131,7 @@ describe("la synchronisation CEPD", () => {
 
       assert.equal(resultat.documents, 3);
       assert.equal(resultat.versionsEcartees, 1);
-      assert.equal(resultat.documentsSansTexte, 1);
+      assert.equal(resultat.documentsSansTexte, 2);
       assert.equal(resultat.tentatives.some((entree) => entree.via === "wayback"), true);
     } finally {
       rmSync(racine, { recursive: true, force: true });
