@@ -20,7 +20,6 @@ import {
   chevauchement,
   dateDuDocument,
   deliberationDuDocument,
-  deliberations,
   deliberationsCitees,
   mentionContraire,
   slugDe,
@@ -159,6 +158,17 @@ describe("liste de référence de la doctrine CNIL", () => {
     );
   });
 
+  it("accepte un PDF servi sans www et écarte un autre domaine", () => {
+    const html = [
+      "<main>",
+      '<a href="https://cnil.fr/sites/default/files/guide.pdf">Guide sans www</a>',
+      '<a href="https://exemple.test/sites/default/files/autre.pdf">Autre domaine</a>',
+      "</main>",
+    ].join("");
+    const { pdfs } = extraireDocuments(html, REFERENCE_GUIDES.url, REFERENCE_GUIDES, "www.cnil.fr");
+    assert.deepEqual(pdfs.map((pdf) => pdf.url), ["https://cnil.fr/sites/default/files/guide.pdf"]);
+  });
+
   it("s'arrête quand une page de résultats ne rend plus rien de nouveau", async () => {
     const html = fixture("autres-referentiels.html");
     const fetchHtml: FetchHtml = async (url) => {
@@ -242,7 +252,7 @@ describe("licences et délibérations", () => {
       "Délibération n° 2018-326 du 11 octobre 2018 portant adoption de lignes directrices sur les analyses d'impact " +
       "Délibération n° 2018-327 du 11 octobre 2018 portant adoption de la liste des types d'opérations de traitement " +
       "pour lesquelles une analyse d'impact relative à la protection des données est requise";
-    assert.deepEqual(deliberations(page), ["2018-326", "2018-327"]);
+    assert.deepEqual(deliberationsCitees(page).map((citee) => citee.numero), ["2018-326", "2018-327"]);
     assert.match(deliberationsCitees(page)[1]?.libelle ?? "", /liste des types d'opérations/);
     assert.equal(chevauchement("Liste des types d'opérations de traitement", "portant adoption de la liste des types d'opérations de traitement"), 4);
   });
@@ -447,6 +457,10 @@ describe("synchronisation de la doctrine CNIL", () => {
       documents_ecartes: { url: string; raison: string }[];
       mention: string;
       licence: string;
+      documents_par_type: Record<
+        string,
+        { licence: string; licence_url: string; source: string }[]
+      >;
     };
     assert.deepEqual(manifeste.liste_reference, [
       {
@@ -472,6 +486,12 @@ describe("synchronisation de la doctrine CNIL", () => {
     assert.match(manifeste.documents_ecartes[0]?.raison ?? "", /tous droits réservés/);
     assert.equal(manifeste.mention, "extrait non modifié · CC BY-ND 4.0");
     assert.equal(manifeste.licence, "CC BY-ND 4.0");
+    assert.equal(manifeste.documents_par_type.liste_aipd?.[0]?.licence, "CC BY-ND 4.0");
+    assert.equal(
+      manifeste.documents_par_type.liste_aipd?.[0]?.licence_url,
+      "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+    );
+    assert.equal(manifeste.documents_par_type.liste_aipd?.[0]?.source, "Source : CNIL – https://www.cnil.fr");
 
     const unites = readFileSync(
       join(racine, "data", "corpus", "cnil_doctrine", "unites.jsonl"),

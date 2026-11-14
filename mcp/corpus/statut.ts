@@ -117,7 +117,8 @@ export function statutApplication(
     if (STATUTS_SANS_EFFET.includes(source)) return "abroge";
     return source === "PUBLIE" ? "adoptee" : "inconnu";
   }
-  if (collection === "cnil") {    if (STATUTS_SANS_EFFET.includes(source)) return "abroge";
+  if (collection === "cnil") {
+    if (STATUTS_SANS_EFFET.includes(source)) return "abroge";
     // Une délibération modifiée n'est rendue ici que dans sa version d'origine.
     if (source !== "VIGUEUR") return "inconnu";
     const natureComparable = formeComparable(nature);

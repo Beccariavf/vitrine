@@ -107,11 +107,12 @@ export function nomFichier(url: string): string {
   }
 }
 
-/** Vrai si le lien est un PDF servi par le domaine déclaré. */
+/** Vrai si le lien est un PDF servi par le domaine déclaré (avec ou sans `www`). */
 function estPdf(url: string, domaine: string): boolean {
   try {
-    const hote = new URL(url).hostname.toLowerCase();
-    if (hote !== domaine && !hote.endsWith(`.${domaine}`)) return false;
+    const hote = new URL(url).hostname.toLowerCase().replace(/^www\./, "");
+    const attendu = domaine.toLowerCase().replace(/^www\./, "");
+    if (hote !== attendu && !hote.endsWith(`.${attendu}`)) return false;
     return new URL(url).pathname.toLowerCase().endsWith(".pdf");
   } catch {
     return false;
@@ -210,6 +211,8 @@ export type OptionsHttp = {
   fetchPdf?: FetchPdf;
   tentatives?: number;
   delaiMs?: number;
+  /** Attente avant chaque requête, pour ne pas marteler la source. */
+  pauseEntreMs?: number;
   /** Attente injectable : les tests la remplacent par une fonction vide. */
   attendre?: (ms: number) => Promise<void>;
   /** En-tête `User-Agent` envoyé aux deux types de requête. */
@@ -244,6 +247,8 @@ async function requete<T>(
 
 /** Charge une page HTML, avec reprise sur 429 et 503. */
 export async function chargerTexte(url: string, options: OptionsHttp = {}): Promise<string> {
+  const pause = options.pauseEntreMs ?? 0;
+  if (pause > 0) await (options.attendre ?? attendreMs)(pause);
   const fetchImpl = options.fetchHtml ?? (fetch as unknown as FetchHtml);
   const reponse = await requete(
     url,
@@ -260,6 +265,8 @@ export async function chargerPdf(
   url: string,
   options: OptionsHttp = {},
 ): Promise<Uint8Array> {
+  const pause = options.pauseEntreMs ?? 0;
+  if (pause > 0) await (options.attendre ?? attendreMs)(pause);
   const fetchImpl = options.fetchPdf ?? (fetch as unknown as FetchPdf);
   const reponse = await requete(
     url,

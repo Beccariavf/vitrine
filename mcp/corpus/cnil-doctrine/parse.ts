@@ -95,14 +95,6 @@ export function dateDuDocument(texte: string): string | null {
   return Number.isNaN(Date.parse(date)) ? null : date;
 }
 
-/**
- * Numéros de délibération cités par un texte, normalisés (`2018-326`,
- * `2019-011`), sans doublon et dans l'ordre de lecture.
- */
-export function deliberations(texte: string): string[] {
-  return deliberationsCitees(texte).map((citee) => citee.numero);
-}
-
 /** Une délibération citée par une page, avec l'intitulé qui la suit. */
 export type DeliberationCitee = { numero: string; libelle: string };
 
@@ -251,23 +243,22 @@ export type DocumentDoctrine = {
   slug: string;
   /** Date du document, ou date d'extraction quand il ne se date pas. */
   date_acte: string;
-  /** D'où vient `date_acte` : le document lui-même ou la passe d'extraction. */
-  date_source: "document" | "extraction";
-  date_extraction: string;
-  snapshot: string;
 };
 
 /**
  * Fragments d'un document : chaque fragment est une tranche du texte extrait,
- * sans réécriture. Le chemin nomme le type et le titre ; l'URL est celle du
- * document.
+ * sans réécriture. Un fragment sans aucune lettre (ponctuation seule, numéro de
+ * page) est écarté : il ne porte aucun texte citable. Le chemin nomme le type et
+ * le titre ; l'URL est celle du document.
  */
 export function unitesDoctrine(
   document: DocumentDoctrine,
   texte: string,
   descripteur: DescripteurDoctrine,
 ): Unite[] {
-  const fragments = decouperParagraphes(paragraphesDepuisTexte(texte));
+  const fragments = decouperParagraphes(paragraphesDepuisTexte(texte)).filter((fragment) =>
+    /\p{L}/u.test(fragment),
+  );
   if (fragments.length === 0) {
     throw new Error(`Aucun fragment pour ${document.url} : le texte extrait est vide`);
   }

@@ -31,7 +31,7 @@
   "consulte_le": "2026-11-14",
   "date_extraction": "2026-11-14",
   "documents": 56,
-  "fragments": 4461,
+  "fragments": 4459,
   "types": {
     "guide": 30,
     "referentiel": 26,
@@ -53,61 +53,79 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 105
       },
       {
         "slug": "guide-communication-politique",
         "type": "guide",
         "titre": "Guide Communication Politique - Protéger les données des électeurs",
-        "url": "https://www.cnil.fr/sites/default/files/2025-11/guide_communication_politique.pdf",
+        "url": "https://cnil.fr/sites/default/files/2025-11/guide_communication_politique.pdf",
         "snapshot": "f3afb51a29970a16e587b7dc7d5fd5c1cedc9942d861c105a1cc63634cbd56f7",
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 35
       },
       {
         "slug": "guide-violations-education-etablissements",
         "type": "guide",
         "titre": "Guide pratique - Les violations de données dans l'éducation (à destination des directeurs d'école, des chefs d'établissement, du personnel administratif et enseignant)",
-        "url": "https://www.cnil.fr/sites/default/files/2025-05/guide_violations_education_etablissements.pdf",
+        "url": "https://cnil.fr/sites/default/files/2025-05/guide_violations_education_etablissements.pdf",
         "snapshot": "5fe0ba497b6b0c3c9de31fe484e75000bf847b7eabe8a7dc974c80991789fbd2",
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 57
       },
       {
         "slug": "guide-violations-education-dpo",
         "type": "guide",
         "titre": "Guide pratique - Les violations de données dans l'éducation (à destination des délégués à la protection des données)",
-        "url": "https://www.cnil.fr/sites/default/files/2025-05/guide_violations_education_dpo.pdf",
+        "url": "https://cnil.fr/sites/default/files/2025-05/guide_violations_education_dpo.pdf",
         "snapshot": "3a8dd9fcb8a5c10a6dea023a588af956217d49858daae896ed0fc84ca2b4a3fb",
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 60
       },
       {
         "slug": "guide-aitd-pdf",
         "type": "guide",
         "titre": "Guide pratique - Analyse d'impact des transferts de données",
-        "url": "https://www.cnil.fr/sites/default/files/2025-02/guide_aitd_pdf.pdf",
+        "url": "https://cnil.fr/sites/default/files/2025-02/guide_aitd_pdf.pdf",
         "snapshot": "0e71f0fba2373c2582feb6bad89a8ab32c0490a8675cea030e188b2dd72c69fe",
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 105
       },
       {
         "slug": "cnil-guide-securite-personnelle",
         "type": "guide",
         "titre": "Guide de la sécurité des données personnelles 2024",
-        "url": "https://www.cnil.fr/sites/default/files/2026-05/cnil_guide_securite_personnelle.pdf",
+        "url": "https://cnil.fr/sites/default/files/2026-05/cnil_guide_securite_personnelle.pdf",
         "snapshot": "5602bd27bc00e5c593a05679895ba40c9c4d7ebd5b60df5543f65e11467636a8",
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 189
       },
       {
@@ -119,6 +137,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 224
       },
       {
@@ -130,6 +151,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 160
       },
       {
@@ -141,6 +165,9 @@
         "date_acte": "2023-01-30",
         "date_source": "document",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 435
       },
       {
@@ -152,6 +179,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 57
       },
       {
@@ -163,6 +193,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 49
       },
       {
@@ -174,6 +207,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 157
       },
       {
@@ -185,6 +221,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 70
       },
       {
@@ -196,6 +235,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 8
       },
       {
@@ -207,6 +249,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 21
       },
       {
@@ -218,6 +263,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 86
       },
       {
@@ -229,6 +277,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 50
       },
       {
@@ -240,7 +291,10 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
-        "fragments": 137
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
+        "fragments": 136
       },
       {
         "slug": "guide-cnom-cnil",
@@ -251,6 +305,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 93
       },
       {
@@ -262,6 +319,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 9
       },
       {
@@ -273,6 +333,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 10
       },
       {
@@ -284,6 +347,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 9
       },
       {
@@ -295,6 +361,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 83
       },
       {
@@ -306,6 +375,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 135
       },
       {
@@ -317,6 +389,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 62
       },
       {
@@ -328,6 +403,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 256
       },
       {
@@ -339,6 +417,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 80
       },
       {
@@ -350,6 +431,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 48
       },
       {
@@ -361,6 +445,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 323
       },
       {
@@ -372,6 +459,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 42
       }
     ],
@@ -385,6 +475,9 @@
         "date_acte": "2019-11-21",
         "date_source": "document",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 59
       },
       {
@@ -396,6 +489,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 42
       },
       {
@@ -407,6 +503,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 20
       },
       {
@@ -418,6 +517,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 11
       },
       {
@@ -429,6 +531,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 33
       },
       {
@@ -440,6 +545,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 42
       },
       {
@@ -451,6 +559,9 @@
         "date_acte": "2021-03-11",
         "date_source": "document",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 86
       },
       {
@@ -462,6 +573,9 @@
         "date_acte": "2021-04-12",
         "date_source": "document",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 34
       },
       {
@@ -473,6 +587,9 @@
         "date_acte": "2021-05-06",
         "date_source": "document",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 63
       },
       {
@@ -484,6 +601,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 31
       },
       {
@@ -495,6 +615,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 22
       },
       {
@@ -506,6 +629,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 25
       },
       {
@@ -517,6 +643,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 11
       },
       {
@@ -528,6 +657,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 60
       },
       {
@@ -539,6 +671,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 36
       },
       {
@@ -550,6 +685,9 @@
         "date_acte": "2022-01-20",
         "date_source": "document",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 101
       },
       {
@@ -561,6 +699,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 73
       },
       {
@@ -572,6 +713,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 52
       },
       {
@@ -583,6 +727,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 63
       },
       {
@@ -594,6 +741,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 124
       },
       {
@@ -605,6 +755,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 66
       },
       {
@@ -616,6 +769,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 69
       },
       {
@@ -627,6 +783,9 @@
         "date_acte": "2023-07-06",
         "date_source": "document",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 73
       },
       {
@@ -638,6 +797,9 @@
         "date_acte": "2019-11-21",
         "date_source": "document",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 59
       },
       {
@@ -649,6 +811,9 @@
         "date_acte": "2026-11-14",
         "date_source": "extraction",
         "date_extraction": "2026-11-14",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 22
       },
       {
@@ -660,7 +825,10 @@
         "date_acte": "2026-04-02",
         "date_source": "document",
         "date_extraction": "2026-11-14",
-        "fragments": 29
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
+        "fragments": 28
       }
     ],
     "liste_aipd": []
@@ -708,6 +876,7 @@
     },
     "couverts_par_cnil": 2,
     "documents_ecartes": 0,
-    "mentions_contraires": 0
+    "mentions_contraires": 0,
+    "licence_note": "Les textes de cnil.fr sont sous CC BY-ND 4.0 sauf mention contraire ; l'heuristique écarte une mention contraire explicite. Un document co-édité avec un tiers garde le crédit du site et son lien, la source ne fournissant pas d'autre mention."
   }
 }

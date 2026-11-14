@@ -72,6 +72,11 @@ export type DocumentManifeste = {
   date_acte: string;
   date_source: "document" | "extraction";
   date_extraction: string;
+  /** Licence applicable à ce document, portée par le document lui-même. */
+  licence: string;
+  licence_url: string;
+  /** Crédit à afficher avec chaque extrait de ce document. */
+  source: string;
   fragments: number;
 };
 
@@ -119,6 +124,7 @@ export type ManifesteDoctrine = {
     couverts_par_cnil: number;
     documents_ecartes: number;
     mentions_contraires: number;
+    licence_note: string;
   };
 };
 
@@ -133,6 +139,8 @@ export type SyncDoctrineOptions = {
   attendre?: (ms: number) => Promise<void>;
   tentatives?: number;
   delaiMs?: number;
+  /** Attente avant chaque requête ; par défaut, le `delai_ms` du descripteur. */
+  pauseEntreMs?: number;
   /** Extraction injectable : les tests remplacent unpdf par un texte de fixture. */
   extraireTexte?: (octets: Uint8Array, url: string) => Promise<string>;
   /** Texte injectable des pages de référence, pour éviter le réseau en test. */
@@ -213,6 +221,7 @@ export function creerTelechargeur(
     ...(options.attendre === undefined ? {} : { attendre: options.attendre }),
     ...(options.tentatives === undefined ? {} : { tentatives: options.tentatives }),
     ...(options.delaiMs === undefined ? {} : { delaiMs: options.delaiMs }),
+    ...(options.pauseEntreMs === undefined ? {} : { pauseEntreMs: options.pauseEntreMs }),
   };
 
   const memoriser = (url: string, fichier: string, empreinte: string, date: string): void => {
@@ -368,23 +377,39 @@ export async function syncDoctrine(
   const brutDir = join(rootDir, DOSSIER_BRUT);
   const cache = lireCache(brutDir);
   const ecrire = options.dryRun !== true;
-  const telechargeur = creerTelechargeur(brutDir, cache, { ...options, date }, ecrire);
+  const delai = options.delaiMs ?? descripteur.delai_ms;
+  const optionsHttp = {
+    ...(options.fetchHtml === undefined ? {} : { fetchHtml: options.fetchHtml }),
+    ...(options.fetchPdf === undefined ? {} : { fetchPdf: options.fetchPdf }),
+    ...(options.attendre === undefined ? {} : { attendre: options.attendre }),
+    tentatives: options.tentatives ?? descripteur.tentatives,
+    delaiMs: delai,
+    pauseEntreMs: delai,
+  };
+  const telechargeur = creerTelechargeur(
+    brutDir,
+    cache,
+    { ...options, ...optionsHttp },
+    ecrire,
+  );
   const lirePage =
     options.lirePage ?? ((url: string) => telechargeur.texte(url).then((lu) => lu.contenu));
+  /** Les pages de résultats passent par le cache comme les pages de document. */
+  const optionsReference = {
+    ...optionsHttp,
+    pauseEntreMs: 0,
+    fetchHtml: async (url: string) => {
+      const lu = await telechargeur.texte(url);
+      return { ok: true, status: 200, text: async () => lu.contenu };
+    },
+  };
 
   const candidats: Candidat[] = [];
   const references: ManifesteDoctrine["liste_reference"] = [];
   let pagesLues = 0;
 
   for (const reference of descripteur.pages_reference) {
-    const http = {
-      ...(options.fetchHtml === undefined ? {} : { fetchHtml: options.fetchHtml }),
-      ...(options.fetchPdf === undefined ? {} : { fetchPdf: options.fetchPdf }),
-      ...(options.attendre === undefined ? {} : { attendre: options.attendre }),
-      ...(options.tentatives === undefined ? {} : { tentatives: options.tentatives }),
-      ...(options.delaiMs === undefined ? {} : { delaiMs: options.delaiMs }),
-    };
-    const liste = await parcourirReference(reference, descripteur.domaine, http);
+    const liste = await parcourirReference(reference, descripteur.domaine, optionsReference);
     pagesLues += liste.pagesLues;
     references.push({
       type: reference.type,
@@ -490,9 +515,6 @@ export async function syncDoctrine(
         titre: lu.titre,
         slug: lu.slug,
         date_acte: lu.date_acte,
-        date_source: lu.date_source,
-        date_extraction: date,
-        snapshot: lu.snapshot,
       },
       texte,
       descripteur,
@@ -507,6 +529,9 @@ export async function syncDoctrine(
       date_acte: lu.date_acte,
       date_source: lu.date_source,
       date_extraction: date,
+      licence: descripteur.licence,
+      licence_url: descripteur.licence_url,
+      source: descripteur.source,
       fragments: fragments.length,
     });
   }
@@ -581,6 +606,10 @@ export async function syncDoctrine(
       couverts_par_cnil: couverts.length,
       documents_ecartes: ecartes.length,
       mentions_contraires: ecartes.filter((ecarte) => ecarte.raison.startsWith("mention contraire")).length,
+      licence_note:
+        "Les textes de cnil.fr sont sous CC BY-ND 4.0 sauf mention contraire ; " +
+        "l'heuristique écarte une mention contraire explicite. Un document co-édité avec un tiers " +
+        "garde le crédit du site et son lien, la source ne fournissant pas d'autre mention.",
     },
   };
 
@@ -631,7 +660,7 @@ async function main(argv: string[]): Promise<void> {
     process.stderr.write(
       `${resultat.documents} document(s), ${resultat.fragments} fragment(s), ` +
         `${resultat.couverts} couvert(s) par le corpus CNIL, ${resultat.ecartes} écarté(s), ` +
-        `${resultat.pagesLues} page(s) de référence` +
+        `${resultat.pagesLues} page(s) de résultats lues` +
         `${dryRun ? " — dry-run, rien n'est écrit" : resultat.ecrit ? " — corpus réécrit" : " — corpus inchangé"}\n`,
     );
   } catch (error) {

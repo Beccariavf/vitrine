@@ -29,6 +29,9 @@ type DocumentManifeste = {
   titre: string;
   url: string;
   date_extraction: string;
+  licence?: unknown;
+  licence_url?: unknown;
+  source?: unknown;
 };
 
 type ManifesteDoctrine = {
@@ -86,13 +89,20 @@ export function mentionsDoctrine(rootDir: string): Map<string, MentionDoctrine> 
       ) {
         continue;
       }
+      // La licence du document prime sur celle du manifeste : un document peut
+      // un jour relever d'un autre régime, et le crédit le suit.
+      const licenceDocument =
+        typeof document.licence === "string" ? document.licence : licence;
+      const licenceUrlDocument =
+        typeof document.licence_url === "string" ? document.licence_url : licenceUrl;
+      const sourceDocument = typeof document.source === "string" ? document.source : source;
       mentions.set(document.slug, {
         mention: `${mention} · ${document.url}`,
         titre: document.titre,
-        source,
+        source: sourceDocument,
         date_extraction: dateFr(document.date_extraction),
-        licence,
-        licence_url: licenceUrl,
+        licence: licenceDocument,
+        licence_url: licenceUrlDocument,
       });
     }
   }
