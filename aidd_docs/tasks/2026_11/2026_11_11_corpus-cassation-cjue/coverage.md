@@ -5,7 +5,7 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 | Corpus | Documents | Fragments | Période | Source | Licence |
 |---|---:|---:|---|---|---|
 | `rgpd` | 1 acte | 272 (99 articles + 173 considérants) | publication 2016-05-04 ; applicable depuis 2018-05-25 | CELLAR / EUR-Lex, CELEX `32016R0679` | Décision 2011/833/UE (CC BY 4.0) |
-| `aiact` | 1 acte | 293 (113 articles + 180 considérants) | publication 2024-07-12 ; en vigueur depuis 2024-08-01 | CELLAR / EUR-Lex, CELEX `32024R1689` | Décision 2011/833/UE (CC BY 4.0) |
+| `aiact` | 1 acte | 299 (119 articles de la consolidation `02024R1689-20260727` + 180 considérants de l'acte d'origine) | publication 2024-07-12 ; en vigueur depuis 2024-08-01 | CELLAR / EUR-Lex, CELEX `32024R1689` | Décision 2011/833/UE (CC BY 4.0) |
 | `cnil` | 3 245 | 29 299 | arrêté au 2026-10-30 | DINUM (historique) + DILA (incréments) | DINUM : `etalab-2.0` et `lov2`, écart déclaré ; DILA : Licence Ouverte 2.0 |
 | `lil` | 1 | 133 articles en vigueur | version consolidée au 2026-10-01 ; consultée le 2026-11-09 | PISTE — Légifrance `/consult/legiPart` | Licence Ouverte 2.0 (Etalab) |
 | `textes_fr` | 3 | 183 articles en vigueur (décret 2019-536 : 166 ; Code pénal 226-16 à 226-24 : 16 ; CPCE L34-5 : 1) ; 2 abrogés écartés | consultés le 2026-11-14 | PISTE — Légifrance `/consult/legiPart`, `/consult/code`, `/consult/getArticleWithIdAndNum` | Licence Ouverte 2.0 (Etalab) |

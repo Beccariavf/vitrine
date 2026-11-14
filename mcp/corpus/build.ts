@@ -4,10 +4,11 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { writeRaw } from "../../veille/write.ts";
 import type { FetchLike } from "../../veille/fetch.ts";
 import { fetchCellar } from "./fetch.ts";
-import { estConsolide, parseCellar, parseConsolide } from "./parse.ts";
+import { estConsolide, compterConsiderantsConsolide, parseCellar, parseConsolide, urlVersion } from "./parse.ts";
 import type { Descripteur, Unite } from "./parse.ts";
 import { parseCcs } from "./ccs/parse.ts";
 import { writeCorpus } from "./write.ts";
+import type { OrigineConsiderants } from "./write.ts";
 
 const ICI = dirname(fileURLToPath(import.meta.url));
 
@@ -19,6 +20,8 @@ export type BuildOptions = {
   descripteurPath?: string;
   /** Une capture locale remplace l'appel réseau ; le test ne sort jamais du disque. */
   fixturePath?: string;
+  /** Capture locale de l'acte d'origine, quand une consolidation n'a pas de préambule. */
+  origineFixturePath?: string;
   fetchImpl?: FetchLike;
 };
 
@@ -27,6 +30,8 @@ export type BuildSetOptions = {
   /** Corpus ou document CELEX à construire seul ; absent, tous les descripteurs. */
   document?: string;
   fixturePath?: string;
+  /** Capture locale de l'acte d'origine, quand une consolidation n'a pas de préambule. */
+  origineFixturePath?: string;
   fetchImpl?: FetchLike;
 };
 
@@ -49,6 +54,11 @@ export function lireDescripteurs(dossier = ICI): Descripteur[] {
  * Récupère (ou lit) le rendu XHTML, le parse, puis écrit le snapshot brut et le
  * corpus. Rien n'est écrit avant que le parse n'ait réussi : une capture
  * incomplète laisse la racine intacte.
+ *
+ * Une consolidation sans préambule ne porte aucun considérant : le corpus garde
+ * ceux de l'acte d'origine, que les actes modificatifs ne touchent pas, et prend
+ * les articles de la consolidation. Les deux captures sont parsées avant la
+ * moindre écriture.
  */
 async function construire(
   descripteur: Descripteur,
@@ -60,14 +70,34 @@ async function construire(
       ? await fetchCellar(descripteur.version ?? descripteur.document, descripteur.langue, options.fetchImpl)
       : readFileSync(options.fixturePath, "utf8");
 
-  const unites =
-    descripteur.parseur === "ccs"
-      ? parseCcs(contenu, descripteur)
-      : estConsolide(descripteur)
-        ? parseConsolide(contenu, descripteur)
-        : parseCellar(contenu, descripteur);
+  let unites: Unite[];
+  let origine: OrigineConsiderants | undefined;
+  if (descripteur.parseur === "ccs") {
+    unites = parseCcs(contenu, descripteur);
+  } else if (estConsolide(descripteur)) {
+    if (compterConsiderantsConsolide(contenu) === 0 && descripteur.considerants_attendus > 0) {
+      const contenuOrigine =
+        options.origineFixturePath === undefined
+          ? await fetchCellar(descripteur.document, descripteur.langue, options.fetchImpl)
+          : readFileSync(options.origineFixturePath, "utf8");
+      // Les considérants viennent de l'acte d'origine : leur lien pointe cet acte,
+      // même quand le descripteur sert l'URL de la consolidation.
+      const descripteurOrigine = { ...descripteur, url: urlVersion(descripteur.document) };
+      const considerants = parseCellar(contenuOrigine, descripteurOrigine, "considérants").filter(
+        (unite) => unite.niveau === "considérant",
+      );
+      const articles = parseConsolide(contenu, { ...descripteur, considerants_attendus: 0 });
+      unites = [...considerants, ...articles];
+      origine = { document: descripteur.document, snapshotPath: writeRaw(rootDir, contenuOrigine, "xhtml") };
+    } else {
+      unites = parseConsolide(contenu, descripteur);
+    }
+  } else {
+    unites = parseCellar(contenu, descripteur);
+  }
+
   const snapshotPath = writeRaw(rootDir, contenu, "xhtml");
-  const { manifestPath, unitesPath } = writeCorpus(rootDir, descripteur, unites, snapshotPath);
+  const { manifestPath, unitesPath } = writeCorpus(rootDir, descripteur, unites, snapshotPath, origine);
 
   return { unites, snapshotPath, manifestPath, unitesPath };
 }
@@ -112,6 +142,9 @@ export async function buildCorpusSet(options: BuildSetOptions = {}): Promise<Bui
       await construire(descripteur, {
         ...(options.rootDir === undefined ? {} : { rootDir: options.rootDir }),
         ...(options.fixturePath === undefined ? {} : { fixturePath: options.fixturePath }),
+        ...(options.origineFixturePath === undefined
+          ? {}
+          : { origineFixturePath: options.origineFixturePath }),
         ...(options.fetchImpl === undefined ? {} : { fetchImpl: options.fetchImpl }),
       }),
     );

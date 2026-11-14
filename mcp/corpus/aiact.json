@@ -11,6 +11,8 @@
   "date_debut": "2024-08-01",
   "date_fin": null,
   "statut": "en_vigueur",
-  "articles_attendus": 113,
-  "considerants_attendus": 180
+  "articles_attendus": 119,
+  "considerants_attendus": 180,
+  "version": "02024R1689-20260727",
+  "date_consolidation": "2026-07-27"
 }

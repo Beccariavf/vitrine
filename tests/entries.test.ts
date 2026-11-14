@@ -65,6 +65,7 @@ describe("les entrées committées", () => {
       arcom: "www.arcom.fr",
       cetat: "www.legifrance.gouv.fr",
       judilibre: "www.courdecassation.fr",
+      eurlex: "eur-lex.europa.eu",
     };
     for (const item of entries) {
       assert.equal(typeof item.id, "string");

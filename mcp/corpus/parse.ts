@@ -211,8 +211,16 @@ function uniteDe(
  * document. Les comptes viennent du descripteur : une capture incomplète ou un
  * descripteur périmé lèvent en nommant le document et le compte attendu ; aucun
  * appelant n'écrit alors de fichier.
+ *
+ * `comptes: "considérants"` ne valide que le compte de considérants : la
+ * capture est alors l'acte d'origine, dont les articles ne sont pas ceux du
+ * corpus consolidé.
  */
-export function parseCellar(xhtml: string, descripteur: Descripteur): Unite[] {
+export function parseCellar(
+  xhtml: string,
+  descripteur: Descripteur,
+  comptes: "tous" | "considérants" = "tous",
+): Unite[] {
   const releves = ancres(xhtml);
   const numerosArticles = new Set(
     releves.filter((ancre) => ancre.genre === "art").map((ancre) => Number(ancre.numero)),
@@ -221,18 +229,20 @@ export function parseCellar(xhtml: string, descripteur: Descripteur): Unite[] {
     releves.filter((ancre) => ancre.genre === "rct").map((ancre) => Number(ancre.numero)),
   );
 
-  const articleManquant = premierManquant(numerosArticles, descripteur.articles_attendus);
-  if (articleManquant !== null) {
-    throw new Error(
-      `Capture ${descripteur.document} incomplète : ancre art_${articleManquant} absente ` +
-        `(${numerosArticles.size} articles au lieu de ${descripteur.articles_attendus})`,
-    );
-  }
-  if (numerosArticles.size !== descripteur.articles_attendus) {
-    throw new Error(
-      `Capture ${descripteur.document} : ${numerosArticles.size} articles au lieu de ` +
-        `${descripteur.articles_attendus} attendus`,
-    );
+  if (comptes === "tous") {
+    const articleManquant = premierManquant(numerosArticles, descripteur.articles_attendus);
+    if (articleManquant !== null) {
+      throw new Error(
+        `Capture ${descripteur.document} incomplète : ancre art_${articleManquant} absente ` +
+          `(${numerosArticles.size} articles au lieu de ${descripteur.articles_attendus})`,
+      );
+    }
+    if (numerosArticles.size !== descripteur.articles_attendus) {
+      throw new Error(
+        `Capture ${descripteur.document} : ${numerosArticles.size} articles au lieu de ` +
+          `${descripteur.articles_attendus} attendus`,
+      );
+    }
   }
   const considerantManquant = premierManquant(
     numerosConsiderants,
@@ -317,35 +327,45 @@ export function numeroArticleConsolide(titre: string): string | null {
   return trouve[2] === undefined ? base : `${base} ${trouve[2].toLowerCase()}`;
 }
 
+/** URL EUR-Lex d'une version servie : une consolidation n'a pas d'ancre ELI. */
+export function urlVersion(version: string): string {
+  return `https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:${version}`;
+}
+
 /**
- * Rend les articles et les considérants d'une version consolidée CELLAR. Ce
- * format n'a pas d'ancres ELI : un article commence à `title-article-norm`, un
- * chapitre à `title-division-1` (son titre suit en `title-division-2`), les
- * considérants sont les lignes `(N)` du préambule, et les articles s'arrêtent
- * aux notes (`separator-short`) ou à la première annexe. Les comptes du
- * descripteur font foi, comme pour `parseCellar`.
+ * Considérants du préambule d'une version consolidée : les lignes `(N)` du bloc
+ * `preamble`. Une consolidation sans préambule n'en rend aucun.
  */
-export function parseConsolide(xhtml: string, descripteur: Descripteur): Unite[] {
-  const unites: Unite[] = [];
+function considerantsConsolides(xhtml: string): Array<{ numero: string; texte: string }> {
+  const considerants: Array<{ numero: string; texte: string }> = [];
   const debutPreambule = xhtml.indexOf('<div class="preamble">');
+  if (debutPreambule < 0) return considerants;
 
-  if (debutPreambule >= 0) {
-    const finPreambule = xhtml.indexOf('<p class="title-article-norm">', debutPreambule);
-    const bloc = xhtml.slice(debutPreambule, finPreambule < 0 ? undefined : finPreambule);
-    const ligne =
-      /<tr>\s*<td[^>]*>\s*<p class="norm">\((\d+)\)<\/p>\s*<\/td>\s*<td[^>]*>([\s\S]*?)<\/td>\s*<\/tr>/g;
-    for (let trouve = ligne.exec(bloc); trouve !== null; trouve = ligne.exec(bloc)) {
-      const [, numero, contenu] = trouve;
-      if (numero === undefined || contenu === undefined) continue;
-      const texte = texteConsolide(contenu);
-      if (texte === "") throw new Error(`Considérant ${numero} vide`);
-      unites.push({
-        ...uniteDe(descripteur, "considérant", String(Number(numero)), `${descripteur.nom} > Considérants`, texte),
-        url: descripteur.url,
-      });
-    }
+  const finPreambule = xhtml.indexOf('<p class="title-article-norm">', debutPreambule);
+  const bloc = xhtml.slice(debutPreambule, finPreambule < 0 ? undefined : finPreambule);
+  const ligne =
+    /<tr>\s*<td[^>]*>\s*<p class="norm">\((\d+)\)<\/p>\s*<\/td>\s*<td[^>]*>([\s\S]*?)<\/td>\s*<\/tr>/g;
+  for (let trouve = ligne.exec(bloc); trouve !== null; trouve = ligne.exec(bloc)) {
+    const [, numero, contenu] = trouve;
+    if (numero === undefined || contenu === undefined) continue;
+    const texte = texteConsolide(contenu);
+    if (texte === "") throw new Error(`Considérant ${numero} vide`);
+    considerants.push({ numero: String(Number(numero)), texte });
   }
+  return considerants;
+}
 
+/**
+ * Parcourt les articles d'une version consolidée et remet chacun à `visiter`
+ * avec son chapitre courant. Le comptage et le parsing passent par ce même
+ * parcours pour ne jamais diverger : un titre illisible ou un article en double
+ * lève en nommant `libelle`.
+ */
+function parcourirArticlesConsolides(
+  xhtml: string,
+  libelle: string,
+  visiter: (numero: string, texte: string, chapitre: { numero: string; titre: string } | null) => void,
+): void {
   const fin = xhtml.search(/<[a-z]+ class="(?:separator-short|title-annex|doc-annex)/);
   const finArticles = fin < 0 ? xhtml.length : fin;
   const reperes: Array<{ genre: "article" | "division"; position: number }> = [];
@@ -357,14 +377,15 @@ export function parseConsolide(xhtml: string, descripteur: Descripteur): Unite[]
   let chapitre: { numero: string; titre: string } | null = null;
   const vus = new Set<string>();
   for (const [index, repere] of reperes.entries()) {
-    const fin = reperes[index + 1]?.position ?? finArticles;
-    const segment = xhtml.slice(repere.position, fin);
+    const limite = reperes[index + 1]?.position ?? finArticles;
+    const segment = xhtml.slice(repere.position, limite);
     const finTitre = segment.indexOf("</p>");
     const titre = texteConsolide(segment.slice(0, finTitre + 4));
     if (repere.genre === "division") {
       const chapitreTrouve = /^CHAPITRE\s+([IVXLC]+)$/i.exec(titre);
       if (chapitreTrouve?.[1] !== undefined) {
-        const sousTitre = /<p class="title-division-2">([\s\S]*?)<\/p>/.exec(segment);
+        // Les consolidations récentes portent un `id` sur le sous-titre.
+        const sousTitre = /<p class="title-division-2"[^>]*>([\s\S]*?)<\/p>/.exec(segment);
         chapitre = {
           numero: chapitreTrouve[1].toUpperCase(),
           titre: sousTitre?.[1] === undefined ? "" : texteConsolide(sousTitre[1]),
@@ -374,9 +395,54 @@ export function parseConsolide(xhtml: string, descripteur: Descripteur): Unite[]
     }
     const numero = numeroArticleConsolide(titre);
     if (numero === null) throw new Error(`Titre d'article illisible : « ${titre} »`);
-    if (vus.has(numero)) throw new Error(`Article ${numero} en double dans ${descripteur.version ?? descripteur.document}`);
+    if (vus.has(numero)) throw new Error(`Article ${numero} en double dans ${libelle}`);
     vus.add(numero);
-    const texte = texteConsolide(segment);
+    visiter(numero, texteConsolide(segment), chapitre);
+  }
+}
+
+/** Nombre d'articles d'une version consolidée, sans valider les comptes du descripteur. */
+export function compterArticlesConsolide(xhtml: string, libelle = "la consolidation"): number {
+  let total = 0;
+  parcourirArticlesConsolides(xhtml, libelle, () => {
+    total += 1;
+  });
+  return total;
+}
+
+/** Nombre de considérants du préambule d'une version consolidée ; zéro sans préambule. */
+export function compterConsiderantsConsolide(xhtml: string): number {
+  return considerantsConsolides(xhtml).length;
+}
+
+/**
+ * Rend les articles et les considérants d'une version consolidée CELLAR. Ce
+ * format n'a pas d'ancres ELI : un article commence à `title-article-norm`, un
+ * chapitre à `title-division-1` (son titre suit en `title-division-2`), les
+ * considérants sont les lignes `(N)` du préambule, et les articles s'arrêtent
+ * aux notes (`separator-short`) ou à la première annexe. Les comptes du
+ * descripteur font foi, comme pour `parseCellar` ; l'URL est celle de la
+ * version servie, qui n'a pas de fragment.
+ */
+export function parseConsolide(xhtml: string, descripteur: Descripteur): Unite[] {
+  const version = descripteur.version ?? descripteur.document;
+  const url = urlVersion(version);
+  const unites: Unite[] = [];
+
+  for (const considerant of considerantsConsolides(xhtml)) {
+    unites.push({
+      ...uniteDe(
+        descripteur,
+        "considérant",
+        considerant.numero,
+        `${descripteur.nom} > Considérants`,
+        considerant.texte,
+      ),
+      url,
+    });
+  }
+
+  parcourirArticlesConsolides(xhtml, version, (numero, texte, chapitre) => {
     const chemin =
       chapitre === null
         ? descripteur.nom
@@ -384,13 +450,12 @@ export function parseConsolide(xhtml: string, descripteur: Descripteur): Unite[]
     unites.push({
       ...uniteDe(descripteur, "article", numero.replace(" ", ""), chemin, texte),
       numero,
-      url: descripteur.url,
+      url,
     });
-  }
+  });
 
   const articles = unites.filter((unite) => unite.niveau === "article").length;
   const considerants = unites.length - articles;
-  const version = descripteur.version ?? descripteur.document;
   if (articles !== descripteur.articles_attendus) {
     throw new Error(
       `Capture ${version} : ${articles} articles au lieu de ${descripteur.articles_attendus} attendus`,

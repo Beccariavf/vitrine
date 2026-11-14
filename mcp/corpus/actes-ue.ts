@@ -10,6 +10,11 @@
  *
  * Le descripteur est rétabli si la construction échoue : il ne reste jamais en
  * avant d'un corpus qui n'a pas suivi.
+ *
+ * Le compte d'articles n'est ajusté qu'à la hausse : un acte modificatif peut
+ * insérer des articles, jamais en retirer. Un rendu consolidé qui en sert moins
+ * que le descripteur est tenu pour tronqué, refusé sans toucher au descripteur,
+ * et l'entrée reste `perime` pour la passe suivante.
  */
 
 import { readFileSync, renameSync, writeFileSync } from "node:fs";
@@ -19,6 +24,8 @@ import type { Entry } from "../../veille/types.ts";
 import type { FetchLike } from "../../veille/fetch.ts";
 import { buildCorpusSet } from "./build.ts";
 import type { BuildResult } from "./build.ts";
+import { fetchCellar } from "./fetch.ts";
+import { compterArticlesConsolide } from "./parse.ts";
 import { buildAdequation, fetchDecision } from "./adequation/build.ts";
 import type { ResultatAdequation } from "./adequation/build.ts";
 import {
@@ -67,6 +74,8 @@ export type SynchroniserActeOptions = {
   /** Consolidation à rendre ; absente, aucune version n'est appliquée. */
   version?: string;
   descripteurPath?: string;
+  /** Remplaçable en test : le compte d'articles lit le rendu consolidé. */
+  fetchImpl?: FetchLike;
   /** Remplaçable en test : la construction réelle appelle CELLAR. */
   construire?: (options: { rootDir: string; document: string }) => Promise<BuildResult[]>;
 };
@@ -88,12 +97,28 @@ export async function synchroniserActeUe(options: SynchroniserActeOptions): Prom
     throw new Error(`Version consolidée illisible : ${options.version}`);
   }
 
+  const contenu = await fetchCellar(options.version, descripteur.langue, options.fetchImpl);
+  const articles = compterArticlesConsolide(contenu, options.version);
+  const attendus = descripteur.articles_attendus;
+  if (articles < attendus) {
+    throw new Error(
+      `Rendu ${options.version} : ${articles} articles au lieu de ${attendus} au descripteur, ` +
+        "compte non ajusté (rendu tronqué) : consolidation refusée",
+    );
+  }
+
   let ecrit = false;
-  if (descripteur.version !== options.version || descripteur.date_consolidation !== date) {
+  const compteAjuste = articles > attendus ? articles : attendus;
+  if (
+    descripteur.version !== options.version ||
+    descripteur.date_consolidation !== date ||
+    descripteur.articles_attendus !== compteAjuste
+  ) {
     const suivant: Descripteur = {
       ...descripteur,
       version: options.version,
       date_consolidation: date,
+      articles_attendus: compteAjuste,
     };
     ecrit = ecrireSiChange(chemin, `${JSON.stringify(suivant, null, 2)}\n`);
   }
