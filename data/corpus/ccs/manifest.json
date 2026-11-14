@@ -1,0 +1,34 @@
+{
+  "document": "32021D0914",
+  "titre": "Décision d'exécution (UE) 2021/914 de la Commission du 4 juin 2021 relative aux clauses contractuelles types pour le transfert de données à caractère personnel vers des pays tiers en vertu du règlement (UE) 2016/679",
+  "langue": "fra",
+  "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32021D0914",
+  "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+  "date_acte": "2021-06-04",
+  "date_publication": "2021-06-07",
+  "date_debut": "2021-06-27",
+  "date_fin": null,
+  "statut": "en_vigueur",
+  "snapshot": "b2264fd8c584ed54c879a6e6ef4e80e718cef4080593ea3bc3e6c5cff218ca2a.xhtml",
+  "unites": 82,
+  "couverture": {
+    "source": "CELLAR — publications.europa.eu/resource/celex/32021D0914",
+    "date_publication": "2021-06-07",
+    "bornes": {
+      "debut": "2021-06-27",
+      "fin": null
+    },
+    "statut": "en_vigueur",
+    "types_retenus": [
+      "article",
+      "considérant",
+      "clause"
+    ],
+    "exclusions": [],
+    "comptes": {
+      "articles": 4,
+      "considerants": 26,
+      "clauses": 52
+    }
+  }
+}

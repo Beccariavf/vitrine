@@ -248,8 +248,9 @@ export function documentsExclus(): ReadonlySet<string> {
 }
 
 /**
- * Identifiants qu'un manifeste déclare : `document`, `text_id`, et
- * `textes[].text_id` pour un corpus de plusieurs textes.
+ * Identifiants qu'un manifeste déclare : `document`, `text_id`,
+ * `textes[].text_id` pour un corpus de plusieurs textes et `decisions[].celex`
+ * pour les décisions d'adéquation.
  */
 export function identifiantsDuManifeste(manifeste: Record<string, unknown>): string[] {
   const identifiants: string[] = [];
@@ -260,6 +261,12 @@ export function identifiantsDuManifeste(manifeste: Record<string, unknown>): str
   if (Array.isArray(manifeste.textes)) {
     for (const texte of manifeste.textes) {
       const valeur = (texte as { text_id?: unknown } | null)?.text_id;
+      if (typeof valeur === "string" && valeur.trim() !== "") identifiants.push(valeur);
+    }
+  }
+  if (Array.isArray(manifeste.decisions)) {
+    for (const decision of manifeste.decisions) {
+      const valeur = (decision as { celex?: unknown } | null)?.celex;
       if (typeof valeur === "string" && valeur.trim() !== "") identifiants.push(valeur);
     }
   }
