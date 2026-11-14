@@ -1,4 +1,4 @@
-# Couverture des huit corpus
+# Couverture des corpus
 
 Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les corpus inchangés), jamais recopiés depuis un autre rapport.
 
@@ -10,6 +10,7 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 | `lil` | 1 | 133 articles en vigueur | version consolidée au 2026-10-01 ; consultée le 2026-11-09 | PISTE — Légifrance `/consult/legiPart` | Licence Ouverte 2.0 (Etalab) |
 | `textes_fr` | 3 | 183 articles en vigueur (décret 2019-536 : 166 ; Code pénal 226-16 à 226-24 : 16 ; CPCE L34-5 : 1) ; 2 abrogés écartés | consultés le 2026-11-14 | PISTE — Légifrance `/consult/legiPart`, `/consult/code`, `/consult/getArticleWithIdAndNum` | Licence Ouverte 2.0 (Etalab) |
 | `ce` | 1 594 | 20 774 | 1982-03-12 → 2026-10-27 | DILA — JADE, fonds `publie` et `inedit` | Licence Ouverte 2.0 (Etalab) |
+| `constit` | 108 | 5 797 | 1982-12-14 → 2026-08-14 | DILA — CONSTIT, XML Légifrance | Licence Ouverte 2.0 (Etalab) |
 | `cepd` | 36 | 5 443 | 2018-04-11 → 2025-06-05 | CEPD, sitemap des pages `_fr` et PDF | À vérifier : aucune licence explicite déclarée |
 | `cc` | 403 | 8 194 | 1986-07-21 → 2026-11-10 | PISTE — Judilibre `/search` et `/decision` | Licence Ouverte 2.0 (Etalab) et CGU Judilibre |
 | `cjue` | 251 | 23 460 | 1999-10-14 → 2026-11-05 | CELLAR / EUR-Lex — SPARQL `PDON` + notions `4.11.01` et `2.04` + 4 CELEX, XHTML français puis anglais, repli HTML patrimonial | Décision 2011/833/UE (CC BY 4.0) |
@@ -23,6 +24,14 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 - `periode.date_min` et `periode.date_max` sont les premières et dernières dates observées dans le corpus (1982-03-12 → 2026-10-27).
 - Filtre inchangé : juridiction normalisée exactement « Conseil d'État » et au moins un mot-clé du descripteur (`données personnelles`, `données à caractère personnel`, `informatique et libertés`, `protection des données`, `RGPD`, `règlement général sur la protection des données`, `commission nationale de l'informatique et des libertés`, `CNIL`). Un seul mot-clé suffit : le corpus contient des faux positifs (par exemple `CETATEXT000028411879`, où la CNIL n'est que créancière de frais), et 132 166 des 167 044 exclusions sans mot-clé sont antérieures à 2014 — « toutes dates » ne veut pas dire « toute la jurisprudence ».
 - 282 décisions sur les 138 074 décisions du Conseil d'État antérieures à 2014 sont retenues. Les 5 627 entrées sans texte intégral (`BLOC_TEXTUEL/CONTENU` vide) n'ont qu'un sommaire dans l'archive, que le parseur ne lit pas : une partie de la jurisprudence ancienne reste donc hors d'atteinte, même sans borne.
+
+## Détail `constit`
+
+- Archive CONSTIT du 8 novembre 2026 (`Freemium_constit_global_20261108-140000.tar.gz`, 13 Mo), lue en flux : 7 423 entrées, 2 045 décisions DC/QPC toutes dates, 108 retenues (77 DC, 31 QPC), 5 797 fragments, 4 doublons de numéro + nature résolus au profit de l'identifiant le plus récent.
+- Exclusions : 5 378 documents de natures hors périmètre (contentieux électoral `AN` 4 171, `SEN` 306, lois `L` 338, `ORGA` 169, etc.), 1 933 DC/QPC sans mot-clé, 0 texte vide, 0 date invalide.
+- Filtre : mots-clés du descripteur CE, ou « vie privée » associée à `données de connexion`, `traitement(s) automatisé(s)`, `traitement(s) de données` ou `fichier automatisé`. Il lit le texte publié entier (décision, saisines, observations) ; les unités sont découpées dans le `BLOC_TEXTUEL` seul, les saisines et observations ne sont jamais indexées. Le compte rejoint la cible du spike #37 (108 décisions au stock du 2026-11-08).
+- La décision la plus récente de l'archive est datée du 2026-10-16, soit 29 jours avant l'extraction du 2026-11-14 ; aucun incrément CONSTIT n'est publié à cette date. Le manifeste porte `couverture.retard_archive`.
+- Natures et lien officiel : `nature` vaut `DC` ou `QPC`, `numero` les associe (`2018-765 DC`), l'URL vient de `URL_CC` (https).
 
 ## Détail `cc`
 

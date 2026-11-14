@@ -26,6 +26,7 @@ import {
 import {
   INSTRUCTION_AIAct,
   INSTRUCTION_CNIL,
+  INSTRUCTION_CONSTIT,
   INSTRUCTION_REQUETE,
   createOllamaEmbedder,
   normaliser,
@@ -343,9 +344,14 @@ describe("l'adaptateur OpenAI", () => {
     const embedder = createOpenAIEmbedder({ model: MODELE, dim: 2, fetchImpl });
 
     await embedder.embedQuery("q", "32024R1689");
+    await embedder.embedQuery("q", "constit");
     await embedder.embedQuery("q", "document-inconnu");
 
-    assert.deepEqual(entrees, [`${INSTRUCTION_AIAct}q`, `${INSTRUCTION_REQUETE}q`]);
+    assert.deepEqual(entrees, [
+      `${INSTRUCTION_AIAct}q`,
+      `${INSTRUCTION_CONSTIT}q`,
+      `${INSTRUCTION_REQUETE}q`,
+    ]);
   });
 
   it("refuse un autre modèle en nommant les deux", async () => {

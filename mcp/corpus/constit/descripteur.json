@@ -1,0 +1,33 @@
+{
+  "corpus": "constit",
+  "nom": "Conseil constitutionnel",
+  "titre": "Décisions DC et QPC du Conseil constitutionnel (archive CONSTIT)",
+  "url_liste": "https://echanges.dila.gouv.fr/OPENDATA/CONSTIT/",
+  "motif_archive": "Freemium_constit_global_*.tar.gz",
+  "natures_retenues": [
+    "DC",
+    "QPC"
+  ],
+  "mots_cles": [
+    "données personnelles",
+    "données à caractère personnel",
+    "informatique et libertés",
+    "protection des données",
+    "RGPD",
+    "règlement général sur la protection des données",
+    "commission nationale de l'informatique et des libertés",
+    "CNIL"
+  ],
+  "terme_vie_privee": "vie privée",
+  "expressions_vie_privee": [
+    "données de connexion",
+    "traitement automatisé",
+    "traitements automatisés",
+    "traitement de données",
+    "traitements de données",
+    "fichier automatisé"
+  ],
+  "licence": "Licence Ouverte 2.0 (Etalab)",
+  "licence_source": "https://echanges.dila.gouv.fr/OPENDATA/CONSTIT/DILA_CONSTIT_Presentation_20170824.pdf",
+  "max_entree_octets": 5242880
+}

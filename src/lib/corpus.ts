@@ -29,6 +29,7 @@ const LIBELLES: ReadonlyArray<readonly [string, string]> = [
   ["cepd", "CEPD"],
   ["cjue", "CJUE"],
   ["ce", "Conseil d'État"],
+  ["constit", "Conseil constitutionnel"],
   ["cc", "Cour de cassation"],
 ];
 

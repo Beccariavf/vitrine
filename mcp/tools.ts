@@ -645,11 +645,11 @@ export function corpusDeNiveau(demande: { corpus?: string; document?: string }):
 export type SearchDemande = {
   question: string;
   k?: number;
-  /** Restreint la recherche à une collection : `rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `cnil`, `lil`, `textes_fr`, `ce`, `cepd`, `cc`, `cjue`. */
+  /** Restreint la recherche à une collection : `rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `cnil`, `lil`, `textes_fr`, `ce`, `constit`, `cepd`, `cc`, `cjue`. */
   corpus?: string;
   /** Restreint la recherche à un document précis. */
   document?: string;
-  /** Restreint à une nature CNIL : Sanction, Avis ou Recommandation/Lignes directrices. */
+  /** Restreint à une nature : Sanction, Avis ou Recommandation/Lignes directrices (CNIL), DC ou QPC (constit). */
   nature?: string;
   /** Date ISO minimale de la décision. */
   date_min?: string;

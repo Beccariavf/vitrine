@@ -57,6 +57,7 @@ export type CitationsParCorpus = readonly {
 const AUTORITES: Readonly<Record<string, string>> = {
   cnil: "CNIL",
   ce: "Conseil d'État",
+  constit: "Conseil constitutionnel",
   cc: "Cour de cassation",
   cjue: "CJUE",
   cepd: "CEPD",
