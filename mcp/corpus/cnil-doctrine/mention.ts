@@ -97,7 +97,7 @@ export function mentionsDoctrine(rootDir: string): Map<string, MentionDoctrine> 
         typeof document.licence_url === "string" ? document.licence_url : licenceUrl;
       const sourceDocument = typeof document.source === "string" ? document.source : source;
       mentions.set(document.slug, {
-        mention: `${mention} · ${document.url}`,
+        mention: `${mention} · ${licenceDocument} · ${document.url}`,
         titre: document.titre,
         source: sourceDocument,
         date_extraction: dateFr(document.date_extraction),

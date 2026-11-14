@@ -4,9 +4,10 @@
   "titre": "Guides, référentiels et listes AIPD de la CNIL",
   "domaine": "www.cnil.fr",
   "source": "Source : CNIL – https://www.cnil.fr",
-  "mention": "extrait non modifié · CC BY-ND 4.0",
+  "mention": "extrait non modifié",
   "licence": "CC BY-ND 4.0",
   "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+  "validite_jours": 7,
   "tentatives": 3,
   "delai_ms": 1000,
   "pages_reference": [

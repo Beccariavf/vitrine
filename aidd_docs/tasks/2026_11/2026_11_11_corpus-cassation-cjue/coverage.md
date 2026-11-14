@@ -67,7 +67,7 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 - 56 documents ingérés (30 guides, 26 référentiels), 4 459 fragments. Les deux listes AIPD ne sont pas dupliquées : la liste requise est la délibération 2018-327 (`CNILTEXT000037560659`), la liste non requise la 2019-118 (`CNILTEXT000039249797`), toutes deux déjà au corpus `cnil` (Licence Ouverte) ; le manifeste les porte dans `couverts_par_cnil`.
 - Aucun document écarté : l'heuristique de « mention contraire » (`tous droits réservés`, `reproduction interdite`, `all rights reserved`, `sous réserve de droits d'auteur`) n'a rien trouvé sur les 58 PDF.
 - Les guides et référentiels sont sous CC BY-ND 4.0 : chaque fragment rendu porte « extrait non modifié · CC BY-ND 4.0 · lien », le titre, « Source : CNIL – https://www.cnil.fr » et la date d'extraction. Le serveur ne produit ni résumé ni reformulation.
-- Les PDF bruts et le cache vivent sous `data/raw/cnil-doctrine/` (non commité), adressés par leur `sha256` ; une relance ne redemande rien. 47 documents sur 56 ne déclarent pas de date dans leur en-tête : leur `date_acte` est la date d'extraction, et le manifeste porte `date_source: "extraction"`.
+- Les PDF bruts et leur cache vivent sous `data/raw/cnil-doctrine/` (non commité), adressés par leur `sha256` ; le cache des PDF vaut sept jours et `--refresh` le force. Les pages de référence sont relues à chaque passe, pour qu'un guide ajouté ou retiré soit vu. 47 documents sur 56 ne déclarent pas de date dans leur en-tête : leur `date_acte` est la date d'extraction, et le manifeste porte `date_source: "extraction"`.
 
 ## Évaluations `dev`
 

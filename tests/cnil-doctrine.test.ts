@@ -292,7 +292,7 @@ describe("marquage de licence au rendu", () => {
       racine,
       "data/corpus/cnil_doctrine/manifest.json",
       JSON.stringify({
-        mention: "extrait non modifié · CC BY-ND 4.0",
+        mention: "extrait non modifié",
         source: "Source : CNIL – https://www.cnil.fr",
         licence: "CC BY-ND 4.0",
         licence_url: "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
@@ -325,6 +325,39 @@ describe("marquage de licence au rendu", () => {
       "extrait non modifié · CC BY-ND 4.0 · https://www.cnil.fr/sites/default/files/guide.pdf",
     );
     assert.equal(passages[0]?.texte, "Un extrait copié mot pour mot.");
+  });
+
+  it("compose la ligne avec la licence du document, pas seulement celle du manifeste", () => {
+    const racine = racineTemporaire();
+    ecrire(
+      racine,
+      "data/corpus/cnil_doctrine/manifest.json",
+      JSON.stringify({
+        mention: "extrait non modifié",
+        source: "Source : CNIL – https://www.cnil.fr",
+        licence: "CC BY-ND 4.0",
+        licence_url: "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        documents_par_type: {
+          referentiel: [
+            {
+              slug: "referentiel",
+              titre: "Référentiel",
+              url: "https://www.cnil.fr/sites/default/files/referentiel.pdf",
+              date_extraction: "2026-11-14",
+              licence: "Licence Ouverte 2.0",
+              licence_url: "https://www.etalab.gouv.fr/licence-ouverte-open-licence",
+              source: "Source : CNIL – https://www.cnil.fr",
+            },
+          ],
+        },
+      }),
+    );
+    const mention = mentionsDoctrine(racine).get("referentiel");
+    assert.equal(
+      mention?.mention,
+      "extrait non modifié · Licence Ouverte 2.0 · https://www.cnil.fr/sites/default/files/referentiel.pdf",
+    );
+    assert.equal(mention?.licence, "Licence Ouverte 2.0");
   });
 
   it("laisse un passage d'un autre corpus intact", () => {
@@ -484,7 +517,7 @@ describe("synchronisation de la doctrine CNIL", () => {
     ]);
     assert.equal(manifeste.documents_ecartes.length, 1);
     assert.match(manifeste.documents_ecartes[0]?.raison ?? "", /tous droits réservés/);
-    assert.equal(manifeste.mention, "extrait non modifié · CC BY-ND 4.0");
+    assert.equal(manifeste.mention, "extrait non modifié");
     assert.equal(manifeste.licence, "CC BY-ND 4.0");
     assert.equal(manifeste.documents_par_type.liste_aipd?.[0]?.licence, "CC BY-ND 4.0");
     assert.equal(
@@ -506,7 +539,98 @@ describe("synchronisation de la doctrine CNIL", () => {
     assert.ok(unites.every((unite) => !unite.texte.includes("Tous droits réservés")));
   });
 
-  it("lit le numéro d'une délibération depuis le corpus cnil réel", () => {
+  it("relit les pages de référence à chaque passe et ne fige pas la liste", async () => {
+    const racine = racineTemporaire();
+    const reference: PageReference = {
+      type: "guide",
+      url: "https://exemple.test/fr/guides",
+      pages_max: 1,
+      liens: "pdf",
+    };
+    ecrire(racine, "descripteur.json", JSON.stringify({ ...DESCRIPTEUR, domaine: "exemple.test", pages_reference: [reference] }));
+
+    let liste = [
+      '<a href="https://exemple.test/docs/guide-a.pdf">Guide A</a>',
+      '<a href="https://exemple.test/docs/guide-b.pdf">Guide B</a>',
+    ].join("");
+    const fetchHtml: FetchHtml = async () => ({
+      ok: true,
+      status: 200,
+      text: async () => `<main>${liste}</main>`,
+    });
+    const fetchPdf: FetchPdf = async () => {
+      const octets = new TextEncoder().encode("%PDF-1.4\n");
+      return { ok: true, status: 200, arrayBuffer: async () => octets.buffer.slice(0) as ArrayBuffer };
+    };
+    const commun = {
+      rootDir: racine,
+      descripteurPath: join(racine, "descripteur.json"),
+      fetchHtml,
+      fetchPdf,
+      extraireTexte: async () => "Un texte de guide avec des lettres.",
+      attendre: async () => {},
+      delaiMs: 0,
+    };
+
+    const premier = await syncDoctrine({ ...commun, date: "2026-12-01" });
+    assert.equal(premier.documents, 2);
+
+    // La page de référence a changé : la seconde passe doit la relire.
+    liste = '<a href="https://exemple.test/docs/guide-a.pdf">Guide A</a>';
+    const second = await syncDoctrine({ ...commun, date: "2026-12-02" });
+    assert.equal(second.documents, 1);
+
+    const manifeste = JSON.parse(
+      readFileSync(join(racine, "data", "corpus", "cnil_doctrine", "manifest.json"), "utf8"),
+    ) as { documents: number; consulte_le: string };
+    assert.equal(manifeste.documents, 1);
+    assert.equal(manifeste.consulte_le, "2026-12-02");
+  });
+
+  it("garde les PDF au cache dans la validité et les relit avec --refresh", async () => {
+    const racine = racineTemporaire();
+    const reference: PageReference = {
+      type: "guide",
+      url: "https://exemple.test/fr/guides",
+      pages_max: 1,
+      liens: "pdf",
+    };
+    ecrire(
+      racine,
+      "descripteur.json",
+      JSON.stringify({ ...DESCRIPTEUR, domaine: "exemple.test", validite_jours: 7, pages_reference: [reference] }),
+    );
+    const fetchHtml: FetchHtml = async () => ({
+      ok: true,
+      status: 200,
+      text: async () => '<main><a href="https://exemple.test/docs/guide-a.pdf">Guide A</a></main>',
+    });
+    let telechargements = 0;
+    const fetchPdf: FetchPdf = async () => {
+      telechargements += 1;
+      const octets = new TextEncoder().encode("%PDF-1.4\n");
+      return { ok: true, status: 200, arrayBuffer: async () => octets.buffer.slice(0) as ArrayBuffer };
+    };
+    const commun = {
+      rootDir: racine,
+      descripteurPath: join(racine, "descripteur.json"),
+      fetchHtml,
+      fetchPdf,
+      extraireTexte: async () => "Un texte de guide avec des lettres.",
+      attendre: async () => {},
+      delaiMs: 0,
+    };
+
+    await syncDoctrine({ ...commun, date: "2026-12-01" });
+    await syncDoctrine({ ...commun, date: "2026-12-02" });
+    assert.equal(telechargements, 1, "le PDF reste au cache dans la validité");
+    await syncDoctrine({ ...commun, date: "2026-12-09" });
+    assert.equal(telechargements, 2, "le cache expire au bout de sept jours");
+    await syncDoctrine({ ...commun, date: "2026-12-09", rafraichir: true });
+    assert.equal(telechargements, 3, "--refresh relit le PDF");
+  });
+
+  it("lit le numéro d'une délibération depuis un corpus cnil réduit", () => {
     const racine = racineTemporaire();
     ecrire(
       racine,

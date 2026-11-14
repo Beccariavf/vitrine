@@ -37,9 +37,12 @@ export type DescripteurDoctrine = {
   titre: string;
   domaine: string;
   source: string;
+  /** Préfixe de la ligne de licence ; la licence du document la complète. */
   mention: string;
   licence: string;
   licence_url: string;
+  /** Durée de validité du cache des PDF, en jours ; `--refresh` la ramène à zéro. */
+  validite_jours: number;
   tentatives: number;
   delai_ms: number;
   pages_reference: PageReference[];
@@ -107,12 +110,21 @@ export function nomFichier(url: string): string {
   }
 }
 
-/** Vrai si le lien est un PDF servi par le domaine déclaré (avec ou sans `www`). */
-function estPdf(url: string, domaine: string): boolean {
+/** Vrai si l'URL appartient au domaine déclaré, avec ou sans `www`. */
+export function estDomaine(url: string, domaine: string): boolean {
   try {
     const hote = new URL(url).hostname.toLowerCase().replace(/^www\./, "");
     const attendu = domaine.toLowerCase().replace(/^www\./, "");
-    if (hote !== attendu && !hote.endsWith(`.${attendu}`)) return false;
+    return hote === attendu || hote.endsWith(`.${attendu}`);
+  } catch {
+    return false;
+  }
+}
+
+/** Vrai si le lien est un PDF servi par le domaine déclaré (avec ou sans `www`). */
+function estPdf(url: string, domaine: string): boolean {
+  if (!estDomaine(url, domaine)) return false;
+  try {
     return new URL(url).pathname.toLowerCase().endsWith(".pdf");
   } catch {
     return false;
@@ -187,6 +199,9 @@ export function extraireDocuments(
     if (reference.liens !== "page" || lienDeNavigation(ancre.url, pageUrl) || ancre.texte === "") {
       continue;
     }
+    // Une page de document vient du même domaine que ses PDF : une page tierce
+    // ne doit pas faire entrer un document dans le corpus.
+    if (!estDomaine(ancre.url, domaine)) continue;
     const motif = motifPage ?? /aipd/i;
     if (!motif.test(new URL(ancre.url).pathname) && !motif.test(ancre.texte)) continue;
     if (!pages.has(ancre.url)) pages.set(ancre.url, { url: ancre.url, titre: ancre.texte });

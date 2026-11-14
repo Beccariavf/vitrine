@@ -141,6 +141,10 @@ export type SyncDoctrineOptions = {
   delaiMs?: number;
   /** Attente avant chaque requête ; par défaut, le `delai_ms` du descripteur. */
   pauseEntreMs?: number;
+  /** Force la relecture des PDF, sans attendre l'expiration du cache. */
+  rafraichir?: boolean;
+  /** Durée de validité du cache des PDF, en jours ; par défaut celle du descripteur. */
+  validite_jours?: number;
   /** Extraction injectable : les tests remplacent unpdf par un texte de fixture. */
   extraireTexte?: (octets: Uint8Array, url: string) => Promise<string>;
   /** Texte injectable des pages de référence, pour éviter le réseau en test. */
@@ -198,7 +202,6 @@ function ecrireOctets(chemin: string, octets: Uint8Array): void {
 
 /** Cache de téléchargement : fichier et empreinte par URL. */
 export type Telechargeur = {
-  texte(url: string): Promise<{ contenu: string; sha256: string }>;
   pdf(url: string): Promise<{ octets: Uint8Array; sha256: string }>;
   /** Retire une entrée dont le fichier s'est révélé inutilisable. */
   oublier(url: string): void;
@@ -231,29 +234,24 @@ export function creerTelechargeur(
     }
   };
 
+  // Le cache des PDF expire : une réédition servie à la même URL doit être vue.
+  // `--refresh` le ramène à zéro. Les pages, elles, ne passent jamais par lui.
+  const validite = options.rafraichir === true ? 0 : Math.max(0, options.validite_jours ?? 7);
+  const date = options.date ?? dateDuJour();
+  const perime = (entree: EntreeCache): boolean => {
+    const veille = Date.parse(`${entree.consulte_le}T00:00:00Z`);
+    if (Number.isNaN(veille)) return true;
+    const jour = Date.parse(`${date}T00:00:00Z`);
+    return (jour - veille) / 86_400_000 >= validite;
+  };
   const cacheValide = (url: string): EntreeCache | null => {
     const entree = cache[url];
     if (entree === undefined) return null;
-    return existsSync(join(brutDir, entree.fichier)) ? entree : null;
+    if (!existsSync(join(brutDir, entree.fichier))) return null;
+    return perime(entree) ? null : entree;
   };
 
-  const date = options.date ?? dateDuJour();
-
   return {
-    async texte(url) {
-      const entree = cacheValide(url);
-      if (entree !== null) {
-        return { contenu: readFileSync(join(brutDir, entree.fichier), "utf8"), sha256: entree.sha256 };
-      }
-      const contenu = await chargerTexte(url, http);
-      const empreinte = sha256(contenu);
-      const fichier = join("pages", `${empreinte}.html`);
-      if (ecrire) {
-        ecrireOctets(join(brutDir, fichier), Buffer.from(contenu, "utf8"));
-        memoriser(url, fichier, empreinte, date);
-      }
-      return { contenu, sha256: empreinte };
-    },
     async pdf(url) {
       const entree = cacheValide(url);
       if (entree !== null) {
@@ -389,27 +387,22 @@ export async function syncDoctrine(
   const telechargeur = creerTelechargeur(
     brutDir,
     cache,
-    { ...options, ...optionsHttp },
+    { ...options, ...optionsHttp, validite_jours: descripteur.validite_jours },
     ecrire,
   );
+  // Les pages de référence et de document sont relues à chaque passe : c'est
+  // elles qui disent quels documents existent. Un cache les figerait sans que
+  // le manifeste le dise.
+  const optionsPage = { ...optionsHttp };
   const lirePage =
-    options.lirePage ?? ((url: string) => telechargeur.texte(url).then((lu) => lu.contenu));
-  /** Les pages de résultats passent par le cache comme les pages de document. */
-  const optionsReference = {
-    ...optionsHttp,
-    pauseEntreMs: 0,
-    fetchHtml: async (url: string) => {
-      const lu = await telechargeur.texte(url);
-      return { ok: true, status: 200, text: async () => lu.contenu };
-    },
-  };
+    options.lirePage ?? ((url: string) => chargerTexte(url, optionsPage));
 
   const candidats: Candidat[] = [];
   const references: ManifesteDoctrine["liste_reference"] = [];
   let pagesLues = 0;
 
   for (const reference of descripteur.pages_reference) {
-    const liste = await parcourirReference(reference, descripteur.domaine, optionsReference);
+    const liste = await parcourirReference(reference, descripteur.domaine, optionsHttp);
     pagesLues += liste.pagesLues;
     references.push({
       type: reference.type,
@@ -608,8 +601,9 @@ export async function syncDoctrine(
       mentions_contraires: ecartes.filter((ecarte) => ecarte.raison.startsWith("mention contraire")).length,
       licence_note:
         "Les textes de cnil.fr sont sous CC BY-ND 4.0 sauf mention contraire ; " +
-        "l'heuristique écarte une mention contraire explicite. Un document co-édité avec un tiers " +
-        "garde le crédit du site et son lien, la source ne fournissant pas d'autre mention.",
+        "l'heuristique écarte une mention contraire explicite. Aucune mention de licence distincte " +
+        "n'est portée par les documents retenus ; un document co-édité avec un tiers garde le crédit " +
+        "du site et son lien, seule mention fournie par la source.",
     },
   };
 
@@ -646,6 +640,7 @@ function valeurDe(nom: string, argv: string[]): string | undefined {
 
 async function main(argv: string[]): Promise<void> {
   const dryRun = argv.includes("--dry-run");
+  const rafraichir = argv.includes("--refresh");
   const rootDir = valeurDe("--root", argv);
   const descripteur = valeurDe("--descripteur", argv);
   const date = valeurDe("--date", argv);
@@ -656,6 +651,7 @@ async function main(argv: string[]): Promise<void> {
       ...(descripteur === undefined ? {} : { descripteurPath: descripteur }),
       ...(date === undefined ? {} : { date }),
       dryRun,
+      rafraichir,
     });
     process.stderr.write(
       `${resultat.documents} document(s), ${resultat.fragments} fragment(s), ` +

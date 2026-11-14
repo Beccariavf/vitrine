@@ -850,7 +850,7 @@
     }
   ],
   "documents_ecartes": [],
-  "mention": "extrait non modifié · CC BY-ND 4.0",
+  "mention": "extrait non modifié",
   "licence": "CC BY-ND 4.0",
   "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
   "source": "Source : CNIL – https://www.cnil.fr",
@@ -877,6 +877,6 @@
     "couverts_par_cnil": 2,
     "documents_ecartes": 0,
     "mentions_contraires": 0,
-    "licence_note": "Les textes de cnil.fr sont sous CC BY-ND 4.0 sauf mention contraire ; l'heuristique écarte une mention contraire explicite. Un document co-édité avec un tiers garde le crédit du site et son lien, la source ne fournissant pas d'autre mention."
+    "licence_note": "Les textes de cnil.fr sont sous CC BY-ND 4.0 sauf mention contraire ; l'heuristique écarte une mention contraire explicite. Aucune mention de licence distincte n'est portée par les documents retenus ; un document co-édité avec un tiers garde le crédit du site et son lien, seule mention fournie par la source."
   }
 }
