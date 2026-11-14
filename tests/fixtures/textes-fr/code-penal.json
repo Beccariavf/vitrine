@@ -1,0 +1,75 @@
+{
+  "id": "LEGITEXT000006070719_26-08-2026",
+  "title": "Code pénal",
+  "dateDebutVersion": "2026-08-26",
+  "articles": [],
+  "sections": [
+    {
+      "title": "Partie législative",
+      "cid": "LEGISCTA000006089684",
+      "id": "LEGISCTA000006089684",
+      "articles": [],
+      "sections": [
+        {
+          "title": "Livre II : Des crimes et délits contre les personnes",
+          "cid": "LEGISCTA000006117597",
+          "id": "LEGISCTA000006117597",
+          "articles": [],
+          "sections": [
+            {
+              "title": "Titre II : Des atteintes à la personne humaine",
+              "cid": "LEGISCTA000006136041",
+              "id": "LEGISCTA000006136041",
+              "articles": [],
+              "sections": [
+                {
+                  "title": "Chapitre VI : Des atteintes à la personnalité",
+                  "cid": "LEGISCTA000006149831",
+                  "id": "LEGISCTA000006149831",
+                  "articles": [],
+                  "sections": [
+                    {
+                      "title": "Section 5 : Des atteintes aux droits de la personne résultant des fichiers ou des traitements informatiques.",
+                      "cid": "LEGISCTA000006165313",
+                      "id": "LEGISCTA000006165313",
+                      "articles": [
+                        {
+                          "id": "LEGIARTI000049578542",
+                          "num": "226-16",
+                          "etat": "VIGUEUR",
+                          "dateDebut": 1708128000000,
+                          "dateFin": 32472144000000,
+                          "content": "<p>Le fait, y compris par négligence, de procéder ou de faire procéder à des traitements de données à caractère personnel sans qu'aient été respectées les formalités préalables à leur mise en oeuvre prévues par la loi est puni de cinq ans d'emprisonnement et de 300 000 euros d'amende.</p><p>Est puni des mêmes peines le fait, y compris par négligence, de procéder ou de faire procéder à un traitement qui a fait l'objet de l'une des mesures prévues au <a href=\"/affichTexteArticle.do?cidTexte=JORFTEXT000000886460&idArticle=LEGIARTI000006528098&dateTexte=&categorieLien=cid\">3° du IV de l'article 20 de la loi n° 78-17 du 6 janvier 1978</a> relative à l'informatique, aux fichiers et aux libertés.</p>",
+                          "pathTitle": null
+                        },
+                        {
+                          "id": "LEGIARTI000006417959",
+                          "num": "226-16-1-A",
+                          "etat": "ABROGE",
+                          "dateDebut": 1091836800000,
+                          "dateFin": 1527206400000,
+                          "content": "<p>Lorsqu'il a été procédé ou fait procéder à un traitement de données à caractère personnel dans les conditions prévues par le I ou le II de <a href=\"/affichTexteArticle.do?cidTexte=JORFTEXT000000886460&idArticle=LEGIARTI000006528106&dateTexte=&categorieLien=cid\">l'article 24</a> de la loi n° 78-17 du 6 janvier 1978 précitée, le fait de ne pas respecter, y compris par négligence, les normes simplifiées ou d'exonération établies à cet effet par la Commission nationale de l'informatique et des libertés est puni de cinq ans d'emprisonnement et de 300 000 euros d'amende.</p>",
+                          "pathTitle": null
+                        },
+                        {
+                          "id": "LEGIARTI000020630874",
+                          "num": "226-24",
+                          "etat": "VIGUEUR",
+                          "dateDebut": 1242259200000,
+                          "dateFin": 32472144000000,
+                          "content": "<p>Les personnes morales déclarées responsables pénalement, dans les conditions prévues par l'article <a href=\"/affichCodeArticle.do?cidTexte=LEGITEXT000006070719&idArticle=LEGIARTI000006417202&dateTexte=&categorieLien=cid\" title=\"Code pénal - art. 121-2 (V)\">121-2</a>, des infractions définies à la présente section encourent, outre l'amende suivant les modalités prévues par <a href=\"/affichCodeArticle.do?cidTexte=LEGITEXT000006070719&idArticle=LEGIARTI000006417333&dateTexte=&categorieLien=cid\" title=\"Code pénal - art. 131-38 (V)\">l'article 131-38</a>, les peines prévues par les 2° à 5° et 7° à 9° de l'<a href=\"/affichCodeArticle.do?cidTexte=LEGITEXT000006070719&idArticle=LEGIARTI000006417335&dateTexte=&categorieLien=cid\" title=\"Code pénal - art. 131-39 (V)\">article 131-39</a>. </p><p>L'interdiction mentionnée au 2° de l'article 131-39 porte sur l'activité dans l'exercice ou à l'occasion de l'exercice de laquelle l'infraction a été commise.</p><p></p>",
+                          "pathTitle": null
+                        }
+                      ],
+                      "sections": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

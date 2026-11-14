@@ -4,7 +4,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
 import type { Unite } from "../mcp/corpus/parse.ts";
-import { citeArticle, decisionsCitant, formeArticle } from "../mcp/corpus/citants.ts";
+import { citeArticle, formeArticle } from "../mcp/corpus/articles.ts";
+import { decisionsCitant } from "../mcp/corpus/citants.ts";
 
 const RGPD = "32016R0679";
 const LIL = "LEGITEXT000006068624";

@@ -10,6 +10,9 @@ const LEGIFRANCE_SEARCH = "https://api.piste.gouv.fr/dila/legifrance/lf-engine-a
 const LEGIFRANCE_CONSULT = "https://api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/juri";
 const LEGIFRANCE_LEGI_PART =
   "https://api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/legiPart";
+const LEGIFRANCE_CODE = "https://api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/code";
+const LEGIFRANCE_ARTICLE_NUM =
+  "https://api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/getArticleWithIdAndNum";
 const JUDILIBRE_SEARCH = "https://api.piste.gouv.fr/cassation/judilibre/v1.0/search";
 const JUDILIBRE_DECISION = "https://api.piste.gouv.fr/cassation/judilibre/v1.0/decision";
 
@@ -186,6 +189,39 @@ export class PisteSession {
       "legiPart",
       { textId, date },
       "Légifrance legiPart",
+    );
+  }
+
+  /**
+   * Une section d'un code à une date (`sctCid`) : un seul appel rend tous ses
+   * articles, là où la lecture article par article en coûterait un chacun.
+   */
+  async consultCode(
+    fetchImpl: FetchLike,
+    textId: string,
+    date: string,
+    sctCid: string,
+  ): Promise<unknown> {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      throw new Error(`Légifrance code: date AAAA-MM-JJ attendue, reçu « ${date} »`);
+    }
+    return this.postLegifrance(
+      fetchImpl,
+      LEGIFRANCE_CODE,
+      "code",
+      { textId, date, sctCid },
+      "Légifrance code",
+    );
+  }
+
+  /** Un article d'un texte, lu par l'identifiant du texte et son numéro (`L34-5`). */
+  async consultArticleParNumero(fetchImpl: FetchLike, id: string, num: string): Promise<unknown> {
+    return this.postLegifrance(
+      fetchImpl,
+      LEGIFRANCE_ARTICLE_NUM,
+      "getArticleWithIdAndNum",
+      { id, num },
+      "Légifrance getArticleWithIdAndNum",
     );
   }
 

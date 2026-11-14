@@ -40,3 +40,6 @@ data/raw/cc/
 
 # Corpus CJUE : captures XHTML non commitées, récupérées par npm run cjue:sync
 data/raw/cjue/
+
+# Textes français d'application : snapshots PISTE non commités, récupérés par npm run textes-fr:sync
+data/raw/textes_fr/

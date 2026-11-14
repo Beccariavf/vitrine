@@ -6,7 +6,9 @@ import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
 import {
   absenceDuDocument,
+  articlesCouverts,
   avecPresence,
+  citationAuCorpus,
   citationsDesUnites,
   citationsDuCorpus,
   documentsPresents,
@@ -545,24 +547,20 @@ describe("la présence des documents cités", () => {
     try {
       assert.equal(absenceDuDocument(root, "32016R0679"), null);
       assert.equal(absenceDuDocument(root, "LEGITEXT000006068624"), null);
-      assert.equal(
-        absenceDuDocument(root, "32002L0058"),
-        "ePrivacy (32002L0058) est absent de mon corpus (périmètre : RGPD, AI Act, ePrivacy, " +
-    "directive 2016/680, règlement 2018/1725, règlement procédural RGPD, LIL, CNIL, " +
-          "Conseil d'État, CEPD, Cour de cassation, CJUE).",
-      );
-      assert.equal(
-        absenceDuDocument(root, " 32002l0058 "),
-        "ePrivacy (32002L0058) est absent de mon corpus (périmètre : RGPD, AI Act, ePrivacy, " +
-    "directive 2016/680, règlement 2018/1725, règlement procédural RGPD, LIL, CNIL, " +
-          "Conseil d'État, CEPD, Cour de cassation, CJUE).",
-      );
+      for (const forme of ["32002L0058", " 32002l0058 "]) {
+        assert.equal(
+          absenceDuDocument(root, forme),
+          "ePrivacy (32002L0058) est absent de mon corpus (périmètre : RGPD, AI Act, ePrivacy, " +
+            "directive 2016/680, règlement 2018/1725, règlement procédural RGPD, LIL, " +
+            "textes français d'application, CNIL, Conseil d'État, CEPD, Cour de cassation, CJUE).",
+        );
+      }
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
   });
 
-  it("tient sur le corpus réel : RGPD, LIL et actes UE présents, les trois autres absents", () => {
+  it("tient sur le corpus réel : RGPD, LIL, actes UE et textes français présents, la directive 95/46 absente", () => {
     const root = fileURLToPath(new URL("..", import.meta.url));
     const presents = documentsPresents(root);
 
@@ -573,17 +571,19 @@ describe("la présence des documents cités", () => {
       "32016L0680",
       "32018R1725",
       "32025R2518",
+      "LEGITEXT000038567662",
+      "LEGITEXT000006070719",
+      "LEGITEXT000006070987",
     ]) {
       assert.equal(presents.has(present), true, present);
       assert.equal(absenceDuDocument(root, present), null, present);
     }
-    for (const absent of [
-      "31995L0046",
-      "LEGITEXT000006070987",
-      "LEGITEXT000006070719",
-    ]) {
-      assert.equal(presents.has(absent), false, absent);
-      assert.match(absenceDuDocument(root, absent) ?? "", /absent de mon corpus/);
-    }
+    // Code pénal et CPCE ne sont couverts qu'en partie : le corpus le dit.
+    const couverts = articlesCouverts(root);
+    assert.deepEqual(couverts.get("LEGITEXT000006070987"), ["L34-5"]);
+    assert.equal(couverts.get("LEGITEXT000006070719")?.[0], "226-16");
+    assert.equal(couverts.has("LEGITEXT000038567662"), false);
+    assert.equal(presents.has("31995L0046"), false);
+    assert.match(absenceDuDocument(root, "31995L0046") ?? "", /absent de mon corpus/);
   });
 });

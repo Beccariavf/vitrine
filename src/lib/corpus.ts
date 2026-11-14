@@ -22,6 +22,7 @@ const LIBELLES: ReadonlyArray<readonly [string, string]> = [
   ["eudpr", "Règlement 2018/1725"],
   ["rgpdproc", "Règlement procédural RGPD"],
   ["lil", "Loi Informatique et Libertés"],
+  ["textes_fr", "Textes français d'application"],
   ["cnil", "CNIL"],
   ["cepd", "CEPD"],
   ["cjue", "CJUE"],

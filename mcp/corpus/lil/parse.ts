@@ -48,11 +48,11 @@ export type LegiPart = {
   articles: ArticleLil[];
 };
 
-function objet(valeur: unknown): Record<string, unknown> | null {
+export function objet(valeur: unknown): Record<string, unknown> | null {
   return typeof valeur === "object" && valeur !== null ? (valeur as Record<string, unknown>) : null;
 }
 
-function texte(valeur: unknown): string {
+export function texte(valeur: unknown): string {
   return typeof valeur === "string" ? valeur.trim() : "";
 }
 
@@ -72,7 +72,7 @@ const FIN_OUVERTE = 32_472_144_000_000;
  * Date d'un article : la DILA rend des millisecondes epoch, parfois déjà une
  * chaîne ISO. La sentinelle de fin ouverte devient `null`, jamais une date.
  */
-function dateOuNull(valeur: unknown): string | null {
+export function dateOuNull(valeur: unknown): string | null {
   if (typeof valeur === "number" && Number.isFinite(valeur)) {
     if (valeur >= FIN_OUVERTE) return null;
     return new Date(valeur).toISOString().slice(0, 10);

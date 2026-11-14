@@ -14,13 +14,15 @@
 
 import {
   CORPUS_DECISIONS,
+  articlesCouverts,
+  citationAuCorpus,
   citationsDuCorpus,
   documentDeclare,
   documentsExclus,
   documentsPresents,
   normaliserIdentifiant,
 } from "./citations.ts";
-import type { Citation } from "./citations.ts";
+import type { ArticlesCouverts, Citation } from "./citations.ts";
 
 /** Citations d'une autorité citante, pour un document hors corpus. */
 export type AutoriteCitations = { autorite: string; citations: number };
@@ -97,6 +99,7 @@ export function classerCitations(
   citationsParCorpus: CitationsParCorpus,
   presents: ReadonlySet<string>,
   exclusions: ReadonlySet<string>,
+  couverts: ArticlesCouverts = new Map(),
 ): DocumentHorsCorpus[] {
   const parDocument = new Map<string, Map<string, number>>();
   const citationsParDocument = new Map<string, number>();
@@ -106,7 +109,8 @@ export function classerCitations(
     for (const citationsDuDocument of citations.values()) {
       for (const citation of citationsDuDocument) {
         const document = normaliserIdentifiant(citation.document);
-        if (presents.has(document)) continue;
+        // Un texte présent en partie garde au classement ses citations non couvertes.
+        if (citationAuCorpus(presents, citation, couverts)) continue;
         citationsParDocument.set(document, (citationsParDocument.get(document) ?? 0) + 1);
         const comptes = parDocument.get(document) ?? new Map<string, number>();
         comptes.set(autorite, (comptes.get(autorite) ?? 0) + 1);
@@ -158,6 +162,11 @@ export function classementHorsCorpus(rootDir: string, date: string): ClassementH
   }));
   return {
     calcule_le: date,
-    documents: classerCitations(citations, documentsPresents(rootDir), documentsExclus()),
+    documents: classerCitations(
+      citations,
+      documentsPresents(rootDir),
+      documentsExclus(),
+      articlesCouverts(rootDir),
+    ),
   };
 }

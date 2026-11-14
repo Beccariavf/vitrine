@@ -261,7 +261,7 @@ complémentaire est déclarée au manifeste. Réutilisation autorisée par la d�
 (CC BY 4.0).
 
 Chaque `manifest.json` porte un bloc `couverture` émis par sa synchronisation : source, date ou
-archive, bornes, types ou natures retenus, exclusions et comptes. Le tableau des douze corpus
+archive, bornes, types ou natures retenus, exclusions et comptes. Le tableau des treize corpus
 (documents, fragments, période, source, licence) est
 `aidd_docs/tasks/2026_11/2026_11_11_corpus-cassation-cjue/coverage.md` ; il reprend les comptes
 des manifestes, jamais une recopie approximative.

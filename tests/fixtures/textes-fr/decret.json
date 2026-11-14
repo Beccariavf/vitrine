@@ -1,0 +1,65 @@
+{
+  "id": "LEGITEXT000038567662_07-09-2025",
+  "title": "Décret n° 2019-536 du 29 mai 2019 pris pour l'application de la loi n° 78-17 du 6 janvier 1978 relative à l'informatique, aux fichiers et aux libertés",
+  "dateDebutVersion": "2025-09-07",
+  "articles": [],
+  "sections": [
+    {
+      "title": "Titre IV BIS : DISPOSITIONS RELATIVES À L'ALTRUISME EN MATIÈRE DE DONNÉES",
+      "cid": "LEGISCTA000051501853",
+      "articles": [
+        {
+          "id": "LEGIARTI000051501855",
+          "num": "151-1",
+          "etat": "VIGUEUR",
+          "dateDebut": 1745452800000,
+          "dateFin": 32472144000000,
+          "content": "<p align=\"left\">Pour l'instruction des demandes d'enregistrement mentionnées à l'<a href=\"/affichTexteArticle.do?cidTexte=JORFTEXT000000886460&idArticle=LEGIARTI000049568354&dateTexte=&categorieLien=cid\">article 124-2 de la loi du 6 janvier 1978 susvisée</a>, le silence gardé par la Commission nationale de l'informatique et des libertés pendant douze semaines vaut décision de rejet de la demande.</p>",
+          "pathTitle": [
+            "Titre IV BIS : DISPOSITIONS RELATIVES À L'ALTRUISME EN MATIÈRE DE DONNÉES"
+          ]
+        }
+      ],
+      "sections": []
+    },
+    {
+      "title": "Sous-section 4 : Modalités d'information des personnes concernées",
+      "cid": "JORFSCTA000038528706",
+      "articles": [
+        {
+          "id": "LEGIARTI000038568056",
+          "num": "111",
+          "etat": "ABROGE",
+          "dateDebut": 1559347200000,
+          "dateFin": 1589587200000,
+          "content": "<p><br/>Concernant les données du système national des données de santé et de ses composantes, les personnes concernées sont informées de la réutilisation possible de ces données, préalablement rendues non directement identifiantes, à des fins de recherche, d'études ou d'évaluation dans les conditions mentionnées à l'<a href=\"/affichCodeArticle.do?cidTexte=LEGITEXT000006072665&idArticle=LEGIARTI000031923903&dateTexte=&categorieLien=cid\">article L. 1461-3 du code de la santé publique</a>, ainsi que de leurs droits. Elles en sont informées par une mention figurant sur le site internet des établissements de santé, des établissements médico-sociaux, des organismes d'assurance maladie obligatoire ou des organismes d'assurance maladie complémentaire, et sur des supports permettant de la porter à la connaissance des personnes concernées, notamment des affiches dans les locaux ouverts au public ou des documents qui leur sont remis. Cette information est mise en œuvre par les directeurs des établissements de santé, des directeurs des établissements médico-sociaux et des directeurs des organismes d'assurance maladie obligatoire et complémentaire.</p>",
+          "pathTitle": [
+            "Titre II : TRAITEMENTS RELEVANT DU RÉGIME DE PROTECTION DES DONNÉES À CARACTÈRE PERSONNEL PRÉVUE PAR LE RÈGLEMENT (UE) 2016/679 DU 27 AVRIL 2016",
+            "Chapitre III : Obligations incombant au responsable du traitement et au sous-traitant",
+            "Section 2 : Traitements de données à caractère personnel dans le domaine de la santé",
+            "Sous-section 4 : Modalités d'information des personnes concernées"
+          ]
+        }
+      ],
+      "sections": []
+    },
+    {
+      "title": "Titre VI : DISPOSITIONS DIVERSES ET FINALES",
+      "cid": "JORFSCTA000038528461",
+      "articles": [
+        {
+          "id": "LEGIARTI000038567896",
+          "num": "157",
+          "etat": "VIGUEUR",
+          "dateDebut": 32472144000000,
+          "dateFin": 32472144000000,
+          "content": "<br/>A modifié les dispositions suivantes :<BLOCKQUOTE>- Décret n°2018-232 du 30 mars 2018<BLOCKQUOTE><a href=\"/affichTexteArticle.do?cidTexte=JORFTEXT000036757777&idArticle=LEGIARTI000038607883&dateTexte=&categorieLien=id\" title=\"Décret n°2018-232 du 30 mars 2018 - art. 2 (V)\">  Art. 2</a>, <a href=\"/affichTexteArticle.do?cidTexte=JORFTEXT000036757777&idArticle=LEGIARTI000038607870&dateTexte=&categorieLien=id\" title=\"Décret n°2018-232 du 30 mars 2018 - art. 3 (V)\">  Art. 3</a>, <a href=\"/affichTexteArticle.do?cidTexte=JORFTEXT000036757777&idArticle=LEGIARTI000038607881&dateTexte=&categorieLien=id\" title=\"Décret n°2018-232 du 30 mars 2018 - art. 4 (V)\">  Art. 4</a></BLOCKQUOTE></BLOCKQUOTE><br/>",
+          "pathTitle": [
+            "Titre VI : DISPOSITIONS DIVERSES ET FINALES"
+          ]
+        }
+      ],
+      "sections": []
+    }
+  ]
+}

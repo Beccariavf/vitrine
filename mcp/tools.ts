@@ -10,10 +10,13 @@ import { debutDispositif, numeroIndex } from "./corpus/cnil/meta.ts";
 import { estSanction } from "./corpus/cnil/nature.ts";
 import {
   absenceDuDocument,
+  articlesCouverts,
   citationsDesUnites,
   citationsDuCorpus,
   documentsPresents,
+  documentDeclare,
   estCorpusDecision,
+  identifiantsDuManifeste,
   marquerPresence,
 } from "./corpus/citations.ts";
 import type { Citation, CitationRendue } from "./corpus/citations.ts";
@@ -32,6 +35,7 @@ import type {
 } from "./corpus/sync-rapport.ts";
 import type { ClassementHorsCorpus } from "./corpus/hors-corpus.ts";
 import { normaliserIdentifiant } from "./corpus/citations.ts";
+import type { ArticlesCouverts } from "./corpus/citations.ts";
 
 /** Où lire les exclusions déclarées : le bloc `couverture` de chaque corpus, rendu par `etat_corpus`. */
 export const RENVOI_EXCLUSIONS = "etat_corpus → corpus[].couverture";
@@ -67,16 +71,15 @@ export type Perimetre = {
   avertissement?: string;
 };
 
-/** Corpus dont le manifeste déclare ce document (`document` ou `text_id`) ; `null` sinon. */
+/** Corpus dont le manifeste déclare ce document (`document`, `text_id`, `textes[].text_id`) ; `null` sinon. */
 function corpusDuDocument(
   manifestes: ReadonlyMap<string, Record<string, unknown>>,
   document: string,
 ): string | null {
   const cherche = normaliserIdentifiant(document);
   for (const [corpus, manifeste] of manifestes) {
-    for (const champ of ["document", "text_id"]) {
-      const valeur = manifeste[champ];
-      if (typeof valeur === "string" && normaliserIdentifiant(valeur) === cherche) return corpus;
+    if (identifiantsDuManifeste(manifeste).some((valeur) => normaliserIdentifiant(valeur) === cherche)) {
+      return corpus;
     }
   }
   return null;
@@ -245,17 +248,28 @@ export type ResultatRechercheOutil = {
 const SUFFIXE_ARTICLE = "bis|ter|quater|quinquies|sexies|septies|octies|nonies|decies";
 
 /**
- * `Article 17`, `art. 17`, `17` : le nombre, sans zéro de tête, suivi de son
- * suffixe latin (`15 bis`) ou d'une lettre collée (`15a`, gardée telle quelle :
- * elle ne désigne aucun article français et rend « introuvable » plutôt que
- * l'article 15). Les subdivisions `-N` restent ignorées (`20-1` → `20`).
+ * `Article 17`, `art. 17`, `n° 17`, `L. 34-5`, `226-16` : préfixe de code, nombre
+ * sans zéro de tête, segments à tiret, puis lettre (`226-16-1-A`), suffixe latin
+ * (`15 bis`) ou lettre collée (`15a`, gardée telle quelle : elle ne désigne aucun
+ * article français et rend « introuvable » plutôt que l'article 15). `26-1` reste
+ * distinct de `26`, `9 bis` de `9` ; ce qui suit (paragraphe, sigle) est ignoré.
  */
 function normaliserNumero(numero: string | number): string | null {
-  const trouve = new RegExp(`(\\d+)(?:\\s*(${SUFFIXE_ARTICLE})\\b|([a-z])\\b)?`, "i").exec(String(numero));
-  if (trouve === null || trouve[1] === undefined) return null;
-  const base = String(Number(trouve[1]));
-  if (trouve[2] !== undefined) return `${base} ${trouve[2].toLowerCase()}`;
-  return trouve[3] === undefined ? base : `${base}${trouve[3].toLowerCase()}`;
+  const brut = String(numero)
+    .trim()
+    .replace(/^(?:articles?|art\.?)\s*/i, "")
+    .replace(/^(?:n[°o]|§)\s*/i, "");
+  const trouve = new RegExp(
+    "^(?:([LRD])\\.?\\s*)?(\\d+)(?:er)?((?:-\\d+)*)" +
+      "(?:-([A-Z]{1,2})(?![A-Za-zÀ-ÿ])|([a-z])(?![A-Za-zÀ-ÿ]))?" +
+      `(?:\\s*(${SUFFIXE_ARTICLE})(?![A-Za-zÀ-ÿ]))?`,
+    "i",
+  ).exec(brut);
+  if (trouve === null) return null;
+  const lettre = trouve[4] === undefined ? "" : `-${trouve[4].toUpperCase()}`;
+  const collee = trouve[5] === undefined ? "" : trouve[5].toLowerCase();
+  const latin = trouve[6] === undefined ? "" : ` ${trouve[6].toLowerCase()}`;
+  return `${trouve[1]?.toUpperCase() ?? ""}${Number(trouve[2])}${trouve[3] ?? ""}${lettre}${collee}${latin}`;
 }
 
 /** Ce qu'il faut d'une unité rendue pour lire son statut d'application. */
@@ -288,9 +302,11 @@ function avecCitations(rootDir: string, passages: Passage[]): Passage[] {
   const parCorpus = new Map<string, ReadonlyMap<string, Citation[]>>();
   // La présence est lue une fois par réponse : huit manifestes, jamais par passage.
   let presents: ReadonlySet<string> | undefined;
+  let couverts: ArticlesCouverts | undefined;
   return passages.map((passage) => {
     if (!estCorpusDecision(passage.corpus)) return passage;
     presents ??= documentsPresents(rootDir);
+    couverts ??= articlesCouverts(rootDir);
     let corpus = parCorpus.get(passage.corpus);
     if (corpus === undefined) {
       corpus = citationsDuCorpus(rootDir, passage.corpus);
@@ -298,16 +314,19 @@ function avecCitations(rootDir: string, passages: Passage[]): Passage[] {
     }
     return {
       ...passage,
-      citations: marquerPresence(presents, corpus.get(passage.document) ?? []),
+      citations: marquerPresence(presents, corpus.get(passage.document) ?? [], couverts),
       decisions_citees: decisionsCitees(rootDir, passage.corpus, passage.document),
     };
   });
 }
 
-/** Numéro cité par « article N », « art. N » ou « art N », suffixe compris (« 15 bis ») ; `null` sinon. */
+/**
+ * Numéro cité par « article N », « art. N », « article L. 34-5 », « article 226-16 »,
+ * suffixe latin compris (« 15 bis ») ; `null` sinon.
+ */
 export function referenceExacte(question: string): string | null {
   const reference = new RegExp(
-    `\\b(?:article|art\\.?)\\s*(\\d+(?:\\s*(?:${SUFFIXE_ARTICLE})\\b)?)`,
+    `\\b(?:article|art\\.?)\\s*((?:[LRD]\\.?\\s*)?\\d+(?:-\\d+)*(?:\\s*(?:${SUFFIXE_ARTICLE})\\b)?)`,
     "i",
   ).exec(question);
   return reference === null ? null : (reference[1] ?? "");
@@ -395,6 +414,15 @@ const ALIAS_ACTES_UE: ReadonlyArray<{ document: string; texte: readonly RegExp[]
 
 /** « règlement procédural RGPD » et `rgpdproc` nomment le règlement 2025/2518, pas le RGPD. */
 const NOM_PROCEDURAL_RGPD = /\breglement procedural (?:du |de l )?(?:rgpd|r g p d)\b|\brgpdproc\b/g;
+const ALIAS_DECRET_2019_536: readonly RegExp[] = [/\bdecret (?:n )?2019 536\b/];
+const ALIAS_CPCE_TEXTE: readonly RegExp[] = [
+  /\bcpce\b/,
+  /\bcode des postes et (?:des )?communications electroniques\b/,
+];
+const ALIAS_CODE_PENAL: readonly RegExp[] = [/\bcode penal\b/];
+/** Fin du titre du décret 2019-536 : la loi 78-17 qu'il applique n'est pas nommée pour elle-même. */
+const TITRE_DECRET_2019_536 =
+  /\bdecret (?:n )?2019 536(?: du 29 mai 2019)? pris pour l application de la loi (?:n )?78 17(?: du 6 janvier 1978)?(?: relative a l informatique aux fichiers et aux libertes)?/g;
 
 /** Nom lisible d'un corpus connu, pour les messages de refus. */
 const NOMS_DOCUMENTS: Record<string, string> = {
@@ -405,6 +433,9 @@ const NOMS_DOCUMENTS: Record<string, string> = {
   "32016L0680": "directive police-justice",
   "32018R1725": "règlement 2018/1725",
   "32025R2518": "règlement procédural RGPD",
+  LEGITEXT000038567662: "décret 2019-536",
+  LEGITEXT000006070719: "Code pénal",
+  LEGITEXT000006070987: "CPCE",
 };
 
 function libelleDocument(document: string): string {
@@ -418,7 +449,9 @@ function libelleDocument(document: string): string {
  * « plusieurs noms » dans ses messages.
  */
 export function documentsNommes(question: string): string[] {
-  const texte = normaliserTexte(question);
+  const texteBrut = normaliserTexte(question);
+  // Le titre complet du décret nomme la loi 78-17 : il ne nomme que le décret.
+  const texte = texteBrut.replace(TITRE_DECRET_2019_536, "decret 2019 536");
   const compact = compacter(texte);
   const texteRgpd = texte.replace(NOM_PROCEDURAL_RGPD, " ");
   const compactRgpd = compacter(texteRgpd);
@@ -443,6 +476,9 @@ export function documentsNommes(question: string): string[] {
       documents.add(acte.document);
     }
   }
+  if (ALIAS_DECRET_2019_536.some((alias) => alias.test(texte))) documents.add("LEGITEXT000038567662");
+  if (ALIAS_CPCE_TEXTE.some((alias) => alias.test(texte))) documents.add("LEGITEXT000006070987");
+  if (ALIAS_CODE_PENAL.some((alias) => alias.test(texte))) documents.add("LEGITEXT000006070719");
   return [...documents];
 }
 
@@ -487,14 +523,20 @@ export function getArticle(
     return { ...avecStatutApplication(article), trouve: true, perimetre };
   }
   // Un instrument connu mais absent du corpus est dit absent, jamais « introuvable » ;
-  // un identifiant inconnu garde le message d'un article manquant.
+  // un texte couvert en partie dit ce qu'il couvre ; un identifiant inconnu garde
+  // le message d'un article manquant.
+  const couverts = articlesCouverts(rootDir).get(normaliserIdentifiant(demande.document));
+  const libelle = documentDeclare(demande.document)?.libelle ?? demande.document;
   return {
     trouve: false,
     document: demande.document,
     numero: String(demande.numero),
     message:
       absenceDuDocument(rootDir, demande.document) ??
-      `Article ${demande.numero} introuvable dans le document ${demande.document}.`,
+      (couverts === undefined
+        ? `Article ${demande.numero} introuvable dans le document ${demande.document}.`
+        : `Article ${demande.numero} hors du corpus : seuls les articles ${couverts.join(", ")} ` +
+          `du ${libelle} (${demande.document}) y figurent.`),
     perimetre,
   };
 }
@@ -528,7 +570,7 @@ export function corpusDeNiveau(demande: { corpus?: string; document?: string }):
 export type SearchDemande = {
   question: string;
   k?: number;
-  /** Restreint la recherche à une collection : `rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `cnil`, `lil`, `ce`, `cepd`, `cc`, `cjue`. */
+  /** Restreint la recherche à une collection : `rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `cnil`, `lil`, `textes_fr`, `ce`, `cepd`, `cc`, `cjue`. */
   corpus?: string;
   /** Restreint la recherche à un document précis. */
   document?: string;
@@ -725,6 +767,7 @@ function lireDecision(
   }
 
   const presents = documentsPresents(rootDir);
+  const couverts = articlesCouverts(rootDir);
   const decisions: DecisionTrouvee[] = [...parDocument.entries()]
     .sort((gauche, droite) => gauche[0].localeCompare(droite[0]))
     .map(([identifiant, fragments]) => {
@@ -753,7 +796,7 @@ function lireDecision(
         ...(premier.injonction === undefined ? {} : { injonction: premier.injonction }),
         fragments_total: premiers.length,
         partie,
-        citations: marquerPresence(presents, citationsDesUnites(premiers)),
+        citations: marquerPresence(presents, citationsDesUnites(premiers), couverts),
         decisions_citees: decisionsCitees(rootDir, premier.corpus, identifiant),
         fragments: rendus.map((unite) => ({
           ref: unite.ref,
@@ -821,7 +864,10 @@ async function chercher(
     ...resultat,
     passages: avecCitations(rootDir, resultat.passages),
   });
-  const numero = referenceExacte(demande.question);
+  // Un corpus de décisions ne porte aucun article : une question qui y cite
+  // « l'article L. 34-5 » cherche des décisions, par le sens.
+  const numero =
+    corpus !== undefined && estCorpusDecision(corpus) ? null : referenceExacte(demande.question);
   if (numero !== null) {
     const articles = trouverArticles(
       rootDir,
