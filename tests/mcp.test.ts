@@ -969,12 +969,12 @@ describe("le serveur en mémoire", () => {
     rmSync(root, { recursive: true, force: true });
   });
 
-  it("expose exactement decisions_citant_decision, etat_corpus, get_article, get_decision et search", async () => {
+  it("expose exactement les six outils", async () => {
     const { tools } = await client.listTools();
 
     assert.deepEqual(
       tools.map((outil) => outil.name).sort(),
-      ["decisions_citant_decision", "etat_corpus", "get_article", "get_decision", "search"],
+      ["decisions_citant", "decisions_citant_decision", "etat_corpus", "get_article", "get_decision", "search"],
     );
   });
 
@@ -1015,6 +1015,35 @@ describe("le serveur en mémoire", () => {
     assert.match(description("search"), /decisions_citees/);
   });
 
+  it("décrit decisions_citant : comptes, pagination, liste non exhaustive et article absent", async () => {
+    const { tools } = await client.listTools();
+    const texte = tools.find((outil) => outil.name === "decisions_citant")?.description ?? "";
+
+    assert.match(texte, /par_autorite/);
+    assert.match(texte, /`limite`/);
+    assert.match(texte, /`decalage`/);
+    assert.match(texte, /non exhaustive/);
+    assert.match(texte, /ne prouve jamais/);
+    assert.match(texte, /article_au_corpus: false/);
+    assert.match(texte, /jamais un article « jamais cité »/);
+    assert.match(texte, /via_plage/);
+    assert.match(texte, /2018-1125/);
+  });
+
+  it("rend decisions_citant par le client, pagination comprise", async () => {
+    const resultat = await client.callTool({
+      name: "decisions_citant",
+      arguments: { document: DOCUMENT, numero: "art. 3", limite: 1, decalage: 0 },
+    });
+    const payload = contenu(resultat);
+
+    assert.equal(payload.trouve, true);
+    assert.equal(payload.document, DOCUMENT);
+    assert.equal(payload.decalage, 0);
+    assert.equal(Array.isArray(payload.decisions), true);
+    assert.equal(typeof payload.total, "number");
+  });
+
   it("nomme statut_application et l'interdit d'applicabilité dans les trois descriptions", async () => {
     const { tools } = await client.listTools();
     const description = (nom: string): string =>
@@ -1033,6 +1062,23 @@ describe("le serveur en mémoire", () => {
       assert.match(texte, /n'est jamais réécrit/, nom);
     }
     assert.equal(/statut_application/.test(description("etat_corpus")), false);
+  });
+
+  it("nomme perimetre et interdit de conclure à l'inexistence dans les trois descriptions", async () => {
+    const { tools } = await client.listTools();
+    const description = (nom: string): string =>
+      tools.find((outil) => outil.name === nom)?.description ?? "";
+
+    for (const nom of ["search", "get_article", "get_decision"]) {
+      const texte = description(nom);
+      assert.match(texte, /`perimetre`/, nom);
+      assert.match(texte, /`a_jour_au`/, nom);
+      assert.match(texte, /corpus\[\]\.couverture/, nom);
+      assert.match(texte, /ne prouve jamais que la règle n'existe pas/, nom);
+      assert.match(texte, /perimetre\.avertissement/, nom);
+    }
+    assert.match(description("etat_corpus"), /`couverture`/);
+    assert.match(description("etat_corpus"), /perimetre\.exclusions/);
   });
 
   it("rend l'état du corpus sans rapport par etat_corpus", async () => {
