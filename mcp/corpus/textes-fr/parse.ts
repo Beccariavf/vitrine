@@ -11,7 +11,7 @@
 
 import type { Unite } from "../parse.ts";
 import { comparerCorps, formeArticle } from "../articles.ts";
-import { lireLegiPart, unitesLil } from "../lil/parse.ts";
+import { dateOuNull, lireLegiPart, objet, texte, unitesLil } from "../lil/parse.ts";
 import type { ArticleLil, LegiPart } from "../lil/parse.ts";
 
 /** Comment PISTE rend un texte : en entier, une section de code, ou un article. */
@@ -35,6 +35,12 @@ export type TexteFr = {
   /** Ce que le corpus couvre du texte, en clair : `texte entier`, `article L34-5`. */
   perimetre: string;
   route: RouteTexte;
+  /**
+   * Date du texte `AAAA-MM-JJ` : `date_acte` d'un article dont la DILA ne donne
+   * pas la date de début (date ouverte). Sa `date_debut` reste alors vide :
+   * jamais la date de la version consolidée.
+   */
+  date_texte?: string;
   /** Articles en vigueur attendus : une réponse amputée est refusée. */
   attendus: { articles: number };
 };
@@ -55,14 +61,6 @@ export type LectureTexte = {
   unites: Unite[];
   abroges: number;
 };
-
-function objet(valeur: unknown): Record<string, unknown> | null {
-  return typeof valeur === "object" && valeur !== null ? (valeur as Record<string, unknown>) : null;
-}
-
-function texte(valeur: unknown): string {
-  return typeof valeur === "string" ? valeur.trim() : "";
-}
 
 /**
  * Vrai quand le numéro tombe dans la plage `[premier, dernier]` du même code.
@@ -123,19 +121,6 @@ export function lireSectionDeCode(brut: unknown, sctCid: string): LegiPart {
   };
 }
 
-/** Sentinelle DILA d'une date de fin ouverte, en millisecondes (an 2999). */
-const FIN_OUVERTE = 32_472_144_000_000;
-
-function dateOuNull(valeur: unknown): string | null {
-  if (typeof valeur === "number" && Number.isFinite(valeur)) {
-    if (valeur >= FIN_OUVERTE) return null;
-    return new Date(valeur).toISOString().slice(0, 10);
-  }
-  const brut = texte(valeur);
-  if (brut === "" || brut.startsWith("2999-") || brut.startsWith("9999-")) return null;
-  return brut;
-}
-
 /**
  * Lit la réponse `getArticleWithIdAndNum` : un objet `article` portant la
  * version rendue. Lève si l'article ou son identifiant manque.
@@ -169,9 +154,10 @@ export function lireArticleParNumero(brut: unknown): LegiPart {
 }
 
 /**
- * Lit la réponse d'un texte selon sa route, garde les articles de son
- * périmètre, puis mappe ceux en vigueur en unités. Un article en vigueur sans
- * texte lève : la capture est refusée avant toute écriture.
+ * Lit la réponse d'un texte selon sa route (la section visée pour un code),
+ * puis mappe les articles en vigueur en unités. Un article en vigueur sans
+ * texte lève : la capture est refusée avant toute écriture. Le périmètre d'une
+ * plage est vérifié par `validerLectures`.
  */
 export function lireTexte(
   texteFr: TexteFr,
@@ -200,7 +186,15 @@ export function lireTexte(
     sections_attendues: 0,
     articles_attendus: 0,
   });
-  return { texte: texteFr, version: part.version, dateDebutVersion: part.dateDebutVersion, unites, abroges };
+  // Une date de début ouverte n'est pas celle de la version : la date du texte
+  // date l'acte, la date de début reste vide plutôt que fausse.
+  const sansDebut = new Set(part.articles.filter((article) => article.dateDebut === null).map((article) => article.id));
+  const datees = unites.map((unite) =>
+    sansDebut.has(unite.ref)
+      ? { ...unite, date_acte: texteFr.date_texte ?? unite.date_acte, date_debut: "" }
+      : unite,
+  );
+  return { texte: texteFr, version: part.version, dateDebutVersion: part.dateDebutVersion, unites: datees, abroges };
 }
 
 /**

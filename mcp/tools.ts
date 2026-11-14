@@ -245,17 +245,23 @@ export type ResultatRechercheOutil = {
 };
 
 /**
- * `Article 17`, `art. 17`, `17`, `L. 34-5`, `226-16` : préfixe de code, nombre
- * sans zéro de tête et segments à tiret. `26-1` reste distinct de `26` ; ce qui
- * suit le numéro (paragraphe, sigle) est ignoré.
+ * `Article 17`, `art. 17`, `n° 17`, `L. 34-5`, `226-16` : préfixe de code, nombre
+ * sans zéro de tête, segments à tiret et suffixe (`226-16-1-A`, `9 bis`). `26-1`
+ * reste distinct de `26`, `9 bis` de `9` ; ce qui suit (paragraphe, sigle) est ignoré.
  */
 function normaliserNumero(numero: string | number): string | null {
   const brut = String(numero)
     .trim()
-    .replace(/^(?:articles?|art\.?)\s*/i, "");
-  const trouve = /^(?:([LRD])\.?\s*)?(\d+)(?:er)?((?:-\d+)*)/i.exec(brut);
+    .replace(/^(?:articles?|art\.?)\s*/i, "")
+    .replace(/^(?:n[°o]|§)\s*/i, "");
+  const trouve =
+    /^(?:([LRD])\.?\s*)?(\d+)(?:er)?((?:-\d+)*)(?:-([A-Z]{1,2})(?![A-Za-zÀ-ÿ]))?(?:\s+(bis|ter|quater|quinquies|sexies)(?![A-Za-zÀ-ÿ]))?/i.exec(
+      brut,
+    );
   if (trouve === null) return null;
-  return `${trouve[1]?.toUpperCase() ?? ""}${Number(trouve[2])}${trouve[3] ?? ""}`;
+  const lettre = trouve[4] === undefined ? "" : `-${trouve[4].toUpperCase()}`;
+  const latin = trouve[5] === undefined ? "" : ` ${trouve[5].toLowerCase()}`;
+  return `${trouve[1]?.toUpperCase() ?? ""}${Number(trouve[2])}${trouve[3] ?? ""}${lettre}${latin}`;
 }
 
 /** Ce qu'il faut d'une unité rendue pour lire son statut d'application. */
@@ -363,6 +369,9 @@ const ALIAS_CPCE_TEXTE: readonly RegExp[] = [
   /\bcode des postes et (?:des )?communications electroniques\b/,
 ];
 const ALIAS_CODE_PENAL: readonly RegExp[] = [/\bcode penal\b/];
+/** Fin du titre du décret 2019-536 : la loi 78-17 qu'il applique n'est pas nommée pour elle-même. */
+const TITRE_DECRET_2019_536 =
+  /\bdecret (?:n )?2019 536(?: du 29 mai 2019)? pris pour l application de la loi (?:n )?78 17(?: du 6 janvier 1978)?(?: relative a l informatique aux fichiers et aux libertes)?/g;
 
 /** Nom lisible d'un corpus connu, pour les messages de refus. */
 const NOMS_DOCUMENTS: Record<string, string> = {
@@ -385,7 +394,9 @@ function libelleDocument(document: string): string {
  * « plusieurs noms » dans ses messages.
  */
 export function documentsNommes(question: string): string[] {
-  const texte = normaliserTexte(question);
+  const texteBrut = normaliserTexte(question);
+  // Le titre complet du décret nomme la loi 78-17 : il ne nomme que le décret.
+  const texte = texteBrut.replace(TITRE_DECRET_2019_536, "decret 2019 536");
   const compact = compacter(texte);
   const documents = new Set<string>();
   if (
@@ -791,7 +802,10 @@ async function chercher(
     ...resultat,
     passages: avecCitations(rootDir, resultat.passages),
   });
-  const numero = referenceExacte(demande.question);
+  // Un corpus de décisions ne porte aucun article : une question qui y cite
+  // « l'article L. 34-5 » cherche des décisions, par le sens.
+  const numero =
+    corpus !== undefined && estCorpusDecision(corpus) ? null : referenceExacte(demande.question);
   if (numero !== null) {
     const articles = trouverArticles(
       rootDir,

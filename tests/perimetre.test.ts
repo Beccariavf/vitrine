@@ -4,6 +4,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
 import type { Embedder } from "../mcp/embed/embedder.ts";
+import { normaliser } from "../mcp/embed/embedder.ts";
+import { buildIndex } from "../mcp/index/build.ts";
+import { openIndex } from "../mcp/index/search.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";
 import { RENVOI_EXCLUSIONS, etatCorpus, getArticle, getDecision, search } from "../mcp/tools.ts";
 
@@ -248,11 +251,22 @@ describe("périmètre et fraîcheur dans chaque réponse", () => {
   it("un corpus sous veille sans passe réussie garde sa date d'arrêté dans l'avertissement", async () => {
     const root = racine();
     try {
-      const resultat = await search(
-        root,
-        { question: "article 999", corpus: "cnil" },
-        { embedder: EMBEDDER_INTERDIT },
-      );
+      // Un corpus de décisions ne porte aucun article : la question part par le sens,
+      // et un embedder hors sujet ne rend aucun passage fiable.
+      const horsSujet: Embedder = {
+        model: "factice",
+        dim: 8,
+        embedPassages: async (textes) => textes.map(() => normaliser(new Array<number>(8).fill(1))),
+        embedQuery: async () => normaliser(new Array<number>(8).fill(-1)),
+      };
+      const { chemin } = await buildIndex(root, horsSujet);
+      const index = openIndex(chemin);
+      let resultat: Awaited<ReturnType<typeof search>>;
+      try {
+        resultat = await search(root, { question: "article 999", corpus: "cnil" }, { embedder: horsSujet, index });
+      } finally {
+        index.db.close();
+      }
 
       assert.match(
         resultat.perimetre.avertissement ?? "",

@@ -11,6 +11,7 @@
       "url": "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000038567662",
       "url_article": "https://www.legifrance.gouv.fr/loda/id/{id}",
       "perimetre": "texte entier",
+      "date_texte": "2019-05-29",
       "route": { "type": "legiPart" },
       "attendus": { "articles": 166 }
     },

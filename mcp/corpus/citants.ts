@@ -24,8 +24,6 @@ import { autoriteDe } from "./hors-corpus.ts";
 import { citeArticle, estPlage, formeArticle } from "./articles.ts";
 import type { Article } from "./articles.ts";
 
-export { citeArticle, formeArticle };
-
 /** Taille de page par défaut et plafond : l'article 15 de la LIL a plus de 700 citants. */
 export const LIMITE_DEFAUT = 50;
 export const LIMITE_MAX = 500;

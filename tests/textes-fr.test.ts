@@ -33,13 +33,13 @@ const DECRET = "LEGITEXT000038567662";
 const PENAL = "LEGITEXT000006070719";
 const CPCE = "LEGITEXT000006070987";
 
-/** Le descripteur réel, aux comptes des captures réduites : 1 article du décret, 2 du Code pénal. */
+/** Le descripteur réel, aux comptes des captures réduites : 2 articles du décret, 2 du Code pénal. */
 function descripteurReduit(root: string): string {
   const descripteur: DescripteurTextesFr = {
     ...DESCRIPTEUR_REEL,
     textes: DESCRIPTEUR_REEL.textes.map((texte) => ({
       ...texte,
-      attendus: { articles: texte.route.type === "legiPart" ? 1 : texte.route.type === "code" ? 2 : 1 },
+      attendus: { articles: texte.route.type === "legiPart" ? 2 : texte.route.type === "code" ? 2 : 1 },
     })),
   };
   const chemin = join(root, "descripteur.json");
@@ -117,7 +117,7 @@ describe("la synchronisation des textes français d'application", () => {
         .trim()
         .split("\n")
         .map((ligne) => JSON.parse(ligne) as Record<string, unknown>);
-      assert.deepEqual(unites.map((unite) => unite.numero), ["151-1", "226-16", "226-24", "L34-5"]);
+      assert.deepEqual(unites.map((unite) => unite.numero), ["151-1", "157", "226-16", "226-24", "L34-5"]);
       assert.ok(unites.every((unite) => unite.corpus === "textes_fr" && unite.statut === "VIGUEUR"));
       const cpce = unites.find((unite) => unite.numero === "L34-5");
       assert.equal(cpce?.document, CPCE);
@@ -128,7 +128,11 @@ describe("la synchronisation des textes français d'application", () => {
         readFileSync(join(root, "data/corpus/textes_fr/manifest.json"), "utf8"),
       ) as ManifesteTextesFr;
       assert.equal(manifeste.documents, 3);
-      assert.equal(manifeste.unites, 4);
+      assert.equal(manifeste.unites, 5);
+      // Article 157 : date de début ouverte à la DILA, datée par le texte, jamais par la version.
+      const final = unites.find((unite) => unite.numero === "157");
+      assert.equal(final?.date_acte, "2019-05-29");
+      assert.equal(final?.date_debut, "");
       assert.equal(manifeste.couverture.articles_abroges_ecartes, 2);
       assert.deepEqual(
         manifeste.textes.map((texte) => [texte.text_id, texte.articles_couverts, texte.articles_abroges_ecartes]),
@@ -174,7 +178,7 @@ describe("la synchronisation des textes français d'application", () => {
     try {
       await assert.rejects(
         syncTextesFr({ rootDir: root, date: "2026-11-14", reponses: REPONSES, config: null }),
-        /Corpus textes_fr invalide, rien n'est écrit : Décret 2019-536 : 1 articles en vigueur au lieu de 166/,
+        /Corpus textes_fr invalide, rien n'est écrit : Décret 2019-536 : 2 articles en vigueur au lieu de 166/,
       );
       assert.equal(existsSync(join(root, "data/corpus/textes_fr")), false);
     } finally {
@@ -205,8 +209,10 @@ describe("les outils sur les textes français d'application", () => {
       const penal = getArticle(root, { document: PENAL, numero: "226-24" });
       assert.equal(penal.trouve && penal.numero, "226-24");
       assert.equal(penal.perimetre.corpus[0]?.corpus, "textes_fr");
-      // « 226 » n'est pas « 226-16 » : le tiret fait partie du numéro.
+      // « 226 » n'est pas « 226-16 », ni « 226-16-1-A » (abrogé) « 226-16 » : tiret et suffixe comptent.
       assert.equal(getArticle(root, { document: PENAL, numero: "226" }).trouve, false);
+      assert.equal(getArticle(root, { document: PENAL, numero: "226-16-1-A" }).trouve, false);
+      assert.equal(getArticle(root, { document: PENAL, numero: "n° 226-24" }).trouve, true);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
@@ -251,6 +257,28 @@ describe("les outils sur les textes français d'application", () => {
     }
   });
 
+  it("cherche par le sens une question qui cite L. 34-5 dans un corpus de décisions", async () => {
+    const root = await racineSynchronisee();
+    try {
+      const marqueur = EMBEDDER_INTERDIT;
+      await assert.rejects(
+        search(
+          root,
+          { question: "manquement à l'article L. 34-5 du CPCE", corpus: "ce" },
+          {
+            embedder: marqueur,
+            index: () => {
+              throw new Error("recherche sémantique");
+            },
+          },
+        ),
+        /recherche sémantique/,
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("borne la recherche sémantique au corpus et à un texte", async () => {
     const root = await racineSynchronisee();
     try {
@@ -286,6 +314,11 @@ describe("les outils sur les textes français d'application", () => {
     assert.equal(referenceExacte("l'article 17 du RGPD"), "17");
     assert.deepEqual(documentsNommes("le décret n° 2019-536"), [DECRET]);
     assert.deepEqual(documentsNommes("selon le CPCE"), [CPCE]);
+    assert.deepEqual(
+      documentsNommes("le décret n° 2019-536 du 29 mai 2019 pris pour l'application de la loi n° 78-17 du 6 janvier 1978"),
+      [DECRET],
+    );
+    assert.equal(documentsNommes("le décret 2019-536 et la loi 78-17").length, 2);
     assert.deepEqual(documentsNommes("l'article 226-16 du Code pénal"), [PENAL]);
     assert.equal(statutApplication("textes_fr", "VIGUEUR"), "en_vigueur");
     assert.equal(statutApplication("textes_fr", "ABROGE"), "abroge");

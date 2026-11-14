@@ -69,6 +69,8 @@ const ENTITES: Record<string, string> = {
   quot: '"',
   apos: "'",
   nbsp: " ",
+  laquo: "«",
+  raquo: "»",
 };
 
 /** Décode les entités nominales et numériques d'un fragment XHTML. */
