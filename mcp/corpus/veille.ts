@@ -3,9 +3,9 @@
  *
  * La veille ne stocke que des entrées normalisées, jamais les textes intégraux :
  * le seul lien stable est l'identifiant officiel. Il est porté directement par
- * l'entrée pour le Conseil d'État et la Cour de cassation, par le CELEX de l'URL
- * pour la CJUE, et par les liens Légifrance de la page CNIL conservée en
- * snapshot. Aucune requête réseau n'est faite ici.
+ * l'entrée pour le Conseil d'État, le Conseil constitutionnel et la Cour de
+ * cassation, par le CELEX de l'URL pour la CJUE, et par les liens Légifrance de
+ * la page CNIL conservée en snapshot. Aucune requête réseau n'est faite ici.
  */
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
@@ -16,6 +16,7 @@ import type { Entry } from "../../veille/types.ts";
 export type CorpusVeille =
   | "cnil"
   | "ce"
+  | "constit"
   | "cc"
   | "cjue"
   | "lil"
@@ -32,6 +33,7 @@ export type CorpusVeille =
 const CORPUS_PAR_SOURCE: Record<string, CorpusVeille> = {
   cnil: "cnil",
   cetat: "ce",
+  constit: "constit",
   judilibre: "cc",
   cjeu: "cjue",
 };
@@ -68,6 +70,7 @@ const CORPUS_PAR_DOCUMENT: Record<string, CorpusVeille> = {
 };
 
 const ID_CETAT = /^CETATEXT\d+$/;
+const ID_CONSTIT = /^CONSTEXT\d+$/;
 const ID_JUDILIBRE = /^[0-9a-f]{24}$/;
 const CELEX = /^6\d{4}[A-Z]{2}\d{1,4}(?:\(\d+\))?$/;
 const LIEN_CNIL = /https?:\/\/www\.legifrance\.gouv\.fr\/cnil\/id\/(CNILTEXT\d+)/g;
@@ -247,6 +250,8 @@ export function documentsDeLEntree(
       return snapshots.get(normaliserUrl(entry.url)) ?? [];
     case "cetat":
       return ID_CETAT.test(entry.id) ? [entry.id] : [];
+    case "constit":
+      return entry.document !== undefined && ID_CONSTIT.test(entry.document) ? [entry.document] : [];
     case "judilibre":
       return ID_JUDILIBRE.test(entry.id) ? [entry.id] : [];
     case "cjeu": {

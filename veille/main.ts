@@ -15,12 +15,14 @@ import { FEED_URL as ARCOM_FEED_URL, PAGE as ARCOM_PAGE, parseFeed as parseArcom
 import { fetchEntries as fetchCetatEntries } from "./sources/cetat.ts";
 import { fetchEntries as fetchJudilibreEntries } from "./sources/judilibre.ts";
 import { passeEurlex } from "./sources/eurlex.ts";
+import { passeConstit } from "./sources/constit.ts";
 import { flushUsage } from "./piste.ts";
 import { assignThemes, readThemes } from "./themes.ts";
 import type { Theme } from "./themes.ts";
 import type { Entry } from "./types.ts";
 import { readEntryById, writeEntries, writeRaw } from "./write.ts";
 import type { FetchLike } from "./fetch.ts";
+import type { FetchFlux } from "../mcp/corpus/tar.ts";
 
 export type { FetchLike } from "./fetch.ts";
 
@@ -54,6 +56,8 @@ export type ApiResult = {
   raw: string[];
   entries: Entry[];
   warnings: string[];
+  /** Lignes informatives, imprimées par la passe sans préfixe d'avertissement. */
+  notes?: string[];
   /**
    * Enrichissement optionnel, appelé après le rattachement et seulement pour une
    * entrée pas encore écrite. Il rend les références de l'entrée, `null` quand le
@@ -65,6 +69,8 @@ export type ApiResult = {
 
 export type ApiContext = {
   fetchImpl: FetchLike;
+  /** `fetch` en flux, pour les sources qui lisent une archive sans la charger entière. */
+  fetchFlux: FetchFlux;
   themes: Theme[];
   now?: Date;
   /** Racine du dépôt : une source peut y lire les descripteurs et le corpus. */
@@ -158,10 +164,30 @@ export const SOURCES: AnySource[] = [
       return { raw: resultat.raw, entries: resultat.entries, warnings: resultat.warnings };
     },
   },
+  {
+    kind: "api",
+    id: "constit",
+    fetchEntries: async (context) => {
+      const resultat = await passeConstit({
+        rootDir: context.rootDir,
+        fetchImpl: context.fetchImpl,
+        fetchFlux: context.fetchFlux,
+        ...(context.now === undefined ? {} : { maintenant: context.now }),
+      });
+      return {
+        raw: resultat.raw,
+        entries: resultat.entries,
+        warnings: resultat.warnings,
+        notes: resultat.notes,
+      };
+    },
+  },
 ];
 
 export type RunOptions = {
   fetchImpl: FetchLike;
+  /** `fetch` en flux ; par défaut le `fetch` global, pour les sources qui lisent une archive. */
+  fetchFlux?: FetchFlux;
   /** Racine du dépôt : `data/` est écrit en dessous. */
   rootDir: string;
   /** Sources à exécuter ; toutes par défaut. */
@@ -185,6 +211,7 @@ export type RunResult = {
   sources: SourceRun[];
   entryPaths: string[];
   warnings: string[];
+  notes: string[];
 };
 
 /** Récupère un texte ; une panne réseau est reformulée avec le libellé et l'URL. */
@@ -235,22 +262,26 @@ async function fetchPage(fetchImpl: FetchLike, url: string): Promise<string> {
  */
 export async function run({
   fetchImpl,
+  fetchFlux,
   rootDir,
   sources = SOURCES,
   themes,
   now,
 }: RunOptions): Promise<RunResult> {
   const catalog = themes ?? readThemes(rootDir);
+  const archiveFetch = fetchFlux ?? (fetch as unknown as FetchFlux);
 
   const results: SourceRun[] = [];
   const errors: string[] = [];
   const warnings: string[] = [];
+  const notes: string[] = [];
 
   for (const source of sources) {
     try {
       if (source.kind === "api") {
         const result = await source.fetchEntries({
           fetchImpl,
+          fetchFlux: archiveFetch,
           themes: catalog,
           rootDir,
           ...(now === undefined ? {} : { now }),
@@ -287,6 +318,7 @@ export async function run({
         // Le snapshot couvre l'enrichissement : il s'écrit une fois les lectures faites.
         const rawPaths = result.raw.map((body) => writeRaw(rootDir, body, "json"));
         warnings.push(...result.warnings);
+        notes.push(...(result.notes ?? []));
         const entryPaths = writeEntries(rootDir, assigned);
         results.push({
           source: source.id,
@@ -380,10 +412,14 @@ export async function run({
     sources: results,
     entryPaths: results.flatMap((result) => result.entryPaths),
     warnings,
+    notes,
   };
 }
 
 const USER_AGENT = "vitrine-veille/0.1 (+https://github.com/Beccariavf/vitrine)";
+
+/** Une archive pèse quelques mégaoctets : le délai de la liste ne lui suffit pas. */
+const ARCHIVE_TIMEOUT_MS = 120_000;
 
 /** Le vrai réseau, borné dans le temps et identifié auprès de la source. */
 const cliFetch: FetchLike = (url, init = {}) =>
@@ -392,6 +428,13 @@ const cliFetch: FetchLike = (url, init = {}) =>
     signal: AbortSignal.timeout(10_000),
     headers: { "user-agent": USER_AGENT, ...init.headers },
   });
+
+/** Le vrai réseau en flux, pour une archive lue sans être chargée entière. */
+const cliFetchFlux: FetchFlux = (url) =>
+  fetch(url, {
+    signal: AbortSignal.timeout(ARCHIVE_TIMEOUT_MS),
+    headers: { "user-agent": USER_AGENT },
+  }) as unknown as ReturnType<FetchFlux>;
 
 const calledDirectly =
   process.argv[1] !== undefined &&
@@ -404,12 +447,13 @@ if (calledDirectly) {
     // Pas de `.env` : les secrets peuvent venir de l'environnement.
   }
 
-  run({ fetchImpl: cliFetch, rootDir: process.cwd() })
-    .then(({ sources, entryPaths, warnings }) => {
+  run({ fetchImpl: cliFetch, fetchFlux: cliFetchFlux, rootDir: process.cwd() })
+    .then(({ sources, entryPaths, warnings, notes }) => {
       for (const warning of warnings) console.warn(`warning: ${warning}`);
+      for (const note of notes) console.log(note);
 
       for (const source of sources) {
-        console.log(`${source.source} snapshot: ${source.rawPath}`);
+        if (source.rawPath !== "") console.log(`${source.source} snapshot: ${source.rawPath}`);
         if (source.pagePaths.length > 0) {
           console.log(`${source.source} pages: ${source.pagePaths.length}`);
         }

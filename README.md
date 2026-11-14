@@ -454,7 +454,7 @@ les expose comme outils directs.
 
 ## Comment ça marche
 
-- `veille/` — le pipeline : onze adaptateurs (neuf autorités, la Commission a deux flux, EUR-Lex pour les actes de l'Union) → normalisation → rattachement aux matières → `data/`.
+- `veille/` — le pipeline : douze adaptateurs (dix autorités, la Commission a deux flux, EUR-Lex pour les actes de l'Union) → normalisation → rattachement aux matières → `data/`.
 - `src/` — les pages Astro, qui lisent `data/` au build et filtrent les matières actives.
 - `mcp/` — les corpus RGPD, AI Act, LIL, CNIL, Conseil d'État, CEPD, Cour de cassation et CJUE,
   l'index vectoriel et lexical, le serveur MCP stdio (`get_article`, `get_decision`, `search`,

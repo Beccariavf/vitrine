@@ -244,6 +244,32 @@ export function classerDecision(
 }
 
 /**
+ * Dédoublonne des décisions retenues par numéro + nature : l'identifiant le plus
+ * récent gagne. Le compte des doublons écartés est rendu avec les décisions.
+ * Partagé par la synchronisation du corpus et par la veille, pour qu'elles ne
+ * divergent jamais : une décision écartée d'un côté resterait « manquante » de
+ * l'autre sans jamais pouvoir entrer au corpus.
+ */
+export function decisionsUniques(decisions: readonly DecisionConstit[]): {
+  decisions: DecisionConstit[];
+  doublons: number;
+} {
+  const retenues = new Map<string, DecisionConstit>();
+  let doublons = 0;
+  for (const decision of decisions) {
+    const cle = `${decision.numero} ${decision.nature}`;
+    const deja = retenues.get(cle);
+    if (deja === undefined) {
+      retenues.set(cle, decision);
+    } else {
+      doublons += 1;
+      if (decision.id > deja.id) retenues.set(cle, decision);
+    }
+  }
+  return { decisions: [...retenues.values()], doublons };
+}
+
+/**
  * Mappe une décision retenue en fragments adressables. Le découpage est local
  * (600 à 1 200 caractères) ; la référence porte l'identifiant CONSTIT et le
  * rang du fragment. Le numéro inclut la nature (`2018-765 DC`), pour que deux
