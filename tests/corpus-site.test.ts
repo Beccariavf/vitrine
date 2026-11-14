@@ -27,7 +27,7 @@ after(() => {
 });
 
 describe("sourcesCorpus", () => {
-  it("rend les seize collections committées dans l'ordre textes, autorités, juridictions", () => {
+  it("rend les dix-sept collections committées dans l'ordre textes, autorités, juridictions", () => {
     const sources = sourcesCorpus(ROOT);
     assert.deepEqual(
       sources.map((source) => source.libelle),
@@ -43,6 +43,7 @@ describe("sourcesCorpus", () => {
         "Textes français d'application",
         "Décisions d'adéquation",
         "CNIL",
+        "Doctrine CNIL",
         "CEPD",
         "CJUE",
         "Conseil d'État",

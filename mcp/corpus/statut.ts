@@ -112,7 +112,8 @@ const STATUTS_CEPD_CONSULTATION: readonly string[] = [
 
 /**
  * Statut d'application d'une unité. Le corpus décide d'abord : les textes
- * suivent leur statut source, les décisions juridictionnelles sont rendues. Pour
+ * suivent leur statut source, les décisions juridictionnelles sont rendues, la
+ * doctrine publiée de la CNIL est adoptée. Pour
  * la CNIL et le CEPD, un statut sans effet (`ABROGE`, `ANNULE`) prime sur la
  * nature — une recommandation abrogée ne s'applique plus —, puis la nature ou la
  * version tranche. Un statut modifié rend `inconnu` : la version rendue n'est pas
@@ -132,6 +133,12 @@ export function statutApplication(
     return STATUTS_TEXTES.get(source) ?? "inconnu";
   }
   if (CORPUS_JURIDICTIONNELS.includes(collection)) return "rendue";
+  // La doctrine publiée (guides, référentiels, listes AIPD) est adoptée par la
+  // CNIL ; un statut sans effet la retire. Le reste n'est pas reconnu.
+  if (collection === "cnil_doctrine") {
+    if (STATUTS_SANS_EFFET.includes(source)) return "abroge";
+    return source === "PUBLIE" ? "adoptee" : "inconnu";
+  }
   if (collection === "cnil") {
     if (STATUTS_SANS_EFFET.includes(source)) return "abroge";
     // Une délibération modifiée n'est rendue ici que dans sa version d'origine.

@@ -44,15 +44,24 @@ const ACTES_UE =
 const PERIMETRE_REFUS = `(périmètre : ${PERIMETRE})`;
 
 const CONSIGNE_PROVENANCE =
-  "Le texte rendu vient des seize corpus locaux (RGPD `32016R0679`, AI Act `32024R1689`, " +
+  "Le texte rendu vient des dix-sept corpus locaux (RGPD `32016R0679`, AI Act `32024R1689`, " +
   "ePrivacy `32002L0058`, directive police-justice `32016L0680`, règlement 2018/1725 " +
   "`32018R1725`, règlement procédural RGPD `32025R2518`, clauses contractuelles types " +
   "`32021D0914`, décisions d'adéquation `adequation`, LIL " +
-  "`LEGITEXT000006068624`, textes français d'application `textes_fr`, délibérations CNIL `cnil`, décisions du Conseil d'État `ce`, décisions DC et QPC du Conseil constitutionnel `constit`, documents " +
+  "`LEGITEXT000006068624`, textes français d'application `textes_fr`, délibérations CNIL `cnil`, " +
+  "doctrine CNIL `cnil_doctrine`, décisions du Conseil d'État `ce`, décisions DC et QPC du Conseil constitutionnel `constit`, documents " +
   "du CEPD `cepd` (lignes directrices, avis art. 64, décisions art. 65, recommandations, G29 repris), décisions de la Cour de cassation `cc` et décisions de la CJUE " +
   "`cjue`), jamais d'une génération. Citer la référence et l'URL rendues. " +
   "Respecter le niveau de confiance : « aucun_resultat_fiable » signifie qu'il faut le dire au " +
   "lecteur, pas inventer un passage.";
+
+const CONSIGNE_MARQUAGE_DOCTRINE =
+  "Les documents du corpus `cnil_doctrine` sont des extraits non modifiés de cnil.fr sous CC BY-ND 4.0. " +
+  "Chaque passage de ce corpus porte `marquage` : `mention` (« extrait non modifié · CC BY-ND 4.0 · " +
+  "<lien> »), `titre`, `source` (« Source : CNIL – https://www.cnil.fr »), `date_extraction` " +
+  "(JJ/MM/AAAA), `licence` et `licence_url`. Reproduire la mention, le titre, la source et la date " +
+  "avant l'extrait. Ne jamais résumer, reformuler ni modifier le texte de ces documents, et ne rien " +
+  "laisser suggérer que la CNIL soutient cet outil.";
 
 const CONSIGNE_PROMESSE =
   "« confiant » est statistique, jamais par réponse : c'est un taux d'erreur mesuré au niveau du " +
@@ -96,7 +105,7 @@ const CONSIGNE_PERIMETRE =
   "(`corpus[].couverture`). Chaque corpus dit sa fraîcheur : `veille: true` pour les corpus " +
   "revérifiés par la synchronisation (`cnil`, `ce`, `cc`, `cjue`), avec `a_jour_au`, la dernière " +
   "synchronisation réussie (`null` si aucune) ; `veille: false` pour un instantané fixe jamais " +
-  "revérifié (`rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `lil`, `textes_fr`, `constit`, `cepd`), daté par `arrete_le` ou non daté (`null`) ; " +
+  "revérifié (`rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `lil`, `textes_fr`, `constit`, `cepd`, `cnil_doctrine`), daté par `arrete_le` ou non daté (`null`) ; " +
   "`inconnu: true` dit qu'un corpus demandé n'existe pas localement et que rien n'y a été interrogé. Ne " +
   "jamais présenter un instantané fixe comme à jour. Le rappeler au lecteur. Une absence de " +
   "résultat ne prouve jamais que la règle n'existe pas : elle peut être hors du périmètre, exclue " +
@@ -116,7 +125,7 @@ const CONSIGNE_DECISIONS_CITEES =
   `${chiffresCitationsDecisions()}`;
 
 const CONSIGNE_SERVEUR =
-  "Serveur de lecture et de recherche sur seize corpus juridiques : le RGPD " +
+  "Serveur de lecture et de recherche sur dix-sept corpus juridiques : le RGPD " +
   "(corpus `rgpd`, CELEX 32016R0679), l'AI Act (corpus `aiact`, CELEX 32024R1689), " +
   `${ACTES_UE}` +
   ", les clauses contractuelles types pour les transferts hors UE (corpus `ccs`, CELEX " +
@@ -125,11 +134,13 @@ const CONSIGNE_SERVEUR =
   "d'application (corpus `textes_fr` : décret 2019-536 LEGITEXT000038567662 en entier, Code pénal " +
   "LEGITEXT000006070719 articles 226-16 à 226-24, CPCE LEGITEXT000006070987 article L34-5), " +
   "les délibérations de la CNIL " +
-  "(corpus `cnil`, natures Sanction, Avis et Recommandation/Lignes directrices), les décisions du " +
+  "(corpus `cnil`, natures Sanction, Avis et Recommandation/Lignes directrices), les guides, " +
+  "référentiels et listes AIPD de la CNIL (corpus `cnil_doctrine`, extraits non modifiés sous " +
+  "CC BY-ND 4.0), les décisions du " +
   "Conseil d'État (corpus `ce`), les décisions DC et QPC du Conseil constitutionnel (corpus " +
   "`constit`), les documents du CEPD (corpus `cepd` : lignes directrices, avis art. 64, décisions art. 65, recommandations), les décisions de la Cour de cassation " +
   "sur les données personnelles (corpus `cc`) et celles de la CJUE (corpus `cjue`). Les outils de " +
-  "recherche acceptent les paramètres `corpus` et `nature` ; sans eux, la recherche couvre les seize " +
+  "recherche acceptent les paramètres `corpus` et `nature` ; sans eux, la recherche couvre les dix-sept " +
   "collections et toutes les natures. Un document nommé dans la question (sigle ou nom ordinaire, " +
   "casse et ponctuation indifférentes) est honoré quand `document` et `corpus` sont absents ; sans " +
   "nom, une référence exacte qui n'existe que dans un corpus est `incertain` et le corpus est " +
@@ -386,7 +397,7 @@ export function createServer(deps: ServerDeps): McpServer {
       title: "Dire à quelle date le corpus est à jour",
       description:
         "Rend la date de la dernière synchronisation réussie depuis la veille (`a_jour_au`), " +
-        "la fenêtre de veille, l'inventaire des seize corpus avec leurs comptes, les documents " +
+        "la fenêtre de veille, l'inventaire des dix-sept corpus avec leurs comptes, les documents " +
         "manquants et l'état des sources et de l'index. Chaque corpus porte `couverture`, le bloc que " +
         "déclare son manifeste — sources, bornes et exclusions — : c'est la cible du renvoi " +
         "`perimetre.exclusions` des autres outils. Les clés d'exclusion varient selon le corpus " +
@@ -408,12 +419,13 @@ export function createServer(deps: ServerDeps): McpServer {
   serveur.registerTool(
     "search",
     {
-      title: "Chercher dans les seize corpus juridiques",
+      title: "Chercher dans les dix-sept corpus juridiques",
       description:
         "Cherche par le sens dans le RGPD, l'AI Act, la directive ePrivacy, la directive " +
         "police-justice, le règlement 2018/1725, le règlement procédural RGPD, les clauses " +
         "contractuelles types, les décisions d'adéquation, la LIL, les textes français d'application, les délibérations de la CNIL " +
-        "(sanctions, avis, recommandations et lignes directrices), les décisions du Conseil d'État, " +
+        "(sanctions, avis, recommandations et lignes directrices), les guides, référentiels et listes " +
+        "AIPD de la CNIL (corpus `cnil_doctrine`), les décisions du Conseil d'État, " +
         "les décisions DC et QPC du Conseil constitutionnel, les documents du CEPD, les " +
         "décisions de la Cour de cassation sur les données personnelles et celles de la CJUE, et rend " +
         "les passages les plus proches avec leur " +
@@ -422,7 +434,7 @@ export function createServer(deps: ServerDeps): McpServer {
         "devant, mais aucun considérant n'est retiré du résultat. " +
         "Une question qui cite un article rend cet article exact, sans recherche vectorielle. " +
         "`corpus` borne la recherche à une collection (`rgpd`, `aiact`, `eprivacy`, `police`, " +
-        "`eudpr`, `rgpdproc`, `ccs`, `adequation`, `cnil`, `lil`, `textes_fr`, `ce`, `constit`, `cepd`, " +
+        "`eudpr`, `rgpdproc`, `ccs`, `adequation`, `cnil`, `cnil_doctrine`, `lil`, `textes_fr`, `ce`, `constit`, `cepd`, " +
         "`cc`, `cjue`) " +
         "et prime sur tout nom de document présent dans la question. " +
         "`nature` borne une recherche CNIL à une nature (`Sanction`, `Avis`, " +
@@ -443,6 +455,7 @@ export function createServer(deps: ServerDeps): McpServer {
         `${CONSIGNE_CITATIONS} ` +
         `${CONSIGNE_DECISIONS_CITEES} ` +
         `${CONSIGNE_STATUT_APPLICATION} ` +
+        `${CONSIGNE_MARQUAGE_DOCTRINE} ` +
         `${CONSIGNE_PERIMETRE} ` +
         CONSIGNE_PROVENANCE,
       inputSchema: {
@@ -453,8 +466,10 @@ export function createServer(deps: ServerDeps): McpServer {
           .optional()
           .describe(
             "Restreint la recherche à une collection : rgpd, aiact, eprivacy, police, eudpr, " +
-              "rgpdproc, ccs, adequation, cnil, lil, textes_fr, ce, constit, cepd, cc ou " +
+              "rgpdproc, ccs, adequation, cnil, cnil_doctrine, lil, textes_fr, ce, constit, cepd, cc ou " +
               "cjue ; cnil couvre les sanctions, avis, recommandations et lignes directrices, " +
+              "cnil_doctrine les guides, référentiels et listes AIPD (extraits non modifiés, " +
+              "CC BY-ND 4.0), " +
               "constit les décisions DC et QPC ; absent, toutes répondent",
           ),
         document: z
@@ -536,7 +551,7 @@ async function main(): Promise<void> {
 
   await serveur.connect(transport);
   process.stderr.write(
-    "Serveur MCP des seize corpus (RGPD, AI Act, ePrivacy, 2016/680, 2018/1725, 2025/2518, CCS, adéquation, CNIL, LIL, textes français, CE, Conseil constitutionnel, CEPD, CC, CJUE) prêt sur stdio " +
+    "Serveur MCP des dix-sept corpus (RGPD, AI Act, ePrivacy, 2016/680, 2018/1725, 2025/2518, CCS, adéquation, CNIL, doctrine CNIL, LIL, textes français, CE, Conseil constitutionnel, CEPD, CC, CJUE) prêt sur stdio " +
       "(six outils : get_article, get_decision, search, decisions_citant, decisions_citant_decision, etat_corpus).\n",
   );
 }

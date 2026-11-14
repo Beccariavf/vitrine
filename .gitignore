@@ -29,6 +29,9 @@ data/corpus/sync.json
 # Corpus CNIL : parquet DINUM non commité (334 Mo), récupéré par npm run cnil:sync
 data/raw/cnil/
 
+# Doctrine CNIL : PDF et cache de cnil.fr non commités, récupérés par npm run cnil-doctrine:sync
+data/raw/cnil-doctrine/
+
 # Corpus LIL : snapshot legiPart non commité, récupéré par npm run lil:sync
 data/raw/lil/
 
