@@ -13,7 +13,9 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import type { Unite } from "../parse.ts";
 import {
   ErreurHttp,
+  TYPES_DOCUMENT,
   chargerTexte,
+  listerDocumentsG29,
   listerDocumentsSitemap,
   listerDocumentsWayback,
   snapshotWayback,
@@ -21,9 +23,11 @@ import {
 } from "./liste.ts";
 import type {
   DescripteurCePd,
+  DocumentG29Liste,
   DocumentListe,
   FetchHtml,
   FetchJson,
+  HebergementG29,
   ResultatListe,
   Tentative,
   TypeDocument,
@@ -34,6 +38,7 @@ import {
   choisirVersions,
   enrichirDocument,
   preparerDocument,
+  slugDe,
   unitesCePd,
   validerUnites,
 } from "./parse.ts";
@@ -51,7 +56,47 @@ export const DOSSIER_BRUT = join("data", "raw", "cepd");
 
 const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
 
-export type DocumentEcart = { url: string; slug: string; raison: string };
+export type DocumentEcart = {
+  url: string;
+  slug: string;
+  /** Type du document écarté, lu sur sa rubrique. */
+  type: TypeDocument;
+  raison: string;
+  /** Origine de l'écart : le sitemap ou la liste d'endossement du G29. */
+  source?: "sitemap" | "endossement";
+};
+
+/** Un document de la liste d'endossement du G29 et son sort au corpus. */
+export type DocumentG29Manifeste = {
+  titre: string;
+  url: string;
+  wp: string | null;
+  hebergement: HebergementG29;
+  statut: "retenu" | "ecarte";
+  /** Slug du document retenu, quand il l'est. */
+  document?: string;
+  /** Type du document retenu, quand il l'est. */
+  type?: TypeDocument;
+  /** Vrai quand le WP est représenté au corpus par son successeur EDPB. */
+  successeur?: boolean;
+  raison?: string;
+};
+
+/** La liste d'endossement du G29, rapprochée du corpus. */
+export type BlocG29 = {
+  source: string;
+  liste_le: string;
+  documents: DocumentG29Manifeste[];
+  comptes: { listes: number; retenus: number; successeurs: number; ecartes: number };
+  /** Renseigné quand la page n'a pas pu être lue. */
+  erreur?: string;
+};
+
+/** Comptes d'un type : documents retenus et fragments produits. */
+export type CompteType = { documents: number; fragments: number };
+
+/** Comptes des cinq types, y compris ceux qui n'ont rien rendu. */
+export type ComptesParType = Record<TypeDocument, CompteType>;
 
 export type ManifesteCePd = {
   corpus: string;
@@ -71,8 +116,16 @@ export type ManifesteCePd = {
   versions_ecartees: number;
   documents_sans_texte_ecartes: number;
   types_retenus: TypeDocument[];
-  /** Langue des PDF retenus, par document. */
+  /** Documents et fragments retenus, type par type. */
+  comptes_par_type: ComptesParType;
+  /** Langue des PDF retenus, tous types confondus. */
   langues_pdf: Record<LanguePdf, number>;
+  /** Langue du texte retenu, document par document. */
+  documents_langues: Record<string, LanguePdf>;
+  /** Type de chaque document retenu, document par document. */
+  documents_types: Record<string, TypeDocument>;
+  /** Liste d'endossement du G29, rapprochée du corpus ; `null` si non lue. */
+  g29: BlocG29 | null;
   licence: string;
   couverture: {
     source: string;
@@ -83,10 +136,14 @@ export type ManifesteCePd = {
     pages_lues: number;
     periode: { date_min: string | null; date_max: string | null };
     types_retenus: TypeDocument[];
+    comptes_par_type: ComptesParType;
     langues_pdf: Record<LanguePdf, number>;
+    documents_langues: Record<string, LanguePdf>;
+    documents_types: Record<string, TypeDocument>;
+    g29: BlocG29 | null;
     documents_sans_texte_ecartes: number;
     versions_ecartees: number;
-    /** Documents écartés, avec leur URL, leur slug et le motif. */
+    /** Documents écartés, avec leur URL, leur slug, leur type et le motif. */
     documents_ecartes: DocumentEcart[];
   };
 };
@@ -107,6 +164,8 @@ export type SyncCePdOptions = {
   attendre?: (ms: number) => Promise<void>;
   tentatives?: number;
   delaiMs?: number;
+  /** Délai de politesse entre deux documents ; `0` le désactive. */
+  delaiEntreRequetesMs?: number;
   pageMax?: number;
   /** Extraction injectable : les tests remplacent unpdf par le texte de la fixture. */
   extraireTexte?: (octets: Uint8Array, url: string) => Promise<string>;
@@ -168,7 +227,11 @@ export function manifesteCePd(
     versionsEcartees: number;
     documentsSansTexte: number;
     typesRetenus: TypeDocument[];
+    comptesParType: ComptesParType;
     languesPdf: Record<LanguePdf, number>;
+    documentsLangues: Record<string, LanguePdf>;
+    documentsTypes: Record<string, TypeDocument>;
+    g29: BlocG29 | null;
     documentsEcartes: DocumentEcart[];
     dateMin: string | null;
     dateMax: string | null;
@@ -189,10 +252,16 @@ export function manifesteCePd(
     versions_ecartees: comptes.versionsEcartees,
     documents_sans_texte_ecartes: comptes.documentsSansTexte,
     types_retenus: comptes.typesRetenus,
+    comptes_par_type: comptes.comptesParType,
     langues_pdf: comptes.languesPdf,
+    documents_langues: comptes.documentsLangues,
+    documents_types: comptes.documentsTypes,
+    g29: comptes.g29,
     licence: descripteur.licence,
     couverture: {
-      source: "CEPD — pages de lignes directrices (PDF)",
+      source:
+        "CEPD — lignes directrices, avis art. 64, décisions contraignantes " +
+        "art. 65, recommandations et documents G29 repris (PDF)",
       date_liste: dateListe,
       limite,
       via,
@@ -200,11 +269,165 @@ export function manifesteCePd(
       pages_lues: comptes.pages,
       periode: { date_min: comptes.dateMin, date_max: comptes.dateMax },
       types_retenus: comptes.typesRetenus,
+      comptes_par_type: comptes.comptesParType,
       langues_pdf: comptes.languesPdf,
+      documents_langues: comptes.documentsLangues,
+      documents_types: comptes.documentsTypes,
+      g29: comptes.g29,
       documents_sans_texte_ecartes: comptes.documentsSansTexte,
       versions_ecartees: comptes.versionsEcartees,
       documents_ecartes: comptes.documentsEcartes,
     },
+  };
+}
+
+/** Slug sûr pour une URL qui n'a pas encore été préparée. */
+function slugSecurise(url: string): string {
+  try {
+    return slugDe(url);
+  } catch {
+    return url;
+  }
+}
+
+/** Message lisible d'une erreur, pour le motif d'un document écarté. */
+function messageErreur(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+/** Forme courte d'un numéro (`Guidelines 05/2020` → `05/2020`). */
+function numeroCourt(numero: string): string | null {
+  const trouve = /(\d{1,2})\s*\/\s*(\d{4})/.exec(numero);
+  if (trouve?.[1] === undefined || trouve[2] === undefined) return null;
+  return `${String(Number(trouve[1])).padStart(2, "0")}/${trouve[2]}`;
+}
+
+/** Famille d'un document de la liste d'endossement, pour ne pas confondre un avis homonyme. */
+function familleG29(titre: string): "guidelines" | "recommandation" | "autre" {
+  if (/^guidelines?\b/i.test(titre)) return "guidelines";
+  if (/^recommendations?\b/i.test(titre)) return "recommandation";
+  return "autre";
+}
+
+/** Famille déduite du lien de successeur, quand le titre est un « Working Document ». */
+function familleDepuisUrlG29(url: string): "guidelines" | "recommandation" | "autre" {
+  let chemin: string;
+  try {
+    chemin = new URL(url).pathname;
+  } catch {
+    return "autre";
+  }
+  if (/\/recommendations?\//i.test(chemin)) return "recommandation";
+  if (/\/guidelines?\//i.test(chemin)) return "guidelines";
+  return "autre";
+}
+
+/**
+ * Rapproche la liste d'endossement du G29 du corpus : un document dont le
+ * numéro EDPB ou WP est déjà retenu est `retenu` ; un document déjà écarté
+ * garde son motif ; les autres sont ajoutés aux écarts avec leur hébergement.
+ */
+function rapprocherG29(
+  items: readonly DocumentG29Liste[],
+  retenus: readonly DocumentPrepare[],
+  ecartes: readonly DocumentEcart[],
+  dateListe: string,
+  source: string,
+): { bloc: BlocG29; ajouts: DocumentEcart[] } {
+  // Un avis 05/2020 et une ligne directrice 05/2020 portent le même numéro :
+  // la famille du titre de la liste d'endossement départage.
+  const parNumero = new Map<string, DocumentPrepare>();
+  const parWp = new Map<string, DocumentPrepare>();
+  for (const document of retenus) {
+    // Un avis art. 64 ou une décision art. 65 porte souvent le même numéro
+    // qu'une ligne directrice : il n'appartient jamais à la liste du G29.
+    if (document.type === "avis_art64" || document.type === "decision_art65") continue;
+    const famille = document.type === "recommandation" ? "recommandation" : "guidelines";
+    const court = numeroCourt(document.numero);
+    if (court !== null) parNumero.set(`${famille}|${court}`, document);
+    if (/^WP\d+$/i.test(document.numero)) parWp.set(document.numero.toUpperCase(), document);
+  }
+
+  const ajouts: DocumentEcart[] = [];
+  const documents = items.map((item, index): DocumentG29Manifeste => {
+    // « Working Document … WP256 » pointe Recommandations 1/2022 : la famille
+    // se lit alors dans le lien du successeur, pas dans le titre.
+    const famille =
+      familleG29(item.titre) === "autre"
+        ? familleDepuisUrlG29(item.url)
+        : familleG29(item.titre);
+    const retenu =
+      (item.wp === null ? undefined : parWp.get(item.wp.toUpperCase())) ??
+      (item.numero === null || famille === "autre"
+        ? undefined
+        : parNumero.get(`${famille}|${item.numero}`));
+    if (retenu !== undefined) {
+      const successeur = item.wp !== null && retenu.numero.toUpperCase() !== item.wp.toUpperCase();
+      return {
+        ...item,
+        statut: "retenu",
+        document: retenu.slug,
+        type: retenu.type,
+        ...(successeur ? { successeur: true } : {}),
+      };
+    }
+    const existant = ecartes.find(
+      (ecart) =>
+        (item.wp !== null && ecart.slug.toLowerCase().includes(item.wp.toLowerCase())) ||
+        ecart.url === item.url,
+    );
+    if (existant !== undefined) {
+      return { ...item, statut: "ecarte", raison: existant.raison };
+    }
+    let hote = "hors site";
+    try {
+      hote = new URL(item.url).hostname;
+    } catch {
+      // URL illisible : le motif générique suffit.
+    }
+    const raison =
+      item.hebergement === "commission"
+        ? `document hébergé hors du site du CEPD (${hote})`
+        : item.hebergement === "cepd"
+          ? "page CEPD sans PDF ou non listée au sitemap"
+          : `hébergement hors du site du CEPD (${hote})`;
+    const slug =
+      item.wp?.toLowerCase() ??
+      (/^position paper/i.test(item.titre) ? "position-paper" : `g29-${index + 1}`);
+    ajouts.push({
+      url: item.url,
+      slug,
+      type: "g29_repris",
+      raison,
+      source: "endossement",
+    });
+    return { ...item, statut: "ecarte", raison };
+  });
+
+  return {
+    bloc: {
+      source,
+      liste_le: dateListe,
+      documents,
+      comptes: {
+        listes: documents.length,
+        retenus: documents.filter((document) => document.statut === "retenu").length,
+        successeurs: documents.filter((document) => document.successeur === true).length,
+        ecartes: documents.filter((document) => document.statut === "ecarte").length,
+      },
+    },
+    ajouts,
+  };
+}
+
+/** Comptes vides des cinq types. */
+function comptesVides(): ComptesParType {
+  return {
+    lignes_directrices: { documents: 0, fragments: 0 },
+    avis_art64: { documents: 0, fragments: 0 },
+    decision_art65: { documents: 0, fragments: 0 },
+    recommandation: { documents: 0, fragments: 0 },
+    g29_repris: { documents: 0, fragments: 0 },
   };
 }
 
@@ -323,24 +546,51 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
   }
 
   const journal: Tentative[] = options.journal ?? [];
+  const delai = options.delaiEntreRequetesMs ?? descripteur.delai_entre_requetes_ms ?? 0;
+  const attendre = options.attendre ?? ((ms: number): Promise<void> =>
+    new Promise((reussir) => setTimeout(reussir, ms)));
   const liste = await listerAvecRepli(descripteur, options, journal);
-  let documentsListe = liste.documents;
-  if (liste.via === "sitemap") {
-    const enrichis: DocumentListe[] = [];
-    for (const document of liste.documents) {
-      const html = await chargerPageDocument(document.url, descripteur, options, journal);
-      enrichis.push(enrichirDocument(document, html));
+  const documentsEcartes: DocumentEcart[] = [];
+  // Documents sans texte lisible : page, date, PDF ou extraction.
+  let sansTexte = 0;
+
+  const documentsListe: DocumentListe[] = [];
+  for (const document of liste.documents) {
+    if (liste.via === "sitemap") {
+      try {
+        const html = await chargerPageDocument(document.url, descripteur, options, journal);
+        documentsListe.push(enrichirDocument(document, html));
+      } catch (error) {
+        sansTexte += 1;
+        documentsEcartes.push({
+          url: document.url,
+          slug: slugSecurise(document.url),
+          type: document.type,
+          raison: `page illisible : ${messageErreur(error)}`,
+        });
+        continue;
+      }
+    } else {
+      documentsListe.push(document);
     }
-    documentsListe = enrichis;
+    // Requête polie : un délai entre deux pages, jamais dans les tests.
+    if (delai > 0) await attendre(delai);
   }
-  const prepares = documentsListe.map((document) => {
+
+  const prepares: DocumentPrepare[] = [];
+  for (const document of documentsListe) {
     try {
-      return preparerDocument(document);
+      prepares.push(preparerDocument(document));
     } catch (error) {
-      const cause = error instanceof Error ? error.message : String(error);
-      throw new Error(`${document.url} : ${cause}`);
+      sansTexte += 1;
+      documentsEcartes.push({
+        url: document.url,
+        slug: slugSecurise(document.url),
+        type: document.type,
+        raison: messageErreur(error),
+      });
     }
-  });
+  }
   // Une même ligne est listée en français et en anglais : le slug les réunit.
   const uniques = new Map<string, DocumentPrepare>();
   for (const document of prepares) {
@@ -358,52 +608,146 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
         `${filtres.length} après la date de départ)`,
     );
   }
+  documentsEcartes.push(
+    ...ecartes.map((document) => ({
+      url: document.url,
+      slug: document.slug,
+      type: document.type,
+      raison: "version obsolète",
+    })),
+  );
 
   const extraireTexte = options.extraireTexte ?? extraireTextePdf;
   const unites: Unite[] = [];
   const documentsAvecTexte: DocumentPrepare[] = [];
-  const sansTexte: DocumentPrepare[] = [];
-  const documentsEcartes: DocumentEcart[] = ecartes.map((document) => ({
-    url: document.url,
-    slug: document.slug,
-    raison: "version obsolète",
-  }));
   const languesPdf: Record<LanguePdf, number> = { fr: 0, en: 0, autre: 0 };
+  const documentsLangues: Record<string, LanguePdf> = {};
 
   for (const document of choix) {
-    let pdfUrl = document.pdfUrl;
-    if (pdfUrl === null && liste.via !== "sitemap") {
-      const html = await chargerPageDocument(document.url, descripteur, options, journal);
-      pdfUrl = trouverLienPdf(html, document.url);
-    }
-    if (pdfUrl === null) {
-      sansTexte.push(document);
+    try {
+      let pdfUrl = document.pdfUrl;
+      if (pdfUrl === null && liste.via !== "sitemap") {
+        const html = await chargerPageDocument(document.url, descripteur, options, journal);
+        pdfUrl = trouverLienPdf(html, document.url);
+      }
+      if (pdfUrl === null) {
+        sansTexte += 1;
+        documentsEcartes.push({
+          url: document.url,
+          slug: document.slug,
+          type: document.type,
+          raison: "PDF absent",
+        });
+        continue;
+      }
+      // Un document G29 n'est retenu que si son PDF porte bien son numéro WP :
+      // une pièce jointe sans rapport ne doit pas entrer au corpus.
+      if (document.type === "g29_repris") {
+        const wp = /\b(WP\d{2,4})\b/i.exec(document.numero)?.[1]?.toUpperCase();
+        if (wp !== undefined && !new URL(pdfUrl).pathname.toLowerCase().includes(wp.toLowerCase())) {
+          sansTexte += 1;
+          documentsEcartes.push({
+            url: document.url,
+            slug: document.slug,
+            type: document.type,
+            raison: `PDF sans rapport avec le document (${wp} absent du nom du fichier)`,
+          });
+          continue;
+        }
+      }
+      // Une page qui ne sert que l'annexe ne donne pas le document : le
+      // corpus ne doit pas prendre la pièce jointe pour le texte principal.
+      // « …_with_annex_fr.pdf » est le document complet, pas une annexe seule.
+      const nomPdf = new URL(pdfUrl).pathname.split("/").at(-1) ?? "";
+      const annexeSeule =
+        /_annexe?\d*_(?:fr|en)\.pdf$/i.test(nomPdf) && !/_with_annex/i.test(nomPdf);
+      if (annexeSeule && !/annexe?/i.test(document.titre)) {
+        sansTexte += 1;
+        documentsEcartes.push({
+          url: document.url,
+          slug: document.slug,
+          type: document.type,
+          raison: "PDF annexe seulement",
+        });
+        continue;
+      }
+      const chemin = join(rootDir, DOSSIER_BRUT, `${document.slug}.pdf`);
+      const octets = await octetsPdf(pdfUrl, chemin, descripteur, options, journal);
+      const texte = await extraireTexte(octets, pdfUrl);
+      unites.push(...unitesCePd(document, texte, descripteur));
+      documentsAvecTexte.push(document);
+      // Un PDF sans suffixe de langue suit la langue de sa page : c'est elle
+      // qui a décidé du repli français → anglais.
+      const langue = languePdf(pdfUrl) === "autre" ? (document.langue ?? "autre") : languePdf(pdfUrl);
+      languesPdf[langue] += 1;
+      documentsLangues[document.slug] = langue;
+    } catch (error) {
+      sansTexte += 1;
       documentsEcartes.push({
         url: document.url,
         slug: document.slug,
-        raison: "PDF absent",
+        type: document.type,
+        raison: messageErreur(error),
       });
-      continue;
+    } finally {
+      if (delai > 0) await attendre(delai);
     }
-    languesPdf[languePdf(pdfUrl)] += 1;
-    const chemin = join(rootDir, DOSSIER_BRUT, `${document.slug}.pdf`);
-    const octets = await octetsPdf(pdfUrl, chemin, descripteur, options, journal);
-    const texte = await extraireTexte(octets, pdfUrl);
-    unites.push(...unitesCePd(document, texte, descripteur));
-    documentsAvecTexte.push(document);
   }
 
   if (unites.length === 0) {
     throw new Error(
-      `Aucun fragment CEPD produit : ${sansTexte.length} document(s) sans PDF` +
-        `${sansTexte.length === 0 ? "" : ` (${sansTexte.slice(0, 3).map((document) => document.url).join(", ")})`}`,
+      `Aucun fragment CEPD produit : ${sansTexte} document(s) sans PDF` +
+        `${sansTexte === 0 ? "" : ` (${documentsEcartes.slice(0, 3).map((document) => document.url).join(", ")})`}`,
     );
   }
   validerUnites(unites);
 
   const documents = new Set(unites.map((unite) => unite.document)).size;
   const dates = unites.map((unite) => unite.date_acte).sort();
-  const typesRetenus = [...new Set(documentsAvecTexte.map((document) => document.type))].sort();
+  const comptesParType = comptesVides();
+  const documentsTypes: Record<string, TypeDocument> = {};
+  const fragmentsParDocument = new Map<string, number>();
+  for (const unite of unites) {
+    fragmentsParDocument.set(unite.document, (fragmentsParDocument.get(unite.document) ?? 0) + 1);
+  }
+  for (const document of documentsAvecTexte) {
+    comptesParType[document.type].documents += 1;
+    comptesParType[document.type].fragments += fragmentsParDocument.get(document.slug) ?? 0;
+    documentsTypes[document.slug] = document.type;
+  }
+  const typesRetenus = TYPES_DOCUMENT.filter((type) => comptesParType[type].documents > 0);
+
+  let g29: BlocG29 | null = null;
+  if (descripteur.url_endossement !== undefined) {
+    const http = {
+      ...(options.fetchHtml === undefined ? {} : { fetchHtml: options.fetchHtml }),
+      ...(options.attendre === undefined ? {} : { attendre: options.attendre }),
+      ...(options.tentatives === undefined ? {} : { tentatives: options.tentatives }),
+      ...(options.delaiMs === undefined ? {} : { delaiMs: options.delaiMs }),
+      journal,
+    };
+    try {
+      const html = await chargerTexte(descripteur.url_endossement, { ...http, via: "direct" });
+      const rapproche = rapprocherG29(
+        listerDocumentsG29(html, descripteur.url_endossement),
+        documentsAvecTexte,
+        documentsEcartes,
+        dateListe,
+        descripteur.url_endossement,
+      );
+      g29 = rapproche.bloc;
+      documentsEcartes.push(...rapproche.ajouts);
+    } catch (error) {
+      // La liste d'endossement ne bloque pas la synchronisation du corpus.
+      g29 = {
+        source: descripteur.url_endossement,
+        liste_le: dateListe,
+        documents: [],
+        comptes: { listes: 0, retenus: 0, successeurs: 0, ecartes: 0 },
+        erreur: messageErreur(error),
+      };
+    }
+  }
   const via = liste.via;
   const manifeste = manifesteCePd(
     descripteur,
@@ -417,9 +761,13 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
       documents,
       fragments: unites.length,
       versionsEcartees: ecartes.length,
-      documentsSansTexte: sansTexte.length,
+      documentsSansTexte: sansTexte,
       typesRetenus,
+      comptesParType,
       languesPdf,
+      documentsLangues,
+      documentsTypes,
+      g29,
       documentsEcartes,
       dateMin: dates[0] ?? null,
       dateMax: dates.at(-1) ?? null,
@@ -445,7 +793,7 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
     documents,
     fragments: unites.length,
     versionsEcartees: ecartes.length,
-    documentsSansTexte: sansTexte.length,
+    documentsSansTexte: sansTexte,
     pages: liste.pages,
     ecrit,
     tentatives: journal,
