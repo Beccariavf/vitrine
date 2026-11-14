@@ -27,13 +27,17 @@ after(() => {
 });
 
 describe("sourcesCorpus", () => {
-  it("rend les huit collections committées dans l'ordre textes, autorités, juridictions", () => {
+  it("rend les douze collections committées dans l'ordre textes, autorités, juridictions", () => {
     const sources = sourcesCorpus(ROOT);
     assert.deepEqual(
       sources.map((source) => source.libelle),
       [
         "RGPD",
         "AI Act",
+        "Directive ePrivacy",
+        "Directive police-justice",
+        "Règlement 2018/1725",
+        "Règlement procédural RGPD",
         "Loi Informatique et Libertés",
         "CNIL",
         "CEPD",

@@ -4,7 +4,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { writeRaw } from "../../veille/write.ts";
 import type { FetchLike } from "../../veille/fetch.ts";
 import { fetchCellar } from "./fetch.ts";
-import { parseCellar } from "./parse.ts";
+import { estConsolide, parseCellar, parseConsolide } from "./parse.ts";
 import type { Descripteur, Unite } from "./parse.ts";
 import { writeCorpus } from "./write.ts";
 
@@ -56,10 +56,12 @@ async function construire(
   const rootDir = options.rootDir ?? RACINE;
   const contenu =
     options.fixturePath === undefined
-      ? await fetchCellar(descripteur.document, descripteur.langue, options.fetchImpl)
+      ? await fetchCellar(descripteur.version ?? descripteur.document, descripteur.langue, options.fetchImpl)
       : readFileSync(options.fixturePath, "utf8");
 
-  const unites = parseCellar(contenu, descripteur);
+  const unites = estConsolide(descripteur)
+    ? parseConsolide(contenu, descripteur)
+    : parseCellar(contenu, descripteur);
   const snapshotPath = writeRaw(rootDir, contenu, "xhtml");
   const { manifestPath, unitesPath } = writeCorpus(rootDir, descripteur, unites, snapshotPath);
 
@@ -75,7 +77,7 @@ export async function buildCorpus(options: BuildOptions = {}): Promise<BuildResu
 
 /**
  * Construit tous les descripteurs, ou un seul quand `document` nomme son
- * `corpus` (`aiact`) ou son identifiant CELEX. Une capture locale ne peut servir
+ * `corpus` (`aiact`), son identifiant CELEX ou sa version consolidée. Une capture locale ne peut servir
  * qu'à un seul corpus.
  */
 export async function buildCorpusSet(options: BuildSetOptions = {}): Promise<BuildResult[]> {
@@ -86,7 +88,8 @@ export async function buildCorpusSet(options: BuildSetOptions = {}): Promise<Bui
       : descripteurs.filter(
           (descripteur) =>
             descripteur.corpus === options.document ||
-            descripteur.document === options.document,
+            descripteur.document === options.document ||
+            descripteur.version === options.document,
         );
 
   if (choisis.length === 0) {

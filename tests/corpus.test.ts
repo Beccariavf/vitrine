@@ -218,7 +218,10 @@ describe("les descripteurs", () => {
     const rgpd = descripteurs.find((descripteur) => descripteur.corpus === "rgpd");
     const aiact = descripteurs.find((descripteur) => descripteur.corpus === "aiact");
 
-    assert.equal(descripteurs.length, 2);
+    assert.deepEqual(
+      descripteurs.map((descripteur) => descripteur.corpus),
+      ["aiact", "eprivacy", "eudpr", "police", "rgpd", "rgpdproc"],
+    );
     assert.deepEqual(
       { articles: rgpd?.articles_attendus, considerants: rgpd?.considerants_attendus },
       { articles: 99, considerants: 173 },
@@ -337,7 +340,7 @@ describe("buildCorpusSet", () => {
     try {
       await assert.rejects(
         buildCorpusSet({ rootDir: root, document: "lil" }),
-        /Aucun descripteur pour « lil » : aiact, rgpd/,
+        /Aucun descripteur pour « lil » : aiact, eprivacy, eudpr, police, rgpd, rgpdproc/,
       );
       assert.equal(existsSync(join(root, "data")), false);
     } finally {

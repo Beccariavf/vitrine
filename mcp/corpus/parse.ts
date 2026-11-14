@@ -27,6 +27,16 @@ export type Descripteur = {
   articles_attendus: number;
   /** Nombre de considérants que la capture doit porter. */
   considerants_attendus: number;
+  /**
+   * CELEX effectivement récupéré : une version consolidée (`0…-AAAAMMJJ`) ou
+   * l'acte d'origine quand aucune consolidation française n'existe. Absent :
+   * `document`.
+   */
+  version?: string;
+  /** Date de la version consolidée rendue ; `null` quand l'acte d'origine est rendu. */
+  date_consolidation?: string | null;
+  /** Exclusions déclarées au manifeste, par exemple des considérants absents de la consolidation. */
+  exclusions?: string[];
 };
 
 /** `fragment` désigne un découpage de texte long, propre à la CNIL. */
@@ -232,6 +242,125 @@ export function parseCellar(xhtml: string, descripteur: Descripteur): Unite[] {
     unites.push(uniteDe(descripteur, "article", ancre.numero, cheminChapitre, texte));
   }
 
+  return unites;
+}
+
+/** Vrai quand le CELEX récupéré est une version consolidée (secteur `0`). */
+export function estConsolide(descripteur: Descripteur): boolean {
+  return (descripteur.version ?? descripteur.document).startsWith("0");
+}
+
+/** Marqueurs de consolidation : ▼B, ▼M2, ►C1… ouvrent un passage, ◄ le ferme. */
+function sansMarqueurs(texte: string): string {
+  return texte
+    .replace(/[►▼][A-Z]\d*/g, " ")
+    .replace(/◄/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/\s+([,.;:!?»)\]])/g, "$1")
+    .replace(/([«(\[])\s+/g, "$1")
+    .trim();
+}
+
+/**
+ * Texte visible d'un fragment consolidé, sans renvois de modification ; la
+ * marque d'un passage supprimé (`—————`) reste.
+ */
+function texteConsolide(fragment: string): string {
+  return sansMarqueurs(texteVisible(fragment));
+}
+
+/** `Article premier` → `1`, `Article 15 bis` → `15 bis` ; `null` si le titre n'est pas un article. */
+export function numeroArticleConsolide(titre: string): string | null {
+  const trouve = /^Article\s+(premier|1er|\d+)(?:\s+(bis|ter|quater|quinquies|sexies|septies|octies|nonies|decies))?$/i.exec(titre);
+  if (trouve === null || trouve[1] === undefined) return null;
+  const base = /^\d+$/.test(trouve[1]) ? String(Number(trouve[1])) : "1";
+  return trouve[2] === undefined ? base : `${base} ${trouve[2].toLowerCase()}`;
+}
+
+/**
+ * Rend les articles et les considérants d'une version consolidée CELLAR. Ce
+ * format n'a pas d'ancres ELI : un article commence à `title-article-norm`, un
+ * chapitre à `title-division-1` (son titre suit en `title-division-2`), les
+ * considérants sont les lignes `(N)` du préambule, et les articles s'arrêtent
+ * aux notes (`separator-short`) ou à la première annexe. Les comptes du
+ * descripteur font foi, comme pour `parseCellar`.
+ */
+export function parseConsolide(xhtml: string, descripteur: Descripteur): Unite[] {
+  const unites: Unite[] = [];
+  const debutPreambule = xhtml.indexOf('<div class="preamble">');
+
+  if (debutPreambule >= 0) {
+    const finPreambule = xhtml.indexOf('<p class="title-article-norm">', debutPreambule);
+    const bloc = xhtml.slice(debutPreambule, finPreambule < 0 ? undefined : finPreambule);
+    const ligne =
+      /<tr>\s*<td[^>]*>\s*<p class="norm">\((\d+)\)<\/p>\s*<\/td>\s*<td[^>]*>([\s\S]*?)<\/td>\s*<\/tr>/g;
+    for (let trouve = ligne.exec(bloc); trouve !== null; trouve = ligne.exec(bloc)) {
+      const [, numero, contenu] = trouve;
+      if (numero === undefined || contenu === undefined) continue;
+      const texte = texteConsolide(contenu);
+      if (texte === "") throw new Error(`Considérant ${numero} vide`);
+      unites.push({
+        ...uniteDe(descripteur, "considérant", String(Number(numero)), `${descripteur.nom} > Considérants`, texte),
+        url: descripteur.url,
+      });
+    }
+  }
+
+  const fin = xhtml.search(/<[a-z]+ class="(?:separator-short|title-annex|doc-annex)/);
+  const finArticles = fin < 0 ? xhtml.length : fin;
+  const reperes: Array<{ genre: "article" | "division"; position: number }> = [];
+  const motif = /<p class="(title-article-norm|title-division-1)">/g;
+  for (let trouve = motif.exec(xhtml); trouve !== null && trouve.index < finArticles; trouve = motif.exec(xhtml)) {
+    reperes.push({ genre: trouve[1] === "title-article-norm" ? "article" : "division", position: trouve.index });
+  }
+
+  let chapitre: { numero: string; titre: string } | null = null;
+  const vus = new Set<string>();
+  for (const [index, repere] of reperes.entries()) {
+    const fin = reperes[index + 1]?.position ?? finArticles;
+    const segment = xhtml.slice(repere.position, fin);
+    const finTitre = segment.indexOf("</p>");
+    const titre = texteConsolide(segment.slice(0, finTitre + 4));
+    if (repere.genre === "division") {
+      const chapitreTrouve = /^CHAPITRE\s+([IVXLC]+)$/i.exec(titre);
+      if (chapitreTrouve?.[1] !== undefined) {
+        const sousTitre = /<p class="title-division-2">([\s\S]*?)<\/p>/.exec(segment);
+        chapitre = {
+          numero: chapitreTrouve[1].toUpperCase(),
+          titre: sousTitre?.[1] === undefined ? "" : texteConsolide(sousTitre[1]),
+        };
+      }
+      continue;
+    }
+    const numero = numeroArticleConsolide(titre);
+    if (numero === null) throw new Error(`Titre d'article illisible : « ${titre} »`);
+    if (vus.has(numero)) throw new Error(`Article ${numero} en double dans ${descripteur.version ?? descripteur.document}`);
+    vus.add(numero);
+    const texte = texteConsolide(segment);
+    const chemin =
+      chapitre === null
+        ? descripteur.nom
+        : [descripteur.nom, `Chapitre ${chapitre.numero}`, chapitre.titre].filter((element) => element !== "").join(" > ");
+    unites.push({
+      ...uniteDe(descripteur, "article", numero.replace(" ", ""), chemin, texte),
+      numero,
+      url: descripteur.url,
+    });
+  }
+
+  const articles = unites.filter((unite) => unite.niveau === "article").length;
+  const considerants = unites.length - articles;
+  const version = descripteur.version ?? descripteur.document;
+  if (articles !== descripteur.articles_attendus) {
+    throw new Error(
+      `Capture ${version} : ${articles} articles au lieu de ${descripteur.articles_attendus} attendus`,
+    );
+  }
+  if (considerants !== descripteur.considerants_attendus) {
+    throw new Error(
+      `Capture ${version} : ${considerants} considérants au lieu de ${descripteur.considerants_attendus} attendus`,
+    );
+  }
   return unites;
 }
 

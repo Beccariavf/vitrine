@@ -150,6 +150,16 @@ const INSTRUMENTS: readonly Instrument[] = [
     ],
   },
   {
+    libelle: "2025/2518",
+    identifiant: "32025R2518",
+    nature: "règlement",
+    url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32025R2518",
+    alias: [
+      `règlement ${QUALIFICATIF}(?:n[o°] ?)?2025/2518`,
+      `Regulation ${QUALIFICATIF}(?:n[o°] ?)?2025/2518`,
+    ],
+  },
+  {
     libelle: "loi 78-17",
     identifiant: "LEGITEXT000006068624",
     nature: "loi",
@@ -184,10 +194,12 @@ const INSTRUMENTS: readonly Instrument[] = [
 const PAR_LIBELLE = new Map(INSTRUMENTS.map((instrument) => [instrument.libelle, instrument]));
 
 /**
- * Les huit corpus du serveur, dans l'ordre de la phrase de refus. Aucune date de
+ * Les douze corpus du serveur, dans l'ordre de la phrase de refus. Aucune date de
  * fraîcheur : le refus d'un document absent ne porte que le périmètre.
  */
-const PERIMETRE = "RGPD, AI Act, LIL, CNIL, Conseil d'État, CEPD, Cour de cassation, CJUE";
+export const PERIMETRE =
+  "RGPD, AI Act, ePrivacy, directive 2016/680, règlement 2018/1725, règlement procédural RGPD, " +
+  "LIL, CNIL, Conseil d'État, CEPD, Cour de cassation, CJUE";
 
 /** Forme comparable d'un identifiant : majuscules, sans espace. */
 export function normaliserIdentifiant(identifiant: string): string {
