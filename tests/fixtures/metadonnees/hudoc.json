@@ -1,0 +1,70 @@
+{
+  "resultcount": 5,
+  "results": [
+    {
+      "columns": {
+        "appno": "30562/04;30566/04",
+        "languageisocode": "FRE",
+        "kpdate": "2008-12-04T00:00:00",
+        "docname": "AFFAIRE S. ET MARPER c. ROYAUME-UNI",
+        "doctypebranch": "GRANDCHAMBER",
+        "itemid": "001-90052",
+        "article": "8;8-1;8-2;41;46;46-2",
+        "doctype": "HFJUD",
+        "rank": "142.85107"
+      }
+    },
+    {
+      "columns": {
+        "appno": "30562/04;30566/04",
+        "languageisocode": "ENG",
+        "kpdate": "2008-12-04T00:00:00",
+        "docname": "CASE OF S. AND MARPER v. THE UNITED KINGDOM",
+        "doctypebranch": "GRANDCHAMBER",
+        "itemid": "001-90051",
+        "article": "8;8-1;8-2;41;46;46-2",
+        "doctype": "HEJUD",
+        "rank": "143.11624"
+      }
+    },
+    {
+      "columns": {
+        "docname": "AFFAIRE BIG BROTHER WATCH ET AUTRES c. ROYAUME-UNI",
+        "doctype": "HFJUD",
+        "kpdate": "2021-05-25T00:00:00",
+        "article": "8;8-1;8-2;10;10-1;10-2;34",
+        "doctypebranch": "GRANDCHAMBER",
+        "languageisocode": "FRE",
+        "itemid": "001-210280",
+        "appno": "58170/13;62322/14;24960/15",
+        "rank": "145.32637"
+      }
+    },
+    {
+      "columns": {
+        "doctypebranch": "GRANDCHAMBER",
+        "doctype": "HEJUD",
+        "docname": "CASE OF BIG BROTHER WATCH AND OTHERS v. THE UNITED KINGDOM",
+        "languageisocode": "ENG",
+        "itemid": "001-210077",
+        "article": "8;8-1;8-2;10;10-1;10-2;34",
+        "appno": "58170/13;62322/14;24960/15",
+        "kpdate": "2021-05-25T00:00:00",
+        "rank": "145.41113"
+      }
+    },
+    {
+      "columns": {
+        "appno": "7823/77;7824/77",
+        "languageisocode": "ENG",
+        "kpdate": "1977-07-06T00:00:00",
+        "docname": "48 KALDERAS GIPSIES v. FEDERAL REPUBLIC OF GERMANY AND NETHERLANDS",
+        "doctypebranch": "DECCOMMISSION",
+        "itemid": "001-74264",
+        "article": "6;6-1;8;8-1;14+3;14;3",
+        "doctype": "HEDEC",
+        "rank": "115.546486"
+      }
+    }
+  ]
+}

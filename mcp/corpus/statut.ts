@@ -75,6 +75,12 @@ const STATUTS_TEXTES = new Map<string, StatutApplication>([
 /** Nature CNIL d'une sanction : elle est rendue. */
 const NATURE_SANCTION = "SANCTION";
 
+/** Nature d'une unité du corpus `metadonnees` : une décision juridictionnelle, rendue. */
+const NATURE_JURIDICTION = "JURIDICTION";
+
+/** Nature d'une unité du corpus `metadonnees` : une décision d'autorité, adoptée. */
+const NATURE_AUTORITE = "AUTORITE";
+
 /** Natures CNIL d'une doctrine — avis, recommandation, lignes directrices — : elle est adoptée. */
 const NATURES_DOCTRINE: readonly string[] = [
   "AVIS",
@@ -124,7 +130,9 @@ const STATUTS_CEPD_CONSULTATION: readonly string[] = [
 /**
  * Statut d'application d'une unité. Le corpus décide d'abord : les textes
  * suivent leur statut source, les décisions juridictionnelles sont rendues, la
- * doctrine publiée de la CNIL est adoptée. Pour
+ * doctrine publiée de la CNIL est adoptée. Le corpus `metadonnees` n'a que des
+ * métadonnées : sa nature tranche — une décision de la CEDH est rendue, une
+ * décision du guichet unique est adoptée —, sans jamais lire de texte. Pour
  * la CNIL et le CEPD, un statut sans effet (`ABROGE`, `ANNULE`) prime sur la
  * nature — une recommandation abrogée ne s'applique plus —, puis la nature ou la
  * version tranche. Un statut modifié rend `inconnu` : la version rendue n'est pas
@@ -174,6 +182,14 @@ export function statutApplication(
     // directrice adoptés sont adoptés ; un texte en consultation n'est pas adopté.
     if (STATUTS_CEPD_ADOPTES.includes(source)) return "adoptee";
     if (STATUTS_CEPD_CONSULTATION.includes(source)) return "propose";
+    return "inconnu";
+  }
+  if (collection === "metadonnees") {
+    // Le corpus ne porte que des métadonnées : le statut suit la nature du
+    // document cité, jamais son texte, que le serveur ne connaît pas.
+    const natureComparable = formeComparable(nature);
+    if (natureComparable === NATURE_JURIDICTION) return "rendue";
+    if (natureComparable === NATURE_AUTORITE) return "adoptee";
     return "inconnu";
   }
   return "inconnu";

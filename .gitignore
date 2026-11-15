@@ -55,3 +55,5 @@ data/raw/textes_fr/
 
 # Préparation : communications du Journal officiel non commitées, récupérées par npm run preparation:sync
 data/raw/preparation/
+# Métadonnées CEDH et guichet unique : pages de recherche et du registre non commitées, récupérées par npm run metadonnees:sync
+data/raw/metadonnees/
