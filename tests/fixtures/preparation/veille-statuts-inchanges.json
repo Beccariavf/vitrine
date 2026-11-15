@@ -1,0 +1,47 @@
+{
+  "head": { "vars": ["celex", "statut", "retire", "acteAdopte", "acteDate", "baseVise"] },
+  "results": {
+    "bindings": [
+      {
+        "celex": { "type": "literal", "value": "52025PC9001" },
+        "statut": {
+          "type": "uri",
+          "value": "http://publications.europa.eu/resource/authority/file-status/PROP_PENDING"
+        },
+        "retire": { "type": "literal", "value": "0" }
+      },
+      {
+        "celex": { "type": "literal", "value": "52025PC9002" },
+        "statut": {
+          "type": "uri",
+          "value": "http://publications.europa.eu/resource/authority/file-status/PROP_PENDING"
+        },
+        "retire": { "type": "literal", "value": "0" }
+      },
+      {
+        "celex": { "type": "literal", "value": "52025PC9003" },
+        "statut": {
+          "type": "uri",
+          "value": "http://publications.europa.eu/resource/authority/file-status/PROP_PENDING"
+        },
+        "retire": { "type": "literal", "value": "0" }
+      },
+      {
+        "celex": { "type": "literal", "value": "52025PC9004" },
+        "statut": {
+          "type": "uri",
+          "value": "http://publications.europa.eu/resource/authority/file-status/PROP_PENDING"
+        },
+        "retire": { "type": "literal", "value": "0" }
+      },
+      {
+        "celex": { "type": "literal", "value": "52025PC9005" },
+        "statut": {
+          "type": "uri",
+          "value": "http://publications.europa.eu/resource/authority/file-status/PROP_PENDING"
+        },
+        "retire": { "type": "literal", "value": "0" }
+      }
+    ]
+  }
+}

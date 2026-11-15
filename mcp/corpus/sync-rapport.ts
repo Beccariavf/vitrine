@@ -15,8 +15,8 @@ import type { CorpusVeille } from "./veille.ts";
 /**
  * Sources que `npm run corpus:sync` revérifie sur signal, dans leur ordre
  * d'exécution. `cnil`, `ce`, `cc` et `cjue` le sont à chaque passe et portent la
- * fraîcheur ; `cnil_doctrine`, `cepd`, `constit`, `lil`, `textes_fr` et les
- * corpus d'actes n'y entrent que sur une entrée de veille.
+ * fraîcheur ; `cnil_doctrine`, `cepd`, `constit`, `lil`, `textes_fr`, la
+ * préparation et les corpus d'actes n'y entrent que sur une entrée de veille.
  */
 export const ORDRE_SOURCES: readonly CorpusVeille[] = [
   "cnil",
@@ -24,6 +24,7 @@ export const ORDRE_SOURCES: readonly CorpusVeille[] = [
   "ce",
   "constit",
   "cc",
+  "preparation",
   "cjue",
   "cepd",
   "lil",
@@ -84,6 +85,8 @@ export type DocumentRapport = {
   version?: string;
   /** Vrai quand la version visée est soumise à consultation publique (`cepd`). */
   consultation?: boolean;
+  /** Corpus de textes visé par un texte adopté (`preparation`). */
+  corpus_vise?: string;
 };
 
 export type SourceRapport = {
@@ -251,7 +254,11 @@ function ligneManquant(document: DocumentRapport): string {
     document.document === null
       ? `${document.entree} (${document.source})`
       : `${document.document} (${document.corpus ?? document.source})`;
-  return document.consultation === true ? `${ligne} [consultation]` : ligne;
+  const consultation = document.consultation === true ? " [consultation]" : "";
+  // Le corpus de textes visé par un texte adopté n'est pas le corpus du document
+  // suivi (la proposition quitte `preparation`) : le rapport le nomme à part.
+  const vise = document.corpus_vise === undefined ? "" : ` → ${document.corpus_vise}`;
+  return `${ligne}${consultation}${vise}`;
 }
 
 /** Texte court : fraîcheur, fenêtre, comptes, manquants, hors corpus, sources et index. */

@@ -22,6 +22,7 @@ export type CorpusVeille =
   | "cc"
   | "cjue"
   | "cepd"
+  | "preparation"
   | "lil"
   | "textes_fr"
   | "rgpd"
@@ -41,6 +42,7 @@ const CORPUS_PAR_SOURCE: Record<string, CorpusVeille> = {
   judilibre: "cc",
   cjeu: "cjue",
   cepd: "cepd",
+  preparation: "preparation",
 };
 
 /** Corpus d'actes de l'Union : ils ne portent pas la fraîcheur globale. */
@@ -94,6 +96,18 @@ const MOTIFS_DURABLES = new Set([
   "autre_type",
   "xhtml_absent",
   "version_francaise_absente",
+]);
+
+/**
+ * Motifs d'écart durables de la préparation : un dossier adopté, retiré ou rejeté
+ * et une affaire jugée ne redeviendront pas pendants. Les autres motifs
+ * (`capture_absente`, `texte_vide`) laissent le document manquant, donc rejoué.
+ */
+const MOTIFS_DURABLES_PREPARATION = new Set([
+  "adoptee",
+  "retiree",
+  "rejetee",
+  "decision_rendue",
 ]);
 
 /**
@@ -318,6 +332,11 @@ export function documentsDeLEntree(
       return entry.document !== undefined && /^3\d{4}[A-Z]\d/.test(entry.document)
         ? [entry.document]
         : [];
+    case "preparation":
+      // Une proposition (`5…PC…`) ou une affaire (`6…CN…`) du corpus de préparation.
+      return entry.document !== undefined && /^[56]\d{4}[A-Z]{2}\d/.test(entry.document)
+        ? [entry.document]
+        : [];
     default:
       return [];
   }
@@ -378,8 +397,11 @@ export function indexerVersionsCorpus(rootDir: string): Map<string, Set<string>>
       for (const ligne of (lireTexte(chemin) ?? "").split("\n")) {
         if (ligne.trim() === "") continue;
         try {
-          const unite = JSON.parse(ligne) as { document?: unknown; ref?: unknown };
+          const unite = JSON.parse(ligne) as { document?: unknown; ref?: unknown; statut?: unknown };
           ajouter(unite.document, unite.ref);
+          // La préparation suit un statut, pas une version : l'unité porte
+          // `PROPOSE`/`PENDANT`, que l'entrée de veille compare au statut atteint.
+          if (dossier.name === "preparation") ajouter(unite.document, unite.statut);
         } catch {
           // Une ligne illisible ne masque pas les versions des autres.
         }
@@ -440,23 +462,37 @@ export function indexerVersionsCorpus(rootDir: string): Map<string, Set<string>>
 /**
  * Documents explicitement écartés par un corpus, avec leur motif. La CJUE publie
  * une liste par CELEX, le CEPD une liste par slug, la doctrine CNIL une liste
- * par URL ; seuls les motifs durables écartent pour de bon, un échec transitoire
- * laisse le document manquant pour qu'une passe le rejoue. Les comptes des
- * autres corpus ne disent pas quel document a été écarté.
+ * par URL, la préparation une liste par CELEX de proposition ou d'affaire ;
+ * seuls les motifs durables écartent pour de bon, un échec transitoire laisse le
+ * document manquant pour qu'une passe le rejoue. Les comptes des autres corpus
+ * ne disent pas quel document a été écarté.
  *
  * Un écart durable ne sera pas réparé par une passe : une mention contraire à
- * la licence, un avis d'avocat général, un XHTML absent.
+ * la licence, un avis d'avocat général, un XHTML absent, un texte adopté.
  */
 export function documentsEcartes(rootDir: string, corpus: string): Map<string, string> {
   const ecartes = new Map<string, string>();
-  if (corpus !== "cjue" && corpus !== "cepd" && corpus !== "cnil_doctrine") return ecartes;
+  if (
+    corpus !== "cjue" &&
+    corpus !== "cepd" &&
+    corpus !== "cnil_doctrine" &&
+    corpus !== "preparation"
+  ) {
+    return ecartes;
+  }
   const chemin = join(rootDir, "data", "corpus", corpus, "manifest.json");
   const texte = lireTexte(chemin);
   if (texte === null) return ecartes;
   try {
     const manifeste = JSON.parse(texte) as {
       couverture?: {
-        documents_ecartes?: { celex?: unknown; motif?: unknown; slug?: unknown; raison?: unknown }[];
+        documents_ecartes?: {
+          celex?: unknown;
+          document?: unknown;
+          motif?: unknown;
+          slug?: unknown;
+          raison?: unknown;
+        }[];
       };
       documents_ecartes?: { url?: unknown; raison?: unknown }[];
     };
@@ -477,6 +513,17 @@ export function documentsEcartes(rootDir: string, corpus: string): Map<string, s
       return ecartes;
     }
     for (const document of manifeste.couverture?.documents_ecartes ?? []) {
+      if (corpus === "preparation") {
+        // La préparation écarte par CELEX de proposition ou d'affaire.
+        if (
+          typeof document.document === "string" &&
+          typeof document.motif === "string" &&
+          MOTIFS_DURABLES_PREPARATION.has(document.motif)
+        ) {
+          ecartes.set(document.document, document.motif);
+        }
+        continue;
+      }
       if (corpus === "cepd") {
         if (
           typeof document.slug === "string" &&

@@ -17,6 +17,7 @@ import { fetchEntries as fetchJudilibreEntries } from "./sources/judilibre.ts";
 import { passeEurlex } from "./sources/eurlex.ts";
 import { passeConstit } from "./sources/constit.ts";
 import { passeDoctrine } from "./sources/cnil-doctrine.ts";
+import { passePreparation } from "./sources/preparation.ts";
 import { flushUsage } from "./piste.ts";
 import { assignThemes, readThemes } from "./themes.ts";
 import type { Theme } from "./themes.ts";
@@ -179,6 +180,25 @@ export const SOURCES: AnySource[] = [
         descripteurAdequation: join(context.rootDir, "mcp", "corpus", "adequation", "descripteur.json"),
       });
       return { raw: resultat.raw, entries: resultat.entries, warnings: resultat.warnings };
+    },
+  },
+  {
+    kind: "api",
+    id: "preparation",
+    fetchEntries: async (context) => {
+      // Les documents suivis sont les unités du corpus : la source relit leur
+      // statut dans CELLAR et n'écrit rien quand il n'a pas changé.
+      const resultat = await passePreparation({
+        rootDir: context.rootDir,
+        fetchImpl: context.fetchImpl,
+        ...(context.now === undefined ? {} : { maintenant: context.now }),
+      });
+      return {
+        raw: [],
+        entries: resultat.entries,
+        warnings: resultat.warnings,
+        notes: resultat.notes,
+      };
     },
   },
   {
@@ -498,6 +518,19 @@ const calledDirectly =
   process.argv[1] !== undefined &&
   import.meta.url === pathToFileURL(resolve(process.argv[1])).href;
 
+/** Sources à exécuter : `--source <id>` limite la passe à une seule. */
+function choisirSources(argv: string[]): AnySource[] {
+  const index = argv.indexOf("--source");
+  if (index < 0) return SOURCES;
+  const id = argv[index + 1];
+  const choisies = SOURCES.filter((source) => source.id === id);
+  if (choisies.length === 0) {
+    const connues = SOURCES.map((source) => source.id).join(", ");
+    throw new Error(`source inconnue « ${id ?? ""} » ; sources : ${connues}`);
+  }
+  return choisies;
+}
+
 if (calledDirectly) {
   try {
     process.loadEnvFile(resolve(process.cwd(), ".env"));
@@ -505,7 +538,15 @@ if (calledDirectly) {
     // Pas de `.env` : les secrets peuvent venir de l'environnement.
   }
 
-  run({ fetchImpl: cliFetch, fetchFlux: cliFetchFlux, rootDir: process.cwd() })
+  let sources: AnySource[] = SOURCES;
+  try {
+    sources = choisirSources(process.argv.slice(2));
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  }
+
+  run({ fetchImpl: cliFetch, fetchFlux: cliFetchFlux, rootDir: process.cwd(), sources })
     .then(({ sources, entryPaths, warnings, notes }) => {
       for (const warning of warnings) console.warn(`warning: ${warning}`);
       for (const note of notes) console.log(note);

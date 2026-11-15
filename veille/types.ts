@@ -23,7 +23,12 @@ export type Entry = {
   source: string;
   /** Document du corpus visé, quand la source en désigne un (`legi` : `LEGITEXT…`, `constit` : `CONSTEXT…`, `cepd` : slug). */
   document?: string;
-  /** Version publiée (`LEGIARTI…`, `LEGITEXT…_JJ-MM-AAAA`, consolidation CELEX) ou signature CEPD (`2.0`, sinon `finale`/`projet`) ; `legi`, `eurlex` et `cepd`. */
+  /**
+   * Version publiée (`LEGIARTI…`, `LEGITEXT…_JJ-MM-AAAA`, consolidation CELEX) ou
+   * signature CEPD (`2.0`, sinon `finale`/`projet`) ; `legi`, `eurlex` et `cepd`.
+   * Pour `preparation`, le statut atteint (`PROP_ADOPTED`, `CJ`…), comparé au
+   * statut de l'unité du corpus pour savoir si la synchronisation doit suivre.
+   */
   version?: string;
   /** Nature de la nouveauté détectée ; `eurlex` seulement. */
   categorie?: "consolidation" | "adequation" | "clauses_types" | "modification";
@@ -45,4 +50,14 @@ export type Entry = {
   abroge?: string;
   /** Nature de la nouveauté détectée (`nouveau`, `modifie`) ; `cnil_doctrine` seulement. */
   motif?: "nouveau" | "modifie";
+  /** Libellé CELLAR du dossier avant le changement (`PROP_PENDING`) ; `preparation` seulement. */
+  statut_avant?: string;
+  /** Statut source après le changement (`PROP_ADOPTED`, `RETIRE`, `PROP_REJECTED`, `CJ`…) ; `preparation` seulement. */
+  statut_apres?: string;
+  /** CELEX de l'acte adopté membre du dossier ; `preparation` seulement, absent s'il n'est pas identifié. */
+  acte_adopte?: string;
+  /** CELEX de la décision rendue de même numéro ; `preparation` seulement. */
+  decision?: string;
+  /** Corpus de textes visé par l'acte adopté ; `preparation` seulement, absent quand il est hors corpus. */
+  corpus_vise?: string;
 };
