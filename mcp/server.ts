@@ -51,7 +51,7 @@ const CONSIGNE_PROVENANCE =
   "`LEGITEXT000006068624`, textes français d'application `textes_fr`, délibérations CNIL `cnil`, " +
   "doctrine CNIL `cnil_doctrine`, décisions du Conseil d'État `ce`, décisions DC et QPC du Conseil constitutionnel `constit`, documents " +
   "du CEPD `cepd` (lignes directrices, avis art. 64, décisions art. 65, recommandations, G29 repris), décisions de la Cour de cassation `cc`, décisions de la CJUE " +
-  "`cjue` et métadonnées de la CEDH et du guichet unique `metadonnees`), jamais d'une génération. Citer la référence et l'URL rendues. " +
+  "`cjue` et notices du guichet unique `metadonnees`), jamais d'une génération. Citer la référence et l'URL rendues. " +
   "Respecter le niveau de confiance : « aucun_resultat_fiable » signifie qu'il faut le dire au " +
   "lecteur, pas inventer un passage.";
 
@@ -76,9 +76,10 @@ const CONSIGNE_PROMESSE =
   "0,69 / 0,74 / 0,01 et ne portent aucune promesse chiffrée.";
 
 const CONSIGNE_METADONNEES =
-  "Le corpus `metadonnees` ne contient que des métadonnées : jurisprudence de la CEDH (article 8 de la " +
-  "Convention et données personnelles) et décisions définitives du guichet unique du CEPD (article 60 du " +
-  "RGPD) — identifiant, intitulé, autorité, date et lien officiel, jamais le texte ni un résumé. Chaque " +
+  "Le corpus `metadonnees` ne contient que des métadonnées : les décisions définitives du guichet unique " +
+  "du CEPD (article 60 du RGPD) — identifiant, intitulé, autorité, date et lien officiel, jamais le texte " +
+  "ni un résumé. La source CEDH (HUDOC) est arrêtée faute d'accès exploitable : le corpus ne contient " +
+  "aucune notice de la CEDH, et une question sur la CEDH ne se conclut pas de son absence. Chaque " +
   "passage de ce corpus porte `metadonnees_seulement: true` et `avertissement_contenu` : afficher la phrase " +
   "« métadonnées seulement — contenu non connu du serveur, consulter la source » et le lien officiel, et " +
   "ne jamais présenter, résumer ni déduire le contenu de la décision : le serveur ne le connaît pas.";
@@ -147,9 +148,9 @@ const CONSIGNE_SERVEUR =
   "CC BY-ND 4.0), les décisions du " +
   "Conseil d'État (corpus `ce`), les décisions DC et QPC du Conseil constitutionnel (corpus " +
   "`constit`), les documents du CEPD (corpus `cepd` : lignes directrices, avis art. 64, décisions art. 65, recommandations), les décisions de la Cour de cassation " +
-  "sur les données personnelles (corpus `cc`), celles de la CJUE (corpus `cjue`), et les métadonnées de la " +
-  "jurisprudence de la CEDH et des décisions définitives du guichet unique (corpus `metadonnees`, sans " +
-  "aucun texte de décision). Les outils de " +
+  "sur les données personnelles (corpus `cc`), celles de la CJUE (corpus `cjue`), et les métadonnées des " +
+  "décisions définitives du guichet unique (corpus `metadonnees`, sans aucun texte de décision ; source " +
+  "CEDH arrêtée, aucune notice CEDH). Les outils de " +
   "recherche acceptent les paramètres `corpus` et `nature` ; sans eux, la recherche couvre les dix-huit " +
   "collections et toutes les natures. Un document nommé dans la question (sigle ou nom ordinaire, " +
   "casse et ponctuation indifférentes) est honoré quand `document` et `corpus` sont absents ; sans " +
@@ -438,7 +439,8 @@ export function createServer(deps: ServerDeps): McpServer {
         "AIPD de la CNIL (corpus `cnil_doctrine`), les décisions du Conseil d'État, " +
         "les décisions DC et QPC du Conseil constitutionnel, les documents du CEPD, les " +
         "décisions de la Cour de cassation sur les données personnelles, celles de la CJUE, et les " +
-        "métadonnées de la CEDH et du guichet unique (corpus `metadonnees`, aucun texte de décision), et rend " +
+        "métadonnées des décisions du guichet unique (corpus `metadonnees`, aucun texte de décision ; " +
+        "source CEDH arrêtée), et rend " +
         "les passages les plus proches avec leur " +
         "provenance et un niveau de confiance (confiant, incertain, aucun_resultat_fiable). " +
         "L'article pose la règle et le considérant l'éclaire : à pertinence comparable, l'article passe " +
@@ -482,8 +484,8 @@ export function createServer(deps: ServerDeps): McpServer {
               "cjue ; cnil couvre les sanctions, avis, recommandations et lignes directrices, " +
               "cnil_doctrine les guides, référentiels et listes AIPD (extraits non modifiés, " +
               "CC BY-ND 4.0), " +
-              "constit les décisions DC et QPC, metadonnees les notices de la CEDH et du guichet " +
-              "unique (métadonnées seulement) ; absent, toutes répondent",
+              "constit les décisions DC et QPC, metadonnees les notices du guichet unique " +
+              "(métadonnées seulement) ; absent, toutes répondent",
           ),
         document: z
           .string()
@@ -564,7 +566,7 @@ async function main(): Promise<void> {
 
   await serveur.connect(transport);
   process.stderr.write(
-    "Serveur MCP des dix-huit corpus (RGPD, AI Act, ePrivacy, 2016/680, 2018/1725, 2025/2518, CCS, adéquation, CNIL, doctrine CNIL, LIL, textes français, CE, Conseil constitutionnel, CEPD, CC, CJUE, métadonnées CEDH et guichet unique) prêt sur stdio " +
+    "Serveur MCP des dix-huit corpus (RGPD, AI Act, ePrivacy, 2016/680, 2018/1725, 2025/2518, CCS, adéquation, CNIL, doctrine CNIL, LIL, textes français, CE, Conseil constitutionnel, CEPD, CC, CJUE, métadonnées du guichet unique) prêt sur stdio " +
       "(six outils : get_article, get_decision, search, decisions_citant, decisions_citant_decision, etat_corpus).\n",
   );
 }

@@ -7,8 +7,8 @@
   "licence": "Base HUDOC du Conseil de l'Europe ; réutilisation des arrêts et décisions admise avec mention de la source. Seules les métadonnées sont reprises, jamais le texte. Notice de copyright du CEPD : réutilisation commerciale et non commerciale autorisée, source citée, sens non dénaturé. Seules les métadonnées du registre sont reprises, jamais le texte des décisions.",
   "metadonnees_seulement": true,
   "documents": 1595,
-  "unites": 1595,
-  "fragments": 1595,
+  "unites": 1603,
+  "fragments": 1603,
   "couverture": {
     "perimetre": {
       "cedh": {
@@ -29,7 +29,8 @@
           "61496/08"
         ],
         "branches_ecartees": {
-          "DECCOMMISSION": "décision de l'ancienne Commission européenne des droits de l'homme, qui n'est pas une décision de la Cour"
+          "DECCOMMISSION": "décision de l'ancienne Commission européenne des droits de l'homme, qui n'est pas une décision de la Cour",
+          "COMMUNICATEDCASES": "communication d'une affaire aux parties, qui n'est pas une décision de la Cour"
         }
       },
       "registre": {
@@ -42,7 +43,7 @@
         "reprise": "Effacer ce bloc et relancer « npm run metadonnees:sync » quand l'endpoint répond à la pile du projet ; le critère et le code de lecture sont conservés et testés hors ligne."
       }
     },
-    "champs": "Chaque unité porte document (n° de requête CEDH ou identifiant EDPBI), numero, date_acte, titre, autorite, url officielle et une ligne `texte` de métadonnées (intitulé, autorité, date, et pour le registre les sujets et la base juridique qu'il publie). Aucune unité ne porte le texte d'une décision ni un résumé.",
+    "champs": "Chaque unité porte document (n° de requête CEDH ou identifiant EDPBI), numero, date_acte, titre, autorite, url officielle et une ligne `texte` de métadonnées (intitulé, autorité, date, et pour le registre les sujets qu'il publie). Aucune unité ne porte le texte d'une décision ni un résumé. `search` rend cette ligne : le titre et l'autorité y sont, pas comme champs séparés.",
     "sources": [
       {
         "source": "HUDOC — Cour européenne des droits de l'homme",
@@ -58,6 +59,8 @@
           "reference_absente": 0,
           "langue_hors_perimetre": 0,
           "commission": 0,
+          "communication": 0,
+          "hors_perimetre": 0,
           "total_annonce": 0
         },
         "licence": "Base HUDOC du Conseil de l'Europe ; réutilisation des arrêts et décisions admise avec mention de la source. Seules les métadonnées sont reprises, jamais le texte.",
@@ -70,11 +73,11 @@
         "statut": "lue",
         "pages": 146,
         "elements_lus": 1603,
-        "retenues": 1595,
+        "retenues": 1603,
         "exclusions": {
           "identifiant_absent": 0,
           "date_invalide": 0,
-          "doublon": 8,
+          "doublon": 0,
           "total_annonce": 1603
         },
         "licence": "Notice de copyright du CEPD : réutilisation commerciale et non commerciale autorisée, source citée, sens non dénaturé. Seules les métadonnées du registre sont reprises, jamais le texte des décisions.",
@@ -86,16 +89,20 @@
         "date_invalide": 0,
         "reference_absente": 0,
         "langue_hors_perimetre": 0,
-        "commission": 0
+        "commission": 0,
+        "communication": 0,
+        "hors_perimetre": 0
       },
       "registre": {
         "identifiant_absent": 0,
         "date_invalide": 0,
-        "doublon": 8
+        "doublon": 0
       }
     },
     "limites": [
-      "Le registre du guichet unique n'a pas d'ordre stable entre deux requêtes : une ligne peut passer d'une page à l'autre pendant la passe. Les lignes vues deux fois sont comptées (`exclusions.registre.doublon`) et le total annoncé est porté (`exclusions.registre.total_annonce`) : l'écart avec `documents` dit les décisions qu'une passe n'a pas vues, reprises à la passe suivante."
+      "Le registre du guichet unique n'a pas d'ordre stable entre deux requêtes : une ligne peut passer d'une page à l'autre pendant la passe. Les lignes exactement répétées sont comptées (`exclusions.registre.doublon`) et le total annoncé est porté (`exclusions.registre.total_annonce`) : l'écart avec `documents` dit les décisions qu'une passe n'a pas vues, reprises à la passe suivante.",
+      "Deux décisions distinctes peuvent être servies sous un même identifiant EDPBI : elles sont gardées toutes les deux et la seconde porte une référence suffixée (`#2`).",
+      "2 notice(s) n'ont pas de PDF au registre : leur url ouvre le registre filtré sur l'identifiant, faute de lien propre."
     ]
   }
 }

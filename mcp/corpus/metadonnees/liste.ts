@@ -56,6 +56,8 @@ export type DescripteurMetadonnees = {
   };
   registre: {
     url_modele: string;
+    /** Page du registre filtrée sur un identifiant, pour une ligne sans PDF. */
+    url_notice: string;
     base: string;
     criteres: string;
     autorite_prefixe: string;
@@ -87,7 +89,15 @@ export type MotifEcartCedh =
   | "date_invalide"
   | "reference_absente"
   | "langue_hors_perimetre"
-  | "commission";
+  | "commission"
+  | "communication"
+  | "hors_perimetre";
+
+/** Motif propre à une branche HUDOC écartée : l'ancienne Commission, les communications. */
+const MOTIF_PAR_BRANCHE: Record<string, MotifEcartCedh> = {
+  DECCOMMISSION: "commission",
+  COMMUNICATEDCASES: "communication",
+};
 
 export type EcartesCedh = Record<MotifEcartCedh, number>;
 
@@ -96,6 +106,8 @@ export const ECARTES_CEDH_VIDES: EcartesCedh = {
   reference_absente: 0,
   langue_hors_perimetre: 0,
   commission: 0,
+  communication: 0,
+  hors_perimetre: 0,
 };
 
 /** Une ligne du registre des décisions définitives du guichet unique. */
@@ -107,8 +119,10 @@ export type EntreeRegistre = {
   autorite: string | null;
   /** Code pays du chef de file, par exemple `no`. */
   pays: string | null;
-  /** Lien du PDF officiel, ou la page du registre quand la ligne n'en porte pas. */
+  /** Lien du PDF officiel, ou la page du registre filtrée quand la ligne n'en porte pas. */
   url: string;
+  /** D'où vient `url` : le PDF officiel, ou la page du registre. */
+  lien: "pdf" | "registre";
   /** Sujets déclarés par le registre, jamais un résumé de la décision. */
   sujets: string[];
 };
@@ -206,13 +220,13 @@ export function lirePageCedh(reponse: unknown): { total: number; entrees: Entree
   return { total, entrees };
 }
 
-/** Vrai pour une branche hors périmètre, avec son motif lu au descripteur. */
+/** Motif d'une branche hors périmètre, `null` quand la branche est retenue. */
 function brancheEcartee(
   branche: string,
   descripteur: DescripteurMetadonnees,
 ): MotifEcartCedh | null {
-  if (branche in descripteur.cedh.branches_ecartees) return "commission";
-  return null;
+  if (!(branche in descripteur.cedh.branches_ecartees)) return null;
+  return MOTIF_PAR_BRANCHE[branche] ?? "hors_perimetre";
 }
 
 /**
@@ -348,19 +362,22 @@ export function lireRegistre(html: string, descripteur: DescripteurMetadonnees):
     const apresChef = resume.split("foss-decision-foss-decision-teaser__lead-sa")[1] ?? "";
     const nomAutorite = /member-state-token__name">\s*([^<]+?)\s*</.exec(apresChef)?.[1];
     const codePays = /member-country-token__code">\s*([a-z]{2})\s*</.exec(apresChef)?.[1];
-    const pdf = /href="(\/system\/files\/[^"]+?\.pdf)"/.exec(resume)?.[1];
+    // L'extension est parfois servie en majuscules : `.PDF`.
+    const pdf = /href="(\/system\/files\/[^"]+?\.pdf)"/i.exec(resume)?.[1];
     const sujets = [...morceau.matchAll(/relevant-topics-list-item-link"[^>]*>([^<]+)</g)]
       .map((trouve) => texteHtml(trouve[1] ?? ""))
       .filter((sujet) => sujet !== "");
+    const id = identifiant ?? "";
     lignes.push({
-      id: identifiant ?? "",
+      id,
       date: date === "" ? "" : date.slice(0, 10),
       autorite: nomAutorite === undefined ? null : texteHtml(nomAutorite),
       pays: codePays === undefined ? null : codePays.toLowerCase(),
       url:
         pdf === undefined
-          ? descripteur.registre.url_modele.replace("{page}", "0")
+          ? descripteur.registre.url_notice.replace("{id}", encodeURIComponent(id))
           : `${descripteur.registre.base}${pdf}`,
+      lien: pdf === undefined ? "registre" : "pdf",
       sujets: [...new Set(sujets)],
     });
   }
@@ -401,37 +418,77 @@ export function ligneRegistre(entree: EntreeRegistre, descripteur: DescripteurMe
   return elements.join(" — ");
 }
 
-/** Unités du registre : une notice par décision définitive, sans texte. */
+/**
+ * Unités du registre : une notice par décision définitive, sans texte. Un
+ * identifiant que le registre porte deux fois donne deux notices : la première
+ * garde l'identifiant pour référence, la suivante y ajoute son rang.
+ */
 export function unitesRegistre(
   entrees: readonly EntreeRegistre[],
   descripteur: DescripteurMetadonnees,
 ): Unite[] {
-  return entrees.map((entree) => ({
-    ref: entree.id,
-    document: entree.id,
-    corpus: descripteur.corpus,
-    niveau: "notice",
-    numero: numeroRegistre(entree.id),
-    chemin: "Registre du guichet unique > Décisions définitives",
-    texte: ligneRegistre(entree, descripteur),
-    date_acte: entree.date,
-    date_debut: entree.date,
-    date_fin: null,
-    statut: "Décision définitive",
-    url: entree.url,
-    titre: `${descripteur.registre.titre_prefixe} n° ${numeroRegistre(entree.id)}`,
-    autorite: autoriteRegistre(entree, descripteur),
-    nature: "autorite",
-    metadonnees_seulement: true,
-  }));
+  const rangs = new Map<string, number>();
+  return entrees.map((entree) => {
+    const rang = rangs.get(entree.id) ?? 0;
+    rangs.set(entree.id, rang + 1);
+    return {
+      ref: rang === 0 ? entree.id : `${entree.id}#${rang + 1}`,
+      document: entree.id,
+      corpus: descripteur.corpus,
+      niveau: "notice",
+      numero: numeroRegistre(entree.id),
+      chemin: "Registre du guichet unique > Décisions définitives",
+      texte: ligneRegistre(entree, descripteur),
+      date_acte: entree.date,
+      date_debut: entree.date,
+      date_fin: null,
+      statut: "Décision définitive",
+      url: entree.url,
+      titre: `${descripteur.registre.titre_prefixe} n° ${numeroRegistre(entree.id)}`,
+      autorite: autoriteRegistre(entree, descripteur),
+      nature: "autorite",
+      metadonnees_seulement: true,
+    };
+  });
 }
 
-/** Classe les lignes du registre : identifiant et date valides, doublons fusionnés. */
+/**
+ * Valide les notices avant écriture : le corpus ne promet que des métadonnées,
+ * et une unité qui porterait un texte multiligne, un titre ou un lien manquant
+ * le dirait trop tard. Lève en nommant la référence fautive.
+ */
+export function validerNotices(unites: readonly Unite[]): void {
+  const erreurs: string[] = [];
+  for (const unite of unites) {
+    if (unite.niveau !== "notice") erreurs.push(`niveau non notice : ${unite.ref}`);
+    if (unite.metadonnees_seulement !== true) {
+      erreurs.push(`metadonnees_seulement absent : ${unite.ref}`);
+    }
+    if (unite.texte.includes("\n")) erreurs.push(`texte multiligne : ${unite.ref}`);
+    if (unite.url.trim() === "") erreurs.push(`lien absent : ${unite.ref}`);
+    if ((unite.titre ?? "").trim() === "") erreurs.push(`titre absent : ${unite.ref}`);
+    if ((unite.autorite ?? "").trim() === "") erreurs.push(`autorité absente : ${unite.ref}`);
+  }
+  if (erreurs.length > 0) {
+    const liste = erreurs.slice(0, 10).join(" ; ");
+    const reste = erreurs.length > 10 ? ` ; et ${erreurs.length - 10} autre(s)` : "";
+    throw new Error(`Corpus METADONNEES : notices invalides, rien n'est écrit : ${liste}${reste}`);
+  }
+}
+
+/**
+ * Classe les lignes du registre. Une ligne est identifiée par son identifiant,
+ * sa date et son lien : le registre n'a pas d'ordre stable entre deux pages, et
+ * il lui arrive de servir deux décisions distinctes sous un même identifiant
+ * (`decision-no-3850.pdf` et `decision-no-3851_1.pdf` sur la même ligne EDPBI).
+ * Seule la ligne exactement répétée est un doublon ; deux lignes de même
+ * identifiant mais de contenu différent sont conservées toutes les deux.
+ */
 export function classerRegistre(
   lignes: readonly EntreeRegistre[],
 ): { retenues: EntreeRegistre[]; ecartes: EcartesRegistre } {
   const ecartes: EcartesRegistre = { ...ECARTES_REGISTRE_VIDES };
-  const parId = new Map<string, EntreeRegistre>();
+  const parCle = new Map<string, EntreeRegistre>();
   for (const ligne of lignes) {
     if (ligne.id.trim() === "") {
       ecartes.identifiant_absent += 1;
@@ -441,14 +498,18 @@ export function classerRegistre(
       ecartes.date_invalide += 1;
       continue;
     }
-    if (parId.has(ligne.id)) {
-      // Le registre n'a pas d'ordre stable entre deux pages : une même ligne peut
-      // se déplacer d'une page à l'autre pendant la passe.
+    const cle = `${ligne.id}\u0000${ligne.date}\u0000${ligne.url}`;
+    if (parCle.has(cle)) {
       ecartes.doublon += 1;
       continue;
     }
-    parId.set(ligne.id, ligne);
+    parCle.set(cle, ligne);
   }
-  const retenues = [...parId.values()].sort((gauche, droite) => gauche.id.localeCompare(droite.id));
+  const retenues = [...parCle.values()].sort(
+    (gauche, droite) =>
+      gauche.id.localeCompare(droite.id) ||
+      gauche.date.localeCompare(droite.date) ||
+      gauche.url.localeCompare(droite.url),
+  );
   return { retenues, ecartes };
 }

@@ -26,7 +26,7 @@ import { statutApplication } from "./corpus/statut.ts";
 import type { StatutApplication } from "./corpus/statut.ts";
 import { mentionsDoctrine } from "./corpus/cnil-doctrine/mention.ts";
 import type { MentionDoctrine } from "./corpus/cnil-doctrine/mention.ts";
-import { avecMarquageMetadonnees } from "./corpus/metadonnees/mention.ts";
+import { CORPUS_METADONNEES, avecMarquageMetadonnees } from "./corpus/metadonnees/mention.ts";
 import { SUFFIXE_ARTICLE, normaliserNumero } from "./corpus/articles.ts";
 import { niveauConfiance } from "./confidence.ts";
 import type { NiveauConfiance } from "./confidence.ts";
@@ -517,6 +517,16 @@ export function documentNomme(question: string): string | null {
 }
 
 /**
+ * Vrai pour un corpus dont les unités ne sont pas des articles : une question
+ * qui y cite « article N » cherche par le sens, sans court-circuit exact. Le
+ * corpus `metadonnees` ne porte que des notices ; les corpus de décisions sont
+ * déjà traités ainsi.
+ */
+function corpusSansArticle(corpus: string | undefined): boolean {
+  return corpus !== undefined && (estCorpusDecision(corpus) || corpus === CORPUS_METADONNEES);
+}
+
+/**
  * Cherche les articles portant ce numéro, dans un document, un corpus, ou tout
  * le corpus. Plusieurs documents peuvent porter le même numéro : l'appelant
  * décide s'il rend le premier ou s'il expose l'ambiguïté.
@@ -979,8 +989,7 @@ async function chercher(
   });
   // Un corpus de décisions ne porte aucun article : une question qui y cite
   // « l'article L. 34-5 » cherche des décisions, par le sens.
-  const numero =
-    corpus !== undefined && estCorpusDecision(corpus) ? null : referenceExacte(demande.question);
+  const numero = corpusSansArticle(corpus) ? null : referenceExacte(demande.question);
   if (numero !== null) {
     const articles = trouverArticles(
       rootDir,

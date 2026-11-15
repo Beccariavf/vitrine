@@ -23,6 +23,7 @@ import { validerUnitesCorpus } from "../parse.ts";
 import type { Unite } from "../parse.ts";
 import {
   classerRegistre,
+  validerNotices,
   fusionnerCedh,
   lirePageCedh,
   lireRegistre,
@@ -348,10 +349,12 @@ export async function syncMetadonnees(
   const registre = await lireGuichetUnique(contexte);
   const classement = classerRegistre(registre.lignes);
 
+  const sansLienPdf = classement.retenues.filter((entree) => entree.lien === "registre").length;
   const unites: Unite[] = [
     ...unitesCedh(fusion.decisions, descripteur),
     ...unitesRegistre(classement.retenues, descripteur),
   ];
+  validerNotices(unites);
   validerUnitesCorpus(unites, "METADONNEES");
   const documents = new Set(unites.map((unite) => unite.document)).size;
 
@@ -418,16 +421,25 @@ export async function syncMetadonnees(
       champs:
         "Chaque unité porte document (n° de requête CEDH ou identifiant EDPBI), numero, date_acte, " +
         "titre, autorite, url officielle et une ligne `texte` de métadonnées (intitulé, autorité, " +
-        "date, et pour le registre les sujets et la base juridique qu'il publie). Aucune unité ne " +
-        "porte le texte d'une décision ni un résumé.",
+        "date, et pour le registre les sujets qu'il publie). Aucune unité ne porte le texte d'une " +
+        "décision ni un résumé. `search` rend cette ligne : le titre et l'autorité y sont, pas " +
+        "comme champs séparés.",
       sources,
       exclusions: { cedh: fusion.ecartes, registre: classement.ecartes },
       limites: [
         "Le registre du guichet unique n'a pas d'ordre stable entre deux requêtes : une ligne peut " +
-          "passer d'une page à l'autre pendant la passe. Les lignes vues deux fois sont comptées " +
-          "(`exclusions.registre.doublon`) et le total annoncé est porté " +
+          "passer d'une page à l'autre pendant la passe. Les lignes exactement répétées sont " +
+          "comptées (`exclusions.registre.doublon`) et le total annoncé est porté " +
           "(`exclusions.registre.total_annonce`) : l'écart avec `documents` dit les décisions " +
           "qu'une passe n'a pas vues, reprises à la passe suivante.",
+        "Deux décisions distinctes peuvent être servies sous un même identifiant EDPBI : elles " +
+          "sont gardées toutes les deux et la seconde porte une référence suffixée (`#2`).",
+        ...(sansLienPdf === 0
+          ? []
+          : [
+              `${sansLienPdf} notice(s) n'ont pas de PDF au registre : leur url ouvre le registre ` +
+                "filtré sur l'identifiant, faute de lien propre.",
+            ]),
       ],
     },
   };

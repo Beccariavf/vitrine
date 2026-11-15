@@ -49,7 +49,8 @@
       "HEDEC": "Décision"
     },
     "branches_ecartees": {
-      "DECCOMMISSION": "décision de l'ancienne Commission européenne des droits de l'homme, qui n'est pas une décision de la Cour"
+      "DECCOMMISSION": "décision de l'ancienne Commission européenne des droits de l'homme, qui n'est pas une décision de la Cour",
+      "COMMUNICATEDCASES": "communication d'une affaire aux parties, qui n'est pas une décision de la Cour"
     },
     "licence": "Base HUDOC du Conseil de l'Europe ; réutilisation des arrêts et décisions admise avec mention de la source. Seules les métadonnées sont reprises, jamais le texte.",
     "licence_url": "https://hudoc.echr.coe.int",
@@ -67,7 +68,8 @@
     "autorite_prefixe": "Autorité chef de file",
     "titre_prefixe": "Décision définitive du guichet unique",
     "licence": "Notice de copyright du CEPD : réutilisation commerciale et non commerciale autorisée, source citée, sens non dénaturé. Seules les métadonnées du registre sont reprises, jamais le texte des décisions.",
-    "licence_url": "https://www.edpb.europa.eu/about-edpb/about-edpb/legal-notice_fr"
+    "licence_url": "https://www.edpb.europa.eu/about-edpb/about-edpb/legal-notice_fr",
+    "url_notice": "https://www.edpb.europa.eu/registers/register-of-final-one-stop-shop-decisions_fr?keys={id}"
   },
   "pays": {
     "at": "Autriche",

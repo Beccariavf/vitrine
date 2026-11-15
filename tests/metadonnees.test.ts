@@ -21,6 +21,8 @@ import {
   totalRegistre,
   unitesCedh,
   unitesRegistre,
+  urlRequeteCedh,
+  validerNotices,
 } from "../mcp/corpus/metadonnees/liste.ts";
 import type {
   DescripteurMetadonnees,
@@ -121,6 +123,22 @@ describe("le critère CEDH", () => {
     assert.equal(ecartes.commission, 1);
   });
 
+  it("ignore un corps de décision servi dans les colonnes de la fiche", () => {
+    const page = JSON.parse(fixture("hudoc.json")) as {
+      resultcount: number;
+      results: Array<{ columns: Record<string, string> }>;
+    };
+    const premiere = page.results[0];
+    assert.ok(premiere !== undefined);
+    const chargee = {
+      ...page,
+      results: [{ columns: { ...premiere.columns, text: CORPS_ARRET } }, ...page.results.slice(1)],
+    };
+    const unites = unitesCedh(fusionnerCedh(lirePageCedh(chargee).entrees, DESCRIPTEUR).decisions, DESCRIPTEUR);
+    assert.ok(unites.length > 0);
+    for (const unite of unites) assert.equal(unite.texte.includes(CORPS_ARRET), false);
+  });
+
   it("écarte une langue hors périmètre et une date invalide en les nommant", () => {
     const { decisions, ecartes, exclusions } = fusionnerCedh(
       [
@@ -182,7 +200,80 @@ describe("le registre du guichet unique", () => {
     assert.equal(premiere.date, "2024-12-18");
     assert.equal(premiere.pays, "ee");
     assert.match(premiere.url, /^https:\/\/www\.edpb\.europa\.eu\/system\/files\/.+\.pdf$/);
+    assert.equal(premiere.lien, "pdf");
     assert.ok(premiere.sujets.length > 0);
+  });
+
+  it("lit un PDF servi en majuscules et garde deux décisions sous un même identifiant", () => {
+    const html = `<div class="view-foss-decisions-overview-overview__row">
+      <div class="foss-decision-teaser__summary">
+        <div class="foss-decision-foss-decision-teaser__id">EDPBI:NO:OSS:D:2023:850</div>
+        <time datetime="2023-06-01T12:00:00Z">1 juin 2023</time>
+        <div class="foss-decision-foss-decision-teaser__lead-sa">
+          <div class="member-country-token__code">no</div>
+        </div>
+        <a href="/system/files/2024-03/no-sa-2023-june-decisionpublic.PDF">PDF</a>
+      </div></div>
+      <div class="view-foss-decisions-overview-overview__row">
+      <div class="foss-decision-teaser__summary">
+        <div class="foss-decision-foss-decision-teaser__id">EDPBI:SE:OSS:D:2024:1</div>
+        <time datetime="2024-02-01T12:00:00Z">1 février 2024</time>
+        <div class="foss-decision-foss-decision-teaser__lead-sa">
+          <div class="member-country-token__code">se</div>
+        </div>
+      </div></div>
+      <div class="view-foss-decisions-overview-overview__row">
+      <div class="foss-decision-teaser__summary">
+        <div class="foss-decision-foss-decision-teaser__id">EDPBI:IE:OSS:D:2025:3850</div>
+        <time datetime="2025-11-04T12:00:00Z">4 novembre 2025</time>
+        <div class="foss-decision-foss-decision-teaser__lead-sa">
+          <div class="member-country-token__code">ie</div>
+        </div>
+        <a href="/system/files/2026-11/decision-no-3850.pdf">PDF</a>
+      </div></div>
+      <div class="view-foss-decisions-overview-overview__row">
+      <div class="foss-decision-teaser__summary">
+        <div class="foss-decision-foss-decision-teaser__id">EDPBI:IE:OSS:D:2025:3850</div>
+        <time datetime="2025-11-04T12:00:00Z">4 novembre 2025</time>
+        <div class="foss-decision-foss-decision-teaser__lead-sa">
+          <div class="member-country-token__code">ie</div>
+        </div>
+        <a href="/system/files/2026-11/decision-no-3851_1.pdf">PDF</a>
+      </div></div>`;
+    const lignes = lireRegistre(html, DESCRIPTEUR);
+    assert.equal(lignes[0]?.url, "https://www.edpb.europa.eu/system/files/2024-03/no-sa-2023-june-decisionpublic.PDF");
+    // Une ligne sans PDF garde la page du registre filtrée sur son identifiant.
+    assert.equal(lignes[1]?.lien, "registre");
+    assert.equal(
+      lignes[1]?.url,
+      "https://www.edpb.europa.eu/registers/register-of-final-one-stop-shop-decisions_fr?keys=EDPBI%3ASE%3AOSS%3AD%3A2024%3A1",
+    );
+    const { retenues, ecartes } = classerRegistre(lignes);
+    assert.equal(retenues.length, 4);
+    assert.equal(ecartes.doublon, 0);
+    const unites = unitesRegistre(retenues, DESCRIPTEUR);
+    assert.deepEqual(
+      unites.map((unite) => unite.ref),
+      [
+        "EDPBI:IE:OSS:D:2025:3850",
+        "EDPBI:IE:OSS:D:2025:3850#2",
+        "EDPBI:NO:OSS:D:2023:850",
+        "EDPBI:SE:OSS:D:2024:1",
+      ],
+    );
+  });
+
+  it("refuse une notice qui ne respecte pas le contrat des métadonnées", () => {
+    const [unite] = unitesRegistre(lignes, DESCRIPTEUR);
+    assert.ok(unite !== undefined);
+    assert.doesNotThrow(() => validerNotices([unite]));
+    assert.throws(
+      () => validerNotices([{ ...unite, texte: `${unite.texte}\nsuite` }]),
+      /texte multiligne/,
+    );
+    assert.throws(() => validerNotices([{ ...unite, titre: "" }]), /titre absent/);
+    const { metadonnees_seulement: _omis, ...sansMarque } = unite;
+    assert.throws(() => validerNotices([sansMarque]), /metadonnees_seulement absent/);
   });
 
   it("ne retient que les lignes identifiées et datées, une fois par identifiant", () => {
@@ -251,6 +342,12 @@ describe("la synchronisation des métadonnées", () => {
       assert.ok(unite.texte.length < 700, unite.texte);
       assert.equal(unite.texte.includes(CORPS_ARRET), false);
     }
+
+    assert.equal(
+      unites.some((unite) => unite.texte.includes(CORPS_ARRET)),
+      false,
+      "le corps d'une décision ne doit jamais entrer dans une notice",
+    );
 
     const manifeste = JSON.parse(
       readFileSync(join(root, "data", "corpus", "metadonnees", "manifest.json"), "utf8"),
@@ -401,6 +498,16 @@ describe("le rendu des métadonnées", () => {
         assert.equal(passage.avertissement_contenu, AVERTISSEMENT_METADONNEES);
         assert.equal(passage.statut_application, "rendue");
         assert.match(passage.url, /^https:\/\/hudoc\.echr\.coe\.int\/fre\?i=/);
+      }
+      // Une question qui cite un article ne doit pas être court-circuitée : le
+      // corpus ne porte aucun article, il porte des notices.
+      for (const question of [
+        "article 8 de la Convention et surveillance des données personnelles",
+        "article 60 du RGPD et décision du guichet unique",
+      ]) {
+        const parArticle = await search(root, { question, corpus: "metadonnees" }, { embedder: embedderUniforme(), index });
+        assert.ok(parArticle.passages.length > 0, question);
+        assert.equal((parArticle.message ?? "").includes("absent du corpus"), false, question);
       }
     } finally {
       index.db.close();

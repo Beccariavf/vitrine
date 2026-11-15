@@ -32,7 +32,7 @@ const LIBELLES: ReadonlyArray<readonly [string, string]> = [
   ["ce", "Conseil d'État"],
   ["constit", "Conseil constitutionnel"],
   ["cc", "Cour de cassation"],
-  ["metadonnees", "CEDH et guichet unique (métadonnées)"],
+  ["metadonnees", "Guichet unique (métadonnées)"],
 ];
 
 const RANG = new Map(LIBELLES.map(([corpus], index) => [corpus, index]));
