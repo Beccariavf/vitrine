@@ -88,7 +88,7 @@ remplacé que si l'archive est plus récente que sa date, sinon il garde sa num�
 `get_decision` rend une décision par identifiant `CNILTEXT…` ou par numéro `SAN-…` — sa partie
 opératoire par défaut, le document entier avec `partie: "tous"` — et `search` accepte un paramètre
 `corpus` (`rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `cnil`, `lil`, `preparation`, `ce`, `cepd`,
-`cc`, `cjue`) et un filtre
+`cc`, `cjue`, `metadonnees`) et un filtre
 `nature` pour les trois natures CNIL. Le filtre est d'abord un choix de corpus, pas de document. La
 route Légifrance `https://www.legifrance.gouv.fr/cnil/id/<id>` est déclarée dans le manifeste mais
 n'a pas été vérifiée : elle répond 403 aux robots.
@@ -121,7 +121,8 @@ Chaque passage de `search`, chaque article de `get_article` et chaque décision 
 comme `en_vigueur` valant `en_vigueur` et `ABROGE` valant `abroge` ; les décisions du Conseil d'État,
 de la Cour de cassation et de la CJUE sont `rendue` quel que soit leur statut de publication ou leur
 type d'acte ; une sanction CNIL est `rendue`, un avis ou une recommandation `adoptee` ; une ligne
-directrice du CEPD est `adoptee`. Pour la CNIL et le CEPD, un statut de source sans effet — `ABROGE`
+directrice du CEPD est `adoptee` ; une notice du corpus `metadonnees` est `rendue` pour une décision
+juridictionnelle et `adoptee` pour une décision d'autorité. Pour la CNIL et le CEPD, un statut de source sans effet — `ABROGE`
 ou `ANNULE` — prime sur la nature : une recommandation abrogée ou annulée rend `abroge`, avec le mot
 exact de la source dans `statut`. Une délibération ou une ligne directrice `MODIFIE` rend `inconnu` :
 la version rendue n'est pas nécessairement celle en vigueur. `propose` porte les propositions du
@@ -218,7 +219,11 @@ document attendu au top 5 pour 8 d'entre elles (MRR 0,486, top 1 33,3 %) ; l'él
 14 novembre n'a pas été remesuré.
 
 Le corpus `cepd` porte les lignes directrices du Comité européen de la protection des données,
-extraites de leurs PDF. `npm run cepd:sync` lit d'abord l'index de sitemaps puis ses cinq pages,
+extraites de leurs PDF. `npm run metadonnees:sync` construit `data/corpus/metadonnees/` : les décisions définitives du
+registre du guichet unique du CEPD (article 60 du RGPD) en notices — identifiant EDPBI, autorité chef
+de file, date, sujets, lien officiel —, sans aucun texte de décision. La source CEDH (HUDOC) est
+arrêtée, son motif est au manifeste ; `search` marque chaque notice « métadonnées seulement ».
+`npm run cepd:sync` lit d'abord l'index de sitemaps puis ses cinq pages,
 retient les URL `/documents/guideline/…_fr` et écarte les traductions `_en`, `_de`, etc. ; le
 Wayback Machine ne sert plus que de repli si le sitemap est injoignable. Chaque page de document est
 ensuite lue pour son titre, sa date, sa version et son PDF : le PDF français `_fr.pdf` est préféré,

@@ -25,6 +25,7 @@
     "cc:sync": "node mcp/corpus/cc/sync.ts",
     "cepd:sync": "node mcp/corpus/cepd/sync.ts",
     "cjue:sync": "node mcp/corpus/cjue/sync.ts",
+    "metadonnees:sync": "node mcp/corpus/metadonnees/sync.ts",
     "cjue:controle": "node mcp/corpus/cjue/controle.ts",
     "cnil:sync": "node mcp/corpus/cnil/sync.ts",
     "cnil-doctrine:sync": "node mcp/corpus/cnil-doctrine/sync.ts",
