@@ -26,6 +26,7 @@ import { statutApplication } from "./corpus/statut.ts";
 import type { StatutApplication } from "./corpus/statut.ts";
 import { mentionsDoctrine } from "./corpus/cnil-doctrine/mention.ts";
 import type { MentionDoctrine } from "./corpus/cnil-doctrine/mention.ts";
+import { avecMarquageMetadonnees } from "./corpus/metadonnees/mention.ts";
 import { SUFFIXE_ARTICLE, normaliserNumero } from "./corpus/articles.ts";
 import { niveauConfiance } from "./confidence.ts";
 import type { NiveauConfiance } from "./confidence.ts";
@@ -245,6 +246,13 @@ export type Passage = ResultatRecherche & {
    * par la CC BY-ND 4.0, à afficher avant l'extrait. Le texte reste mot pour mot.
    */
   marquage?: MentionDoctrine;
+  /**
+   * Corpus `metadonnees` seulement : l'unité ne porte que des métadonnées, le
+   * serveur ne connaît pas le contenu du document cité.
+   */
+  metadonnees_seulement?: true;
+  /** Phrase à afficher telle quelle, avec le lien officiel du passage. */
+  avertissement_contenu?: string;
 };
 
 export type ResultatRechercheOutil = {
@@ -673,7 +681,7 @@ export function corpusDeNiveau(demande: { corpus?: string; document?: string }):
 export type SearchDemande = {
   question: string;
   k?: number;
-  /** Restreint la recherche à une collection : `rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `cnil`, `cnil_doctrine`, `lil`, `textes_fr`, `ce`, `constit`, `cepd`, `cc`, `cjue`. */
+  /** Restreint la recherche à une collection : `rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `cnil`, `cnil_doctrine`, `lil`, `textes_fr`, `ce`, `constit`, `cepd`, `cc`, `cjue`, `metadonnees`. */
   corpus?: string;
   /** Restreint la recherche à un document précis. */
   document?: string;
@@ -962,12 +970,11 @@ async function chercher(
   if (absence !== null) {
     return { niveau_confiance: "aucun_resultat_fiable", passages: [], message: absence };
   }
-  /** Enrichit les passages rendus de leurs citations et du marquage de doctrine. */
+  /** Enrichit les passages rendus de leurs citations, du marquage de doctrine et des métadonnées. */
   const rendre = (resultat: RechercheBrute): RechercheBrute => ({
     ...resultat,
-    passages: avecMarquageDoctrine(
-      rootDir,
-      avecCitations(rootDir, resultat.passages),
+    passages: avecMarquageMetadonnees(
+      avecMarquageDoctrine(rootDir, avecCitations(rootDir, resultat.passages)),
     ),
   });
   // Un corpus de décisions ne porte aucun article : une question qui y cite

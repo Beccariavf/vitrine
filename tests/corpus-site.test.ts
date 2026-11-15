@@ -27,7 +27,7 @@ after(() => {
 });
 
 describe("sourcesCorpus", () => {
-  it("rend les dix-sept collections committées dans l'ordre textes, autorités, juridictions", () => {
+  it("rend les dix-huit collections committées dans l'ordre textes, autorités, juridictions", () => {
     const sources = sourcesCorpus(ROOT);
     assert.deepEqual(
       sources.map((source) => source.libelle),
@@ -49,6 +49,7 @@ describe("sourcesCorpus", () => {
         "Conseil d'État",
         "Conseil constitutionnel",
         "Cour de cassation",
+        "CEDH et guichet unique (métadonnées)",
       ],
     );
     assert.ok(sources.every((source) => source.documents > 0));

@@ -68,6 +68,7 @@ const FAMILLE_DE_SOURCE: Readonly<Record<string, FamilleId>> = {
   ce: "juridictions",
   constit: "juridictions",
   cc: "juridictions",
+  metadonnees: "autre",
   legi: "textes",
   eurlex: "ue",
 };
