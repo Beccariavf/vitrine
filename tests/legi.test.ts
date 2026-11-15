@@ -14,6 +14,7 @@ import { syncTextesFr } from "../mcp/corpus/textes-fr/sync.ts";
 import { syncCorpus } from "../mcp/corpus/sync.ts";
 import type { AgentSync } from "../mcp/corpus/sync.ts";
 import { formaterRapport } from "../mcp/corpus/sync-rapport.ts";
+import { lireLectures } from "../mcp/corpus/lectures.ts";
 import { corpusDeLEntree, documentsDeLEntree } from "../mcp/corpus/veille.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";
 import type { Embedder } from "../mcp/embed/embedder.ts";
@@ -358,6 +359,34 @@ describe("la détection des versions des textes français", () => {
       assert.equal(resultat.echecs.length, 1);
       assert.match(resultat.echecs[0] ?? "", /Code pénal : Légifrance code: HTTP 500/);
       assert.equal(resultat.appels, 5);
+    } finally {
+      resetUsage();
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("note la lecture réussie de legi, et pas une passe où un texte a échoué", async () => {
+    const root = await racineCorpus();
+    try {
+      await passeTextesFr({
+        rootDir: root,
+        date: DATE,
+        reponses: REPONSES_INCHANGEES,
+        config: null,
+      });
+      assert.deepEqual([...lireLectures(root).entries()], [["legi", DATE]]);
+
+      const partiel = { ...REPONSES_INCHANGEES };
+      delete (partiel as Record<string, unknown>)[textesSuivis()[0]?.cle ?? ""];
+      const resultat = await passeTextesFr({
+        rootDir: root,
+        date: "2026-11-12",
+        reponses: partiel,
+        config: CONFIG,
+        fetchImpl: async () => ({ ok: false, status: 500, text: async () => "" }),
+      });
+      assert.ok(resultat.echecs.length > 0);
+      assert.equal(lireLectures(root).get("legi"), DATE);
     } finally {
       resetUsage();
       rmSync(root, { recursive: true, force: true });

@@ -172,7 +172,8 @@ const CONSIGNE_SERVEUR =
   "`decisions_citant_decision` rend les décisions qui citent une décision donnée par sa référence. " +
   "`etat_corpus` dit à quelle date le corpus a été rafraîchi depuis la veille (`a_jour_au`), " +
   "quels documents manquent, quels documents cités restent hors du corpus avec les autorités " +
-  "qui les citent, et quelle source a échoué ; il ne lit ni l'index ni le réseau. " +
+  "qui les citent, quelle source a échoué et, pour chaque corpus, quelles sources de veille " +
+  "l'alimentent avec leur dernière lecture réussie ; il ne lit ni l'index ni le réseau. " +
   CONSIGNE_PROMESSE;
 
 export type ServerDeps = {
@@ -420,7 +421,10 @@ export function createServer(deps: ServerDeps): McpServer {
         "manquants et l'état des sources et de l'index. Chaque corpus porte `couverture`, le bloc que " +
         "déclare son manifeste — sources, bornes et exclusions — : c'est la cible du renvoi " +
         "`perimetre.exclusions` des autres outils. Les clés d'exclusion varient selon le corpus " +
-        "(`exclusions`, `documents_ecartes`, `versions_ecartees`, `articles_abroges_ecartes`…). `hors_corpus` porte le classement des " +
+        "(`exclusions`, `documents_ecartes`, `versions_ecartees`, `articles_abroges_ecartes`…). " +
+        "Chaque corpus porte aussi `veille` : les sources qui l'alimentent avec leur " +
+        "`derniere_lecture_reussie` (null quand la veille n'a jamais été lue ici, donc « jamais lue »), " +
+        "ou `absente.raison` quand aucune source ne le couvre. `hors_corpus` porte le classement des " +
         "documents hors corpus : ceux que les décisions citent sans qu'ils soient au corpus, par " +
         "nombre de décisions citantes décroissant (`citations`), avec les autorités qui les citent et " +
         "leur compte ; un document " +

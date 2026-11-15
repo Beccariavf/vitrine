@@ -1012,6 +1012,8 @@ describe("le serveur en mémoire", () => {
     assert.match(description("etat_corpus"), /citations/);
     assert.match(description("etat_corpus"), /autorités/);
     assert.match(description("etat_corpus"), /exclu/);
+    assert.match(description("etat_corpus"), /derniere_lecture_reussie/);
+    assert.match(description("etat_corpus"), /absente\.raison/);
   });
 
   it("publie les familles exposées et leur mesure dans les descriptions des citations entre décisions", async () => {

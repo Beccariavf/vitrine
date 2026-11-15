@@ -1,0 +1,1038 @@
+{
+  "version": 1,
+  "calcule_le": "2026-11-15",
+  "methode": {
+    "publication": "date_acte de l'entrée de veille, sinon de l'unité qu'elle désigne ; les documents dont la date est celle de l'extraction (doctrine CNIL) sont écartés",
+    "veille": "publishedAt de la première entrée de data/entries qui désigne le document ; null quand la source ne date pas sa lecture (eurlex, legi, constit, cepd, cnil_doctrine, preparation le font)",
+    "corpus": "premier commit git qui ajoute la version de la nouveauté, sinon l'unité (git log -S), à défaut la date d'arrêté du manifeste",
+    "echantillon": "3 document(s) le(s) plus récent(s) par corpus, plus toutes les entrées de veille qui désignent un document",
+    "jours": "date d'entrée au corpus moins date de publication, en jours"
+  },
+  "corpus": [
+    {
+      "corpus": "aiact",
+      "cas_mesures": 1,
+      "mediane_jours": 110,
+      "max_jours": 110,
+      "max_exemple": {
+        "corpus": "aiact",
+        "document": "32024R1689",
+        "date_acte": "2026-07-27",
+        "date_veille": "2026-11-14",
+        "date_corpus": "2026-11-14",
+        "origine_corpus": "git",
+        "entree_veille": true,
+        "jours": 110,
+        "jours_publication_veille": 110,
+        "jours_veille_corpus": 0
+      },
+      "exemples": [
+        {
+          "corpus": "aiact",
+          "document": "32024R1689",
+          "date_acte": "2026-07-27",
+          "date_veille": "2026-11-14",
+          "date_corpus": "2026-11-14",
+          "origine_corpus": "git",
+          "entree_veille": true,
+          "jours": 110,
+          "jours_publication_veille": 110,
+          "jours_veille_corpus": 0
+        }
+      ]
+    },
+    {
+      "corpus": "cc",
+      "cas_mesures": 4,
+      "mediane_jours": 22,
+      "max_jours": 35,
+      "max_exemple": {
+        "corpus": "cc",
+        "document": "6ac6079ec27382d099f5a06e",
+        "date_acte": "2026-10-07",
+        "date_veille": null,
+        "date_corpus": "2026-11-11",
+        "origine_corpus": "git",
+        "entree_veille": true,
+        "jours": 35,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
+      "exemples": [
+        {
+          "corpus": "cc",
+          "document": "6ad9d7517a10202137352428",
+          "date_acte": "2026-10-22",
+          "date_veille": null,
+          "date_corpus": "2026-11-11",
+          "origine_corpus": "git",
+          "entree_veille": true,
+          "jours": 20,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        },
+        {
+          "corpus": "cc",
+          "document": "6ad753e37a10202137e74fa7",
+          "date_acte": "2026-10-20",
+          "date_veille": null,
+          "date_corpus": "2026-11-11",
+          "origine_corpus": "git",
+          "entree_veille": true,
+          "jours": 22,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        },
+        {
+          "corpus": "cc",
+          "document": "6ad754077a10202137e751ba",
+          "date_acte": "2026-10-20",
+          "date_veille": null,
+          "date_corpus": "2026-11-11",
+          "origine_corpus": "git",
+          "entree_veille": true,
+          "jours": 22,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        }
+      ]
+    },
+    {
+      "corpus": "ce",
+      "cas_mesures": 9,
+      "mediane_jours": 20,
+      "max_jours": 73,
+      "max_exemple": {
+        "corpus": "ce",
+        "document": "CETATEXT000054762056",
+        "date_acte": "2026-08-28",
+        "date_veille": null,
+        "date_corpus": "2026-11-09",
+        "origine_corpus": "git",
+        "entree_veille": true,
+        "jours": 73,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
+      "exemples": [
+        {
+          "corpus": "ce",
+          "document": "CETATEXT000055022926",
+          "date_acte": "2026-10-27",
+          "date_veille": null,
+          "date_corpus": "2026-11-09",
+          "origine_corpus": "git",
+          "entree_veille": true,
+          "jours": 13,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        },
+        {
+          "corpus": "ce",
+          "document": "CETATEXT000055005472",
+          "date_acte": "2026-10-20",
+          "date_veille": null,
+          "date_corpus": "2026-11-09",
+          "origine_corpus": "git",
+          "entree_veille": true,
+          "jours": 20,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        },
+        {
+          "corpus": "ce",
+          "document": "CETATEXT000055005481",
+          "date_acte": "2026-10-20",
+          "date_veille": null,
+          "date_corpus": "2026-11-09",
+          "origine_corpus": "git",
+          "entree_veille": true,
+          "jours": 20,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        }
+      ]
+    },
+    {
+      "corpus": "cjue",
+      "cas_mesures": 1,
+      "mediane_jours": 6,
+      "max_jours": 6,
+      "max_exemple": {
+        "corpus": "cjue",
+        "document": "62025CJ0205",
+        "date_acte": "2026-11-05",
+        "date_veille": null,
+        "date_corpus": "2026-11-11",
+        "origine_corpus": "git",
+        "entree_veille": true,
+        "jours": 6,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
+      "exemples": [
+        {
+          "corpus": "cjue",
+          "document": "62025CJ0205",
+          "date_acte": "2026-11-05",
+          "date_veille": null,
+          "date_corpus": "2026-11-11",
+          "origine_corpus": "git",
+          "entree_veille": true,
+          "jours": 6,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        }
+      ]
+    },
+    {
+      "corpus": "cnil",
+      "cas_mesures": 2,
+      "mediane_jours": 222,
+      "max_jours": 430,
+      "max_exemple": {
+        "corpus": "cnil",
+        "document": "CNILTEXT000052182222",
+        "date_acte": "2025-09-01",
+        "date_veille": null,
+        "date_corpus": "2026-11-05",
+        "origine_corpus": "git",
+        "entree_veille": true,
+        "jours": 430,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
+      "exemples": [
+        {
+          "corpus": "cnil",
+          "document": "CNILTEXT000055022778",
+          "date_acte": "2026-10-22",
+          "date_veille": null,
+          "date_corpus": "2026-11-05",
+          "origine_corpus": "git",
+          "entree_veille": true,
+          "jours": 14,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        },
+        {
+          "corpus": "cnil",
+          "document": "CNILTEXT000052182222",
+          "date_acte": "2025-09-01",
+          "date_veille": null,
+          "date_corpus": "2026-11-05",
+          "origine_corpus": "git",
+          "entree_veille": true,
+          "jours": 430,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        }
+      ]
+    }
+  ],
+  "collecte_initiale": [
+    {
+      "corpus": "adequation",
+      "cas_mesures": 3,
+      "mediane_jours": 330,
+      "max_jours": 330,
+      "max_exemple": {
+        "corpus": "adequation",
+        "document": "32025D2571",
+        "date_acte": "2025-12-19",
+        "date_veille": null,
+        "date_corpus": "2026-11-14",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 330,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
+      "exemples": [
+        {
+          "corpus": "adequation",
+          "document": "32026D0179",
+          "date_acte": "2026-01-26",
+          "date_veille": null,
+          "date_corpus": "2026-11-14",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 292,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        },
+        {
+          "corpus": "adequation",
+          "document": "32025D2571",
+          "date_acte": "2025-12-19",
+          "date_veille": null,
+          "date_corpus": "2026-11-14",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 330,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        },
+        {
+          "corpus": "adequation",
+          "document": "32025D2574",
+          "date_acte": "2025-12-19",
+          "date_veille": null,
+          "date_corpus": "2026-11-14",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 330,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        }
+      ]
+    },
+    {
+      "corpus": "cc",
+      "cas_mesures": 2,
+      "mediane_jours": 3.5,
+      "max_jours": 6,
+      "max_exemple": {
+        "corpus": "cc",
+        "document": "6aed6b376c2e1778124430e0",
+        "date_acte": "2026-11-05",
+        "date_veille": null,
+        "date_corpus": "2026-11-11",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 6,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
+      "exemples": [
+        {
+          "corpus": "cc",
+          "document": "6af2c6c76c2e1778126fe354",
+          "date_acte": "2026-11-10",
+          "date_veille": null,
+          "date_corpus": "2026-11-11",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 1,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        },
+        {
+          "corpus": "cc",
+          "document": "6aed6b376c2e1778124430e0",
+          "date_acte": "2026-11-05",
+          "date_veille": null,
+          "date_corpus": "2026-11-11",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 6,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        }
+      ]
+    },
+    {
+      "corpus": "ccs",
+      "cas_mesures": 1,
+      "mediane_jours": 1989,
+      "max_jours": 1989,
+      "max_exemple": {
+        "corpus": "ccs",
+        "document": "32021D0914",
+        "date_acte": "2021-06-04",
+        "date_veille": null,
+        "date_corpus": "2026-11-14",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 1989,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
+      "exemples": [
+        {
+          "corpus": "ccs",
+          "document": "32021D0914",
+          "date_acte": "2021-06-04",
+          "date_veille": null,
+          "date_corpus": "2026-11-14",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 1989,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        }
+      ]
+    },
+    {
+      "corpus": "ce",
+      "cas_mesures": 2,
+      "mediane_jours": 20,
+      "max_jours": 20,
+      "max_exemple": {
+        "corpus": "ce",
+        "document": "CETATEXT000055005463",
+        "date_acte": "2026-10-20",
+        "date_veille": null,
+        "date_corpus": "2026-11-09",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 20,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
+      "exemples": [
+        {
+          "corpus": "ce",
+          "document": "CETATEXT000055005463",
+          "date_acte": "2026-10-20",
+          "date_veille": null,
+          "date_corpus": "2026-11-09",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 20,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        },
+        {
+          "corpus": "ce",
+          "document": "CETATEXT000055005469",
+          "date_acte": "2026-10-20",
+          "date_veille": null,
+          "date_corpus": "2026-11-09",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 20,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        }
+      ]
+    },
+    {
+      "corpus": "cepd",
+      "cas_mesures": 3,
+      "mediane_jours": 4,
+      "max_jours": 32,
+      "max_exemple": {
+        "corpus": "cepd",
+        "document": "opinion-242026-on-the-draft-decision-of-the-french",
+        "date_acte": "2026-10-13",
+        "date_veille": null,
+        "date_corpus": "2026-11-14",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 32,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
+      "exemples": [
+        {
+          "corpus": "cepd",
+          "document": "guidelines-12024-on-processing-of-personal-data-based-on-article-61f-gdpr",
+          "date_acte": "2026-11-10",
+          "date_veille": null,
+          "date_corpus": "2026-11-14",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 4,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        },
+        {
+          "corpus": "cepd",
+          "document": "recommendations-12026-on-the-application-for-approval-and-on-the-elements",
+          "date_acte": "2026-11-10",
+          "date_veille": null,
+          "date_corpus": "2026-11-14",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 4,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        },
+        {
+          "corpus": "cepd",
+          "document": "opinion-242026-on-the-draft-decision-of-the-french",
+          "date_acte": "2026-10-13",
+          "date_veille": null,
+          "date_corpus": "2026-11-14",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 32,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        }
+      ]
+    },
+    {
+      "corpus": "cjue",
+      "cas_mesures": 2,
+      "mediane_jours": 53.5,
+      "max_jours": 69,
+      "max_exemple": {
+        "corpus": "cjue",
+        "document": "62024CJ0798",
+        "date_acte": "2026-09-03",
+        "date_veille": null,
+        "date_corpus": "2026-11-11",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 69,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
+      "exemples": [
+        {
+          "corpus": "cjue",
+          "document": "62026TO0071",
+          "date_acte": "2026-10-07",
+          "date_veille": null,
+          "date_corpus": "2026-11-14",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 38,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        },
+        {
+          "corpus": "cjue",
+          "document": "62024CJ0798",
+          "date_acte": "2026-09-03",
+          "date_veille": null,
+          "date_corpus": "2026-11-11",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 69,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        }
+      ]
+    },
+    {
+      "corpus": "cnil",
+      "cas_mesures": 2,
+      "mediane_jours": 35.5,
+      "max_jours": 53,
+      "max_exemple": {
+        "corpus": "cnil",
+        "document": "CNILTEXT000054908904",
+        "date_acte": "2026-09-17",
+        "date_veille": null,
+        "date_corpus": "2026-11-09",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 53,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
+      "exemples": [
+        {
+          "corpus": "cnil",
+          "document": "CNILTEXT000055011442",
+          "date_acte": "2026-10-22",
+          "date_veille": null,
+          "date_corpus": "2026-11-09",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 18,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        },
+        {
+          "corpus": "cnil",
+          "document": "CNILTEXT000054908904",
+          "date_acte": "2026-09-17",
+          "date_veille": null,
+          "date_corpus": "2026-11-09",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 53,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        }
+      ]
+    },
+    {
+      "corpus": "cnil_doctrine",
+      "cas_mesures": 3,
+      "mediane_jours": 1227,
+      "max_jours": 1384,
+      "max_exemple": {
+        "corpus": "cnil_doctrine",
+        "document": "guide-referentiel-recrutement",
+        "date_acte": "2023-01-30",
+        "date_veille": null,
+        "date_corpus": "2026-11-14",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 1384,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
+      "exemples": [
+        {
+          "corpus": "cnil_doctrine",
+          "document": "referentiel-durees-de-conservation-gestion-des-ressources-humaines",
+          "date_acte": "2026-04-02",
+          "date_veille": null,
+          "date_corpus": "2026-11-14",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 226,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        },
+        {
+          "corpus": "cnil_doctrine",
+          "document": "referentiel-alertes-professionnelles",
+          "date_acte": "2023-07-06",
+          "date_veille": null,
+          "date_corpus": "2026-11-14",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 1227,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        },
+        {
+          "corpus": "cnil_doctrine",
+          "document": "guide-referentiel-recrutement",
+          "date_acte": "2023-01-30",
+          "date_veille": null,
+          "date_corpus": "2026-11-14",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 1384,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        }
+      ]
+    },
+    {
+      "corpus": "constit",
+      "cas_mesures": 3,
+      "mediane_jours": 100,
+      "max_jours": 114,
+      "max_exemple": {
+        "corpus": "constit",
+        "document": "CONSTEXT000054617305",
+        "date_acte": "2026-07-23",
+        "date_veille": null,
+        "date_corpus": "2026-11-14",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 114,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
+      "exemples": [
+        {
+          "corpus": "constit",
+          "document": "CONSTEXT000054952981",
+          "date_acte": "2026-08-14",
+          "date_veille": null,
+          "date_corpus": "2026-11-14",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 92,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        },
+        {
+          "corpus": "constit",
+          "document": "CONSTEXT000054952973",
+          "date_acte": "2026-08-06",
+          "date_veille": null,
+          "date_corpus": "2026-11-14",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 100,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        },
+        {
+          "corpus": "constit",
+          "document": "CONSTEXT000054617305",
+          "date_acte": "2026-07-23",
+          "date_veille": null,
+          "date_corpus": "2026-11-14",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 114,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        }
+      ]
+    },
+    {
+      "corpus": "eprivacy",
+      "cas_mesures": 1,
+      "mediane_jours": 8891,
+      "max_jours": 8891,
+      "max_exemple": {
+        "corpus": "eprivacy",
+        "document": "32002L0058",
+        "date_acte": "2002-07-12",
+        "date_veille": null,
+        "date_corpus": "2026-11-14",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 8891,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
+      "exemples": [
+        {
+          "corpus": "eprivacy",
+          "document": "32002L0058",
+          "date_acte": "2002-07-12",
+          "date_veille": null,
+          "date_corpus": "2026-11-14",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 8891,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        }
+      ]
+    },
+    {
+      "corpus": "eudpr",
+      "cas_mesures": 1,
+      "mediane_jours": 2944,
+      "max_jours": 2944,
+      "max_exemple": {
+        "corpus": "eudpr",
+        "document": "32018R1725",
+        "date_acte": "2018-10-23",
+        "date_veille": null,
+        "date_corpus": "2026-11-14",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 2944,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
+      "exemples": [
+        {
+          "corpus": "eudpr",
+          "document": "32018R1725",
+          "date_acte": "2018-10-23",
+          "date_veille": null,
+          "date_corpus": "2026-11-14",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 2944,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        }
+      ]
+    },
+    {
+      "corpus": "lil",
+      "cas_mesures": 1,
+      "mediane_jours": 2718,
+      "max_jours": 2718,
+      "max_exemple": {
+        "corpus": "lil",
+        "document": "LEGITEXT000006068624",
+        "date_acte": "2019-06-01",
+        "date_veille": null,
+        "date_corpus": "2026-11-09",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 2718,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
+      "exemples": [
+        {
+          "corpus": "lil",
+          "document": "LEGITEXT000006068624",
+          "date_acte": "2019-06-01",
+          "date_veille": null,
+          "date_corpus": "2026-11-09",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 2718,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        }
+      ]
+    },
+    {
+      "corpus": "metadonnees",
+      "cas_mesures": 3,
+      "mediane_jours": 107,
+      "max_jours": 121,
+      "max_exemple": {
+        "corpus": "metadonnees",
+        "document": "EDPBI:NO:OSS:D:2026:4219",
+        "date_acte": "2026-07-17",
+        "date_veille": null,
+        "date_corpus": "2026-11-15",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 121,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
+      "exemples": [
+        {
+          "corpus": "metadonnees",
+          "document": "EDPBI:EE:OSS:D:2026:4265",
+          "date_acte": "2026-08-10",
+          "date_veille": null,
+          "date_corpus": "2026-11-15",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 97,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        },
+        {
+          "corpus": "metadonnees",
+          "document": "EDPBI:LU:OSS:D:2026:4243",
+          "date_acte": "2026-07-31",
+          "date_veille": null,
+          "date_corpus": "2026-11-15",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 107,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        },
+        {
+          "corpus": "metadonnees",
+          "document": "EDPBI:NO:OSS:D:2026:4219",
+          "date_acte": "2026-07-17",
+          "date_veille": null,
+          "date_corpus": "2026-11-15",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 121,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        }
+      ]
+    },
+    {
+      "corpus": "police",
+      "cas_mesures": 1,
+      "mediane_jours": 3853,
+      "max_jours": 3853,
+      "max_exemple": {
+        "corpus": "police",
+        "document": "32016L0680",
+        "date_acte": "2016-04-27",
+        "date_veille": null,
+        "date_corpus": "2026-11-14",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 3853,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
+      "exemples": [
+        {
+          "corpus": "police",
+          "document": "32016L0680",
+          "date_acte": "2016-04-27",
+          "date_veille": null,
+          "date_corpus": "2026-11-14",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 3853,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        }
+      ]
+    },
+    {
+      "corpus": "preparation",
+      "cas_mesures": 3,
+      "mediane_jours": 69,
+      "max_jours": 86,
+      "max_exemple": {
+        "corpus": "preparation",
+        "document": "62026TN0556",
+        "date_acte": "2026-08-21",
+        "date_veille": null,
+        "date_corpus": "2026-11-15",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 86,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
+      "exemples": [
+        {
+          "corpus": "preparation",
+          "document": "62026TN0634",
+          "date_acte": "2026-09-25",
+          "date_veille": null,
+          "date_corpus": "2026-11-15",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 51,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        },
+        {
+          "corpus": "preparation",
+          "document": "62026TN0593",
+          "date_acte": "2026-09-07",
+          "date_veille": null,
+          "date_corpus": "2026-11-15",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 69,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        },
+        {
+          "corpus": "preparation",
+          "document": "62026TN0556",
+          "date_acte": "2026-08-21",
+          "date_veille": null,
+          "date_corpus": "2026-11-15",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 86,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        }
+      ]
+    },
+    {
+      "corpus": "rgpd",
+      "cas_mesures": 1,
+      "mediane_jours": 3843,
+      "max_jours": 3843,
+      "max_exemple": {
+        "corpus": "rgpd",
+        "document": "32016R0679",
+        "date_acte": "2016-04-27",
+        "date_veille": null,
+        "date_corpus": "2026-11-04",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 3843,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
+      "exemples": [
+        {
+          "corpus": "rgpd",
+          "document": "32016R0679",
+          "date_acte": "2016-04-27",
+          "date_veille": null,
+          "date_corpus": "2026-11-04",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 3843,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        }
+      ]
+    },
+    {
+      "corpus": "rgpdproc",
+      "cas_mesures": 1,
+      "mediane_jours": 353,
+      "max_jours": 353,
+      "max_exemple": {
+        "corpus": "rgpdproc",
+        "document": "32025R2518",
+        "date_acte": "2025-11-26",
+        "date_veille": null,
+        "date_corpus": "2026-11-14",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 353,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
+      "exemples": [
+        {
+          "corpus": "rgpdproc",
+          "document": "32025R2518",
+          "date_acte": "2025-11-26",
+          "date_veille": null,
+          "date_corpus": "2026-11-14",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 353,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        }
+      ]
+    },
+    {
+      "corpus": "textes_fr",
+      "cas_mesures": 3,
+      "mediane_jours": 1001,
+      "max_jours": 2302,
+      "max_exemple": {
+        "corpus": "textes_fr",
+        "document": "LEGITEXT000006070987",
+        "date_acte": "2020-07-26",
+        "date_veille": null,
+        "date_corpus": "2026-11-14",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 2302,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
+      "exemples": [
+        {
+          "corpus": "textes_fr",
+          "document": "LEGITEXT000038567662",
+          "date_acte": "2025-04-24",
+          "date_veille": null,
+          "date_corpus": "2026-11-14",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 569,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        },
+        {
+          "corpus": "textes_fr",
+          "document": "LEGITEXT000006070719",
+          "date_acte": "2024-02-17",
+          "date_veille": null,
+          "date_corpus": "2026-11-14",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 1001,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        },
+        {
+          "corpus": "textes_fr",
+          "document": "LEGITEXT000006070987",
+          "date_acte": "2020-07-26",
+          "date_veille": null,
+          "date_corpus": "2026-11-14",
+          "origine_corpus": "git",
+          "entree_veille": false,
+          "jours": 2302,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        }
+      ]
+    }
+  ],
+  "retards_archive": [
+    {
+      "corpus": "constit",
+      "derniere_decision": "2026-10-16",
+      "archive": "2026-11-08",
+      "jours_declares": 29,
+      "jours_avant_archive": 23,
+      "extraction": "2026-11-14",
+      "jours_archive_extraction": 6
+    }
+  ]
+}

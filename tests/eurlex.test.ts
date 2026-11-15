@@ -405,7 +405,7 @@ describe("raccord eurlex → corpus", () => {
     assert.equal(corpusDeLEntree({ source: "eurlex", document: "32024R1689", categorie: "consolidation" }), "aiact");
     assert.equal(corpusDeLEntree({ source: "eurlex", document: "32016R0679", categorie: "modification" }), "rgpd");
     assert.equal(corpusDeLEntree({ source: "eurlex", document: "32026D0400", categorie: "adequation" }), "adequation");
-    assert.equal(corpusDeLEntree({ source: "eurlex", document: "32026D0402", categorie: "clauses_types" }), null);
+    assert.equal(corpusDeLEntree({ source: "eurlex", document: "32026D0402", categorie: "clauses_types" }), "ccs");
     assert.equal(corpusDeLEntree({ source: "eurlex", document: "39999X9999", categorie: "consolidation" }), null);
     assert.deepEqual(documentsDeLEntree({ source: "eurlex", id: "x", url: "", document: "32024R1689" }, new Map()), [
       "32024R1689",

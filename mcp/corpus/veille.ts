@@ -34,7 +34,8 @@ export type CorpusVeille =
   | "ccs"
   | "adequation";
 
-const CORPUS_PAR_SOURCE: Record<string, CorpusVeille> = {
+/** Sources de veille dont l'identifiant est aussi le corpus qu'elles alimentent. */
+export const CORPUS_PAR_SOURCE: Readonly<Record<string, CorpusVeille>> = {
   cnil: "cnil",
   cnil_doctrine: "cnil_doctrine",
   cetat: "ce",
@@ -58,7 +59,7 @@ export const CORPUS_ACTES: readonly CorpusVeille[] = [
 ];
 
 /** Actes de base suivis par la veille `eurlex` : CELEX → corpus. */
-const CORPUS_ACTES_UE: Record<string, CorpusVeille> = {
+export const CORPUS_ACTES_UE: Readonly<Record<string, CorpusVeille>> = {
   "32016R0679": "rgpd",
   "32024R1689": "aiact",
   "32002L0058": "eprivacy",
@@ -68,12 +69,56 @@ const CORPUS_ACTES_UE: Record<string, CorpusVeille> = {
   "32021D0914": "ccs",
 };
 
+/**
+ * Corpus visé par une entrée `eurlex` que son seul CELEX ne désigne pas : une
+ * décision d'adéquation neuve et une décision de clauses types neuve entrent
+ * respectivement dans `adequation` et `ccs`.
+ */
+export const CORPUS_PAR_CATEGORIE: Readonly<Record<string, CorpusVeille>> = {
+  adequation: "adequation",
+  clauses_types: "ccs",
+};
+
 /** Une entrée `legi` vise le corpus du texte qu'elle porte. */
-const CORPUS_PAR_DOCUMENT: Record<string, CorpusVeille> = {
+export const CORPUS_PAR_DOCUMENT: Readonly<Record<string, CorpusVeille>> = {
   LEGITEXT000006068624: "lil",
   LEGITEXT000038567662: "textes_fr",
   LEGITEXT000006070719: "textes_fr",
   LEGITEXT000006070987: "textes_fr",
+};
+
+/**
+ * Sources de veille qui alimentent chaque corpus : l'inverse des trois tables
+ * de raccord, jamais une liste tenue à la main. Un corpus qui n'y figure pas et
+ * que `CORPUS_SANS_VEILLE` ne justifie pas est signalé par `etat_corpus`.
+ */
+export const SOURCES_PAR_CORPUS: Readonly<Record<string, readonly string[]>> = (() => {
+  const agregat = new Map<string, Set<string>>();
+  const ajouter = (corpus: string | undefined, source: string): void => {
+    if (corpus === undefined) return;
+    const sources = agregat.get(corpus) ?? new Set<string>();
+    sources.add(source);
+    agregat.set(corpus, sources);
+  };
+  for (const [source, corpus] of Object.entries(CORPUS_PAR_SOURCE)) ajouter(corpus, source);
+  for (const corpus of Object.values(CORPUS_PAR_DOCUMENT)) ajouter(corpus, "legi");
+  for (const corpus of Object.values(CORPUS_ACTES_UE)) ajouter(corpus, "eurlex");
+  for (const corpus of Object.values(CORPUS_PAR_CATEGORIE)) ajouter(corpus, "eurlex");
+  return Object.fromEntries(
+    [...agregat.entries()]
+      .sort(([gauche], [droite]) => gauche.localeCompare(droite))
+      .map(([corpus, sources]) => [corpus, [...sources].sort()]),
+  );
+})();
+
+/**
+ * Corpus qu'aucune source de veille n'alimente, avec la raison dite au client.
+ * `metadonnees` est un instantané du registre : il ne se resynchronise que par
+ * sa commande, aucun flux ne le signale.
+ */
+export const CORPUS_SANS_VEILLE: Readonly<Record<string, string>> = {
+  metadonnees:
+    "instantané du registre art. 60, resynchronisation manuelle `metadonnees:sync`",
 };
 
 const ID_CETAT = /^CETATEXT\d+$/;
@@ -145,10 +190,10 @@ export function corpusDeLEntree(
     return entry.document === undefined ? null : (CORPUS_PAR_DOCUMENT[entry.document] ?? null);
   }
   if (entry.source === "eurlex") {
-    if (entry.categorie === "adequation") return "adequation";
-    // Des clauses types neuves n'ont pas encore de corpus : l'entrée le dit sans
-    // faire relancer une construction qui ne pourrait pas les accueillir.
-    if (entry.categorie === "clauses_types") return null;
+    if (entry.categorie !== undefined) {
+      const parCategorie = CORPUS_PAR_CATEGORIE[entry.categorie];
+      if (parCategorie !== undefined) return parCategorie;
+    }
     return entry.document === undefined ? null : (CORPUS_ACTES_UE[entry.document] ?? null);
   }
   // Une actualité du flux CEPD ne vise aucun document du corpus ; seule une
