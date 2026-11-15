@@ -51,7 +51,7 @@ npm run kanban -- <issue> [statut] [--reprises <n>]
   Le nom se compare sans accent, sans casse, espaces et tirets équivalents : `en-revue`, `EN REVUE`
   et `En revue` désignent la même option.
 - `--reprises <n>` : nombre entier `>= 0` écrit dans le champ `Reprises`. Il compte les reprises du
-  travail délégué ; c'est la relecture qui le renseigne, pas l'implémentation.
+  travail délégué ; c'est Opus, à la relecture, qui le renseigne, pas l'implémentation.
 
 Au moins le statut ou `--reprises` est requis. Le projet, ses champs et ses options sont résolus par
 leur nom : un nom absent arrête la commande en le nommant et en listant les noms disponibles, sans
