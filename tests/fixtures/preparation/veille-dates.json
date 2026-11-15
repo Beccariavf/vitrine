@@ -1,0 +1,9 @@
+{
+  "head": { "vars": ["celex", "date"] },
+  "results": {
+    "bindings": [
+      { "celex": { "type": "literal", "value": "62025CJ9001" }, "date": { "type": "literal", "value": "2026-11-05" } },
+      { "celex": { "type": "literal", "value": "62020CJ0001" }, "date": { "type": "literal", "value": "2021-03-02" } }
+    ]
+  }
+}

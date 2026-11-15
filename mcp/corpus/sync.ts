@@ -24,6 +24,9 @@ import { syncCePd } from "./cepd/sync.ts";
 import { syncConstit } from "./constit/sync.ts";
 import { syncCc } from "./cc/sync.ts";
 import { syncCjue } from "./cjue/sync.ts";
+import { incorporerArretVeille } from "./cjue/veille.ts";
+import { syncPreparation } from "./preparation/sync.ts";
+import type { ResultatPreparation } from "./preparation/sync.ts";
 import { syncLil } from "./lil/sync.ts";
 import type { ResultatLil } from "./lil/sync.ts";
 import { syncTextesFr } from "./textes-fr/sync.ts";
@@ -64,8 +67,13 @@ export const FENETRE_JOURS = 7;
 
 const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
 
-/** Sources dont l'entrée porte une version : un document présent dans une autre version est périmé. */
-const SOURCES_A_VERSION = new Set(["legi", "eurlex", "cepd", "cnil_doctrine"]);
+/**
+ * Sources dont l'entrée porte une version : un document présent dans une autre
+ * version est périmé. La préparation y entre par son statut : une unité encore
+ * `PROPOSE`/`PENDANT` face à une entrée qui annonce `PROP_ADOPTED`/`CJ` est
+ * périmée, et sa source est relancée.
+ */
+const SOURCES_A_VERSION = new Set(["legi", "eurlex", "cepd", "cnil_doctrine", "preparation"]);
 
 export type AgentSync = (cible?: CibleAgent) => Promise<{ ecrit: boolean; message: string }>;
 
@@ -124,6 +132,8 @@ export type AgentsParDefautDeps = {
   syncLil?: (options: { rootDir: string }) => Promise<ResultatLil>;
   /** Remplaçable en test : une passe des textes français sans réseau. */
   syncTextesFr?: (options: { rootDir: string }) => Promise<ResultatTextesFr>;
+  /** Remplaçable en test : une passe de préparation sans réseau. */
+  syncPreparation?: (options: { rootDir: string }) => Promise<ResultatPreparation>;
   /** Remplaçable en test : journal d'usage en panne. */
   flushUsage?: (rootDir: string) => void;
 };
@@ -136,6 +146,7 @@ export function agentsParDefaut(
   const synchroniserCc = deps.syncCc ?? syncCc;
   const synchroniserLil = deps.syncLil ?? syncLil;
   const synchroniserTextesFr = deps.syncTextesFr ?? syncTextesFr;
+  const synchroniserPreparation = deps.syncPreparation ?? syncPreparation;
   const journal = deps.flushUsage ?? flushUsage;
   return {
     cnil: async () => {
@@ -195,12 +206,37 @@ export function agentsParDefaut(
           `${resultat.enAttente} en attente${avertissement}`,
       };
     },
-    cjue: async () => {
+    cjue: async (cible) => {
+      const entree = cible?.entree;
+      // Un arrêt rendu qu'une affaire suivie désigne entre par cette voie : le
+      // filtre CJUE d'abord, les CELEX complémentaires du descripteur ensuite.
+      if (entree?.source === "preparation" && entree.decision !== undefined) {
+        const resultat = await incorporerArretVeille({
+          rootDir,
+          celex: entree.decision,
+          ...(entree.publishedAt === null ? {} : { date: entree.publishedAt.slice(0, 10) }),
+        });
+        return { ecrit: resultat.ecrit, message: resultat.message };
+      }
       const resultat = await syncCjue({ rootDir });
       return {
         ecrit: resultat.ecrit,
         message: `${resultat.documentsLus} décision(s) lue(s), ${resultat.documents} retenue(s)`,
       };
+    },
+    preparation: async (cible) => {
+      const resultat = await synchroniserPreparation({ rootDir });
+      const entree = cible?.entree;
+      let message =
+        `${resultat.propositions} proposition(s), ${resultat.affaires} affaire(s) pendante(s)`;
+      if (entree?.acte_adopte !== undefined) {
+        message +=
+          ` ; acte ${entree.acte_adopte} adopté, ` +
+          (entree.corpus_vise === undefined
+            ? "hors corpus"
+            : `corpus ${entree.corpus_vise} en attente de consolidation`);
+      }
+      return { ecrit: resultat.ecrit, message };
     },
     cepd: async () => {
       const resultat = await syncCePd({ rootDir });
@@ -262,7 +298,11 @@ export function agentsParDefaut(
 
   function agentActe(corpus: string): AgentSync {
     return async (cible) => {
-      const version = cible?.entree?.version;
+      const entree = cible?.entree;
+      // Une entrée de préparation porte un statut, pas une consolidation : le
+      // corpus visé reste en attente de la version consolidée, que la veille
+      // `eurlex` publiera.
+      const version = entree?.source === "preparation" ? undefined : entree?.version;
       const resultat = await synchroniserActeUe({
         rootDir,
         corpus,
@@ -274,7 +314,12 @@ export function agentsParDefaut(
 }
 
 /** Corpus qui publient la liste de leurs documents écartés. */
-const CORPUS_A_ECARTES: readonly CorpusVeille[] = ["cjue", "cepd", "cnil_doctrine"];
+const CORPUS_A_ECARTES: readonly CorpusVeille[] = [
+  "cjue",
+  "cepd",
+  "cnil_doctrine",
+  "preparation",
+];
 
 /** Documents écartés, corpus par corpus ; seuls ceux qui publient la liste en ont une. */
 function ecartesDesCorpus(rootDir: string): Map<string, Map<string, string>> {
@@ -350,9 +395,17 @@ function classer(
         corpus,
         statut,
         ...(motif === undefined ? {} : { motif }),
-        ...(statut === "perime" ? { motif: "version du corpus antérieure" } : {}),
+        ...(statut === "perime"
+          ? {
+              motif:
+                entree.source === "preparation"
+                  ? "statut du corpus antérieur"
+                  : "version du corpus antérieure",
+            }
+          : {}),
         ...(entree.version === undefined ? {} : { version: entree.version }),
         ...(entree.consultation === true ? { consultation: true } : {}),
+        ...(entree.corpus_vise === undefined ? {} : { corpus_vise: entree.corpus_vise }),
       });
     }
   }
@@ -381,6 +434,40 @@ function compter(documents: DocumentRapport[]): RapportSync["comptes"] {
     }
   }
   return comptes;
+}
+
+/**
+ * Corpus relancés en plus de celui de l'entrée, sur le signal d'une entrée de
+ * préparation : la décision rendue d'une affaire suivie entre au corpus CJUE, et
+ * un texte adopté nomme le corpus de textes qu'il modifie — la veille `eurlex`
+ * en prendra la consolidation quand elle paraîtra, le rapport dit l'attente.
+ * Un arrêt déjà présent au corpus CJUE ne relance rien.
+ */
+function corpusSupplementaires(
+  entrees: readonly Entry[],
+  documentsCorpus: ReadonlyMap<string, Set<string>>,
+): Map<CorpusVeille, Entry> {
+  const supplementaires = new Map<CorpusVeille, Entry>();
+  const connus = new Set<string>(ORDRE_SOURCES);
+  for (const entree of entrees) {
+    if (entree.source !== "preparation") continue;
+    if (
+      entree.decision !== undefined &&
+      documentsCorpus.get("cjue")?.has(entree.decision) !== true &&
+      !supplementaires.has("cjue")
+    ) {
+      supplementaires.set("cjue", entree);
+    }
+    if (
+      entree.acte_adopte !== undefined &&
+      entree.corpus_vise !== undefined &&
+      connus.has(entree.corpus_vise) &&
+      !supplementaires.has(entree.corpus_vise as CorpusVeille)
+    ) {
+      supplementaires.set(entree.corpus_vise as CorpusVeille, entree);
+    }
+  }
+  return supplementaires;
 }
 
 function sourcesALancer(documents: DocumentRapport[]): Set<CorpusVeille> {
@@ -499,6 +586,8 @@ export async function syncCorpus(options: SyncCorpusOptions = {}): Promise<Rappo
   let documents = classer(entrees, snapshots, documentsCorpus, ecartes, versionsCorpus);
 
   const aLancer = sourcesALancer(documents);
+  const supplementaires = corpusSupplementaires(entrees, documentsCorpus);
+  for (const corpus of supplementaires.keys()) aLancer.add(corpus);
   const agents = options.agents ?? agentsParDefaut(rootDir);
   const entreesParId = new Map(entrees.map((entree) => [entree.id, entree]));
   const cibles = new Map<CorpusVeille, Entry>();
@@ -513,6 +602,11 @@ export async function syncCorpus(options: SyncCorpusOptions = {}): Promise<Rappo
     if (existante === undefined || (existante.version === undefined && entree.version !== undefined)) {
       cibles.set(document.corpus, entree);
     }
+  }
+  for (const [corpus, entree] of supplementaires) {
+    // Une entrée de consolidation déjà classée pour ce corpus nomme la version à
+    // construire : elle prime sur le signal d'adoption, qui n'en porte pas.
+    if (!cibles.has(corpus)) cibles.set(corpus, entree);
   }
   const sources: SourceRapport[] = [];
   let echec = false;

@@ -1,0 +1,14 @@
+{
+  "head": { "vars": ["celex", "joined"] },
+  "results": {
+    "bindings": [
+      {
+        "celex": { "type": "literal", "value": "62020CJ0001" },
+        "joined": {
+          "type": "uri",
+          "value": "http://publications.europa.eu/resource/case/celex%3A62020CN9003"
+        }
+      }
+    ]
+  }
+}
