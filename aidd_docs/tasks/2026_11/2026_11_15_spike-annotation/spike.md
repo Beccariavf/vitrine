@@ -90,6 +90,27 @@ point 1 : la référence. La mesure devient alors largement automatique.
 - Effet sur la recommandation : elle s'en trouve renforcée (jeu doré humain), et la piste réduit le
   coût de #60 sans changer la contrainte de nombre de #64.
 
+**Veille des méthodes publiées (2026-11-15, résumés et extraits lus, articles complets non lus).**
+
+| Travail | Méthode | Leçon pour nous |
+| --- | --- | --- |
+| [Legal RAG Bench](https://arxiv.org/html/2603.01710v1) (2026) | 100 questions écrites à la main, juge LLM pour la génération (99 % d'exactitude déclarée par les auteurs) | jeu doré humain ; la recherche est le premier facteur de qualité |
+| [ClaimRAG-LAW](https://arxiv.org/html/2605.21071) (2026) | 317 questions validées par des experts, RGPD (anglais) et Code civil (français), contrôle au niveau de l'affirmation | source possible de questions RGPD (licence à vérifier) |
+| [CanLegalRAGBench](https://arxiv.org/html/2605.30497v3) (2026) | requêtes générées par LLM depuis une décision, filtre LLM (≈ 20 % écartées), réponses vérifiées par des étudiants en droit | les métriques automatiques sous-estiment quand le corrigé est incomplet ; valider tout juge contre des humains |
+| [BSARD](https://ar5iv.labs.arxiv.org/html/2108.11792) / [LLeQA](https://arxiv.org/pdf/2309.17050.pdf) (Maastricht) | vraies questions de citoyens, articles de loi rattachés par des juristes ; 1 868 questions en français | même logique que la piste « doctrine » ; droit belge, modèle de méthode seulement |
+| [Abualhaija et al.](https://orbilu.uni.lu/bitstream/10993/51182/1/AASB-RE22-CRV.pdf) | 107 questions sur quatre règlements UE dont le RGPD | source possible pour `rgpd` (licence à vérifier) |
+| [UMBRELA](https://arxiv.org/html/2406.06519v1), [TREC 2024 RAG](https://arxiv.org/abs/2411.08275) | juge LLM de pertinence ; classement des systèmes très corrélé au classement humain (77 runs), humains plus sévères en absolu | juge utilisable pour **comparer** deux versions, pas pour la borne publiée |
+| [Vals AI](https://vals.ai/benchmarks/legal_research) (2025-2026) | 210 questions inspirées de cas pratiques, notation à l'aveugle par cabinets et universitaires ; banc plus récent noté par juge LLM | aucun concurrent ne publie de méthode plus simple et défendable |
+
+Conséquence : la recommandation tient (borne publiée sur un échantillon validé par un humain), mais une **chaîne mixte** réduit le temps humain :
+
+1. questions issues de la doctrine, sources citées comme corrigé (rappel) ;
+2. questions générées par LLM depuis un passage (le passage est le corrigé), filtrées par un second LLM, **validées** par l'humain — pour les corpus peu commentés ; risque : vocabulaire recopié du texte, qui surestime le serveur, donc reformulation et mélange avec de vraies questions ;
+3. juge LLM de pertinence réservé aux comparaisons entre versions (décisions McNemar), jamais à la borne ;
+4. sous-ensemble annoté par l'auteur, base de la borne Wilson par corpus.
+
+Le kit gagnerait une seconde mesure : le temps de **validation** d'une question générée, à côté du temps d'annotation complète.
+
 **Compatibilité, méthode par méthode**
 
 | Besoin | Aujourd'hui | Annotation complète | ARES / PPI |
