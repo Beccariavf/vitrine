@@ -248,7 +248,9 @@ describe("écriture au tableau", () => {
   });
 
   it("nomme le statut déjà écrit quand l'écriture des reprises échoue", () => {
+    const appels: string[][] = [];
     const executer: Executeur = (args) => {
+      appels.push([...args]);
       if (args[1] === "list") return JSON.stringify(PROJETS);
       if (args[1] === "item-add") return JSON.stringify(ITEM);
       if (args[1] === "field-list") return JSON.stringify(CHAMPS);
@@ -259,6 +261,11 @@ describe("écriture au tableau", () => {
     assert.throws(
       () => mettreAJour({ issue: 12, statut: "en-revue", reprises: 2 }, executer),
       /panne ; le statut En revue était déjà écrit/,
+    );
+    // Le message n'a de sens que si le statut a réellement été écrit avant.
+    assert.deepEqual(
+      appels.filter((appel) => appel.includes("--single-select-option-id")).length,
+      1,
     );
   });
 });
