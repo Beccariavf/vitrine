@@ -2,10 +2,10 @@
   "version": 1,
   "calcule_le": "2026-11-15",
   "methode": {
-    "publication": "date_acte de l'unité du corpus ou de l'entrée de veille",
+    "publication": "date_acte de l'entrée de veille, sinon de l'unité qu'elle désigne ; les documents dont la date est celle de l'extraction (doctrine CNIL) sont écartés",
     "veille": "publishedAt de la première entrée de data/entries qui désigne le document ; null quand la source ne date pas sa lecture (eurlex, legi, constit, cepd, cnil_doctrine, preparation le font)",
     "corpus": "premier commit git qui ajoute la version de la nouveauté, sinon l'unité (git log -S), à défaut la date d'arrêté du manifeste",
-    "echantillon": "3 document(s) le(s) plus récent(s) par corpus, plus toutes les entrées de veille datées",
+    "echantillon": "3 document(s) le(s) plus récent(s) par corpus, plus toutes les entrées de veille qui désignent un document",
     "jours": "date d'entrée au corpus moins date de publication, en jours"
   },
   "corpus": [
@@ -22,9 +22,150 @@
           "date_veille": "2026-11-14",
           "date_corpus": "2026-11-14",
           "origine_corpus": "git",
+          "entree_veille": true,
           "jours": 110,
           "jours_publication_veille": 110,
           "jours_veille_corpus": 0
+        }
+      ]
+    },
+    {
+      "corpus": "cc",
+      "cas_mesures": 4,
+      "mediane_jours": 22,
+      "max_jours": 35,
+      "exemples": [
+        {
+          "corpus": "cc",
+          "document": "6ad9d7517a10202137352428",
+          "date_acte": "2026-10-22",
+          "date_veille": null,
+          "date_corpus": "2026-11-11",
+          "origine_corpus": "git",
+          "entree_veille": true,
+          "jours": 20,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        },
+        {
+          "corpus": "cc",
+          "document": "6ad753e37a10202137e74fa7",
+          "date_acte": "2026-10-20",
+          "date_veille": null,
+          "date_corpus": "2026-11-11",
+          "origine_corpus": "git",
+          "entree_veille": true,
+          "jours": 22,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        },
+        {
+          "corpus": "cc",
+          "document": "6ad754077a10202137e751ba",
+          "date_acte": "2026-10-20",
+          "date_veille": null,
+          "date_corpus": "2026-11-11",
+          "origine_corpus": "git",
+          "entree_veille": true,
+          "jours": 22,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        }
+      ]
+    },
+    {
+      "corpus": "ce",
+      "cas_mesures": 9,
+      "mediane_jours": 20,
+      "max_jours": 73,
+      "exemples": [
+        {
+          "corpus": "ce",
+          "document": "CETATEXT000055022926",
+          "date_acte": "2026-10-27",
+          "date_veille": null,
+          "date_corpus": "2026-11-09",
+          "origine_corpus": "git",
+          "entree_veille": true,
+          "jours": 13,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        },
+        {
+          "corpus": "ce",
+          "document": "CETATEXT000055005472",
+          "date_acte": "2026-10-20",
+          "date_veille": null,
+          "date_corpus": "2026-11-09",
+          "origine_corpus": "git",
+          "entree_veille": true,
+          "jours": 20,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        },
+        {
+          "corpus": "ce",
+          "document": "CETATEXT000055005481",
+          "date_acte": "2026-10-20",
+          "date_veille": null,
+          "date_corpus": "2026-11-09",
+          "origine_corpus": "git",
+          "entree_veille": true,
+          "jours": 20,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        }
+      ]
+    },
+    {
+      "corpus": "cjue",
+      "cas_mesures": 1,
+      "mediane_jours": 6,
+      "max_jours": 6,
+      "exemples": [
+        {
+          "corpus": "cjue",
+          "document": "62025CJ0205",
+          "date_acte": "2026-11-05",
+          "date_veille": null,
+          "date_corpus": "2026-11-11",
+          "origine_corpus": "git",
+          "entree_veille": true,
+          "jours": 6,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        }
+      ]
+    },
+    {
+      "corpus": "cnil",
+      "cas_mesures": 2,
+      "mediane_jours": 222,
+      "max_jours": 430,
+      "exemples": [
+        {
+          "corpus": "cnil",
+          "document": "CNILTEXT000055022778",
+          "date_acte": "2026-10-22",
+          "date_veille": null,
+          "date_corpus": "2026-11-05",
+          "origine_corpus": "git",
+          "entree_veille": true,
+          "jours": 14,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
+        },
+        {
+          "corpus": "cnil",
+          "document": "CNILTEXT000052182222",
+          "date_acte": "2025-09-01",
+          "date_veille": null,
+          "date_corpus": "2026-11-05",
+          "origine_corpus": "git",
+          "entree_veille": true,
+          "jours": 430,
+          "jours_publication_veille": null,
+          "jours_veille_corpus": null
         }
       ]
     }
@@ -43,6 +184,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-14",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 292,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -54,6 +196,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-14",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 330,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -65,6 +208,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-14",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 330,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -84,6 +228,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-11",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 1,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -95,6 +240,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-11",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 6,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -114,6 +260,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-14",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 1989,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -133,6 +280,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-09",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 20,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -144,6 +292,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-09",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 20,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -163,6 +312,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-14",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 4,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -174,6 +324,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-14",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 4,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -185,6 +336,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-14",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 32,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -204,6 +356,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-14",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 38,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -215,6 +368,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-11",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 69,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -234,6 +388,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-09",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 18,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -245,6 +400,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-09",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 53,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -254,39 +410,42 @@
     {
       "corpus": "cnil_doctrine",
       "cas_mesures": 3,
-      "mediane_jours": 0,
-      "max_jours": 0,
+      "mediane_jours": 1227,
+      "max_jours": 1384,
       "exemples": [
         {
           "corpus": "cnil_doctrine",
-          "document": "annexe-guide-de-lecture-des-criteres-du-referentiel-de-certification-des-prestataires-de-formation-protection-donnees",
-          "date_acte": "2026-11-14",
+          "document": "referentiel-durees-de-conservation-gestion-des-ressources-humaines",
+          "date_acte": "2026-04-02",
           "date_veille": null,
           "date_corpus": "2026-11-14",
           "origine_corpus": "git",
-          "jours": 0,
+          "entree_veille": false,
+          "jours": 226,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
         },
         {
           "corpus": "cnil_doctrine",
-          "document": "bpi-cnil-rgpd-fiche-1-que-faire-quand-votre-entreprise-communique-vend-en-ligne",
-          "date_acte": "2026-11-14",
+          "document": "referentiel-alertes-professionnelles",
+          "date_acte": "2023-07-06",
           "date_veille": null,
           "date_corpus": "2026-11-14",
           "origine_corpus": "git",
-          "jours": 0,
+          "entree_veille": false,
+          "jours": 1227,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
         },
         {
           "corpus": "cnil_doctrine",
-          "document": "bpi-cnil-rgpd-fiche-2-ameliorez-maitrisez-votre-relation-client-0",
-          "date_acte": "2026-11-14",
+          "document": "guide-referentiel-recrutement",
+          "date_acte": "2023-01-30",
           "date_veille": null,
           "date_corpus": "2026-11-14",
           "origine_corpus": "git",
-          "jours": 0,
+          "entree_veille": false,
+          "jours": 1384,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
         }
@@ -305,6 +464,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-14",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 92,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -316,6 +476,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-14",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 100,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -327,6 +488,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-14",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 114,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -346,6 +508,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-14",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 8891,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -365,6 +528,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-14",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 2944,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -384,6 +548,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-09",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 2718,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -403,6 +568,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-15",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 97,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -414,6 +580,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-15",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 107,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -425,6 +592,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-15",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 121,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -444,6 +612,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-14",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 3853,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -463,6 +632,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-15",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 51,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -474,6 +644,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-15",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 69,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -485,6 +656,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-15",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 86,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -504,6 +676,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-04",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 3843,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -523,6 +696,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-14",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 353,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -542,6 +716,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-14",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 569,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -553,6 +728,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-14",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 1001,
           "jours_publication_veille": null,
           "jours_veille_corpus": null
@@ -564,6 +740,7 @@
           "date_veille": null,
           "date_corpus": "2026-11-14",
           "origine_corpus": "git",
+          "entree_veille": false,
           "jours": 2302,
           "jours_publication_veille": null,
           "jours_veille_corpus": null

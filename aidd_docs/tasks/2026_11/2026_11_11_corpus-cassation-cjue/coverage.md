@@ -126,34 +126,38 @@ Rapport : `data/corpus/cjue/controle-curia.json`.
 
 Mesure du 2026-11-15 par `npm run veille:delais` (rapport daté : `data/corpus/delais.json`). Délai = date d'entrée au corpus moins `date_acte` ; la détection par la veille est rendue à part quand la source date sa lecture. Aucun chiffre n'est déduit : un corpus sans cas mesurable le dit. Un cas dont la publication précède la mise en route de la veille mesure ce démarrage, pas sa réactivité à l'état stable.
 
-Chaîne complète — publication, détection par la veille, entrée au corpus :
+Cas détectés par la veille — publication, détection, entrée au corpus. La détection n'est datée que par les sources qui datent leur passe ; sinon l'étape publication → veille n'est pas chiffrée.
 
 | Corpus | Cas mesurés | Médiane (jours) | Maximum (jours) | Exemple le plus long |
 |---|---:|---:|---:|---|
 | `aiact` | 1 | 110 | 110 | 32024R1689 : 110 jours (publication → veille 110 j, veille → corpus 0 j) |
+| `cc` | 4 | 22 | 35 | 6ad753e37a10202137e74fa7 : 22 jours (détection par la veille non datée) |
+| `ce` | 9 | 20 | 73 | CETATEXT000055005472 : 20 jours (détection par la veille non datée) |
+| `cjue` | 1 | 6 | 6 | 62025CJ0205 : 6 jours (détection par la veille non datée) |
+| `cnil` | 2 | 222 | 430 | CNILTEXT000052182222 : 430 jours (détection par la veille non datée) |
 
-Collecte initiale — documents récents sans entrée de veille, publication → entrée au corpus. Ce n'est pas le délai d'une nouveauté : le corpus les a lus en une passe.
+Collecte initiale — documents récents qu'aucune entrée de veille ne désigne, publication → entrée au corpus. Ce n'est pas le délai d'une nouveauté : le corpus les a lus en une passe.
 
 | Corpus | Documents | Médiane (jours) | Maximum (jours) | Document le plus long |
 |---|---:|---:|---:|---|
-| `adequation` | 3 | 330 | 330 | 32025D2571 : 330 jours (détection par la veille non datée) |
-| `cc` | 2 | 3.5 | 6 | 6aed6b376c2e1778124430e0 : 6 jours (détection par la veille non datée) |
-| `ccs` | 1 | 1989 | 1989 | 32021D0914 : 1989 jours (détection par la veille non datée) |
-| `ce` | 2 | 20 | 20 | CETATEXT000055005463 : 20 jours (détection par la veille non datée) |
-| `cepd` | 3 | 4 | 32 | opinion-242026-on-the-draft-decision-of-the-french : 32 jours (détection par la veille non datée) |
-| `cjue` | 2 | 53.5 | 69 | 62024CJ0798 : 69 jours (détection par la veille non datée) |
-| `cnil` | 2 | 35.5 | 53 | CNILTEXT000054908904 : 53 jours (détection par la veille non datée) |
-| `cnil_doctrine` | 3 | 0 | 0 | annexe-guide-de-lecture-des-criteres-du-referentiel-de-certification-des-prestataires-de-formation-protection-donnees : 0 jours (détection par la veille non datée) |
-| `constit` | 3 | 100 | 114 | CONSTEXT000054617305 : 114 jours (détection par la veille non datée) |
-| `eprivacy` | 1 | 8891 | 8891 | 32002L0058 : 8891 jours (détection par la veille non datée) |
-| `eudpr` | 1 | 2944 | 2944 | 32018R1725 : 2944 jours (détection par la veille non datée) |
-| `lil` | 1 | 2718 | 2718 | LEGITEXT000006068624 : 2718 jours (détection par la veille non datée) |
-| `metadonnees` | 3 | 107 | 121 | EDPBI:NO:OSS:D:2026:4219 : 121 jours (détection par la veille non datée) |
-| `police` | 1 | 3853 | 3853 | 32016L0680 : 3853 jours (détection par la veille non datée) |
-| `preparation` | 3 | 69 | 86 | 62026TN0556 : 86 jours (détection par la veille non datée) |
-| `rgpd` | 1 | 3843 | 3843 | 32016R0679 : 3843 jours (détection par la veille non datée) |
-| `rgpdproc` | 1 | 353 | 353 | 32025R2518 : 353 jours (détection par la veille non datée) |
-| `textes_fr` | 3 | 1001 | 2302 | LEGITEXT000006070987 : 2302 jours (détection par la veille non datée) |
+| `adequation` | 3 | 330 | 330 | 32025D2571 : 330 jours |
+| `cc` | 2 | 3.5 | 6 | 6aed6b376c2e1778124430e0 : 6 jours |
+| `ccs` | 1 | 1989 | 1989 | 32021D0914 : 1989 jours |
+| `ce` | 2 | 20 | 20 | CETATEXT000055005463 : 20 jours |
+| `cepd` | 3 | 4 | 32 | opinion-242026-on-the-draft-decision-of-the-french : 32 jours |
+| `cjue` | 2 | 53.5 | 69 | 62024CJ0798 : 69 jours |
+| `cnil` | 2 | 35.5 | 53 | CNILTEXT000054908904 : 53 jours |
+| `cnil_doctrine` | 3 | 1227 | 1384 | guide-referentiel-recrutement : 1384 jours |
+| `constit` | 3 | 100 | 114 | CONSTEXT000054617305 : 114 jours |
+| `eprivacy` | 1 | 8891 | 8891 | 32002L0058 : 8891 jours |
+| `eudpr` | 1 | 2944 | 2944 | 32018R1725 : 2944 jours |
+| `lil` | 1 | 2718 | 2718 | LEGITEXT000006068624 : 2718 jours |
+| `metadonnees` | 3 | 107 | 121 | EDPBI:NO:OSS:D:2026:4219 : 121 jours |
+| `police` | 1 | 3853 | 3853 | 32016L0680 : 3853 jours |
+| `preparation` | 3 | 69 | 86 | 62026TN0556 : 86 jours |
+| `rgpd` | 1 | 3843 | 3843 | 32016R0679 : 3843 jours |
+| `rgpdproc` | 1 | 353 | 353 | 32025R2518 : 353 jours |
+| `textes_fr` | 3 | 1001 | 2302 | LEGITEXT000006070987 : 2302 jours |
 
 Retards d'archive déclarés par les manifestes :
 

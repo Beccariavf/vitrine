@@ -16,22 +16,12 @@ import {
   corpusDeLEntree,
 } from "../mcp/corpus/veille.ts";
 import { lireManifestes } from "../mcp/corpus/sync-rapport.ts";
+import { SOURCES } from "../veille/main.ts";
 
 const RACINE_DEPOT = fileURLToPath(new URL("..", import.meta.url));
 
-/** Sources de veille du dépôt : un identifiant inconnu serait une faute de table. */
-const SOURCES_CONNUES = new Set([
-  "cnil",
-  "cnil_doctrine",
-  "cetat",
-  "constit",
-  "judilibre",
-  "cjeu",
-  "cepd",
-  "preparation",
-  "legi",
-  "eurlex",
-]);
+/** Sources de veille du dépôt : la table ne peut nommer qu'une source réellement branchée. */
+const SOURCES_CONNUES = new Set([...SOURCES.map((source) => source.id), "legi"]);
 
 function racine(): string {
   return mkdtempSync(join(tmpdir(), "veille-couverture-"));

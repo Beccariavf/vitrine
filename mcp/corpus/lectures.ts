@@ -18,7 +18,7 @@ export const CHEMIN_ETAT_LECTURES = join("data", "veille", "etat.json");
 const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Une date `AAAA-MM-JJ` valide, ou `null`. */
-function dateValide(valeur: unknown): string | null {
+export function dateValide(valeur: unknown): string | null {
   return typeof valeur === "string" && DATE_ISO.test(valeur) && !Number.isNaN(Date.parse(valeur))
     ? valeur
     : null;
@@ -49,13 +49,9 @@ export function lireLectures(rootDir: string): Map<string, string> {
   return lectures;
 }
 
-/** Écrit l'état s'il change ; rend vrai quand le disque a bougé. */
-export function ecrireLectures(rootDir: string, lectures: ReadonlyMap<string, string>): boolean {
-  const chemin = join(rootDir, CHEMIN_ETAT_LECTURES);
-  const sources = Object.fromEntries(
-    [...lectures.entries()].sort(([gauche], [droite]) => gauche.localeCompare(droite)),
-  );
-  const contenu = `${JSON.stringify({ version: 1, sources }, null, 2)}\n`;
+/** Écrit un fichier JSON de façon atomique, seulement si son contenu change. */
+export function ecrireJsonAtomique(chemin: string, valeur: unknown): boolean {
+  const contenu = `${JSON.stringify(valeur, null, 2)}\n`;
   try {
     if (readFileSync(chemin, "utf8") === contenu) return false;
   } catch {
@@ -70,6 +66,14 @@ export function ecrireLectures(rootDir: string, lectures: ReadonlyMap<string, st
     if (existsSync(temporaire)) rmSync(temporaire, { force: true });
   }
   return true;
+}
+
+/** Écrit l'état s'il change ; rend vrai quand le disque a bougé. */
+export function ecrireLectures(rootDir: string, lectures: ReadonlyMap<string, string>): boolean {
+  const sources = Object.fromEntries(
+    [...lectures.entries()].sort(([gauche], [droite]) => gauche.localeCompare(droite)),
+  );
+  return ecrireJsonAtomique(join(rootDir, CHEMIN_ETAT_LECTURES), { version: 1, sources });
 }
 
 /**

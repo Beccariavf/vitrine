@@ -14,8 +14,8 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import {
   corpusDeLEntree,
@@ -23,6 +23,7 @@ import {
   indexerSnapshots,
   lireEntrees,
 } from "./veille.ts";
+import { dateValide, ecrireJsonAtomique } from "./lectures.ts";
 import { inventaireCorpus, lireManifestes } from "./sync-rapport.ts";
 
 /** Racine du dépôt, résolue depuis ce fichier et non depuis le répertoire courant. */
@@ -59,11 +60,8 @@ export const ECHANTILLON = 3;
 
 const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
 
-function dateValide(valeur: unknown): string | null {
-  return typeof valeur === "string" && DATE_ISO.test(valeur) && !Number.isNaN(Date.parse(valeur))
-    ? valeur
-    : null;
-}
+const DEBUT_RESUME = "<!-- delais:start -->";
+const FIN_RESUME = "<!-- delais:end -->";
 
 /** Nombre de jours entiers entre deux dates `AAAA-MM-JJ`, `null` si l'une manque. */
 export function joursEntre(debut: string | null, fin: string | null): number | null {
@@ -84,6 +82,8 @@ export type CasDelai = {
   date_corpus: string | null;
   /** D'où vient `date_corpus` : le premier commit, ou le manifeste à défaut. */
   origine_corpus: "git" | "manifeste" | null;
+  /** Vrai quand une entrée de veille a désigné le document (nouveauté détectée). */
+  entree_veille: boolean;
 };
 
 /** Un cas rendu : le délai et ses deux étapes. */
@@ -369,22 +369,32 @@ export function casDuDepot(rootDir: string, echantillon: number = ECHANTILLON): 
     const datePasse = SOURCES_DATE_PASSE.includes(entry.source)
       ? dateValide(typeof entry.publishedAt === "string" ? entry.publishedAt.slice(0, 10) : null)
       : null;
+    // Une entrée de flux ne porte pas `date_acte` : la date de publication est
+    // celle de l'unité qu'elle désigne, lue au corpus.
+    const dateActe =
+      dateValide(entry.date_acte) ??
+      (unites.get(corpus) ?? []).find((unite) => unite.document === document)?.date_acte ??
+      null;
     ajouter(
       {
         corpus,
         document,
-        date_acte: dateValide(entry.date_acte),
+        date_acte: dateActe,
         date_veille: datePasse,
         date_corpus: null,
         origine_corpus: null,
+        entree_veille: true,
       },
       [entry.version],
     );
   }
 
   for (const corpus of [...manifestes.keys()].sort()) {
+    // Un document dont la date est celle de l'extraction (doctrine CNIL) n'a pas
+    // de date de publication : son délai mesurerait zéro par construction.
+    const sansPublication = documentsSansDatePubliee(manifestes.get(corpus));
     const documents = (unites.get(corpus) ?? [])
-      .filter((document) => document.date_acte !== null)
+      .filter((document) => document.date_acte !== null && !sansPublication.has(document.document))
       .sort(
         (gauche, droite) =>
           (droite.date_acte ?? "").localeCompare(gauche.date_acte ?? "") ||
@@ -400,6 +410,7 @@ export function casDuDepot(rootDir: string, echantillon: number = ECHANTILLON): 
           date_veille: null,
           date_corpus: null,
           origine_corpus: null,
+          entree_veille: false,
         },
         [],
       );
@@ -435,60 +446,64 @@ export function casDuDepot(rootDir: string, echantillon: number = ECHANTILLON): 
   });
 }
 
+/**
+ * Documents d'un manifeste dont la date d'acte est celle de l'extraction : la
+ * doctrine CNIL déclare `date_source: "extraction"` pour un document sans date
+ * publiée. Leur délai de publication serait nul par construction.
+ */
+export function documentsSansDatePubliee(
+  manifeste: Record<string, unknown> | undefined,
+): Set<string> {
+  const documents = new Set<string>();
+  const parType = manifeste?.documents_par_type;
+  if (typeof parType !== "object" || parType === null) return documents;
+  for (const liste of Object.values(parType)) {
+    if (!Array.isArray(liste)) continue;
+    for (const element of liste) {
+      if (typeof element !== "object" || element === null) continue;
+      const document = element as { slug?: unknown; date_source?: unknown };
+      if (typeof document.slug === "string" && document.date_source === "extraction") {
+        documents.add(document.slug);
+      }
+    }
+  }
+  return documents;
+}
+
 /** Rapport complet : les cas mesurés et les retards d'archive déclarés. */
 export function mesurerDelais(options: OptionsDelais = {}): RapportDelais {
   const rootDir = options.rootDir ?? RACINE;
   const aujourdHui = dateValide(options.aujourdHui) ?? new Date().toISOString().slice(0, 10);
   const manifestes = lireManifestes(rootDir);
   const cas = casDuDepot(rootDir, options.echantillon);
-  const sansDetection = "aucune entrée de veille datée ne désigne un document de ce corpus";
+  const sansDetection = "aucune entrée de veille ne désigne un document de ce corpus";
   return {
     version: 1,
     calcule_le: aujourdHui,
     methode: {
-      publication: "date_acte de l'unité du corpus ou de l'entrée de veille",
+      publication:
+        "date_acte de l'entrée de veille, sinon de l'unité qu'elle désigne ; " +
+        "les documents dont la date est celle de l'extraction (doctrine CNIL) sont écartés",
       veille:
         "publishedAt de la première entrée de data/entries qui désigne le document ; " +
         `null quand la source ne date pas sa lecture (${SOURCES_DATE_PASSE.join(", ")} le font)`,
       corpus:
         "premier commit git qui ajoute la version de la nouveauté, sinon l'unité " +
         "(git log -S), à défaut la date d'arrêté du manifeste",
-      echantillon: `${options.echantillon ?? ECHANTILLON} document(s) le(s) plus récent(s) par corpus, plus toutes les entrées de veille datées`,
+      echantillon: `${options.echantillon ?? ECHANTILLON} document(s) le(s) plus récent(s) par corpus, plus toutes les entrées de veille qui désignent un document`,
       jours: "date d'entrée au corpus moins date de publication, en jours",
     },
     corpus: calculerDelais(
-      cas.filter((element) => element.date_veille !== null),
+      cas.filter((element) => element.entree_veille),
       sansDetection,
     ),
     collecte_initiale: calculerDelais(
-      cas.filter((element) => element.date_veille === null),
+      cas.filter((element) => !element.entree_veille),
       sansDetection,
     ),
     retards_archive: retardsArchive(manifestes),
   };
 }
-
-/** Écrit un fichier JSON de façon atomique, seulement s'il change. */
-function ecrireJson(chemin: string, valeur: unknown): boolean {
-  const contenu = `${JSON.stringify(valeur, null, 2)}\n`;
-  try {
-    if (readFileSync(chemin, "utf8") === contenu) return false;
-  } catch {
-    // Absent : on l'écrit plus bas.
-  }
-  mkdirSync(dirname(chemin), { recursive: true });
-  const temporaire = `${chemin}.tmp`;
-  try {
-    writeFileSync(temporaire, contenu, "utf8");
-    renameSync(temporaire, chemin);
-  } finally {
-    if (existsSync(temporaire)) rmSync(temporaire, { force: true });
-  }
-  return true;
-}
-
-const DEBUT_RESUME = "<!-- delais:start -->";
-const FIN_RESUME = "<!-- delais:end -->";
 
 /** Tableau publié dans `coverage.md` : un chiffre par corpus, jamais un chiffre inventé. */
 export function resumerDelais(rapport: RapportDelais): string {
@@ -501,7 +516,7 @@ export function resumerDelais(rapport: RapportDelais): string {
       "Aucun chiffre n'est déduit : un corpus sans cas mesurable le dit. " +
       "Un cas dont la publication précède la mise en route de la veille mesure ce démarrage, pas sa réactivité à l'état stable.",
     "",
-    "Chaîne complète — publication, détection par la veille, entrée au corpus :",
+    "Cas détectés par la veille — publication, détection, entrée au corpus. La détection n'est datée que par les sources qui datent leur passe ; sinon l'étape publication → veille n'est pas chiffrée.",
     "",
     "| Corpus | Cas mesurés | Médiane (jours) | Maximum (jours) | Exemple le plus long |",
     "|---|---:|---:|---:|---|",
@@ -518,7 +533,7 @@ export function resumerDelais(rapport: RapportDelais): string {
   if (rapport.collecte_initiale.length > 0) {
     lignes.push(
       "",
-      "Collecte initiale — documents récents sans entrée de veille, publication → entrée au corpus. " +
+      "Collecte initiale — documents récents qu'aucune entrée de veille ne désigne, publication → entrée au corpus. " +
         "Ce n'est pas le délai d'une nouveauté : le corpus les a lus en une passe.",
       "",
       "| Corpus | Documents | Médiane (jours) | Maximum (jours) | Document le plus long |",
@@ -530,7 +545,7 @@ export function resumerDelais(rapport: RapportDelais): string {
         continue;
       }
       lignes.push(
-        `| \`${delai.corpus}\` | ${delai.cas_mesures} | ${delai.mediane_jours ?? "—"} | ${delai.max_jours ?? "—"} | ${exempleLePlusLong(delai)} |`,
+        `| \`${delai.corpus}\` | ${delai.cas_mesures} | ${delai.mediane_jours ?? "—"} | ${delai.max_jours ?? "—"} | ${exempleLePlusLong(delai, false)} |`,
       );
     }
   }
@@ -553,9 +568,10 @@ export function resumerDelais(rapport: RapportDelais): string {
 }
 
 /** L'exemple au plus long délai d'un corpus, avec ses deux étapes quand elles sont datées. */
-function exempleLePlusLong(delai: DelaiCorpus): string {
+function exempleLePlusLong(delai: DelaiCorpus, avecDetection = true): string {
   const plusLong = [...delai.exemples].sort((gauche, droite) => droite.jours - gauche.jours)[0];
   if (plusLong === undefined) return "—";
+  if (!avecDetection) return `${plusLong.document} : ${plusLong.jours} jours`;
   return (
     `${plusLong.document} : ${plusLong.jours} jours` +
     (plusLong.jours_publication_veille === null
@@ -597,14 +613,18 @@ async function main(argv: string[]): Promise<void> {
   const racineIndex = argv.indexOf("--root");
   const rootDir = racineIndex >= 0 ? (argv[racineIndex + 1] ?? RACINE) : RACINE;
   const dateIndex = argv.indexOf("--date");
+  const date = dateIndex >= 0 ? dateValide(argv[dateIndex + 1]) : null;
+  if (dateIndex >= 0 && date === null) {
+    throw new Error(`Date de rapport attendue AAAA-MM-JJ ; reçu « ${argv[dateIndex + 1] ?? ""} »`);
+  }
   const dryRun = argv.includes("--dry-run");
   const rapport = mesurerDelais({
     rootDir,
-    ...(dateIndex >= 0 ? { aujourdHui: argv[dateIndex + 1] ?? "" } : {}),
+    ...(date === null ? {} : { aujourdHui: date }),
   });
 
   process.stdout.write(`Délais publication → corpus, mesurés le ${rapport.calcule_le}\n`);
-  process.stdout.write("Chaîne complète (publication → détection → corpus) :\n");
+  process.stdout.write("Cas détectés par la veille :\n");
   if (rapport.corpus.length === 0) process.stdout.write("  aucun cas mesurable\n");
   for (const delai of rapport.corpus) process.stdout.write(`${phrase(delai)}\n`);
   if (rapport.collecte_initiale.length > 0) {
@@ -622,7 +642,7 @@ async function main(argv: string[]): Promise<void> {
     process.stdout.write("dry-run : ni rapport ni résumé écrits\n");
     return;
   }
-  if (ecrireJson(join(rootDir, CHEMIN_DELAIS), rapport)) {
+  if (ecrireJsonAtomique(join(rootDir, CHEMIN_DELAIS), rapport)) {
     process.stdout.write(`rapport : ${CHEMIN_DELAIS}\n`);
   }
   const cheminResume = join(rootDir, CHEMIN_COUVERTURE);

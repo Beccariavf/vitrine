@@ -102,7 +102,7 @@ flowchart LR
 
 - `data/veille/etat.json` porte la dernière lecture réussie de chaque source. Écrit en fin de passe par `npm run veille` pour les sources lues sans erreur, et par `veille:textes-fr` pour `legi` quand les quatre textes sont comparés ; une source en panne garde sa date antérieure. Il décrit une machine et n'est pas versionné (comme `data/corpus/sync.json`) : absent, il rend `null`, lu par `etat_corpus` comme « jamais lue ».
 - `npm run veille:delais` écrit `data/corpus/delais.json` daté et le résumé de `coverage.md`. Trois dates : publication (`date_acte`), détection (`publishedAt` de la première entrée de `data/entries/` qui désigne le document — seulement pour les sources qui datent leur passe : `eurlex`, `legi`, `constit`, `cepd`, `cnil_doctrine`, `preparation`), entrée au corpus (premier commit git qui ajoute la version de la nouveauté, sinon l'unité, sinon la date d'arrêté du manifeste). Les documents récents sans entrée de veille sont publiés à part comme collecte initiale, jamais comptés comme réactivité ; un corpus sans cas mesurable le dit.
-- Mesure du 2026-11-15 : un seul cas de chaîne complète, `aiact` 110 jours (consolidation du 2026-07-27 détectée le 2026-11-14, entrée le même jour) ; retard d'archive `constit` déclaré à 29 jours au manifeste. Les chiffres à jour sont dans `data/corpus/delais.json`, jamais recopiés ici.
+- Mesure du 2026-11-15 : cinq corpus ont des cas détectés par la veille (`aiact`, `cc`, `ce`, `cjue`, `cnil`) ; les autres documents ne sont mesurables qu'en collecte initiale, et le retard d'archive `constit` est déclaré au manifeste. Chiffres datés dans `data/corpus/delais.json`, non recopiés ici.
 
 ## Veille des actes de l'Union
 

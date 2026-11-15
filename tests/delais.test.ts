@@ -104,6 +104,7 @@ describe("délais publication → corpus", () => {
       date_veille,
       date_corpus,
       origine_corpus: date_corpus === null ? null : "git",
+      entree_veille: date_veille !== null,
     };
   }
 
@@ -173,6 +174,72 @@ describe("délais publication → corpus", () => {
       assert.equal(rapport.corpus[0]?.corpus, "aiact");
       assert.equal(rapport.corpus[0]?.exemples[0]?.jours_publication_veille, 110);
       assert.deepEqual(rapport.collecte_initiale, []);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("prend la date de publication de l'unité quand l'entrée de flux n'en porte pas", () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "ce", { date_extraction: "2026-11-09" });
+      ecrireUnites(root, "ce", [
+        {
+          ref: "CETATEXT000055005472#f1",
+          document: "CETATEXT000055005472",
+          corpus: "ce",
+          date_acte: "2026-10-20",
+        },
+      ]);
+      ecrireEntree(
+        root,
+        {
+          id: "CETATEXT000055005472",
+          title: "Décision du Conseil d'État",
+          officialTitle: "Décision du Conseil d'État",
+          url: "https://www.legifrance.gouv.fr/ceta/id/CETATEXT000055005472",
+          publishedAt: "2026-10-21T12:00:00.000Z",
+          summary: null,
+          references: [],
+          themes: ["donnees-personnelles"],
+          source: "cetat",
+        },
+        "2026-10-21",
+      );
+      const rapport = mesurerDelais({ rootDir: root, aujourdHui: "2026-11-15" });
+      const ce = rapport.corpus.find((delai) => delai.corpus === "ce");
+      assert.equal(ce?.cas_mesures, 1);
+      assert.equal(ce?.mediane_jours, joursEntre("2026-10-20", "2026-11-09"));
+      // La source `cetat` ne date pas sa passe : la détection reste inconnue.
+      assert.equal(ce?.exemples[0]?.date_veille, null);
+      assert.equal(ce?.exemples[0]?.jours_publication_veille, null);
+      assert.deepEqual(rapport.collecte_initiale, []);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("écarte un document daté par l'extraction, dont le délai serait nul", () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "cnil_doctrine", {
+        date_extraction: "2026-11-14",
+        documents_par_type: {
+          guide: [
+            { slug: "guide-sans-date", date_acte: "2026-11-14", date_source: "extraction" },
+            { slug: "guide-date", date_acte: "2025-03-01", date_source: "entete" },
+          ],
+        },
+      });
+      ecrireUnites(root, "cnil_doctrine", [
+        { ref: "guide-sans-date#f1", document: "guide-sans-date", date_acte: "2026-11-14" },
+        { ref: "guide-date#f1", document: "guide-date", date_acte: "2025-03-01" },
+      ]);
+      const cas = casDuDepot(root, 3);
+      assert.deepEqual(
+        cas.map((element) => element.document),
+        ["guide-date"],
+      );
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

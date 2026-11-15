@@ -6,6 +6,7 @@ import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { after, before, describe, it } from "node:test";
 import { run, SOURCES } from "../veille/main.ts";
+import { lireLectures } from "../mcp/corpus/lectures.ts";
 import type { FetchLike, Source } from "../veille/main.ts";
 import { readThemes, visibleEntries } from "../veille/themes.ts";
 import type { Entry } from "../veille/types.ts";
@@ -295,6 +296,40 @@ describe("une passe qui échoue", () => {
       /HTTP 503/,
     );
     assert.deepEqual(listFiles(root), []);
+  });
+
+  it("garde la date d'une source déjà lue quand une autre source échoue", async () => {
+    const fresh = tempRoot();
+    try {
+      await runTest({
+        fetchImpl: fetchReturning(FULL),
+        rootDir: fresh,
+        sources: [CNIL],
+        now: new Date("2026-11-01T09:00:00Z"),
+      });
+      assert.deepEqual([...lireLectures(fresh).entries()], [["cnil", "2026-11-01"]]);
+
+      // La CNIL est relue, la CJUE échoue : seule la CNIL avance.
+      const partiel: FetchLike = async (url) => {
+        if (url === CNIL.feedUrl) return { ok: true, status: 200, text: async () => FULL };
+        if (url === CJEU.feedUrl) throw new Error("network down");
+        const page = new Map(CNIL_PAGES).get(url);
+        if (page === undefined) throw new Error(`unexpected URL ${url}`);
+        return { ok: true, status: 200, text: async () => page };
+      };
+      await assert.rejects(
+        runTest({
+          fetchImpl: partiel,
+          rootDir: fresh,
+          sources: CORE_SOURCES,
+          now: new Date("2026-11-15T09:00:00Z"),
+        }),
+        /network down/,
+      );
+      assert.deepEqual([...lireLectures(fresh).entries()], [["cnil", "2026-11-15"]]);
+    } finally {
+      rmSync(fresh, { recursive: true, force: true });
+    }
   });
 
   it("conserve le snapshot brut et n'écrit aucune entrée quand le flux est illisible", async () => {
