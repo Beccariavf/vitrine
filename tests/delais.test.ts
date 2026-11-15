@@ -84,6 +84,7 @@ describe("délais publication → corpus", () => {
     assert.equal(ce?.cas_mesures, 3);
     assert.equal(ce?.mediane_jours, 20);
     assert.equal(ce?.max_jours, 39);
+    assert.equal(ce?.max_exemple?.jours, ce?.max_jours);
     assert.equal(ce?.exemples.length, 3);
     assert.equal(cjue?.cas_mesures, 0);
     assert.equal(cjue?.mediane_jours, null);
@@ -104,7 +105,9 @@ describe("délais publication → corpus", () => {
       date_veille,
       date_corpus,
       origine_corpus: date_corpus === null ? null : "git",
-      entree_veille: date_veille !== null,
+      // Le regroupement du test ne dépend pas de ce champ : `calculerDelais` le
+      // reçoit déjà partitionné.
+      entree_veille: true,
     };
   }
 

@@ -14,6 +14,18 @@
       "cas_mesures": 1,
       "mediane_jours": 110,
       "max_jours": 110,
+      "max_exemple": {
+        "corpus": "aiact",
+        "document": "32024R1689",
+        "date_acte": "2026-07-27",
+        "date_veille": "2026-11-14",
+        "date_corpus": "2026-11-14",
+        "origine_corpus": "git",
+        "entree_veille": true,
+        "jours": 110,
+        "jours_publication_veille": 110,
+        "jours_veille_corpus": 0
+      },
       "exemples": [
         {
           "corpus": "aiact",
@@ -34,6 +46,18 @@
       "cas_mesures": 4,
       "mediane_jours": 22,
       "max_jours": 35,
+      "max_exemple": {
+        "corpus": "cc",
+        "document": "6ac6079ec27382d099f5a06e",
+        "date_acte": "2026-10-07",
+        "date_veille": null,
+        "date_corpus": "2026-11-11",
+        "origine_corpus": "git",
+        "entree_veille": true,
+        "jours": 35,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
       "exemples": [
         {
           "corpus": "cc",
@@ -78,6 +102,18 @@
       "cas_mesures": 9,
       "mediane_jours": 20,
       "max_jours": 73,
+      "max_exemple": {
+        "corpus": "ce",
+        "document": "CETATEXT000054762056",
+        "date_acte": "2026-08-28",
+        "date_veille": null,
+        "date_corpus": "2026-11-09",
+        "origine_corpus": "git",
+        "entree_veille": true,
+        "jours": 73,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
       "exemples": [
         {
           "corpus": "ce",
@@ -122,6 +158,18 @@
       "cas_mesures": 1,
       "mediane_jours": 6,
       "max_jours": 6,
+      "max_exemple": {
+        "corpus": "cjue",
+        "document": "62025CJ0205",
+        "date_acte": "2026-11-05",
+        "date_veille": null,
+        "date_corpus": "2026-11-11",
+        "origine_corpus": "git",
+        "entree_veille": true,
+        "jours": 6,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
       "exemples": [
         {
           "corpus": "cjue",
@@ -142,6 +190,18 @@
       "cas_mesures": 2,
       "mediane_jours": 222,
       "max_jours": 430,
+      "max_exemple": {
+        "corpus": "cnil",
+        "document": "CNILTEXT000052182222",
+        "date_acte": "2025-09-01",
+        "date_veille": null,
+        "date_corpus": "2026-11-05",
+        "origine_corpus": "git",
+        "entree_veille": true,
+        "jours": 430,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
       "exemples": [
         {
           "corpus": "cnil",
@@ -176,6 +236,18 @@
       "cas_mesures": 3,
       "mediane_jours": 330,
       "max_jours": 330,
+      "max_exemple": {
+        "corpus": "adequation",
+        "document": "32025D2571",
+        "date_acte": "2025-12-19",
+        "date_veille": null,
+        "date_corpus": "2026-11-14",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 330,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
       "exemples": [
         {
           "corpus": "adequation",
@@ -220,6 +292,18 @@
       "cas_mesures": 2,
       "mediane_jours": 3.5,
       "max_jours": 6,
+      "max_exemple": {
+        "corpus": "cc",
+        "document": "6aed6b376c2e1778124430e0",
+        "date_acte": "2026-11-05",
+        "date_veille": null,
+        "date_corpus": "2026-11-11",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 6,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
       "exemples": [
         {
           "corpus": "cc",
@@ -252,6 +336,18 @@
       "cas_mesures": 1,
       "mediane_jours": 1989,
       "max_jours": 1989,
+      "max_exemple": {
+        "corpus": "ccs",
+        "document": "32021D0914",
+        "date_acte": "2021-06-04",
+        "date_veille": null,
+        "date_corpus": "2026-11-14",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 1989,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
       "exemples": [
         {
           "corpus": "ccs",
@@ -272,6 +368,18 @@
       "cas_mesures": 2,
       "mediane_jours": 20,
       "max_jours": 20,
+      "max_exemple": {
+        "corpus": "ce",
+        "document": "CETATEXT000055005463",
+        "date_acte": "2026-10-20",
+        "date_veille": null,
+        "date_corpus": "2026-11-09",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 20,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
       "exemples": [
         {
           "corpus": "ce",
@@ -304,6 +412,18 @@
       "cas_mesures": 3,
       "mediane_jours": 4,
       "max_jours": 32,
+      "max_exemple": {
+        "corpus": "cepd",
+        "document": "opinion-242026-on-the-draft-decision-of-the-french",
+        "date_acte": "2026-10-13",
+        "date_veille": null,
+        "date_corpus": "2026-11-14",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 32,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
       "exemples": [
         {
           "corpus": "cepd",
@@ -348,6 +468,18 @@
       "cas_mesures": 2,
       "mediane_jours": 53.5,
       "max_jours": 69,
+      "max_exemple": {
+        "corpus": "cjue",
+        "document": "62024CJ0798",
+        "date_acte": "2026-09-03",
+        "date_veille": null,
+        "date_corpus": "2026-11-11",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 69,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
       "exemples": [
         {
           "corpus": "cjue",
@@ -380,6 +512,18 @@
       "cas_mesures": 2,
       "mediane_jours": 35.5,
       "max_jours": 53,
+      "max_exemple": {
+        "corpus": "cnil",
+        "document": "CNILTEXT000054908904",
+        "date_acte": "2026-09-17",
+        "date_veille": null,
+        "date_corpus": "2026-11-09",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 53,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
       "exemples": [
         {
           "corpus": "cnil",
@@ -412,6 +556,18 @@
       "cas_mesures": 3,
       "mediane_jours": 1227,
       "max_jours": 1384,
+      "max_exemple": {
+        "corpus": "cnil_doctrine",
+        "document": "guide-referentiel-recrutement",
+        "date_acte": "2023-01-30",
+        "date_veille": null,
+        "date_corpus": "2026-11-14",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 1384,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
       "exemples": [
         {
           "corpus": "cnil_doctrine",
@@ -456,6 +612,18 @@
       "cas_mesures": 3,
       "mediane_jours": 100,
       "max_jours": 114,
+      "max_exemple": {
+        "corpus": "constit",
+        "document": "CONSTEXT000054617305",
+        "date_acte": "2026-07-23",
+        "date_veille": null,
+        "date_corpus": "2026-11-14",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 114,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
       "exemples": [
         {
           "corpus": "constit",
@@ -500,6 +668,18 @@
       "cas_mesures": 1,
       "mediane_jours": 8891,
       "max_jours": 8891,
+      "max_exemple": {
+        "corpus": "eprivacy",
+        "document": "32002L0058",
+        "date_acte": "2002-07-12",
+        "date_veille": null,
+        "date_corpus": "2026-11-14",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 8891,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
       "exemples": [
         {
           "corpus": "eprivacy",
@@ -520,6 +700,18 @@
       "cas_mesures": 1,
       "mediane_jours": 2944,
       "max_jours": 2944,
+      "max_exemple": {
+        "corpus": "eudpr",
+        "document": "32018R1725",
+        "date_acte": "2018-10-23",
+        "date_veille": null,
+        "date_corpus": "2026-11-14",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 2944,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
       "exemples": [
         {
           "corpus": "eudpr",
@@ -540,6 +732,18 @@
       "cas_mesures": 1,
       "mediane_jours": 2718,
       "max_jours": 2718,
+      "max_exemple": {
+        "corpus": "lil",
+        "document": "LEGITEXT000006068624",
+        "date_acte": "2019-06-01",
+        "date_veille": null,
+        "date_corpus": "2026-11-09",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 2718,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
       "exemples": [
         {
           "corpus": "lil",
@@ -560,6 +764,18 @@
       "cas_mesures": 3,
       "mediane_jours": 107,
       "max_jours": 121,
+      "max_exemple": {
+        "corpus": "metadonnees",
+        "document": "EDPBI:NO:OSS:D:2026:4219",
+        "date_acte": "2026-07-17",
+        "date_veille": null,
+        "date_corpus": "2026-11-15",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 121,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
       "exemples": [
         {
           "corpus": "metadonnees",
@@ -604,6 +820,18 @@
       "cas_mesures": 1,
       "mediane_jours": 3853,
       "max_jours": 3853,
+      "max_exemple": {
+        "corpus": "police",
+        "document": "32016L0680",
+        "date_acte": "2016-04-27",
+        "date_veille": null,
+        "date_corpus": "2026-11-14",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 3853,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
       "exemples": [
         {
           "corpus": "police",
@@ -624,6 +852,18 @@
       "cas_mesures": 3,
       "mediane_jours": 69,
       "max_jours": 86,
+      "max_exemple": {
+        "corpus": "preparation",
+        "document": "62026TN0556",
+        "date_acte": "2026-08-21",
+        "date_veille": null,
+        "date_corpus": "2026-11-15",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 86,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
       "exemples": [
         {
           "corpus": "preparation",
@@ -668,6 +908,18 @@
       "cas_mesures": 1,
       "mediane_jours": 3843,
       "max_jours": 3843,
+      "max_exemple": {
+        "corpus": "rgpd",
+        "document": "32016R0679",
+        "date_acte": "2016-04-27",
+        "date_veille": null,
+        "date_corpus": "2026-11-04",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 3843,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
       "exemples": [
         {
           "corpus": "rgpd",
@@ -688,6 +940,18 @@
       "cas_mesures": 1,
       "mediane_jours": 353,
       "max_jours": 353,
+      "max_exemple": {
+        "corpus": "rgpdproc",
+        "document": "32025R2518",
+        "date_acte": "2025-11-26",
+        "date_veille": null,
+        "date_corpus": "2026-11-14",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 353,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
       "exemples": [
         {
           "corpus": "rgpdproc",
@@ -708,6 +972,18 @@
       "cas_mesures": 3,
       "mediane_jours": 1001,
       "max_jours": 2302,
+      "max_exemple": {
+        "corpus": "textes_fr",
+        "document": "LEGITEXT000006070987",
+        "date_acte": "2020-07-26",
+        "date_veille": null,
+        "date_corpus": "2026-11-14",
+        "origine_corpus": "git",
+        "entree_veille": false,
+        "jours": 2302,
+        "jours_publication_veille": null,
+        "jours_veille_corpus": null
+      },
       "exemples": [
         {
           "corpus": "textes_fr",

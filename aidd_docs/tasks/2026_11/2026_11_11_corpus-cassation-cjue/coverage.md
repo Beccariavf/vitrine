@@ -131,8 +131,8 @@ Cas détectés par la veille — publication, détection, entrée au corpus. La 
 | Corpus | Cas mesurés | Médiane (jours) | Maximum (jours) | Exemple le plus long |
 |---|---:|---:|---:|---|
 | `aiact` | 1 | 110 | 110 | 32024R1689 : 110 jours (publication → veille 110 j, veille → corpus 0 j) |
-| `cc` | 4 | 22 | 35 | 6ad753e37a10202137e74fa7 : 22 jours (détection par la veille non datée) |
-| `ce` | 9 | 20 | 73 | CETATEXT000055005472 : 20 jours (détection par la veille non datée) |
+| `cc` | 4 | 22 | 35 | 6ac6079ec27382d099f5a06e : 35 jours (détection par la veille non datée) |
+| `ce` | 9 | 20 | 73 | CETATEXT000054762056 : 73 jours (détection par la veille non datée) |
 | `cjue` | 1 | 6 | 6 | 62025CJ0205 : 6 jours (détection par la veille non datée) |
 | `cnil` | 2 | 222 | 430 | CNILTEXT000052182222 : 430 jours (détection par la veille non datée) |
 

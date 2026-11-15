@@ -332,6 +332,30 @@ describe("une passe qui échoue", () => {
     }
   });
 
+  it("ne date pas une source dont la collecte complémentaire échoue", async () => {
+    const fresh = tempRoot();
+    try {
+      const avecDocuments: Source = {
+        ...CNIL,
+        documents: async () => {
+          throw new Error("documents en panne");
+        },
+      };
+      await assert.rejects(
+        runTest({
+          fetchImpl: fetchReturning(FULL),
+          rootDir: fresh,
+          sources: [avecDocuments],
+          now: new Date("2026-11-15T09:00:00Z"),
+        }),
+        /documents en panne/,
+      );
+      assert.deepEqual([...lireLectures(fresh).entries()], []);
+    } finally {
+      rmSync(fresh, { recursive: true, force: true });
+    }
+  });
+
   it("conserve le snapshot brut et n'écrit aucune entrée quand le flux est illisible", async () => {
     await assert.rejects(
       runTest({ fetchImpl: fetchReturning("<rss><channel><item></rss>"), rootDir: root, sources: [CNIL] }),

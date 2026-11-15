@@ -101,6 +101,8 @@ export type DelaiCorpus = {
   cas_mesures: number;
   mediane_jours: number | null;
   max_jours: number | null;
+  /** Le cas qui porte `max_jours`, jamais un autre : le tableau ne se contredit pas. */
+  max_exemple: ExempleDelai | null;
   exemples: ExempleDelai[];
   /** Présent quand aucun cas n'est mesurable : la raison, jamais un chiffre. */
   sans_cas?: string;
@@ -160,6 +162,7 @@ export function calculerDelais(
           cas_mesures: 0,
           mediane_jours: null,
           max_jours: null,
+          max_exemple: null,
           exemples: [],
           sans_cas:
             liste.length === 0 && raisonAbsente !== undefined
@@ -174,11 +177,17 @@ export function calculerDelais(
             gauche.document.localeCompare(droite.document),
         )
         .slice(0, 3);
+      // Le maximum est porté par son propre exemple : la table ne peut pas
+      // afficher un maximum que l'exemple contredit.
+      const maxExemple = mesures.reduce((maximum, element) =>
+        element.jours > maximum.jours ? element : maximum,
+      );
       return {
         corpus,
         cas_mesures: mesures.length,
         mediane_jours: mediane(mesures.map((element) => element.jours)),
-        max_jours: Math.max(...mesures.map((element) => element.jours)),
+        max_jours: maxExemple.jours,
+        max_exemple: maxExemple,
         exemples,
       };
     });
@@ -364,29 +373,33 @@ export function casDuDepot(rootDir: string, echantillon: number = ECHANTILLON): 
   for (const entry of lireEntrees(rootDir)) {
     const corpus = corpusDeLEntree(entry);
     if (corpus === null) continue;
-    const document = documentsDeLEntree(entry, snapshots)[0];
-    if (document === undefined) continue;
-    const datePasse = SOURCES_DATE_PASSE.includes(entry.source)
-      ? dateValide(typeof entry.publishedAt === "string" ? entry.publishedAt.slice(0, 10) : null)
-      : null;
-    // Une entrée de flux ne porte pas `date_acte` : la date de publication est
-    // celle de l'unité qu'elle désigne, lue au corpus.
-    const dateActe =
-      dateValide(entry.date_acte) ??
-      (unites.get(corpus) ?? []).find((unite) => unite.document === document)?.date_acte ??
-      null;
-    ajouter(
-      {
-        corpus,
-        document,
-        date_acte: dateActe,
-        date_veille: datePasse,
-        date_corpus: null,
-        origine_corpus: null,
-        entree_veille: true,
-      },
-      [entry.version],
-    );
+    const sansPublication = documentsSansDatePubliee(manifestes.get(corpus));
+    // Une page peut désigner plusieurs documents (une actualité CNIL cite les
+    // décisions qu'elle commente) : chacun est un cas, et celui qu'aucune unité
+    // ne porte n'est pas mesurable.
+    const documents = unites.get(corpus) ?? [];
+    for (const document of documentsDeLEntree(entry, snapshots)) {
+      const unite = documents.find((element) => element.document === document);      if (unite === undefined) continue;
+      // Un document daté par l'extraction n'a pas de date de publication.
+      if (sansPublication.has(document)) continue;
+      // Une entrée de flux ne porte pas `date_acte` : la date de publication est
+      // celle de l'unité qu'elle désigne, lue au corpus.
+      const dateActe = dateValide(entry.date_acte) ?? unite.date_acte;
+      const published =
+        typeof entry.publishedAt === "string" ? dateValide(entry.publishedAt.slice(0, 10)) : null;
+      ajouter(
+        {
+          corpus,
+          document,
+          date_acte: dateActe,
+          date_veille: SOURCES_DATE_PASSE.includes(entry.source) ? published : null,
+          date_corpus: null,
+          origine_corpus: null,
+          entree_veille: true,
+        },
+        [entry.version],
+      );
+    }
   }
 
   for (const corpus of [...manifestes.keys()].sort()) {
@@ -569,8 +582,8 @@ export function resumerDelais(rapport: RapportDelais): string {
 
 /** L'exemple au plus long délai d'un corpus, avec ses deux étapes quand elles sont datées. */
 function exempleLePlusLong(delai: DelaiCorpus, avecDetection = true): string {
-  const plusLong = [...delai.exemples].sort((gauche, droite) => droite.jours - gauche.jours)[0];
-  if (plusLong === undefined) return "—";
+  const plusLong = delai.max_exemple;
+  if (plusLong === null) return "—";
   if (!avecDetection) return `${plusLong.document} : ${plusLong.jours} jours`;
   return (
     `${plusLong.document} : ${plusLong.jours} jours` +
