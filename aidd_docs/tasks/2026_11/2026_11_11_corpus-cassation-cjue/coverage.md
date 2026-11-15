@@ -1,6 +1,6 @@
 # Couverture des corpus
 
-Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les corpus inchangés), jamais recopiés depuis un autre rapport.
+Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les corpus inchangés, 15 novembre pour `metadonnees`), jamais recopiés depuis un autre rapport.
 
 | Corpus | Documents | Fragments | Période | Source | Licence |
 |---|---:|---:|---|---|---|
@@ -15,6 +15,7 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 | `cepd` | 328 | 20 287 | 2018-04-11 → 2026-11-10 | CEPD, sitemap des pages `_fr` et `_en` et PDF | Régime ouvert (notice de copyright du CEPD) |
 | `cc` | 403 | 8 194 | 1986-07-21 → 2026-11-10 | PISTE — Judilibre `/search` et `/decision` | Licence Ouverte 2.0 (Etalab) et CGU Judilibre |
 | `cjue` | 251 | 23 460 | 1999-10-14 → 2026-11-05 | CELLAR / EUR-Lex — SPARQL `PDON` + notions `4.11.01` et `2.04` + 4 CELEX, XHTML français puis anglais, repli HTML patrimonial | Décision 2011/833/UE (CC BY 4.0) |
+| `metadonnees` | 1 595 | 1 595 notices, aucun texte | 2018-09-12 → 2026-08-10 | CEPD — registre des décisions définitives du guichet unique (art. 60 RGPD) ; source CEDH (HUDOC) arrêtée, motif au manifeste | Notice de copyright du CEPD |
 
 ## Détail `ce`
 
@@ -101,3 +102,10 @@ Fiche : <https://curia.europa.eu/site/upload/docs/application/pdf/2018-10/fiche_
 Absents avec raison : aucun.
 Rapport : `data/corpus/cjue/controle-curia.json`.
 <!-- controle-curia:fin -->
+
+## Détail `metadonnees`
+
+- 1 595 notices, une par décision définitive du guichet unique, lues au registre du CEPD le 2026-11-15 : 146 pages, 1 603 lignes, 8 lignes vues deux fois, donc 1 595 décisions. Aucune ne porte de texte : chaque unité est une ligne de métadonnées (identifiant `EDPBI:…`, autorité chef de file, date, sujets publiés par le registre, PDF officiel) et `metadonnees_seulement: true`.
+- L'écart de 8 avec le total annoncé vient du registre lui-même : son ordre n'est pas stable entre deux pages, une ligne peut glisser de l'une à l'autre pendant la passe. Il est déclaré au manifeste (`exclusions.registre.doublon`, `total_annonce`, `limites`).
+- **Source CEDH arrêtée.** L'interface de recherche de HUDOC (celle du site, `/app/query/results`) refuse le client du projet : 403 en alternance depuis Node quand curl reçoit 200 sur la même URL au même moment, et quatre tentatives espacées de 0, 60, 180 et 480 s pendant la passe. Le critère arbitré (article 8 de la Convention **et** mots-clés de données personnelles, collections `JUDGMENTS` et `DECISIONS`, communications exclues, versions FR et EN fusionnées) est conservé au descripteur et testé hors ligne ; le motif, la preuve et la reprise sont au manifeste (`couverture.perimetre.cedh_abandonnee`). Aucun contournement n'est tenté : ni changement de client, ni empreinte de navigateur imitée.
+- Au rendu, chaque passage du corpus porte `metadonnees_seulement` et `avertissement_contenu` : « métadonnées seulement — contenu non connu du serveur, consulter la source ». Le statut d'application est `adoptee` pour une décision d'autorité, `rendue` pour une décision juridictionnelle.
