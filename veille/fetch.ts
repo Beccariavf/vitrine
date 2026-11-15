@@ -3,6 +3,8 @@ export type FetchInit = {
   method?: string;
   headers?: Record<string, string>;
   body?: string;
+  /** `follow` demande de suivre les redirections ; c'est déjà le défaut de `fetch`. */
+  redirect?: "follow";
 };
 
 export type FetchResponse = {

@@ -8,8 +8,8 @@
  * jamais réécrit — un statut de publication, un type d'acte ou un statut
  * Légifrance restent lisibles à côté —, et une valeur non reconnue rend
  * `inconnu`, jamais `en_vigueur` : le serveur n'affirme pas ce qu'il n'a pas
- * vérifié. `propose` porte les documents CEPD soumis à consultation ;
- * `pendant` attend les affaires pendantes (#24, #56).
+ * vérifié. `propose` porte les documents CEPD soumis à consultation et les
+ * textes en préparation ; `pendant` les affaires pendantes (#56).
  */
 
 /** Vocabulaire uniforme du statut d'application, sans accents comme les autres valeurs du serveur. */
@@ -32,6 +32,17 @@ export const STATUTS_APPLICATION: readonly StatutApplication[] = [
   "adoptee",
   "inconnu",
 ];
+
+/**
+ * Mise en garde rendue avec chaque passage du corpus `preparation` : un texte
+ * proposé n'est pas applicable, une affaire pendante n'est pas une décision
+ * rendue. Le libellé est un champ frère de `texte`, jamais un préfixe.
+ */
+export function mentionPreparation(statut: StatutApplication): string {
+  if (statut === "propose") return "Texte non applicable — proposition en cours de procédure";
+  if (statut === "pendant") return "Affaire pendante — aucune décision rendue";
+  return "Texte en préparation — statut non reconnu";
+}
 
 /** Corpus dont le statut source dit l'applicabilité du texte. */
 const CORPUS_TEXTES: readonly string[] = [
@@ -137,6 +148,14 @@ export function statutApplication(
     .trim()
     .toLowerCase();
   const source = formeComparable(statut);
+  // La préparation ne rend jamais applicable un texte proposé, ni rendue une
+  // affaire pendante : la branche précède les textes et ne connaît que ces deux
+  // statuts ; tout le reste est `inconnu`.
+  if (collection === "preparation") {
+    if (source === "PROPOSE") return "propose";
+    if (source === "PENDANT") return "pendant";
+    return "inconnu";
+  }
   if (CORPUS_TEXTES.includes(collection)) {
     return STATUTS_TEXTES.get(source) ?? "inconnu";
   }

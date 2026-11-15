@@ -41,6 +41,7 @@ describe("sourcesCorpus", () => {
         "Clauses contractuelles types",
         "Loi Informatique et Libertés",
         "Textes français d'application",
+        "Textes en préparation et affaires pendantes",
         "Décisions d'adéquation",
         "CNIL",
         "Doctrine CNIL",

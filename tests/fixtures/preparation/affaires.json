@@ -1,0 +1,54 @@
+{
+  "head": { "vars": ["celex", "date", "type", "procedure", "attackedCelex"] },
+  "results": {
+    "bindings": [
+      {
+        "celex": { "type": "literal", "value": "62025CN0703" },
+        "date": { "type": "date", "value": "2025-10-31" },
+        "type": { "type": "literal", "value": "CN" },
+        "procedure": {
+          "type": "uri",
+          "value": "http://publications.europa.eu/resource/authority/fd_100/ANNU"
+        },
+        "attackedCelex": { "type": "literal", "value": "62023TJ0553" }
+      },
+      {
+        "celex": { "type": "literal", "value": "62025CN0703" },
+        "date": { "type": "date", "value": "2025-10-31" },
+        "type": { "type": "literal", "value": "CN" },
+        "procedure": {
+          "type": "uri",
+          "value": "http://publications.europa.eu/resource/authority/fd_100/PVOI"
+        },
+        "attackedCelex": { "type": "literal", "value": "62023TJ0553" }
+      },
+      {
+        "celex": { "type": "literal", "value": "62019TN0001" },
+        "date": { "type": "date", "value": "2019-01-07" },
+        "type": { "type": "literal", "value": "TN" },
+        "procedure": {
+          "type": "uri",
+          "value": "http://publications.europa.eu/resource/authority/fd_100/ANNU"
+        }
+      },
+      {
+        "celex": { "type": "literal", "value": "62020CN0149" },
+        "date": { "type": "date", "value": "2020-03-16" },
+        "type": { "type": "literal", "value": "CN" },
+        "procedure": {
+          "type": "uri",
+          "value": "http://publications.europa.eu/resource/authority/fd_100/PREJ"
+        }
+      },
+      {
+        "celex": { "type": "literal", "value": "62024CN0999" },
+        "date": { "type": "date", "value": "2024-06-18" },
+        "type": { "type": "literal", "value": "CN" },
+        "procedure": {
+          "type": "uri",
+          "value": "http://publications.europa.eu/resource/authority/fd_100/PREJ"
+        }
+      }
+    ]
+  }
+}

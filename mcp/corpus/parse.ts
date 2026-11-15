@@ -45,10 +45,11 @@ export type Descripteur = {
 
 /**
  * `fragment` désigne un découpage de texte long, propre à la CNIL ; `clause`
- * l'annexe de 2021/914 ; `notice` une unité qui ne porte que des métadonnées —
- * le corpus `metadonnees` ne connaît pas le contenu des décisions qu'il cite.
+ * l'annexe de 2021/914 ; `proposition` et `affaire` les unités de la préparation ;
+ * `notice` une unité qui ne porte que des métadonnées — le corpus `metadonnees`
+ * ne connaît pas le contenu des décisions qu'il cite.
  */
-export type Niveau = "article" | "considérant" | "fragment" | "clause" | "notice";
+export type Niveau = "article" | "considérant" | "fragment" | "clause" | "proposition" | "affaire" | "notice";
 
 /** Origine d'un fragment CNIL : l'historique DINUM ou un incrément DILA. */
 export type Origine = "dinum" | "dila";
@@ -78,8 +79,14 @@ export type Unite = {
   montant?: number | null;
   /** Vrai si le dispositif prononce une injonction. */
   injonction?: boolean;
-  /** Intitulé officiel du document ; renseigné pour le corpus `metadonnees`. */
+  /** Intitulé officiel : titre CELLAR (préparation) ou intitulé du document (`metadonnees`). */
   titre?: string;
+  /** Renseigné pour la préparation seulement : dernière étape du dossier, `<type> — <date>`. */
+  derniere_etape?: string;
+  /** Renseigné pour la préparation seulement : décision attaquée, `<numéro> (<CELEX>)`. */
+  decision_attaquee?: string;
+  /** Renseigné pour la préparation seulement : affaire durant depuis plus que la présomption. */
+  pendant_presume?: boolean;
   /** Autorité qui a rendu le document ; renseigné pour le corpus `metadonnees`. */
   autorite?: string;
   /**

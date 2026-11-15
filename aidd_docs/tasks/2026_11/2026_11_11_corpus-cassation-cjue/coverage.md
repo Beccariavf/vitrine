@@ -10,6 +10,7 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 | `cnil_doctrine` | 56 (30 guides, 26 référentiels) | 4 459 | documents datés de 2019-11-21 à 2026-11-14 ; 2 listes AIPD laissées au corpus `cnil` | cnil.fr — pages de référence (guides, référentiels, listes AIPD) | CC BY-ND 4.0, marquage par fragment ; listes AIPD en Licence Ouverte via `cnil` |
 | `lil` | 1 | 133 articles en vigueur | version consolidée au 2026-10-01 ; consultée le 2026-11-09 | PISTE — Légifrance `/consult/legiPart` | Licence Ouverte 2.0 (Etalab) |
 | `textes_fr` | 3 | 183 articles en vigueur (décret 2019-536 : 166 ; Code pénal 226-16 à 226-24 : 16 ; CPCE L34-5 : 1) ; 2 abrogés écartés | consultés le 2026-11-14 | PISTE — Légifrance `/consult/legiPart`, `/consult/code`, `/consult/getArticleWithIdAndNum` | Licence Ouverte 2.0 (Etalab) |
+| `preparation` | 8 propositions + 120 affaires pendantes | 128 (8 propositions, 120 affaires ; 35 affaires présumées) | propositions 2022-03-22 → 2026-06-23 ; affaires 2019-01-07 → 2026-09-25 | CELLAR / EUR-Lex, SPARQL et communications du Journal officiel en XHTML | Décision 2011/833/UE (CC BY 4.0) |
 | `ce` | 1 594 | 20 774 | 1982-03-12 → 2026-10-27 | DILA — JADE, fonds `publie` et `inedit` | Licence Ouverte 2.0 (Etalab) |
 | `constit` | 108 | 5 775 | 1982-12-14 → 2026-08-14 | DILA — CONSTIT, XML Légifrance | Licence Ouverte 2.0 (Etalab) |
 | `cepd` | 328 | 20 287 | 2018-04-11 → 2026-11-10 | CEPD, sitemap des pages `_fr` et `_en` et PDF | Régime ouvert (notice de copyright du CEPD) |
@@ -92,6 +93,16 @@ Mesures du 11 novembre 2026, hors split `test`, sur l'index à huit corpus (74 8
 Les rangs CJUE ont été rejoués le 14 novembre 2026 sur l'index de 83 994 unités (corpus `cjue` de 248 décisions et 23 188 fragments) : mêmes résultats, la calibration `dev` du harnais donne 1 `confiant` et 9 `incertain`. La recherche « Lindqvist diffusion de données personnelles sur une page Internet » (`corpus: "cjue"`, `k: 5`) rend C-101/01 aux rangs 1, 2 et 4 (`62001CJ0101#point14`, similarité 0,726), avec l'URL EUR-Lex française de l'arrêt. La recherche « données pseudonymisées identifiables par le destinataire » rend toujours C-413/23 P au premier rang (`62023CJ0413#point68`, similarité 0,729).
 
 Le détail des rangs et des similarités est dans [`eval.md`](./eval.md). Ces jeux ne calibrent aucun seuil : le produit applique le repli `0,69 / 0,74 / 0,01` à `cc` et `cjue`.
+
+## Détail `preparation`
+
+- Synchronisation du 2026-11-14, source unique CELLAR SPARQL (`https://publications.europa.eu/webapi/rdf/sparql`) et communications du Journal officiel lues en XHTML français. Licence : décision 2011/833/UE (CC BY 4.0), mention portée au manifeste.
+- Propositions : 41 dossiers candidats, 40 documents (matière `PDON` ou proposition de modification d'un acte du corpus ; `52018PC0636` est porté par deux dossiers), 8 retenus `PROP_PENDING` ; écartés 1 retiré, 13 documents adoptés (dont le Digital Omnibus IA `52025PC0836`, dossier `2025/0359/COD`), 18 sans statut de dossier. Une proposition par dossier, le corrigendum `R(01)` cédant au CELEX de base ; un même document porté par deux dossiers (`52018PC0636`) n'est compté qu'une fois.
+- Titres : ceux que CELLAR sert, souvent en anglais ; CELLAR peut étiqueter `fr` un titre qui n'a pas été traduit. Le titre est repris tel quel, la langue n'est pas affirmée.
+- Dernière étape : événement de date maximale ≤ 2026-11-14 ; les événements planifiés postérieurs (par exemple un vote du Conseil au 2026-11-19 pour `2025/0360/COD`) ne sont pas retenus.
+- Affaires : 351 communications `CN`/`TN` Eurovoc 5181 ou 5595 depuis 2019, 231 écartées parce qu'une décision `CJ`/`CO` (Cour) ou `TJ`/`TO` (Tribunal) de même année et même numéro CELEX existe, 120 pendantes. La lettre de juridiction fait partie de la clé : `C-1/19` et `T-1/19` sont deux affaires distinctes. Une affaire jointe est fermée par le CELEX de son arrêt : `case-law_joins_case_court` ajoute les numéros joints (C-601/20 avec C-37/20, T-84/23 avec T-70/23, et une jonction inter-années pour T-607/25).
+- 35 affaires durent depuis plus de trois ans sans décision : elles restent au corpus avec `pendant_presume: true`, et le manifeste les nomme. Aucune capture n'a manqué ; aucun texte vide.
+- Preuve réelle : `search` borné à `preparation` sur « Digital Omnibus simplification du cadre législatif numérique » rend `2025/0360/COD` au rang 1, `statut_application: propose`, avec « Dernière étape : OPI_R1_byEP_CMT le 10/11/2026 » ; « affaire pendante pourvoi Latombe C-703/25 P » rend `C-703/25 P` au rang 1, `statut_application: pendant`. `get_article` et `get_decision` ne rendent aucun texte proposé applicable.
 
 <!-- controle-curia:debut -->
 ## Contrôle par la fiche thématique Curia

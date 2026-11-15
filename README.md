@@ -34,6 +34,7 @@ npm run cepd:sync -- --dry-run             # ce que la liste produirait, sans é
 npm run lil:sync -- --date 2026-11-09      # loi Informatique et Libertés → data/corpus/lil/
 npm run cnil:sync -- --tout                # historique DINUM + incréments DILA → data/corpus/cnil/
 npm run cnil:sync -- --increments --dry-run   # ce que les archives ajouteraient, sans écrire
+npm run preparation:sync                   # CELLAR → data/corpus/preparation/ (propositions et affaires pendantes)
 npm run corpus:index   # index incrémental Ollama + sqlite-vec → data/corpus/index/index.db
 npm run corpus:sync    # entrées récentes → sources → index → data/corpus/sync.json
 npm run corpus:sync -- --dry-run --depuis 2026-10-01   # la passe sans écrire
@@ -86,7 +87,7 @@ citation) et `dila` pour les incréments (découpage local de 600 à 1 200 carac
 remplacé que si l'archive est plus récente que sa date, sinon il garde sa numérotation publiée.
 `get_decision` rend une décision par identifiant `CNILTEXT…` ou par numéro `SAN-…` — sa partie
 opératoire par défaut, le document entier avec `partie: "tous"` — et `search` accepte un paramètre
-`corpus` (`rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `cnil`, `lil`, `ce`, `cepd`,
+`corpus` (`rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `cnil`, `lil`, `preparation`, `ce`, `cepd`,
 `cc`, `cjue`, `metadonnees`) et un filtre
 `nature` pour les trois natures CNIL. Le filtre est d'abord un choix de corpus, pas de document. La
 route Légifrance `https://www.legifrance.gouv.fr/cnil/id/<id>` est déclarée dans le manifeste mais
@@ -124,8 +125,9 @@ directrice du CEPD est `adoptee` ; une notice du corpus `metadonnees` est `rendu
 juridictionnelle et `adoptee` pour une décision d'autorité. Pour la CNIL et le CEPD, un statut de source sans effet — `ABROGE`
 ou `ANNULE` — prime sur la nature : une recommandation abrogée ou annulée rend `abroge`, avec le mot
 exact de la source dans `statut`. Une délibération ou une ligne directrice `MODIFIE` rend `inconnu` :
-la version rendue n'est pas nécessairement celle en vigueur. `propose` et `pendant` sont déclarés pour
-les textes proposés et les affaires pendantes (#24, #56) ; aucun corpus ne les porte aujourd'hui. Le
+la version rendue n'est pas nécessairement celle en vigueur. `propose` porte les propositions du
+corpus `preparation` et les documents CEPD en consultation ; `pendant` les affaires pendantes de
+`preparation`. Le
 champ `statut` reste la valeur de la source — statut de publication
 (`Publié au Bulletin · Cassation`), type d'acte (`Arrêt de la Cour`) ou statut Légifrance
 (`VIGUEUR`) — et n'est jamais réécrit : un texte abrogé ou proposé est rendu avec son statut, il n'est
@@ -136,7 +138,10 @@ article par article : le corpus ne porte pas les dates d'application échelonné
 
 Un instrument connu mais absent du corpus — ePrivacy, 95/46, 2016/680, 2018/1725, CPCE, code pénal —
 répond, par `get_article`, `get_decision` et `search` : « absent de mon corpus (périmètre : RGPD,
-AI Act, LIL, CNIL, Conseil d'État, CEPD, Cour de cassation, CJUE). », sans rendre de texte ni de
+AI Act, ePrivacy, directive 2016/680, règlement 2018/1725, règlement procédural RGPD, clauses
+contractuelles types, décisions d'adéquation, LIL, textes français d'application, textes en
+préparation et affaires pendantes, CNIL, doctrine CNIL, CEPD, Conseil d'État, Conseil
+constitutionnel, Cour de cassation, CJUE). », sans rendre de texte ni de
 passage. Le refus de `search` précède l'embedder et l'index : un document absent n'a aucun passage à
 chercher. Un identifiant que le serveur ne connaît pas garde sa réponse actuelle — « introuvable »
 pour un article, « Aucune décision pour… » pour une décision —, et un article manquant d'un document

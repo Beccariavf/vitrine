@@ -24,6 +24,7 @@ const LIBELLES: ReadonlyArray<readonly [string, string]> = [
   ["ccs", "Clauses contractuelles types"],
   ["lil", "Loi Informatique et Libertés"],
   ["textes_fr", "Textes français d'application"],
+  ["preparation", "Textes en préparation et affaires pendantes"],
   ["adequation", "Décisions d'adéquation"],
   ["cnil", "CNIL"],
   ["cnil_doctrine", "Doctrine CNIL"],
