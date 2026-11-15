@@ -120,3 +120,42 @@ Rapport : `data/corpus/cjue/controle-curia.json`.
 - Le registre sert parfois la même décision sous deux noms de fichier ou depuis deux dossiers (`…_redacted.pdf` et `…_redacted_0.pdf`, `…_en_1.pdf`) : c'est le numéro de décision lu dans le PDF qui tranche, à défaut le nom normalisé. 6 lignes sont des doublons. Deux identifiants portent deux décisions distinctes (`decision-no-3850.pdf` / `decision-no-3851_1.pdf`, `decision-no-972-1.pdf` / `decision-no-973.pdf`) : les deux sont gardées, la seconde avec une référence suffixée `#2`. Deux notices n'ont pas de PDF : leur `url` ouvre le registre filtré sur leur identifiant. Ces limites sont déclarées (`couverture.limites`).
 - **Source CEDH arrêtée.** L'interface de recherche de HUDOC (celle du site, `/app/query/results`) refuse le client du projet : 403 en alternance depuis Node quand curl reçoit 200 sur la même URL au même moment, et quatre tentatives espacées de 0, 60, 180 et 480 s pendant la passe. Le critère arbitré (article 8 de la Convention **et** mots-clés de données personnelles, collections `JUDGMENTS` et `DECISIONS`, communications exclues, versions FR et EN fusionnées) est conservé au descripteur et testé hors ligne ; le motif, la preuve et la reprise sont au manifeste (`couverture.perimetre.cedh_abandonnee`). Aucun contournement n'est tenté : ni changement de client, ni empreinte de navigateur imitée.
 - Au rendu, chaque passage du corpus porte `metadonnees_seulement` et `avertissement_contenu` : « métadonnées seulement — contenu non connu du serveur, consulter la source ». Le statut d'application est `adoptee` pour une décision d'autorité, `rendue` pour une décision juridictionnelle.
+
+<!-- delais:start -->
+## Délais publication → corpus
+
+Mesure du 2026-11-15 par `npm run veille:delais` (rapport daté : `data/corpus/delais.json`). Délai = date d'entrée au corpus moins `date_acte` ; la détection par la veille est rendue à part quand la source date sa lecture. Aucun chiffre n'est déduit : un corpus sans cas mesurable le dit. Un cas dont la publication précède la mise en route de la veille mesure ce démarrage, pas sa réactivité à l'état stable.
+
+Chaîne complète — publication, détection par la veille, entrée au corpus :
+
+| Corpus | Cas mesurés | Médiane (jours) | Maximum (jours) | Exemple le plus long |
+|---|---:|---:|---:|---|
+| `aiact` | 1 | 110 | 110 | 32024R1689 : 110 jours (publication → veille 110 j, veille → corpus 0 j) |
+
+Collecte initiale — documents récents sans entrée de veille, publication → entrée au corpus. Ce n'est pas le délai d'une nouveauté : le corpus les a lus en une passe.
+
+| Corpus | Documents | Médiane (jours) | Maximum (jours) | Document le plus long |
+|---|---:|---:|---:|---|
+| `adequation` | 3 | 330 | 330 | 32025D2571 : 330 jours (détection par la veille non datée) |
+| `cc` | 2 | 3.5 | 6 | 6aed6b376c2e1778124430e0 : 6 jours (détection par la veille non datée) |
+| `ccs` | 1 | 1989 | 1989 | 32021D0914 : 1989 jours (détection par la veille non datée) |
+| `ce` | 2 | 20 | 20 | CETATEXT000055005463 : 20 jours (détection par la veille non datée) |
+| `cepd` | 3 | 4 | 32 | opinion-242026-on-the-draft-decision-of-the-french : 32 jours (détection par la veille non datée) |
+| `cjue` | 2 | 53.5 | 69 | 62024CJ0798 : 69 jours (détection par la veille non datée) |
+| `cnil` | 2 | 35.5 | 53 | CNILTEXT000054908904 : 53 jours (détection par la veille non datée) |
+| `cnil_doctrine` | 3 | 0 | 0 | annexe-guide-de-lecture-des-criteres-du-referentiel-de-certification-des-prestataires-de-formation-protection-donnees : 0 jours (détection par la veille non datée) |
+| `constit` | 3 | 100 | 114 | CONSTEXT000054617305 : 114 jours (détection par la veille non datée) |
+| `eprivacy` | 1 | 8891 | 8891 | 32002L0058 : 8891 jours (détection par la veille non datée) |
+| `eudpr` | 1 | 2944 | 2944 | 32018R1725 : 2944 jours (détection par la veille non datée) |
+| `lil` | 1 | 2718 | 2718 | LEGITEXT000006068624 : 2718 jours (détection par la veille non datée) |
+| `metadonnees` | 3 | 107 | 121 | EDPBI:NO:OSS:D:2026:4219 : 121 jours (détection par la veille non datée) |
+| `police` | 1 | 3853 | 3853 | 32016L0680 : 3853 jours (détection par la veille non datée) |
+| `preparation` | 3 | 69 | 86 | 62026TN0556 : 86 jours (détection par la veille non datée) |
+| `rgpd` | 1 | 3843 | 3843 | 32016R0679 : 3843 jours (détection par la veille non datée) |
+| `rgpdproc` | 1 | 353 | 353 | 32025R2518 : 353 jours (détection par la veille non datée) |
+| `textes_fr` | 3 | 1001 | 2302 | LEGITEXT000006070987 : 2302 jours (détection par la veille non datée) |
+
+Retards d'archive déclarés par les manifestes :
+
+- `constit` : dernière décision du 2026-10-16, archive du 2026-11-08, soit 23 jours jusqu'à l'archive et 29 jours jusqu'à l'extraction (6 jours de plus entre l'archive et l'extraction du 2026-11-14).
+<!-- delais:end -->

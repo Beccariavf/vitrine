@@ -14,6 +14,7 @@
     "preview": "astro preview",
     "typecheck": "tsc --noEmit",
     "veille": "node veille/main.ts",
+    "veille:delais": "node mcp/corpus/delais.ts",
     "veille:textes-fr": "node veille/textes-fr.ts",
     "backfill": "node veille/backfill.ts",
     "corpus:build": "node mcp/corpus/build.ts",

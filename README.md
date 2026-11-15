@@ -39,6 +39,7 @@ npm run corpus:index   # index incrémental Ollama + sqlite-vec → data/corpus/
 npm run corpus:sync    # entrées récentes → sources → index → data/corpus/sync.json
 npm run corpus:sync -- --dry-run --depuis 2026-10-01   # la passe sans écrire
 npm run corpus:sync -- --planifier                     # agent launchd de trois jours, sans le charger
+npm run veille:delais  # délai publication → veille → corpus, data/corpus/delais.json + coverage.md (hors CI)
 npm run mcp:smoke      # vérifie Ollama et leoipulsar/harrier-0.6b
 npm run mcp            # serveur MCP sur stdio
 npm run mcp:demo       # cinq appels réels au serveur stdio (Ollama requis)
@@ -315,6 +316,12 @@ laisse `a_jour_au` inchangé, et l'index est réessayé à la passe suivante. Un
 `couverture.documents_ecartes` est `ecarte` et ne relance pas la CJUE. `--dry-run` n'écrit rien et
 `--json` rend le rapport brut ; `--date` date le rapport et la fenêtre de la passe (les sources
 consignent leur propre date), `etat_corpus` expose le même état au client MCP, sans réseau ni index.
+Chaque corpus y porte `veille` : les sources dérivées du raccord de veille (`mcp/corpus/veille.ts`)
+avec leur `derniere_lecture_reussie`, lue dans `data/veille/etat.json` que `npm run veille` écrit à
+chaque passe pour les sources lues sans erreur (`null` : jamais lue sur cette machine), ou
+`absente.raison` quand aucune source ne le couvre — `metadonnees` est un instantané du registre,
+resynchronisé à la main. `npm run veille:delais` mesure le délai publication → détection → entrée
+au corpus sur les cas du dépôt et publie `data/corpus/delais.json` et le résumé de `coverage.md`.
 
 `npm run corpus:sync -- --planifier` écrit `~/Library/LaunchAgents/fr.vitrine.corpus-sync.plist`
 (`StartInterval` 259 200 s, soit trois jours) et imprime les commandes `launchctl` `bootstrap` et
