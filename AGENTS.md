@@ -27,6 +27,7 @@
 - **Keep changes minimal** and scoped, no over-engineering.
 - **Stay on task.** Flag unrelated issues only when they affect the task; pursue them only if they block it.
 - **Solve your own issues before escalating.**
+- **Bound repair loops:** after 3 failed fixes of the same check, stop: set the plan `blocked`, record each attempt and the shortest failing line, and run `npm run kanban -- <issue> bloque` when the work has an issue.
 - **Don't assume your knowledge is current**: the doc could also be wrong.
 - **Verify APIs, signatures, flags, and behavior against source or docs.**
 - **Ask one sharp question when ambiguity materially changes the scope or outcome.**
