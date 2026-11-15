@@ -6,7 +6,7 @@ Les conventions de versionnage du projet : branches, commits et plateforme.
 
 - Main branch: `main`
 - Platform: `github` (`Beccariavf/vitrine`, dépôt public, remote SSH)
-- Tickets: aucun tracker pour l'instant
+- Tickets: issues GitHub de `Beccariavf/vitrine`, avancement suivi dans le projet `Vitrine — tickets` (`npm run kanban -- <issue> [statut] [--reprises <n>]`)
 - Hooks: `.githooks/pre-commit` refuse `.env` et les valeurs non vides de `PISTE_CLIENT_SECRET` et `PISTE_KEY_ID` ; activer avec `git config core.hooksPath .githooks`. La CI (`.github/workflows/ci.yml`) rejoue le même contrôle, puis typecheck, tests et build à chaque `push` et `pull_request`
 
 ## Branches
