@@ -50,7 +50,7 @@ export type Entry = {
   abroge?: string;
   /** Nature de la nouveauté détectée (`nouveau`, `modifie`) ; `cnil_doctrine` seulement. */
   motif?: "nouveau" | "modifie";
-  /** Statut source avant le changement (`PROP_PENDING`, `PENDANT`) ; `preparation` seulement. */
+  /** Libellé CELLAR du dossier avant le changement (`PROP_PENDING`) ; `preparation` seulement. */
   statut_avant?: string;
   /** Statut source après le changement (`PROP_ADOPTED`, `RETIRE`, `PROP_REJECTED`, `CJ`…) ; `preparation` seulement. */
   statut_apres?: string;

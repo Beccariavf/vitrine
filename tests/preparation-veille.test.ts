@@ -7,7 +7,12 @@ import type { Entry } from "../veille/types.ts";
 import { normaliser } from "../mcp/embed/embedder.ts";
 import type { Embedder } from "../mcp/embed/embedder.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";
-import { incorporerArretVeille, documentsCjue } from "../mcp/corpus/cjue/veille.ts";
+import {
+  decisionsSuivies,
+  documentsCjue,
+  incorporerArretVeille,
+  incorporerArretsVeille,
+} from "../mcp/corpus/cjue/veille.ts";
 import type { SyncCjueOptions } from "../mcp/corpus/cjue/sync.ts";
 import { agentsParDefaut, syncCorpus } from "../mcp/corpus/sync.ts";
 import type { AgentSync } from "../mcp/corpus/sync.ts";
@@ -55,16 +60,15 @@ const SUIVIS: Suivi[] = [
     document: "52025PC9001",
     niveau: "proposition",
     numero: "2025/9001/COD",
-    statut: "PROPOSE",
     titre: "Proposition de règlement modifiant le RGPD",
   },
-  { document: "52025PC9002", niveau: "proposition", numero: "2025/9002/COD", statut: "PROPOSE" },
-  { document: "52025PC9003", niveau: "proposition", numero: "2025/9003/COD", statut: "PROPOSE" },
-  { document: "52025PC9004", niveau: "proposition", numero: "2025/9004/COD", statut: "PROPOSE" },
-  { document: "52025PC9005", niveau: "proposition", numero: "2025/9005/COD", statut: "PROPOSE" },
-  { document: "62025CN9001", niveau: "affaire", numero: "C-9001/25", statut: "PENDANT" },
-  { document: "62025CN9002", niveau: "affaire", numero: "C-9002/25", statut: "PENDANT" },
-  { document: "62020CN9003", niveau: "affaire", numero: "C-9003/20", statut: "PENDANT" },
+  { document: "52025PC9002", niveau: "proposition", numero: "2025/9002/COD" },
+  { document: "52025PC9003", niveau: "proposition", numero: "2025/9003/COD" },
+  { document: "52025PC9004", niveau: "proposition", numero: "2025/9004/COD" },
+  { document: "52025PC9005", niveau: "proposition", numero: "2025/9005/COD" },
+  { document: "62025CN9001", niveau: "affaire", numero: "C-9001/25" },
+  { document: "62025CN9002", niveau: "affaire", numero: "C-9002/25" },
+  { document: "62020CN9003", niveau: "affaire", numero: "C-9003/20" },
 ];
 
 /** Racine temporaire : aucun fichier du dépôt n'est touché. */
@@ -302,6 +306,10 @@ describe("la veille des changements de statut", () => {
     assert.match(requete, /resource_legal_amends_resource_legal/);
     assert.match(requete, /resource_legal_repeals_resource_legal/);
     assert.match(requete, /resource_legal_proposes_to_amend_resource_legal/);
+    assert.match(requete, /\?proposeCelex/);
+    assert.match(requete, /\?amendCelex/);
+    assert.match(requete, /\?remplaceCelex/);
+    assert.doesNotMatch(requete, /\?baseVise/, "une variable partagée masque la proposition");
     assert.doesNotMatch(requete, /VALUES \?celex/);
 
     assert.deepEqual(anneesSuivies(SUIVIS), ["2020", "2025"]);
@@ -679,9 +687,92 @@ describe("le raccord au corpus des changements de statut", () => {
         descripteurPath,
         syncImpl: async () => ({ ecrit: false }),
       }),
-      /absent du corpus CJUE/,
+      /absent\(s\) du corpus CJUE/,
     );
     assert.equal(readFileSync(descripteurPath, "utf8"), avant);
+  });
+
+  it("verse deux arrêts rendus le même jour en une passe", async () => {
+    const racine = racineTemporaire();
+    const descripteurPath = join(racine, "descripteur.json");
+    writeFileSync(
+      descripteurPath,
+      `${JSON.stringify(
+        {
+          corpus: "cjue",
+          types_retenus: { CJ: "Arrêt de la Cour" },
+          celex_complementaires: [],
+        },
+        null,
+        2,
+      )}\n`,
+      "utf8",
+    );
+    ecrireCorpus(racine, "cjue", []);
+
+    let appels = 0;
+    const syncImpl = async (options: SyncCjueOptions) => {
+      appels += 1;
+      const descripteur = JSON.parse(
+        readFileSync(options.descripteurPath ?? descripteurPath, "utf8"),
+      ) as { celex_complementaires: string[] };
+      for (const celex of descripteur.celex_complementaires) ajouterUniteCjue(racine, celex);
+      return { ecrit: true };
+    };
+    ecrireEntree(racine, entreePreparation("62025CN9001", "CJ", { decision: "62025CJ9001" }));
+    ecrireEntree(racine, entreePreparation("62025CN9002", "CJ", { decision: "62025CJ9002" }));
+
+    const resultat = await incorporerArretsVeille({
+      rootDir: racine,
+      celexes: decisionsSuivies(racine),
+      descripteurPath,
+      syncImpl,
+    });
+
+    assert.equal(appels, 2, "une passe par le filtre, une après l'ajout groupé");
+    assert.deepEqual([...documentsCjue(racine)].sort(), ["62025CJ9001", "62025CJ9002"]);
+    assert.deepEqual(resultat.complementaires, ["62025CJ9001", "62025CJ9002"]);
+    assert.equal(resultat.messages.length, 2);
+  });
+
+  it("ne redemande pas un arrêt durablement écarté du corpus CJUE", async () => {
+    const racine = racineTemporaire();
+    const descripteurPath = join(racine, "descripteur.json");
+    writeFileSync(
+      descripteurPath,
+      `${JSON.stringify({
+        corpus: "cjue",
+        types_retenus: { CJ: "Arrêt de la Cour" },
+        celex_complementaires: [],
+      })}\n`,
+      "utf8",
+    );
+    ecrireCorpus(racine, "cjue", [], {
+      corpus: "cjue",
+      documents: 0,
+      fragments: 0,
+      couverture: {
+        documents_ecartes: [{ celex: "62025CJ9001", motif: "xhtml_absent" }],
+      },
+    });
+
+    let appels = 0;
+    const resultat = await incorporerArretVeille({
+      rootDir: racine,
+      celex: "62025CJ9001",
+      descripteurPath,
+      syncImpl: async () => {
+        appels += 1;
+        return { ecrit: false };
+      },
+    });
+
+    assert.equal(appels, 0, "un écart durable ne se redemande pas à chaque passe");
+    assert.match(resultat.message, /écarté durablement/);
+    const descripteur = JSON.parse(readFileSync(descripteurPath, "utf8")) as {
+      celex_complementaires: string[];
+    };
+    assert.deepEqual(descripteur.celex_complementaires, []);
   });
 
   it("ne verse pas un type que la CJUE ne retient pas", async () => {

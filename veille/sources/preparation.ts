@@ -62,14 +62,16 @@ export const DOSSIER_DESCRIPTEURS = join(ICI, "..", "..", "mcp", "corpus");
  */
 const ORDRE_CORPUS_ACTES = ["rgpd", "aiact", "eprivacy", "police", "eudpr", "rgpdproc", "ccs"];
 
-/** Un document suivi, lu dans le corpus de préparation. */
+/**
+ * Un document suivi, lu dans le corpus de préparation. Son statut de corpus
+ * (`PROPOSE`, `PENDANT`) n'est pas recopié : `statut_avant` porte le libellé du
+ * dossier CELLAR (`PROP_PENDING`, `PENDANT`), celui que la requête compare.
+ */
 export type Suivi = {
   document: string;
   niveau: "proposition" | "affaire";
   /** Référence de procédure (`2025/0360/COD`) ou numéro d'affaire (`C-703/25 P`). */
   numero: string;
-  /** Statut au corpus (`PROPOSE`, `PENDANT`). */
-  statut: string;
   /** Titre CELLAR de la proposition, quand le corpus le porte. */
   titre?: string;
 };
@@ -196,12 +198,10 @@ export function documentsSuivis(rootDir: string): Suivi[] {
     }
     if (typeof unite.document !== "string" || typeof unite.numero !== "string") continue;
     if (unite.niveau !== "proposition" && unite.niveau !== "affaire") continue;
-    if (typeof unite.statut !== "string") continue;
     suivis.push({
       document: unite.document,
       niveau: unite.niveau,
       numero: unite.numero,
-      statut: unite.statut,
       ...(typeof unite.titre === "string" ? { titre: unite.titre } : {}),
     });
   }
@@ -218,7 +218,7 @@ export function documentsSuivis(rootDir: string): Suivi[] {
 export function requeteStatuts(propositions: readonly string[]): string {
   const valeurs = propositions.map((proposition) => `"${proposition}"`).join(",");
   return `PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
-SELECT DISTINCT ?celex ?statut ?retire ?acteAdopte ?acteDate ?baseVise WHERE {
+SELECT DISTINCT ?celex ?statut ?retire ?acteAdopte ?acteDate ?proposeCelex ?amendCelex ?remplaceCelex WHERE {
   ?work cdm:resource_legal_id_celex ?celex .
   FILTER(STR(?celex) IN (${valeurs}))
   { ?work cdm:act_preparatory_initiates_dossier ?dossier }
@@ -227,22 +227,22 @@ SELECT DISTINCT ?celex ?statut ?retire ?acteAdopte ?acteDate ?baseVise WHERE {
   OPTIONAL { ?dossier cdm:procedure_code_interinstitutional_has_status_file-status ?statut }
   OPTIONAL { ?dossier cdm:dossier_withdrawn-proposal ?retire }
   OPTIONAL {
+    ?work cdm:resource_legal_proposes_to_amend_resource_legal ?baseP .
+    ?baseP cdm:resource_legal_id_celex ?proposeCelex
+  }
+  OPTIONAL {
     ?dossier cdm:dossier_contains_work ?acte .
     ?acte cdm:resource_legal_id_celex ?acteAdopte .
     FILTER(STRSTARTS(STR(?acteAdopte), "3"))
     OPTIONAL { ?acte cdm:work_date_document ?acteDate }
     OPTIONAL {
       ?acte cdm:resource_legal_amends_resource_legal ?baseA .
-      ?baseA cdm:resource_legal_id_celex ?baseVise
+      ?baseA cdm:resource_legal_id_celex ?amendCelex
     }
     OPTIONAL {
       ?acte cdm:resource_legal_repeals_resource_legal ?baseR .
-      ?baseR cdm:resource_legal_id_celex ?baseVise
+      ?baseR cdm:resource_legal_id_celex ?remplaceCelex
     }
-  }
-  OPTIONAL {
-    ?work cdm:resource_legal_proposes_to_amend_resource_legal ?baseP .
-    ?baseP cdm:resource_legal_id_celex ?baseVise
   }
 }`;
 }
@@ -269,8 +269,13 @@ export function lireStatuts(reponse: unknown): Map<string, StatutLu> {
       const connue = actuel.actes.get(acte);
       actuel.actes.set(acte, connue ?? date);
     }
-    const base = valeur(ligne, "baseVise");
-    if (base !== null) actuel.bases.add(base);
+    // Trois propriétés distinctes : la proposition propose de modifier, l'acte
+    // adopté modifie ou remplace. Des variables séparées, sans quoi CELLAR ne
+    // sert pas la proposition quand l'acte adopté ne porte aucune des deux.
+    for (const variable of ["proposeCelex", "amendCelex", "remplaceCelex"]) {
+      const base = valeur(ligne, variable);
+      if (base !== null) actuel.bases.add(base);
+    }
     statuts.set(celex, actuel);
   }
   return statuts;

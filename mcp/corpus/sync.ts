@@ -24,7 +24,7 @@ import { syncCePd } from "./cepd/sync.ts";
 import { syncConstit } from "./constit/sync.ts";
 import { syncCc } from "./cc/sync.ts";
 import { syncCjue } from "./cjue/sync.ts";
-import { incorporerArretVeille } from "./cjue/veille.ts";
+import { decisionsSuivies, incorporerArretsVeille } from "./cjue/veille.ts";
 import { syncPreparation } from "./preparation/sync.ts";
 import type { ResultatPreparation } from "./preparation/sync.ts";
 import { syncLil } from "./lil/sync.ts";
@@ -210,13 +210,20 @@ export function agentsParDefaut(
       const entree = cible?.entree;
       // Un arrêt rendu qu'une affaire suivie désigne entre par cette voie : le
       // filtre CJUE d'abord, les CELEX complémentaires du descripteur ensuite.
-      if (entree?.source === "preparation" && entree.decision !== undefined) {
-        const resultat = await incorporerArretVeille({
+      if (entree?.source === "preparation") {
+        // Toutes les décisions des entrées de préparation, pas seulement celle
+        // qui a déclenché la passe : deux arrêts rendus le même jour entrent
+        // ensemble.
+        const celexes = decisionsSuivies(rootDir);
+        if (entree.decision !== undefined && !celexes.includes(entree.decision)) {
+          celexes.push(entree.decision);
+        }
+        const resultat = await incorporerArretsVeille({
           rootDir,
-          celex: entree.decision,
+          celexes,
           ...(entree.publishedAt === null ? {} : { date: entree.publishedAt.slice(0, 10) }),
         });
-        return { ecrit: resultat.ecrit, message: resultat.message };
+        return { ecrit: resultat.ecrit, message: resultat.messages.join(" ; ") };
       }
       const resultat = await syncCjue({ rootDir });
       return {
