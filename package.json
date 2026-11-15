@@ -13,6 +13,7 @@
     "build": "ASTRO_TELEMETRY_DISABLED=1 astro build",
     "preview": "astro preview",
     "typecheck": "tsc --noEmit",
+    "kanban": "node tools/kanban.ts",
     "veille": "node veille/main.ts",
     "veille:delais": "node mcp/corpus/delais.ts",
     "veille:textes-fr": "node veille/textes-fr.ts",
