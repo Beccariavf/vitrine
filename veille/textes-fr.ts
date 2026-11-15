@@ -30,6 +30,7 @@ import type { Changement, TexteSuivi } from "./sources/legi.ts";
 import type { Entry } from "./types.ts";
 import { writeEntries, writeRaw } from "./write.ts";
 import { configPiste } from "../mcp/corpus/lil/sync.ts";
+import { noterLectures } from "../mcp/corpus/lectures.ts";
 
 /** Racine du dépôt, résolue depuis ce fichier et non depuis le répertoire courant. */
 export const RACINE = fileURLToPath(new URL("..", import.meta.url));
@@ -123,6 +124,11 @@ export async function passeTextesFr(
   if (options.dryRun !== true && entrees.length > 0) {
     writeEntries(rootDir, entrees);
     ecrit = true;
+  }
+  // `legi` n'est lue qu'une fois les quatre textes comparés : un texte en échec
+  // laisse la source non lue, la passe la rejouera.
+  if (options.dryRun !== true && echecs.length === 0) {
+    noterLectures(rootDir, ["legi"], date);
   }
 
   return {

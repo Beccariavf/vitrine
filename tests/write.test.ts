@@ -135,7 +135,12 @@ describe("une passe complète", () => {
     const files = listFiles(root);
     const entryFiles = files.filter((file) => file.includes("entries"));
     assert.equal(entryFiles.length, 10);
-    assert.equal(files.length, 11);
+    // Le snapshot brut, les dix entrées et l'état de lecture des sources.
+    assert.equal(files.length, 12);
+    const etat = JSON.parse(
+      readFileSync(join(root, "data", "veille", "etat.json"), "utf8"),
+    ) as { sources: Record<string, string> };
+    assert.match(etat.sources.cnil ?? "", /^\d{4}-\d{2}-\d{2}$/);
     assert.ok(!files.some((file) => file.endsWith(".tmp")), "aucun fichier temporaire ne doit rester");
   });
 

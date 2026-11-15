@@ -26,6 +26,9 @@ data/corpus/index/
 # Rapport de synchronisation : état d'une machine, réécrit par npm run corpus:sync
 data/corpus/sync.json
 
+# Dernière lecture réussie par source : état d'une machine, écrit par npm run veille
+data/veille/etat.json
+
 # Corpus CNIL : parquet DINUM non commité (334 Mo), récupéré par npm run cnil:sync
 data/raw/cnil/
 

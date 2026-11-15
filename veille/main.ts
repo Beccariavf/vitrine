@@ -25,6 +25,7 @@ import type { Entry } from "./types.ts";
 import { readEntryById, writeEntries, writeRaw } from "./write.ts";
 import type { FetchInit, FetchLike } from "./fetch.ts";
 import type { FetchFlux } from "../mcp/corpus/tar.ts";
+import { noterLectures } from "../mcp/corpus/lectures.ts";
 
 export type { FetchLike } from "./fetch.ts";
 
@@ -329,6 +330,8 @@ export async function run({
   const errors: string[] = [];
   const warnings: string[] = [];
   const notes: string[] = [];
+  // Sources lues sans erreur : elles seules datent leur dernière lecture réussie.
+  const reussies: string[] = [];
 
   for (const source of sources) {
     try {
@@ -381,6 +384,7 @@ export async function run({
           pagePaths: [],
           entryPaths,
         });
+        reussies.push(source.id);
         continue;
       }
 
@@ -473,12 +477,19 @@ export async function run({
       const entryPaths = writeEntries(rootDir, assignThemes(entries, catalog));
 
       results.push({ source: source.id, rawPath, rawPaths: [rawPath], pagePaths, entryPaths });
+      // La collecte complémentaire en échec laisse la source non lue : la passe
+      // la rejoue, et la dernière lecture réussie ne doit pas avancer.
+      if (documentsError === null) reussies.push(source.id);
       if (documentsError !== null) errors.push(`${source.id} documents: ${documentsError}`);
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
       errors.push(`${source.id}: ${reason}`);
     }
   }
+
+  // Les sources lues datent leur dernière lecture réussie, y compris quand la
+  // passe échoue ailleurs : ce qui a été lu l'a été.
+  noterLectures(rootDir, reussies, (now ?? new Date()).toISOString().slice(0, 10));
 
   flushUsage(rootDir);
 

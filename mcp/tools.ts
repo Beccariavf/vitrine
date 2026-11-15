@@ -38,6 +38,8 @@ import type {
   SourceRapport,
 } from "./corpus/sync-rapport.ts";
 import type { ClassementHorsCorpus } from "./corpus/hors-corpus.ts";
+import { lireLectures } from "./corpus/lectures.ts";
+import { CORPUS_SANS_VEILLE, SOURCES_PAR_CORPUS } from "./corpus/veille.ts";
 import { normaliserIdentifiant } from "./corpus/citations.ts";
 import type { ArticlesCouverts } from "./corpus/citations.ts";
 import {
@@ -155,6 +157,40 @@ export function perimetreDe(
   };
 }
 
+/** Une source de veille d'un corpus et sa dernière lecture réussie. */
+export type SourceVeille = {
+  id: string;
+  /** Dernière passe sans erreur de cette source ; `null` quand elle n'est jamais lue ici. */
+  derniere_lecture_reussie: string | null;
+};
+
+/**
+ * Ce qui alimente un corpus. `absente` est présent quand aucune source ne le
+ * couvre : le corpus est alors un instantané, et la raison le dit.
+ */
+export type VeilleCorpus = {
+  sources: SourceVeille[];
+  absente?: { raison: string };
+};
+
+/** Sources et dernière lecture réussie d'un corpus, dérivées du raccord de veille. */
+export function veilleDuCorpus(
+  corpus: string,
+  lectures: ReadonlyMap<string, string>,
+): VeilleCorpus {
+  const sources = (SOURCES_PAR_CORPUS[corpus] ?? []).map((id) => ({
+    id,
+    derniere_lecture_reussie: lectures.get(id) ?? null,
+  }));
+  if (sources.length > 0) return { sources };
+  return {
+    sources,
+    absente: {
+      raison: CORPUS_SANS_VEILLE[corpus] ?? "aucune source de veille déclarée pour ce corpus",
+    },
+  };
+}
+
 /** Ce que le serveur dit de la fraîcheur du corpus, sans réseau ni index. */
 export type EtatCorpus = {
   /** Dernière passe sans source ni index en panne ; `null` avant la première. */
@@ -162,8 +198,15 @@ export type EtatCorpus = {
   derniere_tentative: string | null;
   /** Borne basse de la dernière fenêtre de veille. */
   depuis: string | null;
-  /** Chaque corpus porte le bloc `couverture` de son manifeste : ses exclusions déclarées. */
-  corpus: (CorpusRapport & { couverture: Record<string, unknown> | null })[];
+  /**
+   * Chaque corpus porte le bloc `couverture` de son manifeste — ses exclusions
+   * déclarées — et `veille`, les sources qui l'alimentent avec leur dernière
+   * lecture réussie, ou la raison de leur absence.
+   */
+  corpus: (CorpusRapport & {
+    couverture: Record<string, unknown> | null;
+    veille: VeilleCorpus;
+  })[];
   manquants: DocumentRapport[];
   /**
    * Classement des documents cités absents du corpus, daté et recalculé par
@@ -185,6 +228,7 @@ export function etatCorpus(rootDir: string): EtatCorpus {
   const rapport = lireRapport(rootDir);
   const documents = Array.isArray(rapport?.documents) ? rapport.documents : [];
   const manifestes = lireManifestes(rootDir);
+  const lectures = lireLectures(rootDir);
   return {
     a_jour_au: rapport?.a_jour_au ?? null,
     derniere_tentative: rapport?.derniere_tentative ?? null,
@@ -197,6 +241,7 @@ export function etatCorpus(rootDir: string): EtatCorpus {
           typeof couverture === "object" && couverture !== null && !Array.isArray(couverture)
             ? (couverture as Record<string, unknown>)
             : null,
+        veille: veilleDuCorpus(entree.corpus, lectures),
       };
     }),
     manquants: documents.filter(
