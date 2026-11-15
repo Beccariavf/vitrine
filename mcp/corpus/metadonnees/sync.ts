@@ -357,6 +357,8 @@ export async function syncMetadonnees(
   validerNotices(unites);
   validerUnitesCorpus(unites, "METADONNEES");
   const documents = new Set(unites.map((unite) => unite.document)).size;
+  // Un identifiant partagé par deux décisions distinctes : la seconde porte `#2`.
+  const identifiantsPartages = unites.length - documents;
 
   const sources: SourceMetadonnees[] = [
     {
@@ -427,13 +429,16 @@ export async function syncMetadonnees(
       sources,
       exclusions: { cedh: fusion.ecartes, registre: classement.ecartes },
       limites: [
-        "Le registre du guichet unique n'a pas d'ordre stable entre deux requêtes : une ligne peut " +
-          "passer d'une page à l'autre pendant la passe. Les lignes exactement répétées sont " +
-          "comptées (`exclusions.registre.doublon`) et le total annoncé est porté " +
-          "(`exclusions.registre.total_annonce`) : l'écart avec `documents` dit les décisions " +
-          "qu'une passe n'a pas vues, reprises à la passe suivante.",
-        "Deux décisions distinctes peuvent être servies sous un même identifiant EDPBI : elles " +
-          "sont gardées toutes les deux et la seconde porte une référence suffixée (`#2`).",
+        "Le registre n'a pas d'ordre stable entre deux requêtes : une ligne peut passer d'une page " +
+          "à l'autre pendant la passe. Les lignes vues deux fois sont comptées " +
+          "(`exclusions.registre.doublon`) et le total annoncé est porté " +
+          "(`exclusions.registre.total_annonce`).",
+        "Le registre sert parfois la même décision sous deux noms de fichier ou depuis deux " +
+          "dossiers : le numéro de décision du PDF tranche, et à défaut le nom normalisé. Ces " +
+          "lignes sont des doublons, pas des décisions.",
+        `${identifiantsPartages} identifiant(s) EDPBI portent deux décisions distinctes (numéros ` +
+          "de PDF différents) : elles sont gardées toutes les deux, la seconde avec une référence " +
+          "suffixée `#2`.",
         ...(sansLienPdf === 0
           ? []
           : [

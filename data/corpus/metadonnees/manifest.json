@@ -1,14 +1,14 @@
 {
   "corpus": "metadonnees",
   "nom": "Métadonnées",
-  "titre": "Jurisprudence de la CEDH et décisions du guichet unique, en métadonnées seulement",
+  "titre": "Décisions définitives du guichet unique, en métadonnées seulement (source CEDH arrêtée)",
   "source": "Registre des décisions définitives du guichet unique (CEPD) — métadonnées seulement ; source CEDH (HUDOC) arrêtée, motif sous couverture.perimetre.cedh_abandonnee",
   "date_extraction": "2026-11-15",
   "licence": "Base HUDOC du Conseil de l'Europe ; réutilisation des arrêts et décisions admise avec mention de la source. Seules les métadonnées sont reprises, jamais le texte. Notice de copyright du CEPD : réutilisation commerciale et non commerciale autorisée, source citée, sens non dénaturé. Seules les métadonnées du registre sont reprises, jamais le texte des décisions.",
   "metadonnees_seulement": true,
   "documents": 1595,
-  "unites": 1603,
-  "fragments": 1603,
+  "unites": 1597,
+  "fragments": 1597,
   "couverture": {
     "perimetre": {
       "cedh": {
@@ -73,11 +73,11 @@
         "statut": "lue",
         "pages": 146,
         "elements_lus": 1603,
-        "retenues": 1603,
+        "retenues": 1597,
         "exclusions": {
           "identifiant_absent": 0,
           "date_invalide": 0,
-          "doublon": 0,
+          "doublon": 6,
           "total_annonce": 1603
         },
         "licence": "Notice de copyright du CEPD : réutilisation commerciale et non commerciale autorisée, source citée, sens non dénaturé. Seules les métadonnées du registre sont reprises, jamais le texte des décisions.",
@@ -96,12 +96,13 @@
       "registre": {
         "identifiant_absent": 0,
         "date_invalide": 0,
-        "doublon": 0
+        "doublon": 6
       }
     },
     "limites": [
-      "Le registre du guichet unique n'a pas d'ordre stable entre deux requêtes : une ligne peut passer d'une page à l'autre pendant la passe. Les lignes exactement répétées sont comptées (`exclusions.registre.doublon`) et le total annoncé est porté (`exclusions.registre.total_annonce`) : l'écart avec `documents` dit les décisions qu'une passe n'a pas vues, reprises à la passe suivante.",
-      "Deux décisions distinctes peuvent être servies sous un même identifiant EDPBI : elles sont gardées toutes les deux et la seconde porte une référence suffixée (`#2`).",
+      "Le registre n'a pas d'ordre stable entre deux requêtes : une ligne peut passer d'une page à l'autre pendant la passe. Les lignes vues deux fois sont comptées (`exclusions.registre.doublon`) et le total annoncé est porté (`exclusions.registre.total_annonce`).",
+      "Le registre sert parfois la même décision sous deux noms de fichier ou depuis deux dossiers : le numéro de décision du PDF tranche, et à défaut le nom normalisé. Ces lignes sont des doublons, pas des décisions.",
+      "2 identifiant(s) EDPBI portent deux décisions distinctes (numéros de PDF différents) : elles sont gardées toutes les deux, la seconde avec une référence suffixée `#2`.",
       "2 notice(s) n'ont pas de PDF au registre : leur url ouvre le registre filtré sur l'identifiant, faute de lien propre."
     ]
   }

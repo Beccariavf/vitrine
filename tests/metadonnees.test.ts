@@ -95,17 +95,30 @@ describe("le critère CEDH", () => {
     assert.equal(marper.branche, "GRANDCHAMBER");
   });
 
-  it("retient les cinq arrêts connus du critère quand ils sont dans la page", () => {
-    // Les cinq affaires de référence du descripteur, fusionnées comme en passe réelle.
-    const connues = DESCRIPTEUR.cedh.cas_connus_retenus;
-    const fiches: EntreeCedh[] = connues.map((appno, index) =>
-      fiche({ itemid: `001-00000${index}`, appno, date: "2020-01-01" }),
-    );
+  it("porte le critère déclaré dans la requête : article 8, mots-clés, collections, langues", () => {
+    const url = new URL(urlRequeteCedh(DESCRIPTEUR, 500, 500));
+    const requete = url.searchParams.get("query") ?? "";
+    assert.match(requete, /article:8/);
+    for (const mot of DESCRIPTEUR.cedh.mots_cles) {
+      assert.ok(requete.includes(`"${mot}"`) || requete.includes(mot), mot);
+    }
+    assert.match(requete, /documentcollectionid2:"JUDGMENTS" OR documentcollectionid2:"DECISIONS"/);
+    assert.match(requete, /languageisocode:"FRE" OR languageisocode:"ENG"/);
+    assert.equal(requete.includes("COMMUNICATEDCASES"), false);
+    assert.equal(url.searchParams.get("start"), "500");
+    assert.equal(url.searchParams.get("length"), "500");
+  });
+
+  it("retient les cinq affaires de référence et écarte une communication", () => {
+    const fiches: EntreeCedh[] = [
+      ...DESCRIPTEUR.cedh.cas_connus_retenus.map((appno, index) =>
+        fiche({ itemid: `001-00000${index}`, appno, date: "2020-01-01" }),
+      ),
+      fiche({ itemid: "001-999999", appno: "9999/20", branche: "COMMUNICATEDCASES" }),
+    ];
     const { decisions, ecartes } = fusionnerCedh(fiches, DESCRIPTEUR);
-    assert.deepEqual(
-      decisions.map((decision) => decision.appno).sort(),
-      [...connues].sort(),
-    );
+    assert.equal(decisions.length, DESCRIPTEUR.cedh.cas_connus_retenus.length);
+    assert.equal(ecartes.communication, 1);
     assert.equal(ecartes.commission, 0);
   });
 
@@ -261,6 +274,24 @@ describe("le registre du guichet unique", () => {
         "EDPBI:SE:OSS:D:2024:1",
       ],
     );
+  });
+
+  it("compte comme doublon la même décision servie sous deux noms de fichier", () => {
+    const decision = (nom: string): EntreeRegistre => ({
+      id: "EDPBI:IE:OSS:D:2022:577",
+      date: "2022-12-01",
+      autorite: null,
+      pays: "ie",
+      url: `https://www.edpb.europa.eu/system/files/2022-12/${nom}`,
+      lien: "pdf",
+      sujets: [],
+    });
+    const { retenues, ecartes } = classerRegistre([
+      decision("ie-2022-12-decisionpublic_redacted_en_1.pdf"),
+      decision("ie_2022-12_decisionpublic_redacted_2.pdf"),
+    ]);
+    assert.equal(retenues.length, 1);
+    assert.equal(ecartes.doublon, 1);
   });
 
   it("refuse une notice qui ne respecte pas le contrat des métadonnées", () => {

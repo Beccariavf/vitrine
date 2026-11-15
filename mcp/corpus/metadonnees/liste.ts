@@ -453,6 +453,33 @@ export function unitesRegistre(
 }
 
 /**
+ * Identité du document derrière un lien du registre. Un numéro de décision lu
+ * dans le nom du fichier (`decision-no-3851_1.pdf`, `decision-no-973.pdf`) fait
+ * foi ; à défaut, le nom est normalisé et son suffixe de version retiré, parce
+ * que le registre sert la même décision sous deux noms (`…_redacted.pdf` et
+ * `…_redacted_0.pdf`) ou depuis deux dossiers.
+ */
+export function cleDocument(url: string): string {
+  const fichier = decodeURIComponent(url.split("/").pop() ?? "").replace(/\.pdf$/i, "");
+  const numero = /(?:decision[-_]?no[-_]?|[-_]no[-_])(\d+)/i.exec(fichier)?.[1];
+  if (numero !== undefined) return `no:${numero}`;
+  let nom = fichier
+    .normalize("NFD")
+    .replace(/\p{M}+/gu, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  // Le registre ajoute un suffixe de version (`_0`, `_1`) ou de langue (`_en`) :
+  // deux noms qui ne diffèrent que par là désignent la même décision.
+  for (;;) {
+    const suivant = nom.replace(/-(?:\d+|en|fr|eng|fra)$/, "");
+    if (suivant === nom || suivant === "") break;
+    nom = suivant;
+  }
+  return `nom:${nom}`;
+}
+
+/**
  * Valide les notices avant écriture : le corpus ne promet que des métadonnées,
  * et une unité qui porterait un texte multiligne, un titre ou un lien manquant
  * le dirait trop tard. Lève en nommant la référence fautive.
@@ -477,12 +504,13 @@ export function validerNotices(unites: readonly Unite[]): void {
 }
 
 /**
- * Classe les lignes du registre. Une ligne est identifiée par son identifiant,
- * sa date et son lien : le registre n'a pas d'ordre stable entre deux pages, et
- * il lui arrive de servir deux décisions distinctes sous un même identifiant
- * (`decision-no-3850.pdf` et `decision-no-3851_1.pdf` sur la même ligne EDPBI).
- * Seule la ligne exactement répétée est un doublon ; deux lignes de même
- * identifiant mais de contenu différent sont conservées toutes les deux.
+ * Classe les lignes du registre. Une ligne est identifiée par son identifiant
+ * EDPBI **et** par le document que son lien désigne : le registre n'a pas
+ * d'ordre stable entre deux pages, il sert la même décision sous deux noms de
+ * fichier, et il lui arrive de servir deux décisions distinctes sous un même
+ * identifiant (`decision-no-3850.pdf` et `decision-no-3851_1.pdf`). Un même
+ * identifiant et un même document sont un doublon ; deux documents différents
+ * sont conservés tous les deux.
  */
 export function classerRegistre(
   lignes: readonly EntreeRegistre[],
@@ -498,7 +526,7 @@ export function classerRegistre(
       ecartes.date_invalide += 1;
       continue;
     }
-    const cle = `${ligne.id}\u0000${ligne.date}\u0000${ligne.url}`;
+    const cle = `${ligne.id}\u0000${cleDocument(ligne.url)}`;
     if (parCle.has(cle)) {
       ecartes.doublon += 1;
       continue;

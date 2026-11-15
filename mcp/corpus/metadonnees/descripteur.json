@@ -1,7 +1,7 @@
 {
   "corpus": "metadonnees",
   "nom": "Métadonnées",
-  "titre": "Jurisprudence de la CEDH et décisions du guichet unique, en métadonnées seulement",
+  "titre": "Décisions définitives du guichet unique, en métadonnées seulement (source CEDH arrêtée)",
   "delai_ms": 2000,
   "user_agent": "vitrine-corpus/0.1 (veille juridique ; métadonnées seulement, aucun texte de décision)",
   "cache_validite_jours": 7,
