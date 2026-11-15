@@ -1,0 +1,104 @@
+{
+  "corpus": "metadonnees",
+  "nom": "Métadonnées",
+  "titre": "Jurisprudence de la CEDH et décisions du guichet unique, en métadonnées seulement",
+  "delai_ms": 2000,
+  "user_agent": "vitrine-corpus/0.1 (veille juridique ; métadonnées seulement, aucun texte de décision)",
+  "cache_validite_jours": 7,
+  "reprises_ms": [
+    60000,
+    120000,
+    300000
+  ],
+  "cedh": {
+    "endpoint": "https://hudoc.echr.coe.int/app/query/results",
+    "url_source": "https://hudoc.echr.coe.int",
+    "url_item": "https://hudoc.echr.coe.int/fre?i=",
+    "ranking_model": "11111111-0000-0000-0000-000000000000",
+    "taille_page": 500,
+    "select": "itemid,docname,appno,kpdate,doctypebranch,languageisocode,doctype,article",
+    "requete": "contentsitename:ECHR AND article:8 AND (\"personal data\" OR \"données à caractère personnel\" OR surveillance OR fichier OR \"data protection\") AND (documentcollectionid2:\"JUDGMENTS\" OR documentcollectionid2:\"DECISIONS\") AND (languageisocode:\"FRE\" OR languageisocode:\"ENG\")",
+    "criteres": "Arrêts et décisions de la Cour (collections JUDGMENTS et DECISIONS de HUDOC, communications exclues) dont le texte porte l'article 8 de la Convention et au moins un mot-clé de données personnelles : « personal data », « données à caractère personnel », « surveillance », « fichier », « data protection ». Une seule unité par décision : la version française quand elle existe, l'anglaise sinon.",
+    "mots_cles": [
+      "personal data",
+      "données à caractère personnel",
+      "surveillance",
+      "fichier",
+      "data protection"
+    ],
+    "cas_connus_retenus": [
+      "30562/04",
+      "58170/13",
+      "45245/15",
+      "1874/13",
+      "61496/08"
+    ],
+    "autorite": "Cour européenne des droits de l'homme",
+    "formations": {
+      "GRANDCHAMBER": "Grande chambre",
+      "CHAMBER": "chambre",
+      "COMMITTEE": "comité",
+      "ADMISSIBILITY": "formation d'admissibilité",
+      "ADMISSIBILITYCOM": "formation d'admissibilité du comité",
+      "DECGRANDCHAMBER": "Grande chambre"
+    },
+    "types": {
+      "HFJUD": "Arrêt",
+      "HEJUD": "Arrêt",
+      "HFDEC": "Décision",
+      "HEDEC": "Décision"
+    },
+    "branches_ecartees": {
+      "DECCOMMISSION": "décision de l'ancienne Commission européenne des droits de l'homme, qui n'est pas une décision de la Cour"
+    },
+    "licence": "Base HUDOC du Conseil de l'Europe ; réutilisation des arrêts et décisions admise avec mention de la source. Seules les métadonnées sont reprises, jamais le texte.",
+    "licence_url": "https://hudoc.echr.coe.int",
+    "abandonnee": {
+      "le": "2026-11-15",
+      "motif": "Source arrêtée : l'interface de recherche JSON de HUDOC refuse cette pile. Depuis Node, l'endpoint /app/query/results et même une page de fiche répondent 403 de façon intermittente (une requête sur deux en connexion réutilisée, et toutes pendant la passe), alors que les mêmes URL répondent 200 à curl au même moment : le refus porte sur le client, pas sur la requête. Aucun contournement n'est tenté : ni changement de client, ni empreinte de navigateur imitée.",
+      "preuve": "Passe du 2026-11-15 : 4 tentatives espacées de 0, 60, 180 et 480 s, toutes HTTP 403. Diagnostics au même moment : curl 5/5 en 200, Node 200/403 en alternance sur la même URL, node:https et node:http2 en 403, POST non supporté (404).",
+      "reprise": "Effacer ce bloc et relancer « npm run metadonnees:sync » quand l'endpoint répond à la pile du projet ; le critère et le code de lecture sont conservés et testés hors ligne."
+    }
+  },
+  "registre": {
+    "url_modele": "https://www.edpb.europa.eu/registers/register-of-final-one-stop-shop-decisions_fr?page={page}",
+    "base": "https://www.edpb.europa.eu",
+    "criteres": "Toutes les décisions définitives adoptées dans le cadre du mécanisme de guichet unique (article 60 du RGPD), telles que le registre du CEPD les publie : une unité par décision, avec son identifiant EDPBI, son autorité chef de file, la date, le lien du PDF officiel, les sujets et la base juridique que le registre déclare.",
+    "autorite_prefixe": "Autorité chef de file",
+    "titre_prefixe": "Décision définitive du guichet unique",
+    "licence": "Notice de copyright du CEPD : réutilisation commerciale et non commerciale autorisée, source citée, sens non dénaturé. Seules les métadonnées du registre sont reprises, jamais le texte des décisions.",
+    "licence_url": "https://www.edpb.europa.eu/about-edpb/about-edpb/legal-notice_fr"
+  },
+  "pays": {
+    "at": "Autriche",
+    "be": "Belgique",
+    "bg": "Bulgarie",
+    "cy": "Chypre",
+    "cz": "Tchéquie",
+    "de": "Allemagne",
+    "dk": "Danemark",
+    "ee": "Estonie",
+    "es": "Espagne",
+    "fi": "Finlande",
+    "fr": "France",
+    "gr": "Grèce",
+    "hr": "Croatie",
+    "hu": "Hongrie",
+    "ie": "Irlande",
+    "is": "Islande",
+    "it": "Italie",
+    "li": "Liechtenstein",
+    "lt": "Lituanie",
+    "lu": "Luxembourg",
+    "lv": "Lettonie",
+    "mt": "Malte",
+    "nl": "Pays-Bas",
+    "no": "Norvège",
+    "pl": "Pologne",
+    "pt": "Portugal",
+    "ro": "Roumanie",
+    "se": "Suède",
+    "si": "Slovénie",
+    "sk": "Slovaquie"
+  }
+}

@@ -43,8 +43,12 @@ export type Descripteur = {
   exclusions?: string[];
 };
 
-/** `fragment` désigne un découpage de texte long, propre à la CNIL ; `clause` l'annexe de 2021/914. */
-export type Niveau = "article" | "considérant" | "fragment" | "clause";
+/**
+ * `fragment` désigne un découpage de texte long, propre à la CNIL ; `clause`
+ * l'annexe de 2021/914 ; `notice` une unité qui ne porte que des métadonnées —
+ * le corpus `metadonnees` ne connaît pas le contenu des décisions qu'il cite.
+ */
+export type Niveau = "article" | "considérant" | "fragment" | "clause" | "notice";
 
 /** Origine d'un fragment CNIL : l'historique DINUM ou un incrément DILA. */
 export type Origine = "dinum" | "dila";
@@ -74,6 +78,15 @@ export type Unite = {
   montant?: number | null;
   /** Vrai si le dispositif prononce une injonction. */
   injonction?: boolean;
+  /** Intitulé officiel du document ; renseigné pour le corpus `metadonnees`. */
+  titre?: string;
+  /** Autorité qui a rendu le document ; renseigné pour le corpus `metadonnees`. */
+  autorite?: string;
+  /**
+   * Corpus `metadonnees` seulement : l'unité ne porte que des métadonnées, le
+   * serveur ne connaît pas le contenu du document et le dit au rendu.
+   */
+  metadonnees_seulement?: true;
 };
 
 const ENTITES: Record<string, string> = {

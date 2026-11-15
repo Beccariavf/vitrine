@@ -52,3 +52,6 @@ data/raw/cjue/
 
 # Textes français d'application : snapshots PISTE non commités, récupérés par npm run textes-fr:sync
 data/raw/textes_fr/
+
+# Métadonnées CEDH et guichet unique : pages de recherche et du registre non commitées, récupérées par npm run metadonnees:sync
+data/raw/metadonnees/

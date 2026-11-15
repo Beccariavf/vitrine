@@ -1,0 +1,101 @@
+{
+  "corpus": "metadonnees",
+  "nom": "Métadonnées",
+  "titre": "Jurisprudence de la CEDH et décisions du guichet unique, en métadonnées seulement",
+  "source": "Registre des décisions définitives du guichet unique (CEPD) — métadonnées seulement ; source CEDH (HUDOC) arrêtée, motif sous couverture.perimetre.cedh_abandonnee",
+  "date_extraction": "2026-11-15",
+  "licence": "Base HUDOC du Conseil de l'Europe ; réutilisation des arrêts et décisions admise avec mention de la source. Seules les métadonnées sont reprises, jamais le texte. Notice de copyright du CEPD : réutilisation commerciale et non commerciale autorisée, source citée, sens non dénaturé. Seules les métadonnées du registre sont reprises, jamais le texte des décisions.",
+  "metadonnees_seulement": true,
+  "documents": 1595,
+  "unites": 1595,
+  "fragments": 1595,
+  "couverture": {
+    "perimetre": {
+      "cedh": {
+        "criteres": "Arrêts et décisions de la Cour (collections JUDGMENTS et DECISIONS de HUDOC, communications exclues) dont le texte porte l'article 8 de la Convention et au moins un mot-clé de données personnelles : « personal data », « données à caractère personnel », « surveillance », « fichier », « data protection ». Une seule unité par décision : la version française quand elle existe, l'anglaise sinon.",
+        "mots_cles": [
+          "personal data",
+          "données à caractère personnel",
+          "surveillance",
+          "fichier",
+          "data protection"
+        ],
+        "requete": "contentsitename:ECHR AND article:8 AND (\"personal data\" OR \"données à caractère personnel\" OR surveillance OR fichier OR \"data protection\") AND (documentcollectionid2:\"JUDGMENTS\" OR documentcollectionid2:\"DECISIONS\") AND (languageisocode:\"FRE\" OR languageisocode:\"ENG\")",
+        "cas_connus_retenus": [
+          "30562/04",
+          "58170/13",
+          "45245/15",
+          "1874/13",
+          "61496/08"
+        ],
+        "branches_ecartees": {
+          "DECCOMMISSION": "décision de l'ancienne Commission européenne des droits de l'homme, qui n'est pas une décision de la Cour"
+        }
+      },
+      "registre": {
+        "criteres": "Toutes les décisions définitives adoptées dans le cadre du mécanisme de guichet unique (article 60 du RGPD), telles que le registre du CEPD les publie : une unité par décision, avec son identifiant EDPBI, son autorité chef de file, la date, le lien du PDF officiel, les sujets et la base juridique que le registre déclare."
+      },
+      "cedh_abandonnee": {
+        "le": "2026-11-15",
+        "motif": "Source arrêtée : l'interface de recherche JSON de HUDOC refuse cette pile. Depuis Node, l'endpoint /app/query/results et même une page de fiche répondent 403 de façon intermittente (une requête sur deux en connexion réutilisée, et toutes pendant la passe), alors que les mêmes URL répondent 200 à curl au même moment : le refus porte sur le client, pas sur la requête. Aucun contournement n'est tenté : ni changement de client, ni empreinte de navigateur imitée.",
+        "preuve": "Passe du 2026-11-15 : 4 tentatives espacées de 0, 60, 180 et 480 s, toutes HTTP 403. Diagnostics au même moment : curl 5/5 en 200, Node 200/403 en alternance sur la même URL, node:https et node:http2 en 403, POST non supporté (404).",
+        "reprise": "Effacer ce bloc et relancer « npm run metadonnees:sync » quand l'endpoint répond à la pile du projet ; le critère et le code de lecture sont conservés et testés hors ligne."
+      }
+    },
+    "champs": "Chaque unité porte document (n° de requête CEDH ou identifiant EDPBI), numero, date_acte, titre, autorite, url officielle et une ligne `texte` de métadonnées (intitulé, autorité, date, et pour le registre les sujets et la base juridique qu'il publie). Aucune unité ne porte le texte d'une décision ni un résumé.",
+    "sources": [
+      {
+        "source": "HUDOC — Cour européenne des droits de l'homme",
+        "url": "https://hudoc.echr.coe.int/app/query/results",
+        "consulte_le": "2026-11-15",
+        "statut": "abandonnee",
+        "motif": "Source arrêtée : l'interface de recherche JSON de HUDOC refuse cette pile. Depuis Node, l'endpoint /app/query/results et même une page de fiche répondent 403 de façon intermittente (une requête sur deux en connexion réutilisée, et toutes pendant la passe), alors que les mêmes URL répondent 200 à curl au même moment : le refus porte sur le client, pas sur la requête. Aucun contournement n'est tenté : ni changement de client, ni empreinte de navigateur imitée.",
+        "pages": 0,
+        "elements_lus": 0,
+        "retenues": 0,
+        "exclusions": {
+          "date_invalide": 0,
+          "reference_absente": 0,
+          "langue_hors_perimetre": 0,
+          "commission": 0,
+          "total_annonce": 0
+        },
+        "licence": "Base HUDOC du Conseil de l'Europe ; réutilisation des arrêts et décisions admise avec mention de la source. Seules les métadonnées sont reprises, jamais le texte.",
+        "licence_url": "https://hudoc.echr.coe.int"
+      },
+      {
+        "source": "Registre des décisions définitives du guichet unique — CEPD",
+        "url": "https://www.edpb.europa.eu/registers/register-of-final-one-stop-shop-decisions_fr?page=0",
+        "consulte_le": "2026-11-15",
+        "statut": "lue",
+        "pages": 146,
+        "elements_lus": 1603,
+        "retenues": 1595,
+        "exclusions": {
+          "identifiant_absent": 0,
+          "date_invalide": 0,
+          "doublon": 8,
+          "total_annonce": 1603
+        },
+        "licence": "Notice de copyright du CEPD : réutilisation commerciale et non commerciale autorisée, source citée, sens non dénaturé. Seules les métadonnées du registre sont reprises, jamais le texte des décisions.",
+        "licence_url": "https://www.edpb.europa.eu/about-edpb/about-edpb/legal-notice_fr"
+      }
+    ],
+    "exclusions": {
+      "cedh": {
+        "date_invalide": 0,
+        "reference_absente": 0,
+        "langue_hors_perimetre": 0,
+        "commission": 0
+      },
+      "registre": {
+        "identifiant_absent": 0,
+        "date_invalide": 0,
+        "doublon": 8
+      }
+    },
+    "limites": [
+      "Le registre du guichet unique n'a pas d'ordre stable entre deux requêtes : une ligne peut passer d'une page à l'autre pendant la passe. Les lignes vues deux fois sont comptées (`exclusions.registre.doublon`) et le total annoncé est porté (`exclusions.registre.total_annonce`) : l'écart avec `documents` dit les décisions qu'une passe n'a pas vues, reprises à la passe suivante."
+    ]
+  }
+}
