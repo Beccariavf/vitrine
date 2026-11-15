@@ -408,9 +408,13 @@ export function numeroRegistre(id: string): string {
  * file, date et sujets tels que le registre les publie. Sans eux, l'identifiant
  * seul ne rendrait la décision trouvable par aucun sujet.
  */
-export function ligneRegistre(entree: EntreeRegistre, descripteur: DescripteurMetadonnees): string {
+export function ligneRegistre(
+  entree: EntreeRegistre,
+  descripteur: DescripteurMetadonnees,
+  numero: string = numeroRegistre(entree.id),
+): string {
   const elements = [
-    `${descripteur.registre.titre_prefixe} n° ${numeroRegistre(entree.id)}`,
+    `${descripteur.registre.titre_prefixe} n° ${numero}`,
     autoriteRegistre(entree, descripteur),
     entree.date,
     ...(entree.sujets.length === 0 ? [] : [`sujets : ${entree.sujets.join(" ; ")}`]),
@@ -421,7 +425,9 @@ export function ligneRegistre(entree: EntreeRegistre, descripteur: DescripteurMe
 /**
  * Unités du registre : une notice par décision définitive, sans texte. Un
  * identifiant que le registre porte deux fois donne deux notices : la première
- * garde l'identifiant pour référence, la suivante y ajoute son rang.
+ * garde l'identifiant pour référence, la suivante y ajoute son rang. La seconde
+ * porte le numéro de décision de son propre PDF (`3851`, `973`), sans quoi elle
+ * resterait introuvable par le numéro qu'un juriste connaît.
  */
 export function unitesRegistre(
   entrees: readonly EntreeRegistre[],
@@ -431,20 +437,26 @@ export function unitesRegistre(
   return entrees.map((entree) => {
     const rang = rangs.get(entree.id) ?? 0;
     rangs.set(entree.id, rang + 1);
+    const numeroIdentifiant = numeroRegistre(entree.id);
+    const numeroPdf = /^no:(\d+)$/.exec(cleDocument(entree.url))?.[1];
+    const numero =
+      rang > 0 && numeroPdf !== undefined && numeroPdf !== numeroIdentifiant
+        ? numeroPdf
+        : numeroIdentifiant;
     return {
       ref: rang === 0 ? entree.id : `${entree.id}#${rang + 1}`,
       document: entree.id,
       corpus: descripteur.corpus,
       niveau: "notice",
-      numero: numeroRegistre(entree.id),
+      numero,
       chemin: "Registre du guichet unique > Décisions définitives",
-      texte: ligneRegistre(entree, descripteur),
+      texte: ligneRegistre(entree, descripteur, numero),
       date_acte: entree.date,
       date_debut: entree.date,
       date_fin: null,
       statut: "Décision définitive",
       url: entree.url,
-      titre: `${descripteur.registre.titre_prefixe} n° ${numeroRegistre(entree.id)}`,
+      titre: `${descripteur.registre.titre_prefixe} n° ${numero}`,
       autorite: autoriteRegistre(entree, descripteur),
       nature: "autorite",
       metadonnees_seulement: true,

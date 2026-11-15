@@ -274,6 +274,11 @@ describe("le registre du guichet unique", () => {
         "EDPBI:SE:OSS:D:2024:1",
       ],
     );
+    // La seconde décision d'un identifiant partagé porte le numéro de son PDF.
+    const seconde = unites[1];
+    assert.equal(seconde?.numero, "3851");
+    assert.match(seconde?.texte ?? "", /guichet unique n° 3851/);
+    assert.equal(seconde?.document, "EDPBI:IE:OSS:D:2025:3850");
   });
 
   it("compte comme doublon la même décision servie sous deux noms de fichier", () => {
