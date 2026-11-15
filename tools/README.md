@@ -55,7 +55,7 @@ npm run kanban -- <issue> [statut] [--reprises <n>]
 
 Au moins le statut ou `--reprises` est requis. Le projet, ses champs et ses options sont résolus par
 leur nom : un nom absent arrête la commande en le nommant et en listant les noms disponibles, sans
-rien écrire.
+écrire de champ. L'issue, elle, rejoint le tableau avant cette résolution.
 
 Prérequis : `gh` authentifié avec la portée `project`.
 

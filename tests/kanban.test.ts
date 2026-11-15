@@ -246,4 +246,19 @@ describe("écriture au tableau", () => {
       false,
     );
   });
+
+  it("nomme le statut déjà écrit quand l'écriture des reprises échoue", () => {
+    const executer: Executeur = (args) => {
+      if (args[1] === "list") return JSON.stringify(PROJETS);
+      if (args[1] === "item-add") return JSON.stringify(ITEM);
+      if (args[1] === "field-list") return JSON.stringify(CHAMPS);
+      if (args.includes("--number")) throw new Error("gh project item-edit a échoué : panne");
+      return "{}";
+    };
+
+    assert.throws(
+      () => mettreAJour({ issue: 12, statut: "en-revue", reprises: 2 }, executer),
+      /panne ; le statut En revue était déjà écrit/,
+    );
+  });
 });

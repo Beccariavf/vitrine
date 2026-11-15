@@ -207,7 +207,7 @@ export function executerGh(args: readonly string[]): string {
     const brut = typeof cause.stderr === "string" ? cause.stderr : String(cause.message ?? "");
     const premiere = brut.split("\n").find((ligne) => ligne.trim() !== "")?.trim() ?? "";
     throw new Error(
-      `gh ${args.slice(0, 3).join(" ")} a échoué${premiere === "" ? "" : ` : ${premiere}`}`,
+      `gh ${args.slice(0, 2).join(" ")} a échoué${premiere === "" ? "" : ` : ${premiere}`}`,
     );
   }
 }
@@ -256,8 +256,9 @@ function lireChamps(sortie: Record<string, unknown>): ChampProjet[] {
 }
 
 /**
- * Écrit le statut et les reprises. Tout est résolu avant la première écriture :
- * un champ ou une option absente laisse le tableau intact.
+ * Écrit le statut et les reprises. Les champs et l'option sont résolus avant la
+ * première écriture de champ : un nom absent laisse statut et reprises intacts.
+ * L'issue, elle, rejoint le tableau dès `item-add`, avant cette résolution.
  */
 export function mettreAJour(
   demande: ArgumentsKanban,
@@ -302,12 +303,21 @@ export function mettreAJour(
     );
   }
   if (champReprises !== null && demande.reprises !== null) {
-    executer(
-      argsEditionReprises(
-        { projet: projet.id, item: idItem, champ: champReprises.id },
-        demande.reprises,
-      ),
-    );
+    try {
+      executer(
+        argsEditionReprises(
+          { projet: projet.id, item: idItem, champ: champReprises.id },
+          demande.reprises,
+        ),
+      );
+    } catch (error) {
+      // Les deux champs partent en deux appels : un échec du second laisse le
+      // premier écrit, et le message doit le dire plutôt que le taire.
+      const motif = error instanceof Error ? error.message : String(error);
+      throw new Error(
+        statut === null ? motif : `${motif} ; le statut ${statut.option.name} était déjà écrit`,
+      );
+    }
   }
 
   return {
