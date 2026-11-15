@@ -1,4 +1,5 @@
 import { strict as assert } from "node:assert";
+import { createHash } from "node:crypto";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -46,6 +47,18 @@ function ecrireEntree(root: string, entree: Record<string, unknown>, date: strin
   const dossier = join(root, "data", "entries", date.slice(0, 4), date.slice(5, 7));
   mkdirSync(dossier, { recursive: true });
   writeFileSync(join(dossier, `${String(entree.id)}.json`), `${JSON.stringify(entree, null, 2)}\n`);
+}
+
+/** Snapshot HTML d'une page CNIL : sa canonique et les identifiants qu'elle cite. */
+function ecrireSnapshot(root: string, url: string, ids: string[]): void {
+  const liens = ids
+    .map((id) => `<a href="https://www.legifrance.gouv.fr/cnil/id/${id}">${id}</a>`)
+    .join("");
+  const html = `<!doctype html><html><head><link rel="canonical" href="${url}"></head><body>${liens}</body></html>`;
+  const hash = createHash("sha256").update(html).digest("hex");
+  const dossier = join(root, "data", "raw", hash.slice(0, 2));
+  mkdirSync(dossier, { recursive: true });
+  writeFileSync(join(dossier, `${hash}.html`), html, "utf8");
 }
 
 describe("délais publication → corpus", () => {
@@ -217,6 +230,81 @@ describe("délais publication → corpus", () => {
       assert.equal(ce?.exemples[0]?.date_veille, null);
       assert.equal(ce?.exemples[0]?.jours_publication_veille, null);
       assert.deepEqual(rapport.collecte_initiale, []);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("mesure chaque document d'une page et écarte celui qu'aucune unité ne porte", () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "cnil", { arrete_le: "2026-10-30" });
+      ecrireUnites(root, "cnil", [
+        {
+          ref: "CNILTEXT000000000001#f1",
+          document: "CNILTEXT000000000001",
+          corpus: "cnil",
+          date_acte: "2026-10-01",
+        },
+      ]);
+      const url = "https://www.cnil.fr/fr/cloture-injonction-google";
+      ecrireSnapshot(root, url, ["CNILTEXT000000000001", "CNILTEXT000000000009"]);
+      ecrireEntree(
+        root,
+        {
+          id: "cnil-google",
+          title: "Clôture de l'injonction Google",
+          officialTitle: "Clôture de l'injonction Google",
+          url,
+          publishedAt: "2026-10-05T12:00:00.000Z",
+          summary: null,
+          references: [],
+          themes: ["donnees-personnelles"],
+          source: "cnil",
+        },
+        "2026-10-05",
+      );
+      const cas = casDuDepot(root, 0);
+      assert.deepEqual(
+        cas.map((element) => element.document),
+        ["CNILTEXT000000000001"],
+      );
+      assert.equal(cas[0]?.date_acte, "2026-10-01");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("écarte une entrée de veille sur un document daté par l'extraction", () => {
+    const root = racine();
+    try {
+      ecrireCorpus(root, "cnil_doctrine", {
+        date_extraction: "2026-11-14",
+        documents_par_type: {
+          guide: [{ slug: "guide-sans-date", date_acte: "2026-11-14", date_source: "extraction" }],
+        },
+      });
+      ecrireUnites(root, "cnil_doctrine", [
+        { ref: "guide-sans-date#f1", document: "guide-sans-date", date_acte: "2026-11-14" },
+      ]);
+      ecrireEntree(
+        root,
+        {
+          id: "doctrine-1",
+          title: "Nouveau guide",
+          officialTitle: "Nouveau guide",
+          url: "https://www.cnil.fr/fr/guide-sans-date",
+          publishedAt: "2026-11-14T12:00:00.000Z",
+          summary: null,
+          references: [],
+          themes: ["donnees-personnelles"],
+          source: "cnil_doctrine",
+          document: "guide-sans-date",
+          motif: "nouveau",
+        },
+        "2026-11-14",
+      );
+      assert.deepEqual(casDuDepot(root, 0), []);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

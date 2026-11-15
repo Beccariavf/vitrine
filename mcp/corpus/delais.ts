@@ -379,7 +379,8 @@ export function casDuDepot(rootDir: string, echantillon: number = ECHANTILLON): 
     // ne porte n'est pas mesurable.
     const documents = unites.get(corpus) ?? [];
     for (const document of documentsDeLEntree(entry, snapshots)) {
-      const unite = documents.find((element) => element.document === document);      if (unite === undefined) continue;
+      const unite = documents.find((element) => element.document === document);
+      if (unite === undefined) continue;
       // Un document daté par l'extraction n'a pas de date de publication.
       if (sansPublication.has(document)) continue;
       // Une entrée de flux ne porte pas `date_acte` : la date de publication est
