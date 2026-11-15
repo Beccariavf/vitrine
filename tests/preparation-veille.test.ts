@@ -8,6 +8,7 @@ import { normaliser } from "../mcp/embed/embedder.ts";
 import type { Embedder } from "../mcp/embed/embedder.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";
 import {
+  arretsAVerser,
   decisionsSuivies,
   documentsCjue,
   incorporerArretVeille,
@@ -468,7 +469,7 @@ describe("le raccord au corpus des changements de statut", () => {
 
     assert.deepEqual(
       appels,
-      ["preparation", "cjue:62025CJ9001", "rgpd:32026R9001"],
+      ["preparation", "cjue:liste", "rgpd:32026R9001"],
       "la préparation passe avant la CJUE ; le corpus visé est relancé",
     );
     const proposition = rapport.documents.find(
@@ -733,6 +734,7 @@ describe("le raccord au corpus des changements de statut", () => {
     assert.deepEqual([...documentsCjue(racine)].sort(), ["62025CJ9001", "62025CJ9002"]);
     assert.deepEqual(resultat.complementaires, ["62025CJ9001", "62025CJ9002"]);
     assert.equal(resultat.messages.length, 2);
+    assert.deepEqual(arretsAVerser(racine), [], "plus rien à verser après la passe");
   });
 
   it("ne redemande pas un arrêt durablement écarté du corpus CJUE", async () => {
@@ -769,10 +771,52 @@ describe("le raccord au corpus des changements de statut", () => {
 
     assert.equal(appels, 0, "un écart durable ne se redemande pas à chaque passe");
     assert.match(resultat.message, /écarté durablement/);
+    assert.deepEqual(arretsAVerser(racine), []);
     const descripteur = JSON.parse(readFileSync(descripteurPath, "utf8")) as {
       celex_complementaires: string[];
     };
     assert.deepEqual(descripteur.celex_complementaires, []);
+  });
+
+  it("arrête la passe quand la synchronisation découvre un écart durable", async () => {
+    const racine = racineTemporaire();
+    const descripteurPath = join(racine, "descripteur.json");
+    const avant = `${JSON.stringify(
+      {
+        corpus: "cjue",
+        types_retenus: { CJ: "Arrêt de la Cour" },
+        celex_complementaires: [],
+      },
+      null,
+      2,
+    )}\n`;
+    writeFileSync(descripteurPath, avant, "utf8");
+    ecrireCorpus(racine, "cjue", []);
+
+    let appels = 0;
+    const resultat = await incorporerArretVeille({
+      rootDir: racine,
+      celex: "62025CJ9001",
+      descripteurPath,
+      syncImpl: async () => {
+        appels += 1;
+        // La synchronisation réelle écrit son manifeste d'exclusions : ici, un
+        // XHTML absent, motif durable.
+        ecrireCorpus(racine, "cjue", [], {
+          corpus: "cjue",
+          documents: 0,
+          fragments: 0,
+          couverture: {
+            documents_ecartes: [{ celex: "62025CJ9001", motif: "xhtml_absent" }],
+          },
+        });
+        return { ecrit: true };
+      },
+    });
+
+    assert.equal(appels, 1, "aucune seconde synchronisation pour un écart durable");
+    assert.match(resultat.message, /écarté durablement/);
+    assert.equal(readFileSync(descripteurPath, "utf8"), avant);
   });
 
   it("ne verse pas un type que la CJUE ne retient pas", async () => {

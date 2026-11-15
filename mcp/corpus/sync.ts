@@ -24,7 +24,7 @@ import { syncCePd } from "./cepd/sync.ts";
 import { syncConstit } from "./constit/sync.ts";
 import { syncCc } from "./cc/sync.ts";
 import { syncCjue } from "./cjue/sync.ts";
-import { decisionsSuivies, incorporerArretsVeille } from "./cjue/veille.ts";
+import { arretsAVerser, incorporerArretsVeille } from "./cjue/veille.ts";
 import { syncPreparation } from "./preparation/sync.ts";
 import type { ResultatPreparation } from "./preparation/sync.ts";
 import { syncLil } from "./lil/sync.ts";
@@ -206,22 +206,17 @@ export function agentsParDefaut(
           `${resultat.enAttente} en attente${avertissement}`,
       };
     },
-    cjue: async (cible) => {
-      const entree = cible?.entree;
-      // Un arrêt rendu qu'une affaire suivie désigne entre par cette voie : le
-      // filtre CJUE d'abord, les CELEX complémentaires du descripteur ensuite.
-      if (entree?.source === "preparation") {
-        // Toutes les décisions des entrées de préparation, pas seulement celle
-        // qui a déclenché la passe : deux arrêts rendus le même jour entrent
-        // ensemble.
-        const celexes = decisionsSuivies(rootDir);
-        if (entree.decision !== undefined && !celexes.includes(entree.decision)) {
-          celexes.push(entree.decision);
-        }
+    cjue: async () => {
+      // Les arrêts rendus que des affaires suivies désignent entrent par cette
+      // voie, tous ensemble : le filtre CJUE d'abord, les CELEX complémentaires
+      // du descripteur ensuite. La liste est relue même quand une entrée du flux
+      // CJUE a occupé la cible, et hors de la fenêtre de `corpus:sync`.
+      const arrets = arretsAVerser(rootDir);
+      if (arrets.length > 0) {
         const resultat = await incorporerArretsVeille({
           rootDir,
-          celexes,
-          ...(entree.publishedAt === null ? {} : { date: entree.publishedAt.slice(0, 10) }),
+          celexes: arrets,
+          date: dateDuJour(),
         });
         return { ecrit: resultat.ecrit, message: resultat.messages.join(" ; ") };
       }
@@ -445,26 +440,15 @@ function compter(documents: DocumentRapport[]): RapportSync["comptes"] {
 
 /**
  * Corpus relancés en plus de celui de l'entrée, sur le signal d'une entrée de
- * préparation : la décision rendue d'une affaire suivie entre au corpus CJUE, et
- * un texte adopté nomme le corpus de textes qu'il modifie — la veille `eurlex`
- * en prendra la consolidation quand elle paraîtra, le rapport dit l'attente.
- * Un arrêt déjà présent au corpus CJUE ne relance rien.
+ * préparation : un texte adopté nomme le corpus de textes qu'il modifie — la
+ * veille `eurlex` en prendra la consolidation quand elle paraîtra, le rapport
+ * dit l'attente. Les arrêts suivis sont relancés à part (`arretsAVerser`).
  */
-function corpusSupplementaires(
-  entrees: readonly Entry[],
-  documentsCorpus: ReadonlyMap<string, Set<string>>,
-): Map<CorpusVeille, Entry> {
+function corpusSupplementaires(entrees: readonly Entry[]): Map<CorpusVeille, Entry> {
   const supplementaires = new Map<CorpusVeille, Entry>();
   const connus = new Set<string>(ORDRE_SOURCES);
   for (const entree of entrees) {
     if (entree.source !== "preparation") continue;
-    if (
-      entree.decision !== undefined &&
-      documentsCorpus.get("cjue")?.has(entree.decision) !== true &&
-      !supplementaires.has("cjue")
-    ) {
-      supplementaires.set("cjue", entree);
-    }
     if (
       entree.acte_adopte !== undefined &&
       entree.corpus_vise !== undefined &&
@@ -593,8 +577,11 @@ export async function syncCorpus(options: SyncCorpusOptions = {}): Promise<Rappo
   let documents = classer(entrees, snapshots, documentsCorpus, ecartes, versionsCorpus);
 
   const aLancer = sourcesALancer(documents);
-  const supplementaires = corpusSupplementaires(entrees, documentsCorpus);
+  const supplementaires = corpusSupplementaires(entrees);
   for (const corpus of supplementaires.keys()) aLancer.add(corpus);
+  // Un arrêt suivi encore à verser relance la CJUE, même si aucune entrée de la
+  // fenêtre ne nomme une décision.
+  if (arretsAVerser(rootDir).length > 0) aLancer.add("cjue");
   const agents = options.agents ?? agentsParDefaut(rootDir);
   const entreesParId = new Map(entrees.map((entree) => [entree.id, entree]));
   const cibles = new Map<CorpusVeille, Entry>();

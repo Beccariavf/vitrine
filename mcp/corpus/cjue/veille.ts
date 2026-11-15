@@ -151,6 +151,19 @@ export function decisionsSuivies(rootDir: string): string[] {
 }
 
 /**
+ * Arrêts suivis encore à verser : absents du corpus, sans motif d'écart durable.
+ * L'agent CJUE s'en sert à chaque passe où la veille de préparation en désigne
+ * un, même hors de la fenêtre de `corpus:sync` : un arrêt n'est jamais perdu
+ * parce qu'une entrée de flux a occupé la cible du corpus.
+ */
+export function arretsAVerser(rootDir: string): string[] {
+  const documents = documentsCjue(rootDir);
+  return decisionsSuivies(rootDir).filter(
+    (celex) => !documents.has(celex) && motifDurable(rootDir, celex) === null,
+  );
+}
+
+/**
  * Verse au corpus CJUE les arrêts désignés : le filtre CJUE d'abord, les CELEX
  * complémentaires du descripteur ensuite. Rien n'est écrit quand tous sont déjà
  * présents ou durablement écartés.
@@ -259,6 +272,10 @@ export async function incorporerArretVeille(
   return {
     ecrit: resultat.ecrit,
     message,
-    complementaire: resultat.complementaires.includes(options.celex),
+    // Un CELEX déjà complémentaire avant la passe entre aussi par cette liste :
+    // le message le dit, le tableau des ajouts ne le porte pas.
+    complementaire:
+      resultat.complementaires.includes(options.celex) ||
+      /CELEX complémentaires/.test(message),
   };
 }
