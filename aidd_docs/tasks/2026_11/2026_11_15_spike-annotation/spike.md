@@ -71,6 +71,25 @@ pertinent plus tard, si le jeu dépasse le millier de questions et qu'un accord 
 mesuré sur un échantillon tenu à l'écart ; la condition de bascule est alors chiffrée (erreur du
 juge < 2 % à p = 0,02, ≥ 19 annotations par corpus pour une borne à 10 points).
 
+**Piste de l'auteur (2026-11-15) : des questions tirées de la doctrine publiée.** Les articles
+d'avocats et de professeurs de droit en ligne fournissent à la fois une question réelle et sa
+référence experte (les textes et décisions qu'ils citent). C'est exactement le coût identifié au
+point 1 : la référence. La mesure devient alors largement automatique.
+
+- Apport : rappel mesurable sans jugement répété (le serveur retrouve-t-il les sources citées par
+  l'auteur ?), questions de praticiens plutôt que fabriquées, référence attribuable à un expert.
+- Limites : la référence vaut pour le **rappel**, pas pour la **précision** des autres passages
+  rendus (jugement humain toujours requis) ; granularité au document ou à l'article, plus grossière
+  que le fragment de #61 ; articles datés ou discutables (garder la date, écarter ceux dépassés par
+  une réforme) ; biais vers les sujets en vogue, à compléter pour les corpus peu commentés
+  (2016/680, 2018/1725, métadonnées) ; droit d'auteur : ne garder que la question reformulée, la
+  liste des références citées, le lien et la date, jamais le texte de l'article.
+- Coût : la relecture humaine porte sur la reformulation de la question et le rattachement des
+  références aux identifiants du corpus (CELEX, `CNILTEXT…`, numéro d'article), plus rapide que
+  l'écriture d'une référence de zéro ; à mesurer sur quelques articles avec le kit.
+- Effet sur la recommandation : elle s'en trouve renforcée (jeu doré humain), et la piste réduit le
+  coût de #60 sans changer la contrainte de nombre de #64.
+
 **Compatibilité, méthode par méthode**
 
 | Besoin | Aujourd'hui | Annotation complète | ARES / PPI |
