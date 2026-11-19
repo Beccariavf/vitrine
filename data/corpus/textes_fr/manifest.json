@@ -2,7 +2,7 @@
   "corpus": "textes_fr",
   "nom": "Textes français d'application",
   "licence": "Licence Ouverte 2.0 (Etalab)",
-  "date_consultation": "2026-11-14",
+  "date_consultation": "2026-11-19",
   "documents": 3,
   "unites": 183,
   "textes": [
@@ -17,7 +17,8 @@
       "articles_couverts": null,
       "articles_en_vigueur": 166,
       "articles_abroges_ecartes": 1,
-      "snapshot": "2026-11-14/decret-2019-536.json",
+      "versions_remplacees": [],
+      "snapshot": "2026-11-19/decret-2019-536.json",
       "snapshot_sha256": "ac83fa64fd0cd03b77cc863b0ba5a968e768374fde4717f95c8d586c498279d3"
     },
     {
@@ -48,7 +49,8 @@
       ],
       "articles_en_vigueur": 16,
       "articles_abroges_ecartes": 1,
-      "snapshot": "2026-11-14/code-penal-226-16.json",
+      "versions_remplacees": [],
+      "snapshot": "2026-11-19/code-penal-226-16.json",
       "snapshot_sha256": "814a1e120f930409988ac8f43b89e496714950acf394913ca1d37e9bedab5c39"
     },
     {
@@ -64,13 +66,14 @@
       ],
       "articles_en_vigueur": 1,
       "articles_abroges_ecartes": 0,
-      "snapshot": "2026-11-14/cpce-l34-5.json",
-      "snapshot_sha256": "f995464fb839b2bf74a39f0cccd785d1b588550677d6c5aef5fbb5ca83ff899b"
+      "versions_remplacees": [],
+      "snapshot": "2026-11-19/cpce-l34-5.json",
+      "snapshot_sha256": "4f4225a3977cc09152f95b06fd4c2582423dab79eeba58a18bf56b461bf38908"
     }
   ],
   "couverture": {
     "source": "PISTE — Légifrance /consult/legiPart (décret), /consult/code (Code pénal), /consult/getArticleWithIdAndNum (CPCE)",
-    "date": "2026-11-14",
+    "date": "2026-11-19",
     "articles_en_vigueur": 183,
     "articles_abroges_ecartes": 2,
     "perimetre": [

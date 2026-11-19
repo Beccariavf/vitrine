@@ -1,0 +1,15 @@
+{
+  "id": "39ea03bd302359d5",
+  "title": "Conservation des mots de passe clients en clair : la CNIL prononce une sanction de 5 millions d’euros",
+  "officialTitle": "Conservation des mots de passe clients en clair : la CNIL prononce une sanction de 5 millions d’euros",
+  "url": "https://www.cnil.fr/fr/conservation-des-mots-de-passe-sanction-5-millions-deuros",
+  "publishedAt": "2026-11-18T12:00:00.000Z",
+  "summary": "En novembre 2026, la CNIL a infligé une sanction de 5 millions d’euros à une société en raison de l’insuffisance des mesures prises pour assurer la sécurité des données de ses clients et d’une durée…",
+  "references": [
+    "Règlement (UE) 2016/679 · art. 5-1, 32"
+  ],
+  "themes": [
+    "donnees-personnelles"
+  ],
+  "source": "cnil"
+}

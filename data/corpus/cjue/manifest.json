@@ -3,12 +3,12 @@
   "nom": "CJUE",
   "titre": "Décisions de la Cour de justice de l'Union européenne sur les données personnelles",
   "source": "CELLAR / EUR-Lex — SPARQL, rendu XHTML puis HTML patrimonial, français puis anglais",
-  "date_extraction": "2026-11-14",
+  "date_extraction": "2026-11-19",
   "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
   "langue": "fra",
-  "documents": 251,
-  "fragments": 23460,
-  "documents_lus": 365,
+  "documents": 257,
+  "fragments": 24292,
+  "documents_lus": 371,
   "exclusions": {
     "date_invalide": 0,
     "avis_avocat_general": 95,
@@ -37,12 +37,13 @@
       "62018CJ0746",
       "62010CJ0461",
       "62020CJ0037",
-      "62020CJ0339"
+      "62020CJ0339",
+      "62025CJ0528"
     ],
-    "complementaires_ajoutes": 4,
+    "complementaires_ajoutes": 5,
     "langue": "fra",
     "langues": {
-      "fra": 250,
+      "fra": 256,
       "eng": 1
     },
     "documents_langues": {
@@ -56,7 +57,7 @@
     },
     "periode": {
       "date_min": "1999-10-14",
-      "date_max": "2026-11-05"
+      "date_max": "2026-11-19"
     },
     "exclusions": {
       "date_invalide": 0,
