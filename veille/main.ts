@@ -14,7 +14,7 @@ import { FEED_URL as COMMISSION_DMA_FEED_URL, parseFeed as parseCommissionDmaFee
 import { FEED_URL as ARCOM_FEED_URL, PAGE as ARCOM_PAGE, parseFeed as parseArcomFeed } from "./sources/arcom.ts";
 import { fetchEntries as fetchCetatEntries } from "./sources/cetat.ts";
 import { fetchEntries as fetchJudilibreEntries } from "./sources/judilibre.ts";
-import { passeEurlex } from "./sources/eurlex.ts";
+import { ENDPOINT_SPARQL, passeEurlex } from "./sources/eurlex.ts";
 import { passeConstit } from "./sources/constit.ts";
 import { passeDoctrine } from "./sources/cnil-doctrine.ts";
 import { passePreparation } from "./sources/preparation.ts";
@@ -510,11 +510,19 @@ const USER_AGENT = "vitrine-veille/0.1 (+https://github.com/Beccariavf/vitrine)"
 /** Une archive pèse quelques mégaoctets : le délai de la liste ne lui suffit pas. */
 const ARCHIVE_TIMEOUT_MS = 120_000;
 
+/**
+ * Délai d'un appel réseau. Le point SPARQL CELLAR répond en une vingtaine de
+ * secondes sur une requête groupée : il lui faut plus que les appels de liste.
+ */
+export function delaiPour(url: string): number {
+  return url.startsWith(ENDPOINT_SPARQL) ? 60_000 : 10_000;
+}
+
 /** Le vrai réseau, borné dans le temps et identifié auprès de la source. */
 const cliFetch: FetchLike = (url, init = {}) =>
   fetch(url, {
     ...init,
-    signal: AbortSignal.timeout(10_000),
+    signal: AbortSignal.timeout(delaiPour(url)),
     headers: { "user-agent": USER_AGENT, ...init.headers },
   });
 
