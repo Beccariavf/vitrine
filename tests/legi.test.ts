@@ -286,6 +286,7 @@ describe("la détection des versions des textes français", () => {
       });
 
       assert.deepEqual(resultat.entrees, []);
+      assert.deepEqual(resultat.echecs, []);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
@@ -446,6 +447,35 @@ describe("la détection des versions des textes français", () => {
       "2025-12-31",
     );
     assert.equal(resultat.version, "LEGITEXT000038567662_07-09-2025");
+
+    // Même date : la première reste retenue, l'ordre ne change pas le résultat.
+    const egalite = versionDeRecherche(
+      {
+        results: [
+          { titles: [{ id: "LEGITEXT000038567662_24-04-2025" }] },
+          { titles: [{ id: "LEGITEXT000038567662_24-04-2025" }] },
+        ],
+      },
+      DECRET_DOC,
+      DATE,
+    );
+    assert.equal(egalite.version, "LEGITEXT000038567662_24-04-2025");
+
+    // Un identifiant sans date et un texte dont le préfixe allonge le nôtre sont écartés.
+    assert.throws(
+      () =>
+        versionDeRecherche(
+          {
+            results: [
+              { titles: [{ id: "LEGITEXT000038567662" }] },
+              { titles: [{ id: "LEGITEXT0000385676621_07-09-2025" }] },
+            ],
+          },
+          DECRET_DOC,
+          DATE,
+        ),
+      /Réponse search sans version consolidée de LEGITEXT000038567662/,
+    );
   });
 
   it("refuse une recherche sans version admissible", () => {
