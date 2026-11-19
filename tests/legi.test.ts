@@ -448,16 +448,17 @@ describe("la détection des versions des textes français", () => {
     );
     assert.equal(resultat.version, "LEGITEXT000038567662_07-09-2025");
 
-    // Même date : la première reste retenue, l'ordre ne change pas le résultat.
+    // Une version datée du jour même de la passe est admissible : le filtre est
+    // `≤`, pas `<`.
     const egalite = versionDeRecherche(
       {
         results: [
-          { titles: [{ id: "LEGITEXT000038567662_24-04-2025" }] },
+          { titles: [{ id: "LEGITEXT000038567662_07-09-2025" }] },
           { titles: [{ id: "LEGITEXT000038567662_24-04-2025" }] },
         ],
       },
       DECRET_DOC,
-      DATE,
+      "2025-04-24",
     );
     assert.equal(egalite.version, "LEGITEXT000038567662_24-04-2025");
 
