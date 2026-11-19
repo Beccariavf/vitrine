@@ -158,6 +158,81 @@ d'annotation (non mesuré : c'est l'objet du kit) et sur l'accord d'un juge juri
 - Représentativité de l'échantillon humain : un tirage depuis le top 5 du système biaise le
   rectifier ; il faudrait un tirage indépendant, donc plus cher.
 
+## Dépouillement de l'annotation (2026-11-19)
+
+Six blocs annotés par l'auteur (`annotation-bloc-1.md` à `-6.md`) : 60 questions, 252 passages,
+8 corpus. Comptes calculés en comparant les cases cochées au corrigé de chaque bloc.
+
+| Niveau rendu | Questions | ≥ 1 passage « Répond » (humain) | Attendue dans le top 5 (corrigé) |
+| --- | --- | --- | --- |
+| `confiant` | 17 | 17 | 17 |
+| `incertain` | 39 | 36 | 27 |
+| `aucun_resultat_fiable` | 4 | — (2 refus justifiés, 2 injustifiés : Q22, Q41) | 0 |
+
+- **Confiant** : 0 erreur sur 17 ; borne haute de Wilson à 95 % = 18,4 %. Encourageant, non publiable.
+- **Incertain trop prudent** : 36 sur 39 ont une réponse dans le top 5 ; les seuils laissent de la
+  couverture de côté.
+- **Corrigé incomplet** : 117 passages jugés « Répond » hors corrigé ; 9 questions (Q4, Q6, Q17,
+  Q18, Q29, Q38, Q40, Q52, Q59, surtout `ce` et `cc`) sans attendue dans le top 5 mais avec une
+  réponse selon l'humain. Le recall@5 du harnais sous-estime le serveur : argument pour #61.
+- **Citations inexactes** : 0.
+- **Grille indulgente** : 85 % des passages cochés « Répond » (213/252) ; exemple, art. 48 coché pour
+  Q1 alors qu'il est seulement lié. Trancher « suffit à répondre » contre « pertinent » avant
+  d'étendre le jeu.
+- **Trous** : Q8, Q12, Q49 sans case cochée ; 7 passages à double étiquette (Q25, Q34, Q43, Q50,
+  Q60) ; Q50.5 vide.
+- **Temps** (déclaré par l'auteur, non chronométré question par question) : **10 à 15 min par bloc
+  de 10**, soit **1 à 1,5 min par question**, sous l'hypothèse basse du spike (3 min). Extrapolation :
+  150 questions = 2,5 à 3,75 h ; 1 280 questions = 21 à 32 h. Ce temps couvre la relecture du top 5,
+  pas l'écriture d'une référence absente (aucune recherche dans le corpus n'a été faite).
+
+### Remarques de l'auteur, par famille
+
+| Famille | Questions | Action |
+| --- | --- | --- |
+| Question mal posée | Q8 (vidéoprotection / vidéosurveillance), Q38 (rôle du CE face à la CNIL), Q21, Q25 (corpus visé inadapté) | reformuler ou changer de corpus dans le jeu `dev` |
+| Manque du corpus | Q12 (décision du 22/10/2026 absente), Q22, Q41 (refus alors que des sanctions existent ailleurs) | mettre le corpus à jour ; vérifier si la réponse est dans un autre corpus (routage, pas seuils) |
+| Question impossible | Q49 (amende d'une société nommée, décisions anonymisées) | retirer ou réécrire sans le nom |
+| Grille insuffisante | Q50 (extrait trop court), Q33 (recherche internet nécessaire), Q43 (passage qui renvoie à d'autres documents) | montrer le contexte du passage ; dire si un renvoi « répond » (lien avec #62) |
+
+**Vérification contre le corpus (2026-11-19)** : sur les 8 questions signalées, 3 seulement étaient
+mal posées ; les 5 autres sont de **vrais échecs du serveur**, à garder tels quels.
+
+| Question | Constat dans l'index | Décision |
+| --- | --- | --- |
+| Q8 (`questions-cc.csv`) | l'arrêt du 21 mai 2025 parle de « vidéosurveillance » | reformulée : vidéosurveillance, sanction contre un salarié ; l'attendue remonte au rang 3 |
+| Q38 (`questions-ce.csv`) | la décision porte sur le refus de la CNIL de donner suite à une plainte, déféré au juge de l'excès de pouvoir | reformulée en ces termes ; l'attendue reste hors du top 5, rempli d'autres décisions du CE sur le même contrôle (corrigé sans doute incomplet) |
+| Q25 (`questions.csv`) | art. 8 (enfants, services en ligne) répond aussi | attendues `art_7\|art_8` |
+| Q12 | la délibération FNAC (SAN-2026-015, 22/10/2026) **est** dans l'index et nomme FNAC | inchangée : échec de recherche |
+| Q49 | la délibération Solocal **n'est pas** anonymisée et cite « Pages Jaunes » | inchangée : échec de recherche |
+| Q22, Q41 | l'art. 5, § 1, e) (limitation de la conservation) répond ; refus reproduit | inchangées : échec de recherche, refus injustifié |
+| Q21 | Schrems II attendu, question correcte | inchangée |
+
+**Définition retenue (auteur, 2026-11-19)** : « Répond » = le passage **suffit à répondre** ; un
+renvoi sans contenu vaut « Lié ». Les blocs 1 à 6 ont été annotés sous une lecture plus large
+(85 % de « Répond ») et **ne seront pas repassés** (décision de l'auteur) : ils valent pour le
+rappel, les niveaux et les refus, **pas pour la précision**. La précision se mesure sur les blocs 7
+à 21 seuls (150 questions sous la définition stricte).
+
+**Blocs 7 à 15 (Q61–Q150)** : générés le 2026-11-19 par le serveur local (`search`, k = 5, corpus
+de la ligne CSV), sur les questions `dev` restantes, sans le split `test`, sans les questions qui
+citent un numéro d'article (raccourci de référence exacte, déterministe). Tous les corpus à petit jeu
+sont épuisés (aiact 3, cc 4, ce 5, cepd 3, cjue 2, lil 3, doctrine CNIL 9), puis CNIL 30 et RGPD 31,
+dont 6 hors périmètre. Niveaux rendus : 25 `confiant`, 59 `incertain`, 6 refus. Consigne mise à jour
+(« suffit à répondre »), mise en page identique aux blocs 1 à 6.
+
+**Blocs 16 à 21 (Q151–Q210)** : même méthode, 60 questions tirées du reste du `dev` : CNIL 30
+(dont 2 hors périmètre), RGPD 30 (dont 4 hors périmètre). Niveaux rendus : 20 `confiant`,
+36 `incertain`, 4 refus. Les petits corpus étant épuisés, l'échantillon strict est déséquilibré :
+sur Q61–Q210, CNIL 69 (doctrine comprise) et RGPD 61 contre 2 à 5 questions pour les autres corpus ; aucune borne par
+corpus n'y est atteignable hors CNIL et RGPD.
+
+**Périmètre retenu (auteur, 2026-11-19)** : l'annotation s'arrête au **bloc 12**. Échantillon strict
+= blocs 7 à 12, **60 questions** (Q61–Q120) : CNIL 28, RGPD 20, CC 3, CE 3, AI Act 2, CEPD 2,
+CJUE 1, LIL 1 ; 18 `confiant`, 38 `incertain`, 4 refus. Avec les blocs 1 à 6, 120 questions
+annotées. Les blocs 13 à 21 restent en réserve, non annotés. Conséquence : 18 confiantes ne donnent
+qu'une borne de Wilson ≈ 17,6 % à zéro erreur ; la précision se rapporte globalement, jamais par corpus.
+
 ## Follow-up
 
 - **#60** : écrire le jeu doré à la main, 150 questions réparties sur les 19 corpus ; viser 35
