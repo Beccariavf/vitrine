@@ -3,22 +3,22 @@
   "nom": "Cour de cassation",
   "titre": "Décisions de la Cour de cassation relatives aux données personnelles",
   "source": "PISTE — Judilibre /search et /decision",
-  "date_extraction": "2026-11-14",
+  "date_extraction": "2026-11-19",
   "licence": "Licence Ouverte 2.0 (Etalab), conditions générales d'utilisation Judilibre",
-  "documents": 403,
-  "fragments": 8194,
-  "documents_lus": 1348,
-  "doublons_recherche": 705,
+  "documents": 405,
+  "fragments": 8225,
+  "documents_lus": 1352,
+  "doublons_recherche": 709,
   "exclusions": {
     "date_invalide": 0,
-    "hors_sujet": 945,
+    "hors_sujet": 947,
     "texte_vide": 0
   },
   "couverture": {
     "source": "PISTE — Judilibre /search et /decision",
     "periode": {
       "date_min": "1986-07-21",
-      "date_max": "2026-11-10"
+      "date_max": "2026-11-18"
     },
     "champs": "text",
     "requetes": [
@@ -70,18 +70,18 @@
       "visa_pertinent": true
     },
     "veille": {
-      "entrees": 4,
-      "ajoutees": 4,
-      "retenues": 4
+      "entrees": 6,
+      "ajoutees": 1,
+      "retenues": 6
     },
     "exclusions": {
       "date_invalide": 0,
-      "hors_sujet": 945,
+      "hors_sujet": 947,
       "texte_vide": 0
     },
     "introuvables": [],
     "reprise": {
-      "en_cache": 1348,
+      "en_cache": 1352,
       "en_attente": 0
     }
   }
