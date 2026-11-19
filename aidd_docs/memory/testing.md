@@ -120,6 +120,8 @@ Comment le projet est testé : les couches, les outils et les conventions. Où v
 
 ## Manuel
 
+- Annotation humaine (#40, `aidd_docs/tasks/2026_11/2026_11_15_spike-annotation/`) : blocs de 10 questions `dev`, top 5 réel du serveur local (`search`, k = 5), corrigé en fin de fichier. « Répond » = le passage **suffit à répondre** ; un renvoi sans contenu vaut « Lié ». Blocs 1–6 (Q1–Q60) annotés sous une lecture plus large : rappel, niveaux et refus seulement, jamais la précision. Blocs 7–12 (Q61–Q120) : échantillon strict de la précision. Blocs 13–21 : réserve non annotée. Temps constaté : 10 à 15 min par bloc.
+
 - `npm run corpus:build` : lit tous les descripteurs et écrit `data/corpus/{rgpd,aiact,eprivacy,police,eudpr,rgpdproc}/` (réseau) ; `--document <corpus>` n'en construit qu'un.
 - `npm run corpus:index` : construit ou met à jour `data/corpus/index/index.db` (Ollama et `leoipulsar/harrier-0.6b`) ; un second passage sur un corpus inchangé embarque zéro unité et laisse les vecteurs identiques.
 - `npm run corpus:sync -- --dry-run` : la passe sans écrire ; elle nomme la fraîcheur, les documents manquants et les sources qui seraient lancées. Sans `--dry-run`, la commande appelle le réseau et Ollama, réindexe par delta et écrit `data/corpus/sync.json`.
