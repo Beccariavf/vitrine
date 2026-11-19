@@ -5,7 +5,8 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { after, before, describe, it } from "node:test";
 import type { ApiSource, FetchLike } from "../veille/main.ts";
-import { run } from "../veille/main.ts";
+import { delaiPour, run } from "../veille/main.ts";
+import { ENDPOINT_SPARQL } from "../veille/sources/eurlex.ts";
 import { readThemes } from "../veille/themes.ts";
 import type { Entry } from "../veille/types.ts";
 
@@ -92,6 +93,13 @@ function withRoot(body: (root: string) => Promise<void>): () => Promise<void> {
     }
   };
 }
+
+describe("le délai des appels réseau", () => {
+  it("donne 60 s au point SPARQL CELLAR et 10 s aux autres appels", () => {
+    assert.equal(delaiPour(ENDPOINT_SPARQL), 60_000);
+    assert.equal(delaiPour("https://www.cnil.fr/fr/actualites"), 10_000);
+  });
+});
 
 describe("l'enrichissement d'une source API", () => {
   let root: string;

@@ -124,7 +124,7 @@ export function corpsRechercheLoda(fond: string, num: string): unknown {
       ],
       filtres: [],
       pageNumber: 1,
-      pageSize: 10,
+      pageSize: 100,
       sort: "DATE_DESC",
       typePagination: "DEFAUT",
     },
@@ -195,13 +195,20 @@ function articlesEnVigueur(part: LegiPart): VersionLue {
 
 /**
  * Lit l'identifiant de version rendu par une recherche `LODA_DATE` : une ligne
- * par version consolidée, la première du tri `DATE_DESC` étant la courante.
+ * par version consolidée. PISTE ne garantit pas l'ordre malgré `sort` : la
+ * version retenue est celle dont la date d'identifiant est la plus récente sans
+ * dépasser la date de la passe.
  */
-export function versionDeRecherche(reponse: unknown, document: string): { version: string; dateDebut: string | null } {
+export function versionDeRecherche(
+  reponse: unknown,
+  document: string,
+  date: string,
+): { version: string; dateDebut: string | null } {
   const results = objet(reponse)?.results;
   if (!Array.isArray(results)) {
     throw new Error(`Réponse search ${document} sans results`);
   }
+  let retenue: { version: string; dateDebut: string } | null = null;
   for (const valeur of results) {
     const resultat = objet(valeur);
     if (resultat === null) continue;
@@ -209,13 +216,20 @@ export function versionDeRecherche(reponse: unknown, document: string): { versio
     const identifiant =
       texte(premierTitre?.id) || texte(resultat.id) || texte(resultat.textId);
     if (!identifiant.startsWith(`${document}_`)) continue;
-    return { version: identifiant, dateDebut: dateDeVersionIdentifiant(identifiant) };
+    const dateDebut = dateDeVersionIdentifiant(identifiant);
+    if (dateDebut === null || dateDebut > date) continue;
+    if (retenue === null || dateDebut > retenue.dateDebut) {
+      retenue = { version: identifiant, dateDebut };
+    }
   }
-  throw new Error(`Réponse search sans version consolidée de ${document}`);
+  if (retenue === null) {
+    throw new Error(`Réponse search sans version consolidée de ${document}`);
+  }
+  return { version: retenue.version, dateDebut: retenue.dateDebut };
 }
 
 /** Lit une réponse selon la route du texte. */
-export function lireVersion(texteSuivi: TexteSuivi, reponse: unknown): VersionLue {
+export function lireVersion(texteSuivi: TexteSuivi, reponse: unknown, date: string): VersionLue {
   switch (texteSuivi.route.type) {
     case "legiPart":
       return articlesEnVigueur(lireLegiPart(reponse));
@@ -224,7 +238,7 @@ export function lireVersion(texteSuivi: TexteSuivi, reponse: unknown): VersionLu
     case "article":
       return articlesEnVigueur(lireArticleParNumero(reponse));
     case "search": {
-      const lu = versionDeRecherche(reponse, texteSuivi.document);
+      const lu = versionDeRecherche(reponse, texteSuivi.document, date);
       return { version: lu.version, dateDebut: lu.dateDebut, articles: new Map(), dates: new Map() };
     }
   }

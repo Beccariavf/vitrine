@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { describe, it } from "node:test";
 import type { Entry } from "../veille/types.ts";
 import type { FetchLike } from "../veille/fetch.ts";
-import { MAX_CALLS_PASSE, SOURCE_ID, dateDeVersionIdentifiant, textesSuivis } from "../veille/sources/legi.ts";
+import { MAX_CALLS_PASSE, SOURCE_ID, corpsRechercheLoda, dateDeVersionIdentifiant, textesSuivis, versionDeRecherche } from "../veille/sources/legi.ts";
 import { resetUsage } from "../veille/piste.ts";
 import { passeTextesFr } from "../veille/textes-fr.ts";
 import type { DescripteurTextesFr } from "../mcp/corpus/textes-fr/parse.ts";
@@ -28,6 +28,8 @@ const DECRET = fixture("./fixtures/textes-fr/decret.json");
 const PENAL = fixture("./fixtures/textes-fr/code-penal.json");
 const CPCE = fixture("./fixtures/textes-fr/cpce.json");
 const DECRET_RECHERCHE = fixture("./fixtures/legi/decret-recherche.json");
+/** La réponse brute `data/raw/89/891668c1….json` réduite aux identifiants, dans son ordre réel. */
+const DECRET_RECHERCHE_MELANGEE = fixture("./fixtures/legi/decret-recherche-melangee.json");
 
 const LIL_DOC = "LEGITEXT000006068624";
 const DECRET_DOC = "LEGITEXT000038567662";
@@ -273,6 +275,23 @@ describe("la détection des versions des textes français", () => {
     }
   });
 
+  it("ne signale plus le décret périmé sur la réponse réelle mélangée", async () => {
+    const root = await racineCorpus();
+    try {
+      const resultat = await passeTextesFr({
+        rootDir: root,
+        date: DATE,
+        reponses: { ...REPONSES_INCHANGEES, "decret-2019-536": DECRET_RECHERCHE_MELANGEE },
+        config: null,
+      });
+
+      assert.deepEqual(resultat.entrees, []);
+      assert.deepEqual(resultat.echecs, []);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("signale un article retiré de la version en vigueur", async () => {
     const root = await racineCorpus();
     try {
@@ -410,6 +429,78 @@ describe("la détection des versions des textes français", () => {
     assert.equal(dateDeVersionIdentifiant("LEGIARTI000042155961"), null);
     assert.equal(dateDeVersionIdentifiant("LEGITEXT000038567662_31-02-2025"), null);
     assert.equal(textesSuivis().length, 4);
+  });
+
+  it("retient la version la plus récente sans dépasser la passe, quel que soit l'ordre", () => {
+    const lue = versionDeRecherche(DECRET_RECHERCHE_MELANGEE, DECRET_DOC, DATE);
+    assert.equal(lue.version, "LEGITEXT000038567662_07-09-2025");
+    assert.equal(lue.dateDebut, "2025-09-07");
+
+    const resultat = versionDeRecherche(
+      {
+        results: [
+          { titles: [{ id: "LEGITEXT000038567662_26-08-2026" }] },
+          { titles: [{ id: "LEGITEXT000038567662_07-09-2025" }] },
+        ],
+      },
+      DECRET_DOC,
+      "2025-12-31",
+    );
+    assert.equal(resultat.version, "LEGITEXT000038567662_07-09-2025");
+
+    // Une version datée du jour même de la passe est admissible : le filtre est
+    // `≤`, pas `<`.
+    const egalite = versionDeRecherche(
+      {
+        results: [
+          { titles: [{ id: "LEGITEXT000038567662_07-09-2025" }] },
+          { titles: [{ id: "LEGITEXT000038567662_24-04-2025" }] },
+        ],
+      },
+      DECRET_DOC,
+      "2025-04-24",
+    );
+    assert.equal(egalite.version, "LEGITEXT000038567662_24-04-2025");
+
+    // Un identifiant sans date et un texte dont le préfixe allonge le nôtre sont écartés.
+    assert.throws(
+      () =>
+        versionDeRecherche(
+          {
+            results: [
+              { titles: [{ id: "LEGITEXT000038567662" }] },
+              { titles: [{ id: "LEGITEXT0000385676621_07-09-2025" }] },
+            ],
+          },
+          DECRET_DOC,
+          DATE,
+        ),
+      /Réponse search sans version consolidée de LEGITEXT000038567662/,
+    );
+  });
+
+  it("refuse une recherche sans version admissible", () => {
+    assert.throws(
+      () =>
+        versionDeRecherche(
+          {
+            results: [
+              { titles: [{ id: "LEGITEXT000038567662_26-08-2026" }] },
+              { titles: [{ id: "LEGITEXT000006070719_01-01-2020" }] },
+            ],
+          },
+          DECRET_DOC,
+          "2025-12-31",
+        ),
+      /Réponse search sans version consolidée de LEGITEXT000038567662/,
+    );
+  });
+
+  it("demande toutes les versions à la recherche LODA", () => {
+    const corps = corpsRechercheLoda("LODA_DATE", "2019-536") as {
+      recherche: { pageSize: number };
+    };
+    assert.equal(corps.recherche.pageSize, 100);
   });
 });
 

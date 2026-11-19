@@ -113,7 +113,7 @@ export async function passeTextesFr(
       if (options.dryRun !== true) {
         writeRaw(rootDir, `${JSON.stringify(reponse, null, 2)}\n`, "json");
       }
-      changements.push(...detecterChangements(texteSuivi, lireVersion(texteSuivi, reponse), etat));
+      changements.push(...detecterChangements(texteSuivi, lireVersion(texteSuivi, reponse, date), etat));
     } catch (error) {
       echecs.push(`${texteSuivi.nom} : ${raison(error)}`);
     }
