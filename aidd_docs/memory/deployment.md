@@ -13,7 +13,7 @@ Où le projet tourne et comment il est livré.
 
 - Aucun environnement public : le site n'est pas déployé.
 - `dist/` est un artefact local, régénéré par `npm run build` ; la preview Astro sert au contrôle visuel.
-- L'outil de paramètres `tools/parametres.html` est local et non déployé : il écrit `veille/themes.json` via l'API File System Access de Chrome. Aucun serveur, aucun script sur les pages publiques.
+- L'outil de paramètres `tools/parametres.html` est local et non déployé : il écrit `veille/themes.json` via l'API File System Access de Chrome. Aucun serveur pour le site et aucun script sur ses pages, hors l'essai de recherche du connecteur (`EssaiRecherche.astro`), qui interroge l'API locale `GET /recherche` depuis le navigateur — son origine doit figurer dans `VITRINE_HTTP_ORIGINES` (défaut `http://localhost:4321`).
 - Les secrets PISTE vivent dans `.env`, ignoré par git ; `.env.example` documente les trois variables. Le hook pre-commit et la CI refusent leur versionnement ; aucun secret n'est nécessaire à la CI.
 
 ## Release
