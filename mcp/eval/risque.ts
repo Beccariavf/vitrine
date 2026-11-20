@@ -205,8 +205,12 @@ function entete(chemin: string, objet: ObjetMesureJson): string[] {
     `jeu : ${objet.corpus}, split ${objet.split}, ${objet.questions.length} questions ` +
       `mesurées (${semantiques} sémantiques, ${pieges} pièges, ${exactes} références exactes écartées)`,
     `modèle : ${objet.modele} (${objet.dimensions} dimensions), recherche ${objet.recherche}`,
-    `seuils de la mesure : bas=${seuil(objet.seuils.bas)} haut=${seuil(objet.seuils.haut)} ` +
-      `marge=${seuil(objet.seuils.marge)}`,
+    ...(objet.seuils === undefined
+      ? ["seuils de la mesure : aucun (recherche lexicale)"]
+      : [
+          `seuils de la mesure : bas=${seuil(objet.seuils.bas)} haut=${seuil(objet.seuils.haut)} ` +
+            `marge=${seuil(objet.seuils.marge)}`,
+        ]),
   ];
 }
 

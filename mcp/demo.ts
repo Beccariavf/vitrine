@@ -11,7 +11,7 @@
  */
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { StdioClientTransport, getDefaultEnvironment } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { debutDispositif } from "./corpus/cnil/meta.ts";
 
@@ -103,7 +103,9 @@ type Passages = {
     texte: string;
     url: string;
     date_acte: string;
-    similarite: number;
+    similarite?: number;
+    /** Rang BM25 en recherche lexicale, où `similarite` n'existe pas. */
+    rang_lexical?: number;
     type_sanction?: string;
     montant?: number | null;
     injonction?: boolean;
@@ -201,7 +203,11 @@ function rendre(outil: Outil, donnees: unknown): boolean {
       .filter((partie) => partie !== "")
       .join(" · ");
     process.stdout.write(
-      `  ${index + 1}. ${passage.similarite.toFixed(3)} · ${meta}\n` +
+      `  ${index + 1}. ${
+        passage.similarite === undefined
+          ? `rang lexical ${passage.rang_lexical ?? index + 1}`
+          : passage.similarite.toFixed(3)
+      } · ${meta}\n` +
         `     ${passage.ref} · ${passage.url}\n` +
         `     ${extrait(passage.texte)}\n`,
     );
@@ -210,11 +216,17 @@ function rendre(outil: Outil, donnees: unknown): boolean {
 }
 
 async function main(): Promise<void> {
+  // Le client stdio ne transmet pas l'environnement par défaut : sans cela,
+  // `VITRINE_RECHERCHE=lexicale npm run mcp:demo` lancerait un serveur dense.
+  const recherche = process.env.VITRINE_RECHERCHE;
   const transport = new StdioClientTransport({
     command: process.execPath,
     args: ["mcp/server.ts"],
     cwd: RACINE,
     stderr: "inherit",
+    ...(recherche === undefined
+      ? {}
+      : { env: { ...getDefaultEnvironment(), VITRINE_RECHERCHE: recherche } }),
   });
   const client = new Client({ name: "demo-vitrine", version: "0.1.0" });
 
