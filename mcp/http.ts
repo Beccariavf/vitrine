@@ -23,7 +23,7 @@ export const LIMITE_DEFAUT = 20;
 /** Durée de la fenêtre du limiteur : une minute fixe. */
 export const FENETRE_MS = 60_000;
 /** Port d'écoute par défaut, sur la boucle locale seule. */
-export const PORT_DEFAUT = 8787;
+export const PORT_DEFAUT = 8790;
 /** Origine admise par défaut : le site Astro en développement. */
 export const ORIGINE_DEFAUT = "http://localhost:4321";
 /** Origines admises, séparées par des virgules. */

@@ -43,7 +43,7 @@ npm run veille:delais  # délai publication → veille → corpus, data/corpus/d
 npm run mcp:smoke      # vérifie Ollama et leoipulsar/harrier-0.6b
 npm run mcp            # serveur MCP sur stdio
 VITRINE_RECHERCHE=lexicale npm run mcp   # recherche par mots seuls, sans Ollama à la requête
-npm run mcp:http       # API HTTP locale de la recherche lexicale sur 127.0.0.1:8787
+npm run mcp:http       # API HTTP locale de la recherche lexicale sur 127.0.0.1:8790
 npm run mcp:demo       # cinq appels réels au serveur stdio (Ollama requis en mode dense)
 npm run mcp:eval -- --questions questions-v2.csv --split dev    # 30 questions de développement (hors CI)
 npm run mcp:eval -- --questions questions-v2.csv --split test --mesurer-test   # 30 questions tenues à l'écart, une seule fois (hors CI)
@@ -481,10 +481,10 @@ les expose comme outils directs.
 ## API HTTP locale
 
 `npm run mcp:http` sert la recherche lexicale seule — celle de `VITRINE_RECHERCHE=lexicale`, sans
-Ollama ni embedder — par une API HTTP sur `127.0.0.1:8787` (`VITRINE_HTTP_PORT` change le port) :
+Ollama ni embedder — par une API HTTP sur `127.0.0.1:8790` (`VITRINE_HTTP_PORT` change le port) :
 
 ```
-curl -s "http://127.0.0.1:8787/recherche?q=droit%20%C3%A0%20l%27oubli&corpus=rgpd"
+curl -s "http://127.0.0.1:8790/recherche?q=droit%20%C3%A0%20l%27oubli&corpus=rgpd"
 ```
 
 `GET /recherche?q=<question>[&corpus=<id>]` rend cinq passages au plus, chacun avec `rang`, `ref`,
