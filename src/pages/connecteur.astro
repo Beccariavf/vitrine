@@ -15,23 +15,23 @@ const nombre = new Intl.NumberFormat("fr-FR");
 const etapes = [
   {
     numero: "01",
-    couleur: "bg-blue text-paper",
     titre: "Ajoutez le connecteur",
     texte: "Le connecteur se branche sur votre assistant comme un serveur MCP : vos conversations restent dans votre outil.",
   },
   {
     numero: "02",
-    couleur: "bg-red text-paper",
     titre: "Posez votre question",
     texte: "Interrogez votre IA comme d'habitude : elle va chercher dans les textes, les autorités et les juridictions du droit des données personnelles.",
   },
   {
     numero: "03",
-    couleur: "bg-yellow text-ink",
     titre: "Vérifiez la source",
     texte: "Les passages retrouvés portent leur référence et leur lien vers le texte officiel : vous vérifiez avant de vous appuyer dessus.",
   },
 ];
+
+/** Titre de section de la page : sans 500 serré, la hiérarchie vient de la taille. */
+const titreSection = "text-[clamp(1.75rem,3.2vw,2.5rem)] leading-[1.1] font-medium tracking-[-0.025em]";
 ---
 
 <Base
@@ -39,11 +39,14 @@ const etapes = [
   description="Un connecteur en préparation entre votre IA et les sources officielles du droit des données personnelles : ce qu'il couvre, comment il est construit."
 >
   <section>
-    <p class="font-mono text-[0.7rem] uppercase tracking-[0.14em] text-muted">En préparation</p>
-    <h1 class="mt-6 max-w-4xl text-4xl sm:text-5xl lg:text-6xl">
+    <p class="inline-flex items-center gap-2 text-[0.8125rem] font-medium text-encre-douce">
+      <span aria-hidden="true" class="inline-block h-1.5 w-1.5 rounded-[999px] bg-accent"></span>
+      En préparation
+    </p>
+    <h1 class="mt-6 max-w-4xl text-[clamp(2.75rem,7vw,5.25rem)]">
       Votre IA, appuyée sur les sources officielles du droit des données personnelles.
     </h1>
-    <p class="mt-6 max-w-2xl text-lg leading-relaxed text-muted text-pretty">
+    <p class="mt-6 max-w-2xl text-[1.125rem] leading-relaxed text-encre-douce text-pretty">
       Le connecteur relie votre assistant aux textes, aux décisions des autorités et à la
       jurisprudence en matière de données personnelles. Il est en préparation : cette page décrit ce
       qu'il couvre aujourd'hui et comment il est construit.
@@ -59,16 +62,16 @@ const etapes = [
   }
 
   <section aria-labelledby="fonctionnement" class="mt-20">
-    <h2 id="fonctionnement" class="text-3xl sm:text-4xl">Comment ça marche</h2>
-    <ol class="mt-8 grid border-2 border-ink bg-paper shadow-hard sm:grid-cols-3">
+    <h2 id="fonctionnement" class={titreSection}>Comment ça marche</h2>
+    <ol class="mt-8 grid gap-4 sm:grid-cols-3">
       {
-        etapes.map((etape, index) => (
-          <li class:list={["p-5 sm:p-6", index > 0 && "border-t-2 border-ink sm:border-t-0 sm:border-l-2"]}>
-            <span aria-hidden="true" class:list={["etape-numero", etape.couleur]}>
+        etapes.map((etape) => (
+          <li class="rounded-bloc bg-surface p-6 sm:p-8">
+            <span aria-hidden="true" class="block font-serif text-6xl leading-none tabular-nums text-encre-douce">
               {etape.numero}
             </span>
             <h3 class="mt-4 text-2xl">{etape.titre}</h3>
-            <p class="mt-2 text-sm leading-relaxed text-muted text-pretty">{etape.texte}</p>
+            <p class="mt-2 text-[0.9375rem] leading-relaxed text-encre-douce text-pretty">{etape.texte}</p>
           </li>
         ))
       }
@@ -76,28 +79,26 @@ const etapes = [
   </section>
 
   <section aria-labelledby="couverture" class="mt-20">
-    <div class="border-b-2 border-ink pb-3">
-      <h2 id="couverture" class="text-3xl sm:text-4xl">Ce que couvre la base</h2>
-    </div>
+    <h2 id="couverture" class={titreSection}>Ce que couvre la base</h2>
     <Facade sources={sources} class="mt-8" />
-    <div class="mt-8 border-2 border-ink bg-paper shadow-hard">
+    <div class="mt-8 overflow-x-auto rounded-bloc border border-filet bg-surface">
       <table class="w-full border-collapse text-left">
         <thead>
-          <tr class="border-b-2 border-ink font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">
-            <th scope="col" class="px-3 py-2 font-normal sm:px-4">Collection</th>
-            <th scope="col" class="px-3 py-2 text-right font-normal sm:px-4">Documents</th>
-            <th scope="col" class="px-3 py-2 font-normal sm:px-4">À jour au</th>
+          <tr class="border-b border-filet text-[0.75rem] font-medium tracking-[0.04em] uppercase text-encre-douce">
+            <th scope="col" class="px-3 py-3 font-medium sm:px-6">Collection</th>
+            <th scope="col" class="px-3 py-3 text-right font-medium sm:px-6">Documents</th>
+            <th scope="col" class="px-3 py-3 font-medium sm:px-6">À jour au</th>
           </tr>
         </thead>
         <tbody>
           {
             sources.map((source) => (
-              <tr data-collection class="border-b border-ink last:border-b-0">
-                <th scope="row" class="px-3 py-2 text-sm font-bold sm:px-4">{source.libelle}</th>
-                <td class="px-3 py-2 text-right font-mono text-sm tabular-nums sm:px-4">
+              <tr data-collection class="border-b border-filet last:border-b-0">
+                <th scope="row" class="px-3 py-3 text-sm font-medium sm:px-6">{source.libelle}</th>
+                <td class="px-3 py-3 text-right text-sm tabular-nums sm:px-6">
                   {nombre.format(source.documents)}
                 </td>
-                <td class="px-3 py-2 font-mono text-xs sm:px-4">
+                <td class="px-3 py-3 text-sm tabular-nums sm:px-6">
                   {source.arrete_le !== null ? (
                     <time datetime={source.arrete_le}>{dateFormat.format(new Date(source.arrete_le))}</time>
                   ) : (
@@ -110,84 +111,61 @@ const etapes = [
         </tbody>
       </table>
     </div>
-    <p class="mt-4 max-w-2xl text-sm leading-relaxed text-muted">
+    <p class="mt-4 max-w-2xl text-[0.9375rem] leading-relaxed text-encre-douce">
       La base couvre le droit des données personnelles et l'AI Act : ni les autres matières du
       numérique, ni la doctrine privée.
     </p>
   </section>
 
   <section aria-labelledby="construction" class="mt-20">
-    <div class="border-b-2 border-ink pb-3">
-      <h2 id="construction" class="text-3xl sm:text-4xl">Comment c'est construit</h2>
-    </div>
-    <div class="mt-8 border-2 border-ink bg-ink text-paper shadow-hard">
+    <h2 id="construction" class={titreSection}>Comment c'est construit</h2>
+    <div class="mt-8 overflow-hidden rounded-bloc bg-accent text-sur-accent shadow-douce">
       <div
-        class="flex items-center justify-between border-b-2 border-paper/20 px-4 py-2 font-mono text-[0.7rem] uppercase tracking-[0.14em]"
+        class="flex items-center justify-between border-b border-sur-accent/20 px-5 py-3 font-mono text-[0.7rem] uppercase tracking-[0.14em] sm:px-6"
       >
         <span>pipeline.log</span>
-        <span class="text-paper/60">lecture seule</span>
+        <span class="text-sur-accent">lecture seule</span>
       </div>
-      <div class="overflow-x-auto p-4 font-mono text-xs leading-relaxed sm:p-6 sm:text-sm">
-        <p><span class="text-yellow">$</span> npm run corpus:sync</p>
-        <p class="text-paper/70">→ entrées récentes de la veille → sources officielles → index → data/corpus/sync.json</p>
-        <p class="mt-3"><span class="text-yellow">$</span> npm run preparation:sync</p>
-        <p class="text-paper/70">→ instantané séparé : textes en préparation et affaires pendantes</p>
-        <p class="mt-3"><span class="text-yellow">$</span> npm run mcp</p>
-        <p class="text-paper/70">→ serveur MCP : get_article · get_decision · search · etat_corpus</p>
+      <div class="overflow-x-auto p-5 font-mono text-xs leading-relaxed sm:p-6 sm:text-sm">
+        <p><span class="text-sur-accent">$</span> npm run corpus:sync</p>
+        <p class="text-sur-accent">→ entrées récentes de la veille → sources officielles → index → data/corpus/sync.json</p>
+        <p class="mt-3"><span class="text-sur-accent">$</span> npm run preparation:sync</p>
+        <p class="text-sur-accent">→ instantané séparé : textes en préparation et affaires pendantes</p>
+        <p class="mt-3"><span class="text-sur-accent">$</span> npm run mcp</p>
+        <p class="text-sur-accent">→ serveur MCP : get_article · get_decision · search · etat_corpus</p>
       </div>
     </div>
   </section>
 
   <section aria-labelledby="transparence" class="mt-20">
-    <div class="border-b-2 border-ink pb-3">
-      <h2 id="transparence" class="text-3xl sm:text-4xl">Transparence</h2>
-    </div>
+    <h2 id="transparence" class={titreSection}>Transparence</h2>
     <p class="mt-6 max-w-2xl leading-relaxed">
       Le code et le corpus sont ouverts : vous pouvez lire comment chaque source est collectée et
       découpée.
     </p>
     <a
       href="https://github.com/Beccariavf/vitrine"
-      class="mt-4 inline-flex items-center gap-2 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-ink"
+      class="mt-4 inline-flex items-center gap-2 border-b border-filet pb-0.5 text-[0.9375rem] font-medium no-underline hover:border-encre hover:no-underline"
     >
       Voir le dépôt GitHub <span aria-hidden="true">→</span>
     </a>
   </section>
 
-  <section aria-labelledby="suite" class="mt-20 border-t-2 border-ink pt-8">
-    <h2 id="suite" class="text-3xl sm:text-4xl">En attendant le connecteur</h2>
-    <p class="mt-4 max-w-2xl leading-relaxed text-muted">
+  <section aria-labelledby="suite" class="mt-20 border-t border-filet pt-10">
+    <h2 id="suite" class={titreSection}>En attendant le connecteur</h2>
+    <p class="mt-4 max-w-2xl leading-relaxed text-encre-douce">
       La veille suit déjà les publications des autorités et juridictions du numérique, chacune liée à son texte officiel.
     </p>
     <div class="mt-6 flex flex-col items-stretch sm:flex-row">
       <a
         href="/veille"
-        class="inline-flex items-center justify-center gap-2 border-2 border-ink bg-ink px-5 py-3 font-mono text-[0.7rem] font-bold uppercase tracking-[0.12em] text-paper no-underline shadow-hard hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-red hover:no-underline hover:shadow-hard-lg"
+        class="inline-flex items-center justify-center gap-2 rounded-[999px] bg-accent px-6 py-3.5 text-[0.9375rem] font-medium text-sur-accent no-underline transition-transform duration-200 hover:-translate-y-px hover:no-underline"
       >
         Consulter la veille <span aria-hidden="true">→</span>
       </a>
     </div>
-    <p class="mt-6 max-w-2xl text-sm text-muted">
+    <p class="mt-6 max-w-2xl text-[0.875rem] text-encre-douce">
       Outil d'aide à la recherche, ne remplace pas l'analyse d'un professionnel du droit.
     </p>
   </section>
 </Base>
-
-<style>
-  /* Plaque brute : aplat de famille, cadre encre, ombre dure, chiffre mono. L'ordre est porté par la liste ordonnée. */
-  .etape-numero {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 5rem;
-    height: 5rem;
-    border: 3px solid var(--color-ink);
-    box-shadow: 6px 6px 0 var(--color-ink);
-    font-family: var(--font-mono);
-    font-size: 2.6rem;
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: -0.04em;
-    font-variant-numeric: tabular-nums;
-  }
-</style>
