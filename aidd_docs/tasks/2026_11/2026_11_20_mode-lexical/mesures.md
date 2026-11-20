@@ -7,10 +7,10 @@ reconstruit, `data/` non modifié.
 
 Les treize jeux `dev` du dépôt sont mesurés : les huit du plan (`questions-v3`, `questions-cnil-etendu`,
 `questions-lil`, `questions-aiact`, `questions-ce`, `questions-cepd`, `questions-cc`, `questions-cjue`)
-et les cinq autres qui portent un split `dev` (`questions.csv` v1, `questions-v2.csv`,
-`questions-cnil.csv`, `questions-cnil-v2.csv`, `questions-cnil-doctrine.csv`). Les deux derniers jeux
-comptent parce que ce sont eux qui changent la lecture : sur le corpus RGPD phare, le dense gagne
-significativement.
+et les cinq autres jeux `dev` (`questions.csv` v1, `questions-v2.csv`, `questions-cnil.csv`,
+`questions-cnil-v2.csv`, `questions-cnil-doctrine.csv`) ; `questions-cnil.csv` n'a pas de colonne
+`split`, le harnais le lit en entier comme `dev`. Les deux jeux RGPD v1 et v2 comptent parce que ce
+sont eux qui changent la lecture : sur le corpus phare, le dense gagne significativement.
 
 ## Commandes exactes
 
@@ -23,8 +23,8 @@ node mcp/eval/compare.ts <jeu>-dense.json <jeu>-lexical.json --vue brute
 
 Le rapport lexical se lit aussi sans `--json` :
 `node mcp/eval/run.ts --questions <jeu>.csv --split dev --recherche lexicale` (aucun embedder construit,
-modèle affiché « aucun »). Les fichiers JSON ne sont pas commités : les commandes ci-dessus les
-reproduisent à l'identique sur le même index.
+modèle affiché « aucun »). Les fichiers JSON ne sont pas commités : les commandes ci-dessus
+reproduisent les mêmes chiffres sur le même index.
 
 ## Preuve sur l'index, sans Ollama
 
@@ -105,6 +105,6 @@ du mode, dite dans la sortie du harnais.
 ## Verdict
 
 Perte non acceptable comme substitut : sur les trois jeux RGPD (v1, v2, v3), le dense gagne, deux fois
-significativement, et le top 1 lexical tombe de 20 à 42 points ; les gains CNIL, Conseil d'État et Cour
-de cassation ne compensent pas le corpus phare. Le mode ne convient qu'à un essai gratuit explicitement
-présenté comme dégradé. L'adoption n'est pas tranchée ici.
+significativement, et le top 1 lexical tombe de 20,5 à 42,1 points ; aucun gain établi ailleurs (CNIL,
+Conseil d'État, Cour de cassation) ne compense la perte établie sur le corpus phare. Le mode ne convient
+qu'à un essai gratuit explicitement présenté comme dégradé. L'adoption n'est pas tranchée ici.
