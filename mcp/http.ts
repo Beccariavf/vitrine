@@ -83,6 +83,19 @@ function passageHttp(passage: Passage, position: number): PassageHttp {
   };
 }
 
+/**
+ * Analyse la cible d'une requête ; `null` quand Node l'a transmise sans qu'elle
+ * soit une URL valide (`//`, `http://`). Une telle cible ne doit jamais lever
+ * hors de la réponse : elle vaut une route inconnue.
+ */
+function analyserUrl(cible: string | undefined): URL | null {
+  try {
+    return new URL(cible ?? "/", "http://127.0.0.1");
+  } catch {
+    return null;
+  }
+}
+
 /** Ce qu'il faut injecter pour servir l'API, en test comme en exécution directe. */
 export type DependancesHttp = {
   rootDir: string;
@@ -203,8 +216,12 @@ export function creerServeurHttp(deps: DependancesHttp): Server {
 
   /** Traite une requête et rend le statut écrit, pour le journal. */
   const router = async (req: IncomingMessage, res: ServerResponse): Promise<number> => {
-    const url = new URL(req.url ?? "/", "http://127.0.0.1");
-    if (req.method === "OPTIONS") {
+    const url = analyserUrl(req.url);
+    if (url === null) {
+      ecrire(req, res, 404, { erreur: "Route inconnue. Seule GET /recherche répond." });
+      return 404;
+    }
+    if (req.method === "OPTIONS" && url.pathname === "/recherche") {
       preflight(req, res);
       return 204;
     }
@@ -222,33 +239,39 @@ export function creerServeurHttp(deps: DependancesHttp): Server {
     }
 
     const question = (url.searchParams.get("q") ?? "").trim();
+    const caracteres = [...question].length;
     if (question === "") {
       ecrire(req, res, 400, {
         erreur: `Paramètre q requis : une question non vide, ${MAX_QUESTION} caractères au plus.`,
       });
       return 400;
     }
-    if (question.length > MAX_QUESTION) {
+    if (caracteres > MAX_QUESTION) {
       ecrire(req, res, 400, {
-        erreur: `Question trop longue : ${question.length} caractères, ${MAX_QUESTION} au plus.`,
+        erreur: `Question trop longue : ${caracteres} caractères, ${MAX_QUESTION} au plus.`,
       });
       return 400;
     }
 
     let courant: Index;
+    let connus: readonly string[];
     try {
       courant = index();
+      connus = corpusDeLIndex(courant);
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
       ecrire(req, res, 503, {
-        erreur: `Index indisponible : ${error instanceof Error ? error.message : String(error)}`,
+        erreur:
+          `Index indisponible : ${message}` +
+          (message.includes("npm run corpus:index") ? "" : " Lancez « npm run corpus:index »."),
       });
       return 503;
     }
 
     const corpus = url.searchParams.get("corpus");
-    if (corpus !== null && !corpusDeLIndex(courant).includes(corpus)) {
+    if (corpus !== null && !connus.includes(corpus)) {
       ecrire(req, res, 400, {
-        erreur: `Corpus inconnu « ${corpus} ». Corpus indexés : ${corpusDeLIndex(courant).join(", ")}.`,
+        erreur: `Corpus inconnu « ${corpus} ». Corpus indexés : ${connus.join(", ")}.`,
       });
       return 400;
     }
@@ -277,7 +300,7 @@ export function creerServeurHttp(deps: DependancesHttp): Server {
 
   return createServer((req, res) => {
     const debut = horloge();
-    const chemin = new URL(req.url ?? "/", "http://127.0.0.1").pathname;
+    const chemin = analyserUrl(req.url)?.pathname ?? "?";
     const journal = (statut: number): void => {
       const duree = Math.max(0, Math.round(horloge() - debut));
       process.stderr.write(`${req.method ?? "?"} ${chemin} ${statut} ${duree} ms\n`);
