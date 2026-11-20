@@ -15,8 +15,8 @@ import {
 
 describe("urlRecherche", () => {
   it("construit l'URL du contrat sous la base du build, sans double barre", () => {
-    assert.equal(urlRecherche("http://127.0.0.1:8787/", "sanction cookies"), "http://127.0.0.1:8787/recherche?q=sanction%20cookies");
-    assert.equal(BASE_RECHERCHE_PAR_DEFAUT, "http://127.0.0.1:8787");
+    assert.equal(urlRecherche("http://127.0.0.1:8790/", "sanction cookies"), "http://127.0.0.1:8790/recherche?q=sanction%20cookies");
+    assert.equal(BASE_RECHERCHE_PAR_DEFAUT, "http://127.0.0.1:8790");
   });
 
   it("encode la question et rogne ses espaces, sans ajouter de paramètre", () => {
@@ -24,7 +24,7 @@ describe("urlRecherche", () => {
       urlRecherche("https://demo.example", "  durée de conservation vidéosurveillance  "),
       "https://demo.example/recherche?q=dur%C3%A9e%20de%20conservation%20vid%C3%A9osurveillance",
     );
-    assert.equal(urlRecherche("http://127.0.0.1:8787", "a&b=c"), "http://127.0.0.1:8787/recherche?q=a%26b%3Dc");
+    assert.equal(urlRecherche("http://127.0.0.1:8790", "a&b=c"), "http://127.0.0.1:8790/recherche?q=a%26b%3Dc");
   });
 });
 
@@ -132,7 +132,7 @@ describe("lireReponse", () => {
 describe("urlOfficielle", () => {
   it("ne garde que http et https", () => {
     assert.equal(urlOfficielle("https://eur-lex.europa.eu/x"), "https://eur-lex.europa.eu/x");
-    assert.equal(urlOfficielle("http://127.0.0.1:8787/x"), "http://127.0.0.1:8787/x");
+    assert.equal(urlOfficielle("http://127.0.0.1:8790/x"), "http://127.0.0.1:8790/x");
     assert.equal(urlOfficielle("javascript:alert(1)"), null);
     assert.equal(urlOfficielle("data:text/html,<p>"), null);
     assert.equal(urlOfficielle("legifrance.gouv.fr"), null);

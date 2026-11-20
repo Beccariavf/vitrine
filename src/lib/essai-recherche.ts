@@ -6,7 +6,7 @@
 import { FAMILLES } from "./familles.ts";
 
 /** Adresse par défaut, fixée au build par `PUBLIC_RECHERCHE_URL`. */
-export const BASE_RECHERCHE_PAR_DEFAUT = "http://127.0.0.1:8787";
+export const BASE_RECHERCHE_PAR_DEFAUT = "http://127.0.0.1:8790";
 
 /** Commande qui allume le service de démonstration. */
 export const COMMANDE_DEMO = "npm run mcp:http";
