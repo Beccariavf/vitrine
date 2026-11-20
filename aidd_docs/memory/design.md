@@ -6,7 +6,7 @@ La langue visuelle : jetons, typographie, modules et conventions. Ce que ça res
 
 - Tailwind via le plugin Vite d'Astro ; les jetons vivent dans le bloc `@theme` de `src/styles/global.css`, seule source de vérité de la palette, des formes et des polices.
 - Aucune bibliothèque de composants : les pages, un layout partagé (`src/layouts/Base.astro`) et des composants maison (`Demo.astro`, `Legende.astro`, `Facade.astro`, `Collage.astro`, `PublicationRangee.astro`).
-- Deux familles auto-hébergées par Fontsource, épinglées à `5.3.0` (OFL-1.1), importées par `src/layouts/Base.astro` : Instrument Serif (`latin-400.css`, 400 seulement, titres forts) et Inter variable (`wght.css`, tout le reste), avec `font-display: swap`. Open Sans (`@fontsource/open-sans` `5.3.0`, `latin-800.css`, 800 seulement) n'habille que le mot « SANCTION » du bandeau du collage, importée par `Collage.astro`. La police mono de `global.css` n'habille que le bloc `pipeline.log` de `/connecteur`. Aucune requête tierce.
+- Trois familles auto-hébergées par Fontsource, épinglées à `5.3.0` (OFL-1.1), avec `font-display: swap` : Instrument Serif (`latin-400.css`, 400 seulement, titres forts) et Inter variable (`wght.css`, tout le reste), importées par `src/layouts/Base.astro` ; Open Sans (`latin-800.css`, 800 seulement) importée par `Collage.astro`, qui n'habille que le mot « SANCTION » du bandeau du collage. La police mono de `global.css` n'habille que le bloc `pipeline.log` de `/connecteur`. Aucune requête tierce.
 - Aucun JavaScript côté client : rendu HTML et CSS seuls, mode sombre par `prefers-color-scheme`, filtres et bascule de vue par cases et radios CSS.
 - Conteneur : `max-w-5xl` par défaut, `max-w-[76rem]` sur la veille, gouttières `px-5` puis `px-8`.
 
