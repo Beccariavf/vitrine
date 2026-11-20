@@ -43,7 +43,7 @@ npm run veille:delais  # délai publication → veille → corpus, data/corpus/d
 npm run mcp:smoke      # vérifie Ollama et leoipulsar/harrier-0.6b
 npm run mcp            # serveur MCP sur stdio
 VITRINE_RECHERCHE=lexicale npm run mcp   # recherche par mots seuls, sans Ollama à la requête
-npm run mcp:demo       # cinq appels réels au serveur stdio (Ollama requis)
+npm run mcp:demo       # cinq appels réels au serveur stdio (Ollama requis en mode dense)
 npm run mcp:eval -- --questions questions-v2.csv --split dev    # 30 questions de développement (hors CI)
 npm run mcp:eval -- --questions questions-v2.csv --split test --mesurer-test   # 30 questions tenues à l'écart, une seule fois (hors CI)
 npm run mcp:eval -- --questions questions-v3.csv --split dev --json            # 40 questions de développement v3, sortie machine (hors CI)
@@ -78,6 +78,9 @@ avec un message qui nomme la commande. `VITRINE_RECHERCHE=lexicale` remplace la 
 par la voie FTS5 seule : aucun modèle à la requête, les passages portent `rang_lexical` (1 = meilleur)
 au lieu de `distance`/`similarite`, et aucun résultat n'est `confiant` hors appariement exact de
 référence. C'est un mode d'essai : il garde les termes exacts et perd les paraphrases et les synonymes.
+Les pièges ne sont pas refusés (6 sur 6 cités sur `questions-cnil-etendu`) et l'index dense complet
+reste requis : « sans modèle » vaut à la requête, pas au stockage. Détail et verdict dans
+`aidd_docs/tasks/2026_11/2026_11_20_mode-lexical/mesures.md`.
 L'index est incrémental : un second passage sur un corpus inchangé
 embarque zéro unité et laisse les vecteurs identiques. La construction suit les descripteurs
 `mcp/corpus/*.json` ; `--document <corpus>` n'en construit qu'un.
