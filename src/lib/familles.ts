@@ -11,15 +11,13 @@ export type Famille = {
   /** Jeton de `global.css` de la pastille, non textuelle (3:1 vérifié par `tests/familles.test.ts`). */
   pastille: string;
   /**
-   * Anciens jetons texte sur aplat, encore lus par la veille (retirés en phase 4).
-   * `fond` contraste avec les quatre pastilles dans les deux thèmes ; `encre` sur `filet`.
+   * Aplat de la façade du corpus (`Facade.astro`), jamais un fond de texte :
+   * la couleur ne porte plus de texte depuis la phase 4.
    */
   fond: string;
-  texte: string;
   /** Classes Tailwind écrites en entier pour que le build les détecte. */
   classePastille: string;
   classeFond: string;
-  classeTexte: string;
 };
 
 export const FAMILLES: Readonly<Record<FamilleId, Famille>> = {
@@ -28,50 +26,40 @@ export const FAMILLES: Readonly<Record<FamilleId, Famille>> = {
     libelle: "Textes",
     pastille: "textes",
     fond: "textes",
-    texte: "fond",
     classePastille: "bg-textes",
     classeFond: "bg-textes",
-    classeTexte: "text-fond",
   },
   autorites: {
     id: "autorites",
     libelle: "Autorités françaises",
     pastille: "autorites",
     fond: "autorites",
-    texte: "fond",
     classePastille: "bg-autorites",
     classeFond: "bg-autorites",
-    classeTexte: "text-fond",
   },
   ue: {
     id: "ue",
     libelle: "Union européenne",
     pastille: "ue",
     fond: "ue",
-    texte: "fond",
     classePastille: "bg-ue",
     classeFond: "bg-ue",
-    classeTexte: "text-fond",
   },
   juridictions: {
     id: "juridictions",
     libelle: "Juridictions françaises",
     pastille: "juridictions",
     fond: "juridictions",
-    texte: "fond",
     classePastille: "bg-juridictions",
     classeFond: "bg-juridictions",
-    classeTexte: "text-fond",
   },
   autre: {
     id: "autre",
     libelle: "Autres",
     pastille: "filet",
     fond: "filet",
-    texte: "encre",
     classePastille: "bg-filet",
     classeFond: "bg-filet",
-    classeTexte: "text-encre",
   },
 };
 
