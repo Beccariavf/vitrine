@@ -7,6 +7,7 @@ import type { Entry } from "../veille/types.ts";
 import type { CarteCollage, CartePreparation, Complements } from "../src/lib/collage.ts";
 import {
   cartesCollage,
+  lireArticleCpceL345,
   lireArticleRgpd32,
   lirePreparationProposee,
   montantEnEuros,
@@ -154,6 +155,22 @@ describe("cartesCollage", () => {
         ["ANSSI", "Cour de cassation"],
       ],
     );
+  });
+
+  it("ajoute la carte Légifrance en fin de dernière colonne quand l'article est lu", () => {
+    const code = {
+      code: "Code des postes et des communications électroniques",
+      section: "Section 3 : Protection de la vie privée",
+      numero: "L34-5",
+      depuis: "2020-07-26",
+      extrait: "Est interdite la prospection directe…",
+    };
+    const colonnes = cartesCollage(corpus(), { ...COMPLEMENTS, code });
+    assert.deepEqual(
+      colonnes[4]?.map((carte) => carte.source),
+      ["ANSSI", "Cour de cassation", "Légifrance"],
+    );
+    assert.deepEqual(colonnes[4]?.at(-1), { genre: "code", source: "Légifrance", famille: "textes", ...code });
   });
 
   it("retient la dernière entrée de chaque source", () => {
@@ -380,5 +397,51 @@ describe("lirePreparationProposee", () => {
       colonnes.map((colonne) => colonne.map((carte) => carte.source)),
       [[], [], [], [], []],
     );
+  });
+});
+
+describe("lireArticleCpceL345", () => {
+  const CPCE = "LEGITEXT000006070987";
+  const CHEMIN =
+    "CPCE > Partie législative > LIVRE II : Les communications électroniques > Section 3 : Protection de la vie privée des utilisateurs.";
+
+  it("lit l'article L34-5 du CPCE, sa section et sa version en vigueur", () => {
+    const racine = racineTemporaire("cpce");
+    ecrireUnites(racine, "textes_fr", [
+      { niveau: "article", numero: "82", document: "LEGITEXT000038567662", texte: "Un délégué…" },
+      { niveau: "article", numero: "L34-5", document: "AUTRE", chemin: CHEMIN, texte: "Ne doit jamais être lu." },
+      {
+        niveau: "article",
+        numero: "L34-5",
+        document: CPCE,
+        chemin: CHEMIN,
+        statut: "VIGUEUR",
+        date_debut: "2020-07-26",
+        date_fin: null,
+        texte:
+          "Est interdite la prospection directe au moyen de système automatisé de communications électroniques au sens du 6° de l'article L. 32, d'un télécopieur ou de courriers électroniques utilisant les coordonnées d'une personne physique.",
+      },
+    ]);
+
+    const article = lireArticleCpceL345(racine);
+    assert.ok(article !== null);
+    assert.equal(article.code, "Code des postes et des communications électroniques");
+    assert.equal(article.section, "Section 3 : Protection de la vie privée des utilisateurs");
+    assert.equal(article.numero, "L34-5");
+    assert.equal(article.depuis, "2020-07-26");
+    assert.ok(article.extrait.startsWith("Est interdite la prospection directe"));
+    assert.ok(article.extrait.length <= 321);
+  });
+
+  it("ne date pas une version qui n'est plus en vigueur", () => {
+    const racine = racineTemporaire("cpce-abroge");
+    ecrireUnites(racine, "textes_fr", [
+      { niveau: "article", numero: "L34-5", document: CPCE, chemin: CHEMIN, statut: "ABROGE", date_debut: "2020-07-26", texte: "Texte." },
+    ]);
+    assert.equal(lireArticleCpceL345(racine)?.depuis, null);
+  });
+
+  it("rend null sans fichier, sans planter", () => {
+    assert.equal(lireArticleCpceL345(racineTemporaire("cpce-absent")), null);
   });
 });

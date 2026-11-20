@@ -3,7 +3,7 @@ import "@fontsource/open-sans/latin-800.css";
 /** Le bandeau de sanction, tel quel : le SVG ne porte aucun style interne. */
 import sanction from "../assets/sanction.svg?raw";
 import { activeThemes, readThemes } from "../../veille/themes.ts";
-import { cartesCollage, lireArticleRgpd32, lirePreparationProposee } from "../lib/collage.ts";
+import { cartesCollage, lireArticleCpceL345, lireArticleRgpd32, lirePreparationProposee } from "../lib/collage.ts";
 import type { Entry } from "../lib/entries.ts";
 import { FAMILLES } from "../lib/familles.ts";
 
@@ -19,6 +19,7 @@ const colonnes = cartesCollage(entrees, {
   article: lireArticleRgpd32(),
   preparation: lirePreparationProposee(),
   matieres,
+  code: lireArticleCpceL345(),
 });
 
 const cartes = colonnes.flat();
@@ -33,11 +34,24 @@ const formatDate = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "sh
 function dateLisible(date: string | null): string | null {
   return date === null ? null : formatDate.format(new Date(date));
 }
+
+/** Date en toutes lettres, comme le badge de version de Légifrance. */
+const formatDateLongue = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+
+function dateLongue(date: string | null): string | null {
+  return date === null ? null : formatDateLongue.format(new Date(date));
+}
+
+/**
+ * Ligne « Modifié par » de l'article L34-5, recopiée de Légifrance le 20 novembre 2026 :
+ * le corpus ne porte pas le texte modificateur.
+ */
+const MODIFIE_PAR_L34_5 = "Modifié par LOI n°2020-901 du 24 juillet 2020 - art. 8";
 ---
 
 {
   cartes.length > 0 && (
-    <section aria-label="Sources officielles suivies par la veille" class="collage-section mt-12 sm:mt-20">
+    <section aria-label="Sources officielles suivies par la veille" class="collage-section espace-section">
       <div class="collage" role="img" aria-label={legende}>
         <div class="collage-piste" aria-hidden="true">
           {colonnes.map((colonne) => (
@@ -162,6 +176,39 @@ function dateLisible(date: string | null): string | null {
                       <span class="serif-titre">RGPD · art. {carte.numero}</span>
                       <b>{carte.titre}</b>
                       <p class="extrait">{carte.extrait}</p>
+                    </div>
+                  )}
+
+                  {carte.genre === "code" && (
+                    <div class="fiche photo">
+                      <div class="legifrance-visuel">
+                        <p class="lf-titre">Article {carte.numero}</p>
+                        {dateLongue(carte.depuis) !== null && (
+                          <p class="lf-badge">En vigueur depuis le {dateLongue(carte.depuis)}</p>
+                        )}
+                        <p class="lf-lien">{MODIFIE_PAR_L34_5}</p>
+                        <p class="lf-texte">
+                          {carte.extrait.includes("L. 32,") ? (
+                            <>
+                              {carte.extrait.split("L. 32,")[0]}
+                              <u>L. 32,</u>
+                              {carte.extrait.split("L. 32,").slice(1).join("L. 32,")}
+                            </>
+                          ) : (
+                            carte.extrait
+                          )}
+                        </p>
+                      </div>
+                      <div class="photo-corps">
+                        <div class="fiche-tete">
+                          <span class="source">
+                            <i aria-hidden="true" class:list={["pt", FAMILLES[carte.famille].classePastille]} />
+                            {carte.source}
+                          </span>
+                          <span class="nums">art. {carte.numero}</span>
+                        </div>
+                        <b>{carte.code}</b>
+                      </div>
                     </div>
                   )}
 
@@ -333,6 +380,68 @@ function dateLisible(date: string | null): string | null {
     padding: 0.2rem 0.5rem;
     font-size: 0.75rem;
     font-weight: 500;
+  }
+
+  /*
+   * Fragment de la page Légifrance de l'article, recopié à l'identique (couleurs,
+   * corps, graisses et interlignes relevés sur la page le 20 novembre 2026), coupé
+   * aux bords comme une capture. Inter remplace Marianne, police réservée à l'État.
+   * Fond blanc conservé en mode sombre, comme le bandeau de sanction.
+   */
+  .legifrance-visuel {
+    height: 12rem;
+    overflow: hidden;
+    padding: 1.4rem 0 0 1.4rem;
+    background-color: #fff;
+    color: #3a3a3a;
+    font-family: var(--font-texte);
+    -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent);
+    mask-image: linear-gradient(to bottom, #000 78%, transparent);
+  }
+
+  .legifrance-visuel + .photo-corps {
+    border-top: 1px solid var(--color-filet);
+  }
+
+  .legifrance-visuel > * {
+    width: 36rem;
+  }
+
+  .lf-titre {
+    margin-bottom: 0.5rem;
+    color: #000091;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 24px;
+  }
+
+  .lf-badge {
+    width: max-content;
+    padding: 1.2px 4.8px;
+    border-radius: 4px;
+    background-color: #b8fec9;
+    color: #18753c;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 20px;
+    text-transform: uppercase;
+  }
+
+  .lf-lien {
+    margin-top: 0.5rem;
+    color: #000091;
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  .lf-texte {
+    margin-top: 1rem;
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  .lf-texte u {
+    text-underline-offset: 2px;
   }
 
   .montant {

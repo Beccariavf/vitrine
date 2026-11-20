@@ -13,6 +13,9 @@ import { referenceLabel } from "./references.ts";
 
 export type CarteArticle = { document: string; numero: string; titre: string; extrait: string };
 
+/** Article de code lu dans Légifrance : le code, sa section, l'article et sa version. */
+export type CarteCode = { code: string; section: string; numero: string; depuis: string | null; extrait: string };
+
 export type EtapePreparation = { libelle: string; fait: boolean };
 
 export type CartePreparation = { procedure: string; titre: string; etapes: EtapePreparation[] };
@@ -56,6 +59,16 @@ export type CarteCollage =
       extrait: string;
     }
   | {
+      genre: "code";
+      source: "Légifrance";
+      famille: "textes";
+      code: string;
+      section: string;
+      numero: string;
+      depuis: string | null;
+      extrait: string;
+    }
+  | {
       genre: "preparation";
       source: "Textes en préparation";
       famille: "ue";
@@ -69,6 +82,8 @@ export type Complements = {
   article: CarteArticle | null;
   preparation: CartePreparation | null;
   matieres: string[];
+  /** Article de code Légifrance ; absent, la carte est omise. */
+  code?: CarteCode | null;
 };
 
 /**
@@ -271,6 +286,9 @@ export function cartesCollage(entrees: Entry[], complements?: Complements): Cart
   const colonne5: CarteCollage[] = [];
   if (anssi !== undefined) colonne5.push(carteAnssi(anssi));
   if (cassation !== undefined) colonne5.push(carteCassation(cassation));
+  if (complements?.code != null) {
+    colonne5.push({ genre: "code", source: "Légifrance", famille: "textes", ...complements.code });
+  }
 
   return [colonne1, colonne2, colonne3, colonne4, colonne5];
 }
@@ -322,6 +340,36 @@ export function lireArticleRgpd32(rootDir: string = process.cwd()): CarteArticle
       numero: "32",
       titre,
       extrait: tronque(corps, 180),
+    };
+  }
+  return null;
+}
+
+/** Le CPCE, seul code du corpus `textes_fr` (article L34-5 seulement). */
+const CPCE = "LEGITEXT000006070987";
+
+/**
+ * Article L34-5 du CPCE (prospection directe), lu dans le corpus `textes_fr`.
+ * La section est le dernier segment du chemin ; la date de version n'est rendue
+ * que pour une version en vigueur sans date de fin. Un fichier absent ou une
+ * unité inexploitable rend `null` : la carte est omise, le build continue.
+ */
+export function lireArticleCpceL345(rootDir: string = process.cwd()): CarteCode | null {
+  for (const ligne of lignesDe(join(rootDir, "data", "corpus", "textes_fr", "unites.jsonl"))) {
+    const unite = objetDe(ligne);
+    if (unite === null || unite["niveau"] !== "article" || unite["numero"] !== "L34-5") continue;
+    if (unite["document"] !== CPCE) continue;
+    const texte = chaine(unite["texte"]);
+    const section = chaine(unite["chemin"])?.split(" > ").at(-1)?.trim();
+    if (texte === null || section === undefined || section === "") return null;
+
+    const enVigueur = unite["statut"] === "VIGUEUR" && unite["date_fin"] == null;
+    return {
+      code: "Code des postes et des communications électroniques",
+      section: section.replace(/\.$/, ""),
+      numero: "L34-5",
+      depuis: enVigueur ? chaine(unite["date_debut"]) : null,
+      extrait: tronque(texte, 320),
     };
   }
   return null;
