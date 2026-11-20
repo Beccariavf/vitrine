@@ -102,6 +102,8 @@ describe("lancement de l'API avec le serveur de développement", () => {
     const journal = journalSimule();
     const integration = apiRecherche();
     const ancienPort = process.env.VITRINE_HTTP_PORT;
+    const ancienAuto = process.env.VITRINE_ESSAI_AUTO;
+    delete process.env.VITRINE_ESSAI_AUTO;
     process.env.VITRINE_HTTP_PORT = String(port);
     try {
       await integration.hooks["astro:server:start"]?.(optionsDemarrage(4330, journal.logger));
@@ -119,6 +121,8 @@ describe("lancement de l'API avec le serveur de développement", () => {
     } finally {
       if (ancienPort === undefined) delete process.env.VITRINE_HTTP_PORT;
       else process.env.VITRINE_HTTP_PORT = ancienPort;
+      if (ancienAuto === undefined) delete process.env.VITRINE_ESSAI_AUTO;
+      else process.env.VITRINE_ESSAI_AUTO = ancienAuto;
       await integration.hooks["astro:server:done"]?.({ logger: journal.logger });
     }
   });
@@ -128,6 +132,8 @@ describe("lancement de l'API avec le serveur de développement", () => {
     const journal = journalSimule();
     const integration = apiRecherche();
     const ancienPort = process.env.VITRINE_HTTP_PORT;
+    const ancienAuto = process.env.VITRINE_ESSAI_AUTO;
+    delete process.env.VITRINE_ESSAI_AUTO;
     process.env.VITRINE_HTTP_PORT = String(port);
     try {
       await integration.hooks["astro:server:start"]?.(optionsDemarrage(4330, journal.logger));
@@ -139,6 +145,8 @@ describe("lancement de l'API avec le serveur de développement", () => {
     } finally {
       if (ancienPort === undefined) delete process.env.VITRINE_HTTP_PORT;
       else process.env.VITRINE_HTTP_PORT = ancienPort;
+      if (ancienAuto === undefined) delete process.env.VITRINE_ESSAI_AUTO;
+      else process.env.VITRINE_ESSAI_AUTO = ancienAuto;
       await integration.hooks["astro:server:done"]?.({ logger: journal.logger });
     }
   });
