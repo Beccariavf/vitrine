@@ -47,6 +47,8 @@ const PAIRES_TEXTE: readonly (readonly [texte: string, fond: string])[] = [
   ["encre-douce", "surface"],
   ["sur-accent", "accent"],
   ["accent", "fond"],
+  // Liens de la réponse entière sur l'accueil (`Verification.astro`).
+  ["textes", "fond"],
 ];
 
 export const TEXTES: readonly PaireTheme[] = THEMES.flatMap((theme) =>

@@ -76,7 +76,7 @@ const citation =
                   stroke-linejoin="round"
                 />
               </svg></span
-            >, la CNIL a relevé qu’il suffisait d’un clic pour accepter, alors que refuser demandait
+            >, la CNIL a relevé qu'il suffisait d'un clic pour accepter, alors que refuser demandait
             davantage.
           </p>
         </div>
@@ -107,7 +107,7 @@ const citation =
     >
       ×
     </button>
-    <div class="feuille-texte">
+    <div class="feuille-texte reponse-reelle">
       <h2 id="reponse-entiere-titre" class="sr-only">Réponse entière</h2>
       <p class="etiquette">Question</p>
       <p class="bulle">« {question} »</p>
@@ -576,6 +576,18 @@ const citation =
     display: block;
   }
 
+  /* Au-delà du mobile, la croix vit dans une marge à droite : elle ne recouvre plus le texte. */
+  @media (min-width: 640px) {
+    .fenetre {
+      padding-right: calc(clamp(1.5rem, 4vw, 3rem) + 3rem);
+    }
+
+    .fermer {
+      margin-right: -3.25rem;
+      margin-bottom: -2.5rem;
+    }
+  }
+
   .feuille-texte .bulle {
     margin-top: 0.5rem;
     background-color: var(--color-surface);
@@ -659,5 +671,46 @@ const citation =
   .feuille-texte :global(a) {
     text-decoration-thickness: 1px;
     text-underline-offset: 0.2em;
+  }
+
+  /*
+   * La réponse entière reprend l'allure de l'interface d'origine plutôt que celle
+   * du site : titres en Inter gras, liens bleus au soulignement clair. Moins
+   * soigné, mais fidèle à ce que l'IA a rendu.
+   */
+  .reponse-reelle :global(h1) {
+    margin-top: 1.5rem;
+    font-family: var(--font-texte);
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+
+  .reponse-reelle :global(h2) {
+    margin-top: 1.75rem;
+    font-family: var(--font-texte);
+    font-size: 1.1875rem;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: 0;
+  }
+
+  .reponse-reelle :global(p),
+  .reponse-reelle :global(li) {
+    font-size: 1.0625rem;
+    line-height: 1.65;
+  }
+
+  .reponse-reelle :global(a) {
+    color: var(--color-textes);
+    text-decoration-line: underline;
+    text-decoration-color: color-mix(in srgb, var(--color-textes) 40%, transparent);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 0.25em;
+  }
+
+  .reponse-reelle :global(a:hover) {
+    text-decoration-color: var(--color-textes);
   }
 </style>
