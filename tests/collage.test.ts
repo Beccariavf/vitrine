@@ -165,6 +165,19 @@ describe("cartesCollage", () => {
     assert.equal(sanction.famille, "autorites");
   });
 
+  it("n'affiche aucune carte CNIL quand aucune entrée ne nomme une sanction", () => {
+    const entrees = [
+      entree({ source: "cnil", title: "La CNIL publie son rapport d'activité", publishedAt: jour(19) }),
+      entree({ source: "cnil", title: "Cookies : la CNIL accompagne les professionnels", publishedAt: jour(18) }),
+    ];
+    const colonnes = cartesCollage(entrees);
+    assert.deepEqual(
+      colonnes.map((colonne) => colonne.map((carte) => carte.source)),
+      [[], [], [], []],
+    );
+    assert.equal(colonnes.flat().some((carte) => carte.source === "CNIL"), false);
+  });
+
   it("déduit la formation et le numéro du Conseil d'État, tronque sinon", () => {
     const colonnes = cartesCollage(corpus(), COMPLEMENTS);
     const cetat = carteDe(colonnes, "Conseil d'État");
