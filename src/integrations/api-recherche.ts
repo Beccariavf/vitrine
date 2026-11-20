@@ -54,13 +54,9 @@ export async function demarrerApi(options: {
   port: number;
   origines: readonly string[];
   logger: Journal;
-  rootDir?: string;
 }): Promise<Server | null> {
   await arreterApi();
-  const serveur = creerServeurHttp({
-    rootDir: options.rootDir ?? RACINE,
-    origines: options.origines,
-  });
+  const serveur = creerServeurHttp({ rootDir: RACINE, origines: options.origines });
   try {
     await new Promise<void>((resoudre, rejeter) => {
       serveur.once("error", rejeter);
