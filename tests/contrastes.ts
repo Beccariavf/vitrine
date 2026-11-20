@@ -86,7 +86,7 @@ export const TEXTES: readonly PaireTheme[] = THEMES.flatMap((theme) =>
 );
 
 /** Pastilles de famille : non textuelles, 3:1 (WCAG 1.4.11) sur les deux fonds. */
-const FAMILLES_PASTILLE = ["textes", "autorites", "ue", "juridictions"] as const;
+const FAMILLES_PASTILLE = ["textes", "autorites", "ue", "juridictions", "encre-douce"] as const;
 const FONDS_PASTILLE = ["fond", "surface"] as const;
 
 export const PASTILLES: readonly PaireTheme[] = THEMES.flatMap((theme) =>

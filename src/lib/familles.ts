@@ -56,10 +56,10 @@ export const FAMILLES: Readonly<Record<FamilleId, Famille>> = {
   autre: {
     id: "autre",
     libelle: "Autres",
-    pastille: "filet",
-    fond: "filet",
-    classePastille: "bg-filet",
-    classeFond: "bg-filet",
+    pastille: "encre-douce",
+    fond: "encre-douce",
+    classePastille: "bg-encre-douce",
+    classeFond: "bg-encre-douce",
   },
 };
 

@@ -35,7 +35,7 @@ describe("contrastes de la direction artistique", () => {
   });
 
   it("fait passer chaque pastille de famille à 3:1 sur les deux fonds et les deux thèmes", () => {
-    assert.equal(PASTILLES.length, 16);
+    assert.equal(PASTILLES.length, 20);
     assert.deepEqual(echecsTheme(CSS, PASTILLES), []);
   });
 

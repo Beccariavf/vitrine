@@ -44,14 +44,14 @@ describe("familleDeSource", () => {
     }
   });
 
-  it("rend « autre » en filet pour un identifiant inconnu, sans lever", () => {
+  it("rend « autre » en encre douce pour un identifiant inconnu, sans lever", () => {
     const famille = familleDeSource("inconnue");
     assert.equal(famille.id, "autre");
-    assert.equal(famille.classePastille, "bg-filet");
+    assert.equal(famille.classePastille, "bg-encre-douce");
   });
 
-  it("donne à chaque famille de la légende une pastille testée à 3:1 sur fond et surface", () => {
-    for (const famille of FAMILLES_LEGENDE) {
+  it("donne à chaque famille une pastille testée à 3:1 sur fond et surface", () => {
+    for (const famille of Object.values(FAMILLES)) {
       assert.equal(famille.classePastille, `bg-${famille.pastille}`);
       const paires = PASTILLES.filter(([texte]) => texte === famille.pastille);
       assert.equal(paires.length, 4, `${famille.id} : ${famille.pastille}`);
