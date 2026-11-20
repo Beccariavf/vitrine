@@ -371,4 +371,3 @@ describe("l'API HTTP de la recherche lexicale", () => {
     );
   });
 });
-

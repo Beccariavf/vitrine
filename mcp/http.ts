@@ -100,10 +100,10 @@ function analyserUrl(cible: string | undefined): URL | null {
 export type DependancesHttp = {
   rootDir: string;
   /**
-   * Index déjà ouvert, ou fournisseur ; absent, il est ouvert depuis
+   * Index déjà ouvert ; absent, il est ouvert depuis
    * `data/corpus/index/index.db` à la première requête et gardé ouvert.
    */
-  index?: Index | (() => Index);
+  index?: Index;
   /** Horloge en millisecondes, injectable pour éprouver le limiteur sans attendre. */
   horloge?: () => number;
   /** Requêtes autorisées par fenêtre et par IP, `LIMITE_DEFAUT` par défaut. */
@@ -145,15 +145,11 @@ export function creerServeurHttp(deps: DependancesHttp): Server {
   const origines = deps.origines ?? [ORIGINE_DEFAUT];
   /** Fenêtres fixes par IP, purgées dès qu'elles sont expirées. */
   const fenetres = new Map<string, { debut: number; compte: number }>();
-  let indexCourant: Index | null =
-    deps.index !== undefined && typeof deps.index !== "function" ? deps.index : null;
+  let indexCourant: Index | null = deps.index ?? null;
   let corpusConnus: readonly string[] | null = null;
 
   const index = (): Index => {
-    if (indexCourant === null) {
-      indexCourant =
-        typeof deps.index === "function" ? deps.index() : openIndex(cheminIndex(deps.rootDir));
-    }
+    indexCourant ??= openIndex(cheminIndex(deps.rootDir));
     return indexCourant;
   };
 
@@ -253,6 +249,7 @@ export function creerServeurHttp(deps: DependancesHttp): Server {
       return 400;
     }
 
+    const debut = horloge();
     let courant: Index;
     let connus: readonly string[];
     try {
@@ -276,7 +273,6 @@ export function creerServeurHttp(deps: DependancesHttp): Server {
       return 400;
     }
 
-    const debut = horloge();
     try {
       const resultat = await search(
         deps.rootDir,
