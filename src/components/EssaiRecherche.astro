@@ -1,0 +1,217 @@
+---
+import { sourcesCorpus } from "../lib/corpus.ts";
+import { BASE_RECHERCHE_PAR_DEFAUT, type CorpusAffiche } from "../lib/essai-recherche.ts";
+import { familleDeSource } from "../lib/familles.ts";
+
+/** Adresse de l'API de démonstration, fixée au build par `PUBLIC_RECHERCHE_URL`. */
+const base = import.meta.env.PUBLIC_RECHERCHE_URL || BASE_RECHERCHE_PAR_DEFAUT;
+
+/**
+ * Libellé, famille et pastille de chaque corpus, calculés au build et lus par le script
+ * dans `data-corpus` : le navigateur n'a pas la table des familles. Un corpus inconnu
+ * de l'API garde son identifiant brut et la famille « autre ».
+ */
+const corpus: Record<string, CorpusAffiche> = Object.fromEntries(
+  sourcesCorpus().map((source) => {
+    const famille = familleDeSource(source.corpus);
+    return [source.corpus, { libelle: source.libelle, famille: famille.libelle, pastille: famille.classePastille }];
+  }),
+);
+
+/** Trois questions d'exemple, écrites comme on les poserait à un moteur par mots. */
+const exemples = ["droit à l'oubli", "durée de conservation vidéosurveillance", "sanction cookies"];
+
+/** Titre de section de la page : sans 500 serré, la hiérarchie vient de la taille. */
+const titreSection = "text-[clamp(1.75rem,3.2vw,2.5rem)] leading-[1.1] font-medium tracking-[-0.025em]";
+---
+
+<section
+  aria-labelledby="essai-recherche"
+  class="espace-section"
+  data-essai-recherche
+  data-base={base}
+  data-corpus={JSON.stringify(corpus)}
+>
+  <h2 id="essai-recherche" class={titreSection}>Essayer la recherche par mots</h2>
+  <p class="mt-4 max-w-2xl text-[1.0625rem] leading-relaxed text-encre-douce text-pretty">
+    Elle cherche des mots, pas le sens : c'est la démonstration gratuite et volontairement limitée.
+  </p>
+  <p class="mt-2 max-w-2xl text-[0.875rem] leading-relaxed text-encre-douce">
+    Démonstration : les résultats ne sont pas vérifiés et la recherche ne comprend pas les reformulations.
+  </p>
+
+  <form role="search" class="mt-8" data-formulaire>
+    <label for="essai-question" class="block text-[0.8125rem] font-medium text-encre-douce">Votre question</label>
+    <div class="mt-1.5 flex flex-col gap-3 sm:flex-row">
+      <input
+        id="essai-question"
+        name="q"
+        type="search"
+        maxlength="300"
+        required
+        autocomplete="off"
+        disabled
+        placeholder="sanction cookies"
+        class="min-w-0 flex-1 rounded-[999px] border border-filet bg-surface px-5 py-3.5 text-[1rem] text-encre shadow-douce placeholder:text-encre-douce"
+      />
+      <button
+        type="submit"
+        disabled
+        class="rounded-[999px] bg-accent px-6 py-3.5 text-[0.9375rem] font-medium text-sur-accent transition-transform duration-200 hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        Chercher
+      </button>
+    </div>
+  </form>
+
+  <p class="mt-4 flex flex-wrap items-center gap-2 text-[0.8125rem] text-encre-douce">
+    <span>Exemples :</span>
+    {
+      exemples.map((exemple) => (
+        <button
+          type="button"
+          data-exemple={exemple}
+          disabled
+          class="rounded-[999px] bg-accent/5 px-3 py-1.5 text-[0.8125rem] font-medium text-encre transition-colors duration-200 hover:bg-accent/10 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {exemple}
+        </button>
+      ))
+    }
+  </p>
+
+  <div class="mt-8" data-resultats aria-live="polite" aria-atomic="false">
+    <p class="text-[0.9375rem] leading-relaxed text-encre-douce">
+      Tapez une question pour voir ce que la recherche par mots trouve.
+    </p>
+  </div>
+
+  <noscript>
+    <p class="mt-4 text-[0.9375rem] leading-relaxed text-encre-douce">Cet essai a besoin de JavaScript.</p>
+  </noscript>
+</section>
+
+<script>
+  import {
+    COMMANDE_DEMO, MESSAGE_DELAI, MESSAGE_INDISPONIBLE, corpusAffiche, dateLisible, estDateIso, lireReponse,
+    urlRecherche, type CorpusAffiche, type Passage, type Resultat,
+  } from "../lib/essai-recherche.ts";
+
+  const CLASSE_MESSAGE = "text-[0.9375rem] leading-relaxed text-encre-douce";
+  const racine = document.querySelector<HTMLElement>("[data-essai-recherche]");
+  const formulaire = racine?.querySelector<HTMLFormElement>("form[role='search']");
+  const champ = racine?.querySelector<HTMLInputElement>("input[type='search']");
+  const bouton = formulaire?.querySelector<HTMLButtonElement>("button[type='submit']");
+  const zone = racine?.querySelector<HTMLElement>("[data-resultats]");
+
+  if (racine && formulaire && champ && bouton && zone) {
+    const base = racine.dataset.base ?? "";
+    const corpus: Record<string, CorpusAffiche> = JSON.parse(racine.dataset.corpus ?? "{}");
+    const exemples = racine.querySelectorAll<HTMLButtonElement>("[data-exemple]");
+    // Sans JavaScript, formulaire et exemples restent visibles mais inertes.
+    champ.disabled = false;
+    bouton.disabled = false;
+    for (const exemple of exemples) exemple.disabled = false;
+
+    /** Texte seulement : les données de l'API ne passent jamais par `innerHTML`. */
+    const noeud = (balise: string, classe = "", texte?: string): HTMLElement => {
+      const element = document.createElement(balise);
+      if (classe !== "") element.className = classe;
+      if (texte !== undefined) element.textContent = texte;
+      return element;
+    };
+    const message = (texte: string): HTMLElement => noeud("p", CLASSE_MESSAGE, texte);
+
+    const rangee = (passage: Passage): HTMLElement => {
+      const famille = corpusAffiche(passage.corpus, corpus);
+      const item = noeud("li", "border-b border-filet first:border-t hover:bg-surface");
+      const grille = noeud("div", "grid grid-cols-[6rem_1fr] gap-4 py-6 sm:grid-cols-[7rem_1fr] sm:gap-6");
+      grille.append(noeud("p", "pt-0.5 text-[0.875rem] text-encre-douce tabular-nums", `#${passage.rang}`));
+      const corps = noeud("div", "min-w-0");
+      const entete = noeud("p", "flex flex-wrap items-center gap-1.5 text-[0.8125rem] text-encre-douce");
+      const pastille = noeud("span", `inline-block h-[0.55rem] w-[0.55rem] shrink-0 rounded-[999px] ${famille.pastille}`);
+      pastille.setAttribute("aria-hidden", "true");
+      entete.append(pastille, noeud("span", "", famille.famille));
+      if (passage.date !== "") {
+        const date = noeud("time", "tabular-nums", dateLisible(passage.date));
+        if (estDateIso(passage.date)) date.setAttribute("datetime", passage.date);
+        entete.append(noeud("span", "", "·"), date);
+      }
+
+      const titre = noeud("h3", "mt-1.5 text-[1.125rem] leading-snug font-medium tracking-[-0.01em]");
+      const lien = noeud("a", "break-words text-encre no-underline hover:underline hover:decoration-1 hover:underline-offset-4") as HTMLAnchorElement;
+      lien.href = passage.url;
+      lien.target = "_blank";
+      lien.rel = "noopener";
+      // Le dernier segment du chemin est le titre lisible (« Délibération SAN-2023-008 ») ;
+      // le début du chemin situe la source, la référence technique ne s'affiche pas.
+      const segments = passage.chemin.split(" > ").map((s) => s.trim()).filter((s) => s !== "");
+      const intitule = segments.at(-1) ?? (passage.ref === "" ? famille.libelle : passage.ref);
+      lien.textContent = intitule;
+      lien.append(noeud("span", "sr-only", " (nouvel onglet)"));
+      titre.append(lien);
+      corps.append(entete, titre);
+      if (segments.length > 1) corps.append(noeud("p", "mt-1 text-[0.8125rem] text-encre-douce", segments.slice(0, -1).join(" › ")));
+      if (passage.extrait !== "") corps.append(noeud("p", `mt-2 line-clamp-3 ${CLASSE_MESSAGE}`, passage.extrait));
+      grille.append(corps);
+      item.append(grille);
+      return item;
+    };
+
+    const rendre = (resultat: Resultat, question: string): void => {
+      if (resultat.etat === "indisponible") {
+        const texte = noeud("p", CLASSE_MESSAGE, `${MESSAGE_INDISPONIBLE} `);
+        texte.append(noeud("code", "", COMMANDE_DEMO), document.createTextNode("."));
+        zone.replaceChildren(texte);
+      } else if (resultat.etat === "erreur") {
+        zone.replaceChildren(message(resultat.message));
+      } else if (resultat.passages.length === 0) {
+        zone.replaceChildren(message(`Aucun résultat pour « ${question} ». Essayez d'autres mots.`));
+      } else {
+        const nombre = resultat.passages.length;
+        const liste = noeud("ul");
+        liste.setAttribute("aria-label", `Résultats pour « ${question} »`);
+        for (const passage of resultat.passages) liste.append(rangee(passage));
+        const compte = nombre === 1 ? "1 passage trouvé." : `${nombre} passages trouvés.`;
+        zone.replaceChildren(noeud("p", "text-[0.8125rem] text-encre-douce", compte), liste);
+      }
+    };
+
+    // Une seule recherche à la fois : la suivante annule la précédente, qui ne rend plus rien.
+    let derniere = 0;
+    let controleurCourant: AbortController | null = null;
+    const chercher = async (question: string): Promise<void> => {
+      const requete = ++derniere;
+      controleurCourant?.abort();
+      const controleur = new AbortController();
+      controleurCourant = controleur;
+      zone.setAttribute("aria-busy", "true");
+      zone.replaceChildren(message("Recherche en cours…"));
+      const minuterie = setTimeout(() => controleur.abort(), 8000);
+      try {
+        const reponse = await fetch(urlRecherche(base, question), { signal: controleur.signal });
+        const corps: unknown = await reponse.json().catch(() => null);
+        if (requete === derniere) rendre(lireReponse(reponse.status, corps), question);
+      } catch {
+        // Requête remplacée : son abandon ne produit aucun message.
+        if (requete === derniere && controleur.signal.aborted) rendre({ etat: "erreur", message: MESSAGE_DELAI }, question);
+        else if (requete === derniere) rendre({ etat: "indisponible" }, question);
+      } finally {
+        clearTimeout(minuterie);
+        if (requete === derniere) zone.setAttribute("aria-busy", "false");
+      }
+    };
+
+    formulaire.addEventListener("submit", (evenement) => {
+      evenement.preventDefault();
+      const question = champ.value.trim();
+      if (question !== "") void chercher(question);
+    });
+    for (const exemple of exemples) {
+      exemple.addEventListener("click", () => {
+        champ.value = exemple.dataset.exemple ?? "";
+        if (champ.value !== "") void chercher(champ.value);
+      });
+    }
+  }
+</script>

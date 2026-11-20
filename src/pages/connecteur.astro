@@ -1,5 +1,6 @@
 ---
 import Demo from "../components/Demo.astro";
+import EssaiRecherche from "../components/EssaiRecherche.astro";
 import Facade from "../components/Facade.astro";
 import Base from "../layouts/Base.astro";
 import { sourcesCorpus } from "../lib/corpus.ts";
@@ -60,6 +61,8 @@ const titreSection = "text-[clamp(1.75rem,3.2vw,2.5rem)] leading-[1.1] font-medi
       </section>
     )
   }
+
+  <EssaiRecherche />
 
   <section aria-labelledby="fonctionnement" class="espace-section">
     <h2 id="fonctionnement" class={titreSection}>Comment ça marche</h2>
