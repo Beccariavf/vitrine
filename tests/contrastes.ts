@@ -34,38 +34,6 @@ export function ratio(premier: string, second: string): number {
   return (clair! + 0.05) / (sombre! + 0.05);
 }
 
-export type Paire = readonly [texte: string, fond: string, seuil: number];
-
-/** Texte courant : 4,5:1 ; le rouge sur papier reste réservé aux grands textes : 3:1. */
-export const AUTORISEES: readonly Paire[] = [
-  ["ink", "concrete", 4.5],
-  ["muted", "concrete", 4.5],
-  ["ink", "paper", 4.5],
-  ["muted", "paper", 4.5],
-  ["paper", "blue", 4.5],
-  ["paper", "green", 4.5],
-  ["paper", "red", 4.5],
-  ["ink", "yellow", 4.5],
-  ["paper", "concrete-dark", 4.5],
-  ["yellow", "concrete-dark", 4.5],
-  ["stone", "concrete-dark", 4.5],
-  ["red", "paper", 3],
-];
-
-/** Paires que le socle sombre interdit : elles doivent rester sous leur seuil. */
-export const INTERDITES: readonly Paire[] = [
-  ["muted", "concrete-dark", 4.5],
-  ["red", "concrete-dark", 3],
-];
-
-/** Les paires sous leur seuil, chacune nommée avec son ratio. */
-export function echecs(css: string, paires: readonly Paire[]): string[] {
-  return paires
-    .map(([texte, fond, seuil]) => ({ texte, fond, seuil, valeur: ratio(jeton(css, texte), jeton(css, fond)) }))
-    .filter(({ valeur, seuil }) => valeur < seuil)
-    .map(({ texte, fond, seuil, valeur }) => `${texte} sur ${fond} : ${valeur.toFixed(2)}:1 < ${seuil}:1`);
-}
-
 /** Une paire de la direction artistique, évaluée dans son thème. */
 export type PaireTheme = readonly [texte: string, fond: string, seuil: number, theme: Theme];
 

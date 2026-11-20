@@ -1,47 +1,16 @@
 @import "tailwindcss";
 
 /*
- * Jetons du thème « Cité Radieuse » : béton, papier, encre, rouge, bleu, jaune, vert,
- * et le socle sombre (béton sombre, pierre) réservé au pied de page.
- * Une seule source de vérité pour la palette, les formes et les polices.
- * Les paires de contraste autorisées sont vérifiées par tests/contrastes.test.ts.
+ * Jetons de la direction artistique : fond, surface, encre, encre douce, filet,
+ * accent et familles de sources. Une seule source de vérité pour la palette,
+ * les formes et les polices. Les paires autorisées sont vérifiées dans les
+ * deux thèmes par tests/contrastes.test.ts.
+ *
+ * `encre-douce` et `filet` sont les opacités de la planche converties en
+ * hexadécimal opaque sur `fond` : le test de contrastes lit des couleurs, pas
+ * des opacités.
  */
 @theme {
-  --color-concrete: #e7e2d7;
-  --color-paper: #f4f0e8;
-  --color-ink: #121212;
-  --color-red: #c62828;
-  --color-blue: #1e4e79;
-  --color-yellow: #e0a82e;
-  --color-green: #2f6b4f;
-  --color-muted: #57534e;
-  --color-concrete-dark: #2b2a27;
-  --color-stone: #b8b2a7;
-
-  /* Archivo Variable (wdth + wght), auto-hébergée, importée par src/layouts/Base.astro. */
-  --font-display: "Archivo Variable", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
-
-  --shadow-hard: 4px 4px 0 var(--color-ink);
-  --shadow-hard-lg: 6px 6px 0 var(--color-ink);
-
-  --radius-xs: 0px;
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-xl: 0px;
-  --radius-2xl: 0px;
-  --radius-3xl: 0px;
-  --radius-4xl: 0px;
-  --radius-full: 0px;
-
-  /*
-   * Direction artistique : rôles de `planche.html`, ajoutés à côté des jetons
-   * précédents, que la phase 5 retirera. `encre-douce` et `filet` sont les
-   * opacités de la planche converties en hexadécimal opaque sur `fond` : le
-   * test de contrastes lit des couleurs, pas des opacités.
-   */
   --color-fond: #ffffff;
   --color-surface: #f5f5f2;
   --color-encre: #0f1623;
@@ -57,6 +26,8 @@
 
   --font-serif: "Instrument Serif", "Times New Roman", serif;
   --font-texte: "Inter Variable", "Helvetica Neue", Arial, sans-serif;
+  /* Police mono réservée au bloc `pipeline.log` de /connecteur. */
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --radius-carte: 2rem;
   --radius-bloc: 1.5rem;
@@ -82,17 +53,6 @@
 
     color-scheme: dark;
   }
-}
-
-/*
- * Bande papier pleine largeur : le fond déborde du conteneur jusqu'aux bords de la fenêtre
- * par une ombre pleine, rognée verticalement. Jamais 100vw, qui compte la barre de
- * défilement et crée un défilement horizontal.
- */
-@utility pleine-largeur {
-  background-color: var(--color-paper);
-  box-shadow: 0 0 0 100vmax var(--color-paper);
-  clip-path: inset(0 -100vmax);
 }
 
 @layer base {
