@@ -2,6 +2,20 @@
 
 La langue visuelle : jetons, typographie, modules et conventions. Ce que ça ressemble, pas comment c'est codé.
 
+## Direction
+
+Le filtre de toute décision visuelle. Une page, une section ou un composant nouveau se juge d'abord ici, puis se construit avec les jetons et modules ci-dessous. Décisions et planche de référence : `aidd_docs/tasks/2026_11/2026_11_20_direction-artistique/` (`decisions.md`, `planche.html`).
+
+- Trois adjectifs : **attrayant, rigoureux, éditorial**. Un choix qui ne sert aucun des trois est retiré.
+- Référence : america.gov (même promesse : des réponses tirées de sources officielles). S'en inspirer, ne pas l'imiter.
+- Principes :
+  1. **Une idée par écran.** Les sections sont séparées par un grand vide (`espace-section`) : en défilant, le lecteur ne voit qu'une idée à la fois. On ne serre pas pour « faire tenir » ; on retire.
+  2. **Le serif pour les moments forts, une fois par section.** Titre de page, manifeste, titres de cartes, liens du pied. Tout le reste en Inter.
+  3. **Un seul accent.** Le bleu juridique porte l'action ; les couleurs de famille ne sont que des pastilles d'information, jamais un fond sous du texte.
+  4. **Le réel, jamais l'inventé.** Cartes, démo, chiffres et références viennent des données au build ; une source vide disparaît sans trou.
+  5. **La retenue.** Formes douces, ombres légères, mouvement lent et coupé par `prefers-reduced-motion`, aucun JavaScript client.
+- Exception de dosage : la veille est une page de lecture dense, plus serrée que l'accueil et le connecteur.
+
 ## System
 
 - Tailwind via le plugin Vite d'Astro ; les jetons vivent dans le bloc `@theme` de `src/styles/global.css`, seule source de vérité de la palette, des formes et des polices.
@@ -22,7 +36,7 @@ La langue visuelle : jetons, typographie, modules et conventions. Ce que ça res
 
 ## Modules
 
-- Rythme vertical : l'utilitaire `espace-section` (`clamp(6rem, 14vw, 15rem)`, proche des ~290 px d'america.gov) sépare les sections de l'accueil et du connecteur, et le pied de page ; le hero de l'accueil s'ouvre plus bas (`sm:pt-24`).
+- Rythme vertical (principe « une idée par écran ») : l'utilitaire `espace-section` de `global.css` (`clamp(6rem, 14vw, 15rem)`, proche des ~290 px mesurés sur america.gov) est le seul écart entre deux sections de l'accueil et du connecteur, et avant le pied de page. Toute nouvelle section l'emploie au lieu d'un `mt-*` ; un élément qui prolonge l'idée précédente (le collage sous le manifeste, la démo sous le hero du connecteur) reste rapproché (`mt-12` à `mt-24`). Le hero de l'accueil s'ouvre plus bas (`sm:pt-24`).
 - En-tête : marque « Vitrine » en serif, « Droit du numérique » en encre douce, navigation en pilules (« Connecteur », « Veille »), page courante en voile d'accent et `aria-current`. En mobile, la navigation reste à droite de la marque ; le libellé secondaire disparaît sous 560 px.
 - Accueil : hero centré (h1 serif `clamp(3rem,8.5vw,6.5rem)`, chapeau, action pleine en accent et action voilée vers la veille), démo compacte quand `src/demo/demo.json` existe ; manifeste en grand serif avec pastilles RGPD, CNIL et CJUE ; collage des sources (voir ci-dessous) ; rangée « Chaque affirmation se vérifie » en deux colonnes (références réelles en pilules sur un carré d'accent, texte en regard, visuel à droite au-dessus de 760 px) ; « Dernières publications » en trois rangées compactes.
 - Collage des sources (`Collage.astro`), à la place de la façade sur l'accueil, juste sous le manifeste et sans titre (section nommée par `aria-label`) : une bande sur toute la largeur de la fenêtre (marges négatives `calc(50% - 50vw)`, surplus rogné par `main { overflow-x: clip }`), cinq colonnes de deux cartes larges de `max(16rem, 21.5vw)`, centrées, décalées verticalement, coupées et estompées aux deux bords par `mask-image`, qui dérive lentement (`derive`, 28 s, aller-retour) et se met en pause au survol, coupée par `prefers-reduced-motion`. Les fiches (surface `fond`, filet, ombre douce) portent une pastille de famille, une date en `tabular-nums`, un titre serif ou en Inter 600, un extrait sur quatre lignes, des étiquettes de références, un montant en grand serif quand le titre en porte un, une barre d'étapes ou une liste de matières cochées. Une fiche photo (Conseil d'État) et une fiche sanction CNIL dont le bandeau est l'illustration `sanction.svg` copiée telle quelle (licence CC BY-NC-ND assumée par l'utilisateur), fond blanc conservé en mode sombre. Toutes les cartes viennent des données réelles au build : une source sans entrée est omise, sans trou. Crédit sous la bande : photo du Palais-Royal par GFreihalter, Wikimedia Commons, CC BY-SA 3.0.
