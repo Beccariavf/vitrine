@@ -1,9 +1,10 @@
 import { strict as assert } from "node:assert";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { connect } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
-import { buildIndex } from "../mcp/index/build.ts";
+import { buildIndex, cheminIndex } from "../mcp/index/build.ts";
 import { openIndex } from "../mcp/index/search.ts";
 import type { Index } from "../mcp/index/search.ts";
 import { normaliser } from "../mcp/embed/embedder.ts";
@@ -80,8 +81,8 @@ function ecrireCorpus(root: string, unites: Unite[]): void {
 const FENETRE_DEPASSEE = 61_000;
 
 type Options = {
-  /** Absent : index construit sur la racine temporaire ; `false` : racine sans index. */
-  index?: boolean;
+  /** `construit` par défaut ; `absent` ou `corrompu` pour éprouver le 503. */
+  index?: "construit" | "absent" | "corrompu";
   limite?: number;
   horloge?: () => number;
   origines?: readonly string[];
@@ -97,11 +98,15 @@ async function avecServeur(
   options: Options = {},
 ): Promise<void> {
   const root = tempRoot();
+  const mode = options.index ?? "construit";
   let index: Index | null = null;
-  if (options.index !== false) {
+  if (mode === "construit") {
     ecrireCorpus(root, SEPT);
     const construit = await buildIndex(root, embedderFactice());
     index = openIndex(construit.chemin);
+  } else if (mode === "corrompu") {
+    mkdirSync(join(root, "data", "corpus", "index"), { recursive: true });
+    writeFileSync(cheminIndex(root), "ceci n'est pas une base SQLite", "utf8");
   }
   const deps: DependancesHttp = {
     rootDir: root,
@@ -130,6 +135,26 @@ function rechercher(base: string, parametres: string, init?: RequestInit): Promi
   return fetch(`${base}/recherche${parametres}`, init);
 }
 
+/**
+ * Envoie une cible de requête telle quelle sur une socket brute : `fetch`
+ * normalise `//`, or c'est précisément la cible que le serveur doit refuser
+ * sans mourir.
+ */
+function cibleBrute(port: number, cible: string): Promise<string> {
+  return new Promise<string>((resoudre, rejeter) => {
+    const socket = connect(port, "127.0.0.1", () => {
+      socket.write(`GET ${cible} HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n`);
+    });
+    let donnees = "";
+    socket.setEncoding("utf8");
+    socket.on("data", (bloc: string) => {
+      donnees += bloc;
+    });
+    socket.on("end", () => resoudre(donnees));
+    socket.on("error", rejeter);
+  });
+}
+
 describe("l'API HTTP de la recherche lexicale", () => {
   it("rend 200 avec la forme exacte du contrat et cinq passages au plus", async () => {
     await avecServeur(async (base) => {
@@ -138,6 +163,11 @@ describe("l'API HTTP de la recherche lexicale", () => {
       assert.equal(reponse.status, 200);
       assert.equal(reponse.headers.get("content-type"), "application/json; charset=utf-8");
       assert.equal(reponse.headers.get("cache-control"), "no-store");
+      assert.equal(
+        reponse.headers.get("access-control-allow-origin"),
+        null,
+        "aucune origine n'est admise sans en-tête Origin",
+      );
       const corps = (await reponse.json()) as Record<string, unknown>;
       assert.deepEqual(Object.keys(corps).sort(), ["duree_ms", "mode", "passages", "question"]);
       assert.equal(corps.mode, "lexicale");
@@ -202,8 +232,10 @@ describe("l'API HTTP de la recherche lexicale", () => {
       const cas = [
         { parametres: "", motif: /q requis/ },
         { parametres: "?q=", motif: /q requis/ },
+        { parametres: "?q=%20%20", motif: /q requis/ },
         { parametres: `?q=${"a".repeat(MAX_QUESTION + 1)}`, motif: /trop longue/ },
         { parametres: `?q=${encodeURIComponent("données")}&corpus=inexistant`, motif: /Corpus inconnu/ },
+        { parametres: `?q=${encodeURIComponent("données")}&corpus=`, motif: /Corpus inconnu/ },
       ];
       for (const { parametres, motif } of cas) {
         const reponse = await rechercher(base, parametres);
@@ -213,6 +245,19 @@ describe("l'API HTTP de la recherche lexicale", () => {
         assert.deepEqual(Object.keys(corps), ["erreur"]);
         assert.match(String(corps.erreur), motif);
       }
+    });
+  });
+
+  it("borne la question à 300 caractères, comptés en points de code", async () => {
+    await avecServeur(async (base) => {
+      const exacte = await rechercher(base, `?q=${"a".repeat(MAX_QUESTION)}`);
+      assert.equal(exacte.status, 200, "300 caractères passent");
+
+      const emoji = await rechercher(base, `?q=${encodeURIComponent("😀".repeat(MAX_QUESTION))}`);
+      assert.equal(emoji.status, 200, "300 points de code passent même hors BMP");
+
+      const trop = await rechercher(base, `?q=${encodeURIComponent("😀".repeat(MAX_QUESTION + 1))}`);
+      assert.equal(trop.status, 400, "301 points de code sont refusés");
     });
   });
 
@@ -228,6 +273,20 @@ describe("l'API HTTP de la recherche lexicale", () => {
         const corps = (await reponse.json()) as Record<string, unknown>;
         assert.deepEqual(Object.keys(corps), ["erreur"]);
       }
+
+      const preflight = await fetch(`${base}/autre`, { method: "OPTIONS" });
+      assert.equal(preflight.status, 404, "le préflight ne vaut que pour /recherche");
+    });
+  });
+
+  it("répond 404 à une cible de requête malformée, sans tuer le serveur", async () => {
+    await avecServeur(async (base) => {
+      const port = Number(new URL(base).port);
+      const brute = await cibleBrute(port, "//");
+
+      assert.match(brute.split("\r\n")[0] ?? "", /^HTTP\/1\.1 404/);
+      const apres = await rechercher(base, "?q=donnees");
+      assert.equal(apres.status, 200, "le serveur répond encore après la cible invalide");
     });
   });
 
@@ -236,12 +295,16 @@ describe("l'API HTTP de la recherche lexicale", () => {
     await avecServeur(
       async (base) => {
         for (let requete = 0; requete < LIMITE_DEFAUT; requete += 1) {
-          const reponse = await rechercher(base, "?q=donnees");
+          const reponse = await rechercher(base, "?q=donnees", {
+            headers: { "X-Forwarded-For": `10.0.0.${requete}` },
+          });
           assert.equal(reponse.status, 200, `requête ${requete + 1} admise`);
         }
 
-        const refus = await rechercher(base, "?q=donnees");
-        assert.equal(refus.status, 429);
+        const refus = await rechercher(base, "?q=donnees", {
+          headers: { "X-Forwarded-For": "203.0.113.9" },
+        });
+        assert.equal(refus.status, 429, "X-Forwarded-For ne change pas le compteur");
         assert.equal(refus.headers.get("content-type"), "application/json; charset=utf-8");
         const corps = (await refus.json()) as Record<string, unknown>;
         assert.deepEqual(Object.keys(corps).sort(), ["erreur", "reessayer_dans_s"]);
@@ -257,19 +320,21 @@ describe("l'API HTTP de la recherche lexicale", () => {
     );
   });
 
-  it("répond 503 sans index, en nommant la commande qui le construit", async () => {
-    await avecServeur(
-      async (base) => {
-        const reponse = await rechercher(base, "?q=donnees");
+  it("répond 503 sans index ou avec un index illisible, en nommant la commande", async () => {
+    for (const mode of ["absent", "corrompu"] as const) {
+      await avecServeur(
+        async (base) => {
+          const reponse = await rechercher(base, "?q=donnees");
 
-        assert.equal(reponse.status, 503);
-        assert.equal(reponse.headers.get("content-type"), "application/json; charset=utf-8");
-        const corps = (await reponse.json()) as Record<string, unknown>;
-        assert.deepEqual(Object.keys(corps), ["erreur"]);
-        assert.match(String(corps.erreur), /npm run corpus:index/);
-      },
-      { index: false },
-    );
+          assert.equal(reponse.status, 503, `503 attendu pour un index ${mode}`);
+          assert.equal(reponse.headers.get("content-type"), "application/json; charset=utf-8");
+          const corps = (await reponse.json()) as Record<string, unknown>;
+          assert.deepEqual(Object.keys(corps), ["erreur"]);
+          assert.match(String(corps.erreur), /npm run corpus:index/);
+        },
+        { index: mode },
+      );
+    }
   });
 
   it("limite CORS aux origines configurées, en preflight comme sur la réponse", async () => {
