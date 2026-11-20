@@ -7,10 +7,13 @@ type Props = {
   /** Collections lues par `sourcesCorpus` ; aucune façade quand la liste est vide. */
   sources: SourceCorpus[];
   class?: string;
+  /** Colonnes de la grille à partir de 50rem de conteneur : 10 sur l'accueil, 8 sur `/connecteur`. */
+  colonnesLarge?: 8 | 10;
 };
 
-const { sources, class: classe } = Astro.props;
+const { sources, class: classe, colonnesLarge = 8 } = Astro.props;
 const nombre = new Intl.NumberFormat("fr-FR");
+const grilleLarge = colonnesLarge === 10 ? "@[50rem]:grid-cols-10" : "@[50rem]:grid-cols-8";
 
 /** Une colonne par collection : étages calculés au build, du rez-de-chaussée vers le haut. */
 const colonnes = sources.map((source) => {
@@ -34,7 +37,10 @@ const resume = `Façade du corpus, une colonne par collection, hauteur selon le 
       <div
         role="img"
         aria-label={resume}
-        class="grid grid-cols-4 gap-x-3 gap-y-6 @[24rem]:grid-cols-5 @[24rem]:gap-x-4 @[50rem]:grid-cols-10"
+        class:list={[
+          "grid grid-cols-4 gap-x-3 gap-y-6 @[24rem]:grid-cols-5 @[24rem]:gap-x-4",
+          grilleLarge,
+        ]}
       >
         {colonnes.map((colonne) => (
           <div data-colonne={colonne.corpus} data-famille={colonne.famille.id} class="flex min-w-0 flex-col">
