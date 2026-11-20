@@ -1,6 +1,6 @@
 ---
 objective: "Le site entier (accueil, connecteur, veille) suit la direction artistique de `decisions.md` et `planche.html`, en clair et en sombre, sans JavaScript client, contrastes testés."
-status: pending
+status: completed
 ---
 
 # Plan: Refonte de la direction artistique
