@@ -19,7 +19,7 @@ import type { Embedder } from "../mcp/embed/embedder.ts";
 import { buildIndex } from "../mcp/index/build.ts";
 import { BANDE_ARTICLE, openIndex, rangerPassages } from "../mcp/index/search.ts";
 import type { Index, ResultatRecherche } from "../mcp/index/search.ts";
-import { createServer } from "../mcp/server.ts";
+import { createServer, lireModeRecherche } from "../mcp/server.ts";
 import { CANDIDATS_RERANK } from "../mcp/rerank/reranker.ts";
 import type { Reranker } from "../mcp/rerank/reranker.ts";
 import { corpusDeNiveau, documentNomme, documentsNommes, getArticle, getDecision, search } from "../mcp/tools.ts";
@@ -2146,3 +2146,157 @@ describe("le statut d'application dans les réponses", () => {
   });
 });
 
+
+describe("la recherche lexicale seule", () => {
+  it("répond sans embedder, sans distance, avec rang_lexical et un niveau incertain", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-lexical-"));
+    try {
+      ecrireCorpus(root);
+      const { chemin } = await buildIndex(root, embedderFactice());
+      const index = openIndex(chemin);
+      try {
+        const resultat = await search(
+          root,
+          { question: "données", k: 3 },
+          { embedder: EMBEDDER_INTERDIT, index, recherche: "lexicale" },
+        );
+
+        assert.equal(resultat.recherche, "lexicale");
+        assert.equal(resultat.niveau_confiance, "incertain");
+        assert.equal(resultat.passages.length, 3);
+        assert.deepEqual(
+          resultat.passages.map((passage) => passage.rang_lexical),
+          [1, 2, 3],
+        );
+        for (const passage of resultat.passages) {
+          assert.equal("distance" in passage, false, "aucune distance BM25 n'est exposée");
+          assert.equal("similarite" in passage, false, "aucune similarité cosinus n'est inventée");
+        }
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("trouve un terme rare que le classement dense ignore, et respecte le corpus", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-lexical-"));
+    try {
+      ecrireCorpus(root);
+      const { chemin } = await buildIndex(root, embedderFactice());
+      const index = openIndex(chemin);
+      try {
+        const resultat = await search(
+          root,
+          { question: "rectification", corpus: "rgpd", k: 5 },
+          { embedder: EMBEDDER_INTERDIT, index, recherche: "lexicale" },
+        );
+
+        assert.deepEqual(
+          resultat.passages.map((passage) => passage.ref),
+          [`${DOCUMENT}#art_4`],
+        );
+        assert.equal(resultat.passages[0]?.rang_lexical, 1);
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("n'annonce aucun résultat fiable quand aucun mot ne correspond", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-lexical-"));
+    try {
+      ecrireCorpus(root);
+      const { chemin } = await buildIndex(root, embedderFactice());
+      const index = openIndex(chemin);
+      try {
+        const resultat = await search(
+          root,
+          { question: "xylophone" },
+          { embedder: EMBEDDER_INTERDIT, index, recherche: "lexicale" },
+        );
+
+        assert.equal(resultat.niveau_confiance, "aucun_resultat_fiable");
+        assert.deepEqual(resultat.passages, []);
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("garde confiant un appariement exact, sans exposer de distance", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-lexical-"));
+    try {
+      ecrireCorpus(root);
+      const resultat = await search(
+        root,
+        { question: "article 3 du RGPD" },
+        { embedder: EMBEDDER_INTERDIT, recherche: "lexicale" },
+      );
+
+      assert.equal(resultat.recherche, "lexicale");
+      assert.equal(resultat.niveau_confiance, "confiant");
+      assert.equal(resultat.passages[0]?.ref, `${DOCUMENT}#art_3`);
+      assert.equal(resultat.passages[0]?.rang_lexical, 1);
+      assert.equal("distance" in (resultat.passages[0] ?? {}), false);
+      assert.equal("similarite" in (resultat.passages[0] ?? {}), false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("la configuration du mode de recherche", () => {
+  it("lit VITRINE_RECHERCHE, dense par défaut, et refuse une valeur inconnue", () => {
+    assert.equal(lireModeRecherche(undefined), "dense");
+    assert.equal(lireModeRecherche("dense"), "dense");
+    assert.equal(lireModeRecherche("hybride"), "hybride");
+    assert.equal(lireModeRecherche("lexicale"), "lexicale");
+    assert.throws(
+      () => lireModeRecherche("bm25"),
+      /VITRINE_RECHERCHE attendu dense, hybride, lexicale ; reçu « bm25 »/,
+    );
+    assert.throws(() => lireModeRecherche(""), /VITRINE_RECHERCHE attendu/);
+  });
+
+  it("sert search en lexical par un client MCP, sans jamais appeler l'embedder", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-lexical-"));
+    ecrireCorpus(root);
+    const { chemin } = await buildIndex(root, embedderFactice());
+    const index = openIndex(chemin);
+    const serveur = createServer({
+      rootDir: root,
+      embedder: EMBEDDER_INTERDIT,
+      index,
+      recherche: "lexicale",
+    });
+    const client = new Client({ name: "test-lexical", version: "0.0.0" });
+    try {
+      const [transportClient, transportServeur] = InMemoryTransport.createLinkedPair();
+      await Promise.all([client.connect(transportClient), serveur.connect(transportServeur)]);
+
+      const reponse = contenu(
+        await client.callTool({ name: "search", arguments: { question: "données", k: 2 } }),
+      );
+      assert.equal(reponse.recherche, "lexicale");
+      assert.equal(reponse.niveau_confiance, "incertain");
+      const passages = reponse.passages as Record<string, unknown>[];
+      assert.equal(passages.length, 2);
+      assert.deepEqual(
+        passages.map((passage) => passage.rang_lexical),
+        [1, 2],
+      );
+      assert.equal("distance" in (passages[0] ?? {}), false);
+    } finally {
+      await client.close();
+      await serveur.close();
+      index.db.close();
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});

@@ -18,7 +18,7 @@ import { openIndex } from "../index/search.ts";
 import type { Index } from "../index/search.ts";
 import { createLlamaReranker } from "../rerank/reranker.ts";
 import type { Reranker } from "../rerank/reranker.ts";
-import { referenceExacte, search } from "../tools.ts";
+import { referenceExacte, search, type ModeRecherche } from "../tools.ts";
 import { intervalleWilson } from "../statistiques.ts";
 
 const ICI = dirname(fileURLToPath(import.meta.url));
@@ -33,7 +33,6 @@ export const NB_PLIS = 4;
 
 export type Split = "dev" | "test";
 export type FiltreSplit = Split | "all";
-export type ModeRecherche = "dense" | "hybride";
 
 /** Instruction de requête CNIL mesurée : celle du produit, ou une variante de même forme. */
 export type VarianteInstruction = "actuelle" | "neutre";
@@ -587,7 +586,9 @@ async function mesurer(
     mesures.push({
       question,
       refs: resultat.passages.map((passage) => passage.ref),
-      distances: resultat.passages.map((passage) => passage.distance),
+      distances: resultat.passages.flatMap((passage) =>
+        passage.distance === undefined ? [] : [passage.distance],
+      ),
     });
   }
   return { mesures, durees };
@@ -662,6 +663,57 @@ function niveau(mesure: Mesure, seuils: Seuils, corpus?: string) {
   );
 }
 
+/**
+ * Queue commune aux deux rapports : rangs, premiers passages inattendus, têtes
+ * considérant et paraphrase. `avecSimilarite` n'ajoute la similarité que là où
+ * elle existe (voie dense) ; la voie lexicale n'en a pas.
+ */
+function diagnosticRapport(
+  mesures: Mesure[],
+  semantiques: Mesure[],
+  avecSimilarite: boolean,
+): string[] {
+  const positions = semantiques.map(positionAttendue);
+  const considerants = semantiques.filter(teteConsiderant);
+  const inattendues = semantiques
+    .map(teteInattendue)
+    .filter((valeur): valeur is string => valeur !== null);
+  const paraphrase = mesures.find(
+    (mesure) => mesure.question.question === "droit de récupérer mes données",
+  );
+  const rangParaphrase = rangDe(paraphrase, "32016R0679#art_20");
+
+  return [
+    avecSimilarite ? `référence attendue, rang et similarité :` : `référence attendue et rang :`,
+    ...(positions.length === 0
+      ? ["  aucune question sémantique"]
+      : positions.map(
+          (position) =>
+            `  ${position.question.question} → ` +
+            `${position.question.attendues.map(refCourte).join("|")} : rang ` +
+            `${position.rang === 0 ? "absent" : position.rang}` +
+            `${!avecSimilarite || position.similarite === null ? "" : ` (${arrondi(position.similarite)})`}`,
+        )),
+    `premiers passages inattendus : ${inattendues.length === 0 ? "aucun" : inattendues.join(" · ")}`,
+    `têtes considérant pour un article attendu : ${considerants.length}/${semantiques.length}` +
+      (considerants.length === 0
+        ? ""
+        : ` (${considerants
+            .map(
+              (mesure) =>
+                `${mesure.question.attendues.map(refCourte).join("|")} ← ` +
+                `${refCourte(mesure.refs[0] ?? "")}`,
+            )
+            .join(" · ")})`),
+    `paraphrase « droit de récupérer mes données » → art_20 : ` +
+      (paraphrase === undefined
+        ? "question absente de ce split"
+        : rangParaphrase === 0
+          ? "hors des cinq premiers (top 5 : non)"
+          : `rang ${rangParaphrase} (top 5 : oui)`),
+  ];
+}
+
 /** Le rapport d'un split : `dev` règle, `test` constate avec les seuils figés. */
 function rapport(
   mesures: Mesure[],
@@ -672,11 +724,6 @@ function rapport(
   const exactes = mesures.filter((mesure) => !mesure.question.piege && estExacte(mesure));
   const semantiques = mesures.filter((mesure) => !mesure.question.piege && !estExacte(mesure));
   const classementsSemantiques = classer(semantiques);
-  const positions = semantiques.map(positionAttendue);
-  const considerants = semantiques.filter(teteConsiderant);
-  const inattendues = semantiques
-    .map(teteInattendue)
-    .filter((valeur): valeur is string => valeur !== null);
 
   const piegesSeuil = mesures.filter((mesure) => mesure.question.piege && !estExacte(mesure));
   const piegesDeterministes = mesures.filter((mesure) => mesure.question.piege && estExacte(mesure));
@@ -687,11 +734,6 @@ function rapport(
   const incertaines = semantiques.filter((mesure) => niveau(mesure, seuils, corpus) === "incertain");
   const confiantes = semantiques.filter((mesure) => niveau(mesure, seuils, corpus) === "confiant");
   const refusees = semantiques.filter((mesure) => refusee(mesure, seuils, corpus));
-
-  const paraphrase = mesures.find(
-    (mesure) => mesure.question.question === "droit de récupérer mes données",
-  );
-  const rangParaphrase = rangDe(paraphrase, "32016R0679#art_20");
 
   return [
     `jeu : ${mesures.length} questions (${compter(mesures, "reference")} références, ` +
@@ -711,33 +753,32 @@ function rapport(
       `${piegesCites.length === 0 ? "" : ` (${piegesCites.map((mesure) => mesure.question.question).join(" · ")})`}`,
     `pièges confiants : ${piegesConfiants.length}` +
       `${piegesConfiants.length === 0 ? "" : ` (${piegesConfiants.map((mesure) => mesure.question.question).join(" · ")})`}`,
-    `référence attendue, rang et similarité :`,
-    ...(positions.length === 0
-      ? ["  aucune question sémantique"]
-      : positions.map(
-          (position) =>
-            `  ${position.question.question} → ` +
-            `${position.question.attendues.map(refCourte).join("|")} : rang ` +
-            `${position.rang === 0 ? "absent" : position.rang}` +
-            `${position.similarite === null ? "" : ` (${arrondi(position.similarite)})`}`,
-        )),
-    `premiers passages inattendus : ${inattendues.length === 0 ? "aucun" : inattendues.join(" · ")}`,
-    `têtes considérant pour un article attendu : ${considerants.length}/${semantiques.length}` +
-      (considerants.length === 0
-        ? ""
-        : ` (${considerants
-            .map(
-              (mesure) =>
-                `${mesure.question.attendues.map(refCourte).join("|")} ← ` +
-                `${refCourte(mesure.refs[0] ?? "")}`,
-            )
-            .join(" · ")})`),
-    `paraphrase « droit de récupérer mes données » → art_20 : ` +
-      (paraphrase === undefined
-        ? "question absente de ce split"
-        : rangParaphrase === 0
-          ? "hors des cinq premiers (top 5 : non)"
-          : `rang ${rangParaphrase} (top 5 : oui)`),
+    ...diagnosticRapport(mesures, semantiques, true),
+  ];
+}
+
+/** Le rapport d'un split lexical : rangs seuls, aucune calibration de confiance. */
+function rapportLexical(mesures: Mesure[]): string[] {
+  const exactes = mesures.filter((mesure) => !mesure.question.piege && estExacte(mesure));
+  const semantiques = mesures.filter((mesure) => !mesure.question.piege && !estExacte(mesure));
+  const classementsSemantiques = classer(semantiques);
+  const pieges = mesures.filter((mesure) => mesure.question.piege && !estExacte(mesure));
+
+  return [
+    `jeu : ${mesures.length} questions (${compter(mesures, "reference")} références, ` +
+      `${compter(mesures, "conceptuelle")} conceptuelles, ${compter(mesures, "piege")} pièges)`,
+    "calibration de confiance : non appliquée ni publiée (recherche lexicale : aucun seuil BM25, " +
+      "aucun passage n'est `confiant` hors référence exacte)",
+    `références exactes : ${exactes.length} questions, rang 1 par construction ` +
+      `(recall@5 ${arrondi(recallAt5(classer(exactes)))}, MRR ${arrondi(mrr(classer(exactes)))})`,
+    `recherche lexicale : ${semantiques.length} questions, recall@5 ` +
+      `${arrondi(recallAt5(classementsSemantiques))} ` +
+      `(${classementsSemantiques.filter((classement) => classement.rendus.slice(0, 5).some((ref) => satisfait(ref, classement.attendues))).length}/${semantiques.length}), ` +
+      `MRR ${arrondi(mrr(classementsSemantiques))}`,
+    `top-1 lexical : ${pourcentage(precisionAt1(classementsSemantiques))}`,
+    `pièges rendus : ${pieges.filter((mesure) => mesure.refs.length > 0).length}/${pieges.length} ` +
+      "(aucun refus par seuil en mode lexical)",
+    ...diagnosticRapport(mesures, semantiques, false),
   ];
 }
 
@@ -821,11 +862,13 @@ function lireSplit(argv: string[]): FiltreSplit {
   return valeur;
 }
 
-function lireRecherche(argv: string[]): ModeRecherche {
+export function lireRecherche(argv: string[]): ModeRecherche {
   const index = argv.indexOf("--recherche");
   const valeur = index >= 0 ? argv[index + 1] : "dense";
-  if (valeur !== "dense" && valeur !== "hybride") {
-    throw new Error(`--recherche attendu dense ou hybride ; reçu « ${valeur ?? "(vide)"} »`);
+  if (valeur !== "dense" && valeur !== "hybride" && valeur !== "lexicale") {
+    throw new Error(
+      `--recherche attendu dense, hybride ou lexicale ; reçu « ${valeur ?? "(vide)"} »`,
+    );
   }
   return valeur;
 }
@@ -854,6 +897,34 @@ export function instructionsDeMesure(
   variante: VarianteInstruction,
 ): Record<string, string> {
   return { ...INSTRUCTIONS_REQUETE, cnil: instructionCnil(variante) };
+}
+
+/**
+ * Le mode lexical ne mesure que `dev` : la calibration de confiance n'y existe
+ * pas et le split `test` n'a pas de seuils à consommer. Le refus précède toute
+ * mesure et n'écrit aucun marqueur.
+ */
+export function verifierModeLexical(recherche: ModeRecherche, split: FiltreSplit): void {
+  if (recherche === "lexicale" && (split === "test" || split === "all")) {
+    throw new Error(
+      "Le mode lexical ne mesure que dev : la calibration de confiance n'y existe pas, " +
+        "et le split test n'a pas de seuils à consommer.",
+    );
+  }
+}
+
+/** Les options de seuils n'ont pas de sens sans score comparable : le mode lexical les refuse. */
+export function verifierOptionsLexicales(
+  recherche: ModeRecherche,
+  seuils: Seuils | null,
+  regle: Regle,
+): void {
+  if (recherche === "lexicale" && (seuils !== null || regle === "produit")) {
+    throw new Error(
+      "--seuils et --regle produit ne s'appliquent pas à la recherche lexicale : " +
+        "aucun seuil de confiance n'y existe.",
+    );
+  }
 }
 
 /** Le split `test` ne s'exécute que sur autorisation explicite. */
@@ -1009,14 +1080,17 @@ export type EntreeQuestionJson = {
   attendues: string[];
   refs: string[];
   rangs: number[];
-  similarites: number[];
-  niveau: ReturnType<typeof niveauConfiance>;
+  /** Absent en recherche lexicale : aucun score comparable aux similarités cosinus. */
+  similarites?: number[];
+  /** Absent en recherche lexicale : la calibration de confiance ne s'y applique pas. */
+  niveau?: ReturnType<typeof niveauConfiance>;
 };
 
 export function entreeQuestionJson(
   mesure: Mesure,
-  seuils: Seuils,
+  seuils: Seuils | null,
   corpus?: string,
+  lexical = false,
 ): EntreeQuestionJson {
   return {
     question: mesure.question.question,
@@ -1025,8 +1099,8 @@ export function entreeQuestionJson(
     attendues: [...mesure.question.attendues],
     refs: [...mesure.refs],
     rangs: mesure.question.attendues.map((ref) => rangDe(mesure, ref)),
-    similarites: mesure.distances.map((distance) => 1 - distance),
-    niveau: niveau(mesure, seuils, corpus),
+    ...(lexical ? {} : { similarites: mesure.distances.map((distance) => 1 - distance) }),
+    ...(lexical || seuils === null ? {} : { niveau: niveau(mesure, seuils, corpus) }),
   };
 }
 
@@ -1049,11 +1123,13 @@ export type ObjetMesureJson = {
   instruction?: VarianteInstruction;
   /** L'index réellement interrogé : un JSON ne dit pas seulement quel modèle. */
   index: { chemin: string; unites: number };
-  seuils: Seuils;
+  /** Absent en recherche lexicale : aucun seuil BM25 n'est appliqué ni publié. */
+  seuils?: Seuils;
   /** D'où viennent `seuils` : `table (cnil)`, `table (repli, rgpd)`, `calibrés sur dev`, `fournis par --seuils`. */
-  seuils_origine: string;
+  seuils_origine?: string;
   questions: EntreeQuestionJson[];
-  agregats: Resume;
+  /** Absent en recherche lexicale, avec la calibration qu'il porte. */
+  agregats?: Resume;
   /** Absent quand aucun étage de rerank n'a tourné. */
   rerank?: BlocRerankJson;
 };
@@ -1072,12 +1148,13 @@ export function objetMesureJson(args: {
   corpus: string;
   recherche: ModeRecherche;
   index: { chemin: string; unites: number };
-  seuils: Seuils;
-  seuilsOrigine: string;
+  seuils: Seuils | null;
+  seuilsOrigine: string | null;
   mesures: Mesure[];
   instruction?: VarianteInstruction;
   rerank?: BlocRerankJson;
 }): ObjetMesureJson {
+  const lexical = args.recherche === "lexicale";
   return {
     date: args.date,
     modele: args.modele,
@@ -1087,10 +1164,14 @@ export function objetMesureJson(args: {
     recherche: args.recherche,
     ...(args.instruction === undefined ? {} : { instruction: args.instruction }),
     index: args.index,
-    seuils: args.seuils,
-    seuils_origine: args.seuilsOrigine,
-    questions: args.mesures.map((mesure) => entreeQuestionJson(mesure, args.seuils, args.corpus)),
-    agregats: resume(args.mesures, args.seuils, args.corpus),
+    ...(lexical || args.seuils === null ? {} : { seuils: args.seuils }),
+    ...(lexical || args.seuilsOrigine === null ? {} : { seuils_origine: args.seuilsOrigine }),
+    questions: args.mesures.map((mesure) =>
+      entreeQuestionJson(mesure, args.seuils, args.corpus, lexical),
+    ),
+    ...(lexical || args.seuils === null
+      ? {}
+      : { agregats: resume(args.mesures, args.seuils, args.corpus) }),
     ...(args.rerank === undefined ? {} : { rerank: args.rerank }),
   };
 }
@@ -1102,15 +1183,30 @@ export function verifierJsonSplit(split: FiltreSplit, json: boolean): void {
   }
 }
 
+/** Embedder du mode lexical : il ne doit jamais être appelé, et lève s'il l'est. */
+export const EMBEDDER_SANS_MODELE: Embedder = {
+  model: "sans modèle (recherche lexicale)",
+  dim: 0,
+  embedPassages: async () => {
+    throw new Error("Le mode lexical n'appelle jamais l'embedder.");
+  },
+  embedQuery: async () => {
+    throw new Error("Le mode lexical n'appelle jamais l'embedder.");
+  },
+};
+
 async function main(argv: string[]): Promise<void> {
   const split = lireSplit(argv);
   const recherche = lireRecherche(argv);
+  const lexical = recherche === "lexicale";
   const json = argv.includes("--json");
   verifierJsonSplit(split, json);
   verifierAutorisationTest(split, argv.includes("--mesurer-test"));
+  verifierModeLexical(recherche, split);
   const regle = lireRegle(valeurDe("--regle", argv));
   const seuilsExplicites = lireSeuils(valeurDe("--seuils", argv));
   verifierRegleSeuils(regle, seuilsExplicites);
+  verifierOptionsLexicales(recherche, seuilsExplicites, regle);
   const optionInstruction = valeurDe("--instruction", argv);
   const variante = lireInstruction(optionInstruction);
   const date = new Date().toISOString().slice(0, 10);
@@ -1134,12 +1230,14 @@ async function main(argv: string[]): Promise<void> {
   const dim = valeurDe("--dim", argv);
   const urlEmbed = valeurDe("--embed-url", argv);
   const fournisseur = lireFournisseur(valeurDe("--fournisseur", argv));
-  const embedder = creerEmbedder(fournisseur, {
-    ...(modele === undefined ? {} : { modele }),
-    ...(dim === undefined ? {} : { dim }),
-    ...(urlEmbed === undefined ? {} : { url: urlEmbed }),
-    instructions: instructionsDeMesure(variante),
-  });
+  const embedder = lexical
+    ? EMBEDDER_SANS_MODELE
+    : creerEmbedder(fournisseur, {
+        ...(modele === undefined ? {} : { modele }),
+        ...(dim === undefined ? {} : { dim }),
+        ...(urlEmbed === undefined ? {} : { url: urlEmbed }),
+        instructions: instructionsDeMesure(variante),
+      });
 
   const modeleRerank = valeurDe("--rerank", argv);
   const urlRerank = valeurDe("--rerank-url", argv) ?? URL_RERANK_DEFAUT;
@@ -1169,45 +1267,65 @@ async function main(argv: string[]): Promise<void> {
 
     const mesuresDev =
       split === "all" ? mesures.filter((mesure) => mesure.question.split === "dev") : mesures;
-    const { seuils, origine } = seuilsDeMesure({
-      split,
-      avecSplit: jeu.avecSplit,
-      mesuresDev,
-      explicites: seuilsExplicites,
-      regle,
-      corpus,
-    });
+    const { seuils, origine } = lexical
+      ? { seuils: null as Seuils | null, origine: null as string | null }
+      : seuilsDeMesure({
+          split,
+          avecSplit: jeu.avecSplit,
+          mesuresDev,
+          explicites: seuilsExplicites,
+          regle,
+          corpus,
+        });
 
-    const lignes = [
-      `date : ${date}`,
-      `modèle : ${embedder.model} (${embedder.dim} dimensions)`,
-      `corpus : ${corpus}`,
-      `recherche : ${recherche}`,
-      `instruction : ${variante}`,
-      `split : ${split}`,
-      ...(split === "all"
-        ? [
-            "",
-            "== dev ==",
-            ...rapport(
-              mesures.filter((mesure) => mesure.question.split === "dev"),
-              seuils,
-              origine,
-              corpus,
-            ),
-            "",
-            "== test ==",
-            ...rapport(
-              mesures.filter((mesure) => mesure.question.split === "test"),
-              seuils,
-              origine,
-              corpus,
-            ),
-          ]
-        : rapport(mesures, seuils, origine, corpus)),
-    ];
+    let lignes: string[];
+    if (lexical) {
+      lignes = [
+        `date : ${date}`,
+        "modèle : aucun (recherche lexicale, sans embedder)",
+        `corpus : ${corpus}`,
+        `recherche : ${recherche}`,
+        `split : ${split}`,
+        ...rapportLexical(mesures),
+      ];
+    } else {
+      if (seuils === null || origine === null) {
+        throw new Error("Seuils absents hors recherche lexicale.");
+      }
+      lignes = [
+        `date : ${date}`,
+        `modèle : ${embedder.model} (${embedder.dim} dimensions)`,
+        `corpus : ${corpus}`,
+        `recherche : ${recherche}`,
+        `instruction : ${variante}`,
+        `split : ${split}`,
+        ...(split === "all"
+          ? [
+              "",
+              "== dev ==",
+              ...rapport(
+                mesures.filter((mesure) => mesure.question.split === "dev"),
+                seuils,
+                origine,
+                corpus,
+              ),
+              "",
+              "== test ==",
+              ...rapport(
+                mesures.filter((mesure) => mesure.question.split === "test"),
+                seuils,
+                origine,
+                corpus,
+              ),
+            ]
+          : rapport(mesures, seuils, origine, corpus)),
+      ];
+    }
 
     if (consommeTest) {
+      if (seuils === null) {
+        throw new Error("Le split test exige des seuils : mode lexical refusé.");
+      }
       const mesuresTest =
         split === "test"
           ? mesures

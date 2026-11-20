@@ -44,8 +44,10 @@ export type ResultatRecherche = {
   montant?: number | null;
   /** Vrai si la décision CNIL prononce une injonction. */
   injonction?: boolean;
-  /** Distance cosinus rendue par sqlite-vec : `similarité = 1 - distance`. */
-  distance: number;
+  /** Distance cosinus rendue par sqlite-vec : `similarité = 1 - distance`. Absente en recherche lexicale. */
+  distance?: number;
+  /** Rang BM25 rendu par FTS5, 1 = meilleur ; présent seulement en recherche lexicale. */
+  rang_lexical?: number;
 };
 
 export type SearchOptions = {
@@ -156,7 +158,9 @@ function ligneVersResultat(ligne: Ligne): ResultatRecherche {
     type_sanction: texte(ligne.type_sanction),
     montant: ligne.montant === null || ligne.montant === undefined ? null : Number(ligne.montant),
     injonction: Number(ligne.injonction) === 1,
-    distance: Number(ligne.distance),
+    ...(ligne.distance === null || ligne.distance === undefined
+      ? {}
+      : { distance: Number(ligne.distance) }),
   };
 }
 
@@ -171,13 +175,16 @@ export function rangerPassages(resultats: ResultatRecherche[], k: number): Resul
   return resultats
     .map((resultat, position) => ({
       resultat,
-      score: 1 - resultat.distance + (resultat.niveau === "article" ? BANDE_ARTICLE : 0),
+      score:
+        1 - (resultat.distance ?? Number.POSITIVE_INFINITY) +
+        (resultat.niveau === "article" ? BANDE_ARTICLE : 0),
       position,
     }))
     .sort(
       (gauche, droite) =>
         droite.score - gauche.score ||
-        gauche.resultat.distance - droite.resultat.distance ||
+        (gauche.resultat.distance ?? Number.POSITIVE_INFINITY) -
+          (droite.resultat.distance ?? Number.POSITIVE_INFINITY) ||
         gauche.position - droite.position,
     )
     .slice(0, nombre)
@@ -467,11 +474,10 @@ function distancesManquantes(
   );
 }
 
-/** Lignes complètes des rowids retenus, avec la distance dense déjà connue. */
-function resultatsParRowid(
+/** Lignes complètes des rowids retenus, sans distance : la voie lexicale n'en a pas. */
+function resultatsSansDistance(
   index: Index,
   rowids: number[],
-  distances: Map<number, number>,
 ): Map<number, ResultatRecherche> {
   if (rowids.length === 0) return new Map();
   const marques = rowids.map(() => "?").join(",");
@@ -485,11 +491,30 @@ function resultatsParRowid(
     .all(...rowids.map((rowid) => BigInt(rowid))) as Ligne[];
 
   return new Map(
-    lignes.map((ligne) => {
-      const rowid = Number(ligne.rowid);
+    lignes.map((ligne) => [Number(ligne.rowid), ligneVersResultat(ligne)]),
+  );
+}
+
+/** Distance dense d'un résultat : elle est toujours présente dans les voies dense et hybride. */
+function distanceDense(resultat: ResultatRecherche): number {
+  if (resultat.distance === undefined) {
+    throw new Error(`Distance dense absente pour ${resultat.ref}`);
+  }
+  return resultat.distance;
+}
+
+/** Lignes complètes des rowids retenus, avec la distance dense déjà connue. */
+function resultatsParRowid(
+  index: Index,
+  rowids: number[],
+  distances: Map<number, number>,
+): Map<number, ResultatRecherche> {
+  const resultats = resultatsSansDistance(index, rowids);
+  return new Map(
+    [...resultats].map(([rowid, resultat]) => {
       const distance = distances.get(rowid);
       if (distance === undefined) throw new Error(`Distance dense absente pour le rowid ${rowid}`);
-      return [rowid, ligneVersResultat({ ...ligne, distance })];
+      return [rowid, { ...resultat, distance }];
     }),
   );
 }
@@ -519,7 +544,9 @@ export function rechercheHybride(
 
   const limite = Math.max(CANDIDATS_VOIE, k);
   const denses = candidatsDenses(index, vecteur, limite, filtres);
-  const distances = new Map(denses.map((candidat) => [candidat.rowid, candidat.resultat.distance]));
+  const distances = new Map(
+    denses.map((candidat) => [candidat.rowid, distanceDense(candidat.resultat)]),
+  );
 
   const rowidParRef = new Map(denses.map((candidat) => [candidat.resultat.ref, candidat.rowid]));
   const rangDense = new Map<number, number>();
@@ -559,5 +586,32 @@ export function rechercheHybride(
     const resultat = resultats.get(rowid);
     if (resultat === undefined) throw new Error(`Résultat absent pour le rowid ${rowid}`);
     return resultat;
+  });
+}
+
+/**
+ * Recherche lexicale seule : la voie FTS5 existante, sans embedder ni vecteur.
+ * L'ordre est celui de BM25 (`rank` de FTS5) et les mêmes filtres descendent dans
+ * la requête. Chaque résultat porte son `rang_lexical` (1 = meilleur) et aucune
+ * `distance` : un score BM25 n'est ni borné ni comparable à une similarité.
+ */
+export function rechercheLexicale(
+  index: Index,
+  question: string,
+  options: SearchOptions,
+): ResultatRecherche[] {
+  const filtres = optionsAvecNature(index, options);
+  const k = Math.max(0, Math.trunc(options.k));
+  if (k === 0) return [];
+
+  const limite = Math.max(CANDIDATS_VOIE, k);
+  const rowids = candidatsLexicaux(index, question, limite, filtres);
+  if (rowids.length === 0) return [];
+
+  const resultats = resultatsSansDistance(index, rowids);
+  return rowids.slice(0, k).map((rowid, position) => {
+    const resultat = resultats.get(rowid);
+    if (resultat === undefined) throw new Error(`Résultat absent pour le rowid ${rowid}`);
+    return { ...resultat, rang_lexical: position + 1 };
   });
 }

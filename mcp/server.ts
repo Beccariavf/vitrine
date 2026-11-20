@@ -9,6 +9,7 @@ import { cheminIndex } from "./index/build.ts";
 import { openIndex } from "./index/search.ts";
 import type { Index } from "./index/search.ts";
 import { getArticle, getDecision, search, etatCorpus } from "./tools.ts";
+import type { ModeRecherche } from "./tools.ts";
 import { LIMITE_DEFAUT, LIMITE_MAX, decisionsCitant } from "./corpus/citants.ts";
 import { PERIMETRE } from "./corpus/citations.ts";
 import {
@@ -167,6 +168,10 @@ const CONSIGNE_SERVEUR =
   "opératoire par défaut et le document entier avec `partie: \"tous\"` ; " +
   "un avis ou une recommandation se lit par `search` avec `nature`. Le texte rendu vient du corpus " +
   "local, jamais d'une génération ; l'embedding est local (`leoipulsar/harrier-0.6b` sur Ollama). " +
+  "Le serveur peut tourner en recherche lexicale seule (`VITRINE_RECHERCHE=lexicale`) : `search` " +
+  "cherche alors par mots sans modèle ni Ollama, rend `recherche: \"lexicale\"` et `rang_lexical`, " +
+  "n'expose ni `distance` ni `similarite`, et ne rend `confiant` que sur un appariement exact de " +
+  "référence. " +
   "`decisions_citant` rend les décisions qui citent un article, comptées par autorité ; une liste " +
   "vide ne prouve pas qu'aucune ne le cite. " +
   "`decisions_citant_decision` rend les décisions qui citent une décision donnée par sa référence. " +
@@ -181,7 +186,29 @@ export type ServerDeps = {
   embedder: Embedder;
   /** Index déjà ouvert ; sinon il est ouvert à la première recherche sémantique. */
   index?: Index;
+  /** Voie de recherche ; `dense` par défaut, `lexicale` sans modèle à la requête. */
+  recherche?: ModeRecherche;
 };
+
+/** Variable d'environnement qui choisit la voie de recherche du serveur. */
+export const VARIABLE_RECHERCHE = "VITRINE_RECHERCHE";
+/** Voie par défaut : sans variable, le comportement reste strictement celui d'avant. */
+export const RECHERCHE_PAR_DEFAUT: ModeRecherche = "dense";
+/** Valeurs admises par `VITRINE_RECHERCHE`, dans l'ordre de l'erreur de démarrage. */
+export const MODES_RECHERCHE: readonly ModeRecherche[] = ["dense", "hybride", "lexicale"];
+
+/**
+ * Lit `VITRINE_RECHERCHE` : absent, `dense` ; une valeur inconnue arrête le
+ * démarrage en nommant les valeurs admises.
+ */
+export function lireModeRecherche(valeur: string | undefined): ModeRecherche {
+  if (valeur === undefined) return RECHERCHE_PAR_DEFAUT;
+  if ((MODES_RECHERCHE as readonly string[]).includes(valeur)) return valeur as ModeRecherche;
+  throw new Error(
+    `${VARIABLE_RECHERCHE} attendu ${MODES_RECHERCHE.join(", ")} ; ` +
+      `reçu « ${valeur === "" ? "(vide)" : valeur} »`,
+  );
+}
 
 /** Construit le serveur MCP : six outils, aucun accès réseau direct. */
 export function createServer(deps: ServerDeps): McpServer {
@@ -478,6 +505,9 @@ export function createServer(deps: ServerDeps): McpServer {
         "est rendu avec le niveau `incertain` et un message qui nomme ce corpus. " +
         "Si le numéro existe dans plusieurs documents, chaque article est rendu avec sa provenance " +
         "et le niveau est `incertain` ; préciser `document` ou nommer le corpus lève l'ambiguïté. " +
+        "En recherche lexicale seule (`VITRINE_RECHERCHE=lexicale`), les passages portent " +
+        "`rang_lexical` (1 = meilleur) et aucune `distance` ni `similarite` ; le niveau reste " +
+        "`incertain` hors appariement exact, un score BM25 ne prouvant pas la pertinence. " +
         `${CONSIGNE_CITATIONS} ` +
         `${CONSIGNE_DECISIONS_CITEES} ` +
         `${CONSIGNE_STATUT_APPLICATION} ` +
@@ -561,7 +591,11 @@ export function createServer(deps: ServerDeps): McpServer {
         ...(montant_max === undefined ? {} : { montant_max }),
         ...(numero === undefined ? {} : { numero }),
       };
-      const resultat = await search(rootDir, demande, { embedder, index });
+      const resultat = await search(rootDir, demande, {
+        embedder,
+        index,
+        ...(deps.recherche === undefined ? {} : { recherche: deps.recherche }),
+      });
       return { content: [{ type: "text", text: JSON.stringify(resultat, null, 2) }] };
     },
   );
@@ -570,7 +604,8 @@ export function createServer(deps: ServerDeps): McpServer {
 }
 
 async function main(): Promise<void> {
-  const serveur = createServer({ rootDir: RACINE, embedder: createOllamaEmbedder() });
+  const recherche = lireModeRecherche(process.env[VARIABLE_RECHERCHE]);
+  const serveur = createServer({ rootDir: RACINE, embedder: createOllamaEmbedder(), recherche });
   const transport = new StdioServerTransport();
 
   process.once("SIGINT", () => {
@@ -580,7 +615,10 @@ async function main(): Promise<void> {
   await serveur.connect(transport);
   process.stderr.write(
     "Serveur MCP des dix-huit corpus (RGPD, AI Act, ePrivacy, 2016/680, 2018/1725, 2025/2518, CCS, adéquation, CNIL, doctrine CNIL, LIL, textes français, préparation, CE, Conseil constitutionnel, CEPD, CC, CJUE, métadonnées du guichet unique) prêt sur stdio " +
-      "(six outils : get_article, get_decision, search, decisions_citant, decisions_citant_decision, etat_corpus).\n",
+      "(six outils : get_article, get_decision, search, decisions_citant, decisions_citant_decision, etat_corpus) " +
+      `— recherche ${recherche}` +
+      (recherche === "lexicale" ? " (sans modèle à la requête)" : "") +
+      ".\n",
   );
 }
 
