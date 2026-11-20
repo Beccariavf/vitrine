@@ -17,7 +17,7 @@ cp .env.example .env                    # renseigner les accès PISTE
 git config core.hooksPath .githooks     # active le garde-fou secrets
 npm run veille                          # lit les sources et écrit data/
 npm run backfill       # recalcule themes sur les entrées existantes
-npm run dev            # http://localhost:4321
+npm run dev            # http://localhost:4321 + API de recherche sur 127.0.0.1:8790
 npm test               # suite hors ligne
 npm run build          # génère dist/
 
@@ -43,7 +43,7 @@ npm run veille:delais  # délai publication → veille → corpus, data/corpus/d
 npm run mcp:smoke      # vérifie Ollama et leoipulsar/harrier-0.6b
 npm run mcp            # serveur MCP sur stdio
 VITRINE_RECHERCHE=lexicale npm run mcp   # recherche par mots seuls, sans Ollama à la requête
-npm run mcp:http       # API HTTP locale de la recherche lexicale sur 127.0.0.1:8790
+npm run mcp:http       # API HTTP locale seule, sans le site (déjà lancée par npm run dev)
 npm run mcp:demo       # cinq appels réels au serveur stdio (Ollama requis en mode dense)
 npm run mcp:eval -- --questions questions-v2.csv --split dev    # 30 questions de développement (hors CI)
 npm run mcp:eval -- --questions questions-v2.csv --split test --mesurer-test   # 30 questions tenues à l'écart, une seule fois (hors CI)
@@ -480,8 +480,12 @@ les expose comme outils directs.
 
 ## API HTTP locale
 
-`npm run mcp:http` sert la recherche lexicale seule — celle de `VITRINE_RECHERCHE=lexicale`, sans
-Ollama ni embedder — par une API HTTP sur `127.0.0.1:8790` (`VITRINE_HTTP_PORT` change le port) :
+`npm run dev` lance cette API avec le site (`src/integrations/api-recherche.ts`) et l'arrête avec lui ;
+`npm run mcp:http` la sert seule, sans le site. Dans les deux cas c'est la recherche lexicale — celle
+de `VITRINE_RECHERCHE=lexicale`, sans Ollama ni embedder — par une API HTTP sur `127.0.0.1:8790`
+(`VITRINE_HTTP_PORT` change le port). `VITRINE_ESSAI_AUTO=0` coupe le lancement automatique, un port
+occupé avertit sans empêcher le site de démarrer, et `astro build` n'appelle jamais l'API. Par
+exemple :
 
 ```
 curl -s "http://127.0.0.1:8790/recherche?q=droit%20%C3%A0%20l%27oubli&corpus=rgpd"
@@ -493,8 +497,9 @@ curl -s "http://127.0.0.1:8790/recherche?q=droit%20%C3%A0%20l%27oubli&corpus=rgp
 pas ; `429` au-delà de **20 requêtes par minute et par IP** (fenêtre fixe en mémoire, avec
 `reessayer_dans_s`) ; `503` quand l'index est absent ou illisible, en nommant
 `npm run corpus:index`. Toute autre route rend `404`. CORS n'admet que les origines de
-`VITRINE_HTTP_ORIGINES` (défaut
-`http://localhost:4321`) et la méthode `GET`. Le limiteur lit l'adresse de la connexion et ignore
+`VITRINE_HTTP_ORIGINES` (défaut `http://localhost:4321`), plus, sous `npm run dev`, l'adresse réelle
+du serveur Astro (`http://localhost:<port>` et `http://127.0.0.1:<port>`, même si Astro change de
+port), et la méthode `GET`. Le limiteur lit l'adresse de la connexion et ignore
 `X-Forwarded-For` : derrière un proxy, au passage au VPS, cette lecture devra changer.
 
 ## Comment ça marche
