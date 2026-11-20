@@ -143,11 +143,15 @@ const titreSection = "text-[clamp(1.75rem,3.2vw,2.5rem)] leading-[1.1] font-medi
       lien.href = passage.url;
       lien.target = "_blank";
       lien.rel = "noopener";
-      lien.textContent = passage.ref === "" ? famille.libelle : passage.ref;
+      // Le dernier segment du chemin est le titre lisible (« Délibération SAN-2023-008 ») ;
+      // le début du chemin situe la source, la référence technique ne s'affiche pas.
+      const segments = passage.chemin.split(" > ").map((s) => s.trim()).filter((s) => s !== "");
+      const intitule = segments.at(-1) ?? (passage.ref === "" ? famille.libelle : passage.ref);
+      lien.textContent = intitule;
       lien.append(noeud("span", "sr-only", " (nouvel onglet)"));
       titre.append(lien);
       corps.append(entete, titre);
-      if (passage.chemin !== "") corps.append(noeud("p", "mt-1 text-[0.8125rem] text-encre-douce", passage.chemin));
+      if (segments.length > 1) corps.append(noeud("p", "mt-1 text-[0.8125rem] text-encre-douce", segments.slice(0, -1).join(" › ")));
       if (passage.extrait !== "") corps.append(noeud("p", `mt-2 line-clamp-3 ${CLASSE_MESSAGE}`, passage.extrait));
       grille.append(corps);
       item.append(grille);
