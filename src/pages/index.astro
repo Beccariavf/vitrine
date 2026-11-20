@@ -96,7 +96,7 @@ const manifeste = [
   {
     sources.length > 0 && (
       <section aria-labelledby="sources" class="mt-24 sm:mt-28">
-        <div class="grid items-center gap-8 min-[761px]:grid-cols-2 min-[761px]:gap-[clamp(1.5rem,5vw,5rem)]">
+        <div class="grid items-start gap-8 min-[761px]:grid-cols-2 min-[761px]:gap-[clamp(1.5rem,5vw,5rem)]">
           <div class="min-w-0 rounded-carte bg-surface p-4 sm:p-6">
             <Facade sources={sources} />
           </div>
@@ -126,7 +126,7 @@ const manifeste = [
         <div class="grid items-center gap-8 min-[761px]:grid-cols-2 min-[761px]:gap-[clamp(1.5rem,5vw,5rem)]">
           <div
             class="grid aspect-square max-h-[26rem] place-content-center gap-3 rounded-carte bg-accent p-8 min-[761px]:order-2"
-            aria-label="Références citées par les dernières publications"
+            aria-label="Références citées dans la veille"
             role="group"
           >
             {
@@ -176,7 +176,7 @@ const manifeste = [
   }
 
   <section aria-labelledby="publications" class="mt-24 sm:mt-28">
-    <div class="flex flex-wrap items-end justify-between gap-4 border-b border-filet pb-4">
+    <div class="flex flex-wrap items-end justify-between gap-4 pb-4">
       <h2
         id="publications"
         class="text-[clamp(1.75rem,3.2vw,2.5rem)] font-medium leading-[1.1] tracking-[-0.025em]"
