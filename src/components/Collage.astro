@@ -37,7 +37,7 @@ function dateLisible(date: string | null): string | null {
 
 {
   cartes.length > 0 && (
-    <section aria-label="Sources officielles suivies par la veille" class="collage-section mt-10 sm:mt-12">
+    <section aria-label="Sources officielles suivies par la veille" class="collage-section mt-12 sm:mt-20">
       <div class="collage" role="img" aria-label={legende}>
         <div class="collage-piste" aria-hidden="true">
           {colonnes.map((colonne) => (
@@ -205,28 +205,35 @@ function dateLisible(date: string | null): string | null {
   }
 
 
-  /* La bande : un collage qui dérive lentement, jamais de défilement horizontal. */
+  /*
+   * La bande : toute la largeur de la fenêtre, comme america.gov. Elle sort du
+   * conteneur par des marges négatives ; `main { overflow-x: clip }` (global.css)
+   * rogne le surplus de la barre de défilement, donc aucun défilement horizontal.
+   * Les colonnes, plus larges que la fenêtre, sont centrées et coupées aux deux bords.
+   */
   .collage {
     position: relative;
+    display: flex;
+    justify-content: center;
     overflow: hidden;
-    border-radius: var(--radius-carte);
+    margin-inline: calc(50% - 50vw);
     padding: 2.5rem 0 3rem;
-    -webkit-mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
-    mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 3%, #000 97%, transparent);
+    mask-image: linear-gradient(to right, transparent, #000 3%, #000 97%, transparent);
   }
 
   .collage-piste {
     display: grid;
-    grid-template-columns: repeat(4, 19rem);
-    gap: 1.25rem;
+    grid-template-columns: repeat(5, max(16rem, 21.5vw));
+    gap: 1.5rem;
     width: max-content;
-    margin-left: -3rem;
+    flex: none;
     align-items: start;
   }
 
   .collage-col {
     display: grid;
-    gap: 1.25rem;
+    gap: 1.5rem;
   }
 
   .collage-col:nth-child(2) {
@@ -241,11 +248,8 @@ function dateLisible(date: string | null): string | null {
     margin-top: 4.5rem;
   }
 
-  @media (max-width: 760px) {
-    .collage-piste {
-      grid-template-columns: repeat(4, 16rem);
-      margin-left: -5rem;
-    }
+  .collage-col:nth-child(5) {
+    margin-top: 2.25rem;
   }
 
   .fiche {

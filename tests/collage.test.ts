@@ -142,15 +142,16 @@ after(() => {
 });
 
 describe("cartesCollage", () => {
-  it("remplit quatre colonnes fixes, chaque source à sa place", () => {
+  it("remplit cinq colonnes fixes, chaque source à sa place", () => {
     const colonnes = cartesCollage(corpus(), COMPLEMENTS);
     assert.deepEqual(
       colonnes.map((colonne) => colonne.map((carte) => carte.source)),
       [
         ["Matières suivies", "CNIL"],
         ["CEPD", "EUR-Lex"],
-        ["Conseil d'État", "CJUE", "ANSSI"],
-        ["Textes en préparation", "Commission européenne", "Cour de cassation"],
+        ["Conseil d'État", "CJUE"],
+        ["Textes en préparation", "Commission européenne"],
+        ["ANSSI", "Cour de cassation"],
       ],
     );
   });
@@ -189,7 +190,7 @@ describe("cartesCollage", () => {
     const colonnes = cartesCollage(entrees);
     assert.deepEqual(
       colonnes.map((colonne) => colonne.map((carte) => carte.source)),
-      [[], [], [], []],
+      [[], [], [], [], []],
     );
     assert.equal(colonnes.flat().some((carte) => carte.source === "CNIL"), false);
   });
@@ -243,19 +244,19 @@ describe("cartesCollage", () => {
 
   it("omet une source absente sans laisser de trou ni d'erreur", () => {
     const colonnes = cartesCollage([entree({ source: "cnil", title: "Une sanction CNIL" })]);
-    assert.equal(colonnes.length, 4);
+    assert.equal(colonnes.length, 5);
     assert.deepEqual(
       colonnes.map((colonne) => colonne.map((carte) => carte.source)),
-      [["CNIL"], [], [], []],
+      [["CNIL"], [], [], [], []],
     );
-    assert.deepEqual(cartesCollage([], undefined), [[], [], [], []]);
+    assert.deepEqual(cartesCollage([], undefined), [[], [], [], [], []]);
   });
 
   it("garde l'article mais pas la préparation quand seul l'article est lu", () => {
     const colonnes = cartesCollage([], { article: ARTICLE, preparation: null, matieres: [] });
     assert.deepEqual(
       colonnes.map((colonne) => colonne.map((carte) => carte.source)),
-      [[], ["EUR-Lex"], [], []],
+      [[], ["EUR-Lex"], [], [], []],
     );
   });
 
@@ -377,7 +378,7 @@ describe("lirePreparationProposee", () => {
     const colonnes = cartesCollage([], { article: null, preparation: null, matieres: [] });
     assert.deepEqual(
       colonnes.map((colonne) => colonne.map((carte) => carte.source)),
-      [[], [], [], []],
+      [[], [], [], [], []],
     );
   });
 });

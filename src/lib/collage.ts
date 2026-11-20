@@ -229,7 +229,8 @@ function carteAnssi(entry: Entry): CarteCollage {
 }
 
 /**
- * Les quatre colonnes du collage, dans leur ordre d'affichage. Une source sans
+ * Les cinq colonnes du collage, dans leur ordre d'affichage : assez pour couvrir
+ * toute la largeur de l'écran. Une source sans
  * entrée est omise sans laisser de trou ; la répartition des colonnes ne bouge pas.
  */
 export function cartesCollage(entrees: Entry[], complements?: Complements): CarteCollage[][] {
@@ -260,16 +261,18 @@ export function cartesCollage(entrees: Entry[], complements?: Complements): Cart
   const colonne3: CarteCollage[] = [];
   if (cetat !== undefined) colonne3.push(carteConseilEtat(cetat));
   if (cjue !== undefined) colonne3.push(carteCjue(cjue));
-  if (anssi !== undefined) colonne3.push(carteAnssi(anssi));
 
   const colonne4: CarteCollage[] = [];
   if (complements?.preparation != null) {
     colonne4.push({ genre: "preparation", source: "Textes en préparation", famille: "ue", ...complements.preparation });
   }
   if (commission !== undefined) colonne4.push(carteTexte(commission, "Commission européenne", "ue"));
-  if (cassation !== undefined) colonne4.push(carteCassation(cassation));
 
-  return [colonne1, colonne2, colonne3, colonne4];
+  const colonne5: CarteCollage[] = [];
+  if (anssi !== undefined) colonne5.push(carteAnssi(anssi));
+  if (cassation !== undefined) colonne5.push(carteCassation(cassation));
+
+  return [colonne1, colonne2, colonne3, colonne4, colonne5];
 }
 
 /** Lignes d'un fichier JSONL ; un fichier absent rend une liste vide. */
