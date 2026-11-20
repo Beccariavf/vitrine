@@ -1,15 +1,13 @@
 ---
 import Demo from "../components/Demo.astro";
+import Collage from "../components/Collage.astro";
 import PublicationRangee from "../components/PublicationRangee.astro";
-import Facade from "../components/Facade.astro";
 import Base from "../layouts/Base.astro";
-import { sourcesCorpus } from "../lib/corpus.ts";
 import { lireDemo } from "../lib/demo.ts";
 import { getVisibleEntries } from "../lib/entries.ts";
 import { FAMILLES } from "../lib/familles.ts";
 import { referenceLabel, referenceUrl } from "../lib/references.ts";
 
-const sources = sourcesCorpus();
 const visibles = getVisibleEntries();
 const publications = visibles.slice(0, 3);
 const demo = lireDemo();
@@ -93,30 +91,7 @@ const manifeste = [
     }
   </p>
 
-  {
-    sources.length > 0 && (
-      <section aria-labelledby="sources" class="mt-24 sm:mt-28">
-        <div class="grid max-w-[40rem] gap-4 justify-items-start">
-          <h2
-            id="sources"
-            class="text-[clamp(1.75rem,3.2vw,2.5rem)] font-medium leading-[1.08] tracking-[-0.025em]"
-          >
-            Sources du connecteur
-          </h2>
-          <p class="text-[1.0625rem] text-encre-douce">
-            Textes, autorités et juridictions : le connecteur interroge les publications officielles,
-            pas le web.
-          </p>
-          <a href="/connecteur#couverture" class="lien">
-            Dates par collection <span aria-hidden="true">→</span>
-          </a>
-        </div>
-        <div class="mt-6 min-w-0 rounded-carte bg-surface p-4 sm:p-6">
-          <Facade sources={sources} colonnesLarge={10} />
-        </div>
-      </section>
-    )
-  }
+  <Collage entrees={visibles} />
 
   {
     references.length > 0 && (

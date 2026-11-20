@@ -1,0 +1,542 @@
+---
+import "@fontsource/open-sans/latin-800.css";
+/** Le bandeau de sanction, tel quel : le SVG ne porte aucun style interne. */
+import sanction from "../assets/sanction.svg?raw";
+import { activeThemes, readThemes } from "../../veille/themes.ts";
+import { cartesCollage, lireArticleRgpd32, lirePreparationProposee } from "../lib/collage.ts";
+import type { Entry } from "../lib/entries.ts";
+import { FAMILLES } from "../lib/familles.ts";
+
+type Props = {
+  /** Entrées visibles de la veille : le collage n'en montre qu'une par source. */
+  entrees: Entry[];
+};
+
+const { entrees } = Astro.props;
+
+const matieres = activeThemes(readThemes()).map((theme) => theme.label);
+const colonnes = cartesCollage(entrees, {
+  article: lireArticleRgpd32(),
+  preparation: lirePreparationProposee(),
+  matieres,
+});
+
+const cartes = colonnes.flat();
+/** Sources réellement rendues, dans l'ordre des colonnes : la légende du visuel. */
+const sources = [...new Set(cartes.map((carte) => carte.source))];
+const legende =
+  sources.length > 0 ? `Exemples de publications suivies : ${sources.join(", ")}.` : "Publications suivies";
+
+/** Dates en français, à l'heure UTC : les mêmes au build comme en test. */
+const formatDate = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+
+function dateLisible(date: string | null): string | null {
+  return date === null ? null : formatDate.format(new Date(date));
+}
+---
+
+{
+  cartes.length > 0 && (
+    <section aria-labelledby="collage" class="collage-section mt-24 sm:mt-28">
+      <div class="collage-tete">
+        <h2 id="collage">Les sources officielles du droit du numérique, au même endroit.</h2>
+        <p>
+          Textes, autorités et juridictions, françaises et européennes : chaque publication renvoie à son
+          texte officiel.
+        </p>
+        <a href="/veille" class="lien">
+          Consulter la veille <span aria-hidden="true">→</span>
+        </a>
+      </div>
+
+      <div class="collage" role="img" aria-label={legende}>
+        <div class="collage-piste" aria-hidden="true">
+          {colonnes.map((colonne) => (
+            <div class="collage-col">
+              {colonne.map((carte) => (
+                <>
+                  {carte.genre === "matieres" && (
+                    <div class="fiche">
+                      <div class="fiche-tete">
+                        <span class="source">
+                          <i aria-hidden="true" class:list={["pt", FAMILLES[carte.famille].classePastille]} />
+                          {carte.source}
+                        </span>
+                      </div>
+                      <div class="suivi">
+                        {carte.matieres.map((matiere) => (
+                          <div>
+                            {matiere}
+                            <span class="coche">✓</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {carte.genre === "sanction" && (
+                    <div class="fiche photo">
+                      <div class="sanction-visuel" set:html={sanction} />
+                      <div class="photo-corps">
+                        <div class="fiche-tete">
+                          <span class="source">
+                            <i aria-hidden="true" class:list={["pt", FAMILLES[carte.famille].classePastille]} />
+                            {carte.source}
+                          </span>
+                          {dateLisible(carte.date) !== null && (
+                            <time datetime={carte.date ?? undefined}>{dateLisible(carte.date)}</time>
+                          )}
+                        </div>
+                        <b>{carte.titre}</b>
+                        {carte.references.length > 0 && (
+                          <div class="ligne">
+                            {carte.references.map((reference) => (
+                              <span class="ref">{reference}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {carte.genre === "photo" && (
+                    <div class="fiche photo">
+                      <img
+                        src="/images/conseil-etat.jpg"
+                        alt=""
+                        width="760"
+                        height="505"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <div class="photo-corps">
+                        <div class="fiche-tete">
+                          <span class="source">
+                            <i aria-hidden="true" class:list={["pt", FAMILLES[carte.famille].classePastille]} />
+                            {carte.source}
+                          </span>
+                          {dateLisible(carte.date) !== null && (
+                            <time datetime={carte.date ?? undefined}>{dateLisible(carte.date)}</time>
+                          )}
+                        </div>
+                        <span class="serif-titre">{carte.titre}</span>
+                        {carte.numero !== null && (
+                          <div class="ligne">
+                            <span class="ref">n° {carte.numero}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {carte.genre === "texte" && (
+                    <div class="fiche">
+                      <div class="fiche-tete">
+                        <span class="source">
+                          <i aria-hidden="true" class:list={["pt", FAMILLES[carte.famille].classePastille]} />
+                          {carte.source}
+                        </span>
+                        {dateLisible(carte.date) !== null && (
+                          <time datetime={carte.date ?? undefined}>{dateLisible(carte.date)}</time>
+                        )}
+                      </div>
+                      {carte.montant !== null && <span class="montant">{carte.montant}</span>}
+                      <b>{carte.titre}</b>
+                      {carte.extrait !== null && <p class="extrait">{carte.extrait}</p>}
+                      {carte.references.length > 0 && (
+                        <div class="ligne">
+                          {carte.references.map((reference) => (
+                            <span class="ref">{reference}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {carte.genre === "pilule" && (
+                    <div class="fiche pilule">
+                      <i aria-hidden="true">⌁</i>
+                      <b>{carte.texte}</b>
+                    </div>
+                  )}
+
+                  {carte.genre === "article" && (
+                    <div class="fiche">
+                      <div class="fiche-tete">
+                        <span class="source">
+                          <i aria-hidden="true" class:list={["pt", FAMILLES[carte.famille].classePastille]} />
+                          {carte.source}
+                        </span>
+                        <span class="nums">texte consolidé</span>
+                      </div>
+                      <span class="serif-titre">RGPD · art. {carte.numero}</span>
+                      <b>{carte.titre}</b>
+                      <p class="extrait">{carte.extrait}</p>
+                    </div>
+                  )}
+
+                  {carte.genre === "preparation" && (
+                    <div class="fiche">
+                      <div class="fiche-tete">
+                        <span class="source">
+                          <i aria-hidden="true" class:list={["pt", FAMILLES[carte.famille].classePastille]} />
+                          {carte.source}
+                        </span>
+                        <span class="nums">{carte.procedure}</span>
+                      </div>
+                      <b>{carte.titre}</b>
+                      <div class="etapes">
+                        {carte.etapes.map((etape) => (
+                          <span class:list={[etape.fait && "fait"]}>{etape.libelle}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <p class="credit">
+        Photo : Conseil d'État, Palais-Royal, par GFreihalter,{" "}
+        <a href="https://commons.wikimedia.org/wiki/File:Paris_1er_Conseil_d%27%C3%89tat_002.jpg">
+          Wikimedia Commons
+        </a>, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>.
+      </p>
+    </section>
+  )
+}
+
+<style>
+  /* La bande déborde le conteneur de lecture, sans jamais sortir de l'écran. */
+  .collage-section {
+    margin-inline: calc((100% - min(70rem, 100vw - 2.5rem)) / 2);
+  }
+
+  .collage-tete {
+    display: grid;
+    gap: 1rem;
+    justify-items: center;
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .collage-tete h2 {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    font-size: clamp(2.25rem, 5.5vw, 4.25rem);
+    line-height: 1.02;
+    text-wrap: balance;
+    max-width: 16ch;
+  }
+
+  .collage-tete p {
+    font-size: 1.125rem;
+    max-width: 36rem;
+    text-wrap: pretty;
+    color: var(--color-encre-douce);
+  }
+
+  /* Lien de section : un filet fin, pas de soulignement. */
+  .lien {
+    border-bottom: 1px solid var(--color-filet);
+    padding-bottom: 2px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .lien:hover {
+    border-color: var(--color-encre);
+    text-decoration: none;
+  }
+
+  /* La bande : un collage qui dérive lentement, jamais de défilement horizontal. */
+  .collage {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-carte);
+    padding: 2.5rem 0 3rem;
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+    mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+  }
+
+  .collage-piste {
+    display: grid;
+    grid-template-columns: repeat(4, 19rem);
+    gap: 1.25rem;
+    width: max-content;
+    margin-left: -3rem;
+    align-items: start;
+  }
+
+  .collage-col {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .collage-col:nth-child(2) {
+    margin-top: 3.5rem;
+  }
+
+  .collage-col:nth-child(3) {
+    margin-top: 1.25rem;
+  }
+
+  .collage-col:nth-child(4) {
+    margin-top: 4.5rem;
+  }
+
+  @media (max-width: 760px) {
+    .collage-piste {
+      grid-template-columns: repeat(4, 16rem);
+      margin-left: -5rem;
+    }
+  }
+
+  .fiche {
+    background-color: var(--color-fond);
+    border-radius: 22px;
+    padding: 1.15rem 1.2rem;
+    box-shadow: var(--shadow-douce);
+    border: 1px solid var(--color-filet);
+    display: grid;
+    gap: 0.7rem;
+    font-size: 0.875rem;
+    min-width: 0;
+  }
+
+  .fiche-tete {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .fiche-tete .source {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 600;
+  }
+
+  .fiche-tete time {
+    color: var(--color-encre-douce);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pt {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    flex: none;
+    border-radius: 999px;
+  }
+
+  .nums {
+    color: var(--color-encre-douce);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .fiche b {
+    font-weight: 600;
+    font-size: 0.9375rem;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
+
+  .serif-titre {
+    font-family: var(--font-serif);
+    letter-spacing: -0.02em;
+    font-size: 1.45rem;
+    line-height: 1.1;
+    font-weight: 400;
+  }
+
+  .extrait {
+    color: var(--color-encre-douce);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .ligne {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .ref {
+    border: 1px solid var(--color-filet);
+    border-radius: 8px;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .montant {
+    font-family: var(--font-serif);
+    letter-spacing: -0.02em;
+    font-size: 2.6rem;
+    line-height: 1;
+  }
+
+  .etapes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.35rem;
+    font-size: 0.6875rem;
+    color: var(--color-encre-douce);
+  }
+
+  .etapes span {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .etapes span::before {
+    content: "";
+    height: 4px;
+    border-radius: 4px;
+    background-color: var(--color-filet);
+  }
+
+  .etapes span.fait::before {
+    background-color: var(--color-accent);
+  }
+
+  .suivi {
+    display: grid;
+    gap: 0;
+  }
+
+  .suivi div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.55rem 0;
+    border-top: 1px solid var(--color-filet);
+  }
+
+  .suivi div:first-child {
+    border-top: 0;
+  }
+
+  .coche {
+    width: 1.1rem;
+    height: 1.1rem;
+    border-radius: 5px;
+    background-color: var(--color-accent);
+    color: var(--color-sur-accent);
+    display: grid;
+    place-items: center;
+    font-size: 0.7rem;
+    line-height: 1;
+  }
+
+  .fiche.pilule {
+    border-radius: 999px;
+    padding: 0.7rem 1.1rem 0.7rem 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    width: fit-content;
+  }
+
+  .fiche.pilule i {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background-color: var(--color-surface);
+    font-style: normal;
+  }
+
+  .fiche.photo {
+    padding: 0;
+    overflow: hidden;
+    gap: 0;
+  }
+
+  .fiche.photo img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 760 / 505;
+    object-fit: cover;
+  }
+
+  .photo-corps {
+    padding: 1rem 1.2rem 1.15rem;
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  /* Le bandeau de sanction reste sur fond blanc, mode sombre compris. */
+  .sanction-visuel {
+    background-color: #fff;
+    line-height: 0;
+  }
+
+  .sanction-visuel :global(.sanction-svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 760 / 505;
+  }
+
+  .sanction-visuel :global(.s-rouge) {
+    fill: #e44d3c;
+  }
+
+  .sanction-visuel :global(.s-jaune) {
+    fill: #f4c13f;
+  }
+
+  .sanction-visuel :global(.s-jaune-trait) {
+    stroke: #f4c13f;
+  }
+
+  .sanction-visuel :global(.sanction-texte) {
+    font-family: "Open Sans", "Helvetica Neue", Arial, sans-serif;
+    font-size: 162px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.01em;
+    fill: #1a1a1a;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .collage-piste {
+      animation: derive 28s ease-in-out infinite alternate;
+    }
+
+    .collage:hover .collage-piste {
+      animation-play-state: paused;
+    }
+
+    @keyframes derive {
+      from {
+        transform: translateX(0);
+      }
+
+      to {
+        transform: translateX(-6rem);
+      }
+    }
+  }
+
+  .credit {
+    font-size: 0.75rem;
+    color: var(--color-encre-douce);
+    text-align: center;
+    margin-top: -1.5rem;
+  }
+</style>
