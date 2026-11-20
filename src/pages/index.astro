@@ -6,75 +6,184 @@ import Base from "../layouts/Base.astro";
 import { sourcesCorpus } from "../lib/corpus.ts";
 import { lireDemo } from "../lib/demo.ts";
 import { getVisibleEntries } from "../lib/entries.ts";
+import { FAMILLES } from "../lib/familles.ts";
+import { referenceLabel, referenceUrl } from "../lib/references.ts";
 
 const sources = sourcesCorpus();
-const publications = getVisibleEntries().slice(0, 3);
+const visibles = getVisibleEntries();
+const publications = visibles.slice(0, 3);
 const demo = lireDemo();
+
+/**
+ * Références de la rangée « Chaque affirmation se vérifie » : celles des trois
+ * publications affichées, élargies à toutes les entrées visibles quand elles
+ * n'en portent aucune. Trois au plus, sans doublon.
+ */
+function referencesDe(entrees: typeof visibles): string[] {
+  return [...new Set(entrees.flatMap((entry) => entry.references))];
+}
+
+const referencesAffichees = referencesDe(publications);
+const references = (referencesAffichees.length > 0 ? referencesAffichees : referencesDe(visibles))
+  .slice(0, 3)
+  .map((reference) => ({ reference, libelle: referenceLabel(reference), url: referenceUrl(reference) }));
+
+/** Pastilles du manifeste : la couleur de la famille, toujours suivie de son nom. */
+const manifeste = [
+  { avant: "Chaque réponse renvoie au texte officiel", famille: FAMILLES.textes, nom: "RGPD", apres: "publié par l'autorité" },
+  { avant: "", famille: FAMILLES.autorites, nom: "CNIL", apres: "ou la juridiction" },
+  { avant: "", famille: FAMILLES.ue, nom: "CJUE", apres: "qui l'a rendu. Vous vérifiez en un clic." },
+];
 ---
 
 <Base
   title="Vitrine — une IA juridique qui cite ses sources"
   description="Un connecteur en préparation entre votre IA et les sources officielles du droit des données personnelles, et une veille des publications officielles du droit du numérique."
 >
-  <section class:list={[demo !== null && "grid gap-8 lg:grid-cols-12 lg:gap-10"]}>
-    <div class:list={[demo !== null ? "lg:col-span-7" : "max-w-4xl"]}>
-      <p class="font-mono text-[0.7rem] uppercase tracking-[0.14em] text-muted">
-        Droit des données personnelles
-      </p>
-      <h1 class="mt-6 text-5xl sm:text-6xl lg:text-7xl">Une IA juridique qui cite ses sources.</h1>
-      <p class="mt-6 max-w-xl text-lg leading-relaxed text-muted text-pretty">
-        Vitrine prépare un connecteur entre votre IA et les sources officielles du droit des données
-        personnelles : textes, autorités et juridictions. En attendant, consultez la veille : chaque
-        publication renvoie à son texte officiel.
-      </p>
+  <section class="hero grid justify-items-center gap-7 px-1 pb-2 pt-8 text-center">
+    <p class="inline-flex items-center gap-2 text-[0.8125rem] font-medium text-encre-douce">
+      <span aria-hidden="true" class="h-1.5 w-1.5 shrink-0 rounded-[999px] bg-juridictions"></span>
+      Droit des données personnelles
+    </p>
+    <h1 class="max-w-[14ch] text-[clamp(3rem,8.5vw,6.5rem)] leading-[0.98] tracking-[-0.02em]">
+      Une IA juridique qui cite ses sources.
+    </h1>
+    <p class="max-w-[38rem] text-[clamp(1.125rem,2vw,1.375rem)] leading-[1.5] text-pretty text-encre-douce">
+      Vitrine prépare un connecteur entre votre IA et les sources officielles du droit des données
+      personnelles : textes, autorités et juridictions. En attendant, consultez la veille : chaque
+      publication renvoie à son texte officiel.
+    </p>
 
-      <div class="mt-8 flex flex-col items-stretch gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-5">
-        <a
-          href="/connecteur"
-          class="inline-flex items-center justify-center gap-2 border-2 border-ink bg-ink px-5 py-3 font-mono text-[0.7rem] font-bold uppercase tracking-[0.12em] text-paper no-underline shadow-hard hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-red hover:no-underline hover:shadow-hard-lg"
-        >
-          Découvrir le connecteur <span aria-hidden="true">→</span>
-        </a>
-        <a href="/veille" class="text-center text-sm text-ink underline decoration-red decoration-2 underline-offset-4">
-          Consulter la veille
-        </a>
-      </div>
+    <div class="flex flex-wrap items-center justify-center gap-3">
+      <a
+        href="/connecteur"
+        class="inline-flex items-center justify-center gap-2 rounded-[999px] bg-accent px-6 py-4 text-[0.9375rem] font-medium leading-none tracking-[-0.01em] text-sur-accent no-underline transition-transform duration-200 hover:-translate-y-px hover:no-underline"
+      >
+        Découvrir le connecteur <span aria-hidden="true">→</span>
+      </a>
+      <a
+        href="/veille"
+        class="inline-flex items-center justify-center rounded-[999px] bg-accent/10 px-6 py-4 text-[0.9375rem] font-medium leading-none tracking-[-0.01em] text-encre no-underline transition-colors duration-200 hover:bg-accent/15 hover:no-underline"
+      >
+        Consulter la veille
+      </a>
     </div>
+
     {
       demo !== null && (
-        <div class="min-w-0 lg:col-span-5">
+        <div class="w-full max-w-[46rem] pt-7 text-left">
           <Demo demo={demo} variante="compacte" />
         </div>
       )
     }
   </section>
 
+  <p class="manifeste mt-24 sm:mt-28">
+    {
+      manifeste.map((segment) => (
+        <>
+          {segment.avant !== "" && <>{segment.avant} </>}
+          <span class="puce">
+            <span aria-hidden="true" class:list={["h-[0.5em] w-[0.5em] shrink-0 rounded-[999px]", segment.famille.classePastille]} />
+            {segment.nom}
+          </span>{" "}
+          {segment.apres}{" "}
+        </>
+      ))
+    }
+  </p>
+
   {
     sources.length > 0 && (
-      <section aria-labelledby="sources" class="pleine-largeur mt-14 py-8 sm:py-10">
-        <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-          <h2 id="sources" class="font-mono text-[0.7rem] font-normal uppercase tracking-[0.14em]">
-            Sources du connecteur
-          </h2>
-          <a
-            href="/connecteur#couverture"
-            class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted"
-          >
-            Dates par collection <span aria-hidden="true">→</span>
-          </a>
+      <section aria-labelledby="sources" class="mt-24 sm:mt-28">
+        <div class="grid items-start gap-8 min-[761px]:grid-cols-2 min-[761px]:gap-[clamp(1.5rem,5vw,5rem)]">
+          <div class="min-w-0 rounded-carte bg-surface p-4 sm:p-6">
+            <Facade sources={sources} />
+          </div>
+          <div class="grid max-w-[26rem] gap-4 justify-items-start">
+            <h2
+              id="sources"
+              class="text-[clamp(1.75rem,3.2vw,2.5rem)] font-medium leading-[1.08] tracking-[-0.025em]"
+            >
+              Sources du connecteur
+            </h2>
+            <p class="text-[1.0625rem] text-encre-douce">
+              Textes, autorités et juridictions : le connecteur interroge les publications officielles,
+              pas le web.
+            </p>
+            <a href="/connecteur#couverture" class="lien">
+              Dates par collection <span aria-hidden="true">→</span>
+            </a>
+          </div>
         </div>
-        <Facade sources={sources} class="mt-6" />
       </section>
     )
   }
 
-  <section aria-labelledby="publications" class="mt-16">
-    <div class="flex items-end justify-between gap-4 border-b-2 border-ink pb-3">
-      <h2 id="publications" class="text-3xl sm:text-4xl">Dernières publications</h2>
-      <a
-        href="/veille"
-        class="shrink-0 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-ink no-underline hover:underline"
+  {
+    references.length > 0 && (
+      <section aria-labelledby="verification" class="mt-16 sm:mt-20">
+        <div class="grid items-center gap-8 min-[761px]:grid-cols-2 min-[761px]:gap-[clamp(1.5rem,5vw,5rem)]">
+          <div
+            class="grid aspect-square max-h-[26rem] place-content-center gap-3 rounded-carte bg-accent p-8 min-[761px]:order-2"
+            aria-label="Références citées dans la veille"
+            role="group"
+          >
+            {
+              references.map((item, rang) => (
+                <span
+                  class:list={[
+                    "inline-flex justify-center rounded-[0.5rem] bg-fond px-4 py-2.5 text-[0.9375rem] font-medium leading-snug text-encre shadow-douce",
+                    rang === 1 && "translate-x-[8%]",
+                    rang === 2 && "-translate-x-[6%]",
+                  ]}
+                >
+                  {item.url === null ? (
+                    <span title={item.reference}>{item.libelle}</span>
+                  ) : (
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener"
+                      title={item.reference}
+                      class="text-encre no-underline hover:underline hover:decoration-1 hover:underline-offset-4"
+                    >
+                      {item.libelle}
+                      <span class="sr-only"> (nouvel onglet)</span>
+                    </a>
+                  )}
+                </span>
+              ))
+            }
+          </div>
+          <div class="grid max-w-[26rem] gap-4 justify-items-start">
+            <h2
+              id="verification"
+              class="text-[clamp(1.75rem,3.2vw,2.5rem)] font-medium leading-[1.08] tracking-[-0.025em]"
+            >
+              Chaque affirmation se vérifie.
+            </h2>
+            <p class="text-[1.0625rem] text-encre-douce">
+              La réponse cite l'article ou la décision, avec un lien vers le texte publié.
+            </p>
+            <a href="/connecteur" class="lien">
+              Comment ça marche <span aria-hidden="true">→</span>
+            </a>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <section aria-labelledby="publications" class="mt-24 sm:mt-28">
+    <div class="flex flex-wrap items-end justify-between gap-4 pb-4">
+      <h2
+        id="publications"
+        class="text-[clamp(1.75rem,3.2vw,2.5rem)] font-medium leading-[1.1] tracking-[-0.025em]"
       >
+        Dernières publications
+      </h2>
+      <a href="/veille" class="lien shrink-0">
         Toute la veille <span aria-hidden="true">→</span>
       </a>
     </div>
@@ -83,3 +192,85 @@ const demo = lireDemo();
     </ol>
   </section>
 </Base>
+
+<style>
+  .hero > * {
+    animation: monte 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+
+  .hero > *:nth-child(2) {
+    animation-delay: 0.06s;
+  }
+
+  .hero > *:nth-child(3) {
+    animation-delay: 0.14s;
+  }
+
+  .hero > *:nth-child(4) {
+    animation-delay: 0.22s;
+  }
+
+  .hero > *:nth-child(5) {
+    animation-delay: 0.3s;
+  }
+
+  @keyframes monte {
+    from {
+      opacity: 0.35;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero > * {
+      animation: none;
+    }
+  }
+
+  /* Manifeste : le grand serif porte l'idée forte, une fois. */
+  .manifeste {
+    font-family: var(--font-serif);
+    font-size: clamp(2rem, 5.2vw, 4rem);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    text-align: center;
+    text-wrap: balance;
+    max-width: 18em;
+    margin-inline: auto;
+  }
+
+  .puce {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6em;
+    vertical-align: 0.12em;
+    padding: 0.55em 0.9em;
+    border-radius: 999px;
+    background-color: var(--color-surface);
+    color: var(--color-encre);
+    font-family: var(--font-texte);
+    font-size: max(0.75rem, 0.3em);
+    font-weight: 500;
+    letter-spacing: 0;
+    white-space: nowrap;
+  }
+
+  /* Lien de section : un filet fin, pas de soulignement. */
+  .lien {
+    border-bottom: 1px solid var(--color-filet);
+    padding-bottom: 2px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .lien:hover {
+    border-color: var(--color-encre);
+    text-decoration: none;
+  }
+</style>
