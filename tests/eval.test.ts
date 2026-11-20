@@ -37,6 +37,7 @@ import {
   validerReferences,
   verifierAutorisationTest,
   verifierJsonSplit,
+  verifierModeLexical,
   verifierRegleSeuils,
   verifierTestNonConsomme,
 } from "../mcp/eval/run.ts";
@@ -1015,8 +1016,15 @@ describe("le verrou du test", () => {
     assert.equal("seuils_origine" in objet, false);
     assert.equal("agregats" in objet, false);
     assert.equal("niveau" in (objet.questions[0] ?? {}), false);
-    assert.deepEqual(objet.questions[0]?.similarites, []);
+    assert.equal("similarites" in (objet.questions[0] ?? {}), false);
     assert.deepEqual(objet.questions[0]?.rangs, [1]);
+  });
+
+  it("refuse le split test en mode lexical", () => {
+    assert.throws(() => verifierModeLexical("lexicale", "test"), /ne mesure que dev/);
+    assert.throws(() => verifierModeLexical("lexicale", "all"), /ne mesure que dev/);
+    verifierModeLexical("lexicale", "dev");
+    verifierModeLexical("dense", "test");
   });
 
   it("porte le bloc rerank seulement quand l'étage a tourné", () => {

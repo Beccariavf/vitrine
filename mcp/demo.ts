@@ -4,8 +4,8 @@
  * Les tests couvrent le protocole en mémoire et le calcul hors ligne ; ce script
  * lance le vrai `mcp/server.ts`, s'y connecte comme un client MCP, appelle les
  * trois des six outils et imprime une transcription lisible. Il vérifie donc le chemin
- * réel — entrée stdio, embeddings Ollama, index construit — et pas seulement des
- * fonctions importées.
+ * réel — entrée stdio, index construit, embeddings Ollama quand la voie dense
+ * est choisie — et pas seulement des fonctions importées.
  *
  * Usage : `npm run mcp:demo`. Sort en erreur si un outil échoue.
  */
@@ -34,7 +34,7 @@ export const ETAPES: Etape[] = [
     arguments: { document: "32016R0679", numero: "17" },
   },
   {
-    titre: "Recherche sémantique dans le RGPD, avec provenance et confiance",
+    titre: "Recherche dans le RGPD, avec provenance et niveau",
     outil: "search",
     arguments: {
       question: "Quels droits la personne concernée peut-elle exercer sur ses données ?",
@@ -43,7 +43,7 @@ export const ETAPES: Etape[] = [
     },
   },
   {
-    titre: "Recherche sémantique dans l'AI Act",
+    titre: "Recherche dans l'AI Act",
     outil: "search",
     arguments: {
       question: "Quelles obligations de transparence pour les systèmes d'IA à haut risque ?",

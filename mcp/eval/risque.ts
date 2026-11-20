@@ -72,7 +72,7 @@ function niveauDe(
   seuils: Seuils,
 ): ReturnType<typeof niveauConfiance> {
   return niveauConfiance(
-    entree.similarites.map((similarite) => ({ distance: 1 - similarite })),
+    (entree.similarites ?? []).map((similarite) => ({ distance: 1 - similarite })),
     false,
     seuils,
   );
@@ -248,6 +248,14 @@ function ligneRefus(ligne: LigneRefus): string {
 
 function rapport(chemin: string, objet: ObjetMesureJson, seuils: Seuils | null): string[] {
   const lignes = entete(chemin, objet);
+  if (objet.recherche === "lexicale") {
+    lignes.push(
+      "",
+      "calibration de confiance : non applicable (recherche lexicale, aucun score comparable " +
+        "à une similarité cosinus)",
+    );
+    return lignes;
+  }
   if (seuils !== null) {
     lignes.push("", ENTETE_SEUILS, ligneSeuils(objet.questions, seuils));
     return lignes;

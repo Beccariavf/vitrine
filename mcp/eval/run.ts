@@ -18,7 +18,7 @@ import { openIndex } from "../index/search.ts";
 import type { Index } from "../index/search.ts";
 import { createLlamaReranker } from "../rerank/reranker.ts";
 import type { Reranker } from "../rerank/reranker.ts";
-import { referenceExacte, search } from "../tools.ts";
+import { referenceExacte, search, type ModeRecherche } from "../tools.ts";
 import { intervalleWilson } from "../statistiques.ts";
 
 const ICI = dirname(fileURLToPath(import.meta.url));
@@ -33,7 +33,6 @@ export const NB_PLIS = 4;
 
 export type Split = "dev" | "test";
 export type FiltreSplit = Split | "all";
-export type ModeRecherche = "dense" | "hybride" | "lexicale";
 
 /** Instruction de requête CNIL mesurée : celle du produit, ou une variante de même forme. */
 export type VarianteInstruction = "actuelle" | "neutre";
@@ -664,56 +663,28 @@ function niveau(mesure: Mesure, seuils: Seuils, corpus?: string) {
   );
 }
 
-/** Le rapport d'un split : `dev` règle, `test` constate avec les seuils figés. */
-function rapport(
+/**
+ * Queue commune aux deux rapports : rangs, premiers passages inattendus, têtes
+ * considérant et paraphrase. `avecSimilarite` n'ajoute la similarité que là où
+ * elle existe (voie dense) ; la voie lexicale n'en a pas.
+ */
+function diagnosticRapport(
   mesures: Mesure[],
-  seuils: Seuils,
-  origineSeuils: string,
-  corpus?: string,
+  semantiques: Mesure[],
+  avecSimilarite: boolean,
 ): string[] {
-  const exactes = mesures.filter((mesure) => !mesure.question.piege && estExacte(mesure));
-  const semantiques = mesures.filter((mesure) => !mesure.question.piege && !estExacte(mesure));
-  const classementsSemantiques = classer(semantiques);
   const positions = semantiques.map(positionAttendue);
   const considerants = semantiques.filter(teteConsiderant);
   const inattendues = semantiques
     .map(teteInattendue)
     .filter((valeur): valeur is string => valeur !== null);
-
-  const piegesSeuil = mesures.filter((mesure) => mesure.question.piege && !estExacte(mesure));
-  const piegesDeterministes = mesures.filter((mesure) => mesure.question.piege && estExacte(mesure));
-  const piegesCites = piegesSeuil.filter((mesure) => !refusee(mesure, seuils, corpus));
-  const piegesConfiants = piegesSeuil.filter(
-    (mesure) => niveau(mesure, seuils, corpus) === "confiant",
-  );
-  const incertaines = semantiques.filter((mesure) => niveau(mesure, seuils, corpus) === "incertain");
-  const confiantes = semantiques.filter((mesure) => niveau(mesure, seuils, corpus) === "confiant");
-  const refusees = semantiques.filter((mesure) => refusee(mesure, seuils, corpus));
-
   const paraphrase = mesures.find(
     (mesure) => mesure.question.question === "droit de récupérer mes données",
   );
   const rangParaphrase = rangDe(paraphrase, "32016R0679#art_20");
 
   return [
-    `jeu : ${mesures.length} questions (${compter(mesures, "reference")} références, ` +
-      `${compter(mesures, "conceptuelle")} conceptuelles, ${compter(mesures, "piege")} pièges)`,
-    `seuils : bas=${arrondi(seuils.bas)} haut=${arrondi(seuils.haut)} marge=${arrondi(seuils.marge)} (${origineSeuils})`,
-    `références exactes : ${exactes.length} questions, rang 1 par construction ` +
-      `(recall@5 ${arrondi(recallAt5(classer(exactes)))}, MRR ${arrondi(mrr(classer(exactes)))})`,
-    `recherche sémantique : ${semantiques.length} questions, recall@5 ` +
-      `${arrondi(recallAt5(classementsSemantiques))} ` +
-      `(${classementsSemantiques.filter((classement) => classement.rendus.slice(0, 5).some((ref) => satisfait(ref, classement.attendues))).length}/${semantiques.length}), ` +
-      `MRR ${arrondi(mrr(classementsSemantiques))}`,
-    `top-1 sémantique : ${pourcentage(precisionAt1(classementsSemantiques))}`,
-    `niveaux sémantiques : ${confiantes.length} confiant, ${incertaines.length} incertain, ${refusees.length} aucun_resultat_fiable`,
-    `pièges : ${piegesSeuil.length} par seuil, ${piegesDeterministes.length} déterministe ` +
-      `(${piegesDeterministes.map((mesure) => mesure.question.question).join(" · ") || "aucun"})`,
-    `pièges cités : ${piegesCites.length}/${piegesSeuil.length}` +
-      `${piegesCites.length === 0 ? "" : ` (${piegesCites.map((mesure) => mesure.question.question).join(" · ")})`}`,
-    `pièges confiants : ${piegesConfiants.length}` +
-      `${piegesConfiants.length === 0 ? "" : ` (${piegesConfiants.map((mesure) => mesure.question.question).join(" · ")})`}`,
-    `référence attendue, rang et similarité :`,
+    avecSimilarite ? `référence attendue, rang et similarité :` : `référence attendue et rang :`,
     ...(positions.length === 0
       ? ["  aucune question sémantique"]
       : positions.map(
@@ -721,7 +692,7 @@ function rapport(
             `  ${position.question.question} → ` +
             `${position.question.attendues.map(refCourte).join("|")} : rang ` +
             `${position.rang === 0 ? "absent" : position.rang}` +
-            `${position.similarite === null ? "" : ` (${arrondi(position.similarite)})`}`,
+            `${!avecSimilarite || position.similarite === null ? "" : ` (${arrondi(position.similarite)})`}`,
         )),
     `premiers passages inattendus : ${inattendues.length === 0 ? "aucun" : inattendues.join(" · ")}`,
     `têtes considérant pour un article attendu : ${considerants.length}/${semantiques.length}` +
@@ -743,21 +714,55 @@ function rapport(
   ];
 }
 
+/** Le rapport d'un split : `dev` règle, `test` constate avec les seuils figés. */
+function rapport(
+  mesures: Mesure[],
+  seuils: Seuils,
+  origineSeuils: string,
+  corpus?: string,
+): string[] {
+  const exactes = mesures.filter((mesure) => !mesure.question.piege && estExacte(mesure));
+  const semantiques = mesures.filter((mesure) => !mesure.question.piege && !estExacte(mesure));
+  const classementsSemantiques = classer(semantiques);
+
+  const piegesSeuil = mesures.filter((mesure) => mesure.question.piege && !estExacte(mesure));
+  const piegesDeterministes = mesures.filter((mesure) => mesure.question.piege && estExacte(mesure));
+  const piegesCites = piegesSeuil.filter((mesure) => !refusee(mesure, seuils, corpus));
+  const piegesConfiants = piegesSeuil.filter(
+    (mesure) => niveau(mesure, seuils, corpus) === "confiant",
+  );
+  const incertaines = semantiques.filter((mesure) => niveau(mesure, seuils, corpus) === "incertain");
+  const confiantes = semantiques.filter((mesure) => niveau(mesure, seuils, corpus) === "confiant");
+  const refusees = semantiques.filter((mesure) => refusee(mesure, seuils, corpus));
+
+  return [
+    `jeu : ${mesures.length} questions (${compter(mesures, "reference")} références, ` +
+      `${compter(mesures, "conceptuelle")} conceptuelles, ${compter(mesures, "piege")} pièges)`,
+    `seuils : bas=${arrondi(seuils.bas)} haut=${arrondi(seuils.haut)} marge=${arrondi(seuils.marge)} (${origineSeuils})`,
+    `références exactes : ${exactes.length} questions, rang 1 par construction ` +
+      `(recall@5 ${arrondi(recallAt5(classer(exactes)))}, MRR ${arrondi(mrr(classer(exactes)))})`,
+    `recherche sémantique : ${semantiques.length} questions, recall@5 ` +
+      `${arrondi(recallAt5(classementsSemantiques))} ` +
+      `(${classementsSemantiques.filter((classement) => classement.rendus.slice(0, 5).some((ref) => satisfait(ref, classement.attendues))).length}/${semantiques.length}), ` +
+      `MRR ${arrondi(mrr(classementsSemantiques))}`,
+    `top-1 sémantique : ${pourcentage(precisionAt1(classementsSemantiques))}`,
+    `niveaux sémantiques : ${confiantes.length} confiant, ${incertaines.length} incertain, ${refusees.length} aucun_resultat_fiable`,
+    `pièges : ${piegesSeuil.length} par seuil, ${piegesDeterministes.length} déterministe ` +
+      `(${piegesDeterministes.map((mesure) => mesure.question.question).join(" · ") || "aucun"})`,
+    `pièges cités : ${piegesCites.length}/${piegesSeuil.length}` +
+      `${piegesCites.length === 0 ? "" : ` (${piegesCites.map((mesure) => mesure.question.question).join(" · ")})`}`,
+    `pièges confiants : ${piegesConfiants.length}` +
+      `${piegesConfiants.length === 0 ? "" : ` (${piegesConfiants.map((mesure) => mesure.question.question).join(" · ")})`}`,
+    ...diagnosticRapport(mesures, semantiques, true),
+  ];
+}
+
 /** Le rapport d'un split lexical : rangs seuls, aucune calibration de confiance. */
 function rapportLexical(mesures: Mesure[]): string[] {
   const exactes = mesures.filter((mesure) => !mesure.question.piege && estExacte(mesure));
   const semantiques = mesures.filter((mesure) => !mesure.question.piege && !estExacte(mesure));
   const classementsSemantiques = classer(semantiques);
-  const positions = semantiques.map(positionAttendue);
-  const considerants = semantiques.filter(teteConsiderant);
-  const inattendues = semantiques
-    .map(teteInattendue)
-    .filter((valeur): valeur is string => valeur !== null);
   const pieges = mesures.filter((mesure) => mesure.question.piege && !estExacte(mesure));
-  const paraphrase = mesures.find(
-    (mesure) => mesure.question.question === "droit de récupérer mes données",
-  );
-  const rangParaphrase = rangDe(paraphrase, "32016R0679#art_20");
 
   return [
     `jeu : ${mesures.length} questions (${compter(mesures, "reference")} références, ` +
@@ -773,32 +778,7 @@ function rapportLexical(mesures: Mesure[]): string[] {
     `top-1 lexical : ${pourcentage(precisionAt1(classementsSemantiques))}`,
     `pièges rendus : ${pieges.filter((mesure) => mesure.refs.length > 0).length}/${pieges.length} ` +
       "(aucun refus par seuil en mode lexical)",
-    `référence attendue et rang :`,
-    ...(positions.length === 0
-      ? ["  aucune question sémantique"]
-      : positions.map(
-          (position) =>
-            `  ${position.question.question} → ` +
-            `${position.question.attendues.map(refCourte).join("|")} : rang ` +
-            `${position.rang === 0 ? "absent" : position.rang}`,
-        )),
-    `premiers passages inattendus : ${inattendues.length === 0 ? "aucun" : inattendues.join(" · ")}`,
-    `têtes considérant pour un article attendu : ${considerants.length}/${semantiques.length}` +
-      (considerants.length === 0
-        ? ""
-        : ` (${considerants
-            .map(
-              (mesure) =>
-                `${mesure.question.attendues.map(refCourte).join("|")} ← ` +
-                `${refCourte(mesure.refs[0] ?? "")}`,
-            )
-            .join(" · ")})`),
-    `paraphrase « droit de récupérer mes données » → art_20 : ` +
-      (paraphrase === undefined
-        ? "question absente de ce split"
-        : rangParaphrase === 0
-          ? "hors des cinq premiers (top 5 : non)"
-          : `rang ${rangParaphrase} (top 5 : oui)`),
+    ...diagnosticRapport(mesures, semantiques, false),
   ];
 }
 
@@ -917,6 +897,20 @@ export function instructionsDeMesure(
   variante: VarianteInstruction,
 ): Record<string, string> {
   return { ...INSTRUCTIONS_REQUETE, cnil: instructionCnil(variante) };
+}
+
+/**
+ * Le mode lexical ne mesure que `dev` : la calibration de confiance n'y existe
+ * pas et le split `test` n'a pas de seuils à consommer. Le refus précède toute
+ * mesure et n'écrit aucun marqueur.
+ */
+export function verifierModeLexical(recherche: ModeRecherche, split: FiltreSplit): void {
+  if (recherche === "lexicale" && (split === "test" || split === "all")) {
+    throw new Error(
+      "Le mode lexical ne mesure que dev : la calibration de confiance n'y existe pas, " +
+        "et le split test n'a pas de seuils à consommer.",
+    );
+  }
 }
 
 /** Le split `test` ne s'exécute que sur autorisation explicite. */
@@ -1072,7 +1066,8 @@ export type EntreeQuestionJson = {
   attendues: string[];
   refs: string[];
   rangs: number[];
-  similarites: number[];
+  /** Absent en recherche lexicale : aucun score comparable aux similarités cosinus. */
+  similarites?: number[];
   /** Absent en recherche lexicale : la calibration de confiance ne s'y applique pas. */
   niveau?: ReturnType<typeof niveauConfiance>;
 };
@@ -1090,7 +1085,7 @@ export function entreeQuestionJson(
     attendues: [...mesure.question.attendues],
     refs: [...mesure.refs],
     rangs: mesure.question.attendues.map((ref) => rangDe(mesure, ref)),
-    similarites: mesure.distances.map((distance) => 1 - distance),
+    ...(lexical ? {} : { similarites: mesure.distances.map((distance) => 1 - distance) }),
     ...(lexical || seuils === null ? {} : { niveau: niveau(mesure, seuils, corpus) }),
   };
 }
@@ -1193,15 +1188,16 @@ async function main(argv: string[]): Promise<void> {
   const json = argv.includes("--json");
   verifierJsonSplit(split, json);
   verifierAutorisationTest(split, argv.includes("--mesurer-test"));
-  if (lexical && (split === "test" || split === "all")) {
-    throw new Error(
-      "Le mode lexical ne mesure que dev : la calibration de confiance n'y existe pas, " +
-        "et le split test n'a pas de seuils à consommer.",
-    );
-  }
+  verifierModeLexical(recherche, split);
   const regle = lireRegle(valeurDe("--regle", argv));
   const seuilsExplicites = lireSeuils(valeurDe("--seuils", argv));
   verifierRegleSeuils(regle, seuilsExplicites);
+  if (lexical && (seuilsExplicites !== null || regle === "produit")) {
+    throw new Error(
+      "--seuils et --regle produit ne s'appliquent pas à la recherche lexicale : " +
+        "aucun seuil de confiance n'y existe.",
+    );
+  }
   const optionInstruction = valeurDe("--instruction", argv);
   const variante = lireInstruction(optionInstruction);
   const date = new Date().toISOString().slice(0, 10);

@@ -1601,11 +1601,13 @@ describe("la recherche lexicale seule", () => {
           ...unite(1, "sanction cookies vidéosurveillance", "CNILTEXT000000000001"),
           corpus: "cnil",
           nature: "Sanction",
+          numero: "SAN-2026-001",
         },
         {
           ...unite(2, "avis cookies vidéosurveillance", "CNILTEXT000000000002"),
           corpus: "cnil",
           nature: "Avis",
+          numero: "SAN-2026-002",
         },
       ]);
       const { chemin } = await buildIndex(root, embedderFactice());
@@ -1628,6 +1630,16 @@ describe("la recherche lexicale seule", () => {
         assert.deepEqual(
           avis.map((resultat) => resultat.nature),
           ["Avis"],
+        );
+
+        const numero = rechercheLexicale(index, "cookies", {
+          k: 5,
+          corpus: "cnil",
+          numero: "SAN-2026-002",
+        });
+        assert.deepEqual(
+          numero.map((resultat) => resultat.document),
+          ["CNILTEXT000000000002"],
         );
       } finally {
         index.db.close();
