@@ -44,11 +44,10 @@ describe("familleDeSource", () => {
     }
   });
 
-  it("rend « autre » en filet et encre pour un identifiant inconnu, sans lever", () => {
+  it("rend « autre » en filet pour un identifiant inconnu, sans lever", () => {
     const famille = familleDeSource("inconnue");
     assert.equal(famille.id, "autre");
     assert.equal(famille.classePastille, "bg-filet");
-    assert.equal(famille.classeTexte, "text-encre");
   });
 
   it("donne à chaque famille de la légende une pastille testée à 3:1 sur fond et surface", () => {
@@ -59,10 +58,9 @@ describe("familleDeSource", () => {
     }
   });
 
-  it("garde les anciens jetons texte sur aplat que la veille lit encore", () => {
+  it("donne à chaque famille son aplat de façade, sans texte sur aplat", () => {
     for (const famille of Object.values(FAMILLES)) {
       assert.equal(famille.classeFond, `bg-${famille.fond}`);
-      assert.equal(famille.classeTexte, `text-${famille.texte}`);
     }
   });
 
