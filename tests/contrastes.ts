@@ -3,9 +3,22 @@ import { readFileSync } from "node:fs";
 /** Jetons de couleur lus dans `@theme` : la seule source de vérité de la palette. */
 export const CSS = readFileSync(new URL("../src/styles/global.css", import.meta.url), "utf8");
 
-export function jeton(css: string, nom: string): string {
-  const trouve = new RegExp(`--color-${nom}:\\s*(#[0-9a-fA-F]{6})\\s*;`).exec(css);
-  if (trouve === null) throw new Error(`jeton --color-${nom} absent de global.css`);
+export type Theme = "clair" | "sombre";
+
+/** Le thème clair vit dans `@theme`, le sombre dans son bloc `prefers-color-scheme`. */
+function bloc(css: string, theme: Theme): string {
+  if (theme === "clair") return css;
+  const trouve = /@media \(prefers-color-scheme: dark\)\s*\{([\s\S]*?)\n\}/.exec(css);
+  if (trouve === null) throw new Error("bloc prefers-color-scheme: dark absent de global.css");
+  return trouve[1]!;
+}
+
+export function jeton(css: string, nom: string, theme: Theme = "clair"): string {
+  const trouve = new RegExp(`--color-${nom}:\\s*(#[0-9a-fA-F]{6})\\s*;`).exec(bloc(css, theme));
+  if (trouve === null) {
+    const ou = theme === "clair" ? "" : " du thème sombre";
+    throw new Error(`jeton --color-${nom} absent${ou} de global.css`);
+  }
   return trouve[1]!;
 }
 
@@ -51,4 +64,48 @@ export function echecs(css: string, paires: readonly Paire[]): string[] {
     .map(([texte, fond, seuil]) => ({ texte, fond, seuil, valeur: ratio(jeton(css, texte), jeton(css, fond)) }))
     .filter(({ valeur, seuil }) => valeur < seuil)
     .map(({ texte, fond, seuil, valeur }) => `${texte} sur ${fond} : ${valeur.toFixed(2)}:1 < ${seuil}:1`);
+}
+
+/** Une paire de la direction artistique, évaluée dans son thème. */
+export type PaireTheme = readonly [texte: string, fond: string, seuil: number, theme: Theme];
+
+const THEMES: readonly Theme[] = ["clair", "sombre"];
+
+/** Texte courant et contrôles : 4,5:1 dans chaque thème. */
+const PAIRES_TEXTE: readonly (readonly [texte: string, fond: string])[] = [
+  ["encre", "fond"],
+  ["encre", "surface"],
+  ["encre-douce", "fond"],
+  ["encre-douce", "surface"],
+  ["sur-accent", "accent"],
+  ["accent", "fond"],
+];
+
+export const TEXTES: readonly PaireTheme[] = THEMES.flatMap((theme) =>
+  PAIRES_TEXTE.map(([texte, fond]) => [texte, fond, 4.5, theme] as const),
+);
+
+/** Pastilles de famille : non textuelles, 3:1 (WCAG 1.4.11) sur les deux fonds. */
+const FAMILLES_PASTILLE = ["textes", "autorites", "ue", "juridictions"] as const;
+const FONDS_PASTILLE = ["fond", "surface"] as const;
+
+export const PASTILLES: readonly PaireTheme[] = THEMES.flatMap((theme) =>
+  FAMILLES_PASTILLE.flatMap((famille) => FONDS_PASTILLE.map((fond) => [famille, fond, 3, theme] as const)),
+);
+
+/** Les paires sous leur seuil, nommées par thème, paire et ratio. */
+export function echecsTheme(css: string, paires: readonly PaireTheme[]): string[] {
+  return paires
+    .map(([texte, fond, seuil, theme]) => ({
+      texte,
+      fond,
+      seuil,
+      theme,
+      valeur: ratio(jeton(css, texte, theme), jeton(css, fond, theme)),
+    }))
+    .filter(({ valeur, seuil }) => valeur < seuil)
+    .map(
+      ({ texte, fond, seuil, theme, valeur }) =>
+        `${theme} · ${texte} sur ${fond} : ${valeur.toFixed(2)}:1 < ${seuil}:1`,
+    );
 }

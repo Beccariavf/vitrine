@@ -35,6 +35,53 @@
   --radius-3xl: 0px;
   --radius-4xl: 0px;
   --radius-full: 0px;
+
+  /*
+   * Direction artistique : rôles de `planche.html`, ajoutés à côté des jetons
+   * précédents, que la phase 5 retirera. `encre-douce` et `filet` sont les
+   * opacités de la planche converties en hexadécimal opaque sur `fond` : le
+   * test de contrastes lit des couleurs, pas des opacités.
+   */
+  --color-fond: #ffffff;
+  --color-surface: #f5f5f2;
+  --color-encre: #0f1623;
+  --color-encre-douce: #656a72;
+  --color-filet: #e7e8e9;
+  --color-accent: #1d3557;
+  --color-sur-accent: #ffffff;
+  --color-textes: #3b6593;
+  --color-autorites: #b4473c;
+  --color-ue: #3e7458;
+  /* La planche donne #C2922B (2,58:1 sur surface) : assombri au plus près. */
+  --color-juridictions: #9c7419;
+
+  --font-serif: "Instrument Serif", "Times New Roman", serif;
+  --font-texte: "Inter Variable", "Helvetica Neue", Arial, sans-serif;
+
+  --radius-carte: 2rem;
+  --radius-bloc: 1.5rem;
+  --shadow-douce: 0 1px 2px rgb(15 22 35 / 0.04), 0 8px 24px rgb(15 22 35 / 0.06);
+}
+
+/* Sombre : le système seul décide, aucun JavaScript, aucune bascule. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-fond: #0c111a;
+    --color-surface: #151b26;
+    --color-encre: #eceef2;
+    --color-encre-douce: #a0a3a9;
+    --color-filet: #272c34;
+    --color-accent: #9db8dc;
+    --color-sur-accent: #0c111a;
+    --color-textes: #7fa6d3;
+    --color-autorites: #e08174;
+    --color-ue: #7db898;
+    --color-juridictions: #e2b95b;
+
+    --shadow-douce: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.3);
+
+    color-scheme: dark;
+  }
 }
 
 /*
