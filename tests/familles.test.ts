@@ -1,13 +1,13 @@
 import { strict as assert } from "node:assert";
 import { describe, it } from "node:test";
 import { FAMILLES, FAMILLES_LEGENDE, familleDeSource } from "../src/lib/familles.ts";
-import { AUTORISEES } from "./contrastes.ts";
+import { PASTILLES } from "./contrastes.ts";
 
 const SOURCES_VEILLE = ["cnil", "cnil_doctrine", "cjeu", "anssi", "cepd", "arcep", "commission", "commission-dma", "arcom", "cetat", "constit", "judilibre", "legi", "eurlex"];
 const CORPUS = ["rgpd", "aiact", "eprivacy", "police", "eudpr", "rgpdproc", "ccs", "lil", "textes_fr", "preparation", "adequation", "cnil", "cnil_doctrine", "cepd", "cjue", "ce", "constit", "cc", "metadonnees"];
 
 describe("familleDeSource", () => {
-  it("range les sources de veille et les dix-huit corpus dans une famille nommée", () => {
+  it("range les sources de veille et les dix-neuf corpus dans une famille nommée", () => {
     const attendu: Record<string, string> = {
       cnil: "autorites",
       cnil_doctrine: "autorites",
@@ -44,19 +44,23 @@ describe("familleDeSource", () => {
     }
   });
 
-  it("rend « autre » en béton et encre pour un identifiant inconnu, sans lever", () => {
+  it("rend « autre » en encre douce pour un identifiant inconnu, sans lever", () => {
     const famille = familleDeSource("inconnue");
     assert.equal(famille.id, "autre");
-    assert.equal(famille.classeFond, "bg-concrete");
-    assert.equal(famille.classeTexte, "text-ink");
+    assert.equal(famille.classePastille, "bg-encre-douce");
   });
 
-  it("donne à chaque famille un texte contrasté autorisé par le test de contrastes", () => {
+  it("donne à chaque famille une pastille testée à 3:1 sur fond et surface", () => {
     for (const famille of Object.values(FAMILLES)) {
-      const paire = AUTORISEES.find(([texte, fond]) => texte === famille.texte && fond === famille.fond);
-      assert.ok(paire !== undefined && paire[2] === 4.5, `${famille.id} : ${famille.texte} sur ${famille.fond}`);
+      assert.equal(famille.classePastille, `bg-${famille.pastille}`);
+      const paires = PASTILLES.filter(([texte]) => texte === famille.pastille);
+      assert.equal(paires.length, 4, `${famille.id} : ${famille.pastille}`);
+    }
+  });
+
+  it("donne à chaque famille son aplat de façade, sans texte sur aplat", () => {
+    for (const famille of Object.values(FAMILLES)) {
       assert.equal(famille.classeFond, `bg-${famille.fond}`);
-      assert.equal(famille.classeTexte, `text-${famille.texte}`);
     }
   });
 
@@ -65,6 +69,6 @@ describe("familleDeSource", () => {
       FAMILLES_LEGENDE.map((famille) => famille.libelle),
       ["Textes", "Autorités françaises", "Union européenne", "Juridictions françaises"],
     );
-    assert.equal(new Set(FAMILLES_LEGENDE.map((famille) => famille.fond)).size, 4);
+    assert.equal(new Set(FAMILLES_LEGENDE.map((famille) => famille.pastille)).size, 4);
   });
 });

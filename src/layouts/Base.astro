@@ -1,5 +1,6 @@
 ---
-import "@fontsource-variable/archivo/wdth.css";
+import "@fontsource/instrument-serif/latin-400.css";
+import "@fontsource-variable/inter/wght.css";
 import "../styles/global.css";
 
 type Props = {
@@ -19,6 +20,9 @@ const NAV = [
   { href: "/connecteur", label: "Connecteur" },
   { href: "/veille", label: "Veille" },
 ];
+
+/** Liens du pied de page : les pages, puis le dépôt. */
+const PIED = [...NAV, { href: "https://github.com/Beccariavf/vitrine", label: "Code source" }];
 ---
 
 <!doctype html>
@@ -30,39 +34,30 @@ const NAV = [
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   </head>
-  <body class="min-h-dvh bg-concrete text-ink antialiased">
+  <body class="min-h-dvh bg-fond text-encre antialiased">
     <a href="#contenu" class="skip-link">Aller au contenu</a>
-    <header class="border-b-2 border-ink bg-paper">
+    <header>
       <div
         class:list={[
-          "mx-auto flex w-full flex-wrap items-center justify-between gap-x-6 gap-y-4 px-5 py-5 sm:px-8",
+          "mx-auto flex w-full items-center justify-between gap-4 px-5 py-6 sm:px-8",
           containerClass,
         ]}
       >
-        <a href="/" class="flex items-center gap-3 text-ink no-underline hover:no-underline">
-          <span
-            aria-hidden="true"
-            class="flex h-9 w-[1.875rem] shrink-0 items-end justify-end border-2 border-ink bg-concrete p-1 shadow-[3px_3px_0_var(--color-ink)]"
-          >
-            <span class="h-5 w-3 border-2 border-ink bg-red"></span>
-          </span>
-          <span class="flex flex-col">
-            <span class="font-display text-3xl leading-[0.85] font-[850] tracking-[-0.01em] [font-stretch:72%]">VITRINE</span>
-            <span class="mt-1 font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted">Droit du numérique</span>
-          </span>
+        <a href="/" class="flex items-baseline gap-2.5 no-underline hover:no-underline">
+          <span class="font-serif text-[1.6rem] leading-none">Vitrine</span>
+          <span class="hidden text-[0.8125rem] text-encre-douce min-[560px]:inline">Droit du numérique</span>
         </a>
-        <nav aria-label="Navigation principale" class="flex border-2 border-ink bg-paper shadow-hard">
+        <nav aria-label="Navigation principale" class="flex items-center gap-1">
           {
-            NAV.map((lien, index) => {
+            NAV.map((lien) => {
               const courant = path.startsWith(lien.href);
               return (
                 <a
                   href={lien.href}
                   aria-current={courant ? "page" : undefined}
                   class:list={[
-                    "px-4 py-2 font-mono text-[0.7rem] font-bold uppercase tracking-[0.12em] no-underline hover:no-underline",
-                    index > 0 && "border-l-2 border-ink",
-                    courant ? "bg-ink text-paper" : "text-ink hover:bg-ink hover:text-paper",
+                    "rounded-[999px] px-[0.9rem] py-2 text-[0.9375rem] font-medium no-underline hover:no-underline",
+                    courant ? "bg-accent/10 text-encre" : "text-encre hover:bg-accent/5",
                   ]}
                 >
                   {lien.label}
@@ -74,35 +69,38 @@ const NAV = [
       </div>
     </header>
 
-    <main id="contenu" tabindex="-1" class="flex-1 py-12 sm:py-16">
+    <main id="contenu" tabindex="-1" class="flex-1 py-12 sm:py-20">
       <div class:list={["mx-auto w-full px-5 sm:px-8", containerClass]}>
         <slot />
       </div>
     </main>
 
-    <footer class="border-t-2 border-ink bg-concrete-dark text-stone [&_a]:decoration-stone [&_a:focus-visible]:outline-paper">
-      <div
-        class:list={[
-          "mx-auto flex w-full flex-col gap-2 px-5 py-6 font-mono text-[0.7rem] uppercase tracking-[0.12em] sm:flex-row sm:items-center sm:justify-between sm:px-8",
-          containerClass,
-        ]}
-      >
-        <div class="flex flex-col gap-1">
-          <p class="text-paper">Valentin Fouich · Juriste en droit du numérique</p>
-          <p class="font-sans text-xs normal-case tracking-normal">
-            Outil d'aide à la recherche, ne remplace pas l'analyse d'un professionnel du droit.
-          </p>
+    <footer class="espace-section pb-8">
+      <div class:list={["mx-auto w-full px-5 sm:px-8", containerClass]}>
+        <div class="grid gap-12 rounded-carte bg-surface px-5 py-[clamp(2rem,6vw,4rem)] sm:px-8">
+          <nav aria-label="Pied de page" class="grid gap-0.5">
+            {
+              PIED.map((lien) => (
+                <a
+                  href={lien.href}
+                  class="w-fit font-serif text-[clamp(2rem,5vw,3.25rem)] leading-[1.12] no-underline hover:text-encre-douce hover:no-underline"
+                >
+                  {lien.label}
+                </a>
+              ))
+            }
+          </nav>
+          <div class="flex flex-col gap-4 text-[0.8125rem] text-encre-douce sm:flex-row sm:flex-wrap sm:justify-between">
+            <p>Valentin Fouich · Juriste en droit du numérique</p>
+            <p>Outil d'aide à la recherche, ne remplace pas l'analyse d'un professionnel du droit.</p>
+            <p class="flex flex-wrap gap-x-4 gap-y-1">
+              <a href="https://www.legifrance.gouv.fr">Légifrance</a>
+              <a href="https://www.courdecassation.fr">Cour de cassation</a>
+              <a href="https://eur-lex.europa.eu">EUR-Lex</a>
+              <a href="https://eur-lex.europa.eu/content/legal-notice/legal-notice.html">Textes CJUE · CC BY 4.0</a>
+            </p>
+          </div>
         </div>
-        <p class="flex flex-wrap gap-x-5 gap-y-2">
-          <a href="https://www.cnil.fr">CNIL</a>
-          <a href="https://www.legifrance.gouv.fr">Légifrance</a>
-          <a href="https://www.courdecassation.fr">Cour de cassation</a>
-          <a href="https://eur-lex.europa.eu">EUR-Lex</a>
-          <a href="https://eur-lex.europa.eu/content/legal-notice/legal-notice.html">
-            Textes CJUE · CC BY 4.0
-          </a>
-          <a href="https://github.com/Beccariavf/vitrine">Dépôt</a>
-        </p>
       </div>
     </footer>
   </body>
@@ -133,13 +131,12 @@ const NAV = [
     overflow: visible;
     clip-path: none;
     white-space: normal;
-    border: 2px solid var(--color-ink);
-    background-color: var(--color-paper);
-    color: var(--color-ink);
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
+    border: 1px solid var(--color-accent);
+    border-radius: 999px;
+    background-color: var(--color-fond);
+    color: var(--color-encre);
+    font-family: var(--font-texte);
+    font-size: 0.9375rem;
     text-decoration: none;
   }
 </style>
