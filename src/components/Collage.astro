@@ -98,6 +98,7 @@ function dateLisible(date: string | null): string | null {
                         loading="lazy"
                         decoding="async"
                       />
+                      <p class="legende-photo">Palais-Royal · GFreihalter, Wikimedia Commons, CC BY-SA 3.0</p>
                       <div class="photo-corps">
                         <div class="fiche-tete">
                           <span class="source">
@@ -188,12 +189,6 @@ function dateLisible(date: string | null): string | null {
         </div>
       </div>
 
-      <p class="credit">
-        Photo : Conseil d'État, Palais-Royal, par GFreihalter,{" "}
-        <a href="https://commons.wikimedia.org/wiki/File:Paris_1er_Conseil_d%27%C3%89tat_002.jpg">
-          Wikimedia Commons
-        </a>, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>.
-      </p>
     </section>
   )
 }
@@ -493,10 +488,11 @@ function dateLisible(date: string | null): string | null {
     }
   }
 
-  .credit {
-    font-size: 0.75rem;
+  /* Crédit de la photo, juste sous l'image ; la version liée est au pied de page. */
+  .legende-photo {
+    padding: 0.4rem 1.2rem 0;
+    font-size: 0.6875rem;
+    line-height: 1.4;
     color: var(--color-encre-douce);
-    text-align: center;
-    margin-top: -1.5rem;
   }
 </style>
