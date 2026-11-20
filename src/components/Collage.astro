@@ -37,18 +37,7 @@ function dateLisible(date: string | null): string | null {
 
 {
   cartes.length > 0 && (
-    <section aria-labelledby="collage" class="collage-section mt-24 sm:mt-28">
-      <div class="collage-tete">
-        <h2 id="collage">Les sources officielles du droit du numérique, au même endroit.</h2>
-        <p>
-          Textes, autorités et juridictions, françaises et européennes : chaque publication renvoie à son
-          texte officiel.
-        </p>
-        <a href="/veille" class="lien">
-          Consulter la veille <span aria-hidden="true">→</span>
-        </a>
-      </div>
-
+    <section aria-label="Sources officielles suivies par la veille" class="collage-section mt-10 sm:mt-12">
       <div class="collage" role="img" aria-label={legende}>
         <div class="collage-piste" aria-hidden="true">
           {colonnes.map((colonne) => (
@@ -215,44 +204,6 @@ function dateLisible(date: string | null): string | null {
     margin-inline: calc((100% - min(70rem, 100vw - 2.5rem)) / 2);
   }
 
-  .collage-tete {
-    display: grid;
-    gap: 1rem;
-    justify-items: center;
-    text-align: center;
-    margin-bottom: 3rem;
-  }
-
-  .collage-tete h2 {
-    font-family: var(--font-serif);
-    font-weight: 400;
-    letter-spacing: -0.02em;
-    font-size: clamp(2.25rem, 5.5vw, 4.25rem);
-    line-height: 1.02;
-    text-wrap: balance;
-    max-width: 16ch;
-  }
-
-  .collage-tete p {
-    font-size: 1.125rem;
-    max-width: 36rem;
-    text-wrap: pretty;
-    color: var(--color-encre-douce);
-  }
-
-  /* Lien de section : un filet fin, pas de soulignement. */
-  .lien {
-    border-bottom: 1px solid var(--color-filet);
-    padding-bottom: 2px;
-    font-size: 0.9375rem;
-    font-weight: 500;
-    text-decoration: none;
-  }
-
-  .lien:hover {
-    border-color: var(--color-encre);
-    text-decoration: none;
-  }
 
   /* La bande : un collage qui dérive lentement, jamais de défilement horizontal. */
   .collage {
