@@ -325,6 +325,19 @@ export function lireArticleRgpd32(rootDir: string = process.cwd()): CarteArticle
 }
 
 /**
+ * Objet d'une proposition sans sa formule d'introduction en capitales
+ * (« Proposal for a REGULATION OF THE EUROPEAN PARLIAMENT AND OF THE COUNCIL on … ») :
+ * la carte n'a la place que pour l'objet. Un titre sans cette formule reste tel quel.
+ */
+export function titreCourtProposition(titre: string): string {
+  const objet = titre.replace(
+    /^Proposal for an? [A-Z][A-Z ,]*?\s(?:on\s)?(?=[a-z])/,
+    "",
+  );
+  return objet === titre ? titre : `${objet.charAt(0).toUpperCase()}${objet.slice(1)}`;
+}
+
+/**
  * Première proposition du corpus « Textes en préparation », son titre réel et
  * les trois étapes du parcours. Aucune traduction, aucune inférence au-delà du
  * statut d'amendement déjà inscrit dans `derniere_etape`.
@@ -343,7 +356,7 @@ export function lirePreparationProposee(rootDir: string = process.cwd()): CarteP
 
     return {
       procedure,
-      titre,
+      titre: titreCourtProposition(titre),
       etapes: [
         { libelle: "Proposition", fait: true },
         { libelle: "Amendements PE", fait: amendements },

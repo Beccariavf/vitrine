@@ -10,7 +10,23 @@ import {
   lireArticleRgpd32,
   lirePreparationProposee,
   montantEnEuros,
+  titreCourtProposition,
 } from "../src/lib/collage.ts";
+
+describe("titreCourtProposition", () => {
+  it("retire la formule d'introduction en capitales et garde l'objet", () => {
+    assert.equal(
+      titreCourtProposition(
+        "Proposal for a REGULATION OF THE EUROPEAN PARLIAMENT AND OF THE COUNCIL on information security in the institutions, bodies, offices and agencies of the Union",
+      ),
+      "Information security in the institutions, bodies, offices and agencies of the Union",
+    );
+  });
+
+  it("laisse intact un titre sans formule", () => {
+    assert.equal(titreCourtProposition("Règlement sur la résilience opérationnelle"), "Règlement sur la résilience opérationnelle");
+  });
+});
 
 /** Espace insécable des montants, écrit une fois. */
 const NBSP = "\u00a0";
@@ -337,7 +353,7 @@ describe("lirePreparationProposee", () => {
     const preparation = lirePreparationProposee(racine);
     assert.ok(preparation !== null);
     assert.equal(preparation.procedure, "2022/0084/COD");
-    assert.equal(preparation.titre, "Proposal for a REGULATION on information security in the institutions");
+    assert.equal(preparation.titre, "Information security in the institutions");
     assert.deepEqual(preparation.etapes, [
       { libelle: "Proposition", fait: true },
       { libelle: "Amendements PE", fait: true },
