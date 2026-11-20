@@ -491,8 +491,9 @@ curl -s "http://127.0.0.1:8787/recherche?q=droit%20%C3%A0%20l%27oubli&corpus=rgp
 `corpus`, `chemin`, `date`, `extrait` (320 caractères au plus, coupé au mot) et `url`. Il répond
 `400` pour une question absente, vide ou de plus de 300 caractères, ou un corpus que l'index ne porte
 pas ; `429` au-delà de **20 requêtes par minute et par IP** (fenêtre fixe en mémoire, avec
-`reessayer_dans_s`) ; `503` quand l'index manque, en nommant `npm run corpus:index`. Toute autre
-route rend `404`. CORS n'admet que les origines de `VITRINE_HTTP_ORIGINES` (défaut
+`reessayer_dans_s`) ; `503` quand l'index est absent ou illisible, en nommant
+`npm run corpus:index`. Toute autre route rend `404`. CORS n'admet que les origines de
+`VITRINE_HTTP_ORIGINES` (défaut
 `http://localhost:4321`) et la méthode `GET`. Le limiteur lit l'adresse de la connexion et ignore
 `X-Forwarded-For` : derrière un proxy, au passage au VPS, cette lecture devra changer.
 
