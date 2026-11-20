@@ -13,36 +13,44 @@ const complete = variante === "complete";
 const dateFormat = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeZone: "UTC" });
 ---
 
-<figure class="min-w-0 border-2 border-ink bg-paper shadow-hard">
-  <div class="border-b-2 border-ink p-4 sm:p-5">
-    <p class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted wrap-anywhere">
+<figure class="min-w-0 rounded-carte bg-surface p-[clamp(1rem,3vw,1.75rem)]">
+  <div class="grid gap-4">
+    <p class="text-[0.8125rem] text-encre-douce wrap-anywhere">
       Question · capturée le <time datetime={demo.capturee_le}>{dateFormat.format(new Date(demo.capturee_le))}</time>{" · "}{demo.modele}
     </p>
-    <p class="mt-2 text-lg font-bold leading-snug wrap-anywhere">« {demo.question} »</p>
+    <div class="flex items-center gap-3 rounded-[999px] bg-fond py-3 pr-3 pl-5 shadow-douce">
+      <p class="min-w-0 flex-1 text-[1rem] leading-snug wrap-anywhere">« {demo.question} »</p>
+      <span
+        aria-hidden="true"
+        class="grid h-8 w-8 shrink-0 place-items-center rounded-[999px] bg-accent text-[1rem] leading-none text-sur-accent"
+      >
+        ↑
+      </span>
+    </div>
   </div>
 
-  <div class:list={[complete && "grid md:grid-cols-2"]}>
+  <div class:list={[complete ? "mt-4 grid gap-4 md:grid-cols-2" : "px-1 pt-5"]}>
     {
       complete && (
-        <div class="min-w-0 border-b-2 border-ink p-4 sm:p-5 md:border-r-2 md:border-b-0">
-          <p class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">Sans connecteur</p>
-          <p class="mt-3 whitespace-pre-line wrap-anywhere text-sm leading-relaxed">{demo.sans}</p>
+        <div class="min-w-0 rounded-bloc bg-fond p-4 sm:p-5">
+          <p class="text-[0.8125rem] text-encre-douce">Sans connecteur</p>
+          <p class="mt-3 whitespace-pre-line wrap-anywhere text-[0.9375rem] leading-relaxed">{demo.sans}</p>
         </div>
       )
     }
-    <div class="min-w-0 border-l-4 border-l-red p-4 sm:p-5">
-      <p class="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">Avec connecteur</p>
-      <p class="mt-3 whitespace-pre-line wrap-anywhere text-sm leading-relaxed">{demo.avec}</p>
-      <p class="mt-4 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted">Sources</p>
+    <div class:list={["min-w-0", complete && "rounded-bloc bg-fond p-4 sm:p-5"]}>
+      <p class="text-[0.8125rem] text-encre-douce">Avec connecteur</p>
+      <p class="mt-3 whitespace-pre-line wrap-anywhere text-[0.9375rem] leading-relaxed">{demo.avec}</p>
+      <p class="mt-4 text-[0.8125rem] text-encre-douce">Sources</p>
       <ul class="mt-2 flex flex-wrap gap-1.5">
         {
           demo.sources.map((source) => (
-            <li class="border border-ink px-1.5 py-0.5 font-mono text-[0.7rem] leading-snug break-words">
+            <li class="rounded-[0.5rem] border border-filet px-2.5 py-1 text-[0.8125rem] font-medium leading-snug break-words">
               <a
                 href={source.url}
                 target="_blank"
                 rel="noopener"
-                class="text-ink no-underline hover:underline hover:decoration-2 hover:underline-offset-2"
+                class="text-encre no-underline hover:underline hover:decoration-1 hover:underline-offset-2"
               >
                 {source.libelle} <span aria-hidden="true">→</span>
                 <span class="sr-only"> (nouvel onglet)</span>
@@ -56,7 +64,7 @@ const dateFormat = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeZon
 
   {
     complete && (
-      <figcaption class="border-t-2 border-ink px-4 py-2 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-muted sm:px-5">
+      <figcaption class="mt-4 border-t border-filet pt-3 text-[0.8125rem] text-encre-douce">
         Capture réelle, non retouchée.
       </figcaption>
     )
