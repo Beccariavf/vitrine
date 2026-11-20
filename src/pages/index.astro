@@ -38,7 +38,7 @@ const manifeste = [
   title="Vitrine — une IA juridique qui cite ses sources"
   description="Un connecteur en préparation entre votre IA et les sources officielles du droit des données personnelles, et une veille des publications officielles du droit du numérique."
 >
-  <section class="hero grid justify-items-center gap-7 px-1 pb-2 pt-8 text-center">
+  <section class="hero grid justify-items-center gap-8 px-1 pb-2 pt-10 text-center sm:gap-10 sm:pt-24">
     <h1 class="max-w-[14ch] text-[clamp(3rem,8.5vw,6.5rem)] leading-[0.98] tracking-[-0.02em]">
       Une IA juridique qui cite ses sources.
     </h1>
@@ -72,7 +72,7 @@ const manifeste = [
     }
   </section>
 
-  <p class="manifeste mt-24 sm:mt-28">
+  <p class="manifeste espace-section">
     {
       manifeste.map((segment) => (
         <>
@@ -91,7 +91,7 @@ const manifeste = [
 
   {
     references.length > 0 && (
-      <section aria-labelledby="verification" class="mt-16 sm:mt-20">
+      <section aria-labelledby="verification" class="espace-section">
         <div class="grid items-center gap-8 min-[761px]:grid-cols-2 min-[761px]:gap-[clamp(1.5rem,5vw,5rem)]">
           <div
             class="grid aspect-square max-h-[26rem] place-content-center gap-3 rounded-carte bg-accent p-8 min-[761px]:order-2"
@@ -144,7 +144,7 @@ const manifeste = [
     )
   }
 
-  <section aria-labelledby="publications" class="mt-24 sm:mt-28">
+  <section aria-labelledby="publications" class="espace-section">
     <div class="flex flex-wrap items-end justify-between gap-4 pb-4">
       <h2
         id="publications"

@@ -55,11 +55,29 @@
   }
 }
 
+/*
+ * Rythme vertical entre deux sections : de 6rem en mobile à 15rem en grand écran,
+ * proche des ~290 px mesurés sur america.gov. Une seule valeur pour tout le site.
+ */
+@utility espace-section {
+  margin-top: clamp(6rem, 14vw, 15rem);
+}
+
 @layer base {
   html {
     background-color: var(--color-fond);
     color: var(--color-encre);
     -webkit-text-size-adjust: 100%;
+  }
+
+  /*
+   * Rogne ce qui dépasse du contenu (bande pleine largeur du collage, qui compte
+   * la barre de défilement dans `vw`) sans créer de conteneur de défilement.
+   * Sur `main` et non `html` : sur la racine, `clip` deviendrait `hidden` et la
+   * page resterait défilable de quelques pixels par script.
+   */
+  main {
+    overflow-x: clip;
   }
 
   body {

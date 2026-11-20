@@ -55,13 +55,13 @@ const titreSection = "text-[clamp(1.75rem,3.2vw,2.5rem)] leading-[1.1] font-medi
 
   {
     demo !== null && (
-      <section aria-label="Démonstration" class="mt-14">
+      <section aria-label="Démonstration" class="mt-16 sm:mt-24">
         <Demo demo={demo} variante="complete" />
       </section>
     )
   }
 
-  <section aria-labelledby="fonctionnement" class="mt-20">
+  <section aria-labelledby="fonctionnement" class="espace-section">
     <h2 id="fonctionnement" class={titreSection}>Comment ça marche</h2>
     <ol class="mt-8 grid gap-4 sm:grid-cols-3">
       {
@@ -78,7 +78,7 @@ const titreSection = "text-[clamp(1.75rem,3.2vw,2.5rem)] leading-[1.1] font-medi
     </ol>
   </section>
 
-  <section aria-labelledby="couverture" class="mt-20">
+  <section aria-labelledby="couverture" class="espace-section">
     <h2 id="couverture" class={titreSection}>Ce que couvre la base</h2>
     <Facade sources={sources} class="mt-8" />
     <div class="mt-8 overflow-x-auto rounded-bloc border border-filet bg-surface">
@@ -117,7 +117,7 @@ const titreSection = "text-[clamp(1.75rem,3.2vw,2.5rem)] leading-[1.1] font-medi
     </p>
   </section>
 
-  <section aria-labelledby="construction" class="mt-20">
+  <section aria-labelledby="construction" class="espace-section">
     <h2 id="construction" class={titreSection}>Comment c'est construit</h2>
     <div class="mt-8 overflow-hidden rounded-bloc bg-accent text-sur-accent shadow-douce">
       <div
@@ -137,7 +137,7 @@ const titreSection = "text-[clamp(1.75rem,3.2vw,2.5rem)] leading-[1.1] font-medi
     </div>
   </section>
 
-  <section aria-labelledby="transparence" class="mt-20">
+  <section aria-labelledby="transparence" class="espace-section">
     <h2 id="transparence" class={titreSection}>Transparence</h2>
     <p class="mt-6 max-w-2xl leading-relaxed">
       Le code et le corpus sont ouverts : vous pouvez lire comment chaque source est collectée et
@@ -151,7 +151,7 @@ const titreSection = "text-[clamp(1.75rem,3.2vw,2.5rem)] leading-[1.1] font-medi
     </a>
   </section>
 
-  <section aria-labelledby="suite" class="mt-20 border-t border-filet pt-10">
+  <section aria-labelledby="suite" class="espace-section border-t border-filet pt-12">
     <h2 id="suite" class={titreSection}>En attendant le connecteur</h2>
     <p class="mt-4 max-w-2xl leading-relaxed text-encre-douce">
       La veille suit déjà les publications des autorités et juridictions du numérique, chacune liée à son texte officiel.
