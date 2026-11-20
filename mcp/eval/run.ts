@@ -913,6 +913,20 @@ export function verifierModeLexical(recherche: ModeRecherche, split: FiltreSplit
   }
 }
 
+/** Les options de seuils n'ont pas de sens sans score comparable : le mode lexical les refuse. */
+export function verifierOptionsLexicales(
+  recherche: ModeRecherche,
+  seuils: Seuils | null,
+  regle: Regle,
+): void {
+  if (recherche === "lexicale" && (seuils !== null || regle === "produit")) {
+    throw new Error(
+      "--seuils et --regle produit ne s'appliquent pas à la recherche lexicale : " +
+        "aucun seuil de confiance n'y existe.",
+    );
+  }
+}
+
 /** Le split `test` ne s'exécute que sur autorisation explicite. */
 export function verifierAutorisationTest(split: FiltreSplit, mesurerTest: boolean): void {
   if ((split === "test" || split === "all") && !mesurerTest) {
@@ -1192,12 +1206,7 @@ async function main(argv: string[]): Promise<void> {
   const regle = lireRegle(valeurDe("--regle", argv));
   const seuilsExplicites = lireSeuils(valeurDe("--seuils", argv));
   verifierRegleSeuils(regle, seuilsExplicites);
-  if (lexical && (seuilsExplicites !== null || regle === "produit")) {
-    throw new Error(
-      "--seuils et --regle produit ne s'appliquent pas à la recherche lexicale : " +
-        "aucun seuil de confiance n'y existe.",
-    );
-  }
+  verifierOptionsLexicales(recherche, seuilsExplicites, regle);
   const optionInstruction = valeurDe("--instruction", argv);
   const variante = lireInstruction(optionInstruction);
   const date = new Date().toISOString().slice(0, 10);
