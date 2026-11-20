@@ -14,6 +14,9 @@ export const COMMANDE_DEMO = "npm run mcp:http";
 /** Début du message quand le service ne répond pas ; la commande suit, en `<code>`. */
 export const MESSAGE_INDISPONIBLE = "Le service de démonstration est éteint :";
 
+/** Message quand le service ne répond pas dans le délai de 8 s. */
+export const MESSAGE_DELAI = "Le service de démonstration ne répond pas : le délai de 8 secondes est dépassé.";
+
 /** Un passage tel que l'API le rend, réduit aux champs affichés. */
 export type Passage = {
   rang: number;
@@ -29,7 +32,7 @@ export type Passage = {
 export type Resultat =
   | { etat: "resultats"; passages: Passage[] }
   | { etat: "erreur"; message: string }
-  | { etat: "indisponible"; message: string };
+  | { etat: "indisponible" };
 
 /** URL de la recherche : base du build, question encodée, aucun autre paramètre. */
 export function urlRecherche(base: string, question: string): string {
@@ -63,7 +66,7 @@ export function lireReponse(statut: number, corps: unknown): Resultat {
   if (statut === 400) {
     return {
       etat: "erreur",
-      message: erreur === null ? "La question n'a pas été acceptée." : `La question n'a pas été acceptée : ${erreur}`,
+      message: erreur === null ? "La question n'a pas été acceptée." : phraseApi(erreur),
     };
   }
   if (statut === 429) {
@@ -76,7 +79,7 @@ export function lireReponse(statut: number, corps: unknown): Resultat {
   if (statut === 503) {
     return {
       etat: "erreur",
-      message: erreur === null ? "La démonstration est indisponible." : `La démonstration est indisponible : ${erreur}`,
+      message: erreur === null ? "La démonstration est indisponible." : phraseApi(erreur),
     };
   }
   return {
@@ -93,9 +96,14 @@ export function corpusAffiche(corpus: string, table: Readonly<Record<string, Cor
   return connu ?? { libelle: corpus, famille: FAMILLES.autre.libelle, pastille: FAMILLES.autre.classePastille };
 }
 
+/** Une date ISO : `AAAA-MM-JJ`, éventuellement suivie de l'heure. */
+export function estDateIso(valeur: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}(?:$|T)/.test(valeur);
+}
+
 /** Journée d'une date ISO en français ; toute autre forme est rendue telle quelle. */
 export function dateLisible(date: string): string {
-  if (!/^\d{4}-\d{2}-\d{2}(?:$|T)/.test(date)) return date;
+  if (!estDateIso(date)) return date;
   const valeur = new Date(date);
   return Number.isNaN(valeur.getTime()) ? date : FORMAT_DATE.format(valeur);
 }
@@ -145,4 +153,11 @@ function champNombre(corps: unknown, nom: string): number | null {
   if (typeof corps !== "object" || corps === null) return null;
   const valeur = (corps as Record<string, unknown>)[nom];
   return typeof valeur === "number" && Number.isFinite(valeur) ? valeur : null;
+}
+
+/** Le motif de l'API servi tel quel : première lettre en majuscule, point final s'il manque. */
+function phraseApi(erreur: string): string {
+  const phrase = erreur.trim();
+  const majuscule = phrase.charAt(0).toUpperCase() + phrase.slice(1);
+  return /[.!?]$/.test(majuscule) ? majuscule : `${majuscule}.`;
 }

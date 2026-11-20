@@ -3,9 +3,11 @@ import { describe, it } from "node:test";
 import {
   BASE_RECHERCHE_PAR_DEFAUT,
   COMMANDE_DEMO,
+  MESSAGE_DELAI,
   MESSAGE_INDISPONIBLE,
   corpusAffiche,
   dateLisible,
+  estDateIso,
   lireReponse,
   urlOfficielle,
   urlRecherche,
@@ -90,10 +92,14 @@ describe("lireReponse", () => {
     assert.deepEqual(lireReponse(200, null), { etat: "erreur", message: "La réponse de la recherche est illisible." });
   });
 
-  it("reprend le motif d'un 400, et en a un quand le corps se tait", () => {
-    assert.deepEqual(lireReponse(400, { erreur: "q absent" }), {
+  it("sert le motif d'un 400 comme message entier, et en a un quand le corps se tait", () => {
+    assert.deepEqual(lireReponse(400, { erreur: "Paramètre q requis : une question non vide." }), {
       etat: "erreur",
-      message: "La question n'a pas été acceptée : q absent",
+      message: "Paramètre q requis : une question non vide.",
+    });
+    assert.deepEqual(lireReponse(400, { erreur: "La question dépasse 300 caractères." }), {
+      etat: "erreur",
+      message: "La question dépasse 300 caractères.",
     });
     assert.deepEqual(lireReponse(400, null), { etat: "erreur", message: "La question n'a pas été acceptée." });
   });
@@ -106,16 +112,19 @@ describe("lireReponse", () => {
     assert.deepEqual(lireReponse(429, {}), { etat: "erreur", message: "Trop de requêtes : réessayez dans un instant." });
   });
 
-  it("signale un 503 et tout autre statut", () => {
-    assert.deepEqual(lireReponse(503, { erreur: "index absent" }), {
+  it("sert le motif d'un 503, et garde son préfixe aux autres statuts", () => {
+    assert.deepEqual(lireReponse(503, { erreur: "index absent" }), { etat: "erreur", message: "Index absent." });
+    assert.deepEqual(lireReponse(503, {}), { etat: "erreur", message: "La démonstration est indisponible." });
+    assert.deepEqual(lireReponse(500, { erreur: "panne interne" }), {
       etat: "erreur",
-      message: "La démonstration est indisponible : index absent",
+      message: "La recherche a échoué (500) : panne interne",
     });
     assert.deepEqual(lireReponse(500, null), { etat: "erreur", message: "La recherche a échoué (500)." });
   });
 
-  it("nomme le service éteint et sa commande", () => {
+  it("nomme le service éteint, le délai et sa commande", () => {
     assert.equal(MESSAGE_INDISPONIBLE, "Le service de démonstration est éteint :");
+    assert.equal(MESSAGE_DELAI, "Le service de démonstration ne répond pas : le délai de 8 secondes est dépassé.");
     assert.equal(COMMANDE_DEMO, "npm run mcp:http");
   });
 });
@@ -147,6 +156,16 @@ describe("corpusAffiche", () => {
       famille: "Autres",
       pastille: "bg-encre-douce",
     });
+  });
+});
+
+describe("estDateIso", () => {
+  it("reconnaît une date ISO et écarte toute autre forme", () => {
+    assert.equal(estDateIso("2023-12-28"), true);
+    assert.equal(estDateIso("2023-12-28T10:00:00Z"), true);
+    assert.equal(estDateIso("sans date"), false);
+    assert.equal(estDateIso("28/12/2023"), false);
+    assert.equal(estDateIso(""), false);
   });
 });
 

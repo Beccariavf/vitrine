@@ -34,7 +34,7 @@ const titreSection = "text-[clamp(1.75rem,3.2vw,2.5rem)] leading-[1.1] font-medi
 >
   <h2 id="essai-recherche" class={titreSection}>Essayer la recherche par mots</h2>
   <p class="mt-4 max-w-2xl text-[1.0625rem] leading-relaxed text-encre-douce text-pretty">
-    Elle cherche des mots, pas le sens : c'est la version gratuite et volontairement limitée.
+    Elle cherche des mots, pas le sens : c'est la démonstration gratuite et volontairement limitée.
   </p>
   <p class="mt-2 max-w-2xl text-[0.875rem] leading-relaxed text-encre-douce">
     Démonstration : les résultats ne sont pas vérifiés et la recherche ne comprend pas les reformulations.
@@ -93,8 +93,8 @@ const titreSection = "text-[clamp(1.75rem,3.2vw,2.5rem)] leading-[1.1] font-medi
 
 <script>
   import {
-    COMMANDE_DEMO, MESSAGE_INDISPONIBLE, corpusAffiche, dateLisible, lireReponse, urlRecherche,
-    type CorpusAffiche, type Passage, type Resultat,
+    COMMANDE_DEMO, MESSAGE_DELAI, MESSAGE_INDISPONIBLE, corpusAffiche, dateLisible, estDateIso, lireReponse,
+    urlRecherche, type CorpusAffiche, type Passage, type Resultat,
   } from "../lib/essai-recherche.ts";
 
   const CLASSE_MESSAGE = "text-[0.9375rem] leading-relaxed text-encre-douce";
@@ -127,7 +127,6 @@ const titreSection = "text-[clamp(1.75rem,3.2vw,2.5rem)] leading-[1.1] font-medi
       const item = noeud("li", "border-b border-filet first:border-t hover:bg-surface");
       const grille = noeud("div", "grid grid-cols-[6rem_1fr] gap-4 py-6 sm:grid-cols-[7rem_1fr] sm:gap-6");
       grille.append(noeud("p", "pt-0.5 text-[0.875rem] text-encre-douce tabular-nums", `#${passage.rang}`));
-
       const corps = noeud("div", "min-w-0");
       const entete = noeud("p", "flex flex-wrap items-center gap-1.5 text-[0.8125rem] text-encre-douce");
       const pastille = noeud("span", `inline-block h-[0.55rem] w-[0.55rem] shrink-0 rounded-[999px] ${famille.pastille}`);
@@ -135,15 +134,12 @@ const titreSection = "text-[clamp(1.75rem,3.2vw,2.5rem)] leading-[1.1] font-medi
       entete.append(pastille, noeud("span", "", famille.famille));
       if (passage.date !== "") {
         const date = noeud("time", "tabular-nums", dateLisible(passage.date));
-        date.setAttribute("datetime", passage.date);
+        if (estDateIso(passage.date)) date.setAttribute("datetime", passage.date);
         entete.append(noeud("span", "", "·"), date);
       }
 
       const titre = noeud("h3", "mt-1.5 text-[1.125rem] leading-snug font-medium tracking-[-0.01em]");
-      const lien = noeud(
-        "a",
-        "break-words text-encre no-underline hover:underline hover:decoration-1 hover:underline-offset-4",
-      ) as HTMLAnchorElement;
+      const lien = noeud("a", "break-words text-encre no-underline hover:underline hover:decoration-1 hover:underline-offset-4") as HTMLAnchorElement;
       lien.href = passage.url;
       lien.target = "_blank";
       lien.rel = "noopener";
@@ -153,7 +149,6 @@ const titreSection = "text-[clamp(1.75rem,3.2vw,2.5rem)] leading-[1.1] font-medi
       corps.append(entete, titre);
       if (passage.chemin !== "") corps.append(noeud("p", "mt-1 text-[0.8125rem] text-encre-douce", passage.chemin));
       if (passage.extrait !== "") corps.append(noeud("p", `mt-2 line-clamp-3 ${CLASSE_MESSAGE}`, passage.extrait));
-
       grille.append(corps);
       item.append(grille);
       return item;
@@ -178,22 +173,28 @@ const titreSection = "text-[clamp(1.75rem,3.2vw,2.5rem)] leading-[1.1] font-medi
       }
     };
 
+    // Une seule recherche à la fois : la suivante annule la précédente, qui ne rend plus rien.
+    let derniere = 0;
+    let controleurCourant: AbortController | null = null;
     const chercher = async (question: string): Promise<void> => {
+      const requete = ++derniere;
+      controleurCourant?.abort();
+      const controleur = new AbortController();
+      controleurCourant = controleur;
       zone.setAttribute("aria-busy", "true");
       zone.replaceChildren(message("Recherche en cours…"));
-      const controleur = new AbortController();
       const minuterie = setTimeout(() => controleur.abort(), 8000);
       try {
         const reponse = await fetch(urlRecherche(base, question), { signal: controleur.signal });
         const corps: unknown = await reponse.json().catch(() => null);
-        rendre(lireReponse(reponse.status, corps), question);
+        if (requete === derniere) rendre(lireReponse(reponse.status, corps), question);
       } catch {
-        const delai = "Le service de démonstration ne répond pas : le délai de 8 secondes est dépassé.";
-        if (controleur.signal.aborted) rendre({ etat: "erreur", message: delai }, question);
-        else rendre({ etat: "indisponible", message: MESSAGE_INDISPONIBLE }, question);
+        // Requête remplacée : son abandon ne produit aucun message.
+        if (requete === derniere && controleur.signal.aborted) rendre({ etat: "erreur", message: MESSAGE_DELAI }, question);
+        else if (requete === derniere) rendre({ etat: "indisponible" }, question);
       } finally {
         clearTimeout(minuterie);
-        zone.setAttribute("aria-busy", "false");
+        if (requete === derniere) zone.setAttribute("aria-busy", "false");
       }
     };
 
