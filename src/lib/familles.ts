@@ -8,34 +8,71 @@ export type Famille = {
   id: FamilleId;
   /** Libellé lisible, porté par la légende. */
   libelle: string;
-  /** Jetons de `global.css` : fond et texte contrasté (paire vérifiée par `tests/familles.test.ts`). */
+  /** Jeton de `global.css` de la pastille, non textuelle (3:1 vérifié par `tests/familles.test.ts`). */
+  pastille: string;
+  /**
+   * Anciens jetons texte sur aplat, encore lus par la veille (retirés en phase 4).
+   * `fond` contraste avec les quatre pastilles dans les deux thèmes ; `encre` sur `filet`.
+   */
   fond: string;
   texte: string;
   /** Classes Tailwind écrites en entier pour que le build les détecte. */
+  classePastille: string;
   classeFond: string;
   classeTexte: string;
 };
 
 export const FAMILLES: Readonly<Record<FamilleId, Famille>> = {
-  textes: { id: "textes", libelle: "Textes", fond: "blue", texte: "paper", classeFond: "bg-blue", classeTexte: "text-paper" },
+  textes: {
+    id: "textes",
+    libelle: "Textes",
+    pastille: "textes",
+    fond: "textes",
+    texte: "fond",
+    classePastille: "bg-textes",
+    classeFond: "bg-textes",
+    classeTexte: "text-fond",
+  },
   autorites: {
     id: "autorites",
     libelle: "Autorités françaises",
-    fond: "red",
-    texte: "paper",
-    classeFond: "bg-red",
-    classeTexte: "text-paper",
+    pastille: "autorites",
+    fond: "autorites",
+    texte: "fond",
+    classePastille: "bg-autorites",
+    classeFond: "bg-autorites",
+    classeTexte: "text-fond",
   },
-  ue: { id: "ue", libelle: "Union européenne", fond: "green", texte: "paper", classeFond: "bg-green", classeTexte: "text-paper" },
+  ue: {
+    id: "ue",
+    libelle: "Union européenne",
+    pastille: "ue",
+    fond: "ue",
+    texte: "fond",
+    classePastille: "bg-ue",
+    classeFond: "bg-ue",
+    classeTexte: "text-fond",
+  },
   juridictions: {
     id: "juridictions",
     libelle: "Juridictions françaises",
-    fond: "yellow",
-    texte: "ink",
-    classeFond: "bg-yellow",
-    classeTexte: "text-ink",
+    pastille: "juridictions",
+    fond: "juridictions",
+    texte: "fond",
+    classePastille: "bg-juridictions",
+    classeFond: "bg-juridictions",
+    classeTexte: "text-fond",
   },
-  autre: { id: "autre", libelle: "Autres", fond: "concrete", texte: "ink", classeFond: "bg-concrete", classeTexte: "text-ink" },
+  autre: {
+    id: "autre",
+    libelle: "Autres",
+    pastille: "filet",
+    fond: "filet",
+    texte: "encre",
+    classePastille: "bg-filet",
+    classeFond: "bg-filet",
+    classeTexte: "text-encre",
+  },
 };
 
 /** Les quatre familles nommées par la légende, dans l'ordre d'affichage. */
