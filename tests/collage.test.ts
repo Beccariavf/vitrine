@@ -430,8 +430,7 @@ describe("lireArticleCpceL345", () => {
     assert.equal(article.numero, "L34-5");
     assert.equal(article.depuis, "2020-07-26");
     assert.ok(article.extrait.startsWith("Est interdite la prospection directe"));
-    assert.ok(article.extrait.endsWith("…"));
-    assert.ok(article.extrait.length <= 171);
+    assert.ok(article.extrait.length <= 321);
   });
 
   it("ne date pas une version qui n'est plus en vigueur", () => {

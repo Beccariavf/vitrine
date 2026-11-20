@@ -369,7 +369,7 @@ export function lireArticleCpceL345(rootDir: string = process.cwd()): CarteCode 
       section: section.replace(/\.$/, ""),
       numero: "L34-5",
       depuis: enVigueur ? chaine(unite["date_debut"]) : null,
-      extrait: tronque(texte, 170),
+      extrait: tronque(texte, 320),
     };
   }
   return null;

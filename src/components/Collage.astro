@@ -34,6 +34,19 @@ const formatDate = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "sh
 function dateLisible(date: string | null): string | null {
   return date === null ? null : formatDate.format(new Date(date));
 }
+
+/** Date en toutes lettres, comme le badge de version de Légifrance. */
+const formatDateLongue = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+
+function dateLongue(date: string | null): string | null {
+  return date === null ? null : formatDateLongue.format(new Date(date));
+}
+
+/**
+ * Ligne « Modifié par » de l'article L34-5, recopiée de Légifrance le 20 novembre 2026 :
+ * le corpus ne porte pas le texte modificateur.
+ */
+const MODIFIE_PAR_L34_5 = "Modifié par LOI n°2020-901 du 24 juillet 2020 - art. 8";
 ---
 
 {
@@ -167,21 +180,35 @@ function dateLisible(date: string | null): string | null {
                   )}
 
                   {carte.genre === "code" && (
-                    <div class="fiche">
-                      <div class="fiche-tete">
-                        <span class="source">
-                          <i aria-hidden="true" class:list={["pt", FAMILLES[carte.famille].classePastille]} />
-                          {carte.source}
-                        </span>
+                    <div class="fiche photo">
+                      <div class="legifrance-visuel">
+                        <p class="lf-titre">Article {carte.numero}</p>
+                        {dateLongue(carte.depuis) !== null && (
+                          <p class="lf-badge">En vigueur depuis le {dateLongue(carte.depuis)}</p>
+                        )}
+                        <p class="lf-lien">{MODIFIE_PAR_L34_5}</p>
+                        <p class="lf-texte">
+                          {carte.extrait.includes("L. 32,") ? (
+                            <>
+                              {carte.extrait.split("L. 32,")[0]}
+                              <u>L. 32,</u>
+                              {carte.extrait.split("L. 32,").slice(1).join("L. 32,")}
+                            </>
+                          ) : (
+                            carte.extrait
+                          )}
+                        </p>
                       </div>
-                      <p class="chemin">
-                        {carte.code} › {carte.section}
-                      </p>
-                      <span class="serif-titre">Article {carte.numero}</span>
-                      {dateLisible(carte.depuis) !== null && (
-                        <span class="statut">En vigueur depuis le {dateLisible(carte.depuis)}</span>
-                      )}
-                      <p class="extrait">{carte.extrait}</p>
+                      <div class="photo-corps">
+                        <div class="fiche-tete">
+                          <span class="source">
+                            <i aria-hidden="true" class:list={["pt", FAMILLES[carte.famille].classePastille]} />
+                            {carte.source}
+                          </span>
+                          <span class="nums">art. {carte.numero}</span>
+                        </div>
+                        <b>{carte.code}</b>
+                      </div>
                     </div>
                   )}
 
@@ -355,27 +382,66 @@ function dateLisible(date: string | null): string | null {
     font-weight: 500;
   }
 
-  /* Carte Légifrance : le chemin dans le code, puis le statut de la version. */
-  .chemin {
-    color: var(--color-encre-douce);
-    font-size: 0.75rem;
-    line-height: 1.4;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
+  /*
+   * Fragment de la page Légifrance de l'article, recopié à l'identique (couleurs,
+   * corps, graisses et interlignes relevés sur la page le 20 novembre 2026), coupé
+   * aux bords comme une capture. Inter remplace Marianne, police réservée à l'État.
+   * Fond blanc conservé en mode sombre, comme le bandeau de sanction.
+   */
+  .legifrance-visuel {
+    height: 12rem;
     overflow: hidden;
+    padding: 1.4rem 0 0 1.4rem;
+    background-color: #fff;
+    color: #3a3a3a;
+    font-family: var(--font-texte);
+    -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent);
+    mask-image: linear-gradient(to bottom, #000 78%, transparent);
   }
 
-  .statut {
-    justify-self: start;
-    border: 1px solid var(--color-filet);
-    border-radius: 999px;
-    padding: 0.2rem 0.6rem;
-    font-size: 0.6875rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
+  .legifrance-visuel + .photo-corps {
+    border-top: 1px solid var(--color-filet);
+  }
+
+  .legifrance-visuel > * {
+    width: 36rem;
+  }
+
+  .lf-titre {
+    margin-bottom: 0.5rem;
+    color: #000091;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 24px;
+  }
+
+  .lf-badge {
+    width: max-content;
+    padding: 1.2px 4.8px;
+    border-radius: 4px;
+    background-color: #b8fec9;
+    color: #18753c;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 20px;
     text-transform: uppercase;
-    font-variant-numeric: tabular-nums;
+  }
+
+  .lf-lien {
+    margin-top: 0.5rem;
+    color: #000091;
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  .lf-texte {
+    margin-top: 1rem;
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  .lf-texte u {
+    text-underline-offset: 2px;
   }
 
   .montant {
