@@ -1,4 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect x="3" y="2" width="24" height="28" fill="#e7e2d7" stroke="#121212" stroke-width="3"/>
-  <rect x="14" y="13" width="10" height="14" fill="#c62828" stroke="#121212" stroke-width="2.5"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Vitrine">
+  <rect width="32" height="32" rx="7" fill="#FFFFFF" />
+  <text
+    x="16"
+    y="24.5"
+    text-anchor="middle"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="23"
+    fill="#0F1623"
+  >V</text>
 </svg>

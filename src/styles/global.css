@@ -97,60 +97,74 @@
 
 @layer base {
   html {
-    background-color: var(--color-concrete);
-    color: var(--color-ink);
+    background-color: var(--color-fond);
+    color: var(--color-encre);
     -webkit-text-size-adjust: 100%;
   }
 
   body {
-    font-family: var(--font-sans);
+    font-family: var(--font-texte);
     font-size: 1rem;
-    line-height: 1.6;
+    line-height: 1.55;
   }
 
+  /* Serif pour les moments forts : le titre de page, une fois. */
   h1,
   h2,
   h3,
   h4 {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-stretch: 88%;
-    letter-spacing: -0.02em;
-    word-spacing: 0.08em;
-    line-height: 1.08;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
     text-wrap: balance;
   }
 
-  /* Titre monumental : condensé, très gras, serré ; les mots longs se coupent plutôt que de déborder. */
   h1 {
-    font-stretch: 72%;
-    font-weight: 850;
-    letter-spacing: -0.03em;
-    word-spacing: 0.14em;
-    line-height: 0.95;
+    font-family: var(--font-serif);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1;
     overflow-wrap: break-word;
     hyphens: auto;
+  }
+
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-texte);
+    font-weight: 500;
   }
 
   a {
     color: inherit;
     text-decoration-line: underline;
-    text-decoration-color: var(--color-red);
-    text-decoration-thickness: 1.5px;
+    text-decoration-color: var(--color-filet);
+    text-decoration-thickness: 1px;
     text-underline-offset: 0.2em;
   }
 
   a:hover {
-    text-decoration-thickness: 3px;
+    text-decoration-color: var(--color-encre);
   }
 
   ::selection {
-    background-color: var(--color-ink);
-    color: var(--color-paper);
+    background-color: var(--color-accent);
+    color: var(--color-sur-accent);
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-ink);
+    outline: 2px solid var(--color-accent);
     outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
