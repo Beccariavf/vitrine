@@ -72,7 +72,7 @@ function niveauDe(
   seuils: Seuils,
 ): ReturnType<typeof niveauConfiance> {
   return niveauConfiance(
-    entree.similarites.map((similarite) => ({ distance: 1 - similarite })),
+    (entree.similarites ?? []).map((similarite) => ({ distance: 1 - similarite })),
     false,
     seuils,
   );
@@ -205,8 +205,12 @@ function entete(chemin: string, objet: ObjetMesureJson): string[] {
     `jeu : ${objet.corpus}, split ${objet.split}, ${objet.questions.length} questions ` +
       `mesurées (${semantiques} sémantiques, ${pieges} pièges, ${exactes} références exactes écartées)`,
     `modèle : ${objet.modele} (${objet.dimensions} dimensions), recherche ${objet.recherche}`,
-    `seuils de la mesure : bas=${seuil(objet.seuils.bas)} haut=${seuil(objet.seuils.haut)} ` +
-      `marge=${seuil(objet.seuils.marge)}`,
+    ...(objet.seuils === undefined
+      ? ["seuils de la mesure : aucun (recherche lexicale)"]
+      : [
+          `seuils de la mesure : bas=${seuil(objet.seuils.bas)} haut=${seuil(objet.seuils.haut)} ` +
+            `marge=${seuil(objet.seuils.marge)}`,
+        ]),
   ];
 }
 
@@ -244,6 +248,14 @@ function ligneRefus(ligne: LigneRefus): string {
 
 function rapport(chemin: string, objet: ObjetMesureJson, seuils: Seuils | null): string[] {
   const lignes = entete(chemin, objet);
+  if (objet.recherche === "lexicale") {
+    lignes.push(
+      "",
+      "calibration de confiance : non applicable (recherche lexicale, aucun score comparable " +
+        "à une similarité cosinus)",
+    );
+    return lignes;
+  }
   if (seuils !== null) {
     lignes.push("", ENTETE_SEUILS, ligneSeuils(objet.questions, seuils));
     return lignes;

@@ -19,6 +19,7 @@ import {
   lireInstruction,
   lireJeu,
   lireQuestions,
+  lireRecherche,
   lireRegle,
   lireSeuils,
   mrr,
@@ -36,6 +37,8 @@ import {
   validerReferences,
   verifierAutorisationTest,
   verifierJsonSplit,
+  verifierModeLexical,
+  verifierOptionsLexicales,
   verifierRegleSeuils,
   verifierTestNonConsomme,
 } from "../mcp/eval/run.ts";
@@ -966,11 +969,69 @@ describe("le verrou du test", () => {
     assert.deepEqual(objet.questions[1]?.attendues, []);
     assert.deepEqual(objet.questions[1]?.rangs, []);
     assert.equal(objet.questions[1]?.piege, true);
-    assert.equal(objet.agregats.semantiques, 1);
-    assert.equal(objet.agregats.pieges_mesures, 1);
+    assert.equal(objet.agregats?.semantiques, 1);
+    assert.equal(objet.agregats?.pieges_mesures, 1);
     assert.deepEqual(objet.index, { chemin: "/tmp/corpus/index/index.db", unites: 12 });
     assert.equal("rerank" in objet, false);
     assert.equal(entreeQuestionJson(mesures[0]!, seuils).rangs[0], 2);
+  });
+
+  it("accepte --recherche lexicale et refuse une voie inconnue", () => {
+    assert.equal(lireRecherche([]), "dense");
+    assert.equal(lireRecherche(["--recherche", "lexicale"]), "lexicale");
+    assert.throws(
+      () => lireRecherche(["--recherche", "bm25"]),
+      /--recherche attendu dense, hybride ou lexicale ; reçu « bm25 »/,
+    );
+  });
+
+  it("ne publie ni seuils, ni niveaux, ni agrégats en mode lexical", () => {
+    const mesures: Mesure[] = [
+      {
+        question: {
+          question: "une question sans modèle",
+          type: "conceptuelle",
+          attendues: ["32016R0679#art_17"],
+          piege: false,
+          split: "dev",
+        },
+        refs: ["32016R0679#art_17"],
+        distances: [],
+      },
+    ];
+    const objet = objetMesureJson({
+      date: "2026-11-20",
+      modele: "sans modèle (recherche lexicale)",
+      dimensions: 0,
+      split: "dev",
+      corpus: "rgpd",
+      recherche: "lexicale",
+      index: { chemin: "/tmp/corpus/index/index.db", unites: 12 },
+      seuils: null,
+      seuilsOrigine: null,
+      mesures,
+    });
+
+    assert.equal(objet.recherche, "lexicale");
+    assert.equal("seuils" in objet, false);
+    assert.equal("seuils_origine" in objet, false);
+    assert.equal("agregats" in objet, false);
+    assert.equal("niveau" in (objet.questions[0] ?? {}), false);
+    assert.equal("similarites" in (objet.questions[0] ?? {}), false);
+    assert.deepEqual(objet.questions[0]?.rangs, [1]);
+  });
+
+  it("refuse le split test et les seuils en mode lexical", () => {
+    assert.throws(() => verifierModeLexical("lexicale", "test"), /ne mesure que dev/);
+    assert.throws(() => verifierModeLexical("lexicale", "all"), /ne mesure que dev/);
+    verifierModeLexical("lexicale", "dev");
+    verifierModeLexical("dense", "test");
+
+    const seuils = { bas: 0.6, haut: 0.7, marge: 0.01 };
+    assert.throws(() => verifierOptionsLexicales("lexicale", seuils, "calibree"), /ne s'appliquent pas/);
+    assert.throws(() => verifierOptionsLexicales("lexicale", null, "produit"), /ne s'appliquent pas/);
+    verifierOptionsLexicales("lexicale", null, "calibree");
+    verifierOptionsLexicales("dense", seuils, "produit");
   });
 
   it("porte le bloc rerank seulement quand l'étage a tourné", () => {

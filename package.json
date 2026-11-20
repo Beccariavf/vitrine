@@ -37,6 +37,7 @@
     "preparation:sync": "node mcp/corpus/preparation/sync.ts",
     "mcp:smoke": "node mcp/embed/smoke.ts",
     "mcp": "node mcp/server.ts",
+    "mcp:http": "node mcp/http.ts",
     "mcp:eval": "node mcp/eval/run.ts",
     "mcp:eval:filtres": "node mcp/eval/filtres.ts",
     "mcp:demo": "node mcp/demo.ts"

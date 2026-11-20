@@ -1,6 +1,6 @@
 import { lireUnites } from "./index/build.ts";
 import { cheminIndex } from "./index/build.ts";
-import { openIndex, rechercheHybride, searchIndex } from "./index/search.ts";
+import { openIndex, rechercheHybride, rechercheLexicale, searchIndex } from "./index/search.ts";
 import type { Index, ResultatRecherche } from "./index/search.ts";
 import type { Unite } from "./corpus/parse.ts";
 import type { Embedder } from "./embed/embedder.ts";
@@ -279,7 +279,8 @@ export type ResultatArticle = ArticleTrouve | ArticleAbsent;
 
 /** Un passage rendu à la recherche : la distance devient une similarité lisible. */
 export type Passage = ResultatRecherche & {
-  similarite: number;
+  /** Similarité cosinus ; absente en recherche lexicale, où aucun score comparable n'existe. */
+  similarite?: number;
   /** Vocabulaire uniforme du serveur ; le statut source reste dans `statut`. */
   statut_application: StatutApplication;
   /**
@@ -308,6 +309,8 @@ export type Passage = ResultatRecherche & {
 export type ResultatRechercheOutil = {
   niveau_confiance: NiveauConfiance;
   passages: Passage[];
+  /** Présent seulement en recherche lexicale : aucun modèle n'a servi à la requête. */
+  recherche?: "lexicale";
   /** Présent quand une référence exacte est introuvable ou existe dans plusieurs documents. */
   message?: string;
   /** Présent quand le second étage a tourné : la seule latence imputable au rerank. */
@@ -716,6 +719,9 @@ function articleEnVigueur(
   };
 }
 
+/** Voie de recherche du serveur : le mode lexical n'appelle jamais l'embedder. */
+export type ModeRecherche = "dense" | "hybride" | "lexicale";
+
 export type SearchDeps = {
   embedder: Embedder;
   /**
@@ -724,8 +730,12 @@ export type SearchDeps = {
    */
   index?: Index | (() => Index);
   seuils?: { bas?: number; haut?: number; marge?: number };
-  /** Voie de recherche ; `dense` par défaut, `hybride` sur demande mesurée. */
-  recherche?: "dense" | "hybride";
+  /**
+   * Voie de recherche ; `dense` par défaut, `hybride` sur demande mesurée,
+   * `lexicale` sans embedder ni vecteur (configuration du serveur, jamais un
+   * paramètre de l'outil).
+   */
+  recherche?: ModeRecherche;
   /**
    * Second étage : il réordonne la fenêtre dense, il ne remplace pas l'index.
    * Absent, la voie dense reste strictement celle d'avant.
@@ -1017,8 +1027,18 @@ export async function search(
     (demande.corpus === undefined ? documentNomme(demande.question) : null) ??
     undefined;
   const resultat = await chercher(rootDir, demande, document, deps);
+  const lexical = deps.recherche === "lexicale";
   return {
     ...resultat,
+    ...(lexical ? { recherche: "lexicale" as const } : {}),
+    passages: lexical
+      ? resultat.passages.map((passage, position) => {
+          // Ni distance ni similarité : BM25 n'a pas d'échelle comparable. Le
+          // rang lexical porte ce qu'un lecteur peut interpréter.
+          const { distance: _distance, similarite: _similarite, ...reste } = passage;
+          return { ...reste, rang_lexical: position + 1 };
+        })
+      : resultat.passages,
     perimetre: perimetreDe(
       rootDir,
       {
@@ -1116,12 +1136,16 @@ async function chercher(
   const index =
     typeof deps.index === "function" ? deps.index() : deps.index ?? openIndex(cheminIndex(rootDir));
   const k = Math.max(1, Math.trunc(demande.k ?? 5));
+  const mode = deps.recherche ?? "dense";
   // Le reranker réordonne une fenêtre plus large que `k` : il ne peut pas
-  // promouvoir un passage que la recherche dense n'a pas ramené.
+  // promouvoir un passage que la recherche n'a pas ramené.
   const fenetre = deps.rerank === undefined ? k : Math.max(k, CANDIDATS_RERANK);
   // L'instruction de requête suit le document, puis le corpus : un corpus CNIL
   // ne doit pas recevoir l'instruction mesurée pour le RGPD.
-  const vecteur = await deps.embedder.embedQuery(demande.question, document ?? corpus);
+  const vecteur =
+    mode === "lexicale"
+      ? null
+      : await deps.embedder.embedQuery(demande.question, document ?? corpus);
   const options = {
     k: fenetre,
     ...(corpus === undefined ? {} : { corpus }),
@@ -1134,10 +1158,16 @@ async function chercher(
     ...(demande.montant_max === undefined ? {} : { montant_max: demande.montant_max }),
     ...(demande.numero === undefined ? {} : { numero: demande.numero }),
   };
-  const resultats =
-    (deps.recherche ?? "dense") === "hybride"
-      ? rechercheHybride(index, vecteur, demande.question, options)
-      : searchIndex(index, vecteur, options);
+  let resultats: ResultatRecherche[];
+  if (mode === "lexicale") {
+    resultats = rechercheLexicale(index, demande.question, options);
+  } else {
+    if (vecteur === null) throw new Error("Vecteur de requête absent hors mode lexical");
+    resultats =
+      mode === "hybride"
+        ? rechercheHybride(index, vecteur, demande.question, options)
+        : searchIndex(index, vecteur, options);
+  }
 
   let ordre = resultats;
   let blocRerank: { modele: string; duree_ms: number } | undefined;
@@ -1168,18 +1198,35 @@ async function chercher(
   }
 
   const corpusDuNiveau = corpusDeNiveau(demande);
-  const niveau = niveauConfiance(ordre, false, {
-    ...deps.seuils,
-    ...(corpusDuNiveau === undefined ? {} : { corpus: corpusDuNiveau }),
-  });
+  // Aucun score BM25 n'est confiant : hors appariement exact (traité plus haut),
+  // le mode lexical ne prétend rien de plus qu'« incertain ».
+  const niveau =
+    mode === "lexicale"
+      ? ordre.length === 0
+        ? "aucun_resultat_fiable"
+        : "incertain"
+      : niveauConfiance(
+          ordre.map((resultat) => {
+            if (resultat.distance === undefined) {
+              throw new Error(`Distance dense absente pour ${resultat.ref}`);
+            }
+            return { distance: resultat.distance };
+          }),
+          false,
+          {
+            ...deps.seuils,
+            ...(corpusDuNiveau === undefined ? {} : { corpus: corpusDuNiveau }),
+          },
+        );
   return rendre({
     niveau_confiance: niveau,
     passages:
       niveau === "aucun_resultat_fiable"
         ? []
-        : ordre.map((resultat) =>
-            avecStatutApplication({ ...resultat, similarite: 1 - resultat.distance }),
-          ),
+        : ordre.map((resultat) => {
+            if (resultat.distance === undefined) return avecStatutApplication(resultat);
+            return avecStatutApplication({ ...resultat, similarite: 1 - resultat.distance });
+          }),
     ...(blocRerank === undefined ? {} : { rerank: blocRerank }),
   });
 }
