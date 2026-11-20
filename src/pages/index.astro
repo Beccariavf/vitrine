@@ -2,29 +2,15 @@
 import Demo from "../components/Demo.astro";
 import Collage from "../components/Collage.astro";
 import PublicationRangee from "../components/PublicationRangee.astro";
+import Verification from "../components/Verification.astro";
 import Base from "../layouts/Base.astro";
 import { lireDemo } from "../lib/demo.ts";
 import { getVisibleEntries } from "../lib/entries.ts";
 import { FAMILLES } from "../lib/familles.ts";
-import { referenceLabel, referenceUrl } from "../lib/references.ts";
 
 const visibles = getVisibleEntries();
 const publications = visibles.slice(0, 3);
 const demo = lireDemo();
-
-/**
- * Références de la rangée « Chaque affirmation se vérifie » : celles des trois
- * publications affichées, élargies à toutes les entrées visibles quand elles
- * n'en portent aucune. Trois au plus, sans doublon.
- */
-function referencesDe(entrees: typeof visibles): string[] {
-  return [...new Set(entrees.flatMap((entry) => entry.references))];
-}
-
-const referencesAffichees = referencesDe(publications);
-const references = (referencesAffichees.length > 0 ? referencesAffichees : referencesDe(visibles))
-  .slice(0, 3)
-  .map((reference) => ({ reference, libelle: referenceLabel(reference), url: referenceUrl(reference) }));
 
 /** Pastilles du manifeste : la couleur de la famille, toujours suivie de son nom. */
 const manifeste = [
@@ -89,60 +75,7 @@ const manifeste = [
 
   <Collage entrees={visibles} />
 
-  {
-    references.length > 0 && (
-      <section aria-labelledby="verification" class="espace-section">
-        <div class="grid items-center gap-8 min-[761px]:grid-cols-2 min-[761px]:gap-[clamp(1.5rem,5vw,5rem)]">
-          <div
-            class="grid aspect-square max-h-[26rem] place-content-center gap-3 rounded-carte bg-accent p-8 min-[761px]:order-2"
-            aria-label="Références citées dans la veille"
-            role="group"
-          >
-            {
-              references.map((item, rang) => (
-                <span
-                  class:list={[
-                    "inline-flex justify-center rounded-[0.5rem] bg-fond px-4 py-2.5 text-[0.9375rem] font-medium leading-snug text-encre shadow-douce",
-                    rang === 1 && "translate-x-[8%]",
-                    rang === 2 && "-translate-x-[6%]",
-                  ]}
-                >
-                  {item.url === null ? (
-                    <span title={item.reference}>{item.libelle}</span>
-                  ) : (
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener"
-                      title={item.reference}
-                      class="text-encre no-underline hover:underline hover:decoration-1 hover:underline-offset-4"
-                    >
-                      {item.libelle}
-                      <span class="sr-only"> (nouvel onglet)</span>
-                    </a>
-                  )}
-                </span>
-              ))
-            }
-          </div>
-          <div class="grid max-w-[26rem] gap-4 justify-items-start">
-            <h2
-              id="verification"
-              class="text-[clamp(1.75rem,3.2vw,2.5rem)] font-medium leading-[1.08] tracking-[-0.025em]"
-            >
-              Chaque affirmation se vérifie.
-            </h2>
-            <p class="text-[1.0625rem] text-encre-douce">
-              La réponse cite l'article ou la décision, avec un lien vers le texte publié.
-            </p>
-            <a href="/connecteur" class="lien">
-              Comment ça marche <span aria-hidden="true">→</span>
-            </a>
-          </div>
-        </div>
-      </section>
-    )
-  }
+  <Verification />
 
   <section aria-labelledby="publications" class="espace-section">
     <div class="flex flex-wrap items-end justify-between gap-4 pb-4">

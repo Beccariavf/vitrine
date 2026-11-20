@@ -1,0 +1,722 @@
+---
+import { Content as Reponse } from "../demo/reponse-cookies.md";
+import { Content as Source } from "../demo/source-san-2023-008.md";
+
+/** La question de la capture, telle quelle. */
+const question = "Quels sont les risques et sanctions relatives à un bandeau de cookies non conforme au RGPD?";
+
+/** Les quatre lignes du mini-tableau, recopiées de `reponse-cookies.md`. */
+const sanctions = [
+  { decision: "SAN-2021-023", date: "31 déc. 2021", amende: "150 M€" },
+  { decision: "SAN-2022-023", date: "19 déc. 2022", amende: "60 M€" },
+  { decision: "SAN-2023-008", date: "8 juin 2023", amende: "150 000 €" },
+  { decision: "Fnac Darty", date: "22 oct. 2026", amende: "7 M€" },
+];
+
+/** Le point 207 de SAN-2023-008, mot pour mot. */
+const citation =
+  "La formation restreinte estime que, pour garantir la liberté du consentement, il devrait en l’espèce être aussi facile de refuser les cookies que de les accepter.";
+---
+
+<section aria-labelledby="verification" class="verification espace-section">
+  <div class="verification-interieur">
+    <div class="grid max-w-[26rem] gap-4 justify-items-start">
+      <h2
+        id="verification"
+        class="text-[clamp(1.75rem,3.2vw,2.5rem)] font-medium leading-[1.08] tracking-[-0.025em]"
+      >
+        Chaque affirmation se vérifie.
+      </h2>
+      <p class="text-[1.0625rem] text-encre-douce">
+        La réponse cite l'article ou la décision, avec un lien vers le texte publié.
+      </p>
+      <a href="/connecteur" class="lien">Comment ça marche <span aria-hidden="true">→</span></a>
+    </div>
+
+    <div class="pile">
+      <article class="carte carte-question">
+        <h3 class="sr-only">Question posée</h3>
+        <p class="etiquette">Question</p>
+        <p class="bulle">« {question} »</p>
+      </article>
+
+      <article class="carte carte-reponse">
+        <div class="contenu-reponse">
+          <p class="etiquette">Extrait de la réponse · avec le connecteur</p>
+          <h3 class="titre-carte">Pratique répressive de la CNIL</h3>
+          <table class="mini-tableau">
+            <caption class="sr-only">Décisions citées, par date et montant</caption>
+            <thead class="sr-only">
+              <tr>
+                <th scope="col">Décision</th>
+                <th scope="col">Date</th>
+                <th scope="col">Amende</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                sanctions.map((ligne) => (
+                  <tr>
+                    <td>{ligne.decision}</td>
+                    <td>{ligne.date}</td>
+                    <td>{ligne.amende}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+          <p class="constat">
+            <strong>Absence de bouton de refus équivalent.</strong> Dans <span class="cible"
+              >SAN-2023-008<svg class="curseur" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path
+                  d="M5 2v18l4.7-4.4 2.9 6.1 3.1-1.5-2.9-6 6.5-.3z"
+                  fill="#111"
+                  stroke="#fff"
+                  stroke-width="1.4"
+                  stroke-linejoin="round"
+                />
+              </svg></span
+            >, la CNIL a relevé qu'il suffisait d'un clic pour accepter, alors que refuser demandait
+            davantage.
+          </p>
+        </div>
+        <button type="button" class="carte-bouton" popovertarget="reponse-entiere">
+          Lire la réponse entière <span aria-hidden="true">→</span>
+        </button>
+      </article>
+
+      <article class="carte carte-source">
+        <p class="etiquette">CNIL · Sanction · 8 juin 2023</p>
+        <h3 class="titre-carte">Délibération SAN-2023-008</h3>
+        <blockquote class="citation">« {citation} »</blockquote>
+        <p class="reference">Légifrance · point 207</p>
+        <button type="button" class="carte-bouton" popovertarget="source-entiere">
+          Lire la source <span aria-hidden="true">→</span>
+        </button>
+      </article>
+    </div>
+  </div>
+
+  <div id="reponse-entiere" popover role="dialog" aria-labelledby="reponse-entiere-titre" class="fenetre">
+    <button
+      type="button"
+      class="fermer"
+      popovertarget="reponse-entiere"
+      popovertargetaction="hide"
+      aria-label="Fermer"
+    >
+      ×
+    </button>
+    <div class="feuille-texte reponse-reelle">
+      <h2 id="reponse-entiere-titre" class="sr-only">Réponse entière</h2>
+      <p class="etiquette">Question</p>
+      <p class="bulle">« {question} »</p>
+      <Reponse />
+    </div>
+  </div>
+
+  <div id="source-entiere" popover role="dialog" aria-labelledby="source-entiere-titre" class="fenetre">
+    <button
+      type="button"
+      class="fermer"
+      popovertarget="source-entiere"
+      popovertargetaction="hide"
+      aria-label="Fermer"
+    >
+      ×
+    </button>
+    <div class="feuille-texte">
+      <h2 id="source-entiere-titre">Délibération SAN-2023-008 · CNIL, formation restreinte, 8 juin 2023</h2>
+      <p class="mention">Extraits, points 205 à 214</p>
+      <Source />
+      <p class="lien-source">
+        <a href="https://www.legifrance.gouv.fr/cnil/id/CNILTEXT000047682157" target="_blank" rel="noopener">
+          Lire sur Légifrance <span aria-hidden="true">→</span><span class="sr-only"> (nouvel onglet)</span>
+        </a>
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .verification-interieur {
+    display: grid;
+    gap: clamp(2rem, 5vw, 4rem);
+  }
+
+  .pile {
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+  }
+
+  /* Une carte : arrondie, sans filet par défaut ; l'ombre ne se pose qu'au survol. */
+  .carte {
+    position: relative;
+    display: grid;
+    gap: 0.85rem;
+    min-width: 0;
+    padding: 1.75rem;
+    border-radius: var(--radius-carte);
+    background-color: var(--color-fond);
+    color: var(--color-encre);
+  }
+
+  .carte-question {
+    background-color: var(--color-surface);
+  }
+
+  .carte-reponse {
+    height: 24rem;
+    overflow: hidden;
+    grid-template-rows: 1fr auto;
+    border: 1px solid var(--color-filet);
+    box-shadow: var(--shadow-douce);
+  }
+
+  .carte-source {
+    background-color: var(--color-accent);
+    color: var(--color-sur-accent);
+  }
+
+  .etiquette {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--color-encre-douce);
+  }
+
+  .carte-source .etiquette {
+    color: var(--color-sur-accent);
+  }
+
+  .bulle {
+    padding: 1rem 1.25rem;
+    border-radius: 1rem;
+    background-color: var(--color-fond);
+    font-size: 1.0625rem;
+    line-height: 1.5;
+  }
+
+  .titre-carte {
+    font-family: var(--font-serif);
+    font-size: 1.75rem;
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  /*
+   * La réponse continue : le bas du contenu s'estompe, le bouton reste net.
+   * Le fondu ne mord que la dernière ligne : la phrase clé et sa pastille de
+   * citation restent lisibles, et le curseur qui l'actionne reste visible.
+   */
+  .contenu-reponse {
+    display: grid;
+    gap: 0.85rem;
+    align-content: start;
+    min-height: 0;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to bottom, #000 88%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 88%, transparent 100%);
+  }
+
+  .mini-tableau {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    line-height: 1.35;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .mini-tableau th,
+  .mini-tableau td {
+    padding: 0.4rem 0;
+    border-top: 1px solid var(--color-filet);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .mini-tableau td:nth-child(2),
+  .mini-tableau th:nth-child(2) {
+    padding-inline: 0.6rem;
+  }
+
+  .mini-tableau td:first-child {
+    white-space: nowrap;
+  }
+
+  .mini-tableau td:last-child {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .constat {
+    font-size: 0.9375rem;
+    line-height: 1.55;
+  }
+
+  .constat strong {
+    font-weight: 600;
+  }
+
+  /* La pastille de citation : un span, pas un lien ; elle s'allume au défilement. */
+  /*
+   * La source qu'on retrouve sur la carte suivante : seule citation en bleu,
+   * soulignée comme les liens de la réponse entière, pour qu'on fasse le lien.
+   */
+  .cible {
+    position: relative;
+    padding: 0.05em 0.15em;
+    margin: 0 -0.15em;
+    border-radius: 0.3rem;
+    color: var(--color-textes);
+    text-decoration-line: underline;
+    text-decoration-color: color-mix(in srgb, var(--color-textes) 40%, transparent);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 0.25em;
+    white-space: nowrap;
+  }
+
+  .curseur {
+    position: absolute;
+    top: 0.35rem;
+    left: 0.5rem;
+    width: 1.75rem;
+    height: 1.75rem;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .citation {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .reference {
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /*
+   * Le bouton couvre toute sa carte : le ::after, absolu, prend pour référence
+   * la carte positionnée. Le texte reste un vrai bouton, donc le focus visible
+   * du site s'applique.
+   */
+  .carte-bouton {
+    justify-self: start;
+    padding: 0 0 2px;
+    border: 0;
+    border-bottom: 1px solid currentColor;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    line-height: 1.4;
+    cursor: pointer;
+  }
+
+  .carte-bouton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-carte);
+  }
+
+  .carte-bouton:focus-visible {
+    outline-offset: 5px;
+  }
+
+  .carte-source .carte-bouton:focus-visible {
+    outline-color: var(--color-sur-accent);
+  }
+
+  /* Lien de section : un filet fin, pas de soulignement. */
+  .lien {
+    border-bottom: 1px solid var(--color-filet);
+    padding-bottom: 2px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .lien:hover {
+    border-color: var(--color-encre);
+    text-decoration: none;
+  }
+
+  @media (min-width: 900px) {
+    .verification-interieur {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: center;
+    }
+
+    /* La pile : trois cartes inclinées qui se recouvrent, la source au-dessus. */
+    .pile {
+      position: relative;
+      display: block;
+      height: 38rem;
+    }
+
+    .carte {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      max-width: 30rem;
+      transition:
+        rotate 0.3s ease,
+        scale 0.3s ease,
+        box-shadow 0.3s ease;
+    }
+
+    .carte-question {
+      top: 0;
+      rotate: -3deg;
+    }
+
+    .carte-reponse {
+      top: 9.5rem;
+      rotate: 2deg;
+    }
+
+    .carte-source {
+      top: 19.5rem;
+      rotate: -1.5deg;
+    }
+
+    /* On voit nettement la carte survolée : elle se redresse, grossit et se détache. */
+    .carte:hover,
+    .carte:focus-within {
+      z-index: 10;
+      rotate: 0deg;
+      scale: 1.03;
+      box-shadow: 0 2px 4px rgb(15 22 35 / 0.08), 0 18px 40px rgb(15 22 35 / 0.16);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .carte:hover,
+      .carte:focus-within {
+        box-shadow: 0 2px 4px rgb(0 0 0 / 0.4), 0 18px 40px rgb(0 0 0 / 0.5);
+      }
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .carte {
+      transition: none;
+    }
+
+    .curseur {
+      display: none;
+    }
+  }
+
+  /* --- Défilement CSS : la section tient l'écran le temps que les cartes entrent. --- */
+
+  @keyframes entre {
+    from {
+      opacity: 0;
+      translate: 0 45vh;
+    }
+
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+
+  /* Bascule franche à mi-course : un fondu croisé rendrait le texte gris sur gris. */
+  @keyframes appuie {
+    0%,
+    49% {
+      background-color: transparent;
+      text-decoration-color: color-mix(in srgb, var(--color-textes) 40%, transparent);
+    }
+
+    50%,
+    100% {
+      background-color: color-mix(in srgb, var(--color-textes) 14%, transparent);
+      text-decoration-color: var(--color-textes);
+    }
+  }
+
+  @keyframes curseur-glisse {
+    from {
+      opacity: 0;
+      translate: -2.5rem -6rem;
+    }
+
+    20% {
+      opacity: 1;
+    }
+
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+
+  @keyframes curseur-appuie {
+    0% {
+      scale: 1;
+      opacity: 1;
+    }
+
+    40% {
+      scale: 0.85;
+      opacity: 1;
+    }
+
+    100% {
+      scale: 1;
+      opacity: 0;
+    }
+  }
+
+  @supports (animation-timeline: view()) {
+    @media (min-width: 900px) and (prefers-reduced-motion: no-preference) {
+      .verification {
+        height: 300vh;
+        view-timeline: --verif block;
+      }
+
+      .verification-interieur {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        height: 100svh;
+        align-items: center;
+      }
+
+      .carte {
+        animation: entre linear both;
+      }
+
+      /*
+       * Déclaré à part : le minificateur replierait `animation-timeline` dans le
+       * raccourci `animation`, où il est invalide, et perdrait l'animation.
+       */
+      .verification .carte {
+        animation-timeline: --verif;
+      }
+
+      .carte-question {
+        animation-range: contain 0% contain 14%;
+      }
+
+      .carte-reponse {
+        animation-range: contain 20% contain 40%;
+      }
+
+      .carte-source {
+        animation-range: contain 66% contain 86%;
+      }
+
+      .cible {
+        animation: appuie linear both;
+      }
+
+      .verification .cible {
+        animation-timeline: --verif;
+        animation-range: contain 57% contain 63%;
+      }
+
+      .curseur {
+        animation:
+          curseur-glisse linear both,
+          curseur-appuie linear forwards;
+        animation-range:
+          contain 44% contain 56%,
+          contain 56% contain 62%;
+      }
+
+      .verification .cible .curseur {
+        animation-timeline: --verif, --verif;
+      }
+    }
+  }
+
+  /* --- Fenêtres popover : réponse entière et source, sans JavaScript. --- */
+
+  .fenetre {
+    inset: 0;
+    width: calc(100% - 2rem);
+    max-width: 46rem;
+    max-height: 85vh;
+    overflow: auto;
+    margin: auto;
+    padding: clamp(1.5rem, 4vw, 3rem);
+    border: 0;
+    border-radius: var(--radius-carte);
+    background: var(--color-fond);
+    color: var(--color-encre);
+  }
+
+  .fenetre::backdrop {
+    background: rgb(15 22 35 / 0.45);
+  }
+
+  .fermer {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    margin-left: auto;
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--color-filet);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-encre);
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .feuille-texte {
+    display: block;
+  }
+
+  /* Au-delà du mobile, la croix vit dans une marge à droite : elle ne recouvre plus le texte. */
+  @media (min-width: 640px) {
+    .fenetre {
+      padding-right: calc(clamp(1.5rem, 4vw, 3rem) + 3rem);
+    }
+
+    .fermer {
+      margin-right: -3.25rem;
+      margin-bottom: -2.5rem;
+    }
+  }
+
+  .feuille-texte .bulle {
+    margin-top: 0.5rem;
+    background-color: var(--color-surface);
+  }
+
+  .mention {
+    font-size: 0.8125rem;
+    color: var(--color-encre-douce);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .lien-source {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-filet);
+    font-size: 0.9375rem;
+    font-weight: 500;
+  }
+
+  /* Le Markdown rendu n'est pas porté par le scope du composant : styles globaux. */
+  .feuille-texte :global(h2) {
+    margin-top: 1.5rem;
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  .feuille-texte :global(h3) {
+    margin-top: 2rem;
+    font-family: var(--font-texte);
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+
+  .feuille-texte :global(p) {
+    margin-top: 0.75rem;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .feuille-texte :global(ul) {
+    margin-top: 0.75rem;
+    padding-left: 1.25rem;
+    list-style: disc;
+  }
+
+  .feuille-texte :global(li) {
+    margin-top: 0.4rem;
+    line-height: 1.6;
+  }
+
+  .feuille-texte :global(strong) {
+    font-weight: 600;
+  }
+
+  .feuille-texte :global(table) {
+    display: block;
+    width: 100%;
+    margin-top: 1rem;
+    overflow-x: auto;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .feuille-texte :global(th),
+  .feuille-texte :global(td) {
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--color-filet);
+    text-align: left;
+    font-size: 0.9375rem;
+    line-height: 1.4;
+  }
+
+  .feuille-texte :global(th) {
+    font-weight: 600;
+  }
+
+  .feuille-texte :global(a) {
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+
+  /*
+   * La réponse entière reprend l'allure de l'interface d'origine plutôt que celle
+   * du site : titres en Inter gras, liens bleus au soulignement clair. Moins
+   * soigné, mais fidèle à ce que l'IA a rendu.
+   */
+  .reponse-reelle :global(h1) {
+    margin-top: 1.5rem;
+    font-family: var(--font-texte);
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+
+  .reponse-reelle :global(h2) {
+    margin-top: 1.75rem;
+    font-family: var(--font-texte);
+    font-size: 1.1875rem;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: 0;
+  }
+
+  .reponse-reelle :global(p),
+  .reponse-reelle :global(li) {
+    font-size: 1.0625rem;
+    line-height: 1.65;
+  }
+
+  .reponse-reelle :global(a) {
+    color: var(--color-textes);
+    text-decoration-line: underline;
+    text-decoration-color: color-mix(in srgb, var(--color-textes) 40%, transparent);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 0.25em;
+  }
+
+  .reponse-reelle :global(a:hover) {
+    text-decoration-color: var(--color-textes);
+  }
+</style>
