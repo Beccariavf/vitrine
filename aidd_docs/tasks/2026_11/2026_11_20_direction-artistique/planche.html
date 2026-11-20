@@ -1,0 +1,435 @@
+<title>Planche de style Vitrine</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Mise en page : une colonne éditoriale centrée (72rem), sections très espacées, rangées alternées visuel / texte. */
+:root {
+  --fond: #FFFFFF;
+  --surface: #F5F5F2;
+  --encre: #0F1623;
+  --encre-douce: rgb(15 22 35 / 0.64);
+  --filet: rgb(15 22 35 / 0.10);
+  --accent: #1D3557;
+  --accent-voile: rgb(29 53 87 / 0.07);
+  --sur-accent: #FFFFFF;
+  /* familles de sources, adoucies, en pastilles seulement */
+  --f-textes: #3B6593;
+  --f-autorites: #B4473C;
+  --f-ue: #3E7458;
+  --f-juridictions: #C2922B;
+
+  --serif: "Instrument Serif", "Times New Roman", serif;
+  --sans: "Inter", "Helvetica Neue", Arial, sans-serif;
+  --serif-ls: -0.02em;
+
+  --r-carte: 32px;
+  --r-petit: 10px;
+  --ombre: 0 1px 2px rgb(15 22 35 / 0.04), 0 8px 24px rgb(15 22 35 / 0.06);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fond: #0C111A; --surface: #151B26; --encre: #ECEEF2;
+    --encre-douce: rgb(236 238 242 / 0.66); --filet: rgb(236 238 242 / 0.12);
+    --accent: #9DB8DC; --accent-voile: rgb(157 184 220 / 0.12); --sur-accent: #0C111A;
+    --f-textes: #7FA6D3; --f-autorites: #E08174; --f-ue: #7DB898; --f-juridictions: #E2B95B;
+    --ombre: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.3);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --fond: #0C111A; --surface: #151B26; --encre: #ECEEF2;
+  --encre-douce: rgb(236 238 242 / 0.66); --filet: rgb(236 238 242 / 0.12);
+  --accent: #9DB8DC; --accent-voile: rgb(157 184 220 / 0.12); --sur-accent: #0C111A;
+  --f-textes: #7FA6D3; --f-autorites: #E08174; --f-ue: #7DB898; --f-juridictions: #E2B95B;
+  --ombre: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.3);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--fond); color: var(--encre);
+  font-family: var(--sans); font-size: 16px; line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+.page {
+  max-width: 72rem; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 4rem;
+}
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+h1, h2, h3, p { margin: 0; }
+.serif { font-family: var(--serif); font-weight: 400; letter-spacing: var(--serif-ls); }
+.doux { color: var(--encre-douce); }
+.nums { font-variant-numeric: tabular-nums; }
+
+/* Barre d'outils de la planche */
+.outils {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  display: flex; flex-wrap: wrap; gap: .75rem 1.25rem; align-items: center; justify-content: space-between;
+  padding: .75rem 0; background: var(--fond); border-bottom: 1px solid var(--filet);
+  font-size: .8125rem;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--fond); }
+.bascule { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--surface); gap: 2px; }
+.bascule button {
+  font: inherit; font-weight: 500; border: 0; cursor: pointer; color: var(--encre-douce);
+  background: transparent; padding: .4rem .9rem; border-radius: 999px;
+}
+.bascule button[aria-pressed="true"] { background: var(--fond); color: var(--encre); box-shadow: var(--ombre); }
+
+/* Repères de la planche */
+.repere {
+  display: flex; gap: 1rem; align-items: baseline; margin: 6rem 0 2rem;
+  padding-top: 1rem; border-top: 1px solid var(--filet);
+  font-size: .8125rem; color: var(--encre-douce);
+}
+.repere b { color: var(--encre); font-weight: 500; }
+
+/* En-tête du site */
+.entete { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.5rem 0; }
+.marque { display: flex; align-items: baseline; gap: .6rem; text-decoration: none; }
+.marque .serif { font-size: 1.6rem; line-height: 1; }
+.marque small { font-size: .8125rem; color: var(--encre-douce); }
+.nav { display: flex; gap: .25rem; align-items: center; }
+.nav a { text-decoration: none; font-size: .9375rem; font-weight: 500; padding: .5rem .9rem; border-radius: 999px; }
+.nav a[aria-current] { background: var(--accent-voile); }
+@media (max-width: 560px) { .marque small { display: none; } .nav a { padding: .5rem .6rem; } }
+
+/* Boutons */
+.btn {
+  display: inline-flex; align-items: center; gap: .5rem; justify-content: center;
+  font: 500 .9375rem/1 var(--sans); text-decoration: none; letter-spacing: -0.01em;
+  padding: 1rem 1.5rem; border-radius: 999px; border: 0; cursor: pointer;
+  transition: transform .2s ease, background-color .2s ease;
+}
+.btn-plein { background: var(--accent); color: var(--sur-accent); }
+.btn-plein:hover { transform: translateY(-1px); }
+.btn-voile { background: var(--accent-voile); color: var(--encre); }
+.btn-voile:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.lien { font-weight: 500; font-size: .9375rem; text-decoration: none; border-bottom: 1px solid var(--filet); padding-bottom: 2px; }
+.lien:hover { border-color: var(--encre); }
+
+/* Hero */
+.hero { text-align: center; padding: 5rem 0 2rem; display: grid; justify-items: center; gap: 1.75rem; }
+.hero h1 { font-size: clamp(3rem, 8.5vw, 6.5rem); line-height: .98; text-wrap: balance; max-width: 14ch; }
+.hero p { font-size: clamp(1.125rem, 2vw, 1.375rem); line-height: 1.5; max-width: 38rem; text-wrap: pretty; }
+.hero .actions { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; margin-top: .5rem; }
+.surtitre { font-size: .8125rem; font-weight: 500; color: var(--encre-douce); display: inline-flex; gap: .5rem; align-items: center; }
+.surtitre::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--f-juridictions); }
+@media (prefers-reduced-motion: no-preference) {
+  .hero > * { animation: monte .8s cubic-bezier(.2,.7,.2,1) both; }
+  .hero > *:nth-child(2) { animation-delay: .06s; }
+  .hero > *:nth-child(3) { animation-delay: .14s; }
+  .hero > *:nth-child(4) { animation-delay: .22s; }
+  @keyframes monte { from { opacity: .35; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+}
+
+/* Démo dans le hero */
+.demo {
+  margin: 3.5rem auto 0; max-width: 46rem; text-align: left;
+  background: var(--surface); border-radius: var(--r-carte); padding: clamp(1rem, 3vw, 1.75rem);
+}
+.demo-q {
+  display: flex; align-items: center; gap: .75rem; background: var(--fond); border-radius: 999px;
+  padding: .85rem .85rem .85rem 1.25rem; box-shadow: var(--ombre); font-size: .9375rem;
+}
+.demo-q span { flex: 1; min-width: 0; }
+.demo-q i { width: 2rem; height: 2rem; border-radius: 50%; background: var(--accent); flex: none; display: grid; place-items: center; color: var(--sur-accent); font-style: normal; }
+.demo-r { padding: 1.5rem .5rem .25rem; display: grid; gap: 1rem; }
+.demo-r p { font-size: 1rem; max-width: 62ch; }
+.demo-meta { font-size: .8125rem; }
+
+/* Manifeste */
+.manifeste {
+  font-family: var(--serif); letter-spacing: var(--serif-ls);
+  font-size: clamp(2rem, 5.2vw, 4rem); line-height: 1.08; text-align: center; text-wrap: balance;
+  max-width: 18em; margin: 0 auto;
+}
+.manifeste .puce {
+  display: inline-flex; align-items: center; gap: .3em; vertical-align: .12em;
+  font: 500 .3em/1 var(--sans); letter-spacing: 0; padding: .55em .9em; border-radius: 999px;
+  background: var(--surface); white-space: nowrap;
+}
+
+/* Pastilles, étiquettes */
+.pt { width: .55rem; height: .55rem; border-radius: 50%; flex: none; display: inline-block; }
+.pt.textes { background: var(--f-textes); } .pt.autorites { background: var(--f-autorites); }
+.pt.ue { background: var(--f-ue); } .pt.juridictions { background: var(--f-juridictions); }
+.ref {
+  display: inline-flex; font-size: .8125rem; font-weight: 500; padding: .3rem .65rem; border-radius: 8px;
+  border: 1px solid var(--filet); text-decoration: none; white-space: nowrap;
+}
+.ref:hover { border-color: var(--encre-douce); }
+.matiere { font-size: .75rem; font-weight: 500; padding: .25rem .6rem; border-radius: 999px; background: var(--accent-voile); }
+.legende { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; font-size: .8125rem; color: var(--encre-douce); }
+.legende span { display: inline-flex; gap: .45rem; align-items: center; }
+
+/* Palette */
+.palette { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; }
+.nuance { display: grid; gap: .6rem; font-size: .8125rem; }
+.nuance div { aspect-ratio: 4 / 3; border-radius: 16px; border: 1px solid var(--filet); }
+.nuance b { font-weight: 500; font-size: .875rem; }
+
+/* Échelle typo */
+.echelle { display: grid; gap: 1.75rem; }
+.echelle > div { display: grid; grid-template-columns: 9rem 1fr; gap: 1rem; align-items: baseline; }
+.echelle small { font-size: .75rem; color: var(--encre-douce); }
+.echelle > div > *:last-child { min-width: 0; }
+@media (max-width: 640px) { .echelle > div { grid-template-columns: 1fr; gap: .25rem; } }
+
+/* Composants */
+.composants { display: grid; gap: 2rem; }
+.ligne { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
+
+/* Rangées alternées */
+.rangees { display: grid; gap: clamp(3rem, 8vw, 6rem); }
+.rangee { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1.5rem, 5vw, 5rem); align-items: center; }
+.rangee:nth-child(even) .visuel { order: 2; }
+.rangee h2 { font-size: clamp(1.75rem, 3.2vw, 2.5rem); line-height: 1.08; font-weight: 500; letter-spacing: -0.025em; text-wrap: balance; }
+.rangee .texte { display: grid; gap: 1rem; justify-items: start; max-width: 26rem; }
+.rangee .texte p { font-size: 1.0625rem; }
+@media (max-width: 760px) { .rangee { grid-template-columns: 1fr; } .rangee:nth-child(even) .visuel { order: 0; } }
+.visuel { aspect-ratio: 1 / 1; max-width: 100%; border-radius: var(--r-carte); background: var(--surface); overflow: hidden; position: relative; }
+.facade { position: absolute; inset: 14% 10% 16%; display: flex; align-items: flex-end; gap: 4%; }
+.facade div { flex: 1; border-radius: 10px 10px 4px 4px; }
+.facade-libs { position: absolute; left: 10%; right: 10%; bottom: 7%; display: flex; gap: 4%; font-size: .6875rem; color: var(--encre-douce); }
+.facade-libs span { flex: 1; text-align: center; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.visuel.sombre { background: var(--accent); }
+.verif { position: absolute; inset: 18%; display: grid; place-content: center; gap: .75rem; }
+.verif .ref { background: var(--fond); color: var(--encre); border: 0; box-shadow: var(--ombre); font-size: .9375rem; padding: .7rem 1rem; justify-content: center; }
+.verif .ref:nth-child(2) { transform: translateX(14%); }
+.verif .ref:nth-child(3) { transform: translateX(-10%); }
+
+/* Cartes de veille */
+.cartes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+@media (max-width: 900px) { .cartes { grid-template-columns: 1fr; } }
+.carte {
+  background: var(--surface); border-radius: 24px; padding: 1.5rem; display: grid; gap: 1rem;
+  align-content: start; transition: transform .2s ease, box-shadow .2s ease;
+}
+.carte:hover { transform: translateY(-2px); box-shadow: var(--ombre); background: var(--fond); }
+.carte-tete { display: flex; justify-content: space-between; align-items: center; font-size: .8125rem; gap: .75rem; }
+.carte-tete .source { display: inline-flex; align-items: center; gap: .45rem; font-weight: 500; }
+.carte h3 { font-family: var(--serif); letter-spacing: var(--serif-ls); font-weight: 400; font-size: 1.6rem; line-height: 1.12; text-wrap: balance; }
+.carte h3 a { text-decoration: none; }
+.carte h3 a:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.carte p { font-size: .9375rem; }
+.carte .ligne { gap: .4rem; }
+
+/* Liste de lecture */
+.liste { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--filet); }
+.liste li { display: grid; grid-template-columns: 7rem 1fr auto; gap: 1.5rem; padding: 1.5rem 0; border-bottom: 1px solid var(--filet); align-items: baseline; }
+.liste time { font-size: .875rem; color: var(--encre-douce); }
+.liste .source { display: inline-flex; align-items: center; gap: .45rem; font-size: .8125rem; color: var(--encre-douce); margin-bottom: .35rem; }
+.liste h3 { font-size: 1.125rem; font-weight: 500; line-height: 1.35; letter-spacing: -0.01em; }
+.liste h3 a { text-decoration: none; }
+.liste h3 a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.liste li > div { min-width: 0; }
+@media (max-width: 640px) { .liste li { grid-template-columns: 1fr; gap: .25rem; } .liste li > .lien { justify-self: start; } }
+
+/* Pied de page */
+.pied { margin-top: 7rem; background: var(--surface); border-radius: var(--r-carte); padding: clamp(2rem, 6vw, 4rem) clamp(1.25rem, 5vw, 4rem); display: grid; gap: 3rem; }
+.pied nav { display: grid; gap: .1rem; }
+.pied nav a { font-family: var(--serif); letter-spacing: var(--serif-ls); font-size: clamp(2rem, 5vw, 3.25rem); line-height: 1.12; text-decoration: none; width: fit-content; }
+.pied nav a:hover { color: var(--encre-douce); }
+.pied-bas { display: flex; flex-wrap: wrap; gap: 1rem 2rem; justify-content: space-between; font-size: .8125rem; color: var(--encre-douce); }
+
+.note { font-size: .875rem; color: var(--encre-douce); max-width: 62ch; margin-top: 1.25rem; }
+</style>
+
+<div class="page">
+  <div class="outils" role="toolbar" aria-label="Choix des polices">
+    <span><b>Planche de style</b> <span class="doux">· proposition, rien n'est appliqué au site</span></span>
+    <span class="doux">Polices retenues : Instrument Serif + Inter</span>
+  </div>
+
+  <!-- 1. En-tête -->
+  <header class="entete">
+    <a class="marque" href="#">
+      <span class="serif">Vitrine</span>
+      <small>Droit du numérique</small>
+    </a>
+    <nav class="nav" aria-label="Navigation principale">
+      <a href="#" aria-current="page">Connecteur</a>
+      <a href="#">Veille</a>
+    </nav>
+  </header>
+
+  <!-- 2. Hero -->
+  <section class="hero">
+    <span class="surtitre">Connecteur en préparation</span>
+    <h1 class="serif">Une IA juridique qui cite ses sources.</h1>
+    <p class="doux">Vitrine prépare un connecteur entre votre IA et les sources officielles du droit des données personnelles : textes, autorités et juridictions.</p>
+    <div class="actions">
+      <a class="btn btn-plein" href="#">Découvrir le connecteur <span aria-hidden="true">→</span></a>
+      <a class="btn btn-voile" href="#">Consulter la veille</a>
+    </div>
+  </section>
+  <div class="demo" aria-label="Exemple de démonstration (mise en forme seulement)">
+    <div class="demo-q"><span>Une collectivité doit-elle chiffrer les données de ses administrés ?</span><i aria-hidden="true">↑</i></div>
+    <div class="demo-r">
+      <p>Le RGPD impose des mesures de sécurité adaptées au risque, dont le chiffrement lorsqu'il est approprié. En novembre 2026, la CNIL a sanctionné dix collectivités pour des manquements à cette obligation.</p>
+      <div class="ligne" style="gap:.4rem">
+        <a class="ref" href="#">RGPD · art. 32</a>
+        <a class="ref" href="#">LIL · art. 90</a>
+        <a class="ref" href="#">CNIL · sanctions simplifiées</a>
+      </div>
+      <span class="demo-meta doux">Exemple de mise en forme, pas une capture réelle.</span>
+    </div>
+  </div>
+
+  <!-- 3. Manifeste -->
+  <div class="repere"><b>Manifeste</b> Le grand serif porte l'idée forte de la page, une fois.</div>
+  <p class="manifeste">
+    Chaque réponse renvoie au texte officiel
+    <span class="puce"><span class="pt textes"></span>RGPD</span>
+    publié par l'autorité
+    <span class="puce"><span class="pt autorites"></span>CNIL</span>
+    ou la juridiction
+    <span class="puce"><span class="pt ue"></span>CJUE</span>
+    qui l'a rendu. Vous vérifiez en un clic.
+  </p>
+
+  <!-- 4. Palette -->
+  <div class="repere"><b>Palette</b> Un fond, une encre, un accent. Les nuances viennent de l'opacité.</div>
+  <div class="palette">
+    <div class="nuance"><div style="background:var(--fond)"></div><b>Fond</b><span class="doux">Blanc · page</span></div>
+    <div class="nuance"><div style="background:var(--surface)"></div><b>Surface</b><span class="doux">Cartes, démo, pied</span></div>
+    <div class="nuance"><div style="background:var(--encre)"></div><b>Encre</b><span class="doux">Texte, titres</span></div>
+    <div class="nuance"><div style="background:var(--encre-douce)"></div><b>Encre douce</b><span class="doux">Encre à 64 %</span></div>
+    <div class="nuance"><div style="background:var(--accent)"></div><b>Accent</b><span class="doux">Bleu juridique · action</span></div>
+  </div>
+  <p class="note">Familles de sources, réduites à des pastilles :</p>
+  <div class="legende" style="margin-top:.75rem">
+    <span><i class="pt textes"></i>Textes</span>
+    <span><i class="pt autorites"></i>Autorités françaises</span>
+    <span><i class="pt ue"></i>Union européenne</span>
+    <span><i class="pt juridictions"></i>Juridictions françaises</span>
+  </div>
+
+  <!-- 5. Typographie -->
+  <div class="repere"><b>Typographie</b> Serif pour les moments forts, sans-serif pour tout le reste.</div>
+  <div class="echelle">
+    <div><small>Titre · serif 96</small><span class="serif" style="font-size:clamp(2.75rem,7vw,6rem);line-height:1">Droit du numérique</span></div>
+    <div><small>Section · sans 40 / 500</small><span style="font-size:clamp(1.75rem,3.2vw,2.5rem);font-weight:500;letter-spacing:-.025em;line-height:1.1">Dernières publications</span></div>
+    <div><small>Carte · serif 26</small><span class="serif" style="font-size:1.6rem;line-height:1.15">La CNIL prononce dix sanctions</span></div>
+    <div><small>Chapeau · sans 22</small><span class="doux" style="font-size:1.375rem;line-height:1.45">Chaque publication renvoie à son texte officiel.</span></div>
+    <div><small>Texte · sans 16</small><span style="max-width:62ch">Entre juin et octobre 2026, la CNIL a prononcé 38 nouvelles sanctions dans le cadre de la procédure simplifiée : cookies, sécurité des données, prospection commerciale, non-coopération.</span></div>
+    <div><small>Légende · sans 13</small><span class="doux nums" style="font-size:.8125rem">17 nov. 2026 · CNIL · 2 références</span></div>
+  </div>
+
+  <!-- 6. Composants -->
+  <div class="repere"><b>Composants</b> Pilules pour agir, filets fins pour référencer.</div>
+  <div class="composants">
+    <div class="ligne">
+      <a class="btn btn-plein" href="#">Action principale <span aria-hidden="true">→</span></a>
+      <a class="btn btn-voile" href="#">Action secondaire</a>
+      <a class="lien" href="#">Lien de section →</a>
+    </div>
+    <div class="ligne" style="gap:.4rem">
+      <a class="ref" href="#" title="Règlement (UE) 2016/679">RGPD · art. 32</a>
+      <a class="ref" href="#" title="Loi Informatique et Libertés">LIL · art. 82</a>
+      <a class="ref" href="#" title="Code des postes et des communications électroniques">CPCE · art. L. 34-5</a>
+      <span class="matiere">Données personnelles</span>
+      <span class="matiere">Cybersécurité</span>
+    </div>
+  </div>
+
+  <!-- 7. Rangées alternées -->
+  <div class="repere"><b>Rangées alternées</b> Un visuel arrondi, un titre court, deux lignes, un lien.</div>
+  <div class="rangees">
+    <div class="rangee">
+      <div class="visuel" role="img" aria-label="Façade du corpus, illustration : une colonne par collection">
+        <div class="facade">
+          <div style="height:62%;background:var(--f-textes)"></div>
+          <div style="height:48%;background:var(--f-textes);opacity:.7"></div>
+          <div style="height:100%;background:var(--f-autorites)"></div>
+          <div style="height:70%;background:var(--f-ue)"></div>
+          <div style="height:80%;background:var(--f-juridictions)"></div>
+          <div style="height:58%;background:var(--f-juridictions);opacity:.7"></div>
+        </div>
+        <div class="facade-libs" aria-hidden="true"><span>RGPD</span><span>LIL</span><span>CNIL</span><span>CJUE</span><span>CE</span><span>Cass.</span></div>
+      </div>
+      <div class="texte">
+        <h2>Les sources officielles, en un seul endroit.</h2>
+        <p class="doux">Textes, autorités et juridictions : le connecteur interroge les publications officielles, pas le web.</p>
+        <a class="lien" href="#">Voir les collections →</a>
+      </div>
+    </div>
+    <div class="rangee">
+      <div class="visuel sombre" role="img" aria-label="Illustration : références juridiques cliquables">
+        <div class="verif">
+          <span class="ref">RGPD · art. 32</span>
+          <span class="ref">LIL · art. 90</span>
+          <span class="ref">CJUE · C-300/21</span>
+        </div>
+      </div>
+      <div class="texte">
+        <h2>Chaque affirmation se vérifie.</h2>
+        <p class="doux">La réponse cite l'article ou la décision, avec un lien vers le texte publié.</p>
+        <a class="lien" href="#">Comment ça marche →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. Cartes de veille -->
+  <div class="repere"><b>Veille · grille</b> La couleur de famille devient une pastille. Le titre passe en serif.</div>
+  <div class="cartes">
+    <article class="carte">
+      <div class="carte-tete"><span class="source"><i class="pt autorites"></i>CNIL</span><time class="doux nums" datetime="2026-11-17">17 nov. 2026</time></div>
+      <h3><a href="https://www.cnil.fr/fr/38-sanctions-simplifiees">38 nouvelles sanctions en procédure simplifiée depuis juin</a></h3>
+      <p class="doux">Cookies, sécurité des données, prospection commerciale, non-coopération : entre juin et octobre 2026…</p>
+      <div class="ligne"><a class="ref" href="#">LIL · art. 18, 82</a><a class="ref" href="#">RGPD · art. 6, 32</a></div>
+    </article>
+    <article class="carte">
+      <div class="carte-tete"><span class="source"><i class="pt ue"></i>Commission</span><time class="doux nums" datetime="2026-11-17">17 nov. 2026</time></div>
+      <h3><a href="https://digital-strategy.ec.europa.eu/fr/news/commission-preliminarily-finds-temu-breach-digital-services-act-failure-tackle-sale-illegal">Temu aurait enfreint le règlement sur les services numériques</a></h3>
+      <p class="doux">La Commission conclut à titre préliminaire à l'absence de mesures raisonnables contre la vente de produits illégaux…</p>
+      <div class="ligne"><span class="matiere">Plateformes</span></div>
+    </article>
+    <article class="carte">
+      <div class="carte-tete"><span class="source"><i class="pt autorites"></i>CNIL</span><time class="doux nums" datetime="2026-11-09">9 nov. 2026</time></div>
+      <h3><a href="https://www.cnil.fr/fr/sanctions-cybersecurite-collectivites-territoriales">Cybersécurité des collectivités : dix sanctions</a></h3>
+      <p class="doux">Dix sanctions simplifiées à l'encontre de collectivités territoriales et d'un établissement public…</p>
+      <div class="ligne"><a class="ref" href="#">RGPD · art. 32</a><a class="ref" href="#">LIL · art. 90</a></div>
+    </article>
+  </div>
+
+  <!-- 9. Liste -->
+  <div class="repere"><b>Veille · liste</b> Pour lire vite : filets fins, aucune carte.</div>
+  <ol class="liste">
+    <li>
+      <time class="nums" datetime="2026-11-18">18 nov. 2026</time>
+      <div><span class="source"><i class="pt ue"></i>CEPD</span><h3><a href="https://www.edpb.europa.eu/news/italian-dpa-fines-meta-eur-805-million-for-unlawful-access-to-facebook-users-photo-galleries_en">L'autorité italienne inflige 805 millions d'euros d'amende à Meta</a></h3></div>
+      <a class="lien" href="#">Lire →</a>
+    </li>
+    <li>
+      <time class="nums" datetime="2026-11-17">17 nov. 2026</time>
+      <div><span class="source"><i class="pt autorites"></i>CNIL</span><h3><a href="https://www.cnil.fr/fr/38-sanctions-simplifiees">La CNIL a prononcé 38 nouvelles sanctions en procédure simplifiée depuis juin 2026</a></h3></div>
+      <a class="lien" href="#">Lire →</a>
+    </li>
+    <li>
+      <time class="nums" datetime="2026-11-09">9 nov. 2026</time>
+      <div><span class="source"><i class="pt autorites"></i>CNIL</span><h3><a href="https://www.cnil.fr/fr/sanctions-cybersecurite-collectivites-territoriales">Cybersécurité des collectivités territoriales : la CNIL prononce dix sanctions</a></h3></div>
+      <a class="lien" href="#">Lire →</a>
+    </li>
+  </ol>
+
+  <!-- 10. Pied -->
+  <footer class="pied">
+    <nav aria-label="Pied de page">
+      <a href="#">Connecteur</a>
+      <a href="#">Veille</a>
+      <a href="#">Code source</a>
+    </nav>
+    <div class="pied-bas">
+      <span>Valentin Fouich · Juriste en droit du numérique</span>
+      <span>Outil d'aide à la recherche, ne remplace pas l'analyse d'un professionnel du droit.</span>
+    </div>
+  </footer>
+</div>
+
