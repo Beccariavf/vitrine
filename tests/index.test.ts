@@ -20,6 +20,7 @@ import {
   RRF_K,
   openIndex,
   rechercheHybride,
+  rechercheLexicale,
   requeteLexicale,
   searchIndex,
 } from "../mcp/index/search.ts";
@@ -1281,7 +1282,9 @@ describe("searchIndex", () => {
         assert.equal(resultats[0]?.document, DOCUMENT);
         assert.equal(resultats[0]?.date_acte, "2016-04-27");
         assert.equal(resultats[0]?.url, SIX[2]?.url);
-        const distances = resultats.map((resultat) => resultat.distance);
+        const distances = resultats.map(
+          (resultat) => resultat.distance ?? Number.POSITIVE_INFINITY,
+        );
         assert.deepEqual(distances, [...distances].sort((a, b) => a - b));
       } finally {
         index.db.close();
@@ -1537,6 +1540,112 @@ describe("la fusion hybride", () => {
           hybride.map((resultat) => resultat.ref),
           dense.map((resultat) => resultat.ref),
         );
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("la recherche lexicale seule", () => {
+  it("classe par BM25, rend rang_lexical et n'expose aucune distance", async () => {
+    const root = tempRoot();
+    try {
+      ecrireCorpus(root, "rgpd", [
+        ...SIX,
+        unite(7, "vidéosurveillance conservation des enregistrements"),
+      ]);
+      const { chemin } = await buildIndex(root, embedderFactice());
+      const index = openIndex(chemin);
+      try {
+        const resultats = rechercheLexicale(index, "données", { k: 3 });
+
+        assert.equal(resultats.length, 3);
+        assert.deepEqual(
+          resultats.map((resultat) => resultat.rang_lexical),
+          [1, 2, 3],
+        );
+        const refs = resultats.map((resultat) => resultat.ref);
+        assert.equal(new Set(refs).size, refs.length);
+        for (const resultat of resultats) {
+          assert.equal("distance" in resultat, false, "BM25 n'a pas de distance cosinus");
+        }
+
+        const rare = rechercheLexicale(index, "vidéosurveillance", { k: 5 });
+        assert.deepEqual(
+          rare.map((resultat) => resultat.ref),
+          [`${DOCUMENT}#art_7`],
+        );
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("respecte les filtres de corpus et de nature", async () => {
+    const root = tempRoot();
+    try {
+      ecrireCorpus(root, "rgpd", [
+        ...SIX,
+        unite(7, "vidéosurveillance conservation des enregistrements"),
+      ]);
+      ecrireCorpus(root, "dsa", [
+        unite(1, "vidéosurveillance conservation des enregistrements", AUTRE),
+      ]);
+      ecrireCorpus(root, "cnil", [
+        {
+          ...unite(1, "sanction cookies vidéosurveillance", "CNILTEXT000000000001"),
+          corpus: "cnil",
+          nature: "Sanction",
+        },
+        {
+          ...unite(2, "avis cookies vidéosurveillance", "CNILTEXT000000000002"),
+          corpus: "cnil",
+          nature: "Avis",
+        },
+      ]);
+      const { chemin } = await buildIndex(root, embedderFactice());
+      const index = openIndex(chemin);
+      try {
+        const rgpd = rechercheLexicale(index, "vidéosurveillance conservation", {
+          k: 5,
+          corpus: "rgpd",
+        });
+        assert.deepEqual(
+          rgpd.map((resultat) => resultat.document),
+          [DOCUMENT],
+        );
+
+        const avis = rechercheLexicale(index, "cookies", {
+          k: 5,
+          corpus: "cnil",
+          nature: "avis",
+        });
+        assert.deepEqual(
+          avis.map((resultat) => resultat.nature),
+          ["Avis"],
+        );
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("ne rend rien quand aucun mot utile ne subsiste", async () => {
+    const root = tempRoot();
+    try {
+      ecrireCorpus(root, "rgpd", SIX);
+      const { chemin } = await buildIndex(root, embedderFactice());
+      const index = openIndex(chemin);
+      try {
+        assert.deepEqual(rechercheLexicale(index, "le la les de des", { k: 3 }), []);
+        assert.deepEqual(rechercheLexicale(index, "données", { k: 0 }), []);
       } finally {
         index.db.close();
       }

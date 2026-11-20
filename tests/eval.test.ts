@@ -19,6 +19,7 @@ import {
   lireInstruction,
   lireJeu,
   lireQuestions,
+  lireRecherche,
   lireRegle,
   lireSeuils,
   mrr,
@@ -966,11 +967,56 @@ describe("le verrou du test", () => {
     assert.deepEqual(objet.questions[1]?.attendues, []);
     assert.deepEqual(objet.questions[1]?.rangs, []);
     assert.equal(objet.questions[1]?.piege, true);
-    assert.equal(objet.agregats.semantiques, 1);
-    assert.equal(objet.agregats.pieges_mesures, 1);
+    assert.equal(objet.agregats?.semantiques, 1);
+    assert.equal(objet.agregats?.pieges_mesures, 1);
     assert.deepEqual(objet.index, { chemin: "/tmp/corpus/index/index.db", unites: 12 });
     assert.equal("rerank" in objet, false);
     assert.equal(entreeQuestionJson(mesures[0]!, seuils).rangs[0], 2);
+  });
+
+  it("accepte --recherche lexicale et refuse une voie inconnue", () => {
+    assert.equal(lireRecherche([]), "dense");
+    assert.equal(lireRecherche(["--recherche", "lexicale"]), "lexicale");
+    assert.throws(
+      () => lireRecherche(["--recherche", "bm25"]),
+      /--recherche attendu dense, hybride ou lexicale ; reçu « bm25 »/,
+    );
+  });
+
+  it("ne publie ni seuils, ni niveaux, ni agrégats en mode lexical", () => {
+    const mesures: Mesure[] = [
+      {
+        question: {
+          question: "une question sans modèle",
+          type: "conceptuelle",
+          attendues: ["32016R0679#art_17"],
+          piege: false,
+          split: "dev",
+        },
+        refs: ["32016R0679#art_17"],
+        distances: [],
+      },
+    ];
+    const objet = objetMesureJson({
+      date: "2026-11-20",
+      modele: "sans modèle (recherche lexicale)",
+      dimensions: 0,
+      split: "dev",
+      corpus: "rgpd",
+      recherche: "lexicale",
+      index: { chemin: "/tmp/corpus/index/index.db", unites: 12 },
+      seuils: null,
+      seuilsOrigine: null,
+      mesures,
+    });
+
+    assert.equal(objet.recherche, "lexicale");
+    assert.equal("seuils" in objet, false);
+    assert.equal("seuils_origine" in objet, false);
+    assert.equal("agregats" in objet, false);
+    assert.equal("niveau" in (objet.questions[0] ?? {}), false);
+    assert.deepEqual(objet.questions[0]?.similarites, []);
+    assert.deepEqual(objet.questions[0]?.rangs, [1]);
   });
 
   it("porte le bloc rerank seulement quand l'étage a tourné", () => {
