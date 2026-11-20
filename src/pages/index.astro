@@ -58,20 +58,22 @@ const manifeste = [
     }
   </section>
 
-  <p class="manifeste espace-section">
-    {
-      manifeste.map((segment) => (
-        <>
-          {segment.avant !== "" && <>{segment.avant} </>}
-          <span class="puce">
-            <span aria-hidden="true" class:list={["h-[0.5em] w-[0.5em] shrink-0 rounded-[999px]", segment.famille.classePastille]} />
-            {segment.nom}
-          </span>{" "}
-          {segment.apres}{" "}
-        </>
-      ))
-    }
-  </p>
+  <div class="ecran-seul">
+    <p class="manifeste">
+      {
+        manifeste.map((segment) => (
+          <>
+            {segment.avant !== "" && <>{segment.avant} </>}
+            <span class="puce">
+              <span aria-hidden="true" class:list={["h-[0.5em] w-[0.5em] shrink-0 rounded-[999px]", segment.famille.classePastille]} />
+              {segment.nom}
+            </span>{" "}
+            {segment.apres}{" "}
+          </>
+        ))
+      }
+    </p>
+  </div>
 
   <Collage entrees={visibles} />
 
@@ -132,6 +134,18 @@ const manifeste = [
     .hero > * {
       animation: none;
     }
+  }
+
+  /*
+   * Le manifeste occupe un écran entier, centré : quand il est au milieu de la
+   * fenêtre, ni les boutons du hero ni le collage ne sont visibles.
+   */
+  .ecran-seul {
+    display: grid;
+    place-items: center;
+    /* Un écran, plus une marge de 3rem de chaque côté : les voisins restent hors champ. */
+    min-height: calc(100vh + 6rem);
+    min-height: calc(100svh + 6rem);
   }
 
   /* Manifeste : le grand serif porte l'idée forte, une fois. */
