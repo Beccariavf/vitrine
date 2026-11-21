@@ -260,8 +260,10 @@ export async function syncTextesFr(options: SyncTextesFrOptions = {}): Promise<R
         (element) => element.texte.cle === cle || element.texte.textId === cle,
       );
       if (lecture === undefined) continue;
+      // La carte est relue par la clé du bloc courant, pas par la clé de repli
+      // du manifeste précédent : un ancien manifeste garde ainsi son historique.
       historiques.set(
-        cle,
+        lecture.texte.cle,
         historiqueVersions(texteManifeste, {
           version: lecture.version,
           dateDebutVersion: lecture.dateDebutVersion,

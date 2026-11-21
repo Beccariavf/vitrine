@@ -448,6 +448,69 @@ describe("la synchronisation des textes français d'application", () => {
     }
   });
 
+  it("reprend l'historique d'un manifeste antérieur, sans clé de bloc", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-textes-fr-"));
+    try {
+      // Un manifeste écrit avant #124 : des blocs sans `cle`, datés d'une version
+      // antérieure du décret. Le rejeu doit la ranger dans `versions_remplacees`.
+      const ancien = {
+        corpus: "textes_fr",
+        nom: "Textes français d'application",
+        licence: "Licence Ouverte 2.0 (Etalab)",
+        date_consultation: "2024-01-01",
+        documents: 1,
+        unites: 0,
+        textes: [
+          {
+            text_id: DECRET,
+            nom: "Décret 2019-536",
+            titre: "Décret n° 2019-536",
+            url: "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000038567662",
+            version: "LEGITEXT000038567662_01-01-2024",
+            date_debut_version: "2024-01-01",
+            perimetre: "texte entier",
+            articles_couverts: null,
+            articles_en_vigueur: 166,
+            articles_abroges_ecartes: 0,
+            versions_remplacees: [],
+            snapshot: "2024-01-01/decret-2019-536.json",
+            snapshot_sha256: "",
+          },
+        ],
+        couverture: { source: "", date: "2024-01-01", articles_en_vigueur: 0, articles_abroges_ecartes: 0, perimetre: [] },
+      };
+      mkdirSync(join(root, "data", "corpus", "textes_fr"), { recursive: true });
+      writeFileSync(
+        join(root, "data", "corpus", "textes_fr", "manifest.json"),
+        JSON.stringify(ancien),
+        "utf8",
+      );
+
+      await syncTextesFr({
+        rootDir: root,
+        descripteurPath: descripteurReduit(root),
+        date: "2026-11-14",
+        reponses: REPONSES,
+        config: null,
+      });
+
+      const manifeste = JSON.parse(
+        readFileSync(join(root, "data", "corpus", "textes_fr", "manifest.json"), "utf8"),
+      ) as ManifesteTextesFr;
+      const decret = manifeste.textes.find((texte) => texte.cle === "decret-2019-536");
+      assert.ok(decret !== undefined);
+      assert.deepEqual(decret.versions_remplacees, [
+        {
+          identifiant: "LEGITEXT000038567662_01-01-2024",
+          date_debut: "2024-01-01",
+          date_fin: "2025-09-06",
+        },
+      ]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("relit le cache du jour sans appel réseau", async () => {
     const root = mkdtempSync(join(tmpdir(), "vitrine-textes-fr-"));
     try {
