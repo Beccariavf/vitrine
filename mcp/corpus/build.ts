@@ -162,6 +162,15 @@ function ecrireCorpus(
 export async function buildCorpus(options: BuildOptions = {}): Promise<BuildResult> {
   const descripteurPath = options.descripteurPath ?? join(ICI, "rgpd.json");
   const descripteur = JSON.parse(readFileSync(descripteurPath, "utf8")) as Descripteur;
+  // Un corpus à plusieurs documents ne s'écrit pas document par document : le
+  // manifeste plat du dernier écraserait celui des autres.
+  const memeCorpus = lireDescripteurs().filter((candidat) => candidat.corpus === descripteur.corpus);
+  if (memeCorpus.length > 1) {
+    throw new Error(
+      `Le corpus « ${descripteur.corpus} » porte ${memeCorpus.length} documents : ` +
+        `lancez « npm run corpus:build -- --document ${descripteur.corpus} »`,
+    );
+  }
   const construction = await construire(descripteur, options);
   const ecrit = writeCorpus(
     options.rootDir ?? RACINE,

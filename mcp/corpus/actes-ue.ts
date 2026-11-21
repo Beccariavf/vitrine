@@ -51,6 +51,9 @@ export function cheminDescripteur(corpus: string, dossier: string = ICI, documen
       const descripteur = JSON.parse(readFileSync(chemin, "utf8")) as Descripteur;
       if (descripteur.corpus === corpus && descripteur.document === document) return chemin;
     }
+    throw new Error(
+      `Aucun descripteur ${corpus} pour ${document} : consolidation non appliquée`,
+    );
   }
   return join(dossier, `${corpus}.json`);
 }

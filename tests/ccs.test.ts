@@ -6,10 +6,10 @@ import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
 import { buildCorpusSet, lireDescripteurs } from "../mcp/corpus/build.ts";
 import { parseCcs } from "../mcp/corpus/ccs/parse.ts";
-import { documentsPresents, identifiantsDuManifeste } from "../mcp/corpus/citations.ts";
+import { documentsPresents, extraireCitations, identifiantsDuManifeste, marquerPresence } from "../mcp/corpus/citations.ts";
 import type { Descripteur } from "../mcp/corpus/parse.ts";
 import { statutApplication } from "../mcp/corpus/statut.ts";
-import { documentsNommes, getArticle, referenceExacte } from "../mcp/tools.ts";
+import { corpusNomme, documentsNommes, getArticle, referenceExacte } from "../mcp/tools.ts";
 import { inventaireCorpus } from "../mcp/corpus/sync-rapport.ts";
 import { lireUnites } from "../mcp/index/build.ts";
 
@@ -258,7 +258,32 @@ describe("lecture du corpus ccs réel", () => {
       documentsNommes("les clauses contractuelles types entre responsables du traitement et sous-traitants"),
       ["32021D0915"],
     );
+    // La formule générique ne choisit pas une décision : elle borne au corpus `ccs`.
+    assert.deepEqual(documentsNommes("les clauses contractuelles types"), []);
+    assert.equal(corpusNomme("les clauses contractuelles types"), "ccs");
+    assert.equal(corpusNomme("obligations du sous-traitant"), null);
     assert.equal(referenceExacte("article 1 des clauses contractuelles types"), "1");
+  });
+
+  it("extrait une citation d'article de chaque décision et la marque au corpus", () => {
+    const citations = extraireCitations(
+      "l'article 7.1 de la décision d'exécution (UE) 2021/915 et l'article 8.1 de la " +
+        "décision d'exécution (UE) 2021/914",
+    );
+    assert.deepEqual(
+      citations
+        .map((citation) => [citation.document, citation.articles.join(",")])
+        .sort((gauche, droite) => String(gauche[0]).localeCompare(String(droite[0]))),
+      [
+        ["32021D0914", "8.1"],
+        ["32021D0915", "7.1"],
+      ],
+    );
+    const rendues = marquerPresence(documentsPresents(ROOT), citations);
+    assert.deepEqual(
+      rendues.map((citation) => citation.hors_corpus),
+      [false, false],
+    );
   });
 
   it("rend le statut d'application du corpus", () => {

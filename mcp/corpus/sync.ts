@@ -305,10 +305,13 @@ export function agentsParDefaut(
       // corpus visé reste en attente de la version consolidée, que la veille
       // `eurlex` publiera.
       const version = entree?.source === "preparation" ? undefined : entree?.version;
+      // Une entrée de préparation nomme la proposition, pas l'acte suivi : seul
+      // un CELEX d'acte de la veille `eurlex` désigne le descripteur à mettre à jour.
+      const document = entree?.source === "eurlex" ? entree.document : undefined;
       const resultat = await synchroniserActeUe({
         rootDir,
         corpus,
-        ...(entree?.document === undefined ? {} : { document: entree.document }),
+        ...(document === undefined ? {} : { document }),
         ...(version === undefined ? {} : { version }),
       });
       return { ecrit: resultat.ecrit, message: resultat.message };

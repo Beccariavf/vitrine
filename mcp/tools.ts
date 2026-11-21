@@ -501,6 +501,27 @@ const ALIAS_ACTES_UE: ReadonlyArray<{ document: string; texte: readonly RegExp[]
   },
 ];
 
+/**
+ * Corpus nommé par une formule générique : « les clauses contractuelles types »
+ * désigne la collection `ccs` entière, sans choisir entre 2021/914 (transfert)
+ * et 2021/915 (sous-traitance). Un corpus demandé ou un document nommé prime.
+ */
+const ALIAS_CORPUS: ReadonlyArray<{ corpus: string; texte: readonly RegExp[] }> = [
+  {
+    corpus: "ccs",
+    texte: [/\bclauses contractuelles types\b/, /\bclauses types\b/, /\bccs\b/, /\bcct\b/],
+  },
+];
+
+/** Corpus nommé par la question, quand la formule ne nomme aucun document précis. */
+export function corpusNomme(question: string): string | null {
+  const texte = normaliserTexte(question);
+  for (const alias of ALIAS_CORPUS) {
+    if (alias.texte.some((motif) => motif.test(texte))) return alias.corpus;
+  }
+  return null;
+}
+
 /** « règlement procédural RGPD » et `rgpdproc` nomment le règlement 2025/2518, pas le RGPD. */
 const NOM_PROCEDURAL_RGPD = /\breglement procedural (?:du |de l )?(?:rgpd|r g p d)\b|\brgpdproc\b/g;
 const ALIAS_DECRET_2019_536: readonly RegExp[] = [/\bdecret (?:n )?2019 536\b/];
@@ -1031,11 +1052,22 @@ export async function search(
   // cite « l'article 100 du RGPD » ne doit jamais rendre l'article 100 de l'AI Act.
   // Un corpus demandé prime : il borne la recherche, même si la question nomme
   // un autre corpus. La même borne sert à chercher et à dire le périmètre.
+  // Une formule générique (« les clauses contractuelles types ») borne au corpus
+  // entier quand elle ne nomme aucun document : elle ne choisit pas 2021/914
+  // plutôt que 2021/915.
+  const corpusImplicite =
+    demande.corpus === undefined &&
+    demande.document === undefined &&
+    documentsNommes(demande.question).length === 0
+      ? corpusNomme(demande.question)
+      : null;
+  const effective: SearchDemande =
+    corpusImplicite === null ? demande : { ...demande, corpus: corpusImplicite };
   const document =
-    demande.document ??
-    (demande.corpus === undefined ? documentNomme(demande.question) : null) ??
+    effective.document ??
+    (effective.corpus === undefined ? documentNomme(effective.question) : null) ??
     undefined;
-  const resultat = await chercher(rootDir, demande, document, deps);
+  const resultat = await chercher(rootDir, effective, document, deps);
   const lexical = deps.recherche === "lexicale";
   return {
     ...resultat,
@@ -1051,7 +1083,7 @@ export async function search(
     perimetre: perimetreDe(
       rootDir,
       {
-        ...(demande.corpus === undefined ? {} : { corpus: demande.corpus }),
+        ...(effective.corpus === undefined ? {} : { corpus: effective.corpus }),
         ...(document === undefined ? {} : { document }),
       },
       resultat.niveau_confiance === "aucun_resultat_fiable",

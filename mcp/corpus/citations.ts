@@ -54,7 +54,7 @@ export type Attribution = {
 };
 
 /** Nature d'un instrument : le mot qui porte son type, pour une anaphore. */
-type Nature = "règlement" | "directive" | "loi" | "code";
+type Nature = "règlement" | "directive" | "loi" | "code" | "décision";
 
 type Instrument = {
   /** Libellé court rendu, aussi court que la forme citée. */
@@ -159,6 +159,28 @@ const INSTRUMENTS: readonly Instrument[] = [
     alias: [
       `règlement ${QUALIFICATIF}(?:n[o°] ?)?2025/2518`,
       `Regulation ${QUALIFICATIF}(?:n[o°] ?)?2025/2518`,
+    ],
+  },
+  {
+    libelle: "2021/914",
+    identifiant: "32021D0914",
+    nature: "décision",
+    url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32021D0914",
+    alias: [
+      `décision d'exécution ${PARENTHESE} (?:n[o°] ?)?2021/914`,
+      `décision d'exécution (?:n[o°] ?)?2021/914`,
+      `décision (?:n[o°] ?)?2021/914`,
+    ],
+  },
+  {
+    libelle: "2021/915",
+    identifiant: "32021D0915",
+    nature: "décision",
+    url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32021D0915",
+    alias: [
+      `décision d'exécution ${PARENTHESE} (?:n[o°] ?)?2021/915`,
+      `décision d'exécution (?:n[o°] ?)?2021/915`,
+      `décision (?:n[o°] ?)?2021/915`,
     ],
   },
   {
@@ -459,7 +481,7 @@ const CONNECTEUR = /^(?:du|de la|de l['’]|des|of(?: the)?) /i;
  * est capturé pour être refusé : aucune « loi organique » ni « loi du pays »
  * n'appartient au périmètre.
  */
-const ANAPHORE = /^même (règlement|directive|loi|code)s?(?: (organique|du pays))?/i;
+const ANAPHORE = /^même (règlement|directive|loi|code|décision)s?(?: (organique|du pays))?/i;
 
 /** En-tête : l'instrument précède sa liste. */
 const ENTETE =
@@ -684,6 +706,7 @@ function naturesNommees(texte: string): Map<Nature, Set<string>> {
     ["directive", new Set<string>()],
     ["loi", new Set<string>()],
     ["code", new Set<string>()],
+    ["décision", new Set<string>()],
   ]);
   const ajouter = (nature: Nature, identifiant: string): void => {
     parNature.get(nature)?.add(identifiant);
