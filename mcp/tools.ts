@@ -1102,7 +1102,7 @@ async function chercher(
 ): Promise<RechercheBrute> {
   const corpus = demande.corpus;
   // La confiance ne peut certifier un corpus que la question ou l'appel nomme.
-  const corpusNomme = corpus !== undefined || document !== undefined;
+  const corpusBorne = corpus !== undefined || document !== undefined;
   // Un document connu mais absent du corpus n'a aucun passage à chercher : le
   // refus précède l'embedder et l'index, et garde la phrase des trois outils.
   const absence = document === undefined ? null : absenceDuDocument(rootDir, document);
@@ -1143,7 +1143,7 @@ async function chercher(
       if (article === undefined) {
         return { niveau_confiance: "aucun_resultat_fiable", passages: [] };
       }
-      if (!corpusNomme) {
+      if (!corpusBorne) {
         const nommes = documentsNommes(demande.question);
         const motif =
           nommes.length > 1

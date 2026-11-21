@@ -538,7 +538,9 @@ export function createServer(deps: ServerDeps): McpServer {
               "32002L0058 (ePrivacy), 32016L0680, 32018R1725, 32025R2518, 32021D0914 (clauses " +
               "contractuelles types, transfert), 32021D0915 (clauses contractuelles types, sous-traitance), " +
               "LEGITEXT000006068624 (LIL), LEGITEXT000038567662 (décret 2019-536), LEGITEXT000006070719 (Code pénal), LEGITEXT000006070987 (CPCE), un identifiant CNILTEXT, un identifiant CONSTEXT (constit), un identifiant Judilibre (cc) " +
-              "ou un CELEX de jurisprudence (cjue) ; absent, tous les corpus répondent",
+              "ou un CELEX de jurisprudence (cjue) ; absent, tous les corpus répondent, sauf une " +
+              "formule générique qui nomme une famille sans décision (« les clauses contractuelles " +
+              "types »), bornée au corpus `ccs`",
           ),
         nature: z
           .string()

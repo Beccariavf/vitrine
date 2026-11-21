@@ -481,7 +481,7 @@ const CONNECTEUR = /^(?:du|de la|de l['’]|des|of(?: the)?) /i;
  * est capturé pour être refusé : aucune « loi organique » ni « loi du pays »
  * n'appartient au périmètre.
  */
-const ANAPHORE = /^même (règlement|directive|loi|code|décision)s?(?: (organique|du pays))?/i;
+const ANAPHORE = /^même (règlement|directive|loi|code)s?(?: (organique|du pays))?/i;
 
 /** En-tête : l'instrument précède sa liste. */
 const ENTETE =
@@ -706,7 +706,6 @@ function naturesNommees(texte: string): Map<Nature, Set<string>> {
     ["directive", new Set<string>()],
     ["loi", new Set<string>()],
     ["code", new Set<string>()],
-    ["décision", new Set<string>()],
   ]);
   const ajouter = (nature: Nature, identifiant: string): void => {
     parNature.get(nature)?.add(identifiant);

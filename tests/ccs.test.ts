@@ -4,7 +4,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
-import { buildCorpusSet, lireDescripteurs } from "../mcp/corpus/build.ts";
+import { buildCorpus, buildCorpusSet, lireDescripteurs } from "../mcp/corpus/build.ts";
+import { cheminDescripteur } from "../mcp/corpus/actes-ue.ts";
 import { parseCcs } from "../mcp/corpus/ccs/parse.ts";
 import { documentsPresents, extraireCitations, identifiantsDuManifeste, marquerPresence } from "../mcp/corpus/citations.ts";
 import type { Descripteur } from "../mcp/corpus/parse.ts";
@@ -231,6 +232,36 @@ describe("construction du corpus ccs multi-documents", () => {
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
+  });
+});
+
+describe("garde-fous d'un corpus multi-documents", () => {
+  it("refuse de construire un seul document d'un corpus qui en porte plusieurs", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-ccs-"));
+    try {
+      await assert.rejects(
+        () =>
+          buildCorpus({
+            rootDir: root,
+            descripteurPath: join(ROOT, "mcp", "corpus", "ccs-915.json"),
+            fixturePath: fileURLToPath(new URL("./fixtures/eurlex/ccs-915.xhtml", import.meta.url)),
+          }),
+        /Le corpus « ccs » porte 2 documents/,
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("refuse d'appliquer une consolidation au descripteur d'un autre CELEX", () => {
+    assert.throws(
+      () => cheminDescripteur("ccs", join(ROOT, "mcp", "corpus"), "52021PC0000"),
+      /Aucun descripteur ccs pour 52021PC0000/,
+    );
+    assert.equal(
+      cheminDescripteur("ccs", join(ROOT, "mcp", "corpus"), "32021D0915"),
+      join(ROOT, "mcp", "corpus", "ccs-915.json"),
+    );
   });
 });
 
