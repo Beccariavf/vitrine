@@ -6,9 +6,9 @@
  * La précision prime. Un article n'est retenu que si son instrument suit
  * immédiatement le connecteur français (`du`, `de la`, `de l'`, `des`) — ou,
  * forme anglaise, `of` —, ou si l'instrument précède sa liste dans la même
- * proposition ou le même en-tête. Un instrument hors périmètre, un article de
- * code pénal antérieur à 226-16 ou une anaphore ambiguë ne produisent rien :
- * une liste vide est préférée à une attribution inventée.
+ * proposition ou le même en-tête. Un instrument hors périmètre, un article du
+ * code pénal hors du périmètre du corpus ou une anaphore ambiguë ne produisent
+ * rien : une liste vide est préférée à une attribution inventée.
  *
  * L'extraction se fait à la lecture, sans index ni stockage. Le cache ne garde
  * que les citations par document, jamais le texte.
@@ -639,9 +639,10 @@ function numeroPenalRetenu(article: string): boolean {
   const mineur = Number(trouve[2] ?? 0);
   const suffixe = trouve[3];
   if (majeur === 226) {
-    if (suffixe !== undefined) return mineur === 8 && suffixe === "1";
-    if (mineur === 1) return true;
-    return mineur >= 16 && mineur <= 24;
+    if (mineur === 1) return suffixe === undefined;
+    if (mineur === 8) return suffixe === "1";
+    // 226-16 à 226-24, suffixes numériques compris (`226-16-1`, `226-22-2`).
+    return mineur >= 16 && mineur <= 24 && (suffixe === undefined || /^\d+$/.test(suffixe));
   }
   if (majeur === 323) return mineur >= 1 && mineur <= 8;
   return false;

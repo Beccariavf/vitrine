@@ -6,7 +6,13 @@ import { describe, it } from "node:test";
 import { articlesCouverts, citationAuCorpus, documentsPresents } from "../mcp/corpus/citations.ts";
 import { classerCitations } from "../mcp/corpus/hors-corpus.ts";
 import { statutApplication } from "../mcp/corpus/statut.ts";
-import { dansPlage, lireArticleParNumero, lireSectionDeCode, lireTexte } from "../mcp/corpus/textes-fr/parse.ts";
+import {
+  dansPlage,
+  lireArticleParNumero,
+  lireArticlesDeSections,
+  lireSectionDeCode,
+  lireTexte,
+} from "../mcp/corpus/textes-fr/parse.ts";
 import type { DescripteurTextesFr, TexteFr } from "../mcp/corpus/textes-fr/parse.ts";
 import { syncTextesFr } from "../mcp/corpus/textes-fr/sync.ts";
 import type { ManifesteTextesFr } from "../mcp/corpus/textes-fr/sync.ts";
@@ -15,7 +21,12 @@ import { normaliser } from "../mcp/embed/embedder.ts";
 import { buildIndex } from "../mcp/index/build.ts";
 import { openIndex } from "../mcp/index/search.ts";
 import { documentsNommes, getArticle, referenceExacte, search } from "../mcp/tools.ts";
-import { articleSynthetique, identifiantSynthetique, reponsesSynthetiques } from "./fixtures/textes-fr/synthetiques.ts";
+import {
+  articleSynthetique,
+  identifiantSynthetique,
+  reponsesSynthetiques,
+  sectionSynthetique,
+} from "./fixtures/textes-fr/synthetiques.ts";
 
 const fixture = (nom: string): unknown =>
   JSON.parse(readFileSync(new URL(`./fixtures/textes-fr/${nom}.json`, import.meta.url), "utf8"));
@@ -41,10 +52,11 @@ const CMF = "LEGITEXT000006072026";
 const CRPA = "LEGITEXT000031366350";
 const CIVIL = "LEGITEXT000006070721";
 
-/** Nombre d'articles d'une réponse réduite : 2 pour un code, 1 pour un article. */
+/** Nombre d'articles d'une réponse réduite : 2 pour une section, toute la liste sinon. */
 function compteReduit(texte: TexteFr): number {
   const route = texte.route;
   if (route.type === "articles") return route.nums.length;
+  if (route.type === "codeArticles") return route.sections.reduce((total, section) => total + section.nums.length, 0);
   if (route.type === "code" || route.type === "legiPart") return 2;
   return 1;
 }
@@ -142,6 +154,7 @@ describe("la synchronisation des textes français d'application", () => {
           "L1222-4",
           "L2312-38",
           "L1110-4",
+          "L1111-7",
           "L1111-8",
           "L251-1",
           "L255-1",
@@ -168,7 +181,7 @@ describe("la synchronisation des textes français d'application", () => {
       // Neuf documents, treize blocs : le Code pénal et le CPCE en ont plusieurs.
       assert.equal(manifeste.documents, 9);
       assert.equal(manifeste.textes.length, 13);
-      assert.equal(manifeste.unites, 21);
+      assert.equal(manifeste.unites, 22);
       assert.equal(new Set(manifeste.textes.map((texte) => texte.cle)).size, 13);
       // Article 157 : date de début ouverte à la DILA, datée par le texte, jamais par la version.
       const final = unites.find((unite) => unite.numero === "157");
@@ -200,7 +213,7 @@ describe("la synchronisation des textes français d'application", () => {
           ["code-penal-226-16", ["226-16", "226-24"]],
           ["cpce-l34-5", ["L34-5"]],
           ["code-travail", ["L1121-1", "L1222-4", "L2312-38"]],
-          ["csp", ["L1110-4", "L1111-8"]],
+          ["csp", ["L1110-4", "L1111-7", "L1111-8"]],
           ["csi-videoprotection", ["L251-1", "L255-1"]],
           ["cmf-l561-45", ["L561-45"]],
           ["crpa-l311-3-1", ["L311-3-1"]],
@@ -300,6 +313,61 @@ describe("la synchronisation des textes français d'application", () => {
     assert.throws(
       () => lireTexte(texte, {}, "textes_fr", "2026-11-14"),
       /Code du travail : réponse getArticleWithIdAndNum illisible/,
+    );
+  });
+
+  it("prélève des numéros datés dans des sections et y trouve L1111-7", () => {
+    const texte: TexteFr = {
+      cle: "csp",
+      nom: "Code de la santé publique",
+      titre: "Code de la santé publique, articles L1110-4, L1111-7 et L1111-8",
+      textId: CSP,
+      url: "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
+      url_article: "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      perimetre: "articles L1110-4, L1111-7 et L1111-8",
+      route: {
+        type: "codeArticles",
+        sections: [
+          { sctCid: "SECTION-A", nums: ["L1110-4"] },
+          { sctCid: "SECTION-B", nums: ["L1111-7", "L1111-8"] },
+        ],
+      },
+      attendus: { articles: 3 },
+    };
+    const route = texte.route;
+    if (route.type !== "codeArticles") throw new Error("route codeArticles attendue");
+    // La première section porte un article de plus : il reste hors de la lecture.
+    const sectionA = sectionSynthetique(texte, "SECTION-A", ["L1110-3", "L1110-4"]);
+    const sectionB = sectionSynthetique(texte, "SECTION-B", ["L1111-7", "L1111-8"]);
+    const part = lireArticlesDeSections([sectionA, sectionB], route.sections, texte.nom);
+    assert.deepEqual(part.articles.map((article) => article.num), ["L1110-4", "L1111-7", "L1111-8"]);
+    assert.equal(
+      part.version,
+      ["L1110-4", "L1111-7", "L1111-8"]
+        .map((numero) => identifiantSynthetique(CSP, numero))
+        .join("+"),
+    );
+    assert.equal(part.dateDebutVersion, null);
+
+    // Un numéro absent de sa section ou un article non VIGUEUR fait refuser la capture.
+    assert.throws(
+      () =>
+        lireArticlesDeSections(
+          [sectionA, sectionSynthetique(texte, "SECTION-B", ["L1111-8"])],
+          route.sections,
+          texte.nom,
+        ),
+      /Code de la santé publique : article L1111-7 absent de la section SECTION-B/,
+    );
+    const abroge = sectionSynthetique(texte, "SECTION-B", ["L1111-7", "L1111-8"]) as {
+      sections: { articles: { etat: string; num: string }[] }[];
+    };
+    const article = abroge.sections[0]?.articles.find((element) => element.num === "L1111-7");
+    assert.ok(article !== undefined);
+    article.etat = "ABROGE_DIFF";
+    assert.throws(
+      () => lireArticlesDeSections([sectionA, abroge], route.sections, texte.nom),
+      /Code de la santé publique : article L1111-7 rendu ABROGE_DIFF, pas VIGUEUR/,
     );
   });
 

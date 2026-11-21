@@ -109,7 +109,7 @@ function corpsSnapshot(reponse: unknown): string {
   return brut.endsWith("\n") ? brut : `${brut}\n`;
 }
 
-/** Un appel PISTE, selon la route du texte ; une liste d'articles en coûte un par numéro. */
+/** Un appel PISTE par section ou par numéro, selon la route du texte. */
 async function appeler(
   session: PisteSession,
   fetchImpl: FetchLike,
@@ -128,6 +128,13 @@ async function appeler(
       const reponses: unknown[] = [];
       for (const numero of route.nums) {
         reponses.push(await session.consultArticleParNumero(fetchImpl, texteFr.textId, numero));
+      }
+      return reponses;
+    }
+    case "codeArticles": {
+      const reponses: unknown[] = [];
+      for (const section of route.sections) {
+        reponses.push(await session.consultCode(fetchImpl, texteFr.textId, date, section.sctCid));
       }
       return reponses;
     }
@@ -246,9 +253,12 @@ export async function syncTextesFr(options: SyncTextesFrOptions = {}): Promise<R
     for (const valeur of precedent.textes) {
       if (typeof valeur !== "object" || valeur === null) continue;
       const texteManifeste = valeur as Record<string, unknown>;
-      const cle = texteManifeste.cle;
+      // Un manifeste écrit avant #124 n'a pas de `cle` : il retombe sur son text_id.
+      const cle = typeof texteManifeste.cle === "string" ? texteManifeste.cle : texteManifeste.text_id;
       if (typeof cle !== "string") continue;
-      const lecture = lectures.find((element) => element.texte.cle === cle);
+      const lecture = lectures.find(
+        (element) => element.texte.cle === cle || element.texte.textId === cle,
+      );
       if (lecture === undefined) continue;
       historiques.set(
         cle,

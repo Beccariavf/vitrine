@@ -4,7 +4,7 @@
   "licence": "Licence Ouverte 2.0 (Etalab)",
   "date_consultation": "2026-11-19",
   "documents": 9,
-  "unites": 225,
+  "unites": 226,
   "textes": [
     {
       "cle": "decret-2019-536",
@@ -97,20 +97,27 @@
       "cle": "csp",
       "text_id": "LEGITEXT000006072665",
       "nom": "Code de la santé publique",
-      "titre": "Code de la santé publique, articles L1110-4 et L1111-8 (confidentialité et hébergement des données de santé)",
+      "titre": "Code de la santé publique, articles L1110-4, L1111-7 et L1111-8 (confidentialité, accès au dossier médical et hébergement des données de santé)",
       "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
-      "version": "LEGIARTI000043895798+LEGIARTI000049577902",
+      "version": "LEGIARTI000043895798+LEGIARTI000042685313+LEGIARTI000049577902",
       "date_debut_version": null,
-      "perimetre": "articles L1110-4 et L1111-8 ; l'article L1111-7, abrogé à effet différé au 2029-01-01, n'est pas en vigueur et reste hors couverture",
+      "perimetre": "articles L1110-4, L1111-7 et L1111-8, lus à la date de consultation dans leurs sections ; L1111-7 est en vigueur jusqu'au 2028-12-31, sa nouvelle version entrant en vigueur au 2029-01-01",
       "articles_couverts": [
         "L1110-4",
+        "L1111-7",
         "L1111-8"
       ],
-      "articles_en_vigueur": 2,
+      "articles_en_vigueur": 3,
       "articles_abroges_ecartes": 0,
-      "versions_remplacees": [],
+      "versions_remplacees": [
+        {
+          "identifiant": "LEGIARTI000043895798+LEGIARTI000049577902",
+          "date_debut": null,
+          "date_fin": null
+        }
+      ],
       "snapshot": "2026-11-19/csp.json",
-      "snapshot_sha256": "e6341e03cce31cd2b0e549d31be6a41b0ff2a7e29c1816072a5e24d9953bd577"
+      "snapshot_sha256": "1322919a08cf4c34797bcd14bc9f65937ac71e193259f5e3d146c70bc4391f40"
     },
     {
       "cle": "csi-videoprotection",
@@ -275,7 +282,7 @@
       "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006070987",
       "version": "LEGIARTI000051741279",
       "date_debut_version": "2025-06-15",
-      "perimetre": "article L34-1 ; l'article L34-1-1 n'existe pas dans le code et reste hors couverture",
+      "perimetre": "article L34-1 ; l'article L34-1-1, abrogé depuis le 2015-01-01, reste hors couverture",
       "articles_couverts": [
         "L34-1"
       ],
@@ -289,14 +296,14 @@
   "couverture": {
     "source": "PISTE — Légifrance /consult/legiPart (texte entier), /consult/code (section de code), /consult/getArticleWithIdAndNum (article ou liste de numéros)",
     "date": "2026-11-19",
-    "articles_en_vigueur": 225,
+    "articles_en_vigueur": 226,
     "articles_abroges_ecartes": 6,
     "perimetre": [
       "Décret 2019-536 : texte entier",
       "Code pénal : articles 226-16 à 226-24",
       "CPCE : article L34-5",
       "Code du travail : articles L1121-1, L1222-4 et L2312-38",
-      "Code de la santé publique : articles L1110-4 et L1111-8 ; l'article L1111-7, abrogé à effet différé au 2029-01-01, n'est pas en vigueur et reste hors couverture",
+      "Code de la santé publique : articles L1110-4, L1111-7 et L1111-8, lus à la date de consultation dans leurs sections ; L1111-7 est en vigueur jusqu'au 2028-12-31, sa nouvelle version entrant en vigueur au 2029-01-01",
       "Code de la sécurité intérieure : titre V du livre II (vidéoprotection), articles L251-1 à L255-1 : 18 en vigueur ; 4 abrogés écartés (L251-5, L251-6, L251-7, L253-2)",
       "Code monétaire et financier : article L561-45",
       "CRPA : article L311-3-1",
@@ -304,7 +311,7 @@
       "Code pénal : articles 226-1 et 226-8-1",
       "Code pénal : chapitre III du titre II du livre III, articles 323-1 à 323-8",
       "CPCE : article L32-3",
-      "CPCE : article L34-1 ; l'article L34-1-1 n'existe pas dans le code et reste hors couverture"
+      "CPCE : article L34-1 ; l'article L34-1-1, abrogé depuis le 2015-01-01, reste hors couverture"
     ]
   }
 }

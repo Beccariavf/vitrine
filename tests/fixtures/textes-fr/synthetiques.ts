@@ -36,13 +36,8 @@ export function articleSynthetique(textId: string, num: string): unknown {
   };
 }
 
-/** Réponse `/consult/code` réduite à la section visée : premier et dernier article. */
-export function codeSynthetique(texte: TexteFr): unknown {
-  const route = texte.route;
-  if (route.type !== "code") {
-    throw new Error(`${texte.cle} : route code attendue`);
-  }
-  const numeros = [route.premier, route.dernier];
+/** Réponse `/consult/code` réduite à une section : un article par numéro demandé. */
+export function sectionSynthetique(texte: TexteFr, sctCid: string, nums: readonly string[]): unknown {
   return {
     id: `${texte.textId}_01-01-2025`,
     title: texte.titre,
@@ -50,10 +45,10 @@ export function codeSynthetique(texte: TexteFr): unknown {
     articles: [],
     sections: [
       {
-        id: route.sctCid,
-        cid: route.sctCid,
-        title: `Section ${route.premier} à ${route.dernier}`,
-        articles: numeros.map((num) => ({
+        id: sctCid,
+        cid: sctCid,
+        title: `Section ${nums.join(", ")}`,
+        articles: nums.map((num) => ({
           id: identifiantSynthetique(texte.textId, num),
           num,
           content: `<p>Texte de l'article ${num}.</p>`,
@@ -66,6 +61,15 @@ export function codeSynthetique(texte: TexteFr): unknown {
       },
     ],
   };
+}
+
+/** Réponse `/consult/code` de la route `code` : la section visée, premier et dernier article. */
+export function codeSynthetique(texte: TexteFr): unknown {
+  const route = texte.route;
+  if (route.type !== "code") {
+    throw new Error(`${texte.cle} : route code attendue`);
+  }
+  return sectionSynthetique(texte, route.sctCid, [route.premier, route.dernier]);
 }
 
 /**
@@ -88,6 +92,10 @@ export function reponsesSynthetiques(
       reponses[texte.cle] = articleSynthetique(texte.textId, route.num);
     } else if (route.type === "code") {
       reponses[texte.cle] = codeSynthetique(texte);
+    } else if (route.type === "codeArticles") {
+      reponses[texte.cle] = route.sections.map((section) =>
+        sectionSynthetique(texte, section.sctCid, section.nums),
+      );
     } else {
       throw new Error(`${texte.cle} : aucune capture réelle pour une route legiPart`);
     }
@@ -122,6 +130,11 @@ export function reponseParCorps(
     } else if (route.type === "articles") {
       const rang = route.nums.indexOf(String(corps.num));
       if (corps.id === texte.textId && rang >= 0) {
+        return (reponses[texte.cle] as unknown[] | undefined)?.[rang];
+      }
+    } else if (route.type === "codeArticles") {
+      const rang = route.sections.findIndex((section) => section.sctCid === corps.sctCid);
+      if (corps.textId === texte.textId && rang >= 0) {
         return (reponses[texte.cle] as unknown[] | undefined)?.[rang];
       }
     }

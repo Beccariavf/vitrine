@@ -126,6 +126,27 @@
       "status": 200,
       "durationMs": 160,
       "at": "2026-11-21T10:39:30.503Z"
+    },
+    {
+      "source": "piste",
+      "endpoint": "oauth",
+      "status": 200,
+      "durationMs": 145,
+      "at": "2026-11-21T11:08:02.671Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 436,
+      "at": "2026-11-21T11:08:03.108Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 448,
+      "at": "2026-11-21T11:08:05.450Z"
     }
   ]
 }

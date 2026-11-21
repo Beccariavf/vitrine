@@ -194,13 +194,17 @@ describe("l'extraction des citations d'une décision", () => {
     assert.deepEqual(references("articles 226-16 à 226-22 du code pénal"), [
       "code pénal · art. 226-16–226-22",
     ]);
-    // 226-1, 226-8-1 et la série 323 entrent au corpus ; 226-2 et 323-9 restent dehors.
+    // 226-1, 226-8-1 et la série 323 entrent au corpus ; les suffixes numériques
+    // du bloc 226-16 restent cités ; 226-2, 323-9 et 226-16-1-A restent dehors.
     assert.deepEqual(references("l'article 226-1 du code pénal"), ["code pénal · art. 226-1"]);
     assert.deepEqual(references("l'article 226-8-1 du code pénal"), ["code pénal · art. 226-8-1"]);
     assert.deepEqual(references("l'article 323-4-1 du code pénal"), ["code pénal · art. 323-4-1"]);
+    assert.deepEqual(references("l'article 226-17-1 du code pénal"), ["code pénal · art. 226-17-1"]);
+    assert.deepEqual(references("l'article 226-22-2 du code pénal"), ["code pénal · art. 226-22-2"]);
     assert.deepEqual(references("articles 226-2, 323-9 et 226-1 du code pénal"), [
       "code pénal · art. 226-1",
     ]);
+    assert.deepEqual(references("l'article 226-16-1-A du code pénal"), []);
     // Une plage dont une borne sort du périmètre n'est pas affirmée.
     assert.deepEqual(references("articles 323-6 à 323-9 du code pénal"), []);
   });

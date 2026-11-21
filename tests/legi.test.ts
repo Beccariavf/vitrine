@@ -27,11 +27,7 @@ import { corpusDeLEntree, documentsDeLEntree } from "../mcp/corpus/veille.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";
 import type { Embedder } from "../mcp/embed/embedder.ts";
 import { normaliser } from "../mcp/embed/embedder.ts";
-import {
-  identifiantSynthetique,
-  reponseParCorps,
-  reponsesSynthetiques,
-} from "./fixtures/textes-fr/synthetiques.ts";
+import { reponseParCorps, reponsesSynthetiques } from "./fixtures/textes-fr/synthetiques.ts";
 
 const fixture = (chemin: string): unknown =>
   JSON.parse(readFileSync(new URL(chemin, import.meta.url), "utf8"));
@@ -71,10 +67,11 @@ const REPONSES_INCHANGEES: Readonly<Record<string, unknown>> = {
   "decret-2019-536": DECRET_RECHERCHE,
 };
 
-/** Nombre d'articles d'une réponse réduite : 2 pour un code, 1 pour un article. */
+/** Nombre d'articles d'une réponse réduite : 2 pour une section, toute la liste sinon. */
 function compteReduit(texte: DescripteurTextesFr["textes"][number]): number {
   const route = texte.route;
   if (route.type === "articles") return route.nums.length;
+  if (route.type === "codeArticles") return route.sections.reduce((total, section) => total + section.nums.length, 0);
   if (route.type === "code" || route.type === "legiPart") return 2;
   return 1;
 }
@@ -460,10 +457,11 @@ describe("la détection des versions des textes français", () => {
 
       const resultat = await passeTextesFr({ rootDir: root, date: DATE, config: CONFIG, fetchImpl });
       assert.equal(resultat.entrees.length, 0);
-      // Trois entrées lisent une section de code : toutes les trois échouent.
-      assert.equal(resultat.echecs.length, 3);
+      // Quatre entrées lisent une ou deux sections de code : toutes échouent.
+      assert.equal(resultat.echecs.length, 4);
       assert.match(resultat.echecs[0] ?? "", /Code pénal : Légifrance code: HTTP 500/);
-      assert.equal(resultat.appels, 19);
+      // La seconde section du CSP n'est pas demandée après l'échec de la première.
+      assert.equal(resultat.appels, 18);
     } finally {
       resetUsage();
       rmSync(root, { recursive: true, force: true });

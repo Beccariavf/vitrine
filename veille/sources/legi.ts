@@ -21,6 +21,7 @@ import type { Entry } from "../types.ts";
 import { lireLegiPart, objet, texte } from "../../mcp/corpus/lil/parse.ts";
 import type { ArticleLil, DescripteurLil, LegiPart } from "../../mcp/corpus/lil/parse.ts";
 import { budgetPasse, lireArticleParNumero, lireSectionDeCode } from "../../mcp/corpus/textes-fr/parse.ts";
+import { normaliserNumero } from "../../mcp/corpus/articles.ts";
 import type { DescripteurTextesFr } from "../../mcp/corpus/textes-fr/parse.ts";
 
 const ICI = dirname(fileURLToPath(import.meta.url));
@@ -50,6 +51,7 @@ type RouteDetection =
   | { type: "code"; sctCid: string }
   | { type: "article"; num: string }
   | { type: "articles"; nums: string[] }
+  | { type: "codeArticles"; sections: Array<{ sctCid: string; nums: string[] }> }
   | { type: "search"; fond: string; num: string };
 
 /** Un texte suivi : son identité, sa route et ce que le corpus en compare. */
@@ -103,7 +105,15 @@ export function textesSuivis(
             ? { type: "article", num: texteFr.route.num }
             : texteFr.route.type === "articles"
               ? { type: "articles", nums: [...texteFr.route.nums] }
-              : { type: "legiPart" };
+              : texteFr.route.type === "codeArticles"
+                ? {
+                    type: "codeArticles",
+                    sections: texteFr.route.sections.map((section) => ({
+                      sctCid: section.sctCid,
+                      nums: [...section.nums],
+                    })),
+                  }
+                : { type: "legiPart" };
     suivis.push({
       cle: texteFr.cle,
       nom: texteFr.nom,
@@ -159,6 +169,13 @@ export async function appelerTexte(
       const reponses: unknown[] = [];
       for (const numero of route.nums) {
         reponses.push(await session.consultArticleParNumero(fetchImpl, texteSuivi.document, numero));
+      }
+      return reponses;
+    }
+    case "codeArticles": {
+      const reponses: unknown[] = [];
+      for (const section of route.sections) {
+        reponses.push(await session.consultCode(fetchImpl, texteSuivi.document, date, section.sctCid));
       }
       return reponses;
     }
@@ -260,6 +277,39 @@ function partDesArticles(reponses: unknown, nom: string): LegiPart {
   };
 }
 
+/**
+ * Réponses de sections datées agrégées sans contrôle d'état : chaque section
+ * n'est gardée que pour ses numéros, et un article qui n'est plus `VIGUEUR`
+ * est un retrait à signaler, pas une panne de lecture.
+ */
+function partDesSections(
+  reponses: unknown,
+  sections: readonly { sctCid: string; nums: readonly string[] }[],
+  nom: string,
+): LegiPart {
+  if (!Array.isArray(reponses)) throw new Error(`${nom} : réponses de sections illisibles`);
+  const parts = reponses.map((element, rang) => {
+    const section = sections[rang];
+    if (section === undefined) throw new Error(`${nom} : section ${rang} absente`);
+    const part = lireSectionDeCode(element, section.sctCid);
+    const voulus = new Set(section.nums.map(normaliserNumero));
+    return {
+      ...part,
+      articles: part.articles.filter((article) => voulus.has(normaliserNumero(article.num))),
+    };
+  });
+  return {
+    version: parts
+      .flatMap((part) => part.articles)
+      .map((article) => article.id)
+      .join("+"),
+    titre: "",
+    dateDebutVersion: null,
+    sections: 0,
+    articles: parts.flatMap((part) => part.articles),
+  };
+}
+
 /** Lit une réponse selon la route du texte. */
 export function lireVersion(texteSuivi: TexteSuivi, reponse: unknown, date: string): VersionLue {
   switch (texteSuivi.route.type) {
@@ -271,6 +321,8 @@ export function lireVersion(texteSuivi: TexteSuivi, reponse: unknown, date: stri
       return articlesEnVigueur(lireArticleParNumero(reponse));
     case "articles":
       return articlesEnVigueur(partDesArticles(reponse, texteSuivi.nom));
+    case "codeArticles":
+      return articlesEnVigueur(partDesSections(reponse, texteSuivi.route.sections, texteSuivi.nom));
     case "search": {
       const lu = versionDeRecherche(reponse, texteSuivi.document, date);
       return { version: lu.version, dateDebut: lu.dateDebut, articles: new Map(), dates: new Map() };

@@ -150,8 +150,8 @@ const CONSIGNE_SERVEUR =
   "d'application (corpus `textes_fr` : décret 2019-536 LEGITEXT000038567662 en entier, Code pénal " +
   "LEGITEXT000006070719 articles 226-16 à 226-24, 226-1 et 226-8-1, chapitre 323 ; CPCE " +
   "LEGITEXT000006070987 articles L32-3, L34-1 et L34-5 ; Code du travail LEGITEXT000006072050 " +
-  "L1121-1, L1222-4 et L2312-38 ; Code de la santé publique LEGITEXT000006072665 L1110-4 et " +
-  "L1111-8 ; Code de la sécurité intérieure LEGITEXT000025503132 titre V du livre II " +
+  "L1121-1, L1222-4 et L2312-38 ; Code de la santé publique LEGITEXT000006072665 L1110-4, " +
+  "L1111-7 et L1111-8 ; Code de la sécurité intérieure LEGITEXT000025503132 titre V du livre II " +
   "(vidéoprotection) ; Code monétaire et financier LEGITEXT000006072026 L561-45 ; CRPA " +
   "LEGITEXT000031366350 L311-3-1 ; Code civil LEGITEXT000006070721 article 9), " +
   "les textes en préparation et les affaires pendantes (corpus `preparation` : propositions de " +
