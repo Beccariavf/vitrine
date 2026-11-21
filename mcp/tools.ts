@@ -484,12 +484,20 @@ const ALIAS_ACTES_UE: ReadonlyArray<{ document: string; texte: readonly RegExp[]
   {
     document: "32021D0914",
     texte: [
-      /\bclauses contractuelles types\b/,
-      /\bccs\b/,
       /\bdecision d execution (?:ue )?(?:n )?2021 914\b/,
       /\b2021 914\b/,
+      /\bclauses contractuelles types (?:pour le transfert|de transfert)\b/,
     ],
     compact: [/32021d0914/],
+  },
+  {
+    document: "32021D0915",
+    texte: [
+      /\bdecision d execution (?:ue )?(?:n )?2021 915\b/,
+      /\b2021 915\b/,
+      /\bclauses contractuelles types (?:entre (?:le )?responsables? du traitement et (?:les |le )?sous traitants?|de sous traitance)\b/,
+    ],
+    compact: [/32021d0915/],
   },
 ];
 
@@ -514,7 +522,8 @@ const NOMS_DOCUMENTS: Record<string, string> = {
   "32016L0680": "directive police-justice",
   "32018R1725": "règlement 2018/1725",
   "32025R2518": "règlement procédural RGPD",
-  "32021D0914": "clauses contractuelles types",
+  "32021D0914": "clauses contractuelles types (transfert)",
+  "32021D0915": "clauses contractuelles types (sous-traitance)",
   LEGITEXT000038567662: "décret 2019-536",
   LEGITEXT000006070719: "Code pénal",
   LEGITEXT000006070987: "CPCE",
