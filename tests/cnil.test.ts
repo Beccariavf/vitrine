@@ -4,7 +4,7 @@ import { gzipSync } from "node:zlib";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
-import { canonicalUrl, hashId } from "../veille/normalize.ts";
+import { canonicalUrl, hashFullUrl, hashId } from "../veille/normalize.ts";
 import { parseFeed, toIsoUtc } from "../veille/sources/cnil.ts";
 import { ETAT_VIDE, archivesNouvelles, extraireTar, listerArchives, lireArchiveDepuis, fusionnerDecisions } from "../mcp/corpus/cnil/increments.ts";
 import type { ArchiveLue } from "../mcp/corpus/cnil/increments.ts";
@@ -166,6 +166,15 @@ describe("URL canonique et identifiant", () => {
     const noisy = "https://WWW.CNIL.FR/fr/sanction-cookies-app-fnac/?utm_source=rss#haut";
     assert.equal(canonicalUrl(noisy), plain);
     assert.equal(hashId(noisy), hashId(plain));
+  });
+
+  it("refuse une URL dont le schéma n'est ni http ni https", () => {
+    for (const url of ["javascript:alert(1)", "JavaScript://www.cnil.fr/%0aalert(1)", "data:text/html,x"]) {
+      assert.throws(() => canonicalUrl(url), /schéma/, url);
+      assert.throws(() => hashId(url), /schéma/, url);
+      assert.throws(() => hashFullUrl(url), /schéma/, url);
+    }
+    assert.equal(canonicalUrl("http://www.cnil.fr/fr/page"), "http://www.cnil.fr/fr/page");
   });
 
   it("donne des identifiants distincts à deux pages différentes", () => {
