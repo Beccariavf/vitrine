@@ -149,7 +149,8 @@ article par article : le corpus ne porte pas les dates d'application échelonné
 Un instrument connu mais absent du corpus — ePrivacy, 95/46, 2016/680, 2018/1725, CPCE, code pénal —
 répond, par `get_article`, `get_decision` et `search` : « absent de mon corpus (périmètre : RGPD,
 AI Act, ePrivacy, directive 2016/680, règlement 2018/1725, règlement procédural RGPD, clauses
-contractuelles types, décisions d'adéquation, LIL, textes français d'application, textes en
+contractuelles types de transfert (2021/914) et de sous-traitance (2021/915), décisions
+d'adéquation, LIL, textes français d'application, textes en
 préparation et affaires pendantes, CNIL, doctrine CNIL, CEPD, Conseil d'État, Conseil
 constitutionnel, Cour de cassation, CJUE). », sans rendre de texte ni de
 passage. Le refus de `search` précède l'embedder et l'index : un document absent n'a aucun passage à

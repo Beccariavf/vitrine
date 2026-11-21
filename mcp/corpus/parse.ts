@@ -27,7 +27,7 @@ export type Descripteur = {
   articles_attendus: number;
   /** Nombre de considérants que la capture doit porter. */
   considerants_attendus: number;
-  /** Nombre de clauses que l'annexe doit porter ; seule la décision 2021/914 en déclare. */
+  /** Nombre de clauses que l'annexe doit porter ; seules les décisions de clauses types en déclarent. */
   clauses_attendues?: number;
   /** Parseur dédié, quand le corpus n'est pas un acte CELLAR ordinaire. */
   parseur?: "ccs";

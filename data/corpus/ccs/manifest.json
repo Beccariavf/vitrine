@@ -1,24 +1,79 @@
 {
-  "document": "32021D0914",
-  "titre": "Décision d'exécution (UE) 2021/914 de la Commission du 4 juin 2021 relative aux clauses contractuelles types pour le transfert de données à caractère personnel vers des pays tiers en vertu du règlement (UE) 2016/679",
-  "langue": "fra",
-  "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32021D0914",
-  "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
-  "date_acte": "2021-06-04",
-  "date_publication": "2021-06-07",
-  "date_debut": "2021-06-27",
-  "date_fin": null,
-  "statut": "en_vigueur",
-  "snapshot": "b2264fd8c584ed54c879a6e6ef4e80e718cef4080593ea3bc3e6c5cff218ca2a.xhtml",
-  "unites": 82,
-  "couverture": {
-    "source": "CELLAR — publications.europa.eu/resource/celex/32021D0914",
-    "date_publication": "2021-06-07",
-    "bornes": {
-      "debut": "2021-06-27",
-      "fin": null
+  "corpus": "ccs",
+  "nom": "Clauses contractuelles types",
+  "documents": [
+    {
+      "document": "32021D0914",
+      "titre": "Décision d'exécution (UE) 2021/914 de la Commission du 4 juin 2021 relative aux clauses contractuelles types pour le transfert de données à caractère personnel vers des pays tiers en vertu du règlement (UE) 2016/679",
+      "langue": "fra",
+      "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32021D0914",
+      "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+      "date_acte": "2021-06-04",
+      "date_publication": "2021-06-07",
+      "date_debut": "2021-06-27",
+      "date_fin": null,
+      "statut": "en_vigueur",
+      "snapshot": "b2264fd8c584ed54c879a6e6ef4e80e718cef4080593ea3bc3e6c5cff218ca2a.xhtml",
+      "unites": 82,
+      "couverture": {
+        "source": "CELLAR — publications.europa.eu/resource/celex/32021D0914",
+        "date_publication": "2021-06-07",
+        "bornes": {
+          "debut": "2021-06-27",
+          "fin": null
+        },
+        "statut": "en_vigueur",
+        "types_retenus": [
+          "article",
+          "considérant",
+          "clause"
+        ],
+        "exclusions": [],
+        "comptes": {
+          "articles": 4,
+          "considerants": 26,
+          "clauses": 52
+        }
+      }
     },
-    "statut": "en_vigueur",
+    {
+      "document": "32021D0915",
+      "titre": "Décision d'exécution (UE) 2021/915 de la Commission du 4 juin 2021 relative aux clauses contractuelles types entre les responsables du traitement et les sous-traitants au titre de l'article 28, paragraphe 7, du règlement (UE) 2016/679 du Parlement européen et du Conseil et de l'article 29, paragraphe 7, du règlement (UE) 2018/1725 du Parlement européen et du Conseil",
+      "langue": "fra",
+      "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32021D0915",
+      "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+      "date_acte": "2021-06-04",
+      "date_publication": "2021-06-07",
+      "date_debut": "2021-06-27",
+      "date_fin": null,
+      "statut": "en_vigueur",
+      "snapshot": "bb6c455b16343968f24e1afcf819fdcbac9d78787bc05cc9864be6e1b9a7582c.xhtml",
+      "unites": 36,
+      "couverture": {
+        "source": "CELLAR — publications.europa.eu/resource/celex/32021D0915",
+        "date_publication": "2021-06-07",
+        "bornes": {
+          "debut": "2021-06-27",
+          "fin": null
+        },
+        "statut": "en_vigueur",
+        "types_retenus": [
+          "article",
+          "considérant",
+          "clause"
+        ],
+        "exclusions": [],
+        "comptes": {
+          "articles": 4,
+          "considerants": 14,
+          "clauses": 18
+        }
+      }
+    }
+  ],
+  "unites": 118,
+  "couverture": {
+    "source": "CELLAR — publications.europa.eu/resource/celex/32021D0914, 32021D0915",
     "types_retenus": [
       "article",
       "considérant",
@@ -26,9 +81,10 @@
     ],
     "exclusions": [],
     "comptes": {
-      "articles": 4,
-      "considerants": 26,
-      "clauses": 52
+      "documents": 2,
+      "articles": 8,
+      "considerants": 40,
+      "clauses": 70
     }
   }
 }

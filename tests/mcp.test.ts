@@ -22,7 +22,7 @@ import type { Index, ResultatRecherche } from "../mcp/index/search.ts";
 import { createServer, lireModeRecherche } from "../mcp/server.ts";
 import { CANDIDATS_RERANK } from "../mcp/rerank/reranker.ts";
 import type { Reranker } from "../mcp/rerank/reranker.ts";
-import { corpusDeNiveau, documentNomme, documentsNommes, getArticle, getDecision, search } from "../mcp/tools.ts";
+import { corpusDeNiveau, corpusNomme, documentNomme, documentsNommes, getArticle, getDecision, search } from "../mcp/tools.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";
 
 const DOCUMENT = "32016R0679";
@@ -315,6 +315,51 @@ describe("les outils, sans transport", () => {
 
         assert.equal(resultat.niveau_confiance, "aucun_resultat_fiable");
         assert.deepEqual(resultat.passages, []);
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("borne au corpus ccs une question qui nomme les clauses contractuelles types", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-tools-"));
+    try {
+      const ccs: Unite[] = [
+        {
+          ...unite(1, "clauses contractuelles types de transfert vers un pays tiers"),
+          ref: "32021D0914#clause_8.1_m2",
+          document: "32021D0914",
+          corpus: "ccs",
+          niveau: "clause",
+          numero: "8.1",
+          chemin: "Décision (UE) 2021/914 > Annexe > Clauses contractuelles types > Clause 8.1, module 2",
+        },
+        {
+          ...unite(1, "obligations du sous-traitant instructions du responsable du traitement"),
+          ref: "32021D0915#clause_7.1",
+          document: "32021D0915",
+          corpus: "ccs",
+          niveau: "clause",
+          numero: "7.1",
+          chemin: "Décision (UE) 2021/915 > Annexe > Clauses contractuelles types > Clause 7.1",
+        },
+      ];
+      ecrireCorpus(root, ccs, "ccs");
+      const { chemin } = await buildIndex(root, embedderFactice());
+      const index = openIndex(chemin);
+      try {
+        const resultat = await search(
+          root,
+          { question: "obligations du sous-traitant dans les clauses contractuelles types" },
+          { embedder: embedderFactice(), index },
+        );
+        assert.ok(resultat.passages.length > 0);
+        assert.deepEqual(
+          [...new Set(resultat.passages.map((passage) => passage.corpus))],
+          ["ccs"],
+        );
       } finally {
         index.db.close();
       }

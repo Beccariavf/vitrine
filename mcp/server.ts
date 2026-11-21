@@ -48,7 +48,7 @@ const CONSIGNE_PROVENANCE =
   "Le texte rendu vient des dix-huit corpus locaux (RGPD `32016R0679`, AI Act `32024R1689`, " +
   "ePrivacy `32002L0058`, directive police-justice `32016L0680`, règlement 2018/1725 " +
   "`32018R1725`, règlement procédural RGPD `32025R2518`, clauses contractuelles types " +
-  "`32021D0914`, décisions d'adéquation `adequation`, LIL " +
+  "`32021D0914` (transferts) et `32021D0915` (sous-traitance, art. 28), décisions d'adéquation `adequation`, LIL " +
   "`LEGITEXT000006068624`, textes français d'application `textes_fr`, textes en préparation et " +
   "affaires pendantes `preparation`, délibérations CNIL `cnil`, " +
   "doctrine CNIL `cnil_doctrine`, décisions du Conseil d'État `ce`, décisions DC et QPC du Conseil constitutionnel `constit`, documents " +
@@ -144,8 +144,8 @@ const CONSIGNE_SERVEUR =
   "Serveur de lecture et de recherche sur dix-huit corpus juridiques : le RGPD " +
   "(corpus `rgpd`, CELEX 32016R0679), l'AI Act (corpus `aiact`, CELEX 32024R1689), " +
   `${ACTES_UE}` +
-  ", les clauses contractuelles types pour les transferts hors UE (corpus `ccs`, CELEX " +
-  "32021D0914) et les décisions d'adéquation, en vigueur et abrogées (corpus `adequation`), la loi " +
+  ", les clauses contractuelles types pour les transferts hors UE et la sous-traitance (corpus " +
+  "`ccs`, CELEX `32021D0914` et `32021D0915`) et les décisions d'adéquation, en vigueur et abrogées (corpus `adequation`), la loi " +
   "Informatique et Libertés (corpus `lil`, LEGITEXT000006068624), les textes français " +
   "d'application (corpus `textes_fr` : décret 2019-536 LEGITEXT000038567662 en entier, Code pénal " +
   "LEGITEXT000006070719 articles 226-16 à 226-24, CPCE LEGITEXT000006070987 article L34-5), " +
@@ -230,8 +230,8 @@ export function createServer(deps: ServerDeps): McpServer {
       title: "Lire un article d'un texte du corpus",
       description:
         "Rend le texte exact d'un article du RGPD, de l'AI Act, de la directive ePrivacy, de la " +
-        "directive police-justice, du règlement 2018/1725, du règlement procédural RGPD, de la " +
-        "décision 2021/914 sur les clauses contractuelles types, de la " +
+        "directive police-justice, du règlement 2018/1725, du règlement procédural RGPD, des " +
+        "décisions 2021/914 et 2021/915 sur les clauses contractuelles types, de la " +
         "LIL ou d'un texte français d'application (décret 2019-536, Code pénal 226-16 à 226-24, CPCE L34-5), avec sa référence, son chemin, ses dates et son URL. ePrivacy et la directive " +
         "police-justice sont rendues dans leur version consolidée en vigueur ; les règlements " +
         "2018/1725 et 2025/2518, jamais modifiés, dans leur texte d'origine : `etat_corpus` en " +
@@ -257,7 +257,7 @@ export function createServer(deps: ServerDeps): McpServer {
             "Identifiant du document : 32016R0679 (RGPD), 32024R1689 (AI Act), 32002L0058 " +
               "(ePrivacy), 32016L0680 (directive police-justice), 32018R1725 (règlement " +
               "2018/1725), 32025R2518 (règlement procédural RGPD), 32021D0914 (clauses contractuelles " +
-              "types), LEGITEXT000006068624 (LIL), " +
+              "types, transfert), 32021D0915 (clauses contractuelles types, sous-traitance), LEGITEXT000006068624 (LIL), " +
               "LEGITEXT000038567662 (décret 2019-536), LEGITEXT000006070719 (Code pénal) ou LEGITEXT000006070987 (CPCE)",
           ),
         numero: z.string().describe("Numéro d'article, par exemple 17, 15 bis, 26-1, 226-16 ou L34-5"),
@@ -473,7 +473,7 @@ export function createServer(deps: ServerDeps): McpServer {
       description:
         "Cherche par le sens dans le RGPD, l'AI Act, la directive ePrivacy, la directive " +
         "police-justice, le règlement 2018/1725, le règlement procédural RGPD, les clauses " +
-        "contractuelles types, les décisions d'adéquation, la LIL, les textes français d'application, " +
+        "contractuelles types de transfert et de sous-traitance, les décisions d'adéquation, la LIL, les textes français d'application, " +
         "les textes en préparation et les affaires pendantes, les délibérations de la CNIL " +
         "(sanctions, avis, recommandations et lignes directrices), les guides, référentiels et listes " +
         "AIPD de la CNIL (corpus `cnil_doctrine`), les décisions du Conseil d'État, " +
@@ -528,7 +528,8 @@ export function createServer(deps: ServerDeps): McpServer {
               "cnil_doctrine les guides, référentiels et listes AIPD (extraits non modifiés, " +
               "CC BY-ND 4.0), " +
               "constit les décisions DC et QPC, metadonnees les notices du guichet unique " +
-              "(métadonnées seulement) ; absent, toutes répondent",
+              "(métadonnées seulement) ; absent, toutes répondent, sauf une formule générique de " +
+              "famille (« les clauses contractuelles types »), bornée au corpus `ccs`",
           ),
         document: z
           .string()
@@ -536,9 +537,11 @@ export function createServer(deps: ServerDeps): McpServer {
           .describe(
             "Restreint la recherche à un document : 32016R0679 (RGPD), 32024R1689 (AI Act), " +
               "32002L0058 (ePrivacy), 32016L0680, 32018R1725, 32025R2518, 32021D0914 (clauses " +
-              "contractuelles types), " +
+              "contractuelles types, transfert), 32021D0915 (clauses contractuelles types, sous-traitance), " +
               "LEGITEXT000006068624 (LIL), LEGITEXT000038567662 (décret 2019-536), LEGITEXT000006070719 (Code pénal), LEGITEXT000006070987 (CPCE), un identifiant CNILTEXT, un identifiant CONSTEXT (constit), un identifiant Judilibre (cc) " +
-              "ou un CELEX de jurisprudence (cjue) ; absent, tous les corpus répondent",
+              "ou un CELEX de jurisprudence (cjue) ; absent, tous les corpus répondent, sauf une " +
+              "formule générique qui nomme une famille sans décision (« les clauses contractuelles " +
+              "types »), bornée au corpus `ccs`",
           ),
         nature: z
           .string()
