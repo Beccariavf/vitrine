@@ -133,6 +133,11 @@ export function lirePort(valeur: string | undefined): number {
   return port;
 }
 
+/** Détail d'une erreur pour stderr ; il n'est jamais rendu au client. */
+function detailErreur(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 /**
  * Serveur HTTP de la recherche lexicale seule, sur `node:http` sans dépendance.
  * Il ne lit jamais `X-Forwarded-For` : la limitation vise l'adresse de la
@@ -263,12 +268,9 @@ export function creerServeurHttp(deps: DependancesHttp): Server {
       courant = index();
       connus = corpusDeLIndex(courant);
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      ecrire(req, res, 503, {
-        erreur:
-          `Index indisponible : ${message}` +
-          (message.includes("npm run corpus:index") ? "" : " Lancez « npm run corpus:index »."),
-      });
+      // Le détail peut contenir le chemin absolu de l'index : il reste sur stderr.
+      process.stderr.write(`Index indisponible : ${detailErreur(error)}\n`);
+      ecrire(req, res, 503, { erreur: "Index indisponible. Lancez « npm run corpus:index »." });
       return 503;
     }
 
@@ -294,9 +296,8 @@ export function creerServeurHttp(deps: DependancesHttp): Server {
       });
       return 200;
     } catch (error) {
-      ecrire(req, res, 500, {
-        erreur: `Recherche impossible : ${error instanceof Error ? error.message : String(error)}`,
-      });
+      process.stderr.write(`Recherche impossible : ${detailErreur(error)}\n`);
+      ecrire(req, res, 500, { erreur: "Recherche impossible." });
       return 500;
     }
   };
@@ -311,9 +312,9 @@ export function creerServeurHttp(deps: DependancesHttp): Server {
     void router(req, res)
       .then(journal)
       .catch((error: unknown) => {
-        const message = error instanceof Error ? error.message : String(error);
+        process.stderr.write(`Erreur interne : ${detailErreur(error)}\n`);
         if (!res.headersSent) {
-          ecrire(req, res, 500, { erreur: `Erreur interne : ${message}` });
+          ecrire(req, res, 500, { erreur: "Erreur interne." });
         } else {
           res.end();
         }

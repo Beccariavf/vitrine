@@ -345,7 +345,8 @@ describe("l'API HTTP de la recherche lexicale", () => {
           assert.equal(reponse.headers.get("content-type"), "application/json; charset=utf-8");
           const corps = (await reponse.json()) as Record<string, unknown>;
           assert.deepEqual(Object.keys(corps), ["erreur"]);
-          assert.match(String(corps.erreur), /npm run corpus:index/);
+          assert.equal(corps.erreur, "Index indisponible. Lancez « npm run corpus:index ».");
+          assert.doesNotMatch(String(corps.erreur), /\//, "aucun chemin dans la réponse");
         },
         { index: mode },
       );
