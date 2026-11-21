@@ -140,10 +140,10 @@ function rechercher(base: string, parametres: string, init?: RequestInit): Promi
  * normalise `//`, or c'est précisément la cible que le serveur doit refuser
  * sans mourir.
  */
-function cibleBrute(port: number, cible: string): Promise<string> {
+function cibleBrute(port: number, cible: string, hote = `127.0.0.1:${port}`): Promise<string> {
   return new Promise<string>((resoudre, rejeter) => {
     const socket = connect(port, "127.0.0.1", () => {
-      socket.write(`GET ${cible} HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n`);
+      socket.write(`GET ${cible} HTTP/1.1\r\nHost: ${hote}\r\nConnection: close\r\n\r\n`);
     });
     let donnees = "";
     socket.setEncoding("utf8");
@@ -290,6 +290,21 @@ describe("l'API HTTP de la recherche lexicale", () => {
     });
   });
 
+  it("refuse en 403 un en-tête Host étranger, sert 127.0.0.1 et localhost sur son port", async () => {
+    await avecServeur(async (base) => {
+      const port = Number(new URL(base).port);
+      for (const hote of ["intrus.test", `intrus.test:${port}`, "127.0.0.1", `localhost:${port + 1}`]) {
+        const brute = await cibleBrute(port, "/recherche?q=donnees", hote);
+        assert.match(brute.split("\r\n")[0] ?? "", /^HTTP\/1\.1 403/, `403 attendu pour ${hote}`);
+        assert.doesNotMatch(brute, /passages/);
+      }
+      for (const hote of [`127.0.0.1:${port}`, `localhost:${port}`]) {
+        const brute = await cibleBrute(port, "/recherche?q=donnees", hote);
+        assert.match(brute.split("\r\n")[0] ?? "", /^HTTP\/1\.1 200/, `200 attendu pour ${hote}`);
+      }
+    });
+  });
+
   it("limite à 20 requêtes par minute et par IP, puis 429 avec le délai restant", async () => {
     let instant = 0;
     await avecServeur(
@@ -330,7 +345,8 @@ describe("l'API HTTP de la recherche lexicale", () => {
           assert.equal(reponse.headers.get("content-type"), "application/json; charset=utf-8");
           const corps = (await reponse.json()) as Record<string, unknown>;
           assert.deepEqual(Object.keys(corps), ["erreur"]);
-          assert.match(String(corps.erreur), /npm run corpus:index/);
+          assert.equal(corps.erreur, "Index indisponible. Lancez « npm run corpus:index ».");
+          assert.doesNotMatch(String(corps.erreur), /\//, "aucun chemin dans la réponse");
         },
         { index: mode },
       );

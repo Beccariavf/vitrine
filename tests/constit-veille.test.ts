@@ -1,5 +1,5 @@
 import { strict as assert } from "node:assert";
-import { createReadStream, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { createReadStream, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Readable } from "node:stream";
@@ -15,6 +15,8 @@ import {
   passeConstit,
   rapportDeRetard,
 } from "../veille/sources/constit.ts";
+import { urlOfficielleConstit } from "../mcp/corpus/constit/parse.ts";
+import { writeEntries } from "../veille/write.ts";
 
 const FIXTURE = fileURLToPath(new URL("./fixtures/constit/constit.tar.gz", import.meta.url));
 const ARCHIVE = "Freemium_constit_global_20261115-140000.tar.gz";
@@ -226,6 +228,32 @@ describe("la veille du Conseil constitutionnel", () => {
         resultat.warnings[0] ?? "",
         /archive Freemium_constit_global_20261115-140000\.tar\.gz en retard de 70 jours/,
       );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("refuse d'écrire une entrée dont URL_CC est en javascript:", () => {
+    const entree = entreeDeDecision(
+      {
+        id: "CONSTEXT000000000002",
+        nature: "QPC",
+        numero: "2010-25",
+        titre: "M. Jean-Louis N.",
+        date: "2010-07-22",
+        solution: "Non conformité",
+        juridiction: "Conseil constitutionnel",
+        ecli: "ECLI:FR:CC:CONSTEXT000000000002",
+        url: urlOfficielleConstit("CONSTEXT000000000002", "javascript:alert(1)"),
+        paragraphes: [],
+        textePublie: "",
+      },
+      "2010-08-20",
+    );
+    const root = racine();
+    try {
+      assert.throws(() => writeEntries(root, [entree]), /refusée.*schéma javascript:/);
+      assert.equal(existsSync(join(root, "data", "entries")), false, "rien n'est écrit");
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

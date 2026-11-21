@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
+import { webUrl } from "./normalize.ts";
 import type { Entry } from "./types.ts";
 
 /** Écrit un fichier s'il n'a pas déjà exactement ces octets. */
@@ -79,6 +80,14 @@ function entryRelativePath(entry: Entry): string {
  * supprimée, même quand elle disparaît du flux.
  */
 export function writeEntries(rootDir: string, entries: Entry[]): string[] {
+  // L'URL devient un href du site : une seule URL hors http(s) refuse tout le lot, avant écriture.
+  for (const entry of entries) {
+    try {
+      webUrl(entry.url);
+    } catch (error) {
+      throw new Error(`Entrée ${entry.id} refusée : ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
   return entries.map((entry) => {
     const path = join(rootDir, entryRelativePath(entry));
     writeIfChanged(path, `${JSON.stringify(entry, null, 2)}\n`);
