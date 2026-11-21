@@ -343,7 +343,7 @@ async function main(): Promise<void> {
 const entre = process.argv[1];
 if (entre !== undefined && import.meta.url === pathToFileURL(resolve(entre)).href) {
   main().catch((error: unknown) => {
-    process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+    process.stderr.write(`${detailErreur(error)}\n`);
     process.exitCode = 1;
   });
 }
