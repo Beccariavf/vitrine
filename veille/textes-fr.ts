@@ -2,9 +2,10 @@
  * Passe de veille des textes français du périmètre.
  *
  * Commande séparée (`npm run veille:textes-fr`) : elle ouvre son propre
- * processus, donc son propre compteur d'appels PISTE, et coûte un jeton plus un
- * appel par texte — cinq au plus. Elle ne fait pas partie de `npm run veille`,
- * dont les treize appels n'ont pas de place pour elle.
+ * processus, donc son propre compteur d'appels PISTE, et coûte un jeton plus les
+ * appels de chaque entrée du descripteur — un par numéro d'une liste d'articles —
+ * plus une marge de reprise. Elle ne fait pas partie de `npm run veille`, dont
+ * les treize appels n'ont pas de place pour elle.
  *
  * Elle ne publie que des différences d'identifiant de version ; une version
  * inchangée n'écrit aucune entrée. Chaque réponse est conservée telle quelle
@@ -18,12 +19,12 @@ import type { FetchLike } from "./fetch.ts";
 import { PisteSession, flushUsage } from "./piste.ts";
 import type { PisteConfig } from "./piste.ts";
 import {
-  MAX_CALLS_PASSE,
   appelerTexte,
   detecterChangements,
   entreeDeChangement,
   etatsCorpus,
   lireVersion,
+  maxCallsPasse,
   textesSuivis,
 } from "./sources/legi.ts";
 import type { Changement, TexteSuivi } from "./sources/legi.ts";
@@ -68,9 +69,9 @@ function dateDuJour(instant = new Date()): string {
 }
 
 /**
- * Lit les quatre textes, compare leurs identifiants au corpus et écrit une
- * entrée par changement. Une panne sur un texte n'empêche pas les autres : elle
- * est nommée dans `echecs` et la commande sort en erreur.
+ * Lit chaque entrée, compare ses identifiants au corpus et écrit une entrée par
+ * changement. Une panne sur une entrée n'empêche pas les autres : elle est
+ * nommée dans `echecs` et la commande sort en erreur.
  */
 export async function passeTextesFr(
   options: PasseTextesFrOptions = {},
@@ -82,6 +83,7 @@ export async function passeTextesFr(
   }
 
   const suivis = textesSuivis();
+  const budget = maxCallsPasse(suivis);
   const reseau = suivis.some((texteSuivi) => options.reponses?.[texteSuivi.cle] === undefined);
   let session: PisteSession | null = null;
   if (reseau) {
@@ -92,7 +94,7 @@ export async function passeTextesFr(
           "renseignez .env ou l'environnement.",
       );
     }
-    session = new PisteSession(config, MAX_CALLS_PASSE);
+    session = new PisteSession(config, budget);
   }
 
   const etats = etatsCorpus(rootDir);
@@ -102,7 +104,8 @@ export async function passeTextesFr(
 
   for (const texteSuivi of suivis) {
     try {
-      const etat = etats.get(texteSuivi.document);
+      // Un manifeste à texte unique (LIL) porte son identifiant comme clé, pas la clé du descripteur.
+      const etat = etats.get(texteSuivi.cle) ?? etats.get(texteSuivi.document);
       if (etat === undefined) {
         throw new Error(
           `corpus ${texteSuivi.document} absent ou illisible sous data/corpus : ` +
@@ -125,8 +128,8 @@ export async function passeTextesFr(
     writeEntries(rootDir, entrees);
     ecrit = true;
   }
-  // `legi` n'est lue qu'une fois les quatre textes comparés : un texte en échec
-  // laisse la source non lue, la passe la rejouera.
+  // `legi` n'est lue qu'une fois toutes les entrées comparées : une entrée en
+  // échec laisse la source non lue, la passe la rejouera.
   if (options.dryRun !== true && echecs.length === 0) {
     noterLectures(rootDir, ["legi"], date);
   }
@@ -135,7 +138,7 @@ export async function passeTextesFr(
     date,
     entrees,
     echecs,
-    appels: session === null ? 0 : MAX_CALLS_PASSE - session.remainingCalls(),
+    appels: session === null ? 0 : budget - session.remainingCalls(),
     ecrit,
   };
 }

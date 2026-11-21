@@ -191,6 +191,48 @@ const INSTRUMENTS: readonly Instrument[] = [
     url: "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006070719",
     alias: ["code pénal"],
   },
+  {
+    libelle: "code du travail",
+    identifiant: "LEGITEXT000006072050",
+    nature: "code",
+    url: "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072050",
+    alias: ["code du travail"],
+  },
+  {
+    libelle: "code de la santé publique",
+    identifiant: "LEGITEXT000006072665",
+    nature: "code",
+    url: "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
+    alias: ["code de la santé publique"],
+  },
+  {
+    libelle: "code de la sécurité intérieure",
+    identifiant: "LEGITEXT000025503132",
+    nature: "code",
+    url: "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000025503132",
+    alias: ["code de la sécurité intérieure"],
+  },
+  {
+    libelle: "code monétaire et financier",
+    identifiant: "LEGITEXT000006072026",
+    nature: "code",
+    url: "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072026",
+    alias: ["code monétaire et financier"],
+  },
+  {
+    libelle: "code des relations entre le public et l'administration",
+    identifiant: "LEGITEXT000031366350",
+    nature: "code",
+    url: "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000031366350",
+    alias: ["code des relations entre le public et l'administration"],
+  },
+  {
+    libelle: "code civil",
+    identifiant: "LEGITEXT000006070721",
+    nature: "code",
+    url: "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006070721",
+    alias: ["code civil"],
+  },
 ];
 
 const PAR_LIBELLE = new Map(INSTRUMENTS.map((instrument) => [instrument.libelle, instrument]));
@@ -318,20 +360,32 @@ export type ArticlesCouverts = ReadonlyMap<string, readonly string[]>;
 
 /**
  * Textes que le corpus ne porte qu'en partie (`textes[].articles_couverts`) et
- * leurs numéros couverts. Un texte entier n'y figure pas.
+ * leurs numéros couverts. Un texte entier n'y figure pas. Les blocs d'un même
+ * `text_id` fusionnent : le Code pénal et le CPCE en ont plusieurs, et le dernier
+ * bloc ne doit pas effacer les articles couverts par les précédents.
  */
 export function articlesCouverts(rootDir: string): ArticlesCouverts {
   const couverts = new Map<string, string[]>();
+  const entiers = new Set<string>();
   for (const manifeste of manifestesLisibles(rootDir)) {
     if (!Array.isArray(manifeste.textes)) continue;
     for (const texte of manifeste.textes as { text_id?: unknown; articles_couverts?: unknown }[]) {
-      if (typeof texte?.text_id !== "string" || !Array.isArray(texte.articles_couverts)) continue;
-      couverts.set(
-        normaliserIdentifiant(texte.text_id),
-        texte.articles_couverts.filter((numero): numero is string => typeof numero === "string"),
-      );
+      if (typeof texte?.text_id !== "string") continue;
+      const document = normaliserIdentifiant(texte.text_id);
+      if (texte.articles_couverts === null) {
+        entiers.add(document);
+        continue;
+      }
+      if (!Array.isArray(texte.articles_couverts)) continue;
+      const existants = couverts.get(document) ?? [];
+      for (const numero of texte.articles_couverts) {
+        if (typeof numero === "string" && !existants.includes(numero)) existants.push(numero);
+      }
+      couverts.set(document, existants);
     }
   }
+  // Un bloc qui porte le texte entier couvre tout, quels que soient ses autres blocs.
+  for (const document of entiers) couverts.delete(document);
   return couverts;
 }
 

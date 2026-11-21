@@ -1,7 +1,8 @@
 /**
- * Synchronise le corpus des textes français d'application : décret n° 2019-536,
- * Code pénal articles 226-16 à 226-24, CPCE article L34-5, lus par PISTE à une
- * date. Un appel par texte, plus le jeton : 4 appels sous le plafond de 16.
+ * Synchronise le corpus des textes français d'application : un texte entier, des
+ * sections de code et des articles cités par leur numéro, lus par PISTE à une
+ * date. Un appel par entrée, plus un par numéro d'une liste, et le jeton : le
+ * budget est calculé sur le descripteur.
  *
  * Chaque réponse est d'abord gardée sous `data/raw/textes_fr/<date>/` (non
  * commité) : une relance à la même date relit ce cache sans appel. Le corpus
@@ -17,7 +18,7 @@ import type { FetchLike } from "../../../veille/fetch.ts";
 import { PisteSession, flushUsage } from "../../../veille/piste.ts";
 import type { PisteConfig } from "../../../veille/piste.ts";
 import { configPiste, dateDuJour, ecrireSiChange, sansTempsExecution } from "../lil/sync.ts";
-import { lireTexte, validerLectures } from "./parse.ts";
+import { budgetPasse, lireTexte, validerLectures } from "./parse.ts";
 import type { DescripteurTextesFr, LectureTexte, TexteFr } from "./parse.ts";
 import type { VersionRemplacee } from "../versions.ts";
 import { historiqueVersions, lireManifeste } from "../versions.ts";
@@ -33,6 +34,8 @@ export const DOSSIER_BRUT = join("data", "raw", "textes_fr");
 
 /** Un texte au manifeste : son identité, sa version et ce que le corpus en couvre. */
 export type TexteManifeste = {
+  /** Clé du bloc dans le descripteur : le Code pénal et le CPCE en ont plusieurs. */
+  cle: string;
   text_id: string;
   nom: string;
   titre: string;
@@ -106,7 +109,7 @@ function corpsSnapshot(reponse: unknown): string {
   return brut.endsWith("\n") ? brut : `${brut}\n`;
 }
 
-/** Un appel PISTE, selon la route du texte. */
+/** Un appel PISTE, selon la route du texte ; une liste d'articles en coûte un par numéro. */
 async function appeler(
   session: PisteSession,
   fetchImpl: FetchLike,
@@ -121,6 +124,13 @@ async function appeler(
       return session.consultCode(fetchImpl, texteFr.textId, date, route.sctCid);
     case "article":
       return session.consultArticleParNumero(fetchImpl, texteFr.textId, route.num);
+    case "articles": {
+      const reponses: unknown[] = [];
+      for (const numero of route.nums) {
+        reponses.push(await session.consultArticleParNumero(fetchImpl, texteFr.textId, numero));
+      }
+      return reponses;
+    }
   }
 }
 
@@ -135,6 +145,7 @@ export function manifesteTextesFr(
   const textes = lectures.map((lecture): TexteManifeste => {
     const snapshot = snapshots.get(lecture.texte.cle);
     return {
+      cle: lecture.texte.cle,
       text_id: lecture.texte.textId,
       nom: lecture.texte.nom,
       titre: lecture.texte.titre,
@@ -146,7 +157,7 @@ export function manifesteTextesFr(
         lecture.texte.route.type === "legiPart" ? null : lecture.unites.map((unite) => unite.numero),
       articles_en_vigueur: lecture.unites.length,
       articles_abroges_ecartes: lecture.abroges,
-      versions_remplacees: historiques.get(lecture.texte.textId) ?? [],
+      versions_remplacees: historiques.get(lecture.texte.cle) ?? [],
       snapshot: snapshot?.nom ?? "",
       snapshot_sha256: snapshot?.sha256 ?? "",
     };
@@ -157,13 +168,14 @@ export function manifesteTextesFr(
     nom: descripteur.nom,
     licence: descripteur.licence,
     date_consultation: date,
-    documents: textes.length,
+    // Un document par texte : le Code pénal et le CPCE ont plusieurs blocs.
+    documents: new Set(textes.map((texteFr) => texteFr.text_id)).size,
     unites,
     textes,
     couverture: {
       source:
-        "PISTE — Légifrance /consult/legiPart (décret), /consult/code (Code pénal), " +
-        "/consult/getArticleWithIdAndNum (CPCE)",
+        "PISTE — Légifrance /consult/legiPart (texte entier), /consult/code (section de code), " +
+        "/consult/getArticleWithIdAndNum (article ou liste de numéros)",
       date,
       articles_en_vigueur: unites,
       articles_abroges_ecartes: textes.reduce((total, texteFr) => total + texteFr.articles_abroges_ecartes, 0),
@@ -208,7 +220,7 @@ export async function syncTextesFr(options: SyncTextesFrOptions = {}): Promise<R
               "renseignez .env ou l'environnement.",
           );
         }
-        session = new PisteSession(config);
+        session = new PisteSession(config, budgetPasse(descripteur.textes));
       }
       const reponse = await appeler(session, options.fetchImpl ?? (fetch as unknown as FetchLike), texteFr, date);
       appeles.push(texteFr.cle);
@@ -226,19 +238,20 @@ export async function syncTextesFr(options: SyncTextesFrOptions = {}): Promise<R
   const unitesPath = join(rootDir, DOSSIER_CORPUS, "unites.jsonl");
   const manifestPath = join(rootDir, DOSSIER_CORPUS, "manifest.json");
   // L'historique des versions remplacées se lit dans le manifeste précédent :
-  // une version qui cède la place garde son identifiant et ses dates.
+  // une version qui cède la place garde son identifiant et ses dates. Le suivi est
+  // par clé de bloc, le Code pénal et le CPCE ayant plusieurs blocs.
   const precedent = lireManifeste(manifestPath);
   const historiques = new Map<string, VersionRemplacee[]>();
   if (precedent !== null && Array.isArray(precedent.textes)) {
     for (const valeur of precedent.textes) {
       if (typeof valeur !== "object" || valeur === null) continue;
       const texteManifeste = valeur as Record<string, unknown>;
-      const textId = texteManifeste.text_id;
-      if (typeof textId !== "string") continue;
-      const lecture = lectures.find((element) => element.texte.textId === textId);
+      const cle = texteManifeste.cle;
+      if (typeof cle !== "string") continue;
+      const lecture = lectures.find((element) => element.texte.cle === cle);
       if (lecture === undefined) continue;
       historiques.set(
-        textId,
+        cle,
         historiqueVersions(texteManifeste, {
           version: lecture.version,
           dateDebutVersion: lecture.dateDebutVersion,

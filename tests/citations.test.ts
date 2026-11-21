@@ -576,14 +576,24 @@ describe("la présence des documents cités", () => {
       "LEGITEXT000038567662",
       "LEGITEXT000006070719",
       "LEGITEXT000006070987",
+      "LEGITEXT000006072050",
+      "LEGITEXT000006072665",
+      "LEGITEXT000025503132",
+      "LEGITEXT000006072026",
+      "LEGITEXT000031366350",
+      "LEGITEXT000006070721",
     ]) {
       assert.equal(presents.has(present), true, present);
       assert.equal(absenceDuDocument(root, present), null, present);
     }
-    // Code pénal et CPCE ne sont couverts qu'en partie : le corpus le dit.
+    // Les codes ne sont couverts qu'en partie : le corpus le dit, bloc par bloc et fusionné.
     const couverts = articlesCouverts(root);
-    assert.deepEqual(couverts.get("LEGITEXT000006070987"), ["L34-5"]);
+    assert.deepEqual(couverts.get("LEGITEXT000006070987"), ["L34-5", "L32-3", "L34-1"]);
     assert.equal(couverts.get("LEGITEXT000006070719")?.[0], "226-16");
+    assert.ok(couverts.get("LEGITEXT000006070719")?.includes("226-1"));
+    assert.ok(couverts.get("LEGITEXT000006070719")?.includes("323-1"));
+    assert.deepEqual(couverts.get("LEGITEXT000006072050"), ["L1121-1", "L1222-4", "L2312-38"]);
+    assert.deepEqual(couverts.get("LEGITEXT000006070721"), ["9"]);
     assert.equal(couverts.has("LEGITEXT000038567662"), false);
     assert.equal(presents.has("31995L0046"), false);
     assert.match(absenceDuDocument(root, "31995L0046") ?? "", /absent de mon corpus/);
