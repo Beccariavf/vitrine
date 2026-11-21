@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
  * Analyse une URL et refuse tout schéma autre que `http:` ou `https:` : l'URL
  * d'une entrée devient un `href` du site, un `javascript:` y serait exécuté.
  */
-function webUrl(url: string): URL {
+export function webUrl(url: string): URL {
   const parsed = new URL(url);
   if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
     throw new Error(`URL refusée, schéma ${parsed.protocol} ni http ni https : ${url}`);
