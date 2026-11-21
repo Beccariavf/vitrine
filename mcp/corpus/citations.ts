@@ -54,7 +54,7 @@ export type Attribution = {
 };
 
 /** Nature d'un instrument : le mot qui porte son type, pour une anaphore. */
-type Nature = "règlement" | "directive" | "loi" | "code";
+type Nature = "règlement" | "directive" | "loi" | "code" | "décision";
 
 type Instrument = {
   /** Libellé court rendu, aussi court que la forme citée. */
@@ -159,6 +159,28 @@ const INSTRUMENTS: readonly Instrument[] = [
     alias: [
       `règlement ${QUALIFICATIF}(?:n[o°] ?)?2025/2518`,
       `Regulation ${QUALIFICATIF}(?:n[o°] ?)?2025/2518`,
+    ],
+  },
+  {
+    libelle: "2021/914",
+    identifiant: "32021D0914",
+    nature: "décision",
+    url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32021D0914",
+    alias: [
+      `décision d'exécution ${PARENTHESE} (?:n[o°] ?)?2021/914`,
+      `décision d'exécution (?:n[o°] ?)?2021/914`,
+      `décision (?:n[o°] ?)?2021/914`,
+    ],
+  },
+  {
+    libelle: "2021/915",
+    identifiant: "32021D0915",
+    nature: "décision",
+    url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32021D0915",
+    alias: [
+      `décision d'exécution ${PARENTHESE} (?:n[o°] ?)?2021/915`,
+      `décision d'exécution (?:n[o°] ?)?2021/915`,
+      `décision (?:n[o°] ?)?2021/915`,
     ],
   },
   {
@@ -293,14 +315,21 @@ export function documentsExclus(): ReadonlySet<string> {
 
 /**
  * Identifiants qu'un manifeste déclare : `document`, `text_id`,
- * `textes[].text_id` pour un corpus de plusieurs textes et `decisions[].celex`
- * pour les décisions d'adéquation.
+ * `textes[].text_id` pour un corpus de plusieurs textes, `decisions[].celex`
+ * pour les décisions d'adéquation et `documents[].document` pour un corpus de
+ * plusieurs actes (clauses types).
  */
 export function identifiantsDuManifeste(manifeste: Record<string, unknown>): string[] {
   const identifiants: string[] = [];
   for (const champ of ["document", "text_id"]) {
     const valeur = manifeste[champ];
     if (typeof valeur === "string" && valeur.trim() !== "") identifiants.push(valeur);
+  }
+  if (Array.isArray(manifeste.documents)) {
+    for (const document of manifeste.documents) {
+      const valeur = (document as { document?: unknown } | null)?.document;
+      if (typeof valeur === "string" && valeur.trim() !== "") identifiants.push(valeur);
+    }
   }
   if (Array.isArray(manifeste.textes)) {
     for (const texte of manifeste.textes) {

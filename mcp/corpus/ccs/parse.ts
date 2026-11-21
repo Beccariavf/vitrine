@@ -1,9 +1,11 @@
 /**
- * Découpe l'annexe de la décision 2021/914 (clauses contractuelles types) en
- * unités citables. Le corps de la décision se parse comme tout acte CELLAR ;
- * l'annexe n'a pas d'ancres ELI : chaque clause commence à un titre
- * `oj-ti-grseq-1` (« Clause 8 », « 8.1. Instructions »), et les variantes
- * propres à un module sont ouvertes par un titre `MODULE N`.
+ * Découpe l'annexe des décisions de clauses contractuelles types (2021/914 pour
+ * les transferts, 2021/915 pour la sous-traitance) en unités citables. Le corps
+ * de la décision se parse comme tout acte CELLAR ; l'annexe n'a pas d'ancres
+ * ELI : chaque clause commence à un titre `oj-ti-grseq-1` (« Clause 8 »,
+ * « 8.1. Instructions »), et les variantes propres à un module sont ouvertes par
+ * un titre `MODULE N`. L'annexe de 2021/915 n'a pas de module et se lit par la
+ * même règle (`7.1` à `7.8`, `9.1`, `9.2`).
  *
  * Une clause sans variante de module donne une unité. Une clause déclinée par
  * module donne une unité par module : `numero` reste la clause, le texte et le

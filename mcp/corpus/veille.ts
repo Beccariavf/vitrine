@@ -67,6 +67,7 @@ export const CORPUS_ACTES_UE: Readonly<Record<string, CorpusVeille>> = {
   "32018R1725": "eudpr",
   "32025R2518": "rgpdproc",
   "32021D0914": "ccs",
+  "32021D0915": "ccs",
 };
 
 /**
@@ -466,12 +467,21 @@ export function indexerVersionsCorpus(rootDir: string): Map<string, Set<string>>
         document?: unknown;
         text_id?: unknown;
         version?: unknown;
+        documents?: unknown;
         textes?: unknown;
         documents_versions?: unknown;
         documents_par_type?: unknown;
       };
       ajouter(manifeste.document, manifeste.version);
       ajouter(manifeste.text_id, manifeste.version);
+      // Un corpus à plusieurs documents déclare la version de chacun.
+      if (Array.isArray(manifeste.documents)) {
+        for (const element of manifeste.documents) {
+          if (typeof element !== "object" || element === null) continue;
+          const document = element as { document?: unknown; version?: unknown };
+          ajouter(document.document, document.version);
+        }
+      }
       if (Array.isArray(manifeste.textes)) {
         for (const element of manifeste.textes) {
           if (typeof element !== "object" || element === null) continue;
