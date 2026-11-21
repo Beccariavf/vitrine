@@ -484,14 +484,43 @@ const ALIAS_ACTES_UE: ReadonlyArray<{ document: string; texte: readonly RegExp[]
   {
     document: "32021D0914",
     texte: [
-      /\bclauses contractuelles types\b/,
-      /\bccs\b/,
       /\bdecision d execution (?:ue )?(?:n )?2021 914\b/,
       /\b2021 914\b/,
+      /\bclauses contractuelles types (?:pour le transfert|de transfert)\b/,
     ],
     compact: [/32021d0914/],
   },
+  {
+    document: "32021D0915",
+    texte: [
+      /\bdecision d execution (?:ue )?(?:n )?2021 915\b/,
+      /\b2021 915\b/,
+      /\bclauses contractuelles types (?:entre (?:le )?responsables? du traitement et (?:les |le )?sous traitants?|de sous traitance)\b/,
+    ],
+    compact: [/32021d0915/],
+  },
 ];
+
+/**
+ * Corpus nommé par une formule générique : « les clauses contractuelles types »
+ * désigne la collection `ccs` entière, sans choisir entre 2021/914 (transfert)
+ * et 2021/915 (sous-traitance). Un corpus demandé ou un document nommé prime.
+ */
+const ALIAS_CORPUS: ReadonlyArray<{ corpus: string; texte: readonly RegExp[] }> = [
+  {
+    corpus: "ccs",
+    texte: [/\bclauses contractuelles types\b/, /\bclauses types\b/, /\bccs\b/, /\bcct\b/],
+  },
+];
+
+/** Corpus nommé par la question, quand la formule ne nomme aucun document précis. */
+export function corpusNomme(question: string): string | null {
+  const texte = normaliserTexte(question);
+  for (const alias of ALIAS_CORPUS) {
+    if (alias.texte.some((motif) => motif.test(texte))) return alias.corpus;
+  }
+  return null;
+}
 
 /** « règlement procédural RGPD » et `rgpdproc` nomment le règlement 2025/2518, pas le RGPD. */
 const NOM_PROCEDURAL_RGPD = /\breglement procedural (?:du |de l )?(?:rgpd|r g p d)\b|\brgpdproc\b/g;
@@ -501,6 +530,22 @@ const ALIAS_CPCE_TEXTE: readonly RegExp[] = [
   /\bcode des postes et (?:des )?communications electroniques\b/,
 ];
 const ALIAS_CODE_PENAL: readonly RegExp[] = [/\bcode penal\b/];
+/**
+ * Codes français dont le corpus `textes_fr` porte des articles. Leurs alias sont
+ * cherchés sur la forme normalisée : diacritiques retirés, ponctuation changée
+ * en espaces.
+ */
+const ALIAS_CODES_FRANCAIS: ReadonlyArray<{ document: string; texte: readonly RegExp[] }> = [
+  { document: "LEGITEXT000006072050", texte: [/\bcode du travail\b/, /\bc trav\b/] },
+  { document: "LEGITEXT000006072665", texte: [/\bcode de la sante publique\b/, /\bcsp\b/] },
+  { document: "LEGITEXT000025503132", texte: [/\bcode de la securite interieure\b/, /\bcsi\b/] },
+  { document: "LEGITEXT000006072026", texte: [/\bcode monetaire et financier\b/, /\bcmf\b/] },
+  {
+    document: "LEGITEXT000031366350",
+    texte: [/\bcode des relations entre le public et l administration\b/, /\bcrpa\b/],
+  },
+  { document: "LEGITEXT000006070721", texte: [/\bcode civil\b/] },
+];
 /** Fin du titre du décret 2019-536 : la loi 78-17 qu'il applique n'est pas nommée pour elle-même. */
 const TITRE_DECRET_2019_536 =
   /\bdecret (?:n )?2019 536(?: du 29 mai 2019)? pris pour l application de la loi (?:n )?78 17(?: du 6 janvier 1978)?(?: relative a l informatique aux fichiers et aux libertes)?/g;
@@ -514,10 +559,17 @@ const NOMS_DOCUMENTS: Record<string, string> = {
   "32016L0680": "directive police-justice",
   "32018R1725": "règlement 2018/1725",
   "32025R2518": "règlement procédural RGPD",
-  "32021D0914": "clauses contractuelles types",
+  "32021D0914": "clauses contractuelles types (transfert)",
+  "32021D0915": "clauses contractuelles types (sous-traitance)",
   LEGITEXT000038567662: "décret 2019-536",
   LEGITEXT000006070719: "Code pénal",
   LEGITEXT000006070987: "CPCE",
+  LEGITEXT000006072050: "Code du travail",
+  LEGITEXT000006072665: "Code de la santé publique",
+  LEGITEXT000025503132: "Code de la sécurité intérieure",
+  LEGITEXT000006072026: "Code monétaire et financier",
+  LEGITEXT000031366350: "CRPA",
+  LEGITEXT000006070721: "Code civil",
 };
 
 function libelleDocument(document: string): string {
@@ -561,6 +613,9 @@ export function documentsNommes(question: string): string[] {
   if (ALIAS_DECRET_2019_536.some((alias) => alias.test(texte))) documents.add("LEGITEXT000038567662");
   if (ALIAS_CPCE_TEXTE.some((alias) => alias.test(texte))) documents.add("LEGITEXT000006070987");
   if (ALIAS_CODE_PENAL.some((alias) => alias.test(texte))) documents.add("LEGITEXT000006070719");
+  for (const code of ALIAS_CODES_FRANCAIS) {
+    if (code.texte.some((alias) => alias.test(texte))) documents.add(code.document);
+  }
   return [...documents];
 }
 
@@ -1022,11 +1077,22 @@ export async function search(
   // cite « l'article 100 du RGPD » ne doit jamais rendre l'article 100 de l'AI Act.
   // Un corpus demandé prime : il borne la recherche, même si la question nomme
   // un autre corpus. La même borne sert à chercher et à dire le périmètre.
+  // Une formule générique (« les clauses contractuelles types ») borne au corpus
+  // entier quand elle ne nomme aucun document : elle ne choisit pas 2021/914
+  // plutôt que 2021/915.
+  const corpusImplicite =
+    demande.corpus === undefined &&
+    demande.document === undefined &&
+    documentsNommes(demande.question).length === 0
+      ? corpusNomme(demande.question)
+      : null;
+  const effective: SearchDemande =
+    corpusImplicite === null ? demande : { ...demande, corpus: corpusImplicite };
   const document =
-    demande.document ??
-    (demande.corpus === undefined ? documentNomme(demande.question) : null) ??
+    effective.document ??
+    (effective.corpus === undefined ? documentNomme(effective.question) : null) ??
     undefined;
-  const resultat = await chercher(rootDir, demande, document, deps);
+  const resultat = await chercher(rootDir, effective, document, deps);
   const lexical = deps.recherche === "lexicale";
   return {
     ...resultat,
@@ -1042,7 +1108,7 @@ export async function search(
     perimetre: perimetreDe(
       rootDir,
       {
-        ...(demande.corpus === undefined ? {} : { corpus: demande.corpus }),
+        ...(effective.corpus === undefined ? {} : { corpus: effective.corpus }),
         ...(document === undefined ? {} : { document }),
       },
       resultat.niveau_confiance === "aucun_resultat_fiable",
@@ -1061,7 +1127,7 @@ async function chercher(
 ): Promise<RechercheBrute> {
   const corpus = demande.corpus;
   // La confiance ne peut certifier un corpus que la question ou l'appel nomme.
-  const corpusNomme = corpus !== undefined || document !== undefined;
+  const corpusBorne = corpus !== undefined || document !== undefined;
   // Un document connu mais absent du corpus n'a aucun passage à chercher : le
   // refus précède l'embedder et l'index, et garde la phrase des trois outils.
   const absence = document === undefined ? null : absenceDuDocument(rootDir, document);
@@ -1102,7 +1168,7 @@ async function chercher(
       if (article === undefined) {
         return { niveau_confiance: "aucun_resultat_fiable", passages: [] };
       }
-      if (!corpusNomme) {
+      if (!corpusBorne) {
         const nommes = documentsNommes(demande.question);
         const motif =
           nommes.length > 1

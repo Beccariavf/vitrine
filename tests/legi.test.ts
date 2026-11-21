@@ -5,7 +5,15 @@ import { join } from "node:path";
 import { describe, it } from "node:test";
 import type { Entry } from "../veille/types.ts";
 import type { FetchLike } from "../veille/fetch.ts";
-import { MAX_CALLS_PASSE, SOURCE_ID, corpsRechercheLoda, dateDeVersionIdentifiant, textesSuivis, versionDeRecherche } from "../veille/sources/legi.ts";
+import {
+  SOURCE_ID,
+  corpsRechercheLoda,
+  dateDeVersionIdentifiant,
+  etatsCorpus,
+  maxCallsPasse,
+  textesSuivis,
+  versionDeRecherche,
+} from "../veille/sources/legi.ts";
 import { resetUsage } from "../veille/piste.ts";
 import { passeTextesFr } from "../veille/textes-fr.ts";
 import type { DescripteurTextesFr } from "../mcp/corpus/textes-fr/parse.ts";
@@ -19,6 +27,7 @@ import { corpusDeLEntree, documentsDeLEntree } from "../mcp/corpus/veille.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";
 import type { Embedder } from "../mcp/embed/embedder.ts";
 import { normaliser } from "../mcp/embed/embedder.ts";
+import { reponseParCorps, reponsesSynthetiques } from "./fixtures/textes-fr/synthetiques.ts";
 
 const fixture = (chemin: string): unknown =>
   JSON.parse(readFileSync(new URL(chemin, import.meta.url), "utf8"));
@@ -35,13 +44,7 @@ const LIL_DOC = "LEGITEXT000006068624";
 const DECRET_DOC = "LEGITEXT000038567662";
 const PENAL_DOC = "LEGITEXT000006070719";
 const CPCE_DOC = "LEGITEXT000006070987";
-
-const REPONSES_INCHANGEES = {
-  lil: LIL,
-  "decret-2019-536": DECRET_RECHERCHE,
-  "code-penal-226-16": PENAL,
-  "cpce-l34-5": CPCE,
-};
+const TRAVAIL_DOC = "LEGITEXT000006072050";
 
 const CONFIG = { clientId: "client", clientSecret: "secret", keyId: "key" };
 const DATE = "2026-11-14";
@@ -50,14 +53,34 @@ const DESCRIPTEUR_REEL = JSON.parse(
   readFileSync(new URL("../mcp/corpus/textes-fr/descripteur.json", import.meta.url), "utf8"),
 ) as DescripteurTextesFr;
 
-/** Le descripteur réel, aux comptes des captures réduites. */
+/** Les trois captures réelles ; les autres entrées reçoivent leur réponse synthétique. */
+const REPONSES_TEXTES = reponsesSynthetiques(DESCRIPTEUR_REEL, {
+  "decret-2019-536": DECRET,
+  "code-penal-226-16": PENAL,
+  "cpce-l34-5": CPCE,
+});
+
+const REPONSES_INCHANGEES: Readonly<Record<string, unknown>> = {
+  lil: LIL,
+  ...REPONSES_TEXTES,
+  // La veille compare le décret par sa version consolidée, pas par son texte entier.
+  "decret-2019-536": DECRET_RECHERCHE,
+};
+
+/** Nombre d'articles d'une réponse réduite : 2 pour une section, toute la liste sinon. */
+function compteReduit(texte: DescripteurTextesFr["textes"][number]): number {
+  const route = texte.route;
+  if (route.type === "articles") return route.nums.length;
+  if (route.type === "codeArticles") return route.sections.reduce((total, section) => total + section.nums.length, 0);
+  if (route.type === "code" || route.type === "legiPart") return 2;
+  return 1;
+}
+
+/** Le descripteur réel, aux comptes des captures réduites et synthétiques. */
 function descripteurReduit(root: string): string {
   const descripteur: DescripteurTextesFr = {
     ...DESCRIPTEUR_REEL,
-    textes: DESCRIPTEUR_REEL.textes.map((texte) => ({
-      ...texte,
-      attendus: { articles: texte.route.type === "legiPart" ? 2 : texte.route.type === "code" ? 2 : 1 },
-    })),
+    textes: DESCRIPTEUR_REEL.textes.map((texte) => ({ ...texte, attendus: { articles: compteReduit(texte) } })),
   };
   const chemin = join(root, "descripteur.json");
   writeFileSync(chemin, JSON.stringify(descripteur), "utf8");
@@ -72,10 +95,31 @@ async function racineCorpus(): Promise<string> {
     rootDir: root,
     descripteurPath: descripteurReduit(root),
     date: DATE,
-    reponses: { "decret-2019-536": DECRET, "code-penal-226-16": PENAL, "cpce-l34-5": CPCE },
+    reponses: REPONSES_TEXTES,
     config: null,
   });
   return root;
+}
+
+/**
+ * `fetch` simulé qui répond à chaque route PISTE depuis les réponses fournies :
+ * `legiPart` pour la LIL, `LODA_DATE` pour le décret, `code` et
+ * `getArticleWithIdAndNum` pour les autres entrées.
+ */
+function fetchDesReponses(
+  appels: string[],
+  reponses: Readonly<Record<string, unknown>> = REPONSES_INCHANGEES,
+): FetchLike {
+  return async (url, init) => {
+    appels.push(url);
+    if (url.includes("oauth")) return response(200, { access_token: "t", expires_in: 3600 });
+    const corps = JSON.parse(init?.body ?? "{}") as Record<string, unknown>;
+    if (url.endsWith("/legiPart")) return response(200, LIL);
+    if (url.endsWith("/search")) return response(200, DECRET_RECHERCHE);
+    const trouve = reponseParCorps(DESCRIPTEUR_REEL, reponses, corps);
+    if (trouve === null || trouve === undefined) throw new Error(`appel inattendu : ${url} ${String(init?.body)}`);
+    return response(200, trouve);
+  };
 }
 
 /** Le premier article portant ce numéro, où qu'il soit dans l'arbre. */
@@ -334,25 +378,61 @@ describe("la détection des versions des textes français", () => {
     }
   });
 
-  it("consomme au plus cinq appels PISTE, jeton compris", async () => {
+  it("suit chaque bloc d'un même code sans retrait dans les autres", async () => {
+    const root = await racineCorpus();
+    try {
+      // L'état du corpus est par clé de bloc : les trois blocs du Code pénal et les trois du CPCE.
+      const etats = etatsCorpus(root);
+      const penal226 = etats.get("code-penal-226");
+      const penal323 = etats.get("code-penal-323");
+      assert.deepEqual([...(penal226?.articles.keys() ?? [])], ["226-1", "226-8-1"]);
+      assert.deepEqual([...(penal323?.articles.keys() ?? [])], ["323-1", "323-8"]);
+      assert.equal(penal226?.document, PENAL_DOC);
+      assert.deepEqual([...(etats.get("cpce-l34-1")?.articles.keys() ?? [])], ["L34-1"]);
+
+      const reponse = structuredClone(REPONSES_INCHANGEES["code-penal-226"]) as {
+        article: { id: string; dateDebut: string };
+      }[];
+      const premier = reponse[0];
+      assert.ok(premier !== undefined);
+      premier.article.id = "LEGIARTI000099999997";
+      premier.article.dateDebut = "2026-11-01";
+
+      const resultat = await passeTextesFr({
+        rootDir: root,
+        date: DATE,
+        reponses: { ...REPONSES_INCHANGEES, "code-penal-226": reponse },
+        config: null,
+      });
+
+      // Une seule version nouvelle : les articles des deux autres blocs ne sont pas « retirés ».
+      assert.deepEqual(
+        resultat.entrees.map((entree) => entree.title),
+        ["Code pénal, art. 226-1 : nouvelle version en vigueur au 01/11/2026"],
+      );
+      assert.deepEqual(resultat.echecs, []);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("consomme le budget PISTE calculé sur les entrées, jeton compris", async () => {
     const root = await racineCorpus();
     resetUsage();
     try {
       const appels: string[] = [];
-      const fetchImpl: FetchLike = async (url) => {
-        appels.push(url);
-        if (url.includes("oauth")) return response(200, { access_token: "t", expires_in: 3600 });
-        if (url.endsWith("/legiPart")) return response(200, LIL);
-        if (url.endsWith("/search")) return response(200, DECRET_RECHERCHE);
-        if (url.endsWith("/code")) return response(200, PENAL);
-        if (url.endsWith("/getArticleWithIdAndNum")) return response(200, CPCE);
-        throw new Error(`appel inattendu : ${url}`);
-      };
-
-      const resultat = await passeTextesFr({ rootDir: root, date: DATE, config: CONFIG, fetchImpl });
-      assert.equal(appels.length, 5);
-      assert.equal(resultat.appels, 5);
-      assert.equal(MAX_CALLS_PASSE, 5);
+      const resultat = await passeTextesFr({
+        rootDir: root,
+        date: DATE,
+        config: CONFIG,
+        fetchImpl: fetchDesReponses(appels),
+      });
+      // Un jeton, la loi 78-17, puis un appel par entrée et par numéro de liste.
+      assert.equal(appels.length, 19);
+      assert.equal(resultat.appels, 19);
+      // 1 jeton + 18 appels + 5 de marge.
+      assert.equal(maxCallsPasse(), 24);
+      assert.equal(textesSuivis().length, 14);
       assert.deepEqual(resultat.echecs, []);
     } finally {
       resetUsage();
@@ -360,24 +440,28 @@ describe("la détection des versions des textes français", () => {
     }
   });
 
-  it("nomme un texte en panne sans empêcher les autres comparaisons", async () => {
+  it("nomme une entrée en panne sans empêcher les autres comparaisons", async () => {
     const root = await racineCorpus();
     resetUsage();
     try {
-      const fetchImpl: FetchLike = async (url) => {
+      const fetchImpl: FetchLike = async (url, init) => {
         if (url.includes("oauth")) return response(200, { access_token: "t", expires_in: 3600 });
         if (url.endsWith("/code")) return response(500, {});
+        const corps = JSON.parse(init?.body ?? "{}") as Record<string, unknown>;
         if (url.endsWith("/legiPart")) return response(200, LIL);
         if (url.endsWith("/search")) return response(200, DECRET_RECHERCHE);
-        if (url.endsWith("/getArticleWithIdAndNum")) return response(200, CPCE);
-        throw new Error(`appel inattendu : ${url}`);
+        const trouve = reponseParCorps(DESCRIPTEUR_REEL, REPONSES_INCHANGEES, corps);
+        if (trouve === null || trouve === undefined) throw new Error(`appel inattendu : ${url}`);
+        return response(200, trouve);
       };
 
       const resultat = await passeTextesFr({ rootDir: root, date: DATE, config: CONFIG, fetchImpl });
       assert.equal(resultat.entrees.length, 0);
-      assert.equal(resultat.echecs.length, 1);
+      // Quatre entrées lisent une ou deux sections de code : toutes échouent.
+      assert.equal(resultat.echecs.length, 4);
       assert.match(resultat.echecs[0] ?? "", /Code pénal : Légifrance code: HTTP 500/);
-      assert.equal(resultat.appels, 5);
+      // La seconde section du CSP n'est pas demandée après l'échec de la première.
+      assert.equal(resultat.appels, 18);
     } finally {
       resetUsage();
       rmSync(root, { recursive: true, force: true });
@@ -417,7 +501,7 @@ describe("la détection des versions des textes français", () => {
     try {
       const resultat = await passeTextesFr({ rootDir: root, date: DATE, reponses: REPONSES_INCHANGEES, config: null });
       assert.equal(resultat.entrees.length, 0);
-      assert.equal(resultat.echecs.length, 4);
+      assert.equal(resultat.echecs.length, 14);
       assert.match(resultat.echecs[0] ?? "", /corpus LEGITEXT000006068624 absent/);
     } finally {
       rmSync(root, { recursive: true, force: true });
@@ -428,7 +512,7 @@ describe("la détection des versions des textes français", () => {
     assert.equal(dateDeVersionIdentifiant("LEGITEXT000038567662_07-09-2025"), "2025-09-07");
     assert.equal(dateDeVersionIdentifiant("LEGIARTI000042155961"), null);
     assert.equal(dateDeVersionIdentifiant("LEGITEXT000038567662_31-02-2025"), null);
-    assert.equal(textesSuivis().length, 4);
+    assert.equal(textesSuivis().length, 14);
   });
 
   it("retient la version la plus récente sans dépasser la passe, quel que soit l'ordre", () => {

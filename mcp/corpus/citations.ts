@@ -6,9 +6,9 @@
  * La précision prime. Un article n'est retenu que si son instrument suit
  * immédiatement le connecteur français (`du`, `de la`, `de l'`, `des`) — ou,
  * forme anglaise, `of` —, ou si l'instrument précède sa liste dans la même
- * proposition ou le même en-tête. Un instrument hors périmètre, un article de
- * code pénal antérieur à 226-16 ou une anaphore ambiguë ne produisent rien :
- * une liste vide est préférée à une attribution inventée.
+ * proposition ou le même en-tête. Un instrument hors périmètre, un article du
+ * code pénal hors du périmètre du corpus ou une anaphore ambiguë ne produisent
+ * rien : une liste vide est préférée à une attribution inventée.
  *
  * L'extraction se fait à la lecture, sans index ni stockage. Le cache ne garde
  * que les citations par document, jamais le texte.
@@ -54,7 +54,7 @@ export type Attribution = {
 };
 
 /** Nature d'un instrument : le mot qui porte son type, pour une anaphore. */
-type Nature = "règlement" | "directive" | "loi" | "code";
+type Nature = "règlement" | "directive" | "loi" | "code" | "décision";
 
 type Instrument = {
   /** Libellé court rendu, aussi court que la forme citée. */
@@ -162,6 +162,28 @@ const INSTRUMENTS: readonly Instrument[] = [
     ],
   },
   {
+    libelle: "2021/914",
+    identifiant: "32021D0914",
+    nature: "décision",
+    url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32021D0914",
+    alias: [
+      `décision d'exécution ${PARENTHESE} (?:n[o°] ?)?2021/914`,
+      `décision d'exécution (?:n[o°] ?)?2021/914`,
+      `décision (?:n[o°] ?)?2021/914`,
+    ],
+  },
+  {
+    libelle: "2021/915",
+    identifiant: "32021D0915",
+    nature: "décision",
+    url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32021D0915",
+    alias: [
+      `décision d'exécution ${PARENTHESE} (?:n[o°] ?)?2021/915`,
+      `décision d'exécution (?:n[o°] ?)?2021/915`,
+      `décision (?:n[o°] ?)?2021/915`,
+    ],
+  },
+  {
     libelle: "loi 78-17",
     identifiant: "LEGITEXT000006068624",
     nature: "loi",
@@ -190,6 +212,48 @@ const INSTRUMENTS: readonly Instrument[] = [
     nature: "code",
     url: "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006070719",
     alias: ["code pénal"],
+  },
+  {
+    libelle: "code du travail",
+    identifiant: "LEGITEXT000006072050",
+    nature: "code",
+    url: "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072050",
+    alias: ["code du travail"],
+  },
+  {
+    libelle: "code de la santé publique",
+    identifiant: "LEGITEXT000006072665",
+    nature: "code",
+    url: "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
+    alias: ["code de la santé publique"],
+  },
+  {
+    libelle: "code de la sécurité intérieure",
+    identifiant: "LEGITEXT000025503132",
+    nature: "code",
+    url: "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000025503132",
+    alias: ["code de la sécurité intérieure"],
+  },
+  {
+    libelle: "code monétaire et financier",
+    identifiant: "LEGITEXT000006072026",
+    nature: "code",
+    url: "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072026",
+    alias: ["code monétaire et financier"],
+  },
+  {
+    libelle: "code des relations entre le public et l'administration",
+    identifiant: "LEGITEXT000031366350",
+    nature: "code",
+    url: "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000031366350",
+    alias: ["code des relations entre le public et l'administration"],
+  },
+  {
+    libelle: "code civil",
+    identifiant: "LEGITEXT000006070721",
+    nature: "code",
+    url: "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006070721",
+    alias: ["code civil"],
   },
 ];
 
@@ -251,14 +315,21 @@ export function documentsExclus(): ReadonlySet<string> {
 
 /**
  * Identifiants qu'un manifeste déclare : `document`, `text_id`,
- * `textes[].text_id` pour un corpus de plusieurs textes et `decisions[].celex`
- * pour les décisions d'adéquation.
+ * `textes[].text_id` pour un corpus de plusieurs textes, `decisions[].celex`
+ * pour les décisions d'adéquation et `documents[].document` pour un corpus de
+ * plusieurs actes (clauses types).
  */
 export function identifiantsDuManifeste(manifeste: Record<string, unknown>): string[] {
   const identifiants: string[] = [];
   for (const champ of ["document", "text_id"]) {
     const valeur = manifeste[champ];
     if (typeof valeur === "string" && valeur.trim() !== "") identifiants.push(valeur);
+  }
+  if (Array.isArray(manifeste.documents)) {
+    for (const document of manifeste.documents) {
+      const valeur = (document as { document?: unknown } | null)?.document;
+      if (typeof valeur === "string" && valeur.trim() !== "") identifiants.push(valeur);
+    }
   }
   if (Array.isArray(manifeste.textes)) {
     for (const texte of manifeste.textes) {
@@ -318,20 +389,32 @@ export type ArticlesCouverts = ReadonlyMap<string, readonly string[]>;
 
 /**
  * Textes que le corpus ne porte qu'en partie (`textes[].articles_couverts`) et
- * leurs numéros couverts. Un texte entier n'y figure pas.
+ * leurs numéros couverts. Un texte entier n'y figure pas. Les blocs d'un même
+ * `text_id` fusionnent : le Code pénal et le CPCE en ont plusieurs, et le dernier
+ * bloc ne doit pas effacer les articles couverts par les précédents.
  */
 export function articlesCouverts(rootDir: string): ArticlesCouverts {
   const couverts = new Map<string, string[]>();
+  const entiers = new Set<string>();
   for (const manifeste of manifestesLisibles(rootDir)) {
     if (!Array.isArray(manifeste.textes)) continue;
     for (const texte of manifeste.textes as { text_id?: unknown; articles_couverts?: unknown }[]) {
-      if (typeof texte?.text_id !== "string" || !Array.isArray(texte.articles_couverts)) continue;
-      couverts.set(
-        normaliserIdentifiant(texte.text_id),
-        texte.articles_couverts.filter((numero): numero is string => typeof numero === "string"),
-      );
+      if (typeof texte?.text_id !== "string") continue;
+      const document = normaliserIdentifiant(texte.text_id);
+      if (texte.articles_couverts === null) {
+        entiers.add(document);
+        continue;
+      }
+      if (!Array.isArray(texte.articles_couverts)) continue;
+      const existants = couverts.get(document) ?? [];
+      for (const numero of texte.articles_couverts) {
+        if (typeof numero === "string" && !existants.includes(numero)) existants.push(numero);
+      }
+      couverts.set(document, existants);
     }
   }
+  // Un bloc qui porte le texte entier couvre tout, quels que soient ses autres blocs.
+  for (const document of entiers) couverts.delete(document);
   return couverts;
 }
 
@@ -574,16 +657,32 @@ function numerosArticles(liste: string): string[] {
 }
 
 /**
- * Article du code pénal retenu : la série 226 à partir de 226-16, seule visée
- * par le périmètre. Un article de la partie « atteintes aux systèmes » ou du
- * code de procédure pénale reste dehors.
+ * Un numéro d'article du code pénal entre-t-il dans le périmètre du corpus
+ * `textes_fr` : 226-1, 226-8-1, 226-16 à 226-24 et 323-1 à 323-8, suffixes bis
+ * (`323-4-1`) compris. Tout autre article du code reste dehors.
  */
-function articlePenalRetenu(article: string): boolean {
-  const trouve = /^(\d+)(?:-(\d+))?/.exec(article);
+function numeroPenalRetenu(article: string): boolean {
+  const trouve = /^(\d+)(?:-(\d+))?(?:-(.+))?$/.exec(article);
   if (trouve === null) return false;
   const majeur = Number(trouve[1]);
-  const mineur = trouve[2] === undefined ? 0 : Number(trouve[2]);
-  return majeur === 226 && mineur >= 16;
+  const mineur = Number(trouve[2] ?? 0);
+  const suffixe = trouve[3];
+  if (majeur === 226) {
+    if (mineur === 1) return suffixe === undefined;
+    if (mineur === 8) return suffixe === "1";
+    // 226-16 à 226-24, suffixes numériques compris (`226-16-1`, `226-22-2`).
+    return mineur >= 16 && mineur <= 24 && (suffixe === undefined || /^\d+$/.test(suffixe));
+  }
+  if (majeur === 323) return mineur >= 1 && mineur <= 8;
+  return false;
+}
+
+/**
+ * Article ou plage du code pénal retenu : une plage n'est gardée que si ses
+ * deux bornes sont couvertes, une couverture partielle n'étant pas affirmée.
+ */
+function articlePenalRetenu(article: string): boolean {
+  return article.split("–").every((borne) => numeroPenalRetenu(borne.trim()));
 }
 
 /** Articles rendus pour un instrument : le code pénal garde son filtre. */
