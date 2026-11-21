@@ -41,7 +41,7 @@ export type Entry = {
   /**
    * Type du document quand la source le distingue : CEPD (`lignes_directrices`,
    * `avis_art64`, `decision_art65`, `recommandation`, `g29_repris`) ou doctrine
-   * CNIL (`guide`, `referentiel`, `liste_aipd`) ; `cepd` et `cnil_doctrine`.
+   * CNIL (`guide`, `referentiel`, `liste_aipd`, `fiche_ia`) ; `cepd` et `cnil_doctrine`.
    */
   type?: string;
   /** Vrai quand la version listée est soumise à consultation publique ; `cepd` seulement. */

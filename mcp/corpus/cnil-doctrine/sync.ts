@@ -27,6 +27,7 @@ import {
   extraireDocuments,
   lireDescripteur,
   parcourirReference,
+  pdfVersionFiche,
 } from "./liste.ts";
 import type {
   DescripteurDoctrine,
@@ -37,11 +38,13 @@ import type {
   TypeDoctrine,
 } from "./liste.ts";
 import {
+  dateDePage,
   dateDuDocument,
   deliberationDuDocument,
   deliberationsCitees,
   mentionContraire,
   slugUnique,
+  texteFiche,
   unitesDoctrine,
   validerUnites,
 } from "./parse.ts";
@@ -72,6 +75,13 @@ export type DocumentManifeste = {
   date_acte: string;
   date_source: "document" | "extraction";
   date_extraction: string;
+  /** Comment le texte a été obtenu : la page HTML de la fiche, ou son PDF officiel. */
+  representation: "pdf" | "page";
+  /**
+   * PDF officiel proposé pour la fiche, même quand la page l'emporte
+   * (`representation: "page"`, par exemple une infographie) ; `null` sans PDF.
+   */
+  pdf: string | null;
   /** Licence applicable à ce document, portée par le document lui-même. */
   licence: string;
   licence_url: string;
@@ -99,9 +109,19 @@ export type ManifesteDoctrine = {
   nom: string;
   titre: string;
   /** Pages de référence réellement consultées, avec leur date de consultation. */
-  liste_reference: { type: TypeDoctrine; url: string; consulte_le: string; documents: number }[];
+  liste_reference: {
+    type: TypeDoctrine;
+    url: string;
+    consulte_le: string;
+    /** Documents que la page a listés, retenus ou non. */
+    listes: number;
+    /** Documents retenus au corpus (ou couverts par le corpus `cnil`). */
+    documents: number;
+  }[];
   consulte_le: string;
   date_extraction: string;
+  /** Documents que les pages de référence ont listés, tous types confondus. */
+  documents_listes: number;
   documents: number;
   fragments: number;
   types: Record<TypeDoctrine, number>;
@@ -119,6 +139,7 @@ export type ManifesteDoctrine = {
     date_liste: string;
     date_extraction: string;
     pages_reference: string[];
+    documents_listes: number;
     types: Record<TypeDoctrine, number>;
     couverts_par_type: Record<TypeDoctrine, number>;
     couverts_par_cnil: number;
@@ -168,6 +189,11 @@ export function dateDuJour(instant = new Date()): string {
 /** Empreinte `sha256` d'octets. */
 function sha256(octets: Uint8Array | string): string {
   return createHash("sha256").update(octets).digest("hex");
+}
+
+/** Nombre de lettres d'un texte, pour comparer deux représentations. */
+function lettres(texte: string): number {
+  return (texte.match(/\p{L}/gu) ?? []).length;
 }
 
 /** Écrit un fichier UTF-8 s'il n'a pas déjà exactement ce contenu. */
@@ -319,24 +345,29 @@ export function texteDePage(html: string): string {
   return texteVisible(main === null ? html : main[0]).replace(/\s+/g, " ").trim();
 }
 
-/** Un candidat de document, avant téléchargement de son PDF. */
+/** Un candidat de document : sa page, le PDF officiel qu'elle sert, ou les deux. */
 type Candidat = {
   type: TypeDoctrine;
-  pdf: LienDocument;
-  /** Page qui porte le PDF, quand la référence liste des pages. */
-  page: string | null;
-  /** Texte de cette page, pour y lire une délibération. */
+  /** Le document : URL de la page de la fiche, ou du PDF quand il n'y a que lui. */
+  url: string;
+  titre: string;
+  /** PDF officiel de la même fiche, quand la page en publie un. */
+  pdf: LienDocument | null;
+  /** HTML de la page de la fiche, quand le document est publié en page. */
+  pageHtml: string | null;
+  /** Texte de la page qui porte le document, pour y lire une délibération. */
   pageTexte: string | null;
   reference: PageReference;
 };
 
-/** Un document retenu, son PDF, son empreinte et son texte. */
+/** Un document retenu, sa représentation, son empreinte et son texte. */
 type DocumentLu = {
   candidat: Candidat;
   slug: string;
   titre: string;
   date_acte: string;
   date_source: "document" | "extraction";
+  representation: "pdf" | "page";
   snapshot: string;
   texte: string;
 };
@@ -386,21 +417,62 @@ export async function syncDoctrine(
 
   const candidats: Candidat[] = [];
   const references: ManifesteDoctrine["liste_reference"] = [];
+  const ecartes: DocumentEcart[] = [];
   let pagesLues = 0;
 
   for (const reference of descripteur.pages_reference) {
     const liste = await parcourirReference(reference, descripteur.domaine, optionsHttp);
     pagesLues += liste.pagesLues;
-    references.push({
+    // Ce que la page de référence a listé, retenu ou non : une fiche refusée
+    // reste comptée ici, puis déclarée dans `documents_ecartes`.
+    let listes = 0;
+    const entreeReference = {
       type: reference.type,
       url: reference.url,
       consulte_le: date,
+      listes,
       documents: 0,
-    });
+    };
+    references.push(entreeReference);
     for (const pdf of liste.pdfs) {
-      candidats.push({ type: reference.type, pdf, page: null, pageTexte: null, reference });
+      listes += 1;
+      candidats.push({
+        type: reference.type,
+        url: pdf.url,
+        titre: pdf.titre.trim(),
+        pdf,
+        pageHtml: null,
+        pageTexte: null,
+        reference,
+      });
     }
     for (const page of liste.pages) {
+      if (reference.liens === "fiches") {
+        let html: string;
+        try {
+          html = await lirePage(page.url);
+        } catch (error) {
+          // Une fiche refusée est déclarée : la liste de référence ne l'oublie pas.
+          listes += 1;
+          ecartes.push({
+            url: page.url,
+            titre: page.titre.trim(),
+            raison: error instanceof Error ? error.message : String(error),
+          });
+          continue;
+        }
+        listes += 1;
+        candidats.push({
+          type: reference.type,
+          url: page.url,
+          titre: page.titre.trim(),
+          pdf: pdfVersionFiche(html, page.url, descripteur.domaine, page.titre),
+          pageHtml: html,
+          pageTexte: texteDePage(html),
+          reference,
+        });
+        continue;
+      }
       const html = await lirePage(page.url);
       const trouves = extraireDocuments(
         html,
@@ -410,15 +482,25 @@ export async function syncDoctrine(
       );
       const pageTexte = texteDePage(html);
       for (const pdf of trouves.pdfs) {
-        candidats.push({ type: reference.type, pdf, page: page.url, pageTexte, reference });
+        listes += 1;
+        candidats.push({
+          type: reference.type,
+          url: pdf.url,
+          titre: pdf.titre.trim(),
+          pdf,
+          pageHtml: null,
+          pageTexte,
+          reference,
+        });
       }
     }
+    entreeReference.listes = listes;
   }
 
   const vus = new Set<string>();
   const uniques = candidats.filter((candidat) => {
-    if (vus.has(candidat.pdf.url)) return false;
-    vus.add(candidat.pdf.url);
+    if (vus.has(candidat.url)) return false;
+    vus.add(candidat.url);
     return true;
   });
   if (uniques.length === 0) {
@@ -432,32 +514,63 @@ export async function syncDoctrine(
     guide: [],
     referentiel: [],
     liste_aipd: [],
+    fiche_ia: [],
   };
   const couverts: CouvertParCnil[] = [];
-  const ecartes: DocumentEcart[] = [];
   const pris = new Set<string>();
 
   for (const candidat of uniques) {
-    const url = candidat.pdf.url;
-    const titre = candidat.pdf.titre.trim();
-    let octets: Uint8Array;
-    let empreinte: string;
-    let texte: string;
-    try {
-      const fichier = await telechargeur.pdf(url);
-      octets = fichier.octets;
-      empreinte = fichier.sha256;
-      texte = await extraireTexte(octets, url);
-    } catch (error) {
-      // Un PDF dont l'extraction échoue ne doit pas rester au cache : la passe
-      // suivante le redemande au lieu d'échouer sur le même fichier.
-      telechargeur.oublier(url);
-      ecartes.push({
-        url,
-        titre,
-        raison: error instanceof Error ? error.message : String(error),
-      });
+    const url = candidat.url;
+    const titre = candidat.titre.trim();
+    const textePage = candidat.pageHtml === null ? null : texteFiche(candidat.pageHtml);
+    const datePage = candidat.pageHtml === null ? null : dateDePage(candidat.pageHtml);
+    let empreinte = "";
+    let texte = textePage ?? "";
+    let representation: "pdf" | "page" = "page";
+    let luDepuisPdf = false;
+
+    if (candidat.pdf !== null) {
+      try {
+        const fichier = await telechargeur.pdf(candidat.pdf.url);
+        empreinte = fichier.sha256;
+        texte = await extraireTexte(fichier.octets, candidat.pdf.url);
+        representation = "pdf";
+        luDepuisPdf = true;
+      } catch (error) {
+        // Un PDF dont l'extraction échoue ne doit pas rester au cache : la passe
+        // suivante le redemande au lieu d'échouer sur le même fichier.
+        telechargeur.oublier(candidat.pdf.url);
+        if (candidat.pageHtml === null) {
+          ecartes.push({
+            url,
+            titre,
+            raison: error instanceof Error ? error.message : String(error),
+          });
+          continue;
+        }
+      }
+    }
+
+    if (!luDepuisPdf && candidat.pageHtml !== null) {
+      // Une fiche publiée en page : son corps seul, converti en paragraphes.
+      texte = textePage ?? "";
+      empreinte = sha256(candidat.pageHtml);
+      representation = "page";
+      if (!/\p{L}/u.test(texte)) {
+        ecartes.push({ url, titre, raison: "page sans texte : aucune lettre dans la zone principale" });
+        continue;
+      }
+    } else if (!luDepuisPdf) {
+      ecartes.push({ url, titre, raison: "ni page ni PDF à lire" });
       continue;
+    }
+
+    // Le PDF d'une fiche peut n'être qu'une infographie : quand la page porte
+    // plus de texte, c'est elle la fiche, et le PDF n'est qu'une illustration.
+    if (representation === "pdf" && textePage !== null && lettres(texte) < lettres(textePage)) {
+      texte = textePage;
+      empreinte = sha256(candidat.pageHtml ?? "");
+      representation = "page";
     }
 
     const contraire = mentionContraire(texte);
@@ -476,7 +589,13 @@ export async function syncDoctrine(
       continue;
     }
 
-    const dateDocument = dateDuDocument(texte);
+    // La page retenue est conservée comme preuve, adressée par son empreinte,
+    // sous `data/raw/` (non commité), comme les PDF.
+    if (ecrire && representation === "page" && candidat.pageHtml !== null) {
+      ecrireOctets(join(brutDir, "page", `${empreinte}.html`), new TextEncoder().encode(candidat.pageHtml));
+    }
+
+    const dateDocument = datePage ?? dateDuDocument(texte);
     const dateActe = dateDocument ?? date;
     const slug = slugUnique(url, pris);
     const lu: DocumentLu = {
@@ -485,6 +604,7 @@ export async function syncDoctrine(
       titre: titre === "" ? slug : titre,
       date_acte: dateActe,
       date_source: dateDocument === null ? "extraction" : "document",
+      representation,
       snapshot: empreinte,
       texte,
     };
@@ -509,6 +629,8 @@ export async function syncDoctrine(
       date_acte: lu.date_acte,
       date_source: lu.date_source,
       date_extraction: date,
+      representation: lu.representation,
+      pdf: candidat.pdf?.url ?? null,
       licence: descripteur.licence,
       licence_url: descripteur.licence_url,
       source: descripteur.source,
@@ -529,24 +651,28 @@ export async function syncDoctrine(
     guide: documentsParType.guide.length,
     referentiel: documentsParType.referentiel.length,
     liste_aipd: documentsParType.liste_aipd.length,
+    fiche_ia: documentsParType.fiche_ia.length,
   };
   const couvertsParType: Record<TypeDoctrine, number> = {
     guide: couverts.filter((couvert) => couvert.type === "guide").length,
     referentiel: couverts.filter((couvert) => couvert.type === "referentiel").length,
     liste_aipd: couverts.filter((couvert) => couvert.type === "liste_aipd").length,
+    fiche_ia: couverts.filter((couvert) => couvert.type === "fiche_ia").length,
   };
   const compteParReference = new Map<PageReference, number>();
+  const parUrl = new Map(uniques.map((candidat) => [candidat.url, candidat]));
   for (const document of [
     ...documentsParType.guide,
     ...documentsParType.referentiel,
     ...documentsParType.liste_aipd,
+    ...documentsParType.fiche_ia,
   ]) {
-    const candidat = uniques.find((entree) => entree.pdf.url === document.url);
+    const candidat = parUrl.get(document.url);
     if (candidat === undefined) continue;
     compteParReference.set(candidat.reference, (compteParReference.get(candidat.reference) ?? 0) + 1);
   }
   for (const couvert of couverts) {
-    const candidat = uniques.find((entree) => entree.pdf.url === couvert.url);
+    const candidat = parUrl.get(couvert.url);
     if (candidat === undefined) continue;
     compteParReference.set(candidat.reference, (compteParReference.get(candidat.reference) ?? 0) + 1);
   }
@@ -557,6 +683,7 @@ export async function syncDoctrine(
       documents: reference === undefined ? 0 : compteParReference.get(reference) ?? 0,
     };
   });
+  const documentsListes = references.reduce((total, entree) => total + entree.listes, 0);
 
   const manifeste: ManifesteDoctrine = {
     corpus: descripteur.corpus,
@@ -565,6 +692,7 @@ export async function syncDoctrine(
     liste_reference: listeReference,
     consulte_le: date,
     date_extraction: date,
+    documents_listes: documentsListes,
     documents,
     fragments: unites.length,
     types,
@@ -577,10 +705,11 @@ export async function syncDoctrine(
     licence_url: descripteur.licence_url,
     source: descripteur.source,
     couverture: {
-      source: "CNIL — guides, référentiels et listes AIPD (cnil.fr)",
+      source: "CNIL — guides, référentiels, fiches IA et listes AIPD (cnil.fr)",
       date_liste: date,
       date_extraction: date,
       pages_reference: descripteur.pages_reference.map((reference) => reference.url),
+      documents_listes: documentsListes,
       types,
       couverts_par_type: couvertsParType,
       couverts_par_cnil: couverts.length,

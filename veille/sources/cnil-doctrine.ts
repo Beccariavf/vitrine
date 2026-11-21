@@ -1,5 +1,5 @@
 /**
- * Veille de la doctrine de la CNIL : guides, référentiels et listes AIPD.
+ * Veille de la doctrine de la CNIL : guides, référentiels, fiches IA et listes AIPD.
  *
  * La source relit les pages de référence déclarées au descripteur par la même
  * reconnaissance que le corpus `cnil_doctrine` (#54) — `liste.ts`, réutilisé en
@@ -277,6 +277,12 @@ export async function documentsListes(
     for (const pdf of liste.pdfs) ajouter(reference.type, pdf);
 
     for (const page of liste.pages) {
+      // Une fiche IA est la page elle-même : son PDF officiel peut changer sans
+      // que son URL bouge, la veille ne lit pas le fichier.
+      if (reference.liens === "fiches") {
+        ajouter(reference.type, page);
+        continue;
+      }
       const html = await chargerTexte(page.url, http);
       const referencePdf: PageReference = {
         type: reference.type,

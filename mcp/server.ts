@@ -153,8 +153,8 @@ const CONSIGNE_SERVEUR =
   "modification des actes du corpus et affaires CJUE pendantes), " +
   "les délibérations de la CNIL " +
   "(corpus `cnil`, natures Sanction, Avis et Recommandation/Lignes directrices), les guides, " +
-  "référentiels et listes AIPD de la CNIL (corpus `cnil_doctrine`, extraits non modifiés sous " +
-  "CC BY-ND 4.0), les décisions du " +
+  "référentiels, fiches pratiques IA et listes AIPD de la CNIL (corpus `cnil_doctrine`, extraits " +
+  "non modifiés sous CC BY-ND 4.0), les décisions du " +
   "Conseil d'État (corpus `ce`), les décisions DC et QPC du Conseil constitutionnel (corpus " +
   "`constit`), les documents du CEPD (corpus `cepd` : lignes directrices, avis art. 64, décisions art. 65, recommandations), les décisions de la Cour de cassation " +
   "sur les données personnelles (corpus `cc`), celles de la CJUE (corpus `cjue`), et les métadonnées des " +
@@ -475,8 +475,8 @@ export function createServer(deps: ServerDeps): McpServer {
         "police-justice, le règlement 2018/1725, le règlement procédural RGPD, les clauses " +
         "contractuelles types, les décisions d'adéquation, la LIL, les textes français d'application, " +
         "les textes en préparation et les affaires pendantes, les délibérations de la CNIL " +
-        "(sanctions, avis, recommandations et lignes directrices), les guides, référentiels et listes " +
-        "AIPD de la CNIL (corpus `cnil_doctrine`), les décisions du Conseil d'État, " +
+        "(sanctions, avis, recommandations et lignes directrices), les guides, référentiels, fiches " +
+        "pratiques IA et listes AIPD de la CNIL (corpus `cnil_doctrine`), les décisions du Conseil d'État, " +
         "les décisions DC et QPC du Conseil constitutionnel, les documents du CEPD, les " +
         "décisions de la Cour de cassation sur les données personnelles, celles de la CJUE, et les " +
         "métadonnées des décisions du guichet unique (corpus `metadonnees`, aucun texte de décision ; " +
@@ -525,8 +525,8 @@ export function createServer(deps: ServerDeps): McpServer {
             "Restreint la recherche à une collection : rgpd, aiact, eprivacy, police, eudpr, " +
               "rgpdproc, ccs, adequation, cnil, cnil_doctrine, lil, textes_fr, preparation, ce, constit, cepd, cc ou " +
               "cjue ; cnil couvre les sanctions, avis, recommandations et lignes directrices, " +
-              "cnil_doctrine les guides, référentiels et listes AIPD (extraits non modifiés, " +
-              "CC BY-ND 4.0), " +
+              "cnil_doctrine les guides, référentiels, fiches pratiques IA et listes AIPD (extraits " +
+              "non modifiés, CC BY-ND 4.0), " +
               "constit les décisions DC et QPC, metadonnees les notices du guichet unique " +
               "(métadonnées seulement) ; absent, toutes répondent",
           ),

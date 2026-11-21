@@ -168,6 +168,45 @@ describe("veille de la doctrine CNIL", () => {
     assert.match(resultat.notes.join(" "), /3 inchangé\(s\)/);
   });
 
+  it("signale une fiche IA absente du manifeste par sa page, puis la tient pour inchangée", async () => {
+    const manifeste = manifesteReel();
+    manifeste.documents_par_type.fiche_ia = [];
+    manifeste.documents_ecartes = [];
+    const racine = racineAvecManifeste(manifeste);
+    const reference: DescripteurDoctrine["pages_reference"][number] = {
+      type: "fiche_ia",
+      url: "https://www.cnil.fr/fr/les-fiches-pratiques-ia",
+      pages_max: 1,
+      liens: "fiches",
+    };
+
+    const premier = await passe(racine, descripteur(reference), {
+      "https://www.cnil.fr/fr/les-fiches-pratiques-ia": fixture("fiches-ia.html"),
+    });
+
+    assert.equal(premier.entries.length, 18);
+    assert.ok(premier.entries.every((entree) => entree.motif === "nouveau"));
+    assert.ok(premier.entries.every((entree) => entree.type === "fiche_ia"));
+    const annotations = premier.entries.find((entree) => entree.title === "Annoter les données");
+    assert.ok(annotations !== undefined);
+    assert.equal(annotations.url, "https://www.cnil.fr/fr/ia-annoter-les-donnees");
+    assert.equal(annotations.version, annotations.url, "la page est la version constatée");
+    assert.equal(annotations.summary, null);
+
+    const connus = manifesteReel();
+    connus.documents_ecartes = [];
+    connus.documents_par_type.fiche_ia = premier.entries.map((entree) => ({
+      slug: entree.document ?? "",
+      titre: entree.title,
+      url: entree.url,
+    }));
+    const seconde = await passe(racineAvecManifeste(connus), descripteur(reference), {
+      "https://www.cnil.fr/fr/les-fiches-pratiques-ia": fixture("fiches-ia.html"),
+    });
+    assert.deepEqual(seconde.entries, []);
+    assert.match(seconde.notes.join(" "), /18 inchangé\(s\)/);
+  });
+
   it("ne signale pas une liste AIPD déjà couverte par le corpus cnil", async () => {
     const racine = racineAvecManifeste(manifesteReel());
 

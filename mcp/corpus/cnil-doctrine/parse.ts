@@ -12,6 +12,7 @@
 import { createHash } from "node:crypto";
 import { decouperParagraphes } from "../cnil/parse.ts";
 import type { Unite } from "../parse.ts";
+import { decoderEntites, texteVisible } from "../parse.ts";
 import { paragraphesDepuisTexte } from "../cepd/pdf.ts";
 import type { DescripteurDoctrine, TypeDoctrine } from "./liste.ts";
 
@@ -22,6 +23,7 @@ const LIBELLES: Record<TypeDoctrine, string> = {
   guide: "Guides",
   referentiel: "Référentiels",
   liste_aipd: "Listes AIPD",
+  fiche_ia: "Fiches IA",
 };
 
 /** Marques d'une licence contraire à la CC BY-ND, cherchées dans le texte. */
@@ -71,6 +73,24 @@ const MOTIF_DATE_FR =
   /(\d{1,2})\s+(janvier|février|fevrier|mars|avril|mai|juin|juillet|août|aout|septembre|octobre|novembre|décembre|decembre)\s+(\d{4})/i;
 
 /**
+ * Date écrite dans un fragment, en ISO : forme `AAAA-MM-JJ` ou date française
+ * (« 22 juillet 2025 »). Une valeur illisible rend `null`.
+ */
+export function dateFrancaise(valeur: string): string | null {
+  const iso = /(\d{4}-\d{2}-\d{2})/.exec(valeur);
+  if (iso?.[1] !== undefined && !Number.isNaN(Date.parse(iso[1]))) return iso[1];
+  const francais = MOTIF_DATE_FR.exec(valeur);
+  if (francais?.[1] === undefined || francais[2] === undefined || francais[3] === undefined) {
+    return null;
+  }
+  const mois = MOIS[francais[2].toLocaleLowerCase("fr")];
+  const jour = Number(francais[1]);
+  if (mois === undefined || !Number.isInteger(jour) || jour < 1 || jour > 31) return null;
+  const date = `${francais[3]}-${mois}-${String(jour).padStart(2, "0")}`;
+  return Number.isNaN(Date.parse(date)) ? null : date;
+}
+
+/**
  * Date du document, quand son en-tête la déclare (« Adopté le 21 novembre
  * 2019 », « Version du … », « Publié le … »). Une date de visa ou de citation
  * n'est pas la date du document : sans formule qui la déclare, `null`.
@@ -82,18 +102,88 @@ export function dateDuDocument(texte: string): string | null {
       entete,
     );
   if (declaree?.[1] === undefined) return null;
-  const valeur = declaree[1].trim();
-  const iso = /^(\d{4}-\d{2}-\d{2})$/.exec(valeur);
-  if (iso?.[1] !== undefined && !Number.isNaN(Date.parse(iso[1]))) return iso[1];
-  const francais = MOTIF_DATE_FR.exec(valeur);
-  if (francais?.[1] === undefined || francais[2] === undefined || francais[3] === undefined) {
-    return null;
+  return dateFrancaise(declaree[1].trim());
+}
+
+/**
+ * Date affichée par une page de fiche, dans son en-tête (`ctn-gen-auteur` :
+ * « 22 juillet 2025 ») ; `null` quand la page n'en porte pas.
+ */
+export function dateDePage(html: string): string | null {
+  const auteur =
+    /<p\b[^>]*class=["'][^"']*\bctn-gen-auteur\b[^"']*["'][^>]*>([\s\S]*?)<\/p>/i.exec(html);
+  if (auteur?.[1] === undefined) return null;
+  return dateFrancaise(texteVisible(auteur[1]));
+}
+
+/** Bloc `<div>` équilibré dont l'ouverture correspond à `ouverture`, ou `null`. */
+function blocDiv(html: string, ouverture: RegExp): string | null {
+  const debut = ouverture.exec(html)?.index;
+  if (debut === undefined) return null;
+  const balise = /<\/?div\b[^>]*>/gi;
+  balise.lastIndex = debut;
+  let profondeur = 0;
+  for (let trouve = balise.exec(html); trouve !== null; trouve = balise.exec(html)) {
+    profondeur += trouve[0].startsWith("</") ? -1 : 1;
+    if (profondeur === 0) return html.slice(debut, balise.lastIndex);
   }
-  const mois = MOIS[francais[2].toLocaleLowerCase("fr")];
-  const jour = Number(francais[1]);
-  if (mois === undefined || !Number.isInteger(jour) || jour < 1 || jour > 31) return null;
-  const date = `${francais[3]}-${mois}-${String(jour).padStart(2, "0")}`;
-  return Number.isNaN(Date.parse(date)) ? null : date;
+  return null;
+}
+
+/** Retire un bloc `<div>` reconnu à son ouverture ; le texte le traverse sinon. */
+function sansBloc(html: string, ouverture: RegExp): string {
+  const bloc = blocDiv(html, ouverture);
+  return bloc === null ? html : html.replace(bloc, " ");
+}
+
+/**
+ * Texte de la zone principale d'une fiche IA : le corps de l'article, ses
+ * intertitres et ses paragraphes, sans navigation, sans outils de page et sans
+ * pied de page. La conversion est technique (balises, entités, blancs) ; le
+ * texte lui-même n'est jamais réécrit.
+ */
+export function texteFiche(html: string): string {
+  const main = /<main\b[\s\S]*?<\/main>/i.exec(html)?.[0];
+  const article = /<article\b[\s\S]*?<\/article>/i.exec(html)?.[0];
+  const zone = main ?? article ?? html;
+  const corps =
+    blocDiv(
+      zone,
+      /<div\b[^>]*class=["'](?:[^"']*\s)?ctn-gen(?:\s[^"']*)?["'][^>]*>/i,
+    ) ?? zone;
+  // Le corps de la fiche est encadré de chrome dans `ctn-gen` : outils de page,
+  // pager « Fiche précédente / Sommaire / Fiche suivante », étiquettes, rubrique
+  // « Pour approfondir ». Rien de cela n'est du texte de doctrine.
+  const sansChrome = [
+    /<div\b[^>]*class=["'](?:[^"']*\s)?page--tools(?:\s[^"']*)?["'][^>]*>/i,
+    /<div\b[^>]*class=["'](?:[^"']*\s)?ctn-gen-push-3(?:\s[^"']*)?["'][^>]*>/i,
+    /<div\b[^>]*class=["'](?:[^"']*\s)?general-tags(?:\s[^"']*)?["'][^>]*>/i,
+    /<div\b[^>]*class=["'](?:[^"']*\s)?nav--hub-nav(?:\s[^"']*)?["'][^>]*>/i,
+    /<div\b[^>]*class=["'](?:[^"']*\s)?ctn-gen-textes-references(?:\s[^"']*)?["'][^>]*>/i,
+    // Cartes de téléchargement associées à la fiche, et libellés masqués
+    // (« Texte reference », « Document reference »).
+    /<div\b[^>]*class=["'](?:[^"']*\s)?ctn-gen-documents(?:\s[^"']*)?["'][^>]*>/i,
+    /<div\b[^>]*class=["'](?:[^"']*\s)?text-hide(?:\s[^"']*)?["'][^>]*>/i,
+  ].reduce(sansBloc, corps);
+  const sansOutils = sansChrome
+    .replace(/<script\b[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style\b[\s\S]*?<\/style>/gi, " ")
+    .replace(/<nav\b[\s\S]*?<\/nav>/gi, " ")
+    // Le libellé du bouton d'accordéon (« Déplier ») est une commande d'interface,
+    // pas du texte de doctrine ; les boutons de glossaire, eux, portent un terme.
+    .replace(
+      /<button\b[^>]*class=["'][^"']*\bctn-gen-ascenseur-collapse\b[^"']*["'][\s\S]*?<\/button>/gi,
+      " ",
+    );
+  const avecSauts = sansOutils
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(?:p|div|h[1-6]|li|ul|ol|tr|section|blockquote|table|dd|dt)>/gi, "\n\n")
+    .replace(/<[^>]*>/g, " ");
+  return decoderEntites(avecSauts)
+    .split("\n")
+    .map((ligne) => ligne.replace(/\s+/g, " ").trim())
+    .filter((ligne) => ligne !== "")
+    .join("\n\n");
 }
 
 /** Une délibération citée par une page, avec l'intitulé qui la suit. */
