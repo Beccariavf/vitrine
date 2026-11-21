@@ -628,16 +628,31 @@ function numerosArticles(liste: string): string[] {
 }
 
 /**
- * Article du code pénal retenu : la série 226 à partir de 226-16, seule visée
- * par le périmètre. Un article de la partie « atteintes aux systèmes » ou du
- * code de procédure pénale reste dehors.
+ * Un numéro d'article du code pénal entre-t-il dans le périmètre du corpus
+ * `textes_fr` : 226-1, 226-8-1, 226-16 à 226-24 et 323-1 à 323-8, suffixes bis
+ * (`323-4-1`) compris. Tout autre article du code reste dehors.
  */
-function articlePenalRetenu(article: string): boolean {
-  const trouve = /^(\d+)(?:-(\d+))?/.exec(article);
+function numeroPenalRetenu(article: string): boolean {
+  const trouve = /^(\d+)(?:-(\d+))?(?:-(.+))?$/.exec(article);
   if (trouve === null) return false;
   const majeur = Number(trouve[1]);
-  const mineur = trouve[2] === undefined ? 0 : Number(trouve[2]);
-  return majeur === 226 && mineur >= 16;
+  const mineur = Number(trouve[2] ?? 0);
+  const suffixe = trouve[3];
+  if (majeur === 226) {
+    if (suffixe !== undefined) return mineur === 8 && suffixe === "1";
+    if (mineur === 1) return true;
+    return mineur >= 16 && mineur <= 24;
+  }
+  if (majeur === 323) return mineur >= 1 && mineur <= 8;
+  return false;
+}
+
+/**
+ * Article ou plage du code pénal retenu : une plage n'est gardée que si ses
+ * deux bornes sont couvertes, une couverture partielle n'étant pas affirmée.
+ */
+function articlePenalRetenu(article: string): boolean {
+  return article.split("–").every((borne) => numeroPenalRetenu(borne.trim()));
 }
 
 /** Articles rendus pour un instrument : le code pénal garde son filtre. */
