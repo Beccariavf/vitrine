@@ -1,22 +1,35 @@
 /**
  * Liste les documents de doctrine depuis les pages de référence de cnil.fr.
  *
- * Une page de référence déclare son type (`guide`, `referentiel`, `liste_aipd`)
- * et la façon dont elle liste ses documents : des PDF directs, ou des pages qui
- * portent elles-mêmes le PDF. Les pages de résultats sont parcourues par
+ * Une page de référence déclare son type (`guide`, `referentiel`, `liste_aipd`,
+ * `fiche_ia`) et la façon dont elle liste ses documents : des PDF directs, des
+ * pages qui portent elles-mêmes le PDF, ou des fiches rangées ligne par ligne
+ * avec leur libellé et leur titre. Les pages de résultats sont parcourues par
  * `?page=N` jusqu'à ce qu'elles ne rendent plus rien de nouveau. Seuls les liens
  * de la zone de contenu sont retenus : la navigation, les étiquettes et les
  * médiathèques ne sont pas des documents.
  */
 
 import { readFileSync } from "node:fs";
-import { texteVisible } from "../parse.ts";
+import { decoderEntites, texteVisible } from "../parse.ts";
+import { chevauchement } from "./parse.ts";
+
+/**
+ * Texte d'un intitulé : balises retirées, entités décodées, blancs normalisés.
+ * `texteVisible` resserre aussi la ponctuation (« d’IA: »), ce qui altérerait
+ * l'intitulé officiel ; un titre garde donc ses espaces.
+ */
+function titreVisible(fragment: string): string {
+  return decoderEntites(fragment.replace(/<[^>]*>/g, " "))
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
 /** Type de doctrine retenu. */
-export type TypeDoctrine = "guide" | "referentiel" | "liste_aipd";
+export type TypeDoctrine = "guide" | "referentiel" | "liste_aipd" | "fiche_ia";
 
 /** Comment une page de référence expose ses documents. */
-export type ModeLiens = "pdf" | "page";
+export type ModeLiens = "pdf" | "page" | "fiches";
 
 /** Une page de référence déclarée au descripteur. */
 export type PageReference = {
@@ -139,18 +152,22 @@ function preferencePdf(url: string): number {
   return new URL(url).pathname.includes("/sites/default/files/") ? 0 : 1;
 }
 
-/** Une ancre de la zone principale, son texte et son bloc. */
-type Ancre = { url: string; texte: string };
+/** Une ancre de la zone principale, son texte, son attribut `title` et son bloc. */
+type Ancre = { url: string; texte: string; titre: string };
 
 function ancres(html: string, pageUrl: string): Ancre[] {
   const zone = zonePrincipale(html);
   const liens: Ancre[] = [];
-  const motif = /<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a\s*>/gi;
+  const motif = /<a\b([^>]*)>([\s\S]*?)<\/a\s*>/gi;
   for (let trouve = motif.exec(zone); trouve !== null; trouve = motif.exec(zone)) {
-    const url = urlAbsolue(trouve[1] ?? "", pageUrl);
+    const attributs = trouve[1] ?? "";
+    const url = urlAbsolue(/href=["']([^"']+)["']/i.exec(attributs)?.[1] ?? "", pageUrl);
     if (url === null) continue;
     const texte = texteVisible(trouve[2] ?? "").replace(/\s+/g, " ").trim();
-    liens.push({ url, texte });
+    const titre = texteVisible(/title=["']([^"']*)["']/i.exec(attributs)?.[1] ?? "")
+      .replace(/\s+/g, " ")
+      .trim();
+    liens.push({ url, texte, titre });
   }
   return liens;
 }
@@ -166,10 +183,87 @@ function lienDeNavigation(url: string, pageUrl: string): boolean {
 }
 
 /**
+ * Fiches listées par une page de référence, reconnues à leurs lignes : chaque
+ * document y porte un libellé (`Fiche 3`, `Fiche 8 bis`, `Introduction`,
+ * `Liste de vérification`) et le lien de sa page ou de son PDF. Un lien qui ne
+ * mène pas au domaine déclaré n'est pas une fiche.
+ */
+export function extraireFiches(
+  html: string,
+  pageUrl: string,
+  domaine: string,
+): { pdfs: LienDocument[]; pages: LienDocument[] } {
+  const zone = zonePrincipale(html);
+  const pdfs = new Map<string, LienDocument>();
+  const pages = new Map<string, LienDocument>();
+  const etiquettes = [...zone.matchAll(/<p\b[^>]*class=["'][^"']*\bnumber\b[^"']*["'][^>]*>([\s\S]*?)<\/p>/gi)];
+
+  for (let index = 0; index < etiquettes.length; index += 1) {
+    const etiquette = etiquettes[index];
+    if (etiquette === undefined || etiquette.index === undefined) continue;
+    const debut = etiquette.index;
+    const fin = etiquettes[index + 1]?.index ?? zone.length;
+    const ligne = zone.slice(debut, fin);
+    const libelle = texteVisible(etiquette[1] ?? "").replace(/\s+/g, " ").trim();
+    const href = /<a\b[^>]*href=["']([^"']+)["']/i.exec(ligne)?.[1];
+    if (href === undefined) continue;
+    const url = urlAbsolue(href, pageUrl);
+    if (url === null || !estDomaine(url, domaine)) continue;
+    const titre =
+      titreVisible(/<h3\b[^>]*>([\s\S]*?)<\/h3>/i.exec(ligne)?.[1] ?? "") ||
+      titreVisible(/<a\b[^>]*>([\s\S]*?)<\/a>/i.exec(ligne)?.[1] ?? "") ||
+      libelle;
+    if (titre === "") continue;
+    if (estPdf(url, domaine)) {
+      if (!pdfs.has(url)) pdfs.set(url, { url, titre });
+    } else if (!pages.has(url)) {
+      pages.set(url, { url, titre });
+    }
+  }
+
+  // Chaque libellé de la page est un document : un libellé sans lien ou hors
+  // domaine signale que le balisage a changé, et aucune fiche ne doit
+  // disparaître en silence.
+  if (pages.size + pdfs.size < etiquettes.length) {
+    throw new Error(
+      `Fiches listées non reconnues : ${etiquettes.length} libellé(s) pour ` +
+        `${pages.size + pdfs.size} document(s) — la page de référence a changé ?`,
+    );
+  }
+
+  return { pdfs: [...pdfs.values()], pages: [...pages.values()] };
+}
+
+/** Jetons communs exigés entre l'intitulé de la fiche et celui de son PDF. */
+const SEUIL_PDF_FICHE = 3;
+
+/**
+ * PDF officiel de la même fiche, quand la page en publie une version. Le lien
+ * porte la mention « Consulter la version PDF » et un `title` qui reprend
+ * l'intitulé du document ; le rapprochement des intitulés évite de prendre le
+ * schéma d'une autre fiche ou d'une fiche voisine pour la version de celle-ci.
+ */
+export function pdfVersionFiche(
+  html: string,
+  pageUrl: string,
+  domaine: string,
+  titre: string,
+): LienDocument | null {
+  for (const ancre of ancres(html, pageUrl)) {
+    if (!estPdf(ancre.url, domaine)) continue;
+    if (!/^consulter\s+la\s+version\s+pdf/i.test(ancre.texte)) continue;
+    if (chevauchement(titre, ancre.titre) < SEUIL_PDF_FICHE) continue;
+    return { url: ancre.url, titre };
+  }
+  return null;
+}
+
+/**
  * Documents listés par une page de référence.
  *
  * `liens: "pdf"` retient les PDF de la page. `liens: "page"` retient les pages
  * dont le chemin ou l'intitulé porte `motif_page` ; leurs PDF sont lus ensuite.
+ * `liens: "fiches"` retient les fiches rangées par libellé, pages ou PDF.
  * Un PDF dont le nom ne porte pas `motif_pdf` (quand il est déclaré) est écarté.
  */
 export function extraireDocuments(
@@ -178,6 +272,7 @@ export function extraireDocuments(
   reference: PageReference,
   domaine: string,
 ): { pdfs: LienDocument[]; pages: LienDocument[] } {
+  if (reference.liens === "fiches") return extraireFiches(html, pageUrl, domaine);
   const pdfs = new Map<string, LienDocument>();
   const pages = new Map<string, LienDocument>();
   const motifPage =

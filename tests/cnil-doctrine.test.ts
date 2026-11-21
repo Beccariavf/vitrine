@@ -1,5 +1,6 @@
 import { strict as assert } from "node:assert";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -7,8 +8,10 @@ import { after, describe, it } from "node:test";
 import {
   chargerTexte,
   extraireDocuments,
+  extraireFiches,
   lireDescripteur,
   parcourirReference,
+  pdfVersionFiche,
 } from "../mcp/corpus/cnil-doctrine/liste.ts";
 import type {
   DescripteurDoctrine,
@@ -18,11 +21,14 @@ import type {
 } from "../mcp/corpus/cnil-doctrine/liste.ts";
 import {
   chevauchement,
+  dateDePage,
   dateDuDocument,
+  dateFrancaise,
   deliberationDuDocument,
   deliberationsCitees,
   mentionContraire,
   slugDe,
+  texteFiche,
   unitesDoctrine,
   validerUnites,
 } from "../mcp/corpus/cnil-doctrine/parse.ts";
@@ -182,6 +188,100 @@ describe("liste de référence de la doctrine CNIL", () => {
     );
     assert.equal(resultat.pdfs.length, 3);
     assert.equal(resultat.pagesLues, 1);
+  });
+});
+
+describe("fiches IA de la CNIL", () => {
+  const REFERENCE_FICHES: PageReference = {
+    type: "fiche_ia",
+    url: "https://www.cnil.fr/fr/les-fiches-pratiques-ia",
+    pages_max: 1,
+    liens: "fiches",
+  };
+
+  it("liste chaque fiche de la page de référence, sa page ou son PDF", () => {
+    const { pdfs, pages } = extraireFiches(
+      fixture("fiches-ia.html"),
+      REFERENCE_FICHES.url,
+      "www.cnil.fr",
+    );
+    assert.equal(pages.length, 17);
+    assert.equal(pdfs.length, 1);
+    assert.deepEqual(pdfs[0]?.url, "https://www.cnil.fr/sites/default/files/2025-07/ia_liste_de_verification.pdf");
+    assert.equal(pdfs[0]?.titre, "Développement des systèmes d'IA : Que faut-il vérifier ?");
+    assert.equal(pages[0]?.url, "https://www.cnil.fr/fr/developpement-des-systemes-dia-les-recommandations-de-la-cnil-pour-respecter-le-rgpd");
+    assert.equal(pages[0]?.titre, "Les recommandations de la CNIL en bref");
+    assert.equal(
+      pages.at(-1)?.url,
+      "https://www.cnil.fr/fr/ia-analyser-le-statut-dun-modele-dia-au-regard-du-rgpd",
+    );
+    assert.equal(pages.at(-1)?.titre, "Analyser le statut d’un modèle d’IA au regard du RGPD");
+  });
+
+  it("lève plutôt que de perdre une fiche quand le balisage de la liste change", () => {
+    const html = [
+      "<main>",
+      '<div class="row"><div class="col-sm-3 left"><p class="number">Fiche 1</p></div>',
+      '<div class="col-sm-9 right"><h3>Une fiche</h3><a href="/fr/fiche-1">Lire</a></div></div>',
+      '<div class="row"><div class="col-sm-3 left"><p class="number">Fiche 2</p></div>',
+      '<div class="col-sm-9 right"><h3>Fiche sans lien</h3></div></div>',
+      "</main>",
+    ].join("");
+    assert.throws(
+      () => extraireFiches(html, REFERENCE_FICHES.url, "www.cnil.fr"),
+      /Fiches listées non reconnues : 2 libellé\(s\) pour 1 document\(s\)/,
+    );
+  });
+
+  it("extrait le corps de la fiche sans navigation, ni outils, ni pied de page", () => {
+    const html = fixture("fiche-ia.html");
+    const texte = texteFiche(html);
+    assert.match(texte, /^IA : Annoter les données/);
+    assert.match(texte, /La phase d’annotation des données est cruciale/);
+    assert.match(texte, /annoter la position de ses membres peut être une indication utile/);
+    assert.match(texte, /Les enjeux de l’annotation pour les droits et libertés des personnes/);
+    assert.doesNotMatch(texte, /Déplier/);
+    assert.doesNotMatch(texte, /Mentions légales/);
+    assert.doesNotMatch(texte, /Accueil/);
+    assert.doesNotMatch(texte, /Imprimer l’article/);
+    assert.doesNotMatch(texte, /Intelligence artificielle \(IA\)/);
+    assert.doesNotMatch(texte, /Fiche précédente|Fiche suivante|Sommaire/);
+    assert.doesNotMatch(texte, /Pour approfondir|Texte reference/);
+    assert.doesNotMatch(texte, /Document reference|Liste de vérification|Télécharger/);
+    assert.equal(dateDePage(html), "2025-07-22");
+  });
+
+  it("préfère le PDF officiel de la même fiche, et seulement celui-là", () => {
+    const html = fixture("fiche-ia-pdf.html");
+    const page = "https://www.cnil.fr/fr/tenir-compte-de-la-protection-des-donnees-dans-la-conception-du-systeme";
+    assert.deepEqual(
+      pdfVersionFiche(
+        html,
+        page,
+        "www.cnil.fr",
+        "Tenir compte de la protection des données dans la conception du système",
+      ),
+      {
+        url: "https://www.cnil.fr/sites/cnil/files/2024-06/fiche_ia_protection_des_donnees_des_la_conception_du_systeme.pdf",
+        titre: "Tenir compte de la protection des données dans la conception du système",
+      },
+    );
+    assert.equal(
+      pdfVersionFiche(
+        html,
+        page,
+        "www.cnil.fr",
+        "Définir une finalité",
+      ),
+      null,
+      "un PDF d'une autre fiche n'est pas la version de celle-ci",
+    );
+  });
+
+  it("lit une date de page en français et laisse une valeur illisible telle quelle", () => {
+    assert.equal(dateFrancaise("22 juillet 2025"), "2025-07-22");
+    assert.equal(dateFrancaise("2024-04-08"), "2024-04-08");
+    assert.equal(dateFrancaise("sans date"), null);
   });
 });
 
@@ -500,12 +600,18 @@ describe("synchronisation de la doctrine CNIL", () => {
         type: "liste_aipd",
         url: "https://exemple.test/fr/listes-aipd",
         consulte_le: "2026-11-14",
+        listes: 3,
         documents: 2,
       },
     ]);
     assert.equal(manifeste.consulte_le, "2026-11-14");
-    assert.deepEqual(manifeste.types, { guide: 0, referentiel: 0, liste_aipd: 1 });
-    assert.deepEqual(manifeste.couverts_par_type, { guide: 0, referentiel: 0, liste_aipd: 1 });
+    assert.deepEqual(manifeste.types, { guide: 0, referentiel: 0, liste_aipd: 1, fiche_ia: 0 });
+    assert.deepEqual(manifeste.couverts_par_type, {
+      guide: 0,
+      referentiel: 0,
+      liste_aipd: 1,
+      fiche_ia: 0,
+    });
     assert.deepEqual(manifeste.couverts_par_cnil, [
       {
         type: "liste_aipd",
@@ -628,6 +734,227 @@ describe("synchronisation de la doctrine CNIL", () => {
     assert.equal(telechargements, 2, "le cache expire au bout de sept jours");
     await syncDoctrine({ ...commun, date: "2026-12-09", rafraichir: true });
     assert.equal(telechargements, 3, "--refresh relit le PDF");
+  });
+
+  it("ingère les fiches IA en page ou en PDF et déclare une fiche refusée", async () => {
+    const racine = racineTemporaire();
+    const reference: PageReference = {
+      type: "fiche_ia",
+      url: "https://exemple.test/fr/fiches-pratiques-ia",
+      pages_max: 1,
+      liens: "fiches",
+    };
+    ecrire(
+      racine,
+      "descripteur.json",
+      JSON.stringify({ ...DESCRIPTEUR, domaine: "exemple.test", pages_reference: [reference] }),
+    );
+
+    const pageA = "https://exemple.test/fr/fiche-annotations";
+    const pageB = "https://exemple.test/fr/fiche-securite";
+    const pageC = "https://exemple.test/fr/fiche-refusee";
+    const pdfB = "https://exemple.test/sites/default/files/fiche_securite.pdf";
+    const pdfListe = "https://exemple.test/sites/default/files/liste_verification.pdf";
+    const textePdfB =
+      "La sécurité du développement d'un système d'IA repose sur une analyse des risques.\n\n" +
+      "Les mesures de sécurité sont proportionnées aux risques identifiés.";
+
+    const htmlFiche = (titre: string, date: string, corps: string, pdf: string | null): string => [
+      "<main>",
+      '<ol class="breadcrumb"><li><a href="/fr">Accueil</a></li></ol>',
+      '<div class="ctn-gen">',
+      `<div class='ctn-gen-titre js-zoom-wrapper zoom-wrapper'><h1><span>${titre}</span></h1></div>`,
+      `<p class='ctn-gen-auteur'>${date}</p>`,
+      '<div class="page--tools"><div class="social"><ul><li><button type="button"><span class="sr-only">Imprimer l’article</span></button></li></ul></div></div>',
+      '<div class="ctn-gen-after js-zoom-wrapper zoom-wrapper">',
+      `<p>${corps}</p>`,
+      pdf === null
+        ? ""
+        : `<p class="text-align-center"><a href="${pdf}" title="Fiche IA - ${titre} - PDF - Nouvelle fenêtre"><em>Consulter la version PDF</em></a></p>`,
+      "</div>",
+      "</div>",
+      '<div class="general-tags"><ul><li><a href="/fr/tag/IA">#IA</a></li></ul></div>',
+      "</main>",
+      '<footer class="page--footer"><a href="/fr/mentions-legales">Mentions légales</a></footer>',
+    ].join("");
+
+    const pages: Record<string, string> = {
+      "https://exemple.test/fr/fiches-pratiques-ia": [
+        "<main>",
+        '<div class="row"><div class="col-sm-3 left"><p class="number">Fiche 1</p></div>',
+        '<div class="col-sm-9 right"><h3>Annoter les données</h3><a href="/fr/fiche-annotations">&gt; En savoir plus</a></div></div>',
+        '<div class="row"><div class="col-sm-3 left"><p class="number">Fiche 2</p></div>',
+        '<div class="col-sm-9 right"><h3>Garantir la sécurité du développement</h3><a href="/fr/fiche-securite">&gt; En savoir plus</a></div></div>',
+        '<div class="row"><div class="col-sm-3 left"><p class="number">Fiche 3</p></div>',
+        '<div class="col-sm-9 right"><h3>Fiche refusée</h3><a href="/fr/fiche-refusee">&gt; En savoir plus</a></div></div>',
+        '<div class="row"><div class="col-sm-3 left"><p class="number">Liste de vérification</p></div>',
+        `<div class="col-sm-9 right"><h3>Que faut-il vérifier ?</h3><a href="${pdfListe}">Télécharger</a></div></div>`,
+        "</main>",
+      ].join(""),
+      [pageA]: htmlFiche(
+        "Annoter les données",
+        "22 juillet 2025",
+        "La phase d’annotation des données est cruciale pour garantir la qualité du modèle entraîné.",
+        null,
+      ),
+      [pageB]: htmlFiche(
+        "Garantir la sécurité du développement",
+        "22 juillet 2025",
+        "La sécurité des systèmes d’IA est une obligation.",
+        pdfB,
+      ),
+    };
+    const textes: Record<string, string> = { [pdfB]: textePdfB, [pdfListe]: "Une liste de vérification avec des lettres." };
+
+    const fetchHtml: FetchHtml = async (url) => {
+      const html = pages[url];
+      if (html === undefined) return { ok: false, status: 404, text: async () => "" };
+      return { ok: true, status: 200, text: async () => html };
+    };
+    const fetchPdf: FetchPdf = async (url) => {
+      if (textes[url] === undefined) {
+        return { ok: false, status: 404, arrayBuffer: async () => new ArrayBuffer(0) };
+      }
+      const octets = new TextEncoder().encode("%PDF-1.4\n% fixture\n");
+      return {
+        ok: true,
+        status: 200,
+        arrayBuffer: async () => octets.buffer.slice(0) as ArrayBuffer,
+      };
+    };
+
+    const resultat = await syncDoctrine({
+      rootDir: racine,
+      descripteurPath: join(racine, "descripteur.json"),
+      date: "2026-11-21",
+      fetchHtml,
+      fetchPdf,
+      extraireTexte: async (_octets, url) => textes[url] ?? "",
+      attendre: async () => {},
+      delaiMs: 0,
+    });
+
+    assert.equal(resultat.documents, 3);
+    assert.equal(resultat.ecartes, 1);
+
+    const manifeste = JSON.parse(
+      readFileSync(join(racine, "data", "corpus", "cnil_doctrine", "manifest.json"), "utf8"),
+    ) as {
+      documents_listes: number;
+      types: Record<string, number>;
+      liste_reference: { listes: number; documents: number }[];
+      documents_par_type: Record<string, {
+        slug: string;
+        titre: string;
+        url: string;
+        date_acte: string;
+        date_source: string;
+        representation: string;
+        pdf: string | null;
+      }[]>;
+      documents_ecartes: { url: string; raison: string }[];
+    };
+
+    assert.equal(manifeste.documents_listes, 4);
+    assert.equal(manifeste.types.fiche_ia, 3);
+    assert.equal(manifeste.liste_reference[0]?.listes, 4);
+    assert.equal(manifeste.liste_reference[0]?.documents, 3);
+    assert.equal(manifeste.documents_ecartes.length, 1);
+    assert.equal(manifeste.documents_ecartes[0]?.url, pageC);
+    assert.match(manifeste.documents_ecartes[0]?.raison ?? "", /HTTP 404/);
+
+    const documents = manifeste.documents_par_type.fiche_ia ?? [];
+    const annotations = documents.find((document) => document.slug === "fiche-annotations");
+    const securite = documents.find((document) => document.slug === "fiche-securite");
+    const liste = documents.find((document) => document.slug === "liste-verification");
+    assert.ok(annotations !== undefined && securite !== undefined && liste !== undefined);
+    assert.equal(annotations.url, pageA);
+    assert.equal(annotations.representation, "page");
+    assert.equal(annotations.pdf, null);
+    assert.equal(annotations.date_acte, "2025-07-22");
+    assert.equal(annotations.date_source, "document");
+    assert.equal(securite.url, pageB, "le lien officiel reste la page de la fiche");
+    assert.equal(securite.representation, "pdf");
+    assert.equal(securite.pdf, pdfB);
+    assert.equal(securite.date_acte, "2025-07-22", "la date affichée par la page date la fiche");
+    assert.equal(liste.representation, "pdf");
+    assert.equal(liste.date_acte, "2026-11-21");
+    assert.equal(liste.date_source, "extraction");
+
+    const unites = readFileSync(
+      join(racine, "data", "corpus", "cnil_doctrine", "unites.jsonl"),
+      "utf8",
+    )
+      .split("\n")
+      .filter(Boolean)
+      .map((ligne) => JSON.parse(ligne) as { document: string; chemin: string; texte: string; url: string });
+    const annotees = unites.filter((unite) => unite.document === "fiche-annotations");
+    assert.ok(annotees.length > 0);
+    assert.match(annotees[0]?.chemin ?? "", /^Doctrine CNIL > Fiches IA > Annoter les données/);
+    assert.ok(unites.every((unite) => !/Fiche précédente|Sommaire|#Intelligence artificielle/.test(unite.texte)));
+    assert.equal(annotees[0]?.url, pageA);
+    assert.ok(annotees.some((unite) => /La phase d’annotation des données/.test(unite.texte)));
+    assert.ok(unites.every((unite) => !/Mentions légales/.test(unite.texte)));
+    assert.ok(
+      unites
+        .filter((unite) => unite.document === "fiche-securite")
+        .some((unite) => /analyse des risques/.test(unite.texte)),
+      "le texte de la fiche vient de son PDF officiel",
+    );
+
+    assert.equal(
+      mentionsDoctrine(racine).get("fiche-annotations")?.mention,
+      `extrait non modifié · CC BY-ND 4.0 · ${pageA}`,
+    );
+
+    const snapshot = manifeste.documents_par_type.fiche_ia?.find(
+      (document) => document.slug === "fiche-annotations",
+    ) as { snapshot?: string } | undefined;
+    assert.ok(snapshot?.snapshot !== undefined);
+    assert.ok(
+      existsSync(join(racine, "data", "raw", "cnil-doctrine", "page", `${snapshot.snapshot}.html`)),
+      "la page retenue est conservée sous data/raw, adressée par son empreinte",
+    );
+  });
+
+  it("laisse les 56 documents déjà au corpus inchangés", () => {
+    const attendus = JSON.parse(fixture("documents-2026-11-21.json")) as {
+      documents: number;
+      documents_par_slug: Record<string, { fragments: number; type: string; sha256: string }>;
+    };
+    const manifeste = JSON.parse(
+      readFileSync(join(ICI, "..", "data", "corpus", "cnil_doctrine", "manifest.json"), "utf8"),
+    ) as { documents_par_type: Record<string, { slug: string; fragments: number }[]> };
+    const textes = new Map<string, string[]>();
+    for (const ligne of readFileSync(
+      join(ICI, "..", "data", "corpus", "cnil_doctrine", "unites.jsonl"),
+      "utf8",
+    )
+      .split("\n")
+      .filter(Boolean)) {
+      const unite = JSON.parse(ligne) as { ref: string; document: string; texte: string };
+      const liste = textes.get(unite.document) ?? [];
+      liste.push(`${unite.ref}\n${unite.texte}\n`);
+      textes.set(unite.document, liste);
+    }
+
+    assert.equal(attendus.documents, 56);
+    for (const [slug, attendu] of Object.entries(attendus.documents_par_slug)) {
+      const document = manifeste.documents_par_type[attendu.type]?.find((entree) => entree.slug === slug);
+      assert.ok(document !== undefined, `document disparu : ${slug}`);
+      assert.equal(document.fragments, attendu.fragments, `fragments modifiés : ${slug}`);
+      assert.equal(
+        createHash("sha256").update((textes.get(slug) ?? []).join(""), "utf8").digest("hex"),
+        attendu.sha256,
+        `texte modifié à compte constant : ${slug}`,
+      );
+    }
+    const slugs = new Set(
+      Object.values(manifeste.documents_par_type)
+        .flat()
+        .map((document) => document.slug),
+    );
+    for (const slug of Object.keys(attendus.documents_par_slug)) assert.ok(slugs.has(slug));
   });
 
   it("lit le numéro d'une délibération depuis un corpus cnil réduit", () => {

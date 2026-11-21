@@ -1,0 +1,286 @@
+{
+  "arret": "2026-11-14",
+  "documents": 56,
+  "documents_par_slug": {
+    "guide-pratique-rgpd-collectivites-territoriales": {
+      "type": "guide",
+      "fragments": 105,
+      "sha256": "e6c2daf8e263eaf6ba8e65861a2fbac5210a08eff5a5bf3fcdddef8373090084"
+    },
+    "guide-communication-politique": {
+      "type": "guide",
+      "fragments": 35,
+      "sha256": "0c3ffe61846731c062a12c877f4ac8ada5ca35c579e03ed534c0e98e0230b2cc"
+    },
+    "guide-violations-education-etablissements": {
+      "type": "guide",
+      "fragments": 57,
+      "sha256": "16d72069d76162aa53349ac91225095075d4cb52372981c4695d74fa96a3566a"
+    },
+    "guide-violations-education-dpo": {
+      "type": "guide",
+      "fragments": 60,
+      "sha256": "92c4a1c2fff96d4d3ed523d96a3c5ed6dc518d134f7c3cc3821064373315c54d"
+    },
+    "guide-aitd-pdf": {
+      "type": "guide",
+      "fragments": 105,
+      "sha256": "4216c9b845ba67631f41c671288c8e349f79093a6c370d08f8eab996163d8b0f"
+    },
+    "cnil-guide-securite-personnelle": {
+      "type": "guide",
+      "fragments": 189,
+      "sha256": "bc5e54f7b017d3bdbd556085724d368d43a49a84715b5033f21a9dbd174d5636"
+    },
+    "guide-rgpd-affaires-publiques-acap-afcl-apap-scrp": {
+      "type": "guide",
+      "fragments": 224,
+      "sha256": "158124c67886f4355421fce368bf8b964e5c056c30f4494687633316a85019fb"
+    },
+    "guide-organisations-syndicales": {
+      "type": "guide",
+      "fragments": 160,
+      "sha256": "964e5a368c09764d6c35a076f73c446fcecdac9c4421c1973e07e89651480724"
+    },
+    "guide-referentiel-recrutement": {
+      "type": "guide",
+      "fragments": 435,
+      "sha256": "5090dcdd06efe555020eae7d78e0f1f35f42179a38fdd0b045bea85ecb93f8b3"
+    },
+    "cybermalveillance-gouv-fr-cnil-guide-sur-les-obligations-et-responsabilites-des-collectivites": {
+      "type": "guide",
+      "fragments": 57,
+      "sha256": "5a8abb984426286e7ba199d0b2247e42b41046b9945132b2c9d3b1e95eaa3e2f"
+    },
+    "guide-responsabilite-des-acteurs-dans-le-cadre-de-la-commande-publique": {
+      "type": "guide",
+      "fragments": 49,
+      "sha256": "9faf1daff63e16d60618c4fcaec7c631e27008a217ce69bda38462f56d6ff0b5"
+    },
+    "guide-pratique-rgpd-delegues-a-la-protection-des-donnees": {
+      "type": "guide",
+      "fragments": 157,
+      "sha256": "3082a032fbcedef16fdbb8ca3d8ad3fe7896ec07efc6af55bf15783af130cf88"
+    },
+    "cnil-guide-association": {
+      "type": "guide",
+      "fragments": 70,
+      "sha256": "d42da7e9a2c5a8d2324138880e6631aaf34422de806a14b6274a25ff53af7e75"
+    },
+    "check-list-rgpd-pour-les-tpe-pme": {
+      "type": "guide",
+      "fragments": 8,
+      "sha256": "41323fe3f56bae0655793c3d7975d5bfd311a07b61a81fe502f8206e2b7d91cd"
+    },
+    "guide-pratique-circuits-nir-recherche-en-sante": {
+      "type": "guide",
+      "fragments": 21,
+      "sha256": "7ced07ec47ba088da4f712a98aa1c7aaf9cab9656c399e298040184e5fcbf2cc"
+    },
+    "guide-durees-de-conservation": {
+      "type": "guide",
+      "fragments": 86,
+      "sha256": "344d8457e009315383b38e489f574216d6b4ef83726c06f8ff92aaea76706d5c"
+    },
+    "guide-tiers-autorises": {
+      "type": "guide",
+      "fragments": 50,
+      "sha256": "2124b3d86422fee0170b66bbc50bc63282e98cf273de6521b1f4b627e8e1513c"
+    },
+    "guide-open-data": {
+      "type": "guide",
+      "fragments": 136,
+      "sha256": "87486418d62f7e6c632239624da1f0c69184e2996d78dfdc66137d39fa90e3bf"
+    },
+    "guide-cnom-cnil": {
+      "type": "guide",
+      "fragments": 93,
+      "sha256": "1358e6927b6c2ae6b6dd592772d2ba15878c49713f04309bd1c96700a89a9103"
+    },
+    "bpi-cnil-rgpd-fiche-3-protegez-les-donnees-de-vos-collaborateurs": {
+      "type": "guide",
+      "fragments": 9,
+      "sha256": "06af512059b65cf3ace57830f39b23212e3364c41086a0ddd5b27278bfff44bf"
+    },
+    "bpi-cnil-rgpd-fiche-2-ameliorez-maitrisez-votre-relation-client-0": {
+      "type": "guide",
+      "fragments": 10,
+      "sha256": "ef1f9778e31dc9134669629fe32df45f59c5cff2c390ca16fd727e7fae1b92ce"
+    },
+    "bpi-cnil-rgpd-fiche-1-que-faire-quand-votre-entreprise-communique-vend-en-ligne": {
+      "type": "guide",
+      "fragments": 9,
+      "sha256": "c7288ebaf753960fc199eaad0e333f8a58bdf573649cc63b7b51484d4b711e5c"
+    },
+    "bpi-cnil-rgpd-guide-tpe-pme": {
+      "type": "guide",
+      "fragments": 83,
+      "sha256": "2e4ce212b66b49e5a2be83f823f5ee6434985583421fa09742c748107b28fdb3"
+    },
+    "cnil-pia-piaf-connectedobjects-fr": {
+      "type": "guide",
+      "fragments": 135,
+      "sha256": "4ff1954763d5f74ceea9dded9475fb75875f653150f887b3a5e609b92e0a075f"
+    },
+    "rgpd-guide-sous-traitant-cnil": {
+      "type": "guide",
+      "fragments": 62,
+      "sha256": "9ba50b3e97c062ed1245298409f445fdaeba8a7e31f2709f34151cd9a8ac1bab"
+    },
+    "ddd-gui-20120501-egalite-chances-0": {
+      "type": "guide",
+      "fragments": 256,
+      "sha256": "f627cd13762c85e821fdc67b49f52b6bd8340c3e60204c9b6fb36ce2b6286294"
+    },
+    "cnil-pia-captoo-fr": {
+      "type": "guide",
+      "fragments": 80,
+      "sha256": "114002dfea96c025a27daa783eee50bbfb0418b64fb89a5961b2cf72a46f975a"
+    },
+    "cnil-pia-2-fr-modeles": {
+      "type": "guide",
+      "fragments": 48,
+      "sha256": "fac70748289b83c0060d5249de95d12c4e70a8d3debfa8845d55d02dca507a7f"
+    },
+    "cnil-pia-3-fr-basesdeconnaissances": {
+      "type": "guide",
+      "fragments": 323,
+      "sha256": "05329b13485470375b6bc1e0c413855960bf1b9a809b9ba47f880c4098b6a9f4"
+    },
+    "cnil-pia-1-fr-methode": {
+      "type": "guide",
+      "fragments": 42,
+      "sha256": "c5fb921966d30294c5a51212a0c90c63da0d4dfeb4090d98eb653b8f75970395"
+    },
+    "referentiel-grh-novembre-2019-0": {
+      "type": "referentiel",
+      "fragments": 59,
+      "sha256": "973eb51bc9e0ca2e86d53dd2ae0c4d533cd855d51f473d2fee5eb724de769741"
+    },
+    "referentiel-cabinet": {
+      "type": "referentiel",
+      "fragments": 42,
+      "sha256": "b0e7f9f126afa3a057e654fc8a3d979c1ee34dd0e4c858b9e0a2bf211d6ac0f6"
+    },
+    "referentiel-recherches-dans-le-domaine-de-la-sante": {
+      "type": "referentiel",
+      "fragments": 20,
+      "sha256": "0cc2e0ca324919e76baa30c8856c9096525ca3d14da2116c1e099189d82cf859"
+    },
+    "referentiel-traitements-dans-le-domaine-de-la-sante-hors-recherches": {
+      "type": "referentiel",
+      "fragments": 11,
+      "sha256": "c868a795660010d50f6d2f986d246eb09ce3e8d6b4b6f87b62ad7c2de2193cf1"
+    },
+    "referentiel-de-certification-des-prestataires-de-formation-a-la-protection-des-donnees-personnelles": {
+      "type": "referentiel",
+      "fragments": 33,
+      "sha256": "be8bd018e9c858e875bbf10508578c76cb47f56716213b90a8eb5e8c53ae5039"
+    },
+    "annexe-guide-de-lecture-des-criteres-du-referentiel-de-certification-des-prestataires-de-formation-protection-donnees": {
+      "type": "referentiel",
+      "fragments": 42,
+      "sha256": "4ddb8fd1d68181eee2809235ce85cc88da74a821202e2660a0cd408d1189b34e"
+    },
+    "referentiel-relatif-aux-traitements-de-donnees-personnelles-pour-le-suivi-social-et-medico-social-des-personnes-agees-en-situation-de-handicap-ou-en-difficulte": {
+      "type": "referentiel",
+      "fragments": 86,
+      "sha256": "cf4188942cc901c80f45678c12cd90709855b24cc4a0f1e5febfe7f11a62c0fe"
+    },
+    "referentiel-relatif-aux-traitements-de-donnees-personnelles-mis-en-oeuvre-dans-le-cadre-de-la-designation-des-conducteurs-ayant-commis-une-infraction-au-code-de-la-route": {
+      "type": "referentiel",
+      "fragments": 34,
+      "sha256": "695ec4988343e1d4d85b8b6d4fd2aa14bc4fb01dadc114270f0c20cae0d2b408"
+    },
+    "referentiel-relatif-aux-traitements-de-donnees-personnelles-mis-en-oeuvre-dans-le-cadre-de-la-gestion-locative": {
+      "type": "referentiel",
+      "fragments": 63,
+      "sha256": "f10e650868cd446681af36311497815bf85c4ffcf28dd2b1d340b12ed78ebcf2"
+    },
+    "referentiel-agrement-code-de-conduite-0": {
+      "type": "referentiel",
+      "fragments": 31,
+      "sha256": "d9ddb5ecd8230107fb58299b4e4768fe1d2c29bbcf7f8cc8f47a89c12e64e3b1"
+    },
+    "referentiel-utilisation-des-datamarts-de-la-sniiram-par-legb": {
+      "type": "referentiel",
+      "fragments": 22,
+      "sha256": "0d9d1814b05a5a8f629efed874334f8db2143cc18d503df69c146e3b3bf0ae66"
+    },
+    "referentiel-certification-des-organismes-de-certification-des-competences-du-dpo": {
+      "type": "referentiel",
+      "fragments": 25,
+      "sha256": "8eb6c006f93cc3c4d47338525b1bcada4f48fa58b6bb0bab4cf70004c4be93f4"
+    },
+    "referentiel-certification-des-competences-du-dpo": {
+      "type": "referentiel",
+      "fragments": 11,
+      "sha256": "35871cfa0857d466a1e9611d9b31736fd9e8c52bd3484c7a6c3488c45c27dfcf"
+    },
+    "referentiel-traitements-donnees-caractere-personnel-gestion-activites-commerciales": {
+      "type": "referentiel",
+      "fragments": 60,
+      "sha256": "9c81dee7977c8faa90e6a0143bbedb5415b51ead5c1d3d14dbe76fd93f87769e"
+    },
+    "referentiel-traitements-donnees-caractere-personnel-gestion-impayes-transaction-commerciale": {
+      "type": "referentiel",
+      "fragments": 36,
+      "sha256": "bd53019608973c01c86668648516a821a1ddbc74513d7a186966561ade991a4e"
+    },
+    "referentiel-relatif-a-la-protection-de-lenfance": {
+      "type": "referentiel",
+      "fragments": 101,
+      "sha256": "4b1d30cb683489f0cc43d37df4c125597c1bdc1c71aca0053d2081c9c7bd4533"
+    },
+    "referentiel-agrement-des-organismes-pour-la-certification-des-prestataires-de-formation-a-la-protection-des-donnees": {
+      "type": "referentiel",
+      "fragments": 73,
+      "sha256": "d269e69d83201f76c9bcaa4bcb2fa3f24e2b00356798b673f5aa4882b45da0ed"
+    },
+    "referentiel-officines-de-pharmacie": {
+      "type": "referentiel",
+      "fragments": 52,
+      "sha256": "a9ae280418dc760e9ec97b35ea9f04fe0a8330f2a17a52335b5d3c231ed9c907"
+    },
+    "check-list-de-conformite-referentiel-donnes-sante": {
+      "type": "referentiel",
+      "fragments": 63,
+      "sha256": "80e60cc5263b29413b9d7404e3c1801517e73cc290afd0cc87740a6ed439020e"
+    },
+    "referentiel-agrement-organismes-certification-mecanismes-certification": {
+      "type": "referentiel",
+      "fragments": 124,
+      "sha256": "48d8d4b7dfd4cd905bc1c88db0a5bb11aa561a503308112251efbd0b2b7002a6"
+    },
+    "referentiel-acces-compassionnel": {
+      "type": "referentiel",
+      "fragments": 66,
+      "sha256": "a31e4f2faf5c026060eb82d1e7bcb8970de87cb66a49075f2a4412577e5469ee"
+    },
+    "referentiel-acces-precoce": {
+      "type": "referentiel",
+      "fragments": 69,
+      "sha256": "ada2c25d2cda96e3704192afc8f247de8de1c9c0915ec891234e43c5e77e67fd"
+    },
+    "referentiel-alertes-professionnelles": {
+      "type": "referentiel",
+      "fragments": 73,
+      "sha256": "bbbdc033b345b5ce496fe5773351145e736002d3d8b5bb6befb9bf477fa35dbe"
+    },
+    "referentiel-gestion-des-ressources-humaines": {
+      "type": "referentiel",
+      "fragments": 59,
+      "sha256": "7fe397c6cbbf618bb3ecb7514ca8b2da138846e56a5633d2d8e02d702cea00db"
+    },
+    "referentiel-durees-de-conservation-social-et-medico-social": {
+      "type": "referentiel",
+      "fragments": 22,
+      "sha256": "8b64d0f45bfc0980c80cc700e995187a7ae0a9e1d2d514cb900bf26633730672"
+    },
+    "referentiel-durees-de-conservation-gestion-des-ressources-humaines": {
+      "type": "referentiel",
+      "fragments": 28,
+      "sha256": "2dcc852aa936f206db06231fb2c067e7f8c308985bad428d2ed8298043f77a55"
+    }
+  }
+}

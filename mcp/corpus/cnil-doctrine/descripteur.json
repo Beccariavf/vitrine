@@ -36,6 +36,12 @@
       "liens": "page",
       "motif_page": "aipd",
       "motif_pdf": "liste-traitements-aipd"
+    },
+    {
+      "type": "fiche_ia",
+      "url": "https://www.cnil.fr/fr/les-fiches-pratiques-ia",
+      "pages_max": 1,
+      "liens": "fiches"
     }
   ]
 }
