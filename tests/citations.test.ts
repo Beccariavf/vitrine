@@ -14,6 +14,7 @@ import {
   documentsPresents,
   extraireCitations,
   instrumentParIdentifiant,
+  marquerPresence,
   urlOfficielle,
 } from "../mcp/corpus/citations.ts";
 import type { Citation } from "../mcp/corpus/citations.ts";
@@ -185,12 +186,27 @@ describe("l'extraction des citations d'une décision", () => {
     );
   });
 
-  it("écarte les articles du code pénal antérieurs à 226-16", () => {
+  it("ne rend du code pénal que les articles du périmètre du corpus", () => {
     assert.deepEqual(references("articles 378 et 226-21 du code pénal"), ["code pénal · art. 226-21"]);
-    assert.deepEqual(references("articles 323-1 et 226-21 du code pénal"), ["code pénal · art. 226-21"]);
+    assert.deepEqual(references("articles 323-1 et 226-21 du code pénal"), [
+      "code pénal · art. 323-1, 226-21",
+    ]);
     assert.deepEqual(references("articles 226-16 à 226-22 du code pénal"), [
       "code pénal · art. 226-16–226-22",
     ]);
+    // 226-1, 226-8-1 et la série 323 entrent au corpus ; les suffixes numériques
+    // du bloc 226-16 restent cités ; 226-2, 323-9 et 226-16-1-A restent dehors.
+    assert.deepEqual(references("l'article 226-1 du code pénal"), ["code pénal · art. 226-1"]);
+    assert.deepEqual(references("l'article 226-8-1 du code pénal"), ["code pénal · art. 226-8-1"]);
+    assert.deepEqual(references("l'article 323-4-1 du code pénal"), ["code pénal · art. 323-4-1"]);
+    assert.deepEqual(references("l'article 226-17-1 du code pénal"), ["code pénal · art. 226-17-1"]);
+    assert.deepEqual(references("l'article 226-22-2 du code pénal"), ["code pénal · art. 226-22-2"]);
+    assert.deepEqual(references("articles 226-2, 323-9 et 226-1 du code pénal"), [
+      "code pénal · art. 226-1",
+    ]);
+    assert.deepEqual(references("l'article 226-16-1-A du code pénal"), []);
+    // Une plage dont une borne sort du périmètre n'est pas affirmée.
+    assert.deepEqual(references("articles 323-6 à 323-9 du code pénal"), []);
   });
 
   it("ne prend pas un point d'énumération pour un numéro d'article", () => {
@@ -576,16 +592,53 @@ describe("la présence des documents cités", () => {
       "LEGITEXT000038567662",
       "LEGITEXT000006070719",
       "LEGITEXT000006070987",
+      "LEGITEXT000006072050",
+      "LEGITEXT000006072665",
+      "LEGITEXT000025503132",
+      "LEGITEXT000006072026",
+      "LEGITEXT000031366350",
+      "LEGITEXT000006070721",
     ]) {
       assert.equal(presents.has(present), true, present);
       assert.equal(absenceDuDocument(root, present), null, present);
     }
-    // Code pénal et CPCE ne sont couverts qu'en partie : le corpus le dit.
+    // Les codes ne sont couverts qu'en partie : le corpus le dit, bloc par bloc et fusionné.
     const couverts = articlesCouverts(root);
-    assert.deepEqual(couverts.get("LEGITEXT000006070987"), ["L34-5"]);
+    assert.deepEqual(couverts.get("LEGITEXT000006070987"), ["L34-5", "L32-3", "L34-1"]);
     assert.equal(couverts.get("LEGITEXT000006070719")?.[0], "226-16");
+    assert.ok(couverts.get("LEGITEXT000006070719")?.includes("226-1"));
+    assert.ok(couverts.get("LEGITEXT000006070719")?.includes("323-1"));
+    assert.deepEqual(couverts.get("LEGITEXT000006072050"), ["L1121-1", "L1222-4", "L2312-38"]);
+    assert.deepEqual(couverts.get("LEGITEXT000006070721"), ["9"]);
     assert.equal(couverts.has("LEGITEXT000038567662"), false);
     assert.equal(presents.has("31995L0046"), false);
     assert.match(absenceDuDocument(root, "31995L0046") ?? "", /absent de mon corpus/);
+
+    // Une décision qui cite 226-1, 226-8-1 ou 323-4-1 les trouve au corpus,
+    // comme 226-16 ; 226-2 reste hors du périmètre déclaré.
+    const penal = marquerPresence(
+      presents,
+      [
+        {
+          instrument: "code pénal",
+          document: "LEGITEXT000006070719",
+          articles: ["226-1", "226-8-1", "323-4-1", "226-16"],
+          reference: "",
+          url: null,
+        },
+        {
+          instrument: "code pénal",
+          document: "LEGITEXT000006070719",
+          articles: ["226-2"],
+          reference: "",
+          url: null,
+        },
+      ],
+      couverts,
+    );
+    assert.deepEqual(
+      penal.map((citation) => citation.hors_corpus),
+      [false, true],
+    );
   });
 });

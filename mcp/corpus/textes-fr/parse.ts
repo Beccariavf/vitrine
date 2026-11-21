@@ -1,8 +1,9 @@
 /**
- * Lit les textes français d'application rendus par PISTE : le décret
- * n° 2019-536 (`/consult/legiPart`), la section 5 du chapitre VI du titre II du
- * livre II du Code pénal (`/consult/code`, articles 226-16 à 226-24) et
- * l'article L34-5 du CPCE (`/consult/getArticleWithIdAndNum`).
+ * Lit les textes français d'application rendus par PISTE : un texte entier
+ * (`/consult/legiPart`), une section de code (`/consult/code`), un ou plusieurs
+ * articles cités par leur numéro (`/consult/getArticleWithIdAndNum`), ou des
+ * numéros prélevés dans des sections datées quand la route par numéro ne sert
+ * pas l'article en vigueur.
  *
  * Chaque article est copié, jamais reformulé : seul le HTML est ramené à son
  * texte visible. Seuls les articles `VIGUEUR` deviennent des unités ; les autres
@@ -10,15 +11,46 @@
  */
 
 import type { Unite } from "../parse.ts";
-import { comparerCorps, formeArticle } from "../articles.ts";
+import { comparerCorps, formeArticle, normaliserNumero } from "../articles.ts";
 import { dateOuNull, lireLegiPart, objet, texte, unitesLil } from "../lil/parse.ts";
 import type { ArticleLil, LegiPart } from "../lil/parse.ts";
 
-/** Comment PISTE rend un texte : en entier, une section de code, ou un article. */
+/**
+ * Comment PISTE rend un texte : en entier, une section de code, un article, une
+ * liste de numéros lus un par un, ou des numéros prélevés dans des sections
+ * datées quand la route par numéro ne sert pas l'article en vigueur.
+ */
 export type RouteTexte =
   | { type: "legiPart" }
   | { type: "code"; sctCid: string; premier: string; dernier: string }
-  | { type: "article"; num: string };
+  | { type: "article"; num: string }
+  | { type: "articles"; nums: string[] }
+  | { type: "codeArticles"; sections: Array<{ sctCid: string; nums: string[] }> };
+
+/** Marge fixe du budget d'une passe, au-dessus des appels calculés. */
+export const MARGE_APPELS_PISTE = 5;
+
+/** Nombre d'appels PISTE qu'une route coûte : un par numéro ou par section. */
+export function appelsRoute(route: {
+  type: string;
+  nums?: readonly string[];
+  sections?: readonly unknown[];
+}): number {
+  if (route.type === "articles" && Array.isArray(route.nums)) return route.nums.length;
+  if (route.type === "codeArticles" && Array.isArray(route.sections)) return route.sections.length;
+  return 1;
+}
+
+/** Budget d'une passe : un jeton, un appel par entrée, puis la marge fixe. */
+export function budgetPasse(
+  entrees: readonly {
+    route: { type: string; nums?: readonly string[]; sections?: readonly unknown[] };
+  }[],
+): number {
+  return (
+    1 + entrees.reduce((total, entree) => total + appelsRoute(entree.route), 0) + MARGE_APPELS_PISTE
+  );
+}
 
 /** Un texte du corpus, tel que le descripteur le déclare. */
 export type TexteFr = {
@@ -160,6 +192,94 @@ export function lireArticleParNumero(brut: unknown): LegiPart {
 }
 
 /**
+ * Lit les réponses d'une liste de numéros agrégées en une seule lecture. Chaque
+ * réponse est celle de `getArticleWithIdAndNum`, dans l'ordre du descripteur :
+ * un numéro qui revient non `VIGUEUR` ou sous un autre numéro fait lever la
+ * capture en le nommant, avant toute écriture. La version est la suite des
+ * identifiants lus, jointe par `+` ; `dateDebutVersion` reste `null`, chaque
+ * article portant sa propre date de début.
+ */
+export function lireArticlesParNumero(
+  reponse: unknown,
+  nums: readonly string[],
+  nom: string,
+): LegiPart {
+  if (!Array.isArray(reponse)) {
+    throw new Error(`${nom} : réponse getArticleWithIdAndNum illisible (tableau attendu)`);
+  }
+  if (reponse.length !== nums.length) {
+    throw new Error(`${nom} : ${reponse.length} réponse(s) pour ${nums.length} article(s) demandé(s)`);
+  }
+  const parts = reponse.map((element, rang): LegiPart => {
+    const numero = nums[rang] ?? "";
+    const part = lireArticleParNumero(element);
+    const article = part.articles[0];
+    if (article === undefined) throw new Error(`${nom} : article ${numero} absent de la réponse`);
+    if (normaliserNumero(article.num) !== normaliserNumero(numero)) {
+      throw new Error(`${nom} : article ${article.num || "sans numéro"} rendu au lieu de ${numero}`);
+    }
+    if (article.etat.trim().toUpperCase() !== "VIGUEUR") {
+      throw new Error(`${nom} : article ${numero} rendu ${article.etat || "sans état"}, pas VIGUEUR`);
+    }
+    return part;
+  });
+  return {
+    version: parts.map((part) => part.version).join("+"),
+    titre: "",
+    dateDebutVersion: null,
+    sections: 0,
+    articles: parts.flatMap((part) => part.articles),
+  };
+}
+
+/**
+ * Lit des sections datées d'un code et n'en garde que les numéros demandés :
+ * la route par numéro ne sert pas toujours l'article en vigueur (une version
+ * dont l'abrogation est différée, comme CSP L1111-7, n'est rendue qu'à la date
+ * de consultation). Chaque section coûte un appel ; un numéro demandé absent de
+ * sa section ou non `VIGUEUR` fait lever la capture en le nommant.
+ */
+export function lireArticlesDeSections(
+  reponse: unknown,
+  sections: readonly { sctCid: string; nums: readonly string[] }[],
+  nom: string,
+): LegiPart {
+  if (!Array.isArray(reponse)) {
+    throw new Error(`${nom} : réponses de sections illisibles (tableau attendu)`);
+  }
+  if (reponse.length !== sections.length) {
+    throw new Error(`${nom} : ${reponse.length} réponse(s) pour ${sections.length} section(s) demandée(s)`);
+  }
+  const parties = reponse.map((element, rang): LegiPart => {
+    const section = sections[rang];
+    if (section === undefined) throw new Error(`${nom} : section ${rang} absente du descripteur`);
+    const part = lireSectionDeCode(element, section.sctCid);
+    const voulus = new Set(section.nums.map(normaliserNumero));
+    const articles = part.articles.filter((article) => voulus.has(normaliserNumero(article.num)));
+    for (const numero of section.nums) {
+      const article = articles.find((candidat) => normaliserNumero(candidat.num) === normaliserNumero(numero));
+      if (article === undefined) {
+        throw new Error(`${nom} : article ${numero} absent de la section ${section.sctCid}`);
+      }
+      if (article.etat.trim().toUpperCase() !== "VIGUEUR") {
+        throw new Error(`${nom} : article ${numero} rendu ${article.etat || "sans état"}, pas VIGUEUR`);
+      }
+    }
+    return { ...part, articles };
+  });
+  return {
+    version: parties
+      .flatMap((part) => part.articles)
+      .map((article) => article.id)
+      .join("+"),
+    titre: "",
+    dateDebutVersion: null,
+    sections: 0,
+    articles: parties.flatMap((part) => part.articles),
+  };
+}
+
+/**
  * Lit la réponse d'un texte selon sa route (la section visée pour un code),
  * puis mappe les articles en vigueur en unités. Un article en vigueur sans
  * texte lève : la capture est refusée avant toute écriture. Le périmètre d'une
@@ -175,6 +295,10 @@ export function lireTexte(
   let part: LegiPart;
   if (route.type === "article") {
     part = lireArticleParNumero(reponse);
+  } else if (route.type === "articles") {
+    part = lireArticlesParNumero(reponse, route.nums, texteFr.nom);
+  } else if (route.type === "codeArticles") {
+    part = lireArticlesDeSections(reponse, route.sections, texteFr.nom);
   } else if (route.type === "code") {
     part = lireSectionDeCode(reponse, route.sctCid);
   } else {
@@ -236,6 +360,14 @@ export function validerLectures(lectures: readonly LectureTexte[]): void {
       });
       if (autre !== undefined) {
         erreurs.push(`${texteFr.nom} : article ${autre.numero} rendu au lieu de ${texteFr.route.num}`);
+      }
+    }
+    if (route.type === "codeArticles") {
+      const voulus = new Set(route.sections.flatMap((section) => section.nums).map(normaliserNumero));
+      for (const unite of unites) {
+        if (!voulus.has(normaliserNumero(unite.numero))) {
+          erreurs.push(`${texteFr.nom} : article ${unite.numero} hors des numéros demandés`);
+        }
       }
     }
     if (unites.length !== texteFr.attendus.articles) {

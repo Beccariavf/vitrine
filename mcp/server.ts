@@ -148,7 +148,12 @@ const CONSIGNE_SERVEUR =
   "`ccs`, CELEX `32021D0914` et `32021D0915`) et les décisions d'adéquation, en vigueur et abrogées (corpus `adequation`), la loi " +
   "Informatique et Libertés (corpus `lil`, LEGITEXT000006068624), les textes français " +
   "d'application (corpus `textes_fr` : décret 2019-536 LEGITEXT000038567662 en entier, Code pénal " +
-  "LEGITEXT000006070719 articles 226-16 à 226-24, CPCE LEGITEXT000006070987 article L34-5), " +
+  "LEGITEXT000006070719 articles 226-16 à 226-24, 226-1 et 226-8-1, chapitre 323 ; CPCE " +
+  "LEGITEXT000006070987 articles L32-3, L34-1 et L34-5 ; Code du travail LEGITEXT000006072050 " +
+  "L1121-1, L1222-4 et L2312-38 ; Code de la santé publique LEGITEXT000006072665 L1110-4, " +
+  "L1111-7 et L1111-8 ; Code de la sécurité intérieure LEGITEXT000025503132 titre V du livre II " +
+  "(vidéoprotection) ; Code monétaire et financier LEGITEXT000006072026 L561-45 ; CRPA " +
+  "LEGITEXT000031366350 L311-3-1 ; Code civil LEGITEXT000006070721 article 9), " +
   "les textes en préparation et les affaires pendantes (corpus `preparation` : propositions de " +
   "modification des actes du corpus et affaires CJUE pendantes), " +
   "les délibérations de la CNIL " +
@@ -232,14 +237,17 @@ export function createServer(deps: ServerDeps): McpServer {
         "Rend le texte exact d'un article du RGPD, de l'AI Act, de la directive ePrivacy, de la " +
         "directive police-justice, du règlement 2018/1725, du règlement procédural RGPD, des " +
         "décisions 2021/914 et 2021/915 sur les clauses contractuelles types, de la " +
-        "LIL ou d'un texte français d'application (décret 2019-536, Code pénal 226-16 à 226-24, CPCE L34-5), avec sa référence, son chemin, ses dates et son URL. ePrivacy et la directive " +
+        "LIL ou d'un texte français d'application (décret 2019-536, Code pénal 226-16 à 226-24, " +
+        "226-1, 226-8-1 et chapitre 323, CPCE L32-3, L34-1 et L34-5, Code du travail, Code de la " +
+        "santé publique, Code de la sécurité intérieure (vidéoprotection), Code monétaire et " +
+        "financier, CRPA, Code civil), avec sa référence, son chemin, ses dates et son URL. ePrivacy et la directive " +
         "police-justice sont rendues dans leur version consolidée en vigueur ; les règlements " +
         "2018/1725 et 2025/2518, jamais modifiés, dans leur texte d'origine : `etat_corpus` en " +
         "donne la version et la date (`corpus[].couverture.version`, `date_consolidation`). Un article " +
         "inséré se demande avec son suffixe (`15 bis`). Répondre « introuvable » quand l'article " +
         "n'existe pas ; ne jamais compléter un texte absent. Un document qui est un instrument " +
         `connu absent du corpus répond « absent de mon corpus ${PERIMETRE_REFUS}. », sans ` +
-        "rendre de texte ; un article hors de la partie couverte du Code pénal ou du CPCE est dit hors du " +
+        "rendre de texte ; un article hors de la partie couverte d'un code du corpus est dit hors du " +
         "corpus ; un identifiant inconnu " +
         "garde la réponse d'un article introuvable. " +
         "Un paramètre `date` (AAAA-MM-JJ), accepté pour la LIL seule, rend la version applicable " +
@@ -258,7 +266,11 @@ export function createServer(deps: ServerDeps): McpServer {
               "(ePrivacy), 32016L0680 (directive police-justice), 32018R1725 (règlement " +
               "2018/1725), 32025R2518 (règlement procédural RGPD), 32021D0914 (clauses contractuelles " +
               "types, transfert), 32021D0915 (clauses contractuelles types, sous-traitance), LEGITEXT000006068624 (LIL), " +
-              "LEGITEXT000038567662 (décret 2019-536), LEGITEXT000006070719 (Code pénal) ou LEGITEXT000006070987 (CPCE)",
+              "LEGITEXT000038567662 (décret 2019-536), LEGITEXT000006070719 (Code pénal), " +
+              "LEGITEXT000006070987 (CPCE), LEGITEXT000006072050 (Code du travail), " +
+              "LEGITEXT000006072665 (Code de la santé publique), LEGITEXT000025503132 (Code de la " +
+              "sécurité intérieure), LEGITEXT000006072026 (Code monétaire et financier), " +
+              "LEGITEXT000031366350 (CRPA) ou LEGITEXT000006070721 (Code civil)",
           ),
         numero: z.string().describe("Numéro d'article, par exemple 17, 15 bis, 26-1, 226-16 ou L34-5"),
         date: z
@@ -498,7 +510,9 @@ export function createServer(deps: ServerDeps): McpServer {
         "« règlement général », « règlement (UE) 2016/679 », « AI Act », « IA Act », « règlement IA », " +
         "« règlement européen sur l'intelligence artificielle », « règlement (UE) 2024/1689 », « LIL », " +
         "« loi informatique et libertés », « loi 78-17 », « loi n° 78-17 », « décret 2019-536 », « CPCE », " +
-        "« code des postes et des communications électroniques », « code pénal ») ; la " +
+        "« code des postes et des communications électroniques », « code pénal », « code du travail », " +
+        "« code de la santé publique », « code de la sécurité intérieure », « code monétaire et " +
+        "financier », « code des relations entre le public et l'administration », « code civil ») ; la " +
         "référence exacte et la recherche sémantique s'y restreignent, et un numéro absent de ce " +
         "document est refusé explicitement. Deux corpus nommés n'infèrent rien. " +
         "Si aucun document n'est nommé et que le numéro cité n'existe que dans un corpus, l'article " +
@@ -538,7 +552,7 @@ export function createServer(deps: ServerDeps): McpServer {
             "Restreint la recherche à un document : 32016R0679 (RGPD), 32024R1689 (AI Act), " +
               "32002L0058 (ePrivacy), 32016L0680, 32018R1725, 32025R2518, 32021D0914 (clauses " +
               "contractuelles types, transfert), 32021D0915 (clauses contractuelles types, sous-traitance), " +
-              "LEGITEXT000006068624 (LIL), LEGITEXT000038567662 (décret 2019-536), LEGITEXT000006070719 (Code pénal), LEGITEXT000006070987 (CPCE), un identifiant CNILTEXT, un identifiant CONSTEXT (constit), un identifiant Judilibre (cc) " +
+              "LEGITEXT000006068624 (LIL), LEGITEXT000038567662 (décret 2019-536), LEGITEXT000006070719 (Code pénal), LEGITEXT000006070987 (CPCE), LEGITEXT000006072050 (Code du travail), LEGITEXT000006072665 (Code de la santé publique), LEGITEXT000025503132 (Code de la sécurité intérieure), LEGITEXT000006072026 (Code monétaire et financier), LEGITEXT000031366350 (CRPA), LEGITEXT000006070721 (Code civil), un identifiant CNILTEXT, un identifiant CONSTEXT (constit), un identifiant Judilibre (cc) " +
               "ou un CELEX de jurisprudence (cjue) ; absent, tous les corpus répondent, sauf une " +
               "formule générique qui nomme une famille sans décision (« les clauses contractuelles " +
               "types »), bornée au corpus `ccs`",

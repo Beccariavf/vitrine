@@ -2,11 +2,10 @@
  * Détection des nouvelles versions des textes français du périmètre.
  *
  * Une version est identifiée, jamais comparée par son texte : `LEGIARTI…` par
- * article en vigueur, `LEGITEXT…_JJ-MM-AAAA` pour le décret consolidé. La passe
- * lit un appel par texte (loi 78-17 par `legiPart`, décret par une recherche
- * `LODA_DATE` sur son numéro, Code pénal par sa section, CPCE par son numéro)
- * et compare les identifiants à ceux du corpus. Une différence devient une
- * entrée de veille ; aucune différence n'en produit aucune.
+ * article en vigueur, `LEGITEXT…_JJ-MM-AAAA` pour un texte consolidé. La passe
+ * lit un appel par entrée du descripteur — un numéro d'article en coûte un — et
+ * compare les identifiants à ceux du corpus. Une différence devient une entrée
+ * de veille ; aucune différence n'en produit aucune.
  *
  * Le module est hors ligne : aucune requête n'est faite ici, l'appelant fournit
  * une `PisteSession` et la racine du dépôt.
@@ -20,8 +19,9 @@ import type { FetchLike } from "../fetch.ts";
 import type { PisteSession } from "../piste.ts";
 import type { Entry } from "../types.ts";
 import { lireLegiPart, objet, texte } from "../../mcp/corpus/lil/parse.ts";
-import type { DescripteurLil, LegiPart } from "../../mcp/corpus/lil/parse.ts";
-import { lireArticleParNumero, lireSectionDeCode } from "../../mcp/corpus/textes-fr/parse.ts";
+import type { ArticleLil, DescripteurLil, LegiPart } from "../../mcp/corpus/lil/parse.ts";
+import { budgetPasse, lireArticleParNumero, lireSectionDeCode } from "../../mcp/corpus/textes-fr/parse.ts";
+import { normaliserNumero } from "../../mcp/corpus/articles.ts";
 import type { DescripteurTextesFr } from "../../mcp/corpus/textes-fr/parse.ts";
 
 const ICI = dirname(fileURLToPath(import.meta.url));
@@ -33,10 +33,16 @@ export const DESCRIPTEUR_TEXTES_FR = join(ICI, "..", "..", "mcp", "corpus", "tex
 /** Identifiant de la source de veille. */
 export const SOURCE_ID = "legi";
 
-/** Plafond de la passe : un jeton et un appel par texte. */
-export const MAX_CALLS_PASSE = 5;
+/**
+ * Budget d'une passe : un jeton, un appel par entrée, un par numéro d'une liste
+ * d'articles, plus la marge de reprise. Le plafond de 16 de `npm run veille` n'est
+ * pas partagé : cette passe ouvre son propre processus.
+ */
+export function maxCallsPasse(suivis: readonly TexteSuivi[] = textesSuivis()): number {
+  return budgetPasse(suivis);
+}
 
-/** Matière unique des quatre textes : ils mettent en œuvre la protection des données. */
+/** Matière unique des textes suivis : ils mettent en œuvre la protection des données. */
 export const THEME = "donnees-personnelles";
 
 /** Comment la version d'un texte se lit chez PISTE. */
@@ -44,6 +50,8 @@ type RouteDetection =
   | { type: "legiPart" }
   | { type: "code"; sctCid: string }
   | { type: "article"; num: string }
+  | { type: "articles"; nums: string[] }
+  | { type: "codeArticles"; sections: Array<{ sctCid: string; nums: string[] }> }
   | { type: "search"; fond: string; num: string };
 
 /** Un texte suivi : son identité, sa route et ce que le corpus en compare. */
@@ -66,7 +74,7 @@ export type TexteSuivi = {
   comparaison: "articles" | "version";
 };
 
-/** Les quatre textes suivis, lus dans les descripteurs qui font foi. */
+/** Les textes suivis, lus dans les descripteurs qui font foi : la loi 78-17, puis chaque bloc de `textes_fr`. */
 export function textesSuivis(
   descripteurLil: string = DESCRIPTEUR_LIL,
   descripteurTextes: string = DESCRIPTEUR_TEXTES_FR,
@@ -95,7 +103,17 @@ export function textesSuivis(
           ? { type: "code", sctCid: texteFr.route.sctCid }
           : texteFr.route.type === "article"
             ? { type: "article", num: texteFr.route.num }
-            : { type: "legiPart" };
+            : texteFr.route.type === "articles"
+              ? { type: "articles", nums: [...texteFr.route.nums] }
+              : texteFr.route.type === "codeArticles"
+                ? {
+                    type: "codeArticles",
+                    sections: texteFr.route.sections.map((section) => ({
+                      sctCid: section.sctCid,
+                      nums: [...section.nums],
+                    })),
+                  }
+                : { type: "legiPart" };
     suivis.push({
       cle: texteFr.cle,
       nom: texteFr.nom,
@@ -132,7 +150,7 @@ export function corpsRechercheLoda(fond: string, num: string): unknown {
   };
 }
 
-/** Un appel PISTE par texte, selon sa route de détection. */
+/** Un appel PISTE par entrée, selon sa route de détection : un par numéro pour une liste. */
 export async function appelerTexte(
   session: PisteSession,
   fetchImpl: FetchLike,
@@ -147,6 +165,20 @@ export async function appelerTexte(
       return session.consultCode(fetchImpl, texteSuivi.document, date, route.sctCid);
     case "article":
       return session.consultArticleParNumero(fetchImpl, texteSuivi.document, route.num);
+    case "articles": {
+      const reponses: unknown[] = [];
+      for (const numero of route.nums) {
+        reponses.push(await session.consultArticleParNumero(fetchImpl, texteSuivi.document, numero));
+      }
+      return reponses;
+    }
+    case "codeArticles": {
+      const reponses: unknown[] = [];
+      for (const section of route.sections) {
+        reponses.push(await session.consultCode(fetchImpl, texteSuivi.document, date, section.sctCid));
+      }
+      return reponses;
+    }
     case "search":
       return session.legifrance(fetchImpl, corpsRechercheLoda(route.fond, route.num));
   }
@@ -228,6 +260,56 @@ export function versionDeRecherche(
   return { version: retenue.version, dateDebut: retenue.dateDebut };
 }
 
+/**
+ * Réponses d'une liste de numéros agrégées sans contrôle d'état : un article
+ * qui n'est plus `VIGUEUR` est un retrait à signaler, pas une panne de lecture.
+ */
+function partDesArticles(reponses: unknown, nom: string): LegiPart {
+  if (!Array.isArray(reponses)) throw new Error(`${nom} : réponses d'articles illisibles`);
+  const parts = reponses.map((element) => lireArticleParNumero(element));
+  const articles: ArticleLil[] = parts.flatMap((part) => part.articles);
+  return {
+    version: parts.map((part) => part.version).join("+"),
+    titre: "",
+    dateDebutVersion: null,
+    sections: 0,
+    articles,
+  };
+}
+
+/**
+ * Réponses de sections datées agrégées sans contrôle d'état : chaque section
+ * n'est gardée que pour ses numéros, et un article qui n'est plus `VIGUEUR`
+ * est un retrait à signaler, pas une panne de lecture.
+ */
+function partDesSections(
+  reponses: unknown,
+  sections: readonly { sctCid: string; nums: readonly string[] }[],
+  nom: string,
+): LegiPart {
+  if (!Array.isArray(reponses)) throw new Error(`${nom} : réponses de sections illisibles`);
+  const parts = reponses.map((element, rang) => {
+    const section = sections[rang];
+    if (section === undefined) throw new Error(`${nom} : section ${rang} absente`);
+    const part = lireSectionDeCode(element, section.sctCid);
+    const voulus = new Set(section.nums.map(normaliserNumero));
+    return {
+      ...part,
+      articles: part.articles.filter((article) => voulus.has(normaliserNumero(article.num))),
+    };
+  });
+  return {
+    version: parts
+      .flatMap((part) => part.articles)
+      .map((article) => article.id)
+      .join("+"),
+    titre: "",
+    dateDebutVersion: null,
+    sections: 0,
+    articles: parts.flatMap((part) => part.articles),
+  };
+}
+
 /** Lit une réponse selon la route du texte. */
 export function lireVersion(texteSuivi: TexteSuivi, reponse: unknown, date: string): VersionLue {
   switch (texteSuivi.route.type) {
@@ -237,6 +319,10 @@ export function lireVersion(texteSuivi: TexteSuivi, reponse: unknown, date: stri
       return articlesEnVigueur(lireSectionDeCode(reponse, texteSuivi.route.sctCid));
     case "article":
       return articlesEnVigueur(lireArticleParNumero(reponse));
+    case "articles":
+      return articlesEnVigueur(partDesArticles(reponse, texteSuivi.nom));
+    case "codeArticles":
+      return articlesEnVigueur(partDesSections(reponse, texteSuivi.route.sections, texteSuivi.nom));
     case "search": {
       const lu = versionDeRecherche(reponse, texteSuivi.document, date);
       return { version: lu.version, dateDebut: lu.dateDebut, articles: new Map(), dates: new Map() };
@@ -244,8 +330,11 @@ export function lireVersion(texteSuivi: TexteSuivi, reponse: unknown, date: stri
   }
 }
 
-/** État du corpus pour un texte : ce que la synchronisation y a laissé. */
+/** État du corpus pour un bloc : ce que la synchronisation y a laissé. */
 export type EtatTexte = {
+  /** Clé du bloc au descripteur, ou identifiant du texte pour un manifeste à texte unique. */
+  cle: string;
+  document: string;
   version: string;
   articles: Map<string, string>;
 };
@@ -272,31 +361,55 @@ function lireUnites(chemin: string): Array<Record<string, unknown>> | null {
   }
 }
 
-/** Versions déclarées par un manifeste : `(document, version)`. */
-function versionsManifeste(manifeste: Record<string, unknown>): Array<[string, string]> {
-  const versions: Array<[string, string]> = [];
+/** Un bloc de manifeste : sa clé, son document, sa version et les numéros qu'il couvre. */
+type BlocManifeste = {
+  cle: string;
+  document: string;
+  version: string;
+  /** Numéros couverts ; `null` quand le bloc porte le texte entier. */
+  couverts: string[] | null;
+};
+
+/**
+ * Blocs déclarés par un manifeste : le bloc unique d'un manifeste à `text_id`
+ * (LIL), puis chaque entrée de `textes[]`. Une clé absente d'un manifeste écrit
+ * avant #124 retombe sur l'identifiant du texte.
+ */
+function blocsManifeste(manifeste: Record<string, unknown>): BlocManifeste[] {
+  const blocs: BlocManifeste[] = [];
   if (typeof manifeste.text_id === "string" && typeof manifeste.version === "string") {
-    versions.push([manifeste.text_id, manifeste.version]);
+    blocs.push({
+      cle: manifeste.text_id,
+      document: manifeste.text_id,
+      version: manifeste.version,
+      couverts: null,
+    });
   }
   if (Array.isArray(manifeste.textes)) {
     for (const valeur of manifeste.textes) {
-      const texteManifeste = objet(valeur);
-      if (
-        texteManifeste !== null &&
-        typeof texteManifeste.text_id === "string" &&
-        typeof texteManifeste.version === "string"
-      ) {
-        versions.push([texteManifeste.text_id, texteManifeste.version]);
-      }
+      const bloc = objet(valeur);
+      if (bloc === null) continue;
+      const { text_id: document, version } = bloc;
+      if (typeof document !== "string" || typeof version !== "string") continue;
+      blocs.push({
+        cle: typeof bloc.cle === "string" ? bloc.cle : document,
+        document,
+        version,
+        couverts: Array.isArray(bloc.articles_couverts)
+          ? bloc.articles_couverts.filter((numero): numero is string => typeof numero === "string")
+          : null,
+      });
     }
   }
-  return versions;
+  return blocs;
 }
 
 /**
- * Corpus actuel, par document, lu dans `lil` et `textes_fr`. Un corpus absent ou
- * illisible ne figure pas dans la carte : l'appelant ne peut alors pas comparer
- * et le dit, plutôt que de publier chaque article comme nouveau.
+ * Corpus actuel, par bloc de manifeste, lu dans `lil` et `textes_fr`. Un texte y
+ * porte plusieurs blocs (le Code pénal, le CPCE) : chacun ne rend que ses propres
+ * articles, sinon ceux des autres blocs seraient publiés comme retirés. Un corpus
+ * absent ou illisible ne figure pas dans la carte : l'appelant ne peut alors pas
+ * comparer et le dit, plutôt que de publier chaque article comme nouveau.
  */
 export function etatsCorpus(
   rootDir: string,
@@ -309,14 +422,20 @@ export function etatsCorpus(
     const unites = lireUnites(join(dossier, "unites.jsonl"));
     if (manifeste === null || unites === null) continue;
 
-    for (const [document, version] of versionsManifeste(manifeste)) {
+    for (const bloc of blocsManifeste(manifeste)) {
       const articles = new Map<string, string>();
       for (const unite of unites) {
-        if (unite.document !== document) continue;
+        if (unite.document !== bloc.document) continue;
         if (typeof unite.numero !== "string" || typeof unite.ref !== "string") continue;
+        if (bloc.couverts !== null && !bloc.couverts.includes(unite.numero)) continue;
         articles.set(unite.numero, unite.ref);
       }
-      etats.set(document, { version, articles });
+      etats.set(bloc.cle, {
+        cle: bloc.cle,
+        document: bloc.document,
+        version: bloc.version,
+        articles,
+      });
     }
   }
   return etats;

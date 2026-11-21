@@ -530,6 +530,22 @@ const ALIAS_CPCE_TEXTE: readonly RegExp[] = [
   /\bcode des postes et (?:des )?communications electroniques\b/,
 ];
 const ALIAS_CODE_PENAL: readonly RegExp[] = [/\bcode penal\b/];
+/**
+ * Codes français dont le corpus `textes_fr` porte des articles. Leurs alias sont
+ * cherchés sur la forme normalisée : diacritiques retirés, ponctuation changée
+ * en espaces.
+ */
+const ALIAS_CODES_FRANCAIS: ReadonlyArray<{ document: string; texte: readonly RegExp[] }> = [
+  { document: "LEGITEXT000006072050", texte: [/\bcode du travail\b/, /\bc trav\b/] },
+  { document: "LEGITEXT000006072665", texte: [/\bcode de la sante publique\b/, /\bcsp\b/] },
+  { document: "LEGITEXT000025503132", texte: [/\bcode de la securite interieure\b/, /\bcsi\b/] },
+  { document: "LEGITEXT000006072026", texte: [/\bcode monetaire et financier\b/, /\bcmf\b/] },
+  {
+    document: "LEGITEXT000031366350",
+    texte: [/\bcode des relations entre le public et l administration\b/, /\bcrpa\b/],
+  },
+  { document: "LEGITEXT000006070721", texte: [/\bcode civil\b/] },
+];
 /** Fin du titre du décret 2019-536 : la loi 78-17 qu'il applique n'est pas nommée pour elle-même. */
 const TITRE_DECRET_2019_536 =
   /\bdecret (?:n )?2019 536(?: du 29 mai 2019)? pris pour l application de la loi (?:n )?78 17(?: du 6 janvier 1978)?(?: relative a l informatique aux fichiers et aux libertes)?/g;
@@ -548,6 +564,12 @@ const NOMS_DOCUMENTS: Record<string, string> = {
   LEGITEXT000038567662: "décret 2019-536",
   LEGITEXT000006070719: "Code pénal",
   LEGITEXT000006070987: "CPCE",
+  LEGITEXT000006072050: "Code du travail",
+  LEGITEXT000006072665: "Code de la santé publique",
+  LEGITEXT000025503132: "Code de la sécurité intérieure",
+  LEGITEXT000006072026: "Code monétaire et financier",
+  LEGITEXT000031366350: "CRPA",
+  LEGITEXT000006070721: "Code civil",
 };
 
 function libelleDocument(document: string): string {
@@ -591,6 +613,9 @@ export function documentsNommes(question: string): string[] {
   if (ALIAS_DECRET_2019_536.some((alias) => alias.test(texte))) documents.add("LEGITEXT000038567662");
   if (ALIAS_CPCE_TEXTE.some((alias) => alias.test(texte))) documents.add("LEGITEXT000006070987");
   if (ALIAS_CODE_PENAL.some((alias) => alias.test(texte))) documents.add("LEGITEXT000006070719");
+  for (const code of ALIAS_CODES_FRANCAIS) {
+    if (code.texte.some((alias) => alias.test(texte))) documents.add(code.document);
+  }
   return [...documents];
 }
 
