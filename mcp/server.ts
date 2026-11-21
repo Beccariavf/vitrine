@@ -528,7 +528,8 @@ export function createServer(deps: ServerDeps): McpServer {
               "cnil_doctrine les guides, référentiels et listes AIPD (extraits non modifiés, " +
               "CC BY-ND 4.0), " +
               "constit les décisions DC et QPC, metadonnees les notices du guichet unique " +
-              "(métadonnées seulement) ; absent, toutes répondent",
+              "(métadonnées seulement) ; absent, toutes répondent, sauf une formule générique de " +
+              "famille (« les clauses contractuelles types »), bornée au corpus `ccs`",
           ),
         document: z
           .string()
