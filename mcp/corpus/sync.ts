@@ -308,6 +308,7 @@ export function agentsParDefaut(
       const resultat = await synchroniserActeUe({
         rootDir,
         corpus,
+        ...(entree?.document === undefined ? {} : { document: entree.document }),
         ...(version === undefined ? {} : { version }),
       });
       return { ecrit: resultat.ecrit, message: resultat.message };

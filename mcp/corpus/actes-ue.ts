@@ -17,7 +17,7 @@
  * et l'entrée reste `perime` pour la passe suivante.
  */
 
-import { readFileSync, renameSync, writeFileSync } from "node:fs";
+import { readFileSync, readdirSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Entry } from "../../veille/types.ts";
@@ -39,8 +39,19 @@ import { dateDeConsolidation } from "./versions.ts";
 
 const ICI = dirname(fileURLToPath(import.meta.url));
 
-/** Chemin du descripteur d'un acte suivi. */
-export function cheminDescripteur(corpus: string, dossier: string = ICI): string {
+/**
+ * Chemin du descripteur d'un acte suivi. Un corpus à plusieurs documents
+ * (`ccs`) en porte un par CELEX : `document` le désigne, sinon le descripteur
+ * `mcp/corpus/<corpus>.json` est rendu.
+ */
+export function cheminDescripteur(corpus: string, dossier: string = ICI, document?: string): string {
+  if (document !== undefined) {
+    for (const fichier of readdirSync(dossier).filter((nom) => nom.endsWith(".json")).sort()) {
+      const chemin = join(dossier, fichier);
+      const descripteur = JSON.parse(readFileSync(chemin, "utf8")) as Descripteur;
+      if (descripteur.corpus === corpus && descripteur.document === document) return chemin;
+    }
+  }
   return join(dossier, `${corpus}.json`);
 }
 
@@ -71,6 +82,8 @@ export type ResultatActeUe = {
 export type SynchroniserActeOptions = {
   rootDir: string;
   corpus: string;
+  /** CELEX visé, quand le corpus porte plusieurs documents (`ccs`). */
+  document?: string;
   /** Consolidation à rendre ; absente, aucune version n'est appliquée. */
   version?: string;
   descripteurPath?: string;
@@ -85,7 +98,8 @@ export type SynchroniserActeOptions = {
  * corpus. Rejouer la même version reconstruit sans réécrire le descripteur.
  */
 export async function synchroniserActeUe(options: SynchroniserActeOptions): Promise<ResultatActeUe> {
-  const chemin = options.descripteurPath ?? cheminDescripteur(options.corpus);
+  const chemin =
+    options.descripteurPath ?? cheminDescripteur(options.corpus, ICI, options.document);
   const avant = readFileSync(chemin, "utf8");
   const descripteur = JSON.parse(avant) as Descripteur;
 

@@ -45,6 +45,28 @@ export type Manifeste = {
 /** Acte d'origine dont une consolidation sans préambule a laissé les considérants. */
 export type OrigineConsiderants = { document: string; snapshotPath: string };
 
+/** Un document prêt à écrire : son descripteur, ses unités et son snapshot brut. */
+export type DocumentCorpus = {
+  descripteur: Descripteur;
+  unites: Unite[];
+  snapshotPath: string;
+  origine?: OrigineConsiderants;
+};
+
+/** Manifeste d'un corpus qui porte plusieurs documents (`ccs`). */
+export type ManifesteCorpus = {
+  corpus: string;
+  nom: string;
+  documents: Manifeste[];
+  unites: number;
+  couverture: {
+    source: string;
+    types_retenus: string[];
+    exclusions: string[];
+    comptes: Record<string, number>;
+  };
+};
+
 /** Écrit un fichier UTF-8 s'il n'a pas déjà exactement ce contenu. */
 function writeIfChanged(path: string, content: string): void {
   try {
@@ -63,19 +85,16 @@ function writeIfChanged(path: string, content: string): void {
 }
 
 /**
- * Écrit `manifest.json` puis `unites.jsonl` sous `data/corpus/<document>/`.
- * Deux passes sur le même corpus rendent les mêmes octets et ne réécrivent rien.
+ * Manifeste d'un document : métadonnées du descripteur et comptes des unités.
  * Une `origine` déclare l'acte d'origine des considérants quand la consolidation
  * n'a pas de préambule.
  */
-export function writeCorpus(
-  rootDir: string,
+function manifesteDeDocument(
   descripteur: Descripteur,
   unites: Unite[],
   snapshotPath: string,
   origine?: OrigineConsiderants,
-): { manifestPath: string; unitesPath: string } {
-  const dossier = join(rootDir, "data", "corpus", descripteur.corpus);
+): Manifeste {
   const articles = unites.filter((unite) => unite.niveau === "article").length;
   const considerants = unites.filter((unite) => unite.niveau === "considérant").length;
   const clauses = unites.filter((unite) => unite.niveau === "clause").length;
@@ -84,7 +103,7 @@ export function writeCorpus(
     ...(considerants > 0 ? ["considérant"] : []),
     ...(clauses > 0 ? ["clause"] : []),
   ];
-  const manifeste: Manifeste = {
+  return {
     document: descripteur.document,
     titre: descripteur.titre,
     langue: descripteur.langue,
@@ -121,6 +140,72 @@ export function writeCorpus(
       ...(descripteur.version === undefined
         ? {}
         : { version: descripteur.version, date_consolidation: descripteur.date_consolidation ?? null }),
+    },
+  };
+}
+
+/**
+ * Écrit `manifest.json` puis `unites.jsonl` sous `data/corpus/<document>/`.
+ * Deux passes sur le même corpus rendent les mêmes octets et ne réécrivent rien.
+ * Une `origine` déclare l'acte d'origine des considérants quand la consolidation
+ * n'a pas de préambule.
+ */
+export function writeCorpus(
+  rootDir: string,
+  descripteur: Descripteur,
+  unites: Unite[],
+  snapshotPath: string,
+  origine?: OrigineConsiderants,
+): { manifestPath: string; unitesPath: string } {
+  const dossier = join(rootDir, "data", "corpus", descripteur.corpus);
+  const manifeste = manifesteDeDocument(descripteur, unites, snapshotPath, origine);
+
+  const manifestPath = join(dossier, "manifest.json");
+  const unitesPath = join(dossier, "unites.jsonl");
+  writeIfChanged(manifestPath, `${JSON.stringify(manifeste, null, 2)}\n`);
+  writeIfChanged(unitesPath, `${unites.map((unite) => JSON.stringify(unite)).join("\n")}\n`);
+  return { manifestPath, unitesPath };
+}
+
+/**
+ * Écrit un corpus qui porte plusieurs documents : un manifeste à `documents[]`,
+ * un seul `unites.jsonl` dans l'ordre donné, sans qu'un document écrase l'autre.
+ * Les comptes de la couverture sont la somme des documents.
+ */
+export function writeCorpusMulti(
+  rootDir: string,
+  corpus: string,
+  nom: string,
+  documents: readonly DocumentCorpus[],
+): { manifestPath: string; unitesPath: string } {
+  const dossier = join(rootDir, "data", "corpus", corpus);
+  const manifestes = documents.map((document) =>
+    manifesteDeDocument(document.descripteur, document.unites, document.snapshotPath, document.origine),
+  );
+  const unites = documents.flatMap((document) => document.unites);
+
+  const types = ["article", "considérant", "clause"].filter((niveau) =>
+    documents.some((document) => document.unites.some((unite) => unite.niveau === niveau)),
+  );
+  const comptes: Record<string, number> = { documents: documents.length };
+  for (const niveau of types) {
+    comptes[niveau === "considérant" ? "considerants" : `${niveau}s`] = unites.filter(
+      (unite) => unite.niveau === niveau,
+    ).length;
+  }
+
+  const manifeste: ManifesteCorpus = {
+    corpus,
+    nom,
+    documents: manifestes,
+    unites: unites.length,
+    couverture: {
+      source: `CELLAR — publications.europa.eu/resource/celex/${documents
+        .map((document) => document.descripteur.version ?? document.descripteur.document)
+        .join(", ")}`,
+      types_retenus: types,
+      exclusions: [...new Set(documents.flatMap((document) => document.descripteur.exclusions ?? []))],
+      comptes,
     },
   };
 

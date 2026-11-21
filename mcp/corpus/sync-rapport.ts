@@ -237,11 +237,13 @@ export function inventaireCorpus(
     corpus.push({
       corpus: nom,
       documents:
-        typeof manifeste.documents === "number"
-          ? manifeste.documents
-          : typeof manifeste.document === "string" || nom === "rgpd" || nom === "aiact"
-            ? 1
-            : 0,
+        Array.isArray(manifeste.documents)
+          ? manifeste.documents.length
+          : typeof manifeste.documents === "number"
+            ? manifeste.documents
+            : typeof manifeste.document === "string" || nom === "rgpd" || nom === "aiact"
+              ? 1
+              : 0,
       unites: nombre(manifeste.unites, nombre(manifeste.fragments, 0)),
       arrete_le: date,
     });

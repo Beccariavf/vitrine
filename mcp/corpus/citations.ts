@@ -251,14 +251,21 @@ export function documentsExclus(): ReadonlySet<string> {
 
 /**
  * Identifiants qu'un manifeste déclare : `document`, `text_id`,
- * `textes[].text_id` pour un corpus de plusieurs textes et `decisions[].celex`
- * pour les décisions d'adéquation.
+ * `textes[].text_id` pour un corpus de plusieurs textes, `decisions[].celex`
+ * pour les décisions d'adéquation et `documents[].document` pour un corpus de
+ * plusieurs actes (clauses types).
  */
 export function identifiantsDuManifeste(manifeste: Record<string, unknown>): string[] {
   const identifiants: string[] = [];
   for (const champ of ["document", "text_id"]) {
     const valeur = manifeste[champ];
     if (typeof valeur === "string" && valeur.trim() !== "") identifiants.push(valeur);
+  }
+  if (Array.isArray(manifeste.documents)) {
+    for (const document of manifeste.documents) {
+      const valeur = (document as { document?: unknown } | null)?.document;
+      if (typeof valeur === "string" && valeur.trim() !== "") identifiants.push(valeur);
+    }
   }
   if (Array.isArray(manifeste.textes)) {
     for (const texte of manifeste.textes) {
