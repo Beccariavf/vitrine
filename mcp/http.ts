@@ -212,6 +212,13 @@ export function creerServeurHttp(deps: DependancesHttp): Server {
 
   /** Traite une requête et rend le statut écrit, pour le journal. */
   const router = async (req: IncomingMessage, res: ServerResponse): Promise<number> => {
+    // Anti DNS rebinding : seul un hôte de boucle locale sur le port d'écoute est servi.
+    const port = req.socket.localPort;
+    const hote = req.headers.host;
+    if (hote !== `127.0.0.1:${port}` && hote !== `localhost:${port}`) {
+      ecrire(req, res, 403, { erreur: "Hôte refusé." });
+      return 403;
+    }
     const url = analyserUrl(req.url);
     if (url === null) {
       ecrire(req, res, 404, { erreur: "Route inconnue. Seule GET /recherche répond." });
