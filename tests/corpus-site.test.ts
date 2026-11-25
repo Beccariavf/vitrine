@@ -94,7 +94,7 @@ describe("unités et étages de la façade", () => {
   it("rend les unités indexées de chaque collection committée", () => {
     const unites = new Map(sourcesCorpus(ROOT).map((source) => [source.corpus, source.unites]));
     assert.equal(unites.get("rgpd"), 272);
-    assert.equal(unites.get("aiact"), 299);
+    assert.equal(unites.get("aiact"), 377);
     assert.equal(unites.get("cnil"), 29698);
     assert.ok([...unites.values()].every((nombre) => nombre > 0));
   });

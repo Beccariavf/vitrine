@@ -39,6 +39,8 @@ type DefinitionCorpus = {
   nom: string;
   /** Libellé du connecteur (`src/lib/corpus.ts`). */
   libelle: string;
+  /** Nom du manifeste d'un corpus à plusieurs documents ; le libellé par défaut. */
+  nomManifeste?: string;
   type: TypeCorpus;
   gouvernance: readonly ChampGouvernance[];
   famille: FamilleSite;
@@ -111,12 +113,15 @@ const DEFINITIONS = [
   {
     nom: "aiact",
     libelle: "AI Act",
+    nomManifeste: "AI Act et actes d'application",
     type: "texte",
     gouvernance: ["ia"],
     famille: "textes",
     regleStatut: "texte",
     commandeSync: "npm run corpus:build -- --document aiact",
-    descriptionServeur: "l'AI Act (corpus `aiact`, CELEX 32024R1689)",
+    descriptionServeur:
+      "l'AI Act et ses actes d'application (corpus `aiact`, CELEX 32024R1689, `32025R0454`, " +
+      "`32026D2274`, `32026R2487`)",
     descriptionProvenance: "AI Act `32024R1689`",
     descriptionRecherche: "l'AI Act",
     rangSite: 2,
@@ -126,7 +131,7 @@ const DEFINITIONS = [
     sources: ["eurlex"],
     acteUe: true,
     rangActeVise: 2,
-    actesSuivis: ["32024R1689"],
+    actesSuivis: ["32024R1689", "32025R0454", "32026D2274", "32026R2487"],
   },
   {
     nom: "eprivacy",

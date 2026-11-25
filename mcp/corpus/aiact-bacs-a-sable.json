@@ -1,0 +1,19 @@
+{
+  "document": "32026R2487",
+  "corpus": "aiact",
+  "nom": "Règlement d'exécution (UE) 2026/2487",
+  "titre": "Règlement d'exécution (UE) 2026/2487 de la Commission du 10 novembre 2026 portant modalités d'application du règlement (UE) 2024/1689 du Parlement européen et du Conseil en ce qui concerne la mise en place, le développement, la mise en œuvre, l'exploitation et la surveillance des bacs à sable réglementaires de l'IA",
+  "langue": "fra",
+  "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32026R2487",
+  "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+  "date_acte": "2026-11-10",
+  "date_publication": "2026-11-11",
+  "date_debut": "2026-12-01",
+  "date_fin": null,
+  "statut": "en_vigueur",
+  "articles_attendus": 10,
+  "considerants_attendus": 26,
+  "parseur": "donnees",
+  "version": "32026R2487",
+  "date_consolidation": null
+}

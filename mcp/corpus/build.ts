@@ -117,7 +117,8 @@ async function construire(
 
 /** Nom d'un corpus qui porte plusieurs documents, lu dans le registre. */
 function nomDuCorpus(corpus: string): string {
-  return corpusDeclare(corpus)?.libelle ?? corpus;
+  const declare = corpusDeclare(corpus);
+  return declare?.nomManifeste ?? declare?.libelle ?? corpus;
 }
 
 /**

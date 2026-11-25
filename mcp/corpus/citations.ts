@@ -253,6 +253,40 @@ const INSTRUMENTS: readonly Instrument[] = [
     ],
   },
   {
+    libelle: "2026/2487",
+    identifiant: "32026R2487",
+    nature: "règlement",
+    url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32026R2487",
+    alias: [
+      `règlement d'exécution ${PARENTHESE} (?:n[o°] ?)?2026/2487`,
+      `règlement d'exécution (?:n[o°] ?)?2026/2487`,
+      `(?:n[o°] ?)?2026/2487`,
+    ],
+  },
+  {
+    libelle: "2025/454",
+    identifiant: "32025R0454",
+    nature: "règlement",
+    url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32025R0454",
+    alias: [
+      `règlement d'exécution ${PARENTHESE} (?:n[o°] ?)?2025/454`,
+      `règlement d'exécution (?:n[o°] ?)?2025/454`,
+      `(?:n[o°] ?)?2025/454`,
+    ],
+  },
+  {
+    libelle: "2026/2274",
+    identifiant: "32026D2274",
+    nature: "décision",
+    url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32026D2274",
+    alias: [
+      `décision d'exécution ${PARENTHESE} (?:n[o°] ?)?2026/2274`,
+      `décision d'exécution (?:n[o°] ?)?2026/2274`,
+      `décision (?:n[o°] ?)?2026/2274`,
+      `(?:n[o°] ?)?2026/2274`,
+    ],
+  },
+  {
     libelle: "EHDS",
     identifiant: "32025R0327",
     nature: "règlement",
