@@ -85,9 +85,9 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 ## Détail `cnil`
 
 - Ajout du 25 novembre 2026 (#135) : quatorze délibérations de nature `Référentiel/Règlement type/Norme` retenues hors du filtre de natures, listées au descripteur dans `deliberations_supplementaires` : MR-001 à MR-008, référentiel entrepôts 2021-118, référentiel vigilances 2019-057, et les quatre délibérations du 19 mars 2026 (2026-049 annexe sécurité, 2026-050 MR-001 révisée, 2026-051 MR-003 révisée, 2026-052 annexe contrôle qualité).
-- Le corpus passe de 3 245 à 3 260 documents et de 29 299 à 29 698 fragments : 325 lignes ajoutées, 0 supprimée ou modifiée (vérifié au diff de `unites.jsonl`), les comptes attendus du filtre de natures restant la base. `couverture.exclusions` descend de 35 167 à 34 842 lignes.
+- Le corpus passe de 3 246 à 3 260 documents (+14) et de 29 373 à 29 698 fragments (+325) : 325 lignes ajoutées, 0 supprimée ou modifiée (vérifié au diff de `unites.jsonl`, `325 0`), les comptes attendus de la base DINUM (filtre de natures) restant 3 245 / 29 299. `couverture.exclusions` descend de 35 167 à 34 842 lignes.
 - 2018-153 (MR-001) et 2018-154 (MR-003) restent au corpus avec le statut « Remplacée par 2026-050 » et « Remplacée par 2026-051 » ; `objets` donne le libellé de chaque délibération, porté au `chemin`. Aucune délibération déclarée absente des sources.
-- Les PDF compagnons (grilles, versions annotées, FAQ vigilances) ne sont pas listés sur une page de référence déjà lue et restent hors périmètre, déclarés ici.
+- Restent hors périmètre, déclarés : les textes intégraux des MR-001 et MR-003 révisées et des annexes sécurité / contrôle qualité, que les délibérations 2026-049 à 2026-052 publiées par la DINUM ne portent pas (elles donnent les observations et renvoient au JORF, `JORFTEXT000054125917`, `…924`, `…946`, `…963`), ainsi que les PDF compagnons (grilles, versions annotées, FAQ vigilances), qui ne sont pas listés sur une page de référence déjà lue.
 
 ## Détail `cnil_doctrine`
 
