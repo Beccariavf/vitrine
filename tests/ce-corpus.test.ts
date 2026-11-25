@@ -311,6 +311,14 @@ describe("la synchronisation du corpus CE", () => {
       assert.equal(manifeste.couverture.fonds.inedit.fragments, 1);
       assert.equal(manifeste.couverture.fonds.inedit.doublons, 0);
       assert.equal(manifeste.licence, "Licence Ouverte 2.0 (Etalab)");
+      assert.deepEqual(manifeste.couverture.filtre.historique.mots_cles, DESCRIPTEUR.mots_cles);
+      assert.deepEqual(
+        manifeste.couverture.filtre.elargi.criteres.map((critere) => critere.cle),
+        (DESCRIPTEUR.criteres_elargis ?? []).map((critere) => critere.cle),
+        "le manifeste déclare le filtre élargi du descripteur",
+      );
+      assert.match(manifeste.couverture.filtre.union, /ou/);
+      assert.deepEqual(manifeste.couverture.filtre.ajouts_par_critere, {});
 
       const etat = JSON.parse(
         readFileSync(join(racine, "data", "corpus", "ce", "etat.json"), "utf8"),

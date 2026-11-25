@@ -50,12 +50,19 @@ const COMPILES = new WeakMap<CritereElargi, CritereCompile>();
 function compiler(critere: CritereElargi): CritereCompile {
   const connu = COMPILES.get(critere);
   if (connu !== undefined) return connu;
+  if (critere.articles !== undefined && critere.articles.trim() === "") {
+    throw new Error(`Critère « ${critere.cle} » : motif d'articles vide`);
+  }
+  const expressions = (critere.expressions ?? []).map((expression) =>
+    normaliserComparaison(expression),
+  );
+  if (expressions.some((expression) => expression === "")) {
+    throw new Error(`Critère « ${critere.cle} » : expression vide`);
+  }
   const compile: CritereCompile = {
     articlesGlobal: critere.articles === undefined ? null : new RegExp(critere.articles, "g"),
     contexte: critere.contexte === undefined ? null : new RegExp(critere.contexte),
-    expressions: (critere.expressions ?? []).map((expression) =>
-      normaliserComparaison(expression),
-    ),
+    expressions,
     toutes: critere.toutes === true,
   };
   COMPILES.set(critere, compile);

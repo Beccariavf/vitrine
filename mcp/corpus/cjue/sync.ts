@@ -130,7 +130,7 @@ export type ResultatCjue = {
   unitesPath: string;
   /** Décisions retenues par le seul critère élargi (citation d'un acte). */
   ajoutsParCritere: Record<string, number>;
-  /** Décisions déjà retenues qui portent aussi le critère. */
+  /** Décisions déjà présentes (matière, notion, veille ou complémentaire) qui portent aussi le critère. */
   dejaPresentsParCritere: Record<string, number>;
 };
 
@@ -412,6 +412,8 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
   const lues = limite === null ? retenues : retenues.slice(0, limite);
 
   const decisionsParOrigine: Record<string, number> = { matiere: 0, notion: 0, acte_cite: 0, liste: 0 };
+  const dansLaVeille = new Set(veille.map((entree) => entree.celex));
+  const complementairesConnus = new Set(complementaires);
   let ajoutsActeCite = 0;
   let dejaActeCite = 0;
   for (const entree of retenues) {
@@ -420,7 +422,12 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
       decisionsParOrigine[origine] = (decisionsParOrigine[origine] ?? 0) + 1;
     }
     if (origines.includes("acte_cite")) {
-      if (origines.includes("matiere") || origines.includes("notion")) dejaActeCite += 1;
+      const deja =
+        origines.includes("matiere") ||
+        origines.includes("notion") ||
+        dansLaVeille.has(entree.celex) ||
+        complementairesConnus.has(entree.celex);
+      if (deja) dejaActeCite += 1;
       else ajoutsActeCite += 1;
     }
   }

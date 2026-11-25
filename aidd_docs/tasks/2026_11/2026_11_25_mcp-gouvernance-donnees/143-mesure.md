@@ -24,16 +24,21 @@ Périmètre : filtre élargi en **union** avec le filtre historique ; aucune dé
 
 ## Volume ajouté
 
-| Corpus | Décisions | Fragments | Part de l'index | Critères principaux |
+| Corpus | Décisions ajoutées | Fragments | Part de l'index | Critères principaux |
 | --- | ---: | ---: | ---: | --- |
 | `ce` | 1 033 | 10 616 | 6,8 % | accès aux documents administratifs 634 / 5 200 ; CRPA livre III 214 / 2 748 ; secret des affaires 120 / 2 090 ; communication des documents administratifs 75 / 582 ; code pénal 226-13 69 / 954 ; CSP données de santé 42 / 543 ; loi 51-711 34 / 283 ; code du patrimoine 18 / 241 ; base de données + producteur 17 / 359 ; autres ≤ 14 |
-| `cc` | 330 | 7 431 | 4,7 % | secret des affaires 265 ; base de données + producteur 17 ; code de commerce L. 151-1 16 ; CSP données de santé 12 ; CPI L. 341-1 12 ; CRPA livre III 11 ; code pénal 226-13 10 ; patrimoine 8 ; droit sui generis 8 ; accès aux documents administratifs 7 ; intelligence artificielle 7 ; directive bases de données 5 ; communication des documents 4 ; loi 68-678 3 ; directive secret des affaires 1 |
-| `cjue` | 58 (citation d'acte) | 5 072 | 3,2 % | DSA, directive Open Data, directive bases de données, droit d'auteur, secret des affaires, AI Act : 176 entrées CELLAR par citation, 58 retenues hors filtre historique |
-| **Total** | **1 421** | **23 119** | **14,8 %** | seuil d'arrêt : 47 000 fragments (30 %) — **non atteint** |
+| `cc` | 330 | 7 445 | 4,8 % | secret des affaires 265 ; base de données + producteur 17 ; code de commerce L. 151-1 16 ; CSP données de santé 12 ; CPI L. 341-1 12 ; CRPA livre III 11 ; code pénal 226-13 10 ; patrimoine 8 ; droit sui generis 8 ; accès aux documents administratifs 7 ; intelligence artificielle 7 ; directive bases de données 5 ; communication des documents 4 ; loi 68-678 3 ; directive secret des affaires 1 |
+| `cjue` | 55 | 5 026 | 3,2 % | DSA, directive Open Data, directive bases de données, droit d'auteur, secret des affaires, AI Act : 62 décisions retenues par citation d'acte (57 hors filtre historique, 5 déjà présentes) |
+| **Total** | **1 418** | **23 087** | **14,7 %** | seuil d'arrêt : 47 000 fragments (30 %) — **non atteint** |
 
-La mesure `cc` par les seules 11 requêtes nouvelles donnait 315 décisions / 7 170 fragments ;
-la synchronisation réelle, qui rejoue aussi les 22 requêtes historiques sur le cache, en retient
-330 / 7 431 (15 décisions entrées par un critère élargi depuis une requête historique).
+Ces comptes sont les deltas réels des corpus (`git show HEAD~1:data/corpus/<c>/unites.jsonl` face aux fichiers ingérés).
+La mesure `cc` par les seules 11 requêtes nouvelles donnait 315 décisions / 7 170 fragments ; la
+synchronisation réelle, qui rejoue aussi les 22 requêtes historiques sur le cache, porte le corpus
+à 330 décisions / 7 445 fragments. Les comptes par critère du manifeste (`ajouts_par_critere`)
+excluent les décisions déjà présentes par la veille : ils donnent 329 décisions / 7 427 fragments
+pour `cc` et 57 pour `cjue`, la différence avec le delta étant des décisions déjà au corpus avant
+la passe. La liste CELLAR a retiré `62025CO0502` entre deux passes : il n'était pas au corpus avant
+#143, donc aucune décision antérieure n'est perdue ; l'index a supprimé ses 46 unités.
 
 ## Échantillon (60 décisions, graine 143)
 
@@ -76,18 +81,18 @@ Hors-sujet : **0 / 20**.
 | 6 | 60e5435fd7f3d51b50f07860 | 2021-07-07 | secret des affaires | pertinente | saisie informatique, sélection des données |
 | 7 | 5fca4be130816962ab3c3c53 | 2020-07-02 | secret des affaires | pertinente | mesure d'instruction, secret des affaires |
 | 8 | 6079bd329ba5988459c57101 | 2012-12-19 | secret des affaires | pertinente | documents RH, vie privée et secret |
-| 9 | 6257bca47ee821954281c720 | 2022-04-14 | secret des affaires | pertinente | séquestre, tri des pièces saisies |
-| 10 | 68242dbbeaabb276d1616de3 | 2025-05-14 | secret, L. 151-1 | pertinente | séquestre, R. 153-1 code de commerce |
-| 11 | 6257bc947ee821954281c710 | 2022-04-14 | secret des affaires | pertinente | information confidentielle, secret des affaires |
-| 12 | 63bfb6f05e2fbe7c90043b5d | 2023-01-12 | secret des affaires | pertinente | saisie d'une data room, secret des affaires |
-| 13 | 5fd8fd1cc74ea992f28e94bb | 2017-07-05 | secret des affaires | pertinente | saisie, secret des affaires |
-| 14 | 6af55f1b6c2e1778128884a8 | 2026-11-12 | intelligence artificielle | **hors-sujet** | « Intelligence artificielle applications » est le nom d'une société |
-| 15 | 5fd90113a8a26697c6092936 | 2017-06-01 | secret des affaires | pertinente | pièces saisies, secret des affaires |
-| 16 | 6079e66f9ba5988459c5c369 | 2015-11-10 | secret des affaires | pertinente | pièces internes confidentielles |
-| 17 | 60c1aaa31ce32f2fbf7feebe | 2021-06-10 | secret des affaires | pertinente | mots-clés de saisie, secret des affaires |
-| 18 | 67a3097deaef5a22b443b3ab | 2025-02-05 | secret, L. 151-1 | pertinente | violation du secret des affaires |
-| 19 | 5fd9153a91a7c7b039dda485 | 2016-12-06 | secret des affaires | pertinente | mesure d'instruction, secret des affaires |
-| 20 | 5fca2f300a545067a49c148b | 2020-10-14 | loi 68-678 | pertinente | échange d'informations AMF, loi 68-678 |
+| 9 | 6140257b1879b4afa45906b5 | 2012-03-06 | CSP, 226-13 | pertinente | bilan sanguin, donnée médicale et secret professionnel |
+| 10 | 6257bca47ee821954281c720 | 2022-04-14 | secret des affaires | pertinente | séquestre, tri des pièces saisies |
+| 11 | 68242dbbeaabb276d1616de3 | 2025-05-14 | secret, L. 151-1 | pertinente | séquestre, R. 153-1 code de commerce |
+| 12 | 6257bc947ee821954281c710 | 2022-04-14 | secret des affaires | pertinente | information confidentielle, secret des affaires |
+| 13 | 63bfb6f05e2fbe7c90043b5d | 2023-01-12 | secret des affaires | pertinente | saisie d'une data room, secret des affaires |
+| 14 | 5fd8fd1cc74ea992f28e94bb | 2017-07-05 | secret des affaires | pertinente | saisie, secret des affaires |
+| 15 | 6af55f1b6c2e1778128884a8 | 2026-11-12 | intelligence artificielle | **hors-sujet** | « Intelligence artificielle applications » est le nom d'une société |
+| 16 | 5fd90113a8a26697c6092936 | 2017-06-01 | secret des affaires | pertinente | pièces saisies, secret des affaires |
+| 17 | 6079e66f9ba5988459c5c369 | 2015-11-10 | secret des affaires | pertinente | pièces internes confidentielles |
+| 18 | 60c1aaa31ce32f2fbf7feebe | 2021-06-10 | secret des affaires | pertinente | mots-clés de saisie, secret des affaires |
+| 19 | 67a3097deaef5a22b443b3ab | 2025-02-05 | secret, L. 151-1 | pertinente | violation du secret des affaires |
+| 20 | 61372843cd580146774303b9 | 2012-09-26 | CSP | pertinente | hébergement de données de santé, L. 1111-8 |
 
 Hors-sujet : **1 / 20** (5 %).
 
@@ -128,6 +133,22 @@ aucun resserrement supplémentaire n'est appliqué, le taux restant très en de�
 
 ## Décision
 
-Volume ajouté 23 119 fragments (**14,8 %** de l'index, seuil 47 000 non atteint) et hors-sujet
-3,3 % : **ingestion**. Les corpus sont reconstruits par `ce:sync`, `cc:sync` et `cjue:sync`,
-puis l'index est mis à jour en incrémental par `npm run corpus:index`.
+Volume ajouté 23 087 fragments (**14,7 %** de l'index, seuil 47 000 non atteint) et hors-sujet
+3,3 % : **ingestion**. Les corpus ont été reconstruits par `ce:sync`, `cc:sync` et `cjue:sync`,
+puis l'index mis à jour en incrémental par `npm run corpus:index`.
+
+## Vérification après ingestion
+
+- Corpus : `ce` 2 627 décisions / 31 390 fragments ; `cc` 735 / 15 670 ; `cjue` 312 / 29 318.
+  Aucune décision ni référence antérieure à #143 ne manque dans les trois corpus.
+- Index : première passe **23 133 ajoutées, 0 modifiée, 0 supprimée, 156 706 inchangées** ;
+  après la correction de liste CELLAR (retrait de `62025CO0502`), seconde passe **0 ajoutée,
+  0 modifiée, 46 supprimées, 179 793 inchangées** — 179 793 unités au total.
+- `decisions_citant` : CRPA L. 321-1 → 2 décisions du Conseil d'État (toutes deux ajoutées par
+  #143) ; C. com. L. 151-1 → 16 (10 Cour de cassation, 6 Conseil d'État) ; CPI L. 342-1 → 9
+  (6 Cour de cassation, 3 Conseil d'État).
+- Recherche « secret des affaires communication document administratif » : quatre décisions du
+  Conseil d'État au top 5, toutes ajoutées par #143 (`CETATEXT000052031228`,
+  `CETATEXT000049631269`, `CETATEXT000054534126`, `CETATEXT000047357723`), derrière l'article du
+  CRPA livre III.
+- `npm run typecheck`, `npm test` (1 414 réussis, 0 échec, 1 ignoré) et `npm run build` verts.

@@ -208,6 +208,17 @@ describe("la synchronisation du corpus Cour de cassation", () => {
         manifeste.documents_lus,
       );
       assert.equal(manifeste.couverture.reprise.en_cache, 2);
+      assert.equal(
+        manifeste.couverture.filtre.historique.occurrences_min,
+        DESCRIPTEUR.occurrences_min,
+      );
+      assert.deepEqual(
+        manifeste.couverture.filtre.elargi.criteres.map((critere) => critere.cle),
+        (DESCRIPTEUR.criteres_elargis ?? []).map((critere) => critere.cle),
+        "le manifeste déclare le filtre élargi du descripteur",
+      );
+      assert.match(manifeste.couverture.filtre.union, /ou/);
+      assert.deepEqual(manifeste.couverture.filtre.ajouts_par_critere, {});
       assert.equal(resultat.appels.decision, 2);
       assert.doesNotThrow(() => validerUnitesCorpus(unites, "Cour de cassation"));
 
@@ -422,6 +433,11 @@ describe("la synchronisation du corpus Cour de cassation", () => {
     assert.equal(new Set(unites.map((unite) => unite.document)).size, manifeste.documents);
     assert.equal("date_min" in manifeste, false, "aucune borne au manifeste");
     assert.equal("borne" in manifeste.couverture, false, "aucune borne en couverture");
+    assert.equal(
+      manifeste.documents + Object.values(manifeste.exclusions).reduce((a, b) => a + b, 0),
+      manifeste.documents_lus,
+      "les retenues et les écartées couvrent les décisions lues",
+    );
     const etat = JSON.parse(
       readFileSync(join(RACINE, "data", "corpus", "cc", "etat.json"), "utf8"),
     ) as Record<string, unknown>;

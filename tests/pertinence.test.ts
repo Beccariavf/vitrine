@@ -31,6 +31,13 @@ describe("les critères d'un filtre élargi", () => {
     assert.deepEqual(loin, [], "un numéro d'article d'un autre code ne suffit pas");
   });
 
+  it("borne la proximité du nom du texte à 160 caractères", () => {
+    const proche = `L. 321-1 ${"x ".repeat(50)}code des relations`;
+    const loin = `L. 321-1 ${"x ".repeat(100)}code des relations`;
+    assert.deepEqual(criteresTrouves(proche, [CRPA]).map((c) => c.cle), ["crpa-livre-iii"]);
+    assert.deepEqual(criteresTrouves(loin, [CRPA]), []);
+  });
+
   it("satisfait une expression, ou toutes quand le critère l'exige", () => {
     const textes: CritereElargi[] = [
       { cle: "simple", libelle: "une expression", expressions: ["secret des affaires"] },
@@ -55,10 +62,24 @@ describe("les critères d'un filtre élargi", () => {
     );
   });
 
-  it("refuse un critère vide plutôt que de tout retenir", () => {
+  it("refuse un critère vide ou un motif vide plutôt que de tout retenir", () => {
     assert.throws(
       () => criteresTrouves("Un texte.", [{ cle: "vide", libelle: "vide" }]),
       /sans article ni expression/,
+    );
+    assert.throws(
+      () =>
+        criteresTrouves("Un texte.", [
+          { cle: "motif", libelle: "motif", articles: "  " },
+        ]),
+      /motif d'articles vide/,
+    );
+    assert.throws(
+      () =>
+        criteresTrouves("Un texte.", [
+          { cle: "expression", libelle: "expression", expressions: ["—"] },
+        ]),
+      /expression vide/,
     );
   });
 });

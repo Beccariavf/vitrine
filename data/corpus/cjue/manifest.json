@@ -6,9 +6,9 @@
   "date_extraction": "2026-11-25",
   "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
   "langue": "fra",
-  "documents": 313,
-  "fragments": 29364,
-  "documents_lus": 540,
+  "documents": 312,
+  "fragments": 29318,
+  "documents_lus": 539,
   "exclusions": {
     "date_invalide": 0,
     "avis_avocat_general": 145,
@@ -59,7 +59,7 @@
       },
       "union": "décision listée par la matière, une notion fine, ou parce qu'elle cite un acte visé",
       "ajouts_par_critere": {
-        "acte_cite": 58
+        "acte_cite": 57
       },
       "deja_presents_par_critere": {
         "acte_cite": 5
@@ -67,7 +67,7 @@
       "decisions_par_origine": {
         "matiere": 194,
         "notion": 195,
-        "acte_cite": 63,
+        "acte_cite": 62,
         "liste": 0
       }
     },
@@ -81,7 +81,7 @@
     "complementaires_ajoutes": 5,
     "langue": "fra",
     "langues": {
-      "fra": 312,
+      "fra": 311,
       "eng": 1
     },
     "documents_langues": {

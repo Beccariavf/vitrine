@@ -295,7 +295,7 @@
         "directive-bases-donnees": 5,
         "directive-secret-affaires": 1,
         "droit-sui-generis": 8,
-        "intelligence-artificielle": 7,
+        "intelligence-artificielle": 6,
         "loi-68-678": 3,
         "patrimoine-livre-ii": 8,
         "penal-226-13": 10,
@@ -305,6 +305,7 @@
         "base-donnees-producteur": 1,
         "cpi-bases-donnees": 1,
         "droit-sui-generis": 1,
+        "intelligence-artificielle": 1,
         "penal-226-13": 5,
         "secret-des-affaires": 5
       }

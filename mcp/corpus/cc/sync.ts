@@ -123,7 +123,7 @@ export type ResultatCc = {
   fragmentsAjoutes: number;
   /** Décisions ajoutées par critère élargi. */
   ajoutsParCritere: Record<string, number>;
-  /** Décisions déjà retenues qui portent aussi le critère. */
+  /** Décisions déjà présentes (filtre historique ou veille) qui portent aussi le critère. */
   dejaPresentsParCritere: Record<string, number>;
 };
 
@@ -517,8 +517,9 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
       continue;
     }
     const nouvelles = unitesCc(verdict.decision, descripteur);
-    compterCriteres(verdict.historique ? dejaPresentsParCritere : ajoutsParCritere, verdict.criteres);
-    if (!verdict.historique && verdict.criteres.length > 0) {
+    const dejaPresente = verdict.historique || veilleIds.has(id);
+    compterCriteres(dejaPresente ? dejaPresentsParCritere : ajoutsParCritere, verdict.criteres);
+    if (!dejaPresente && verdict.criteres.length > 0) {
       ajouteesElargi += 1;
       fragmentsAjoutes += nouvelles.length;
     }
