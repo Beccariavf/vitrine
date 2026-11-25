@@ -116,6 +116,7 @@ async function construire(
 
 /** Nom d'un corpus qui porte plusieurs documents, pour son manifeste. */
 const NOMS_CORPUS: Readonly<Record<string, string>> = {
+  aiact: "AI Act et actes d'application",
   ccs: "Clauses contractuelles types",
   donnees: "Textes UE de l'économie des données",
   sante_ue: "Espace européen des données de santé",

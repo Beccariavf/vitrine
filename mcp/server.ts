@@ -148,7 +148,8 @@ const CONSIGNE_DECISIONS_CITEES =
 
 const CONSIGNE_SERVEUR =
   "Serveur de lecture et de recherche sur vingt-deux corpus juridiques : le RGPD " +
-  "(corpus `rgpd`, CELEX 32016R0679), l'AI Act (corpus `aiact`, CELEX 32024R1689), " +
+  "(corpus `rgpd`, CELEX 32016R0679), l'AI Act et ses actes d'application (corpus `aiact`, " +
+  "CELEX 32024R1689, `32025R0454`, `32026D2274`, `32026R2487`), " +
   `${ACTES_UE}` +
   ", les clauses contractuelles types pour les transferts hors UE et la sous-traitance (corpus " +
   "`ccs`, CELEX `32021D0914` et `32021D0915`) et les décisions d'adéquation, en vigueur et abrogées (corpus `adequation`), " +

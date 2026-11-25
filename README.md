@@ -22,7 +22,7 @@ npm test               # suite hors ligne
 npm run build          # génère dist/
 
 npm run corpus:build   # CELLAR → data/corpus/{rgpd,aiact,eprivacy,police,eudpr,rgpdproc}/
-npm run corpus:build -- --document aiact   # un seul descripteur
+npm run corpus:build -- --document aiact   # le corpus aiact, ses quatre documents
 npm run ce:sync                            # archive JADE globale → data/corpus/ce/ (1,32 Go, long)
 npm run ce:sync -- --dry-run               # ce que l'archive produirait, sans écrire
 npm run cc:sync                            # Judilibre → data/corpus/cc/ (budget PISTE, reprise au cache)
@@ -84,7 +84,7 @@ reste requis : « sans modèle » vaut à la requête, pas au stockage. Détail 
 `aidd_docs/tasks/2026_11/2026_11_20_mode-lexical/mesures.md`.
 L'index est incrémental : un second passage sur un corpus inchangé
 embarque zéro unité et laisse les vecteurs identiques. La construction suit les descripteurs
-`mcp/corpus/*.json` ; `--document <corpus>` n'en construit qu'un.
+`mcp/corpus/*.json` ; `--document <corpus>` ne construit que ce corpus, avec tous ses documents.
 
 Le corpus `cnil` porte 3 245 délibérations et 29 299 fragments, filtrés sur trois natures :
 `Sanction` (249 documents / 6 342 fragments), `Avis` (2 896 / 21 914) et

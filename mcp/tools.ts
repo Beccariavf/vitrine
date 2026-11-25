@@ -559,6 +559,30 @@ const ALIAS_ACTES_UE: ReadonlyArray<{ document: string; texte: readonly RegExp[]
     compact: [/32023r1622/],
   },
   {
+    document: "32026R2487",
+    texte: [
+      /\breglement d execution (?:ue )?(?:n )?2026 2487\b/,
+      /\b2026 2487\b/,
+    ],
+    compact: [/32026r2487/],
+  },
+  {
+    document: "32025R0454",
+    texte: [
+      /\breglement d execution (?:ue )?(?:n )?2025 454\b/,
+      /\b2025 454\b/,
+    ],
+    compact: [/32025r0454/],
+  },
+  {
+    document: "32026D2274",
+    texte: [
+      /\bdecision d execution (?:ue )?(?:n )?2026 2274\b/,
+      /\b2026 2274\b/,
+    ],
+    compact: [/32026d2274/],
+  },
+  {
     document: "32025R0327",
     texte: [
       /\behds\b/,
@@ -681,6 +705,9 @@ const NOMS_DOCUMENTS: Record<string, string> = {
   "32018R1807": "libre circulation des données",
   "32026H2394": "recommandation clauses types Data Act",
   "32023R1622": "logos DGA",
+  "32026R2487": "règlement d'exécution bacs à sable de l'IA",
+  "32025R0454": "règlement d'exécution groupe scientifique de l'IA",
+  "32026D2274": "décision d'exécution norme harmonisée EN 18286:2026",
   "32025R0327": "EHDS",
   "32026R0771": "règlement d'exécution 2026/771 (comité de l'EEDS)",
   "32026R2083": "règlement d'exécution 2026/2083 (MaSanté@UE)",
