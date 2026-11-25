@@ -1913,6 +1913,7 @@ describe("synchronisation du corpus", () => {
       "cnil",
       "cnil_doctrine",
       "constit",
+      "doctrine_ue",
       "donnees",
       "eprivacy",
       "eudpr",

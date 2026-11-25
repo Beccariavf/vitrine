@@ -571,7 +571,7 @@ describe("la présence des documents cités", () => {
             "types, décisions d'adéquation, textes UE de l'économie des données, espace européen des " +
             "données de santé (EHDS), textes UE de frontière, LIL, textes français d'application, " +
             "textes en préparation et affaires pendantes, CNIL, CADA, doctrine CNIL, CEPD, Conseil " +
-            "d'État, Conseil constitutionnel, Cour de cassation, CJUE).",
+            "d'État, Conseil constitutionnel, Cour de cassation, CJUE, doctrine de la Commission).",
         );
       }
     } finally {
