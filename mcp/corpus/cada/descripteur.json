@@ -1,0 +1,29 @@
+{
+  "corpus": "cada",
+  "nom": "CADA",
+  "jeu": {
+    "id": "53698f37a3a729239d2036a0",
+    "url": "https://www.data.gouv.fr/fr/datasets/avis-et-conseils-de-la-cada/",
+    "api": "https://www.data.gouv.fr/api/1/datasets/53698f37a3a729239d2036a0/"
+  },
+  "ressource": {
+    "id": "3a6d6fe3-8548-43ed-ad09-72052771447c",
+    "titre": "Ensemble consolidé des avis et conseils de la CADA",
+    "url": "https://static.data.gouv.fr/resources/avis-et-conseils-de-la-cada/20260814-172417/cada-2026-08-14.csv",
+    "sha1": "68f5c7923e2a4af8fbaae54a71710443babb1e11",
+    "modifiee_le": "2026-08-14"
+  },
+  "licence": "fr-lo",
+  "selection": {
+    "motif": "r[ée]utilis|code source|algorithm|open data|donn[ée]es publiques|L\\.? ?312-1|L\\.? ?311-3-1|L\\.? ?32[1-7]-|base de donn[ée]es|format (?:ouvert|[ée]lectronique)|mise en ligne",
+    "champs": ["Avis", "Objet", "Mots clés"],
+    "date_min": ["2010-01-01", "2016-10-08"]
+  },
+  "volume": {
+    "unites_index": 117701,
+    "fragments_max": 35300
+  },
+  "url_texte": "https://www.cada.fr/{numero}",
+  "url_texte_verifiee": true,
+  "url_texte_note": "Motif https://www.cada.fr/<numéro canonique à 9 chiffres> : les numéros à 8 chiffres redirigent en 301 vers cette forme, vérifiée en direct le 2026-11-25 sur 201302257, 201401326 et 201603641 (3 sur 3, 200, avis et date conformes). La publication des fiches n'est pas exhaustive : celles que le site ne publie pas répondent 403, chaque lien des 3 918 avis retenus n'est donc pas vérifié un par un."
+}

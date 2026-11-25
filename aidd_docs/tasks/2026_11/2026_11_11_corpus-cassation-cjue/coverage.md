@@ -1,6 +1,6 @@
 # Couverture des corpus
 
-Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les corpus inchangés, 15 novembre pour `metadonnees`, 25 novembre pour `donnees`, `cnil` et `cepd`), jamais recopiés depuis un autre rapport.
+Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les corpus inchangés, 15 novembre pour `metadonnees`, 25 novembre pour `donnees`, `cnil`, `cepd` et `cada`), jamais recopiés depuis un autre rapport.
 
 | Corpus | Documents | Fragments | Période | Source | Licence |
 |---|---:|---:|---|---|---|
@@ -8,6 +8,7 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 | `aiact` | 1 acte | 299 (119 articles de la consolidation `02024R1689-20260727` + 180 considérants de l'acte d'origine) | publication 2024-07-12 ; en vigueur depuis 2024-08-01 | CELLAR / EUR-Lex, CELEX `32024R1689` | Décision 2011/833/UE (CC BY 4.0) |
 | `donnees` | 7 actes | 470 (125 articles, 325 considérants, 3 points, 17 annexes) | actes du 2018-11-14 au 2026-10-29 ; publication du 2018-11-28 au 2026-11-06 | CELLAR / EUR-Lex, CELEX `32023R2854`, `32022R0868`, `32019L1024`, `32023R0138`, `32018R1807`, `32026H2394`, `32023R1622` | Décision 2011/833/UE (CC BY 4.0) |
 | `cnil` | 3 260 (dont 14 délibérations supplémentaires) | 29 698 (dont 325) | arrêté au 2026-11-17 | DINUM (historique) + DILA (incréments) | DINUM : `etalab-2.0` et `lov2`, écart déclaré ; DILA : Licence Ouverte 2.0 |
+| `cada` | 3 918 | 35 396 | 2016-10-20 → 2024-04-18 ; sélection thématique (4 607 avis / 39 098 fragments) : 56 333 lignes hors thème, 689 avis antérieurs au 2016-10-08 et 1 sans texte écartés ; 96 fragments au-dessus du plafond de 35 300, dépassement déclaré | data.gouv.fr — ressource consolidée du 2026-08-14 (API) | Licence Ouverte 2.0 |
 | `cnil_doctrine` | 56 (30 guides, 26 référentiels) | 4 459 | documents datés de 2019-11-21 à 2026-11-14 ; 2 listes AIPD laissées au corpus `cnil` | cnil.fr — pages de référence (guides, référentiels, listes AIPD) | CC BY-ND 4.0, marquage par fragment ; listes AIPD en Licence Ouverte via `cnil` |
 | `lil` | 1 | 133 articles en vigueur | version consolidée au 2026-10-01 ; consultée le 2026-11-09 | PISTE — Légifrance `/consult/legiPart` | Licence Ouverte 2.0 (Etalab) |
 | `textes_fr` | 12 (40 blocs) | 626 articles en vigueur (décret 2019-536 : 166 ; Code pénal : 31 — 226-16 à 226-24, 226-1, 226-8-1, 226-13, chapitre 323 ; CPCE L32-3, L34-1, L34-5 : 3 ; Code du travail : 5 ; Code de la santé publique : 394 — L1110, L1111, L1121 à L1126, L1130 à L1133, L1141, SNDS L1460/L1461, L1470, L6316, articles isolés et parties réglementaires R1110, R1111, R1461, R1470, R6316 ; Code de la sécurité sociale : 3 ; Code des assurances : 2 ; CGCT : 1 ; Code de la sécurité intérieure titre V du livre II : 18 ; Code monétaire et financier : 1 ; CRPA : 1 ; Code civil art. 9 : 1) ; 37 abrogés écartés | consultés le 2026-11-25 | PISTE — Légifrance `/consult/legiPart`, `/consult/code`, `/consult/getArticleWithIdAndNum` | Licence Ouverte 2.0 (Etalab) |
@@ -96,6 +97,15 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 - Aucun document écarté : l'heuristique de « mention contraire » (`tous droits réservés`, `reproduction interdite`, `all rights reserved`, `sous réserve de droits d'auteur`) n'a rien trouvé sur les 58 PDF.
 - Les guides et référentiels sont sous CC BY-ND 4.0 : chaque fragment rendu porte « extrait non modifié · CC BY-ND 4.0 · lien », le titre, « Source : CNIL – https://www.cnil.fr » et la date d'extraction. Le serveur ne produit ni résumé ni reformulation.
 - Les PDF bruts et leur cache vivent sous `data/raw/cnil-doctrine/` (non commité), adressés par leur `sha256` ; le cache des PDF vaut sept jours et `--refresh` le force. Les pages de référence sont relues à chaque passe, pour qu'un guide ajouté ou retiré soit vu. 47 documents sur 56 ne déclarent pas de date dans leur en-tête : leur `date_acte` est la date d'extraction, et le manifeste porte `date_source: "extraction"`.
+
+## Détail `cada`
+
+- Ressource « Ensemble consolidé des avis et conseils de la CADA » (`cada-2026-08-14.csv`, 198 398 592 octets, `sha256` `6862177e…4da3`, `sha1` data.gouv `68f5c792…1e11`), trouvée par l'API data.gouv.fr ; Licence Ouverte 2.0. Le fichier reste sous `data/raw/cada/`, non commité.
+- 60 941 lignes lues : la sélection thématique retient 4 607 documents / 39 098 fragments ; le seuil du 2016-10-08 laisse 3 918 documents (3 686 avis, 232 conseils) et 35 396 fragments. Exclusions : 56 333 lignes hors sélection thématique, 689 avis antérieurs au 2016-10-08, 1 ligne sans texte. Les 3 lignes typées « Sanction » sont déclarées en anomalie, valeur source conservée ; aucune n'entre au corpus.
+- `sens` est la partie avant la barre de « Sens et motivation » ; les formes composées (`Favorable, Sans objet`…) restent telles quelles et sont comptées au manifeste `par_sens`.
+- Découpage local par `decouperParagraphes` : paragraphes regroupés jusqu'à 1 200 caractères, un paragraphe long reste seul, un fragment plus court que 600 possible quand le suivant ne tient pas ; aucun caractère perdu, blancs normalisés. `ref` = `<numero>#f<n>`. Lien officiel `https://www.cada.fr/<numéro canonique à 9 chiffres>`, vérifié en direct le 2026-11-25 sur 201302257, 201401326 et 201603641 (200, avis et date conformes) ; les fiches non publiées répondent 403, chaque lien n'est pas vérifié avis par avis.
+- Sélection déclarée au descripteur (`selection.motif` et `selection.champs`, recopiés au manifeste `couverture.selection`) : réutilisation, code source, algorithme, open data, données publiques, articles L. 311-3-1, L. 312-1 et L. 321 à L. 327, base de données, format ouvert ou électronique, mise en ligne ; elle s'applique toutes dates confondues.
+- Règle de volume : 241 420 fragments pour le corpus entier ; 39 098 pour la sélection thématique ; 38 407 au seuil du 2010-01-01 ; 35 396 au seuil du 2016-10-08, soit 96 au-dessus des 35 300 (30 % des 117 701 unités indexées au départ). Le dernier seuil est appliqué et le dépassement est **déclaré** (`couverture.volume.depassement: 96`), sans troncature. Le corpus est indexé et `unites.jsonl` (35 396 fragments, 46 064 327 octets) est versionné, sous la cible de 50 Mo ; seuls `administration` et `sens` sont recopiés sur l'unité.
 
 ## Évaluations `dev`
 

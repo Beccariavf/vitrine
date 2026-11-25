@@ -15,7 +15,7 @@ import type { CorpusVeille } from "./veille.ts";
 /**
  * Sources que `npm run corpus:sync` revérifie sur signal, dans leur ordre
  * d'exécution. `cnil`, `ce`, `cc` et `cjue` le sont à chaque passe et portent la
- * fraîcheur ; `cnil_doctrine`, `cepd`, `constit`, `lil`, `textes_fr`, la
+ * fraîcheur ; `cnil_doctrine`, `cepd`, `constit`, `lil`, `textes_fr`, `cada`, la
  * préparation et les corpus d'actes n'y entrent que sur une entrée de veille.
  */
 export const ORDRE_SOURCES: readonly CorpusVeille[] = [
@@ -38,6 +38,7 @@ export const ORDRE_SOURCES: readonly CorpusVeille[] = [
   "ccs",
   "adequation",
   "donnees",
+  "cada",
 ];
 
 /**
