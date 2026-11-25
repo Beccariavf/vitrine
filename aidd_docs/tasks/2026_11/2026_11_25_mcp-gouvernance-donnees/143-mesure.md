@@ -31,14 +31,21 @@ Périmètre : filtre élargi en **union** avec le filtre historique ; aucune dé
 | `cjue` | 55 | 5 026 | 3,2 % | DSA, directive Open Data, directive bases de données, droit d'auteur, secret des affaires, AI Act : 62 décisions retenues par citation d'acte (57 hors filtre historique, 5 déjà présentes) |
 | **Total** | **1 418** | **23 087** | **14,7 %** | seuil d'arrêt : 47 000 fragments (30 %) — **non atteint** |
 
-Ces comptes sont les deltas réels des corpus (`git show HEAD~1:data/corpus/<c>/unites.jsonl` face aux fichiers ingérés).
+Ces comptes sont les deltas réels des corpus (base **pré-#143**, `git show 8bf5419~1:data/corpus/<c>/unites.jsonl`,
+face aux fichiers ingérés ; `8bf5419~1` est `c4154a1`, pas le commit de données #143).
 La mesure `cc` par les seules 11 requêtes nouvelles donnait 315 décisions / 7 170 fragments ; la
 synchronisation réelle, qui rejoue aussi les 22 requêtes historiques sur le cache, porte le corpus
-à 330 décisions / 7 445 fragments. Les comptes par critère du manifeste (`ajouts_par_critere`)
-excluent les décisions déjà présentes par la veille : ils donnent 329 décisions / 7 427 fragments
-pour `cc` et 57 pour `cjue`, la différence avec le delta étant des décisions déjà au corpus avant
-la passe. La liste CELLAR a retiré `62025CO0502` entre deux passes : il n'était pas au corpus avant
-#143, donc aucune décision antérieure n'est perdue ; l'index a supprimé ses 46 unités.
+à 330 décisions / 7 445 fragments. Sur ces 330 : 329 sont entrées par un critère élargi (7 427
+fragments) et 1, nouvelle, est retenue par le filtre historique depuis une requête nouvelle
+(18 fragments, aucun critère élargi). Les compteurs par critère du résultat de synchronisation
+(`ajouteesElargi`, `fragmentsAjoutes`) portent ces 329 / 7 427 et excluent en outre la décision
+déjà présente par la veille, qui passe en `deja_presents_par_critere` (critère « intelligence
+artificielle », 7 → 6). Pour `cjue`, 62 décisions sont retenues par citation d'acte : 57 ajoutées
+et 5 déjà présentes (matière, notion, veille ou complémentaire) ; le manifeste ne stocke que les
+comptes par critère (`ajouts_par_critere`, `deja_presents_par_critere`, `decisions_par_origine`),
+pas le total de synchronisation. La liste CELLAR a retiré `62025CO0502` entre deux passes : il
+n'était pas au corpus avant #143, donc aucune décision antérieure n'est perdue ; l'index a supprimé
+ses 46 unités.
 
 ## Échantillon (60 décisions, graine 143)
 

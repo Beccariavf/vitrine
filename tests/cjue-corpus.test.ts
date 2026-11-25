@@ -631,6 +631,41 @@ describe("la synchronisation du corpus CJUE", () => {
     }
   });
 
+  it("ne compte pas comme ajout une citation d'acte déjà présente par la veille", async () => {
+    const racine = racineTemporaire();
+    try {
+      ecrire(
+        racine,
+        "data/entries/2026/11/entree.json",
+        JSON.stringify({
+          source: "cjue",
+          url: `https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:${CELEX_204}`,
+          publishedAt: "2025-09-04T12:00:00.000Z",
+        }),
+      );
+      const resultat = await syncCjue({
+        rootDir: racine,
+        date: "2026-11-11",
+        reponseListe: {
+          results: {
+            bindings: [
+              { celex: { value: CELEX_ARRET }, date: { value: "2014-05-13" }, origine: { value: "matiere" } },
+              { celex: { value: CELEX_204 }, date: { value: "2025-09-04" }, origine: { value: "acte_cite" } },
+            ],
+          },
+        },
+        complementaires: [],
+        reponsesXhtml: { [CELEX_ARRET]: ARRET, [CELEX_204]: ARRET_EN },
+      });
+      assert.equal(resultat.documents, 2);
+      const manifeste = lireManifeste(racine);
+      assert.deepEqual(manifeste.couverture.filtre.ajouts_par_critere, { acte_cite: 0 });
+      assert.deepEqual(manifeste.couverture.filtre.deja_presents_par_critere, { acte_cite: 1 });
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
+  });
+
   it("retient un arrêt de 2003 sur la directive 95/46", async () => {
     const racine = racineTemporaire();
     const xhtml = `<html xmlns="http://www.w3.org/1999/xhtml"><body>

@@ -294,6 +294,48 @@ describe("la synchronisation du corpus Cour de cassation", () => {
     }
   });
 
+  it("ne compte pas comme ajout élargi une décision déjà présente par la veille", async () => {
+    const racine = racineTemporaire();
+    const id = "abcdef1234567890";
+    try {
+      ecrire(
+        racine,
+        "data/entries/2026/11/entree.json",
+        JSON.stringify({ source: "judilibre", id, url: "https://exemple" }),
+      );
+      const resultat = await syncCc({
+        rootDir: racine,
+        date: "2026-11-11",
+        reponsesRecherche: { "données personnelles": commandeRecherche() },
+        reponsesDecision: {
+          [ID_PERTINENT]: PERTINENT,
+          [ID_HORS_SUJET]: HORS_SUJET,
+          [id]: {
+            id,
+            decision_date: "2026-11-10",
+            chamber: "comm",
+            number: "24-1",
+            solution: "rejet",
+            publication: ["n"],
+            text: "Le secret des affaires protège les informations utiles à l'activité.",
+          },
+        },
+      });
+      assert.equal(resultat.documents, 2, "la décision de la veille entre hors filtre");
+      const manifeste = JSON.parse(
+        readFileSync(join(racine, "data", "corpus", "cc", "manifest.json"), "utf8"),
+      ) as ManifesteCc;
+      assert.deepEqual(manifeste.couverture.filtre.ajouts_par_critere, {});
+      assert.equal(
+        manifeste.couverture.filtre.deja_presents_par_critere["secret-des-affaires"],
+        1,
+        "la veille explique la présence, pas le filtre élargi",
+      );
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
+  });
+
   it("refuse d'écrire un corpus tronqué quand la recherche est interrompue", async () => {
     const racine = racineTemporaire();
     try {

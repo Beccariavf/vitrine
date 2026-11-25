@@ -32,8 +32,12 @@ describe("les critères d'un filtre élargi", () => {
   });
 
   it("borne la proximité du nom du texte à 160 caractères", () => {
-    const proche = `L. 321-1 ${"x ".repeat(50)}code des relations`;
-    const loin = `L. 321-1 ${"x ".repeat(100)}code des relations`;
+    // Forme normalisée : « l 321 1 » (7), une espace, P caractères, une espace,
+    // puis « code des relations » (18). La fenêtre s'étend de 160 après
+    // l'article, soit jusqu'à l'indice 167 : 9 + P + 18 ≤ 167, donc P = 140
+    // passe et P = 141 ne passe plus.
+    const proche = `L. 321-1 ${"x".repeat(140)} code des relations`;
+    const loin = `L. 321-1 ${"x".repeat(141)} code des relations`;
     assert.deepEqual(criteresTrouves(proche, [CRPA]).map((c) => c.cle), ["crpa-livre-iii"]);
     assert.deepEqual(criteresTrouves(loin, [CRPA]), []);
   });
@@ -80,6 +84,13 @@ describe("les critères d'un filtre élargi", () => {
           { cle: "expression", libelle: "expression", expressions: ["—"] },
         ]),
       /expression vide/,
+    );
+    assert.throws(
+      () =>
+        criteresTrouves("Un texte.", [
+          { cle: "contexte", libelle: "contexte", articles: "l 321 1", contexte: " " },
+        ]),
+      /motif de contexte vide/,
     );
   });
 });

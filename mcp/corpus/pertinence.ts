@@ -53,6 +53,9 @@ function compiler(critere: CritereElargi): CritereCompile {
   if (critere.articles !== undefined && critere.articles.trim() === "") {
     throw new Error(`Critère « ${critere.cle} » : motif d'articles vide`);
   }
+  if (critere.contexte !== undefined && critere.contexte.trim() === "") {
+    throw new Error(`Critère « ${critere.cle} » : motif de contexte vide`);
+  }
   const expressions = (critere.expressions ?? []).map((expression) =>
     normaliserComparaison(expression),
   );
