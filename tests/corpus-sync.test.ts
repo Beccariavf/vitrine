@@ -1797,6 +1797,7 @@ describe("synchronisation du corpus", () => {
           "ccs",
           "adequation",
           "donnees",
+          "cada",
         ],
       );
       assert.equal(rapport.sources[0]?.statut, "panne");
@@ -1901,6 +1902,7 @@ describe("synchronisation du corpus", () => {
     assert.deepEqual(Object.keys(agents).sort(), [
       "adequation",
       "aiact",
+      "cada",
       "cc",
       "ccs",
       "ce",

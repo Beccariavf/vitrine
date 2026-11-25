@@ -195,5 +195,8 @@ export function statutApplication(
     if (natureComparable === NATURE_AUTORITE) return "adoptee";
     return "inconnu";
   }
+  // Un avis ou un conseil de la CADA est adopté par la commission ; la source
+  // ne publie pas d'autre état.
+  if (collection === "cada") return "adoptee";
   return "inconnu";
 }

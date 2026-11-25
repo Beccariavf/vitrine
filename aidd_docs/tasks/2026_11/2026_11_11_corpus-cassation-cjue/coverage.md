@@ -1,6 +1,6 @@
 # Couverture des corpus
 
-Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les corpus inchangés, 15 novembre pour `metadonnees`, 25 novembre pour `donnees`), jamais recopiés depuis un autre rapport.
+Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les corpus inchangés, 15 novembre pour `metadonnees`, 25 novembre pour `donnees` et `cada`), jamais recopiés depuis un autre rapport.
 
 | Corpus | Documents | Fragments | Période | Source | Licence |
 |---|---:|---:|---|---|---|
@@ -8,6 +8,7 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 | `aiact` | 1 acte | 299 (119 articles de la consolidation `02024R1689-20260727` + 180 considérants de l'acte d'origine) | publication 2024-07-12 ; en vigueur depuis 2024-08-01 | CELLAR / EUR-Lex, CELEX `32024R1689` | Décision 2011/833/UE (CC BY 4.0) |
 | `donnees` | 7 actes | 470 (125 articles, 325 considérants, 3 points, 17 annexes) | actes du 2018-11-14 au 2026-10-29 ; publication du 2018-11-28 au 2026-11-06 | CELLAR / EUR-Lex, CELEX `32023R2854`, `32022R0868`, `32019L1024`, `32023R0138`, `32018R1807`, `32026H2394`, `32023R1622` | Décision 2011/833/UE (CC BY 4.0) |
 | `cnil` | 3 245 | 29 299 | arrêté au 2026-10-30 | DINUM (historique) + DILA (incréments) | DINUM : `etalab-2.0` et `lov2`, écart déclaré ; DILA : Licence Ouverte 2.0 |
+| `cada` | 39 003 | 175 319 | 2016-10-08 → 2024-04-18 ; 21 937 avis antérieurs et 1 sans texte écartés | data.gouv.fr — ressource consolidée du 2026-08-14 (API) | Licence Ouverte 2.0 |
 | `cnil_doctrine` | 56 (30 guides, 26 référentiels) | 4 459 | documents datés de 2019-11-21 à 2026-11-14 ; 2 listes AIPD laissées au corpus `cnil` | cnil.fr — pages de référence (guides, référentiels, listes AIPD) | CC BY-ND 4.0, marquage par fragment ; listes AIPD en Licence Ouverte via `cnil` |
 | `lil` | 1 | 133 articles en vigueur | version consolidée au 2026-10-01 ; consultée le 2026-11-09 | PISTE — Légifrance `/consult/legiPart` | Licence Ouverte 2.0 (Etalab) |
 | `textes_fr` | 9 | 226 articles en vigueur (décret 2019-536 : 166 ; Code pénal 226-16 à 226-24 : 16, 226-1 et 226-8-1 : 2, chapitre 323 : 12 ; CPCE L32-3, L34-1, L34-5 : 3 ; Code du travail : 3 ; Code de la santé publique L1110-4, L1111-7, L1111-8 : 3 ; Code de la sécurité intérieure titre V du livre II : 18 ; Code monétaire et financier : 1 ; CRPA : 1 ; Code civil art. 9 : 1) ; 6 abrogés écartés | consultés le 2026-11-19 | PISTE — Légifrance `/consult/legiPart`, `/consult/code`, `/consult/getArticleWithIdAndNum` | Licence Ouverte 2.0 (Etalab) |
@@ -88,6 +89,14 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 - Aucun document écarté : l'heuristique de « mention contraire » (`tous droits réservés`, `reproduction interdite`, `all rights reserved`, `sous réserve de droits d'auteur`) n'a rien trouvé sur les 58 PDF.
 - Les guides et référentiels sont sous CC BY-ND 4.0 : chaque fragment rendu porte « extrait non modifié · CC BY-ND 4.0 · lien », le titre, « Source : CNIL – https://www.cnil.fr » et la date d'extraction. Le serveur ne produit ni résumé ni reformulation.
 - Les PDF bruts et leur cache vivent sous `data/raw/cnil-doctrine/` (non commité), adressés par leur `sha256` ; le cache des PDF vaut sept jours et `--refresh` le force. Les pages de référence sont relues à chaque passe, pour qu'un guide ajouté ou retiré soit vu. 47 documents sur 56 ne déclarent pas de date dans leur en-tête : leur `date_acte` est la date d'extraction, et le manifeste porte `date_source: "extraction"`.
+
+## Détail `cada`
+
+- Ressource « Ensemble consolidé des avis et conseils de la CADA » (`cada-2026-08-14.csv`, 198 398 592 octets, `sha256` `6862177e…4da3`, `sha1` data.gouv `68f5c792…1e11`), trouvée par l'API data.gouv.fr ; Licence Ouverte 2.0. Le fichier reste sous `data/raw/cada/`, non commité.
+- 60 941 lignes lues : 39 003 documents retenus (37 284 avis, 1 719 conseils) et 175 319 fragments. Exclusions : 21 937 avis antérieurs au 2016-10-08, 1 ligne sans texte. Les 3 lignes typées « Sanction » sont déclarées en anomalie, valeur source conservée ; toutes antérieures au seuil, elles n'entrent pas au corpus.
+- `sens` est la partie avant la barre de « Sens et motivation » ; les formes composées (`Favorable, Sans objet`…) restent telles quelles et sont comptées au manifeste `par_sens`.
+- Découpage local de 600 à 1 200 caractères, `ref` = `<numero>#f<n>`, aucun texte perdu. Lien officiel `https://www.cada.fr/<numero>`, vérifié sur trois avis par leurs copies archivées ; cada.fr répond 403 aux robots.
+- Règle de volume : 241 420 fragments pour le corpus entier, 175 319 pour le sous-ensemble au 2016-10-08 et après, tous deux au-delà des 35 300 (30 % des ≈ 117 700 unités indexées). Le sous-ensemble est conservé, **l'index n'est pas construit** ; `couverture.volume.indexable` vaut `false` et le motif est écrit au manifeste. Le fichier `unites.jsonl` (240 Mo) n'est pas versionné (limite GitHub de 100 Mo par fichier).
 
 ## Évaluations `dev`
 

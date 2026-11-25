@@ -24,6 +24,7 @@ import { syncCePd } from "./cepd/sync.ts";
 import { syncConstit } from "./constit/sync.ts";
 import { syncCc } from "./cc/sync.ts";
 import { syncCjue } from "./cjue/sync.ts";
+import { syncCada } from "./cada/sync.ts";
 import { arretsAVerser, incorporerArretsVeille } from "./cjue/veille.ts";
 import { syncPreparation } from "./preparation/sync.ts";
 import type { ResultatPreparation } from "./preparation/sync.ts";
@@ -247,6 +248,15 @@ export function agentsParDefaut(
         message: `${resultat.documents} document(s), ${resultat.fragments} fragment(s)`,
       };
     },
+    cada: async () => {
+      const resultat = await syncCada({ rootDir });
+      return {
+        ecrit: resultat.ecrit,
+        message:
+          `${resultat.documents} document(s), ${resultat.unites} fragment(s)` +
+          (resultat.volume.indexable ? "" : ", index non construit (volume)"),
+      };
+    },
     lil: async () => {
       let resultat: Awaited<ReturnType<typeof synchroniserLil>>;
       let avertissement = "";
@@ -371,7 +381,9 @@ function classer(
         motif:
           corpus === "cnil"
             ? "aucun identifiant CNILTEXT dans la page snapshotée"
-            : "identifiant de document absent",
+            : corpus === "cada"
+              ? "ressource modifiée : aucun avis nommé, resynchronisation en bloc"
+              : "identifiant de document absent",
       });
       continue;
     }
@@ -475,6 +487,8 @@ function sourcesALancer(documents: DocumentRapport[]): Set<CorpusVeille> {
     if (document.statut === "perime" && document.corpus !== null) aLancer.add(document.corpus);
     // Une sanction CNIL non mappée peut être portée par un nouvel incrément DILA.
     if (document.statut === "non_mappe" && document.source === "cnil") aLancer.add("cnil");
+    // La veille CADA signale une ressource nouvelle sans nommer d'avis.
+    if (document.statut === "non_mappe" && document.source === "cada") aLancer.add("cada");
   }
   return aLancer;
 }
