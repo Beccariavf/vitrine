@@ -27,7 +27,7 @@ after(() => {
 });
 
 describe("sourcesCorpus", () => {
-  it("rend les vingt collections committées dans l'ordre textes, autorités, juridictions", () => {
+  it("rend les vingt et une collections committées dans l'ordre textes, autorités, juridictions", () => {
     const sources = sourcesCorpus(ROOT);
     assert.deepEqual(
       sources.map((source) => source.libelle),
@@ -46,6 +46,7 @@ describe("sourcesCorpus", () => {
         "Décisions d'adéquation",
         "CNIL",
         "Doctrine CNIL",
+        "CADA",
         "CEPD",
         "CJUE",
         "Conseil d'État",
@@ -55,6 +56,7 @@ describe("sourcesCorpus", () => {
       ],
     );
     assert.ok(sources.every((source) => source.documents > 0));
+    assert.ok(sources.every((source) => source.unites > 0));
   });
 
   it("rend une liste vide sans data/corpus/", () => {

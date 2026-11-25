@@ -1,0 +1,114 @@
+{
+  "corpus": "cada",
+  "nom": "CADA",
+  "documents": 3918,
+  "unites": 35396,
+  "par_nature": {
+    "Avis": {
+      "documents": 3686,
+      "unites": 33694
+    },
+    "Conseil": {
+      "documents": 232,
+      "unites": 1702
+    }
+  },
+  "par_sens": {
+    "(vide)": 2,
+    "Défavorable": 351,
+    "Défavorable, Défavorable": 1,
+    "Défavorable, Favorable": 9,
+    "Défavorable, Favorable, Favorable": 12,
+    "Défavorable, Favorable, Sans objet": 72,
+    "Défavorable, Incompétence": 1,
+    "Défavorable, Sans objet": 9,
+    "Favorable": 2521,
+    "Favorable, Défavorable": 23,
+    "Favorable, Défavorable, Favorable": 4,
+    "Favorable, Défavorable, Sans objet": 8,
+    "Favorable, Favorable": 168,
+    "Favorable, Incompétence": 22,
+    "Favorable, Irrecevable": 19,
+    "Favorable, Sans objet": 23,
+    "Incompétence": 124,
+    "Incompétence, Défavorable, Favorable": 1,
+    "Incompétence, Favorable": 2,
+    "Incompétence, Irrecevable": 1,
+    "Irrecevable": 159,
+    "Irrecevable, Sans objet": 1,
+    "Sans objet": 383,
+    "Sans objet, Défavorable, Favorable, Favorable": 1,
+    "Sans objet, Favorable": 1
+  },
+  "decoupage": "local — paragraphes regroupés jusqu'à 1 200 caractères, un paragraphe long restant seul ; fragment plus court quand le suivant ne tient pas ; aucun caractère perdu, blancs normalisés",
+  "arrete_le": "2024-04-18",
+  "url_texte": "https://www.cada.fr/{numero}",
+  "url_texte_verifiee": true,
+  "url_texte_note": "Motif https://www.cada.fr/<numéro canonique à 9 chiffres> : les numéros à 8 chiffres redirigent en 301 vers cette forme, vérifiée en direct le 2026-11-25 sur 201302257, 201401326 et 201603641 (3 sur 3, 200, avis et date conformes). La publication des fiches n'est pas exhaustive : celles que le site ne publie pas répondent 403, chaque lien des 3 918 avis retenus n'est donc pas vérifié un par un.",
+  "source": {
+    "jeu": "https://www.data.gouv.fr/fr/datasets/avis-et-conseils-de-la-cada/",
+    "jeu_id": "53698f37a3a729239d2036a0",
+    "ressource_id": "3a6d6fe3-8548-43ed-ad09-72052771447c",
+    "ressource_titre": "Ensemble consolidé des avis et conseils de la CADA",
+    "url": "https://static.data.gouv.fr/resources/avis-et-conseils-de-la-cada/20260814-172417/cada-2026-08-14.csv",
+    "fichier": "cada-2026-08-14.csv",
+    "sha256": "6862177e33c43967d3f9e1460509aa7eeb1828ee8919bbead16710cf6a2f4da3",
+    "sha1": "68f5c7923e2a4af8fbaae54a71710443babb1e11",
+    "taille": 198398592,
+    "modifiee_le": "2026-08-14",
+    "licence": "fr-lo"
+  },
+  "couverture": {
+    "source": "data.gouv.fr — Avis et conseils de la CADA (Licence Ouverte 2.0)",
+    "date": "2026-08-14",
+    "bornes": {
+      "debut": "2016-10-20",
+      "fin": "2024-04-18"
+    },
+    "lignes_lues": 60941,
+    "selection": {
+      "motif": "r[ée]utilis|code source|algorithm|open data|donn[ée]es publiques|L\\.? ?312-1|L\\.? ?311-3-1|L\\.? ?32[1-7]-|base de donn[ée]es|format (?:ouvert|[ée]lectronique)|mise en ligne",
+      "champs": [
+        "Avis",
+        "Objet",
+        "Mots clés"
+      ]
+    },
+    "exclusions": [
+      {
+        "motif": "hors sélection thématique",
+        "lignes": 56333
+      },
+      {
+        "motif": "antérieur au 2016-10-08",
+        "lignes": 689
+      },
+      {
+        "motif": "texte vide",
+        "lignes": 1
+      }
+    ],
+    "anomalies": [
+      {
+        "constat": "3 ligne(s) de type « Sanction » : la CADA est consultative, ce type est un écart de la source",
+        "lignes": 3,
+        "traitement": "valeur source conservée, aucune ligne renommée ; le document est retenu ou écarté par la même règle que les autres"
+      }
+    ],
+    "volume": {
+      "fragments_total": 241420,
+      "fragments_selection": 39098,
+      "plafond": 35300,
+      "fragments_retenus": 35396,
+      "part_index": 0.30072811615874123,
+      "decision": "selection_date",
+      "date_min": "2016-10-08",
+      "regle": "sélection thématique (4607 document(s), 39098 fragment(s)) > 35300 ; avec le seuil du 2016-10-08 elle compte encore 35396 fragments : dépassement de 96 fragment(s) déclaré, rien n'est tronqué",
+      "depassement": 96
+    },
+    "comptes": {
+      "documents": 3918,
+      "unites": 35396
+    }
+  }
+}

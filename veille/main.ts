@@ -18,6 +18,7 @@ import { ENDPOINT_SPARQL, passeEurlex } from "./sources/eurlex.ts";
 import { passeConstit } from "./sources/constit.ts";
 import { passeDoctrine } from "./sources/cnil-doctrine.ts";
 import { passePreparation } from "./sources/preparation.ts";
+import { passeCada } from "./sources/cada.ts";
 import { flushUsage } from "./piste.ts";
 import { assignThemes, readThemes } from "./themes.ts";
 import type { Theme } from "./themes.ts";
@@ -196,6 +197,25 @@ export const SOURCES: AnySource[] = [
       });
       return {
         raw: [],
+        entries: resultat.entries,
+        warnings: resultat.warnings,
+        notes: resultat.notes,
+      };
+    },
+  },
+  {
+    kind: "api",
+    id: "cada",
+    fetchEntries: async (context) => {
+      // La source compare la ressource data.gouv à l'état du corpus : aucun
+      // document n'est lu, aucun CSV n'est téléchargé quand rien n'a changé.
+      const resultat = await passeCada({
+        rootDir: context.rootDir,
+        fetchImpl: context.fetchImpl,
+        ...(context.now === undefined ? {} : { maintenant: context.now }),
+      });
+      return {
+        raw: resultat.raw,
         entries: resultat.entries,
         warnings: resultat.warnings,
         notes: resultat.notes,

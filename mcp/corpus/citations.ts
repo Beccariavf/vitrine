@@ -402,7 +402,7 @@ const PAR_LIBELLE = new Map(INSTRUMENTS.map((instrument) => [instrument.libelle,
 export const PERIMETRE =
   "RGPD, AI Act, ePrivacy, directive 2016/680, règlement 2018/1725, règlement procédural RGPD, " +
   "clauses contractuelles types, décisions d'adéquation, textes UE de l'économie des données, LIL, " +
-  "textes français d'application, textes en préparation et affaires pendantes, CNIL, doctrine CNIL, " +
+  "textes français d'application, textes en préparation et affaires pendantes, CNIL, CADA, doctrine CNIL, " +
   "CEPD, Conseil d'État, Conseil constitutionnel, Cour de cassation, CJUE";
 
 /** Forme comparable d'un identifiant : majuscules, sans espace. */

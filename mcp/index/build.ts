@@ -48,7 +48,7 @@ export function cheminIndex(rootDir: string): string {
   return join(rootDir, INDEX_RELATIF);
 }
 
-/** Lit tous les `data/corpus/<corpus>/unites.jsonl`, dans l'ordre des fichiers. */
+/** Lit les `data/corpus/<corpus>/unites.jsonl`. */
 export function lireUnites(rootDir: string): Unite[] {
   const racineCorpus = join(rootDir, "data", "corpus");
   if (!existsSync(racineCorpus)) {

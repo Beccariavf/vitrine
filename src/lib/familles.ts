@@ -82,6 +82,7 @@ const FAMILLE_DE_SOURCE: Readonly<Record<string, FamilleId>> = {
   adequation: "ue",
   cnil: "autorites",
   cnil_doctrine: "autorites",
+  cada: "autorites",
   anssi: "autorites",
   arcep: "autorites",
   arcom: "autorites",

@@ -60,7 +60,7 @@ node mcp/eval/citations.ts cnil --taille 5                                      
 node mcp/eval/citations.ts --classement                                         # classement réel des documents cités absents du corpus, sans écrire (hors CI)
 ```
 
-Le MCP lit le RGPD, l'AI Act, la LIL, les délibérations de la CNIL, les décisions du Conseil
+Le MCP lit le RGPD, l'AI Act, la LIL, les délibérations de la CNIL, les avis et conseils de la CADA, les décisions du Conseil
 d'État, les lignes directrices du CEPD, les décisions de la Cour de cassation et celles de la CJUE
 par passage exact et par recherche sémantique, avec provenance. Seule
 la recherche sémantique exige Ollama sur `127.0.0.1:11434` et le modèle `leoipulsar/harrier-0.6b`
@@ -97,8 +97,7 @@ citation) et `dila` pour les incréments (découpage local de 600 à 1 200 carac
 remplacé que si l'archive est plus récente que sa date, sinon il garde sa numérotation publiée.
 `get_decision` rend une décision par identifiant `CNILTEXT…` ou par numéro `SAN-…` — sa partie
 opératoire par défaut, le document entier avec `partie: "tous"` — et `search` accepte un paramètre
-`corpus` (`rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `cnil`, `lil`, `preparation`, `ce`, `cepd`,
-`cc`, `cjue`, `metadonnees`) et un filtre
+`corpus` (`rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `donnees`, `cnil`, `cada`, `cnil_doctrine`, `lil`, `textes_fr`, `preparation`, `ce`, `constit`, `cepd`, `cc`, `cjue`, `metadonnees`) et un filtre
 `nature` pour les trois natures CNIL. Le filtre est d'abord un choix de corpus, pas de document. La
 route Légifrance `https://www.legifrance.gouv.fr/cnil/id/<id>` est déclarée dans le manifeste mais
 n'a pas été vérifiée : elle répond 403 aux robots.

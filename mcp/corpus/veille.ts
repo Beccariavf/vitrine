@@ -33,7 +33,8 @@ export type CorpusVeille =
   | "rgpdproc"
   | "ccs"
   | "adequation"
-  | "donnees";
+  | "donnees"
+  | "cada";
 
 /** Sources de veille dont l'identifiant est aussi le corpus qu'elles alimentent. */
 export const CORPUS_PAR_SOURCE: Readonly<Record<string, CorpusVeille>> = {
@@ -45,6 +46,7 @@ export const CORPUS_PAR_SOURCE: Readonly<Record<string, CorpusVeille>> = {
   cjeu: "cjue",
   cepd: "cepd",
   preparation: "preparation",
+  cada: "cada",
 };
 
 /** Corpus d'actes de l'Union : ils ne portent pas la fraîcheur globale. */
@@ -404,6 +406,10 @@ export function documentsDeLEntree(
       return entry.document !== undefined && /^[56]\d{4}[A-Z]{2}\d/.test(entry.document)
         ? [entry.document]
         : [];
+    case "cada":
+      // Une entrée de ressource ne nomme aucun avis : elle porte la version du
+      // fichier consolidé, et le corpus est resynchronisé en bloc.
+      return [];
     default:
       return [];
   }
