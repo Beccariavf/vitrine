@@ -443,8 +443,12 @@ export async function syncDoctrineUe(
     const precedent = precedents.get(document.cle);
     const memeContenu = precedent !== undefined && precedent.snapshot === ressource.snapshot;
     const dateActe =
-      document.date_source === "extraction"
-        ? (memeContenu ? (precedent.date_acte ?? date) : date)
+      document.vivante === true
+        ? precedent === undefined
+          ? document.date_acte
+          : memeContenu
+            ? (precedent.date_acte ?? date)
+            : date
         : document.date_acte;
     let fragments: Unite[];
     try {

@@ -10,6 +10,7 @@ import {
   statutUnite,
   texteDepuisHtml,
   unitesDoctrineUe,
+  verifierPage,
   verifierVersion,
 } from "../mcp/corpus/doctrine-ue/parse.ts";
 import { extraireTextePdf, syncDoctrineUe } from "../mcp/corpus/doctrine-ue/sync.ts";
@@ -158,6 +159,39 @@ describe("doctrine de la Commission — texte", () => {
     );
   });
 
+  it("rattache une queue courte au fragment précédent, sans perdre de texte", () => {
+    const descripteur = lireDescripteur(DESCRIPTEUR);
+    const document = descripteur.documents.find((entree) => entree.cle === "doc-final");
+    assert.ok(document !== undefined);
+    const unites = unitesDoctrineUe(
+      document,
+      `${LIGNES}\n\nSubmit your question to the Data Act Legal Helpdesk`,
+      "doctrine_ue",
+      "Doctrine de la Commission",
+    );
+    assert.ok(unites.every((unite) => unite.texte.length >= 80));
+    assert.ok(unites.at(-1)?.texte.includes("Submit your question"));
+  });
+
+  it("coupe le mobilier de page et refuse une page vide ou un défi", () => {
+    const page = texteDepuisHtml(
+      '<main><article><p>Un texte de doctrine suffisamment long pour être retenu.</p>' +
+        '<p>Quick Links Data Act Follow us Latest News Une actualité</p></article></main>',
+    );
+    assert.ok(page.includes("Un texte de doctrine"));
+    assert.ok(!page.includes("Latest News"));
+    assert.throws(() => verifierPage("trop court", "https://example.org/x"), /sans texte/);
+    assert.throws(
+      () =>
+        verifierPage(
+          "Enable JavaScript and solve the captcha to continue. ".repeat(5),
+          "https://example.org/x",
+        ),
+      /défi/,
+    );
+    assert.equal(verifierPage(texteDepuisHtml(PAGE_QR), "https://example.org/qr"), undefined);
+  });
+
   it("range les statuts de la doctrine de la Commission", () => {
     assert.equal(statutApplication("doctrine_ue", "final"), "adoptee");
     assert.equal(statutApplication("doctrine_ue", "projet"), "propose");
@@ -229,11 +263,11 @@ describe("doctrine de la Commission — synchronisation hors ligne", () => {
     );
     assert.ok(unites.some((unite) => unite.document === "doc-cellar"));
     const qr = manifeste.documents_par_type.questions_reponses[0];
-    assert.equal(qr?.date_acte, "2026-11-25");
+    assert.equal(qr?.date_acte, "2026-07-24");
     assert.ok(
       unites
         .filter((unite) => unite.document === "doc-qr")
-        .every((unite) => unite.date_acte === "2026-11-25"),
+        .every((unite) => unite.date_acte === "2026-07-24"),
     );
 
     // Une page vivante inchangée garde sa date et ses unités.
@@ -262,7 +296,28 @@ describe("doctrine de la Commission — synchronisation hors ligne", () => {
     const apres = JSON.parse(
       readFileSync(join(racine, "data", "corpus", "doctrine_ue", "manifest.json"), "utf8"),
     ) as ManifesteDoctrineUe;
-    assert.equal(apres.documents_par_type.questions_reponses[0]?.date_acte, "2026-11-25");
+    assert.equal(apres.documents_par_type.questions_reponses[0]?.date_acte, "2026-07-24");
+
+    // Une page vivante rééditée prend la date de la passe qui voit le changement.
+    const reedite = await syncDoctrineUe({
+      rootDir: racine,
+      descripteurPath: DESCRIPTEUR,
+      date: "2026-11-27",
+      rafraichir: true,
+      fetchPdf: async (url) => {
+        if (url.includes("absent")) return reponsePdf(new Uint8Array(), 404);
+        return reponsePdf(new TextEncoder().encode("%PDF-1.4\nfixture"));
+      },
+      fetchHtml: async () => reponseTexte(`${PAGE_QR}\n<!-- réédition -->`),
+      lireCellar: async () => JOURNAL,
+      extraireTexte: async (_octets, url) => (url.includes("projet") ? PROJET : LIGNES),
+      attendre: async () => undefined,
+    });
+    assert.ok(reedite.fragments > 0);
+    const change = JSON.parse(
+      readFileSync(join(racine, "data", "corpus", "doctrine_ue", "manifest.json"), "utf8"),
+    ) as ManifesteDoctrineUe;
+    assert.equal(change.documents_par_type.questions_reponses[0]?.date_acte, "2026-11-27");
   });
 
   it("lit le marquage CC BY 4.0 du corpus réel au rendu", () => {

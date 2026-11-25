@@ -18,6 +18,9 @@ import { LIBELLES_TYPE } from "./liste.ts";
 
 const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
 
+/** Longueur sous laquelle une queue de document rejoint le fragment précédent. */
+export const QUEUE_MIN = 80;
+
 export type OptionsTexteHtml = {
   /** Rend un acte du Journal officiel : son en-tête `oj-hd-*` n'est pas du texte. */
   cellar?: boolean;
@@ -141,6 +144,13 @@ export function unitesDoctrineUe(
   const fragments = decouperParagraphes(paragraphesDepuisTexte(texte)).filter((fragment) =>
     /\p{L}/u.test(fragment),
   );
+  // Une queue plus courte que `QUEUE_MIN` (bouton, signature, appel à l'action)
+  // rejoint le fragment précédent : seule, elle remonterait en tête de recherche
+  // sans porter de doctrine, et aucun texte n'est perdu.
+  if (fragments.length > 1 && (fragments.at(-1) ?? "").length < QUEUE_MIN) {
+    const queue = fragments.pop() ?? "";
+    fragments[fragments.length - 1] = `${fragments[fragments.length - 1]} ${queue}`;
+  }
   if (fragments.length === 0) {
     throw new Error(`Aucun fragment pour ${document.cle} : le texte extrait est vide`);
   }

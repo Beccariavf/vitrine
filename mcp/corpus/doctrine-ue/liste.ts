@@ -62,6 +62,11 @@ export type DocumentDoctrineUe = {
   remplace?: string[];
   /** Version finale qui remplace ce projet. */
   remplace_par?: string;
+  /**
+   * Page vivante : son contenu peut être réédité sous la même URL. Un contenu
+   * inchangé garde sa date ; une réédition prend la date de la passe.
+   */
+  vivante?: boolean;
 };
 
 export type NonRecupere = {

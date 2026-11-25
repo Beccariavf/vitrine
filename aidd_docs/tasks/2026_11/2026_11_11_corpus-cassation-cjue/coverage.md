@@ -20,7 +20,7 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 | `cc` | 403 | 8 194 | 1986-07-21 → 2026-11-10 | PISTE — Judilibre `/search` et `/decision` | Licence Ouverte 2.0 (Etalab) et CGU Judilibre |
 | `cjue` | 251 | 23 460 | 1999-10-14 → 2026-11-05 | CELLAR / EUR-Lex — SPARQL `PDON` + notions `4.11.01` et `2.04` + 4 CELEX, XHTML français puis anglais, repli HTML patrimonial | Décision 2011/833/UE (CC BY 4.0) |
 | `metadonnees` | 1 595 identifiants (1 597 notices) | 1 597 notices, aucun texte | 2018-09-12 → 2026-08-10 | CEPD — registre des décisions définitives du guichet unique (art. 60 RGPD) ; source CEDH (HUDOC) arrêtée, motif au manifeste | Notice de copyright du CEPD |
-| `doctrine_ue` | 22 (5 lignes directrices, 5 projets, 4 codes de bonne pratique, 3 modèles, 5 questions-réponses) | 2 920 | actes du 2025-07-10 au 2026-11-12 ; liste de référence consultée le 2026-11-25 ; 2 formulaires DOCX non récupérés, 8 pages écartées | Commission (DG CNECT) — pages et PDF `digital-strategy.ec.europa.eu`, `ec.europa.eu`, guichet unique, CELLAR `52026XC06005` | CC BY 4.0 — décision 2011/833/UE, marquage par fragment |
+| `doctrine_ue` | 22 (5 lignes directrices, 5 projets, 4 codes de bonne pratique, 3 modèles, 5 questions-réponses) | 2 919 | actes du 2025-07-10 au 2026-11-12 ; liste de référence consultée le 2026-11-25 ; 2 formulaires DOCX non récupérés, 8 pages écartées | Commission (DG CNECT) — pages et PDF `digital-strategy.ec.europa.eu`, `ec.europa.eu`, guichet unique, CELLAR `52026XC06005` | CC BY 4.0 — décision 2011/833/UE, marquage par fragment |
 
 ## Détail `ce`
 
