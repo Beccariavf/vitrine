@@ -1647,6 +1647,7 @@ describe("les documents supplémentaires du CEPD", () => {
       });
       assert.equal(rejoue.ecrit, false);
       assert.equal(rejoue.documents, 5);
+      assert.equal(rejoue.tentatives.length, 0, "aucune requête réseau n'est faite");
       assert.deepEqual(lireUnites(), apresAjout);
 
       // Une synchronisation complète ne relit pas les documents déclarés hors
@@ -1667,7 +1668,11 @@ describe("les documents supplémentaires du CEPD", () => {
         apresComplete.filter((unite) => !unite.document.startsWith("opinion-32019")),
         apresAjout.filter((unite) => !unite.document.startsWith("opinion-32019")),
       );
-      assert.ok(apresComplete.some((unite) => unite.document.startsWith("opinion-32019")));
+      assert.deepEqual(
+        apresComplete.filter((unite) => unite.document.startsWith("opinion-32019")),
+        apresAjout.filter((unite) => unite.document.startsWith("opinion-32019")),
+        "les unités de l'avis sont conservées à l'identique",
+      );
     } finally {
       rmSync(racine, { recursive: true, force: true });
     }
