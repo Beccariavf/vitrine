@@ -1,0 +1,171 @@
+{
+  "corpus": "sante_ue",
+  "nom": "Espace européen des données de santé",
+  "documents": [
+    {
+      "document": "32025R0327",
+      "titre": "Règlement (UE) 2025/327 du Parlement européen et du Conseil du 11 février 2025 relatif à l'espace européen des données de santé et modifiant la directive 2011/24/UE et le règlement (UE) 2024/2847",
+      "langue": "fra",
+      "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32025R0327",
+      "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+      "date_acte": "2025-02-11",
+      "date_publication": "2025-03-05",
+      "date_debut": "2027-03-26",
+      "date_fin": null,
+      "statut": "en_vigueur",
+      "note_application": "Application échelonnée lue à l'article 105 : application générale le 2027-03-26 ; le 2029-03-26 pour les articles 3 à 15, 23 § 2 à 6 et 25 à 27, 47 à 49 sur les catégories prioritaires a), b) et c) de l'article 14 § 1 et le chapitre IV ; le 2031-03-26 pour ces mêmes articles sur les catégories d), e) et f), le chapitre III aux systèmes de DME mis en service (article 26 § 2) et l'article 51 § 1 b), f), g), m) et p) ; le 2035-03-26 pour l'article 75 § 5. Par dérogation, l'article 55 § 6, l'article 70, l'article 73 § 5, l'article 75 § 1 et 12, l'article 77 § 4 et l'article 78 § 6 s'appliquent dès le 2027-03-26.",
+      "version": "32025R0327",
+      "date_consolidation": null,
+      "snapshot": "9745297f63a9b65478d3955f6fc2487d2c952e6eb28d45e29a7756b64ee119d8.xhtml",
+      "unites": 224,
+      "couverture": {
+        "source": "CELLAR — publications.europa.eu/resource/celex/32025R0327",
+        "date_publication": "2025-03-05",
+        "bornes": {
+          "debut": "2027-03-26",
+          "fin": null
+        },
+        "statut": "en_vigueur",
+        "types_retenus": [
+          "article",
+          "considérant",
+          "annexe"
+        ],
+        "exclusions": [],
+        "comptes": {
+          "articles": 105,
+          "considerants": 115,
+          "annexes": 4
+        },
+        "version": "32025R0327",
+        "date_consolidation": null
+      }
+    },
+    {
+      "document": "32026R0771",
+      "titre": "Règlement d'exécution (UE) 2026/771 de la Commission du 7 avril 2026 établissant les mesures nécessaires à la création et au fonctionnement du comité de l'espace européen des données de santé",
+      "langue": "fra",
+      "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32026R0771",
+      "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+      "date_acte": "2026-04-07",
+      "date_publication": "2026-04-08",
+      "date_debut": "2026-04-28",
+      "date_fin": null,
+      "statut": "en_vigueur",
+      "version": "32026R0771",
+      "date_consolidation": null,
+      "snapshot": "084511bb6ba2d2d5e8c7c1b26dd047695970c163f4b28c69456f917587e502c4.xhtml",
+      "unites": 24,
+      "couverture": {
+        "source": "CELLAR — publications.europa.eu/resource/celex/32026R0771",
+        "date_publication": "2026-04-08",
+        "bornes": {
+          "debut": "2026-04-28",
+          "fin": null
+        },
+        "statut": "en_vigueur",
+        "types_retenus": [
+          "article",
+          "considérant"
+        ],
+        "exclusions": [],
+        "comptes": {
+          "articles": 11,
+          "considerants": 13
+        },
+        "version": "32026R0771",
+        "date_consolidation": null
+      }
+    },
+    {
+      "document": "32026R2083",
+      "titre": "Règlement d'exécution (UE) 2026/2083 de la Commission du 18 septembre 2026 sur MaSanté@UE",
+      "langue": "fra",
+      "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32026R2083",
+      "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+      "date_acte": "2026-09-18",
+      "date_publication": "2026-09-21",
+      "date_debut": "2027-03-26",
+      "date_fin": null,
+      "statut": "en_vigueur",
+      "version": "32026R2083",
+      "date_consolidation": null,
+      "snapshot": "be87d32f9740fadc8dd5ca485c662ecf331fa30d5d8f4cc13f24578189894844.xhtml",
+      "unites": 46,
+      "couverture": {
+        "source": "CELLAR — publications.europa.eu/resource/celex/32026R2083",
+        "date_publication": "2026-09-21",
+        "bornes": {
+          "debut": "2027-03-26",
+          "fin": null
+        },
+        "statut": "en_vigueur",
+        "types_retenus": [
+          "article",
+          "considérant"
+        ],
+        "exclusions": [],
+        "comptes": {
+          "articles": 19,
+          "considerants": 27
+        },
+        "version": "32026R2083",
+        "date_consolidation": null
+      }
+    },
+    {
+      "document": "32026R2098",
+      "titre": "Règlement d'exécution (UE) 2026/2098 de la Commission du 18 septembre 2026 fixant les éléments minimaux de métadonnées et leurs caractéristiques que doivent fournir les détenteurs de données de santé pour les descriptions des ensembles de données aux fins de l'utilisation secondaire des données de santé électroniques, tel que prévu par l'article 77, paragraphe 4, du règlement (UE) 2025/327 établissant l'espace européen des données de santé",
+      "langue": "fra",
+      "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32026R2098",
+      "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+      "date_acte": "2026-09-18",
+      "date_publication": "2026-09-21",
+      "date_debut": "2029-03-26",
+      "date_fin": null,
+      "statut": "en_vigueur",
+      "version": "32026R2098",
+      "date_consolidation": null,
+      "snapshot": "6f7d4ffe6babeb919ad63e19e164ccec3a36390d84cd15eb5c0351b0d3238cec.xhtml",
+      "unites": 12,
+      "couverture": {
+        "source": "CELLAR — publications.europa.eu/resource/celex/32026R2098",
+        "date_publication": "2026-09-21",
+        "bornes": {
+          "debut": "2029-03-26",
+          "fin": null
+        },
+        "statut": "en_vigueur",
+        "types_retenus": [
+          "article",
+          "considérant",
+          "annexe"
+        ],
+        "exclusions": [],
+        "comptes": {
+          "articles": 4,
+          "considerants": 7,
+          "annexes": 1
+        },
+        "version": "32026R2098",
+        "date_consolidation": null
+      }
+    }
+  ],
+  "unites": 306,
+  "couverture": {
+    "source": "CELLAR — publications.europa.eu/resource/celex/32025R0327, 32026R0771, 32026R2083, 32026R2098",
+    "types_retenus": [
+      "article",
+      "considérant",
+      "annexe"
+    ],
+    "exclusions": [],
+    "comptes": {
+      "documents": 4,
+      "articles": 139,
+      "considerants": 162,
+      "annexes": 5
+    }
+  }
+}

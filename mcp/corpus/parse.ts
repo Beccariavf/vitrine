@@ -34,7 +34,7 @@ export type Descripteur = {
   /** Nombre d'annexes que la capture doit porter (`donnees`). */
   annexes_attendues?: number;
   /** Parseur dédié, quand le corpus n'est pas un acte CELLAR ordinaire. */
-  parseur?: "ccs" | "donnees";
+  parseur?: "ccs" | "donnees" | "sante_ue";
   /**
    * CELEX effectivement récupéré : une version consolidée (`0…-AAAAMMJJ`) ou
    * l'acte d'origine quand aucune consolidation française n'existe. Absent :
@@ -45,15 +45,21 @@ export type Descripteur = {
   date_consolidation?: string | null;
   /** Exclusions déclarées au manifeste, par exemple des considérants absents de la consolidation. */
   exclusions?: string[];
+  /**
+   * Échelonnement de l'application, quand `date_debut` ne dit que la date
+   * générale : le manifeste le porte tel quel, jamais recopié article par article.
+   */
+  note_application?: string;
 };
 
 /**
  * `fragment` désigne un découpage de texte long, propre à la CNIL ; `clause`
  * l'annexe de 2021/914 ; `point` la partie opératoire numérotée d'une
  * recommandation et `annexe` une annexe entière d'un acte de l'économie des
- * données ; `proposition` et `affaire` les unités de la préparation ; `notice`
- * une unité qui ne porte que des métadonnées — le corpus `metadonnees` ne
- * connaît pas le contenu des décisions qu'il cite.
+ * données ou de l'espace européen des données de santé ; `proposition` et
+ * `affaire` les unités de la préparation ; `notice` une unité qui ne porte que
+ * des métadonnées — le corpus `metadonnees` ne connaît pas le contenu des
+ * décisions qu'il cite.
  */
 export type Niveau =
   | "article"

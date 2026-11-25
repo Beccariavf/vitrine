@@ -38,6 +38,7 @@ export const ORDRE_SOURCES: readonly CorpusVeille[] = [
   "ccs",
   "adequation",
   "donnees",
+  "sante_ue",
   "cada",
 ];
 

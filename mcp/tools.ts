@@ -558,6 +558,36 @@ const ALIAS_ACTES_UE: ReadonlyArray<{ document: string; texte: readonly RegExp[]
     ],
     compact: [/32023r1622/],
   },
+  {
+    document: "32025R0327",
+    texte: [
+      /\behds\b/,
+      /\bespace europeen des donnees de sante\b/,
+      /\breglement (?:ue )?(?:n )?2025 327\b/,
+    ],
+    compact: [/32025r0327/],
+  },
+  {
+    document: "32026R0771",
+    texte: [
+      /\breglement d execution (?:ue )?(?:n )?2026 771\b/,
+      /\bcomite de l eeds\b/,
+    ],
+    compact: [/32026r0771/],
+  },
+  {
+    document: "32026R2083",
+    texte: [
+      /\bmasante ue\b/,
+      /\breglement d execution (?:ue )?(?:n )?2026 2083\b/,
+    ],
+    compact: [/32026r2083/],
+  },
+  {
+    document: "32026R2098",
+    texte: [/\breglement d execution (?:ue )?(?:n )?2026 2098\b/],
+    compact: [/32026r2098/],
+  },
 ];
 
 /**
@@ -651,6 +681,10 @@ const NOMS_DOCUMENTS: Record<string, string> = {
   "32018R1807": "libre circulation des données",
   "32026H2394": "recommandation clauses types Data Act",
   "32023R1622": "logos DGA",
+  "32025R0327": "EHDS",
+  "32026R0771": "règlement d'exécution 2026/771 (comité de l'EEDS)",
+  "32026R2083": "règlement d'exécution 2026/2083 (MaSanté@UE)",
+  "32026R2098": "règlement d'exécution 2026/2098 (métadonnées EHDS)",
   LEGITEXT000038567662: "décret 2019-536",
   LEGITEXT000006070719: "Code pénal",
   LEGITEXT000006070987: "CPCE",
@@ -925,7 +959,7 @@ export function corpusDeNiveau(demande: { corpus?: string; document?: string }):
 export type SearchDemande = {
   question: string;
   k?: number;
-  /** Restreint la recherche à une collection : `rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `donnees`, `cnil`, `cada`, `cnil_doctrine`, `lil`, `textes_fr`, `preparation`, `ce`, `constit`, `cepd`, `cc`, `cjue`, `metadonnees`. */
+  /** Restreint la recherche à une collection : `rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `donnees`, `sante_ue`, `cnil`, `cada`, `cnil_doctrine`, `lil`, `textes_fr`, `preparation`, `ce`, `constit`, `cepd`, `cc`, `cjue`, `metadonnees`. */
   corpus?: string;
   /** Restreint la recherche à un document précis. */
   document?: string;
