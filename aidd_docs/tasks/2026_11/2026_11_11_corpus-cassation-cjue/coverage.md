@@ -1,6 +1,6 @@
 # Couverture des corpus
 
-Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les corpus inchangés, 15 novembre pour `metadonnees`, 25 novembre pour `aiact`, `donnees`, `sante_ue`, `cnil`, `cepd` et `cada`), jamais recopiés depuis un autre rapport.
+Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les corpus inchangés, 15 novembre pour `metadonnees`, 25 novembre pour `aiact`, `donnees`, `sante_ue`, `frontieres`, `cnil`, `cepd` et `cada`), jamais recopiés depuis un autre rapport.
 
 | Corpus | Documents | Fragments | Période | Source | Licence |
 |---|---:|---:|---|---|---|
@@ -8,6 +8,7 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 | `aiact` | 4 actes | 377 (AI Act 299 : 119 articles de la consolidation `02024R1689-20260727` + 180 considérants de l'acte d'origine ; 2026/2487 : 10 articles + 26 considérants ; 2025/454 : 20 + 13 ; 2026/2274 : 2 + 6 + 1 annexe) | AI Act publication 2024-07-12, en vigueur depuis 2024-08-01 ; actes d'application du 2025-03-07 au 2026-11-10, publication du 2025-03-10 au 2026-11-11 | CELLAR / EUR-Lex, CELEX `32024R1689`, `32025R0454`, `32026D2274`, `32026R2487` | Décision 2011/833/UE (CC BY 4.0) |
 | `donnees` | 7 actes | 470 (125 articles, 325 considérants, 3 points, 17 annexes) | actes du 2018-11-14 au 2026-10-29 ; publication du 2018-11-28 au 2026-11-06 | CELLAR / EUR-Lex, CELEX `32023R2854`, `32022R0868`, `32019L1024`, `32023R0138`, `32018R1807`, `32026H2394`, `32023R1622` | Décision 2011/833/UE (CC BY 4.0) |
 | `sante_ue` | 4 actes | 306 (139 articles, 162 considérants, 5 annexes) | actes du 2025-02-11 au 2026-09-18 ; publication du 2025-03-05 au 2026-09-21 ; 2026-04-28 (entrée en vigueur) → 2029-03-26 (application) | CELLAR / EUR-Lex, CELEX `32025R0327`, `32026R0771`, `32026R2083`, `32026R2098` | Décision 2011/833/UE (CC BY 4.0) |
+| `frontieres` | 10 actes | 1 332 (443 articles, 861 considérants, 28 annexes) | actes du 1996-03-11 au 2024-10-23 ; publication du 1996-03-27 au 2024-11-20 ; 7 consolidations servies, 3 actes d'origine | CELLAR / EUR-Lex, CELEX `32019R1020`, `32024L2853`, `32024R2847`, `32023R1230`, `31996L0009`, `32016L0943`, `32019L0790`, `32022R2065`, `32024L2831`, `32023L2225` | Décision 2011/833/UE (CC BY 4.0) |
 | `cnil` | 3 260 (dont 14 délibérations supplémentaires) | 29 698 (dont 325) | arrêté au 2026-11-17 | DINUM (historique) + DILA (incréments) | DINUM : `etalab-2.0` et `lov2`, écart déclaré ; DILA : Licence Ouverte 2.0 |
 | `cada` | 3 918 | 35 396 | 2016-10-20 → 2024-04-18 ; sélection thématique (4 607 avis / 39 098 fragments) : 56 333 lignes hors thème, 689 avis antérieurs au 2016-10-08 et 1 sans texte écartés ; 96 fragments au-dessus du plafond de 35 300, dépassement déclaré | data.gouv.fr — ressource consolidée du 2026-08-14 (API) | Licence Ouverte 2.0 |
 | `cnil_doctrine` | 56 (30 guides, 26 référentiels) | 4 459 | documents datés de 2019-11-21 à 2026-11-14 ; 2 listes AIPD laissées au corpus `cnil` | cnil.fr — pages de référence (guides, référentiels, listes AIPD) | CC BY-ND 4.0, marquage par fragment ; listes AIPD en Licence Ouverte via `cnil` |
@@ -72,6 +73,14 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 - Les trois actes d'application sont lus sur leur acte d'origine : SPARQL ne rend aucune consolidation pour eux, `version` = CELEX et `date_consolidation: null`, `parseur: donnees`.
 - La consolidation de l'AI Act ne change pas : ses 299 unités gardent `ref`, texte et URL, octet pour octet ; `aiact.json` reste son descripteur.
 - Veille : `eurlex` suit les quatre CELEX dans la requête de consolidations ; `corpus:sync` met à jour `version` dans `aiact.json` et reconstruit les quatre documents ensemble. Citations connues au catalogue (`INSTRUMENTS`) par leur numéro ; `get_article` sur « AI Act » rend toujours `32024R1689`.
+
+## Détail `frontieres`
+
+- Dix actes lus sur CELLAR en XHTML français, corpus multi-documents (un descripteur par acte, manifeste à `documents[]`) : surveillance du marché `32019R1020` (44 articles, 68 considérants, 3 annexes), responsabilité du fait des produits `32024L2853` (24, 64, 1), CRA `32024R2847` (71, 130, 8), machines `32023R1230` (59, 86, 12), bases de données `31996L0009` (17, 60), secret des affaires `32016L0943` (21, 40), droit d'auteur `32019L0790` (32, 86), DSA `32022R2065` (93, 156), travail via plateforme `32024L2831` (32, 73), crédit à la consommation `32023L2225` (50, 98, 4).
+- Sept consolidations françaises servies (`02019R1020-20260812`, `02024L2853-20241118`, `02024R2847-20241120`, `02023R1230-20260727`, `01996L0009-20190606`, `02022R2065-20221027`, `02023L2225-20231030`) ; toutes sans préambule, les considérants venant de l'acte d'origine (`considerants_source`). Trois actes rendent l'acte d'origine : `32016L0943` et `32019L0790` (consolidation 404 en français et en anglais), `32024L2831` (consolidation servie en anglais seulement).
+- 96/9 : la consolidation ne porte ni préambule ni ancre `rct_`, et l'acte d'origine est le HTML patrimonial de 1996 ; ses 60 considérants se lisent par les lignes `(N)` du préambule, comme dans `mcp/corpus/adequation/`.
+- Découpage : `mcp/corpus/frontieres/parse.ts` (`parseur: "frontieres"`) — articles et considérants par `parseConsolide` (consolidation) ou `parseCellar` (acte d'origine), une unité par annexe, découpée par bornes de `<div>`.
+- Veille : dix CELEX suivis par la requête de consolidations ; deux actes ajoutés aux `actes_suivis` de `preparation` (23).
 
 ## Détail `donnees`
 
