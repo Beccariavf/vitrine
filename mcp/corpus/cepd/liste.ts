@@ -23,14 +23,16 @@ function fetchAgent(url: string, accept: string): ReturnType<typeof fetch> {
 export type TypeDocument =
   | "lignes_directrices"
   | "avis_art64"
+  | "avis_legislatif"
   | "decision_art65"
   | "recommandation"
   | "g29_repris";
 
-/** Les cinq types, dans l'ordre du corpus. */
+/** Les six types, dans l'ordre du corpus. */
 export const TYPES_DOCUMENT: readonly TypeDocument[] = [
   "lignes_directrices",
   "avis_art64",
+  "avis_legislatif",
   "decision_art65",
   "recommandation",
   "g29_repris",
@@ -40,6 +42,7 @@ export const TYPES_DOCUMENT: readonly TypeDocument[] = [
 export const LIBELLES_TYPE: Record<TypeDocument, string> = {
   lignes_directrices: "Lignes directrices",
   avis_art64: "Avis art. 64",
+  avis_legislatif: "Avis législatifs",
   decision_art65: "Décisions contraignantes art. 65",
   recommandation: "Recommandations",
   g29_repris: "G29 repris",
@@ -52,6 +55,7 @@ const TYPE_PAR_RUBRIQUE: Record<string, TypeDocument> = {
   recommendation: "recommandation",
   recommendations: "recommandation",
   "opinion-of-the-board-art-64": "avis_art64",
+  "legislative-opinion": "avis_legislatif",
   "edpb-binding-decisions": "decision_art65",
 };
 
@@ -79,9 +83,14 @@ export type DocumentG29Liste = {
   hebergement: HebergementG29;
 };
 
-/** Un document listé, avant enrichissement depuis sa page. */
-export type DocumentListe = {
+/** Un document déclaré hors sitemap : son URL réelle et son type. */
+export type DocumentSupplementaire = {
+  url: string;
   type: TypeDocument;
+};
+
+/** Un document listé, avant enrichissement depuis sa page. */
+export type DocumentListe = {  type: TypeDocument;
   /** URL de la page du document, sur `edpb.europa.eu`. */
   url: string;
   titre: string;
@@ -137,6 +146,11 @@ export type DescripteurCePd = {
   langue: string;
   /** Types retenus depuis le sitemap. */
   types: TypeDocument[];
+  /**
+   * Documents ajoutés hors du sitemap, par URL et type explicites : leur
+   * rubrique n'est pas parcourue, seuls ces documents entrent au corpus.
+   */
+  documents_supplementaires?: DocumentSupplementaire[];
   /** Délai de politesse entre deux documents, en millisecondes. */
   delai_entre_requetes_ms?: number;
   page_debut: number;
