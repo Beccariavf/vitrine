@@ -55,8 +55,6 @@ type DefinitionCorpus = {
   separateurProvenance?: string;
   /** Fragment de la description de l'outil `search`, dans l'ordre du tableau. */
   descriptionRecherche: string;
-  /** Séparateur qui précède ce fragment dans la description de `search` ; « , » par défaut. */
-  separateurRecherche?: string;
   /** Rang d'affichage du connecteur, textes puis autorités puis juridictions. */
   rangSite: number;
   /** Rang dans l'énumération `veille: false` de la consigne de périmètre ; absent, non énuméré. */
@@ -585,7 +583,6 @@ const DEFINITIONS = [
     descriptionRecherche:
       "et les métadonnées des décisions du guichet unique (corpus `metadonnees`, aucun texte de décision ; " +
       "source CEDH arrêtée)",
-    separateurRecherche: " ",
     rangSite: 22,
     sources: [],
     sansVeille: "instantané du registre art. 60, resynchronisation manuelle `metadonnees:sync`",
@@ -668,12 +665,9 @@ export function descriptionProvenance(): string {
   ).join("");
 }
 
-/** Description de l'outil `search` : fragments du registre, dans le même ordre. */
+/** Description de l'outil `search` : fragments du registre, séparés par des virgules. */
 export function descriptionRecherche(): string {
-  return CORPUS.map(
-    (corpus, index) =>
-      `${index === 0 ? "" : (corpus.separateurRecherche ?? ", ")}${corpus.descriptionRecherche}`,
-  ).join("");
+  return CORPUS.map((corpus) => corpus.descriptionRecherche).join(", ");
 }
 
 /** Phrase de périmètre d'un document absent : libellés dans l'ordre de refus connu. */

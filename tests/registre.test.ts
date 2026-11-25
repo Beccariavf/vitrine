@@ -33,6 +33,7 @@ describe("registre des corpus", () => {
       assert.ok(corpus.commandeSync.startsWith("npm run "), `${corpus.nom} : commande`);
       assert.ok(corpus.descriptionServeur !== "", `${corpus.nom} : description serveur`);
       assert.ok(corpus.descriptionProvenance !== "", `${corpus.nom} : description provenance`);
+      assert.ok(corpus.descriptionRecherche !== "", `${corpus.nom} : description recherche`);
     }
     assert.equal(NOMBRE_CORPUS, 22);
   });
