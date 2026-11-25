@@ -529,7 +529,7 @@ const ALIAS_ACTES_UE: ReadonlyArray<{ document: string; texte: readonly RegExp[]
   {
     document: "32023R0138",
     texte: [
-      /\bensembles? de donnees de (?:forte|haute) valeur\b/,
+      /\bensembles? de (?:donnees de )?(?:forte|haute) valeur\b/,
       /\breglement d execution (?:ue )?(?:n )?2023 138\b/,
     ],
     compact: [/32023r0138/],
@@ -648,6 +648,22 @@ function libelleDocument(document: string): string {
  * l'AI Act » en nomme deux, et l'appelant doit alors distinguer « aucun nom » de
  * « plusieurs noms » dans ses messages.
  */
+/** Une occurrence d'un alias dans la question normalisée. */
+type NomTrouve = { document: string; debut: number; fin: number };
+
+/** Toutes les occurrences des alias d'un document, positions comprises. */
+function occurrences(texte: string, document: string, alias: readonly RegExp[]): NomTrouve[] {
+  const trouves: NomTrouve[] = [];
+  for (const motif of alias) {
+    const global = new RegExp(motif.source, motif.flags.includes("g") ? motif.flags : `${motif.flags}g`);
+    for (const trouve of texte.matchAll(global)) {
+      if (trouve.index === undefined || trouve[0] === "") continue;
+      trouves.push({ document, debut: trouve.index, fin: trouve.index + trouve[0].length });
+    }
+  }
+  return trouves;
+}
+
 export function documentsNommes(question: string): string[] {
   const texteBrut = normaliserTexte(question);
   // Le titre complet du décret nomme la loi 78-17 : il ne nomme que le décret.
@@ -655,34 +671,37 @@ export function documentsNommes(question: string): string[] {
   const compact = compacter(texte);
   const texteRgpd = texte.replace(NOM_PROCEDURAL_RGPD, " ");
   const compactRgpd = compacter(texteRgpd);
-  const documents = new Set<string>();
-  if (
-    ALIAS_RGPD_TEXTE.some((alias) => alias.test(texteRgpd)) ||
-    ALIAS_RGPD_COMPACT.some((alias) => alias.test(compactRgpd))
-  ) {
-    documents.add("32016R0679");
-  }
-  if (
-    ALIAS_AIA_TEXTE.some((alias) => alias.test(texte)) ||
-    ALIAS_AIA_COMPACT.some((alias) => alias.test(compact))
-  ) {
-    documents.add("32024R1689");
-  }
-  if (ALIAS_LIL_TEXTE.some((alias) => alias.test(texte))) {
-    documents.add("LEGITEXT000006068624");
-  }
+  const trouves = [
+    ...occurrences(texte, "32016R0679", ALIAS_RGPD_TEXTE),
+    ...occurrences(texte, "32024R1689", ALIAS_AIA_TEXTE),
+    ...occurrences(texte, "LEGITEXT000006068624", ALIAS_LIL_TEXTE),
+    ...ALIAS_ACTES_UE.flatMap((acte) => occurrences(texte, acte.document, acte.texte)),
+    ...occurrences(texte, "LEGITEXT000038567662", ALIAS_DECRET_2019_536),
+    ...occurrences(texte, "LEGITEXT000006070987", ALIAS_CPCE_TEXTE),
+    ...occurrences(texte, "LEGITEXT000006070719", ALIAS_CODE_PENAL),
+    ...ALIAS_CODES_FRANCAIS.flatMap((code) => occurrences(texte, code.document, code.texte)),
+  ];
+  // Un alias contenu dans un alias plus long d'un autre document cède le pas :
+  // « logos DGA » nomme 2023/1622, pas la DGA ; « clauses types Data Act » la
+  // recommandation, pas le Data Act.
+  const retenus = trouves.filter(
+    (trouve) =>
+      !trouves.some(
+        (autre) =>
+          autre.document !== trouve.document &&
+          autre.debut <= trouve.debut &&
+          trouve.fin <= autre.fin &&
+          autre.fin - autre.debut > trouve.fin - trouve.debut,
+      ),
+  );
+  const documents = retenus.sort((gauche, droite) => gauche.debut - droite.debut).map((trouve) => trouve.document);
+  // Un CELEX compact n'a pas de position comparable aux mots : il s'ajoute après.
+  if (ALIAS_RGPD_COMPACT.some((alias) => alias.test(compactRgpd))) documents.push("32016R0679");
+  if (ALIAS_AIA_COMPACT.some((alias) => alias.test(compact))) documents.push("32024R1689");
   for (const acte of ALIAS_ACTES_UE) {
-    if (acte.texte.some((alias) => alias.test(texte)) || acte.compact.some((alias) => alias.test(compact))) {
-      documents.add(acte.document);
-    }
+    if (acte.compact.some((alias) => alias.test(compact))) documents.push(acte.document);
   }
-  if (ALIAS_DECRET_2019_536.some((alias) => alias.test(texte))) documents.add("LEGITEXT000038567662");
-  if (ALIAS_CPCE_TEXTE.some((alias) => alias.test(texte))) documents.add("LEGITEXT000006070987");
-  if (ALIAS_CODE_PENAL.some((alias) => alias.test(texte))) documents.add("LEGITEXT000006070719");
-  for (const code of ALIAS_CODES_FRANCAIS) {
-    if (code.texte.some((alias) => alias.test(texte))) documents.add(code.document);
-  }
-  return [...documents];
+  return [...new Set(documents)];
 }
 
 /**
@@ -1158,10 +1177,17 @@ export async function search(
   const effective: SearchDemande =
     corpusImplicite === null ? demande : { ...demande, corpus: corpusImplicite };
   const document =
-    effective.document ??
+    (effective.document === undefined
+      ? undefined
+      : (documentNomme(effective.document) ?? effective.document)) ??
     (effective.corpus === undefined ? documentNomme(effective.question) : null) ??
     undefined;
-  const resultat = await chercher(rootDir, effective, document, deps);
+  const resultat = await chercher(
+    rootDir,
+    document === undefined ? effective : { ...effective, document },
+    document,
+    deps,
+  );
   const lexical = deps.recherche === "lexicale";
   return {
     ...resultat,

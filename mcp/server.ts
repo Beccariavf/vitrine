@@ -496,8 +496,9 @@ export function createServer(deps: ServerDeps): McpServer {
         "Cherche par le sens dans le RGPD, l'AI Act, la directive ePrivacy, la directive " +
         "police-justice, le règlement 2018/1725, le règlement procédural RGPD, les clauses " +
         "contractuelles types de transfert et de sous-traitance, les décisions d'adéquation, " +
-        "les textes UE de l'économie des données (Data Act, DGA, directive Open Data et actes " +
-        "d'application), la LIL, les textes français d'application, " +
+        "les textes UE de l'économie des données (Data Act, DGA, directive Open Data, ensembles " +
+        "de forte valeur, libre circulation, recommandation clauses types, logos DGA), la LIL, " +
+        "les textes français d'application, " +
         "les textes en préparation et les affaires pendantes, les délibérations de la CNIL " +
         "(sanctions, avis, recommandations et lignes directrices), les guides, référentiels, fiches " +
         "pratiques IA et listes AIPD de la CNIL (corpus `cnil_doctrine`), les décisions du Conseil d'État, " +

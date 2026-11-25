@@ -182,14 +182,29 @@ describe("corpus donnees", () => {
     assert.match(resultat.message, /aucune version consolidée à appliquer/);
   });
 
-  it("résout le nom des actes dans les outils", () => {
+  it("résout le nom des sept actes dans les outils", () => {
+    const noms: Array<[string, string]> = [
+      ["Data Act", "32023R2854"],
+      ["DGA", "32022R0868"],
+      ["directive Open Data", "32019L1024"],
+      ["ensembles de forte valeur", "32023R0138"],
+      ["libre circulation des données", "32018R1807"],
+      ["recommandation clauses types Data Act", "32026H2394"],
+      ["logos DGA", "32023R1622"],
+    ];
+    for (const [nom, celex] of noms) {
+      assert.deepEqual(documentsNommes(nom), [celex], nom);
+      assert.deepEqual(documentsNommes(`l'article 3 des ${nom}`), [celex], nom);
+    }
     assert.deepEqual(documentsNommes("le Data Act et la DGA"), ["32023R2854", "32022R0868"]);
-    assert.deepEqual(documentsNommes("l'article 24 du Data Act"), ["32023R2854"]);
     assert.equal(referenceExacte("l'article 24 du Data Act"), "24");
 
-    const article = getArticle(ROOT, { document: "Data Act", numero: "24" });
-    assert.equal(article.trouve, true);
-    assert.equal(article.trouve ? article.corpus : null, "donnees");
+    for (const [nom, celex] of noms) {
+      if (nom === "recommandation clauses types Data Act") continue;
+      const article = getArticle(ROOT, { document: nom, numero: nom === "logos DGA" ? "unique" : "1" });
+      assert.equal(article.trouve, true, nom);
+      assert.equal(article.trouve ? article.document : null, celex, nom);
+    }
   });
 
   it("extrait et attribue une citation de l'article unique des logos DGA", () => {
@@ -200,6 +215,49 @@ describe("corpus donnees", () => {
     assert.equal(citations[0]?.document, "32023R1622");
     assert.deepEqual(citations[0]?.articles, ["unique"]);
     assert.equal(marquerPresence(documentsPresents(ROOT), citations)[0]?.hors_corpus, false);
+  });
+
+  it("reparse chaque capture brute et rend exactement les unités écrites", () => {
+    const manifeste = JSON.parse(
+      readFileSync(join(ROOT, "data", "corpus", "donnees", "manifest.json"), "utf8"),
+    ) as { documents: { document: string; snapshot: string }[] };
+    const descripteurs = new Map(
+      lireDescripteurs()
+        .filter((descripteur) => descripteur.corpus === "donnees")
+        .map((descripteur) => [descripteur.document, descripteur]),
+    );
+    const unites = readFileSync(join(ROOT, "data", "corpus", "donnees", "unites.jsonl"), "utf8")
+      .split("\n")
+      .filter((ligne) => ligne.trim() !== "")
+      .map((ligne) => JSON.parse(ligne) as Unite);
+
+    for (const document of manifeste.documents) {
+      const descripteur = descripteurs.get(document.document);
+      assert.ok(descripteur, document.document);
+      const capture = readFileSync(
+        join(ROOT, "data", "raw", document.snapshot.slice(0, 2), document.snapshot),
+        "utf8",
+      );
+      const reparsees = parseDonnees(capture, descripteur);
+      assert.deepEqual(
+        reparsees,
+        unites.filter((unite) => unite.document === document.document),
+        document.document,
+      );
+    }
+    assert.equal(unites.filter((unite) => unite.ref === "32023R1622#art_unique").length, 1);
+    assert.equal(unites.filter((unite) => unite.niveau === "point").length, 3);
+  });
+
+  it("refuse une capture consolidée plutôt que de la découper à l'aveugle", () => {
+    assert.throws(
+      () =>
+        parseDonnees(
+          FIXTURE,
+          descripteurReduit({ version: "02000R0001-20260101", date_consolidation: "2026-01-01" }),
+        ),
+      /consolidation 02000R0001-20260101 servie/,
+    );
   });
 
   it("pointe chaque unité par une ancre qui existe dans sa capture", () => {
