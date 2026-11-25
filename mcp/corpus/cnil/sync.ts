@@ -14,6 +14,7 @@ import type { Unite } from "../parse.ts";
 import {
   lireDescripteur,
   lireLignes,
+  numerosSupplementaires,
   telechargerHistorique,
   unitesDinum,
 } from "./historique.ts";
@@ -101,6 +102,18 @@ export type ManifesteCnil = {
     /** Lignes DINUM lues : unités retenues + exclusions. */
     lignes_lues: number;
     comptes: { documents: number; unites: number };
+    /**
+     * Délibérations retenues hors du filtre de natures (MR, référentiels
+     * santé) : leur nombre déclaré, les documents trouvés, celles qui manquent
+     * aux sources, et les versions remplacées.
+     */
+    deliberations_supplementaires: {
+      numeros: string[];
+      documents: string[];
+      absentes: string[];
+      remplacements: Record<string, string>;
+      objets: Record<string, string>;
+    };
   };
 };
 
@@ -281,6 +294,21 @@ export function manifesteCnil(
   const naturesExclues = descripteur.natures.filter(
     (nature) => !natures.some((demandee) => natureComparable(demandee) === natureComparable(nature)),
   );
+  const numerosSupplementaires = descripteur.deliberations_supplementaires ?? [];
+  const documentsSupplementaires = [
+    ...new Set(
+      unites
+        .filter((unite) => numerosSupplementaires.includes(unite.numero))
+        .map((unite) => unite.document),
+    ),
+  ].sort();
+  const supplementairesAbsentes = [
+    ...new Set(
+      numerosSupplementaires.filter(
+        (numero) => !unites.some((unite) => unite.numero === numero),
+      ),
+    ),
+  ];
   return {
     corpus: descripteur.corpus,
     nom: descripteur.nom,
@@ -305,6 +333,13 @@ export function manifesteCnil(
       exclusions,
       lignes_lues: origines.dinum + exclues,
       comptes: { documents, unites: unites.length },
+      deliberations_supplementaires: {
+        numeros: [...numerosSupplementaires],
+        documents: documentsSupplementaires,
+        absentes: supplementairesAbsentes,
+        remplacements: { ...(descripteur.remplacements ?? {}) },
+        objets: { ...(descripteur.objets ?? {}) },
+      },
     },
     url_texte: descripteur.url_texte,
     url_texte_verifiee: descripteur.url_texte_verifiee,
@@ -409,8 +444,14 @@ export async function syncHistorique(options: SyncOptions = {}): Promise<Resulta
       ? { documents: descripteur.documents_attendus, fragments: descripteur.fragments_attendus }
       : undefined);
   // Les comptes du snapshot portent sur l'historique seul : y ajouter un
-  // incrément DILA ne doit pas rendre la synchronisation invalide.
-  validerUnites(historiques, attendus);
+  // incrément DILA ne doit pas rendre la synchronisation invalide. Les
+  // délibérations supplémentaires s'ajoutent par-dessus le filtre de natures ;
+  // elles ne déplacent donc pas les comptes attendus de la base.
+  const supplementaires = numerosSupplementaires(descripteur);
+  validerUnites(
+    historiques.filter((unite) => !supplementaires.has(unite.numero)),
+    attendus,
+  );
   const comptes = validerUnites(unites);
   const manifeste = manifesteCnil(
     descripteur,

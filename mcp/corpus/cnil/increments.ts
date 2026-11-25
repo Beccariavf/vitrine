@@ -12,6 +12,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { gunzipSync } from "node:zlib";
 import type { Unite } from "../parse.ts";
 import type { DescripteurCnil, FetchBinaire } from "./historique.ts";
+import { numeroSupplementaire, numerosSupplementaires, statutRemplacement } from "./historique.ts";
 import { natureDemandee } from "./nature.ts";
 import { parseTexteCnil, unitesDila } from "./parse.ts";
 import type { DecisionDila } from "./parse.ts";
@@ -126,11 +127,17 @@ export async function lireArchiveDepuis(
 
   const decisions: DecisionDila[] = [];
   let documentsLus = 0;
+  const supplementaires = numerosSupplementaires(descripteur);
   for (const entree of extraireTar(gunzipSync(octets))) {
     if (!/CNILTEXT\d+\.xml$/i.test(entree.nom)) continue;
     documentsLus += 1;
     const decision = parseTexteCnil(entree.donnees.toString("utf8"), entree.nom);
-    if (!natureDemandee(decision.natureDelib, natures)) continue;
+    if (
+      !natureDemandee(decision.natureDelib, natures) &&
+      !numeroSupplementaire(decision.numero, supplementaires)
+    ) {
+      continue;
+    }
     if (decision.paragraphes.length === 0) {
       throw new Error(`${entree.nom} : ${decision.id} sans texte, nature ${decision.natureDelib} attendue`);
     }
@@ -150,15 +157,30 @@ export async function lireArchiveDepuis(
 export function fusionnerDecisions(
   unites: Unite[],
   decisions: DecisionDila[],
-  descripteur: Pick<DescripteurCnil, "corpus" | "nom" | "natures" | "url_texte">,
+  descripteur: Pick<
+    DescripteurCnil,
+    "corpus"
+    | "nom"
+    | "natures"
+    | "url_texte"
+    | "deliberations_supplementaires"
+    | "remplacements"
+    | "objets"
+  >,
   natures: readonly string[] = descripteur.natures,
 ): { unites: Unite[]; remplacees: number; ajoutees: number; ignorees: number } {
   let courant = [...unites];
   let remplacees = 0;
   let ajoutees = 0;
   let ignorees = 0;
+  const supplementaires = numerosSupplementaires(descripteur);
   for (const decision of decisions) {
-    if (!natureDemandee(decision.natureDelib, natures)) continue;
+    if (
+      !natureDemandee(decision.natureDelib, natures) &&
+      !numeroSupplementaire(decision.numero, supplementaires)
+    ) {
+      continue;
+    }
     const existantes = courant.filter((unite) => unite.document === decision.id);
     const dateCorpus = existantes[0]?.date_acte ?? "";
     if (existantes.length > 0 && decision.dateTexte <= dateCorpus) {
@@ -166,6 +188,10 @@ export function fusionnerDecisions(
       continue;
     }
     const nouvelles = unitesDila(decision, descripteur);
+    const remplacement = statutRemplacement(decision.numero, descripteur.remplacements);
+    if (remplacement !== null) {
+      for (const unite of nouvelles) unite.statut = remplacement;
+    }
     courant = courant.filter((unite) => unite.document !== decision.id);
     courant.push(...nouvelles);
     remplacees += existantes.length;
