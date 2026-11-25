@@ -1,5 +1,5 @@
 import { strict as assert } from "node:assert";
-import { existsSync, mkdtempSync, readFileSync, rmSync, statSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -1045,11 +1045,12 @@ describe("la synchronisation CEPD", () => {
     assert.equal(manifeste.via, "sitemap");
     assert.equal(manifeste.couverture.via, "sitemap");
     assert.equal(manifeste.sitemap_pages.length, 5);
-    assert.equal(manifeste.documents, 328);
-    assert.equal(manifeste.fragments, 20287);
+    assert.equal(manifeste.documents, 330);
+    assert.equal(manifeste.fragments, 20509);
     assert.deepEqual(manifeste.types_retenus, [
       "lignes_directrices",
       "avis_art64",
+      "avis_legislatif",
       "decision_art65",
       "recommandation",
       "g29_repris",
@@ -1064,6 +1065,7 @@ describe("la synchronisation CEPD", () => {
       {
         lignes_directrices: [43, 6914],
         avis_art64: [263, 7770],
+        avis_legislatif: [2, 222],
         decision_art65: [12, 4571],
         recommandation: [9, 841],
         g29_repris: [1, 191],
@@ -1078,7 +1080,7 @@ describe("la synchronisation CEPD", () => {
       ).length,
       9,
     );
-    assert.deepEqual(manifeste.langues_pdf, { fr: 154, en: 174, autre: 0 });
+    assert.deepEqual(manifeste.langues_pdf, { fr: 156, en: 174, autre: 0 });
     assert.equal(manifeste.couverture.periode.date_min, "2018-04-11");
     assert.equal(manifeste.couverture.periode.date_max, "2026-11-10");
     assert.match(manifeste.licence, /Régime ouvert/);
@@ -1499,6 +1501,178 @@ describe("la synchronisation CEPD", () => {
       );
       assert.equal(existsSync(join(racine, "data")), false);
       assert.equal(journal.length >= 4, true);
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("les documents supplémentaires du CEPD", () => {
+  const AVIS_LEGISLATIF =
+    `${BASE}/documents/legislative-opinion/opinion-32019-concerning-the-questions-and-answers-on-the-interplay_en`;
+  const PAGE_AVIS = [
+    "<html><body><main>",
+    "<h1>Opinion 3/2019 concerning the Questions and Answers on the interplay between the Clinical Trials Regulation (CTR) and the GDPR</h1>",
+    '<time datetime="2019-01-23T12:00:00Z">23 January 2019</time>',
+    '<a href="/system/files/documents/files/file1/edpb_opinionctrq_a_final_en.pdf">Download</a>',
+    "</main></body></html>",
+  ].join("");
+
+  it("ajoute un avis législatif au corpus existant sans toucher aux autres documents", async () => {
+    const racine = racineTemporaire();
+    const descripteurPath = join(racine, "descripteur.json");
+    try {
+      await syncCePd({
+        rootDir: racine,
+        date: DATE,
+        fetchHtml: fauxHtml(SYNC_PAGES),
+        fetchPdf: fauxPdf(PDF),
+        extraireTexte: async () => TEXTE,
+        attendre: async () => {},
+        tentatives: 1,
+      });
+      const avant = readFileSync(
+        join(racine, "data", "corpus", "cepd", "unites.jsonl"),
+        "utf8",
+      )
+        .split("\n")
+        .filter((ligne) => ligne !== "")
+        .map((ligne) => JSON.parse(ligne) as Unite);
+
+      writeFileSync(
+        descripteurPath,
+        JSON.stringify({
+          ...DESCRIPTEUR,
+          documents_supplementaires: [{ url: AVIS_LEGISLATIF, type: "avis_legislatif" }],
+        }),
+      );
+      const supplementaires = await syncCePd({
+        rootDir: racine,
+        descripteurPath,
+        supplementairesSeulement: true,
+        fetchHtml: fauxHtml(new Map([[AVIS_LEGISLATIF, PAGE_AVIS]])),
+        fetchPdf: fauxPdf(PDF),
+        extraireTexte: async () => TEXTE,
+        attendre: async () => {},
+        tentatives: 1,
+      });
+
+      assert.equal(supplementaires.documents, 5);
+      const apres = readFileSync(
+        join(racine, "data", "corpus", "cepd", "unites.jsonl"),
+        "utf8",
+      )
+        .split("\n")
+        .filter((ligne) => ligne !== "")
+        .map((ligne) => JSON.parse(ligne) as Unite);
+      assert.deepEqual(
+        apres.filter((unite) => unite.document !== "opinion-32019-concerning-the-questions-and-answers-on-the-interplay"),
+        avant,
+        "les documents déjà présents gardent leurs unités",
+      );
+
+      const avis = apres.filter(
+        (unite) =>
+          unite.document === "opinion-32019-concerning-the-questions-and-answers-on-the-interplay",
+      );
+      assert.ok(avis.length > 0);
+      assert.equal(avis[0]?.numero, "Avis 03/2019");
+      assert.equal(avis[0]?.date_acte, "2019-01-23");
+      assert.match(avis[0]?.chemin ?? "", /^CEPD > Avis législatifs > /);
+
+      const manifeste = JSON.parse(
+        readFileSync(join(racine, "data", "corpus", "cepd", "manifest.json"), "utf8"),
+      ) as ManifesteCePd;
+      assert.equal(manifeste.documents, 5);
+      assert.equal(manifeste.comptes_par_type.avis_legislatif.documents, 1);
+      assert.deepEqual(manifeste.couverture.documents_supplementaires, {
+        declares: [{ url: AVIS_LEGISLATIF, type: "avis_legislatif" }],
+        documents: ["opinion-32019-concerning-the-questions-and-answers-on-the-interplay"],
+      });
+      assert.equal(manifeste.date_liste, DATE, "la date de la liste d'origine est conservée");
+      assert.equal(manifeste.couverture.pages_lues, 0);
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
+  });
+
+  it("reste idempotent et survit à une synchronisation complète", async () => {
+    const racine = racineTemporaire();
+    const descripteurPath = join(racine, "descripteur.json");
+    const lireUnites = (): Unite[] =>
+      readFileSync(join(racine, "data", "corpus", "cepd", "unites.jsonl"), "utf8")
+        .split("\n")
+        .filter((ligne) => ligne !== "")
+        .map((ligne) => JSON.parse(ligne) as Unite);
+    try {
+      await syncCePd({
+        rootDir: racine,
+        date: DATE,
+        fetchHtml: fauxHtml(SYNC_PAGES),
+        fetchPdf: fauxPdf(PDF),
+        extraireTexte: async () => TEXTE,
+        attendre: async () => {},
+        tentatives: 1,
+      });
+      writeFileSync(
+        descripteurPath,
+        JSON.stringify({
+          ...DESCRIPTEUR,
+          documents_supplementaires: [{ url: AVIS_LEGISLATIF, type: "avis_legislatif" }],
+        }),
+      );
+      const ajout = await syncCePd({
+        rootDir: racine,
+        descripteurPath,
+        supplementairesSeulement: true,
+        fetchHtml: fauxHtml(new Map([[AVIS_LEGISLATIF, PAGE_AVIS]])),
+        fetchPdf: fauxPdf(PDF),
+        extraireTexte: async () => TEXTE,
+        attendre: async () => {},
+        tentatives: 1,
+      });
+      assert.equal(ajout.ecrit, true);
+      const apresAjout = lireUnites();
+
+      // Rejoué tel quel : rien à ajouter, rien n'est écrit ni demandé au réseau.
+      const rejoue = await syncCePd({
+        rootDir: racine,
+        descripteurPath,
+        supplementairesSeulement: true,
+        fetchHtml: async () => ({ ok: false, status: 500, text: async () => "" }),
+        fetchPdf: async () => ({ ok: false, status: 500, arrayBuffer: async () => new ArrayBuffer(0) }),
+        extraireTexte: async () => TEXTE,
+        attendre: async () => {},
+        tentatives: 1,
+      });
+      assert.equal(rejoue.ecrit, false);
+      assert.equal(rejoue.documents, 5);
+      assert.equal(rejoue.tentatives.length, 0, "aucune requête réseau n'est faite");
+      assert.deepEqual(lireUnites(), apresAjout);
+
+      // Une synchronisation complète ne relit pas les documents déclarés hors
+      // sitemap : elle conserve leurs unités déjà validées.
+      await syncCePd({
+        rootDir: racine,
+        descripteurPath,
+        date: DATE,
+        fetchHtml: fauxHtml(SYNC_PAGES),
+        fetchPdf: fauxPdf(PDF),
+        extraireTexte: async () => TEXTE,
+        attendre: async () => {},
+        tentatives: 1,
+      });
+      const apresComplete = lireUnites();
+      assert.equal(new Set(apresComplete.map((unite) => unite.document)).size, 5);
+      assert.deepEqual(
+        apresComplete.filter((unite) => !unite.document.startsWith("opinion-32019")),
+        apresAjout.filter((unite) => !unite.document.startsWith("opinion-32019")),
+      );
+      assert.deepEqual(
+        apresComplete.filter((unite) => unite.document.startsWith("opinion-32019")),
+        apresAjout.filter((unite) => unite.document.startsWith("opinion-32019")),
+        "les unités de l'avis sont conservées à l'identique",
+      );
     } finally {
       rmSync(racine, { recursive: true, force: true });
     }

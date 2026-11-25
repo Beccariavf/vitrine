@@ -1,7 +1,48 @@
 {
   "corpus": "cnil",
   "nom": "CNIL",
-  "natures": ["Sanction", "Avis", "Recommandation/Lignes directrices"],
+  "natures": [
+    "Sanction",
+    "Avis",
+    "Recommandation/Lignes directrices"
+  ],
+  "deliberations_supplementaires": [
+    "2015-256",
+    "2018-153",
+    "2018-154",
+    "2018-155",
+    "2018-256",
+    "2018-257",
+    "2019-057",
+    "2021-118",
+    "2023-082",
+    "2023-083",
+    "2026-049",
+    "2026-050",
+    "2026-051",
+    "2026-052"
+  ],
+  "remplacements": {
+    "2018-153": "2026-050",
+    "2018-154": "2026-051"
+  },
+  "objets": {
+    "2015-256": "MR-002 — études de performances des DMDIV",
+    "2018-153": "MR-001 — recherches avec consentement (version 2018)",
+    "2018-154": "MR-003 — recherches sans consentement (version 2018)",
+    "2018-155": "MR-004 — recherches n'impliquant pas la personne humaine",
+    "2018-256": "MR-005 — accès PMSI/RPU par les établissements",
+    "2018-257": "MR-006 — accès PMSI par les industriels",
+    "2019-057": "Référentiel vigilances sanitaires",
+    "2021-118": "Référentiel entrepôts de données de santé",
+    "2023-082": "MR-007 — base principale du SNDS, mission d'intérêt public",
+    "2023-083": "MR-008 — base principale du SNDS, intérêts légitimes",
+    "2026-049": "Annexe sécurité des méthodologies de référence",
+    "2026-050": "MR-001 révisée — recherches avec consentement",
+    "2026-051": "MR-003 révisée — recherches sans consentement",
+    "2026-052": "Annexe contrôle qualité des méthodologies de référence"
+  },
+  "deliberations_supplementaires_note": "Méthodologies de référence MR-001 à MR-008, référentiels entrepôts (2021-118) et vigilances (2019-057) : délibérations de nature Référentiel/Règlement type/Norme, écartées par le filtre de natures. 2026-049 à 2026-052 révisent MR-001 et MR-003 et homologuent les annexes sécurité et contrôle qualité du 19 mars 2026.",
   "documents_attendus": 3245,
   "fragments_attendus": 29299,
   "snapshot": "2026-10-30",

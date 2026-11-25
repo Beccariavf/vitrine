@@ -12,9 +12,16 @@
       "url_article": "https://www.legifrance.gouv.fr/loda/id/{id}",
       "perimetre": "texte entier",
       "date_texte": "2019-05-29",
-      "route": { "type": "legiPart" },
-      "detection": { "fond": "LODA_DATE", "num": "2019-536" },
-      "attendus": { "articles": 166 }
+      "route": {
+        "type": "legiPart"
+      },
+      "detection": {
+        "fond": "LODA_DATE",
+        "num": "2019-536"
+      },
+      "attendus": {
+        "articles": 166
+      }
     },
     {
       "cle": "code-penal-226-16",
@@ -24,8 +31,15 @@
       "url": "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006070719/LEGISCTA000006165313/",
       "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
       "perimetre": "articles 226-16 à 226-24",
-      "route": { "type": "code", "sctCid": "LEGISCTA000006165313", "premier": "226-16", "dernier": "226-24" },
-      "attendus": { "articles": 16 }
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000006165313",
+        "premier": "226-16",
+        "dernier": "226-24"
+      },
+      "attendus": {
+        "articles": 16
+      }
     },
     {
       "cle": "cpce-l34-5",
@@ -35,30 +49,542 @@
       "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006070987",
       "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
       "perimetre": "article L34-5",
-      "route": { "type": "article", "num": "L34-5" },
-      "attendus": { "articles": 1 }
+      "route": {
+        "type": "article",
+        "num": "L34-5"
+      },
+      "attendus": {
+        "articles": 1
+      }
     },
     {
       "cle": "code-travail",
       "nom": "Code du travail",
-      "titre": "Code du travail, articles L1121-1, L1222-4 et L2312-38 (libertés individuelles, information préalable du salarié, données du comité social et économique)",
+      "titre": "Code du travail, articles L1121-1, L1222-4, L1226-2, L2312-38 et L4624-8 (libertés individuelles, information du salarié, inaptitude, données du comité social et économique, dossier médical en santé au travail)",
       "textId": "LEGITEXT000006072050",
       "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072050",
       "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
-      "perimetre": "articles L1121-1, L1222-4 et L2312-38",
-      "route": { "type": "articles", "nums": ["L1121-1", "L1222-4", "L2312-38"] },
-      "attendus": { "articles": 3 }
+      "perimetre": "articles L1121-1, L1222-4, L1226-2, L2312-38 et L4624-8",
+      "route": {
+        "type": "articles",
+        "nums": [
+          "L1121-1",
+          "L1222-4",
+          "L1226-2",
+          "L2312-38",
+          "L4624-8"
+        ]
+      },
+      "attendus": {
+        "articles": 5
+      }
     },
     {
-      "cle": "csp",
+      "cle": "csp-l1110",
       "nom": "Code de la santé publique",
-      "titre": "Code de la santé publique, articles L1110-4, L1111-7 et L1111-8 (confidentialité, accès au dossier médical et hébergement des données de santé)",
+      "titre": "Code de la santé publique, chapitre préliminaire du titre Ier du livre Ier de la première partie (droits de la personne)",
       "textId": "LEGITEXT000006072665",
       "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
       "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
-      "perimetre": "articles L1110-4, L1111-7 et L1111-8, lus à la date de consultation dans leurs sections ; L1111-7 est en vigueur jusqu'au 2028-12-31, sa nouvelle version entrant en vigueur au 2029-01-01",
-      "route": { "type": "codeArticles", "sections": [{ "sctCid": "LEGISCTA000006170991", "nums": ["L1110-4"] }, { "sctCid": "LEGISCTA000006185255", "nums": ["L1111-7", "L1111-8"] }] },
-      "attendus": { "articles": 3 }
+      "perimetre": "chapitre préliminaire du titre Ier du livre Ier de la première partie (LEGISCTA000006170991), articles L1110-1 à L1110-13, y compris L1110-4-1 ; 2 tirages antérieurs abrogés écartés (L1110-4-1, L1110-4-2)",
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000006170991",
+        "premier": "L1110-1",
+        "dernier": "L1110-13"
+      },
+      "attendus": {
+        "articles": 24
+      }
+    },
+    {
+      "cle": "csp-l1111-principes",
+      "nom": "Code de la santé publique",
+      "textId": "LEGITEXT000006072665",
+      "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "titre": "Code de la santé publique, section 1 du chapitre Ier du titre Ier du livre Ier de la première partie (principes généraux de l'information des usagers)",
+      "perimetre": "section 1 du chapitre Ier du titre Ier du livre Ier de la première partie (LEGISCTA000006185255), articles L1111-1 à L1111-9",
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000006185255",
+        "premier": "L1111-1",
+        "dernier": "L1111-9"
+      },
+      "attendus": {
+        "articles": 22
+      }
+    },
+    {
+      "cle": "csp-l1111-volonte",
+      "nom": "Code de la santé publique",
+      "textId": "LEGITEXT000006072665",
+      "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "titre": "Code de la santé publique, section 2 du chapitre Ier du titre Ier du livre Ier de la première partie (expression de la volonté des malades)",
+      "perimetre": "section 2 du chapitre Ier du titre Ier du livre Ier de la première partie (LEGISCTA000006185256), articles L1111-11 et L1111-12 en vigueur ; 2 abrogés écartés (L1111-10 et l'ancienne version de L1111-13)",
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000006185256",
+        "premier": "L1111-10",
+        "dernier": "L1111-12"
+      },
+      "attendus": {
+        "articles": 2
+      }
+    },
+    {
+      "cle": "csp-l1111-aide-mourir",
+      "nom": "Code de la santé publique",
+      "textId": "LEGITEXT000006072665",
+      "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "titre": "Code de la santé publique, section 2 bis du chapitre Ier du titre Ier du livre Ier de la première partie (droit à l'aide à mourir)",
+      "perimetre": "section 2 bis du chapitre Ier du titre Ier du livre Ier de la première partie (LEGISCTA000054709545), articles L1111-12-1 à L1111-12-13",
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000054709545",
+        "premier": "L1111-12-1",
+        "dernier": "L1111-12-13"
+      },
+      "attendus": {
+        "articles": 13
+      }
+    },
+    {
+      "cle": "csp-l1111-ens",
+      "nom": "Code de la santé publique",
+      "textId": "LEGITEXT000006072665",
+      "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "titre": "Code de la santé publique, section 3 du chapitre Ier du titre Ier du livre Ier de la première partie (espace numérique de santé, dossier médical partagé et dossier pharmaceutique)",
+      "perimetre": "section 3 du chapitre Ier du titre Ier du livre Ier de la première partie (LEGISCTA000020889011), articles L1111-13 à L1111-24",
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000020889011",
+        "premier": "L1111-13",
+        "dernier": "L1111-24"
+      },
+      "attendus": {
+        "articles": 13
+      }
+    },
+    {
+      "cle": "csp-l1111-force-probante",
+      "nom": "Code de la santé publique",
+      "textId": "LEGITEXT000006072665",
+      "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "titre": "Code de la santé publique, section 4 du chapitre Ier du titre Ier du livre Ier de la première partie (force probante des documents numériques)",
+      "perimetre": "section 4 du chapitre Ier du titre Ier du livre Ier de la première partie (LEGISCTA000033861544), articles L1111-25 à L1111-31",
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000033861544",
+        "premier": "L1111-25",
+        "dernier": "L1111-31"
+      },
+      "attendus": {
+        "articles": 7
+      }
+    },
+    {
+      "cle": "csp-l1121",
+      "nom": "Code de la santé publique",
+      "titre": "Code de la santé publique, chapitre Ier du titre II du livre Ier de la première partie (principes généraux des recherches impliquant la personne humaine)",
+      "textId": "LEGITEXT000006072665",
+      "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "perimetre": "chapitre Ier du titre II du livre Ier de la première partie (LEGISCTA000006170998), articles L1121-1 à L1121-17, y compris L1121-16-1 A ; 2 abrogés écartés (L1121-13-1, L1121-16-3)",
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000006170998",
+        "premier": "L1121-1",
+        "dernier": "L1121-17"
+      },
+      "attendus": {
+        "articles": 21
+      }
+    },
+    {
+      "cle": "csp-l1122",
+      "nom": "Code de la santé publique",
+      "titre": "Code de la santé publique, chapitre II du titre II du livre Ier de la première partie (information et consentement de la personne qui se prête à une recherche)",
+      "textId": "LEGITEXT000006072665",
+      "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "perimetre": "chapitre II du titre II du livre Ier de la première partie (LEGISCTA000006171000), articles L1122-1 à L1122-2",
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000006171000",
+        "premier": "L1122-1",
+        "dernier": "L1122-2"
+      },
+      "attendus": {
+        "articles": 6
+      }
+    },
+    {
+      "cle": "csp-l1123",
+      "nom": "Code de la santé publique",
+      "titre": "Code de la santé publique, chapitre III du titre II du livre Ier de la première partie (comités de protection des personnes et autorité compétente)",
+      "textId": "LEGITEXT000006072665",
+      "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "perimetre": "chapitre III du titre II du livre Ier de la première partie (LEGISCTA000006171003), articles L1123-1 à L1123-14 ; 1 abrogé écarté (L1123-4)",
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000006171003",
+        "premier": "L1123-1",
+        "dernier": "L1123-14"
+      },
+      "attendus": {
+        "articles": 16
+      }
+    },
+    {
+      "cle": "csp-l1123-bis",
+      "nom": "Code de la santé publique",
+      "titre": "Code de la santé publique, chapitre III bis du titre II du livre Ier de la première partie (recherches relevant du secret de la défense nationale)",
+      "textId": "LEGITEXT000006072665",
+      "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "perimetre": "chapitre III bis du titre II du livre Ier de la première partie (LEGISCTA000036505807), articles L1123-15 à L1123-20",
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000036505807",
+        "premier": "L1123-15",
+        "dernier": "L1123-20"
+      },
+      "attendus": {
+        "articles": 6
+      }
+    },
+    {
+      "cle": "csp-l1124",
+      "nom": "Code de la santé publique",
+      "titre": "Code de la santé publique, article L1124-1 (essais cliniques de médicaments)",
+      "textId": "LEGITEXT000006072665",
+      "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "perimetre": "article L1124-1, seul article en vigueur de l'ancien chapitre IV « Recherches sans bénéfice individuel direct » ; le chapitre IV actuel « essais cliniques de médicaments » ne porte que lui",
+      "route": {
+        "type": "articles",
+        "nums": [
+          "L1124-1"
+        ]
+      },
+      "attendus": {
+        "articles": 1
+      }
+    },
+    {
+      "cle": "csp-l1125",
+      "nom": "Code de la santé publique",
+      "titre": "Code de la santé publique, chapitre V du titre II du livre Ier de la première partie (investigations cliniques de dispositifs médicaux)",
+      "textId": "LEGITEXT000006072665",
+      "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "perimetre": "chapitre V du titre II du livre Ier de la première partie (LEGISCTA000045619831), articles L1125-1 à L1125-31",
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000045619831",
+        "premier": "L1125-1",
+        "dernier": "L1125-31"
+      },
+      "attendus": {
+        "articles": 32
+      }
+    },
+    {
+      "cle": "csp-l1126",
+      "nom": "Code de la santé publique",
+      "titre": "Code de la santé publique, chapitre VI du titre II du livre Ier de la première partie (études des performances de dispositifs médicaux de diagnostic in vitro)",
+      "textId": "LEGITEXT000006072665",
+      "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "perimetre": "chapitre VI du titre II du livre Ier de la première partie (LEGISCTA000046122391), articles L1126-1 à L1126-29",
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000046122391",
+        "premier": "L1126-1",
+        "dernier": "L1126-29"
+      },
+      "attendus": {
+        "articles": 30
+      }
+    },
+    {
+      "cle": "csp-l1131",
+      "nom": "Code de la santé publique",
+      "titre": "Code de la santé publique, titre III du livre Ier de la première partie (examens des caractéristiques génétiques, identification par empreintes génétiques et profession de conseiller en génétique)",
+      "textId": "LEGITEXT000006072665",
+      "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "perimetre": "titre III du livre Ier de la première partie (LEGISCTA000006154980), articles L1130-1 à L1133-11 ; 2 abrogés écartés (L1133-1, L1133-11)",
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000006154980",
+        "premier": "L1130-1",
+        "dernier": "L1133-11"
+      },
+      "attendus": {
+        "articles": 36
+      }
+    },
+    {
+      "cle": "csp-l1141",
+      "nom": "Code de la santé publique",
+      "titre": "Code de la santé publique, chapitre Ier du titre IV du livre Ier de la première partie (accès à l'assurance contre les risques d'invalidité ou de décès)",
+      "textId": "LEGITEXT000006072665",
+      "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "perimetre": "chapitre Ier du titre IV du livre Ier de la première partie (LEGISCTA000006171013), articles L1141-1 à L1141-6",
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000006171013",
+        "premier": "L1141-1",
+        "dernier": "L1141-6"
+      },
+      "attendus": {
+        "articles": 7
+      }
+    },
+    {
+      "cle": "csp-l1460",
+      "nom": "Code de la santé publique",
+      "titre": "Code de la santé publique, chapitre préliminaire du titre VI du livre IV de la première partie (principes de mise à disposition des données de santé)",
+      "textId": "LEGITEXT000006072665",
+      "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "perimetre": "chapitre préliminaire du titre VI du livre IV de la première partie (LEGISCTA000031923863), article L1460-1",
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000031923863",
+        "premier": "L1460-1",
+        "dernier": "L1460-1"
+      },
+      "attendus": {
+        "articles": 1
+      }
+    },
+    {
+      "cle": "csp-l1461",
+      "nom": "Code de la santé publique",
+      "titre": "Code de la santé publique, chapitre Ier du titre VI du livre IV de la première partie (système national des données de santé)",
+      "textId": "LEGITEXT000006072665",
+      "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "perimetre": "chapitre Ier du titre VI du livre IV de la première partie (LEGISCTA000031923877), articles L1461-1 à L1461-7",
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000031923877",
+        "premier": "L1461-1",
+        "dernier": "L1461-7"
+      },
+      "attendus": {
+        "articles": 7
+      }
+    },
+    {
+      "cle": "csp-l1470",
+      "nom": "Code de la santé publique",
+      "titre": "Code de la santé publique, titre VII du livre IV de la première partie (services numériques en santé)",
+      "textId": "LEGITEXT000006072665",
+      "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "perimetre": "titre VII du livre IV de la première partie (LEGISCTA000043497475), articles L1470-1 à L1470-6, y compris L1470-5-1",
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000043497475",
+        "premier": "L1470-1",
+        "dernier": "L1470-6"
+      },
+      "attendus": {
+        "articles": 7
+      }
+    },
+    {
+      "cle": "csp-l6316",
+      "nom": "Code de la santé publique",
+      "titre": "Code de la santé publique, chapitre VI du titre Ier du livre III de la sixième partie (télésanté)",
+      "textId": "LEGITEXT000006072665",
+      "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "perimetre": "chapitre VI du titre Ier du livre III de la sixième partie (LEGISCTA000020891315), articles L6316-1 et L6316-2",
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000020891315",
+        "premier": "L6316-1",
+        "dernier": "L6316-2"
+      },
+      "attendus": {
+        "articles": 2
+      }
+    },
+    {
+      "cle": "csp-articles-isoles",
+      "nom": "Code de la santé publique",
+      "titre": "Code de la santé publique, articles L1462-1 (plateforme des données de santé), L3113-1 (transmission obligatoire de données à l'autorité sanitaire) et L5121-22 (pharmacovigilance)",
+      "textId": "LEGITEXT000006072665",
+      "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "perimetre": "articles L1462-1, L3113-1 et L5121-22",
+      "route": {
+        "type": "articles",
+        "nums": [
+          "L1462-1",
+          "L3113-1",
+          "L5121-22"
+        ]
+      },
+      "attendus": {
+        "articles": 3
+      }
+    },
+    {
+      "cle": "csp-r1110",
+      "nom": "Code de la santé publique",
+      "titre": "Code de la santé publique, chapitre préliminaire du titre Ier du livre Ier de la première partie, partie réglementaire (droits de la personne)",
+      "textId": "LEGITEXT000006072665",
+      "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "perimetre": "chapitre préliminaire du titre Ier du livre Ier de la première partie, partie réglementaire (LEGISCTA000006178465), articles R1110-1 à R1110-16 et décrets D1110-3-1 à D1110-7",
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000006178465",
+        "premier": "R1110-1",
+        "dernier": "R1110-16"
+      },
+      "attendus": {
+        "articles": 22
+      }
+    },
+    {
+      "cle": "csp-r1111",
+      "nom": "Code de la santé publique",
+      "titre": "Code de la santé publique, chapitre Ier du titre Ier du livre Ier de la première partie, partie réglementaire (informations des usagers du système de santé)",
+      "textId": "LEGITEXT000006072665",
+      "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "perimetre": "chapitre Ier du titre Ier du livre Ier de la première partie, partie réglementaire (LEGISCTA000006178466), articles R1111-1 à R1111-64, décrets D1111-16-2 à D1111-16-4 et D1111-38-1 ; 16 abrogés écartés",
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000006178466",
+        "premier": "R1111-1",
+        "dernier": "R1111-64"
+      },
+      "attendus": {
+        "articles": 77
+      }
+    },
+    {
+      "cle": "csp-r1461",
+      "nom": "Code de la santé publique",
+      "titre": "Code de la santé publique, chapitre Ier du titre VI du livre IV de la première partie, partie réglementaire (système national des données de santé)",
+      "textId": "LEGITEXT000006072665",
+      "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "perimetre": "chapitre Ier du titre VI du livre IV de la première partie, partie réglementaire (LEGISCTA000033707685), articles R1461-1 à R1461-17 ; 2 abrogés écartés (R1461-18, R1461-19)",
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000033707685",
+        "premier": "R1461-1",
+        "dernier": "R1461-17"
+      },
+      "attendus": {
+        "articles": 17
+      }
+    },
+    {
+      "cle": "csp-r1470",
+      "nom": "Code de la santé publique",
+      "titre": "Code de la santé publique, titre VII du livre IV de la première partie, partie réglementaire (services numériques en santé)",
+      "textId": "LEGITEXT000006072665",
+      "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "perimetre": "titre VII du livre IV de la première partie, partie réglementaire (LEGISCTA000048712673), articles R1470-1 à R1470-16",
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000048712673",
+        "premier": "R1470-1",
+        "dernier": "R1470-16"
+      },
+      "attendus": {
+        "articles": 16
+      }
+    },
+    {
+      "cle": "csp-r6316",
+      "nom": "Code de la santé publique",
+      "titre": "Code de la santé publique, chapitre VI du titre Ier du livre III de la sixième partie, partie réglementaire (télésanté)",
+      "textId": "LEGITEXT000006072665",
+      "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072665",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "perimetre": "chapitre VI du titre Ier du livre III de la sixième partie, partie réglementaire (LEGISCTA000022933195), articles R6316-1 à R6316-6 ; 4 abrogés écartés (R6316-6 ancienne version, R6316-7, R6316-8, R6316-11)",
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000022933195",
+        "premier": "R6316-1",
+        "dernier": "R6316-6"
+      },
+      "attendus": {
+        "articles": 6
+      }
+    },
+    {
+      "cle": "code-securite-sociale",
+      "nom": "Code de la sécurité sociale",
+      "titre": "Code de la sécurité sociale, articles L161-28-1 (SNIIRAM), L161-31 (carte électronique individuelle) et L315-1 (contrôle médical)",
+      "textId": "LEGITEXT000006073189",
+      "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006073189",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "perimetre": "articles L161-28-1, L161-31 et L315-1",
+      "route": {
+        "type": "articles",
+        "nums": [
+          "L161-28-1",
+          "L161-31",
+          "L315-1"
+        ]
+      },
+      "attendus": {
+        "articles": 3
+      }
+    },
+    {
+      "cle": "code-assurances",
+      "nom": "Code des assurances",
+      "titre": "Code des assurances, articles L113-2 (déclaration du risque) et L133-1 (accès garanti à l'assurance invalidité ou décès)",
+      "textId": "LEGITEXT000006073984",
+      "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006073984",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "perimetre": "articles L113-2 et L133-1",
+      "route": {
+        "type": "articles",
+        "nums": [
+          "L113-2",
+          "L133-1"
+        ]
+      },
+      "attendus": {
+        "articles": 2
+      }
+    },
+    {
+      "cle": "cgct",
+      "nom": "CGCT",
+      "titre": "Code général des collectivités territoriales, article L2223-42 (certificat médical de décès)",
+      "textId": "LEGITEXT000006070633",
+      "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006070633",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "perimetre": "article L2223-42",
+      "route": {
+        "type": "article",
+        "num": "L2223-42"
+      },
+      "attendus": {
+        "articles": 1
+      }
     },
     {
       "cle": "csi-videoprotection",
@@ -74,7 +600,9 @@
         "premier": "L251-1",
         "dernier": "L255-1"
       },
-      "attendus": { "articles": 18 }
+      "attendus": {
+        "articles": 18
+      }
     },
     {
       "cle": "cmf-l561-45",
@@ -84,8 +612,13 @@
       "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006072026",
       "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
       "perimetre": "article L561-45",
-      "route": { "type": "article", "num": "L561-45" },
-      "attendus": { "articles": 1 }
+      "route": {
+        "type": "article",
+        "num": "L561-45"
+      },
+      "attendus": {
+        "articles": 1
+      }
     },
     {
       "cle": "crpa-l311-3-1",
@@ -95,8 +628,13 @@
       "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000031366350",
       "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
       "perimetre": "article L311-3-1",
-      "route": { "type": "article", "num": "L311-3-1" },
-      "attendus": { "articles": 1 }
+      "route": {
+        "type": "article",
+        "num": "L311-3-1"
+      },
+      "attendus": {
+        "articles": 1
+      }
     },
     {
       "cle": "code-civil-9",
@@ -106,19 +644,33 @@
       "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006070721",
       "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
       "perimetre": "article 9",
-      "route": { "type": "article", "num": "9" },
-      "attendus": { "articles": 1 }
+      "route": {
+        "type": "article",
+        "num": "9"
+      },
+      "attendus": {
+        "articles": 1
+      }
     },
     {
       "cle": "code-penal-226",
       "nom": "Code pénal",
-      "titre": "Code pénal, articles 226-1 et 226-8-1 (atteintes à la vie privée et au droit à l'image)",
+      "titre": "Code pénal, articles 226-1, 226-8-1 et 226-13 (atteintes à la vie privée, au droit à l'image et révélation du secret professionnel)",
       "textId": "LEGITEXT000006070719",
       "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006070719",
       "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
-      "perimetre": "articles 226-1 et 226-8-1",
-      "route": { "type": "articles", "nums": ["226-1", "226-8-1"] },
-      "attendus": { "articles": 2 }
+      "perimetre": "articles 226-1, 226-8-1 et 226-13",
+      "route": {
+        "type": "articles",
+        "nums": [
+          "226-1",
+          "226-8-1",
+          "226-13"
+        ]
+      },
+      "attendus": {
+        "articles": 3
+      }
     },
     {
       "cle": "code-penal-323",
@@ -134,7 +686,9 @@
         "premier": "323-1",
         "dernier": "323-8"
       },
-      "attendus": { "articles": 12 }
+      "attendus": {
+        "articles": 12
+      }
     },
     {
       "cle": "cpce-l32-3",
@@ -144,8 +698,13 @@
       "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006070987",
       "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
       "perimetre": "article L32-3",
-      "route": { "type": "article", "num": "L32-3" },
-      "attendus": { "articles": 1 }
+      "route": {
+        "type": "article",
+        "num": "L32-3"
+      },
+      "attendus": {
+        "articles": 1
+      }
     },
     {
       "cle": "cpce-l34-1",
@@ -155,8 +714,13 @@
       "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006070987",
       "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
       "perimetre": "article L34-1 ; l'article L34-1-1, abrogé depuis le 2015-01-01, reste hors couverture",
-      "route": { "type": "article", "num": "L34-1" },
-      "attendus": { "articles": 1 }
+      "route": {
+        "type": "article",
+        "num": "L34-1"
+      },
+      "attendus": {
+        "articles": 1
+      }
     }
   ]
 }

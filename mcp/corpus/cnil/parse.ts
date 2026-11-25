@@ -141,10 +141,14 @@ export function decouperParagraphes(paragraphes: string[]): string[] {
  */
 export function unitesDila(
   decision: DecisionDila,
-  descripteur: Pick<DescripteurCnil, "corpus" | "nom" | "natures" | "url_texte">,
+  descripteur: Pick<
+    DescripteurCnil,
+    "corpus" | "nom" | "natures" | "url_texte" | "objets"
+  >,
 ): Unite[] {
   const nature = libelleNature(decision.natureDelib, descripteur.natures);
   const libelle = nature === "" ? "Délibération" : nature;
+  const objet = String(descripteur.objets?.[decision.numero] ?? "").trim();
   const meta = estSanction(nature)
     ? extraireMetaSanction(decision.paragraphes.join("\n"))
     : {};
@@ -154,7 +158,7 @@ export function unitesDila(
     corpus: descripteur.corpus,
     niveau: "fragment",
     numero: decision.numero,
-    chemin: `${descripteur.nom} > ${libelle} > Délibération ${decision.numero} > Découpage local`,
+    chemin: `${descripteur.nom} > ${libelle} > Délibération ${decision.numero}${objet === "" ? "" : ` — ${objet}`} > Découpage local`,
     texte,
     date_acte: decision.dateTexte,
     date_debut: decision.dateTexte,

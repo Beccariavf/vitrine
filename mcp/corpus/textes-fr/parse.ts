@@ -105,11 +105,14 @@ export type LectureTexte = {
  * Un suffixe de lettre (`226-16-1-A`) est comparé par son corps numérique.
  */
 export function dansPlage(num: string, premier: string, dernier: string): boolean {
-  const article = formeArticle(num.trim().replace(/-[A-Z]+$/i, ""));
+  // La DILA écrit parfois le suffixe de lettre détaché (« L1121-16-1 A ») : il
+  // ne change pas le corps numérique comparé ici.
+  const article = formeArticle(num.trim().replace(/(?:-|\s)[A-Z]+$/i, ""));
   const debut = formeArticle(premier);
   const fin = formeArticle(dernier);
   if (article === null || debut === null || fin === null) return false;
-  if (article.prefixe !== debut.prefixe || article.prefixe !== fin.prefixe) return false;
+  // Le préfixe n'est pas comparé : un chapitre réglementaire porte aussi ses
+  // décrets d'application (D1110-3-1 dans une plage R1110-1 à R1110-16).
   return comparerCorps(debut.corps, article.corps) <= 0 && comparerCorps(article.corps, fin.corps) <= 0;
 }
 
@@ -122,22 +125,47 @@ function titreSection(valeur: unknown): string {
  * La section `sctCid` de la réponse `/consult/code` et les titres qui y mènent.
  * Seule cette section porte le texte de ses articles ; le reste de l'arbre du
  * code n'a que des numéros.
+ *
+ * Un même `cid` peut désigner deux branches de l'arbre — l'ancienne et la
+ * nouvelle version d'un chapitre recodifié. La branche retenue est celle dont
+ * les articles portent un texte ; la première trouvée sert de repli quand
+ * aucune n'en porte.
  */
 function sectionCiblee(
   sections: unknown,
   sctCid: string,
   chemin: string[] = [],
 ): { section: Record<string, unknown>; titres: string[] } | null {
-  if (!Array.isArray(sections)) return null;
-  for (const valeur of sections) {
-    const section = objet(valeur);
-    if (section === null) continue;
-    const titres = [...chemin, titreSection(section.title)].filter((titre) => titre !== "");
-    if (texte(section.cid) === sctCid || texte(section.id) === sctCid) return { section, titres };
-    const trouvee = sectionCiblee(section.sections, sctCid, titres);
-    if (trouvee !== null) return trouvee;
+  const trouvees: Array<{ section: Record<string, unknown>; titres: string[] }> = [];
+  const collecter = (valeurs: unknown, titres: string[]): void => {
+    if (!Array.isArray(valeurs)) return;
+    for (const valeur of valeurs) {
+      const section = objet(valeur);
+      if (section === null) continue;
+      const siens = [...titres, titreSection(section.title)].filter((titre) => titre !== "");
+      if (texte(section.cid) === sctCid || texte(section.id) === sctCid) {
+        trouvees.push({ section, titres: siens });
+      }
+      collecter(section.sections, siens);
+    }
+  };
+  collecter(sections, chemin);
+  return trouvees.find((trouvee) => porteDuTexte(trouvee.section)) ?? trouvees[0] ?? null;
+}
+
+/** Vrai quand la branche porte au moins un article avec du texte. */
+function porteDuTexte(section: Record<string, unknown>): boolean {
+  const articles = Array.isArray(section.articles) ? section.articles : [];
+  for (const valeur of articles) {
+    const article = objet(valeur);
+    if (article === null) continue;
+    if (typeof article.content === "string" && article.content.trim() !== "") return true;
+    if (typeof article.texteHtml === "string" && article.texteHtml.trim() !== "") return true;
   }
-  return null;
+  return Array.isArray(section.sections) && section.sections.some((valeur) => {
+    const enfant = objet(valeur);
+    return enfant !== null && porteDuTexte(enfant);
+  });
 }
 
 /**

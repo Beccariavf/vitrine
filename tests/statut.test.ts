@@ -41,7 +41,13 @@ describe("la table par corpus", () => {
     assert.equal(statutApplication("cnil", "VIGUEUR", "Sanction"), "rendue");
     assert.equal(statutApplication("cnil", "VIGUEUR", "Avis"), "adoptee");
     assert.equal(statutApplication("cnil", "VIGUEUR", "Recommandation/Lignes directrices"), "adoptee");
+    assert.equal(statutApplication("cnil", "VIGUEUR", "Référentiel/Règlement type/Norme"), "adoptee");
     assert.equal(statutApplication("cepd", "finale"), "adoptee");
+  });
+
+  it("traite une MR remplacée comme sans effet, sans perdre son texte", () => {
+    assert.equal(statutApplication("cnil", "Remplacée par 2026-050", "Référentiel/Règlement type/Norme"), "abroge");
+    assert.equal(statutApplication("cnil", "Remplacée par 2026-051"), "abroge");
   });
 
   it("laisse un statut sans effet primer sur la nature, dans les corpus concernés", () => {

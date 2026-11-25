@@ -8,6 +8,16 @@
   "pages_sitemap": 5,
   "langue": "fr",
   "types": ["lignes_directrices", "avis_art64", "decision_art65", "recommandation"],
+  "documents_supplementaires": [
+    {
+      "url": "https://www.edpb.europa.eu/documents/legislative-opinion/opinion-32019-concerning-the-questions-and-answers-on-the-interplay_en",
+      "type": "avis_legislatif"
+    },
+    {
+      "url": "https://www.edpb.europa.eu/documents/legislative-opinion/edpb-edps-joint-opinion-032022-on-the-proposal-for-a-regulation-on_en",
+      "type": "avis_legislatif"
+    }
+  ],
   "page_debut": 0,
   "page_max": 20,
   "domaine": "edpb.europa.eu",

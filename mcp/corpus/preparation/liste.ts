@@ -25,8 +25,18 @@ export type DescripteurPreparation = {
   /** URI de la matière CELLAR, par exemple `.../subject-matter/PDON`. */
   matiere: string;
   matiere_libelle: string;
-  /** Actes dont la proposition de modification entre au corpus, avec leur libellé court. */
+  /**
+   * Actes nommés dans l'objet d'une unité, avec leur libellé court. Cette liste
+   * ne décide pas de la sélection : elle garde le texte des unités existantes.
+   */
   actes_du_corpus: Array<{ celex: string; libelle: string }>;
+  /**
+   * Actes dont la modification place une proposition et une affaire au corpus :
+   * socle déjà suivi, économie des données, EHDS et actes de frontière.
+   */
+  actes_suivis: Array<{ celex: string; libelle: string }>;
+  /** Propositions retenues par leur numéro COM, hors du critère de modification. */
+  propositions_ajoutees?: Array<{ celex: string; libelle: string }>;
   /** Notions Eurovoc qui marquent une affaire de données personnelles. */
   eurovoc: string[];
   /** Borne basse des affaires listées, incluse. */
@@ -56,6 +66,8 @@ export type PropositionListee = {
   titre: string | null;
   /** Langue du titre retenu ; `fr` est préférée, un titre anglais sert de repli. */
   langueTitre: string | null;
+  /** Vrai quand CELLAR classe la proposition dans la matière PDON. */
+  pdon: boolean;
   /** CELEX des actes que la proposition propose de modifier, dédoublonnés. */
   actesVises: string[];
 };
@@ -159,14 +171,23 @@ export function dateIso(valeurBrute: string | null): string | null {
 
 /**
  * Requête SPARQL des propositions : les deux propriétés de rattachement au
- * dossier, restreintes à la matière PDON ou aux actes du corpus. Le filtre sur
- * `amendCelex` garde les propositions de modification d'un acte du corpus,
- * même quand CELLAR ne les classe pas dans la matière.
+ * dossier, restreintes à la matière PDON, aux actes suivis ou à une proposition
+ * ajoutée par son numéro COM. Le filtre sur `amendCelex` garde les propositions
+ * de modification d'un acte suivi, même quand CELLAR ne les classe pas dans la
+ * matière.
  */
 export function requetePropositions(descripteur: DescripteurPreparation): string {
-  const actes = descripteur.actes_du_corpus.map((acte) => `"${acte.celex}"`).join(",");
+  const actes = descripteur.actes_suivis.map((acte) => `"${acte.celex}"`).join(",");
+  const ajoutees = (descripteur.propositions_ajoutees ?? [])
+    .map((proposition) => `"${proposition.celex}"`)
+    .join(",");
+  const selection = [
+    "?pdon = true",
+    `STR(?amendCelex) IN (${actes})`,
+    ...(ajoutees === "" ? [] : [`STR(?celex) IN (${ajoutees})`]),
+  ].join(" || ");
   return `PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
-SELECT DISTINCT ?dossier ?ref ?statut ?retire ?celex ?date ?titre ?langue ?amendCelex WHERE {
+SELECT DISTINCT ?dossier ?ref ?statut ?retire ?celex ?date ?titre ?langue ?amendCelex ?pdon WHERE {
   { ?celexWork cdm:act_preparatory_initiates_dossier ?dossier }
   UNION
   { ?dossier cdm:dossier_contains_work ?celexWork }
@@ -180,7 +201,7 @@ SELECT DISTINCT ?dossier ?ref ?statut ?retire ?celex ?date ?titre ?langue ?amend
   OPTIONAL { ?celexWork cdm:work_title ?titre . BIND(LANG(?titre) AS ?langue) }
   OPTIONAL { ?celexWork cdm:resource_legal_proposes_to_amend_resource_legal ?amend . ?amend cdm:resource_legal_id_celex ?amendCelex }
   BIND(EXISTS { ?celexWork cdm:resource_legal_is_about_subject-matter <${descripteur.matiere}> } AS ?pdon)
-  FILTER(?pdon = true || STR(?amendCelex) IN (${actes}))
+  FILTER(${selection})
 }`;
 }
 
@@ -196,11 +217,16 @@ SELECT ?dossier ?date ?type WHERE {
 }`;
 }
 
-/** Requête SPARQL des affaires pendantes de la matière, depuis la borne du descripteur. */
+/**
+ * Requête SPARQL des affaires pendantes : la matière Eurovoc du corpus, ou une
+ * question préjudicielle portant sur un acte suivi (C-245/25 vise l'AI Act).
+ * Depuis la borne du descripteur.
+ */
 export function requeteAffaires(descripteur: DescripteurPreparation): string {
   const eurovoc = descripteur.eurovoc
     .map((uri) => `STR(?ev) = "${uri}"`)
     .join(" || ");
+  const actes = descripteur.actes_suivis.map((acte) => `"${acte.celex}"`).join(",");
   return `PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
 SELECT DISTINCT ?celex ?date ?type ?procedure ?attackedCelex WHERE {
   ?work cdm:resource_legal_id_celex ?celex .
@@ -208,8 +234,9 @@ SELECT DISTINCT ?celex ?date ?type ?procedure ?attackedCelex WHERE {
   FILTER(STR(?type) = "CN" || STR(?type) = "TN")
   ?work cdm:work_date_document ?date .
   FILTER(STR(?date) >= "${descripteur.depuis_affaires}")
-  ?work cdm:work_is_about_concept_eurovoc ?ev .
-  FILTER(${eurovoc})
+  BIND(EXISTS { ?work cdm:work_is_about_concept_eurovoc ?ev . FILTER(${eurovoc}) } AS ?matiere)
+  BIND(EXISTS { ?work cdm:communication_case_new_submits_preliminary_question_resource_legal ?acte . ?acte cdm:resource_legal_id_celex ?acteSuivi . FILTER(STR(?acteSuivi) IN (${actes})) } AS ?suivi)
+  FILTER(?matiere = true || ?suivi = true)
   OPTIONAL { ?work cdm:communication_cjeu_has_type_procedure_concept_type_procedure ?procedure }
   OPTIONAL { ?work cdm:communication_case_new_requests_review_of_decision_case-law ?attacked . ?attacked cdm:resource_legal_id_celex ?attackedCelex }
 }`;
@@ -241,11 +268,14 @@ export function lirePropositions(reponse: unknown): PropositionListee[] {
     const amend = valeur(ligne, "amendCelex");
     const titre = valeur(ligne, "titre");
     const langue = valeur(ligne, "langue");
+    const pdon = valeur(ligne, "pdon");
+    const estPdon = pdon === "1" || pdon?.toLowerCase() === "true";
     const connue = parCle.get(cle);
     if (connue !== undefined) {
       // Une proposition modifie souvent plusieurs actes : chaque ligne apporte
       // le sien ; le titre français l'emporte sur un titre dans une autre langue.
       if (amend !== null && !connue.actesVises.includes(amend)) connue.actesVises.push(amend);
+      connue.pdon ||= estPdon;
       if (titre !== null && (connue.titre === null || (langue === "fr" && connue.langueTitre !== "fr"))) {
         connue.titre = titre;
         connue.langueTitre = langue;
@@ -263,6 +293,7 @@ export function lirePropositions(reponse: unknown): PropositionListee[] {
       date: dateIso(valeur(ligne, "date")),
       titre,
       langueTitre: langue,
+      pdon: estPdon,
       actesVises: amend === null ? [] : [amend],
     });
   }

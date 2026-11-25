@@ -286,11 +286,19 @@ describe("la veille des changements de statut", () => {
     ecrireCorpus(racine, "preparation", [
       unitePreparation("52025PC9001", "proposition", "PROPOSE", "2025/9001/COD"),
       unitePreparation("62025CN9001", "affaire", "PENDANT", "C-9001/25"),
+      // Les nouvelles unités des actes suivis entrent sans code par corpus.
+      unitePreparation("52025PC0504", "proposition", "PROPOSE", "2025/0403/COD"),
+      unitePreparation("62025CN0245", "affaire", "PENDANT", "C-245/25"),
     ]);
     const suivis = documentsSuivis(racine);
     assert.deepEqual(
       suivis.map((suivi) => `${suivi.document}:${suivi.niveau}`),
-      ["52025PC9001:proposition", "62025CN9001:affaire"],
+      [
+        "52025PC0504:proposition",
+        "52025PC9001:proposition",
+        "62025CN0245:affaire",
+        "62025CN9001:affaire",
+      ],
     );
     assert.throws(
       () => documentsSuivis(join(racine, "absent")),

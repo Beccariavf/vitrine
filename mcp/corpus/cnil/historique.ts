@@ -34,6 +34,20 @@ export type DescripteurCnil = {
   nom: string;
   /** Natures retenues : sanctions, avis, recommandations et lignes directrices. */
   natures: string[];
+  /**
+   * Numéros de délibérations retenus quelle que soit leur `nature_delib` : les
+   * méthodologies de référence et les référentiels santé, que le filtre de
+   * natures écarte. La nature de la source est conservée, jamais renommée.
+   */
+  deliberations_supplementaires?: string[];
+  /** Numéro remplacé → numéro qui le remplace, pour le statut des MR révisées. */
+  remplacements?: Record<string, string>;
+  /**
+   * Objet lisible d'une délibération supplémentaire, par exemple
+   * `2026-051` → « MR-003 révisée — recherches sans consentement ». Il est
+   * porté au `chemin` de l'unité, jamais à la nature de la source.
+   */
+  objets?: Record<string, string>;
   documents_attendus: number;
   fragments_attendus: number;
   snapshot: string;
@@ -154,6 +168,49 @@ export function estDeNature(ligne: LigneDinum, natures: readonly string[]): bool
   return natureDemandee(ligne.nature_delib, natures);
 }
 
+/** Ensemble vide, pour ne pas recréer un `Set` à chaque appel. */
+const AUCUN_SUPPLEMENTAIRE: ReadonlySet<string> = new Set<string>();
+
+/** Numéros déclarés supplémentaires par le descripteur, sans doublon. */
+export function numerosSupplementaires(
+  descripteur: Pick<DescripteurCnil, "deliberations_supplementaires">,
+): Set<string> {
+  return new Set(
+    (descripteur.deliberations_supplementaires ?? [])
+      .map((numero) => String(numero).trim())
+      .filter((numero) => numero !== ""),
+  );
+}
+
+/** Vrai si un numéro est retenu hors du filtre de natures. */
+export function numeroSupplementaire(
+  numero: string | null | undefined,
+  numeros: ReadonlySet<string>,
+): boolean {
+  return numeros.has(String(numero ?? "").trim());
+}
+
+/** Vrai si la ligne porte un numéro retenu hors du filtre de natures. */
+export function estSupplementaire(
+  ligne: Pick<LigneDinum, "number">,
+  numeros: ReadonlySet<string>,
+): boolean {
+  return numeroSupplementaire(ligne.number, numeros);
+}
+
+/**
+ * Statut d'une unité déclarée remplacée : « Remplacée par 2026-050 » remplace
+ * l'état de la source, pour qu'on ne lise pas la version antérieure d'une MR
+ * comme en vigueur. Un numéro absent du descripteur garde son statut source.
+ */
+export function statutRemplacement(
+  numero: string,
+  remplacements: Record<string, string> | undefined,
+): string | null {
+  const remplacant = remplacements?.[numero.trim()];
+  return remplacant === undefined ? null : `Remplacée par ${remplacant}`;
+}
+
 /**
  * Mappe une ligne DINUM en unité. La référence reste vérifiable : elle porte le
  * `doc_id` publié et le `chunk_index` publié, jamais une numérotation inventée.
@@ -169,13 +226,14 @@ export function uniteDinum(
   const date = String(ligne.date ?? "").trim();
   const nature = libelleNature(ligne.nature_delib, natures);
   const libelle = nature === "" ? "Délibération" : nature;
+  const objet = String(descripteur.objets?.[numero] ?? "").trim();
   return {
     ref: `${document}#f${Number(ligne.chunk_index)}`,
     document,
     corpus: descripteur.corpus,
     niveau: "fragment",
     numero,
-    chemin: `${descripteur.nom} > ${libelle} > Délibération ${numero}`,
+    chemin: `${descripteur.nom} > ${libelle} > Délibération ${numero}${objet === "" ? "" : ` — ${objet}`}`,
     texte: String(ligne.text ?? "").trim(),
     date_acte: date,
     date_debut: date,
@@ -197,10 +255,11 @@ export type ExclusionNature = { nature: string; lignes: number };
 export function compterExclusionsNature(
   lignes: readonly LigneDinum[],
   natures: readonly string[],
+  supplementaires: ReadonlySet<string> = AUCUN_SUPPLEMENTAIRE,
 ): ExclusionNature[] {
   const comptes = new Map<string, number>();
   for (const ligne of lignes) {
-    if (estDeNature(ligne, natures)) continue;
+    if (estDeNature(ligne, natures) || estSupplementaire(ligne, supplementaires)) continue;
     const nature = String(ligne.nature_delib ?? "").trim() || "(vide)";
     comptes.set(nature, (comptes.get(nature) ?? 0) + 1);
   }
@@ -219,8 +278,10 @@ export function unitesDinum(
 ): { unites: Unite[]; erreurs: string[]; exclusions: ExclusionNature[] } {
   const unites: Unite[] = [];
   const erreurs: string[] = [];
+  const supplementaires = numerosSupplementaires(descripteur);
   for (const ligne of lignes) {
-    if (!estDeNature(ligne, natures)) continue;
+    const supplementaire = estSupplementaire(ligne, supplementaires);
+    if (!supplementaire && !estDeNature(ligne, natures)) continue;
     const document = String(ligne.doc_id ?? "").trim();
     const emplacement = `${document || "(sans doc_id)"}#f${ligne.chunk_index}`;
     if (document === "") {
@@ -235,7 +296,10 @@ export function unitesDinum(
       erreurs.push(`${emplacement} : date absente`);
       continue;
     }
-    unites.push(uniteDinum(ligne, descripteur, natures));
+    const unite = uniteDinum(ligne, descripteur, natures);
+    const remplacement = statutRemplacement(unite.numero, descripteur.remplacements);
+    if (remplacement !== null) unite.statut = remplacement;
+    unites.push(unite);
   }
 
   // Le dispositif est commun à tous les fragments d'une décision : on le lit
@@ -253,5 +317,5 @@ export function unitesDinum(
     for (const unite of groupe) Object.assign(unite, meta);
   }
 
-  return { unites, erreurs, exclusions: compterExclusionsNature(lignes, natures) };
+  return { unites, erreurs, exclusions: compterExclusionsNature(lignes, natures, supplementaires) };
 }

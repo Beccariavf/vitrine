@@ -14,13 +14,14 @@
     "https://www.edpb.europa.eu/sitemap.xml?page=4",
     "https://www.edpb.europa.eu/sitemap.xml?page=5"
   ],
-  "documents": 328,
-  "fragments": 20287,
+  "documents": 330,
+  "fragments": 20509,
   "versions_ecartees": 3,
   "documents_sans_texte_ecartes": 10,
   "types_retenus": [
     "lignes_directrices",
     "avis_art64",
+    "avis_legislatif",
     "decision_art65",
     "recommandation",
     "g29_repris"
@@ -33,6 +34,10 @@
     "avis_art64": {
       "documents": 263,
       "fragments": 7770
+    },
+    "avis_legislatif": {
+      "documents": 2,
+      "fragments": 222
     },
     "decision_art65": {
       "documents": 12,
@@ -48,7 +53,7 @@
     }
   },
   "langues_pdf": {
-    "fr": 154,
+    "fr": 156,
     "en": 174,
     "autre": 0
   },
@@ -380,7 +385,9 @@
     "opinion-82018-on-the-draft-list-of-the-competent-supervisory": "fr",
     "opinion-92018-on-the-draft-list-of-the-competent-supervisory": "fr",
     "guidelines-22018-on-derogations-of-article-49-under-regulation-2016679": "fr",
-    "article-29-working-party-guidelines-on-transparency-under-regulation-2016679": "fr"
+    "article-29-working-party-guidelines-on-transparency-under-regulation-2016679": "fr",
+    "edpb-edps-joint-opinion-032022-on-the-proposal-for-a-regulation-on": "fr",
+    "opinion-32019-concerning-the-questions-and-answers-on-the-interplay": "fr"
   },
   "documents_types": {
     "guidelines-12024-on-processing-of-personal-data-based-on-article-61f-gdpr": "lignes_directrices",
@@ -710,7 +717,9 @@
     "opinion-82018-on-the-draft-list-of-the-competent-supervisory": "avis_art64",
     "opinion-92018-on-the-draft-list-of-the-competent-supervisory": "avis_art64",
     "guidelines-22018-on-derogations-of-article-49-under-regulation-2016679": "lignes_directrices",
-    "article-29-working-party-guidelines-on-transparency-under-regulation-2016679": "g29_repris"
+    "article-29-working-party-guidelines-on-transparency-under-regulation-2016679": "g29_repris",
+    "edpb-edps-joint-opinion-032022-on-the-proposal-for-a-regulation-on": "avis_legislatif",
+    "opinion-32019-concerning-the-questions-and-answers-on-the-interplay": "avis_legislatif"
   },
   "documents_versions": {
     "guidelines-12024-on-processing-of-personal-data-based-on-article-61f-gdpr": "finale",
@@ -1040,7 +1049,9 @@
     "opinion-82018-on-the-draft-list-of-the-competent-supervisory": "finale",
     "opinion-92018-on-the-draft-list-of-the-competent-supervisory": "finale",
     "guidelines-22018-on-derogations-of-article-49-under-regulation-2016679": "finale",
-    "article-29-working-party-guidelines-on-transparency-under-regulation-2016679": "rev01"
+    "article-29-working-party-guidelines-on-transparency-under-regulation-2016679": "rev01",
+    "edpb-edps-joint-opinion-032022-on-the-proposal-for-a-regulation-on": "finale",
+    "opinion-32019-concerning-the-questions-and-answers-on-the-interplay": "finale"
   },
   "documents_lastmod": {
     "guidelines-12024-on-processing-of-personal-data-based-on-article-61f-gdpr": "2026-11-12T09:30:25+01:00",
@@ -1370,7 +1381,9 @@
     "opinion-82018-on-the-draft-list-of-the-competent-supervisory": "2026-03-19T22:02:06+01:00",
     "opinion-92018-on-the-draft-list-of-the-competent-supervisory": "2026-03-19T22:02:06+01:00",
     "guidelines-22018-on-derogations-of-article-49-under-regulation-2016679": "2026-03-12T12:28:39+01:00",
-    "article-29-working-party-guidelines-on-transparency-under-regulation-2016679": "2026-03-12T12:33:43+01:00"
+    "article-29-working-party-guidelines-on-transparency-under-regulation-2016679": "2026-03-12T12:33:43+01:00",
+    "edpb-edps-joint-opinion-032022-on-the-proposal-for-a-regulation-on": null,
+    "opinion-32019-concerning-the-questions-and-answers-on-the-interplay": null
   },
   "g29": {
     "source": "https://www.edpb.europa.eu/endorsed-wp29-guidelines_en",
@@ -1552,7 +1565,7 @@
       "https://www.edpb.europa.eu/sitemap.xml?page=4",
       "https://www.edpb.europa.eu/sitemap.xml?page=5"
     ],
-    "pages_lues": 5,
+    "pages_lues": 0,
     "periode": {
       "date_min": "2018-04-11",
       "date_max": "2026-11-10"
@@ -1560,6 +1573,7 @@
     "types_retenus": [
       "lignes_directrices",
       "avis_art64",
+      "avis_legislatif",
       "decision_art65",
       "recommandation",
       "g29_repris"
@@ -1572,6 +1586,10 @@
       "avis_art64": {
         "documents": 263,
         "fragments": 7770
+      },
+      "avis_legislatif": {
+        "documents": 2,
+        "fragments": 222
       },
       "decision_art65": {
         "documents": 12,
@@ -1587,7 +1605,7 @@
       }
     },
     "langues_pdf": {
-      "fr": 154,
+      "fr": 156,
       "en": 174,
       "autre": 0
     },
@@ -1919,7 +1937,9 @@
       "opinion-82018-on-the-draft-list-of-the-competent-supervisory": "fr",
       "opinion-92018-on-the-draft-list-of-the-competent-supervisory": "fr",
       "guidelines-22018-on-derogations-of-article-49-under-regulation-2016679": "fr",
-      "article-29-working-party-guidelines-on-transparency-under-regulation-2016679": "fr"
+      "article-29-working-party-guidelines-on-transparency-under-regulation-2016679": "fr",
+      "edpb-edps-joint-opinion-032022-on-the-proposal-for-a-regulation-on": "fr",
+      "opinion-32019-concerning-the-questions-and-answers-on-the-interplay": "fr"
     },
     "documents_types": {
       "guidelines-12024-on-processing-of-personal-data-based-on-article-61f-gdpr": "lignes_directrices",
@@ -2249,7 +2269,9 @@
       "opinion-82018-on-the-draft-list-of-the-competent-supervisory": "avis_art64",
       "opinion-92018-on-the-draft-list-of-the-competent-supervisory": "avis_art64",
       "guidelines-22018-on-derogations-of-article-49-under-regulation-2016679": "lignes_directrices",
-      "article-29-working-party-guidelines-on-transparency-under-regulation-2016679": "g29_repris"
+      "article-29-working-party-guidelines-on-transparency-under-regulation-2016679": "g29_repris",
+      "edpb-edps-joint-opinion-032022-on-the-proposal-for-a-regulation-on": "avis_legislatif",
+      "opinion-32019-concerning-the-questions-and-answers-on-the-interplay": "avis_legislatif"
     },
     "documents_versions": {
       "guidelines-12024-on-processing-of-personal-data-based-on-article-61f-gdpr": "finale",
@@ -2579,7 +2601,9 @@
       "opinion-82018-on-the-draft-list-of-the-competent-supervisory": "finale",
       "opinion-92018-on-the-draft-list-of-the-competent-supervisory": "finale",
       "guidelines-22018-on-derogations-of-article-49-under-regulation-2016679": "finale",
-      "article-29-working-party-guidelines-on-transparency-under-regulation-2016679": "rev01"
+      "article-29-working-party-guidelines-on-transparency-under-regulation-2016679": "rev01",
+      "edpb-edps-joint-opinion-032022-on-the-proposal-for-a-regulation-on": "finale",
+      "opinion-32019-concerning-the-questions-and-answers-on-the-interplay": "finale"
     },
     "documents_lastmod": {
       "guidelines-12024-on-processing-of-personal-data-based-on-article-61f-gdpr": "2026-11-12T09:30:25+01:00",
@@ -2909,7 +2933,9 @@
       "opinion-82018-on-the-draft-list-of-the-competent-supervisory": "2026-03-19T22:02:06+01:00",
       "opinion-92018-on-the-draft-list-of-the-competent-supervisory": "2026-03-19T22:02:06+01:00",
       "guidelines-22018-on-derogations-of-article-49-under-regulation-2016679": "2026-03-12T12:28:39+01:00",
-      "article-29-working-party-guidelines-on-transparency-under-regulation-2016679": "2026-03-12T12:33:43+01:00"
+      "article-29-working-party-guidelines-on-transparency-under-regulation-2016679": "2026-03-12T12:33:43+01:00",
+      "edpb-edps-joint-opinion-032022-on-the-proposal-for-a-regulation-on": null,
+      "opinion-32019-concerning-the-questions-and-answers-on-the-interplay": null
     },
     "g29": {
       "source": "https://www.edpb.europa.eu/endorsed-wp29-guidelines_en",
@@ -3222,6 +3248,22 @@
         "raison": "document hébergé hors du site du CEPD (ec.europa.eu)",
         "source": "endossement"
       }
-    ]
+    ],
+    "documents_supplementaires": {
+      "declares": [
+        {
+          "url": "https://www.edpb.europa.eu/documents/legislative-opinion/opinion-32019-concerning-the-questions-and-answers-on-the-interplay_en",
+          "type": "avis_legislatif"
+        },
+        {
+          "url": "https://www.edpb.europa.eu/documents/legislative-opinion/edpb-edps-joint-opinion-032022-on-the-proposal-for-a-regulation-on_en",
+          "type": "avis_legislatif"
+        }
+      ],
+      "documents": [
+        "edpb-edps-joint-opinion-032022-on-the-proposal-for-a-regulation-on",
+        "opinion-32019-concerning-the-questions-and-answers-on-the-interplay"
+      ]
+    }
   }
 }

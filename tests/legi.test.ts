@@ -72,7 +72,8 @@ function compteReduit(texte: DescripteurTextesFr["textes"][number]): number {
   const route = texte.route;
   if (route.type === "articles") return route.nums.length;
   if (route.type === "codeArticles") return route.sections.reduce((total, section) => total + section.nums.length, 0);
-  if (route.type === "code" || route.type === "legiPart") return 2;
+  if (route.type === "code") return new Set([route.premier, route.dernier]).size;
+  if (route.type === "legiPart") return 2;
   return 1;
 }
 
@@ -385,7 +386,7 @@ describe("la détection des versions des textes français", () => {
       const etats = etatsCorpus(root);
       const penal226 = etats.get("code-penal-226");
       const penal323 = etats.get("code-penal-323");
-      assert.deepEqual([...(penal226?.articles.keys() ?? [])], ["226-1", "226-8-1"]);
+      assert.deepEqual([...(penal226?.articles.keys() ?? [])], ["226-1", "226-8-1", "226-13"]);
       assert.deepEqual([...(penal323?.articles.keys() ?? [])], ["323-1", "323-8"]);
       assert.equal(penal226?.document, PENAL_DOC);
       assert.deepEqual([...(etats.get("cpce-l34-1")?.articles.keys() ?? [])], ["L34-1"]);
@@ -428,11 +429,11 @@ describe("la détection des versions des textes français", () => {
         fetchImpl: fetchDesReponses(appels),
       });
       // Un jeton, la loi 78-17, puis un appel par entrée et par numéro de liste.
-      assert.equal(appels.length, 19);
-      assert.equal(resultat.appels, 19);
-      // 1 jeton + 18 appels + 5 de marge.
-      assert.equal(maxCallsPasse(), 24);
-      assert.equal(textesSuivis().length, 14);
+      assert.equal(appels.length, 53);
+      assert.equal(resultat.appels, 53);
+      // 1 jeton + 52 appels + 5 de marge.
+      assert.equal(maxCallsPasse(), 58);
+      assert.equal(textesSuivis().length, 41);
       assert.deepEqual(resultat.echecs, []);
     } finally {
       resetUsage();
@@ -457,11 +458,10 @@ describe("la détection des versions des textes français", () => {
 
       const resultat = await passeTextesFr({ rootDir: root, date: DATE, config: CONFIG, fetchImpl });
       assert.equal(resultat.entrees.length, 0);
-      // Quatre entrées lisent une ou deux sections de code : toutes échouent.
-      assert.equal(resultat.echecs.length, 4);
+      // Chaque entrée qui lit une section de code échoue, sans empêcher les autres.
+      assert.equal(resultat.echecs.length, 26);
       assert.match(resultat.echecs[0] ?? "", /Code pénal : Légifrance code: HTTP 500/);
-      // La seconde section du CSP n'est pas demandée après l'échec de la première.
-      assert.equal(resultat.appels, 18);
+      assert.equal(resultat.appels, 53);
     } finally {
       resetUsage();
       rmSync(root, { recursive: true, force: true });
@@ -501,7 +501,7 @@ describe("la détection des versions des textes français", () => {
     try {
       const resultat = await passeTextesFr({ rootDir: root, date: DATE, reponses: REPONSES_INCHANGEES, config: null });
       assert.equal(resultat.entrees.length, 0);
-      assert.equal(resultat.echecs.length, 14);
+      assert.equal(resultat.echecs.length, 41);
       assert.match(resultat.echecs[0] ?? "", /corpus LEGITEXT000006068624 absent/);
     } finally {
       rmSync(root, { recursive: true, force: true });
@@ -512,7 +512,7 @@ describe("la détection des versions des textes français", () => {
     assert.equal(dateDeVersionIdentifiant("LEGITEXT000038567662_07-09-2025"), "2025-09-07");
     assert.equal(dateDeVersionIdentifiant("LEGIARTI000042155961"), null);
     assert.equal(dateDeVersionIdentifiant("LEGITEXT000038567662_31-02-2025"), null);
-    assert.equal(textesSuivis().length, 14);
+    assert.equal(textesSuivis().length, 41);
   });
 
   it("retient la version la plus récente sans dépasser la passe, quel que soit l'ordre", () => {
