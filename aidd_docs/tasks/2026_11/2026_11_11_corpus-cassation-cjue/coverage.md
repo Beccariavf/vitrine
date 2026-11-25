@@ -1,11 +1,11 @@
 # Couverture des corpus
 
-Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les corpus inchangés, 15 novembre pour `metadonnees`, 25 novembre pour `donnees`, `cnil`, `cepd` et `cada`), jamais recopiés depuis un autre rapport.
+Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les corpus inchangés, 15 novembre pour `metadonnees`, 25 novembre pour `aiact`, `donnees`, `cnil`, `cepd` et `cada`), jamais recopiés depuis un autre rapport.
 
 | Corpus | Documents | Fragments | Période | Source | Licence |
 |---|---:|---:|---|---|---|
 | `rgpd` | 1 acte | 272 (99 articles + 173 considérants) | publication 2016-05-04 ; applicable depuis 2018-05-25 | CELLAR / EUR-Lex, CELEX `32016R0679` | Décision 2011/833/UE (CC BY 4.0) |
-| `aiact` | 1 acte | 299 (119 articles de la consolidation `02024R1689-20260727` + 180 considérants de l'acte d'origine) | publication 2024-07-12 ; en vigueur depuis 2024-08-01 | CELLAR / EUR-Lex, CELEX `32024R1689` | Décision 2011/833/UE (CC BY 4.0) |
+| `aiact` | 4 actes | 377 (AI Act 299 : 119 articles de la consolidation `02024R1689-20260727` + 180 considérants de l'acte d'origine ; 2026/2487 : 10 articles + 26 considérants ; 2025/454 : 20 + 13 ; 2026/2274 : 2 + 6 + 1 annexe) | AI Act publication 2024-07-12, en vigueur depuis 2024-08-01 ; actes d'application du 2025-03-07 au 2026-11-10, publication du 2025-03-10 au 2026-11-11 | CELLAR / EUR-Lex, CELEX `32024R1689`, `32025R0454`, `32026D2274`, `32026R2487` | Décision 2011/833/UE (CC BY 4.0) |
 | `donnees` | 7 actes | 470 (125 articles, 325 considérants, 3 points, 17 annexes) | actes du 2018-11-14 au 2026-10-29 ; publication du 2018-11-28 au 2026-11-06 | CELLAR / EUR-Lex, CELEX `32023R2854`, `32022R0868`, `32019L1024`, `32023R0138`, `32018R1807`, `32026H2394`, `32023R1622` | Décision 2011/833/UE (CC BY 4.0) |
 | `cnil` | 3 260 (dont 14 délibérations supplémentaires) | 29 698 (dont 325) | arrêté au 2026-11-17 | DINUM (historique) + DILA (incréments) | DINUM : `etalab-2.0` et `lov2`, écart déclaré ; DILA : Licence Ouverte 2.0 |
 | `cada` | 3 918 | 35 396 | 2016-10-20 → 2024-04-18 ; sélection thématique (4 607 avis / 39 098 fragments) : 56 333 lignes hors thème, 689 avis antérieurs au 2016-10-08 et 1 sans texte écartés ; 96 fragments au-dessus du plafond de 35 300, dépassement déclaré | data.gouv.fr — ressource consolidée du 2026-08-14 (API) | Licence Ouverte 2.0 |
@@ -64,6 +64,13 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 - La notion `4.11.01` est large : six décisions ajoutées (douanes, droit d'auteur, agents FIFA, État de droit, réparation automobile, ne bis in idem) ne traitent les données personnelles que dans une partie de leur raisonnement. Elles restent dans le corpus, la source officielle et son libellé étant déclarés.
 - Le contrôle du 14 novembre 2026 par la fiche thématique Curia « Protection des données à caractère personnel » a fait entrer trois arrêts que le classement CELLAR ne donnait pas : C-461/10 (Bonnier Audio, `62010CJ0461`), C-37/20 et C-601/20 (`62020CJ0037`), C-339/20 et C-397/20 (`62020CJ0339`). Prokuratuur (`62018CJ0746`) était déjà complémentaire.
 - La synchronisation de ce contrôle s'est faite sans cache `data/raw/cjue/` (non commité) : elle a relu les 251 arrêts, et EUR-Lex a actualisé la graphie « État » dans 287 fragments de 19 décisions. Aucun texte n'a été édité à la main.
+
+## Détail `aiact`
+
+- Quatre documents lus sur CELLAR en XHTML français, corpus multi-documents (un descripteur par acte, manifeste à `documents[]`) : AI Act `32024R1689` (119 articles de la consolidation `02024R1689-20260727`, 180 considérants de l'acte d'origine), règlement d'exécution `32026R2487` (10 articles, 26 considérants), règlement d'exécution `32025R0454` (20, 13), décision d'exécution `32026D2274` (2 articles, 6 considérants, 1 annexe).
+- Les trois actes d'application sont lus sur leur acte d'origine : SPARQL ne rend aucune consolidation pour eux, `version` = CELEX et `date_consolidation: null`, `parseur: donnees`.
+- La consolidation de l'AI Act ne change pas : ses 299 unités gardent `ref`, texte et URL, octet pour octet ; `aiact.json` reste son descripteur.
+- Veille : `eurlex` suit les quatre CELEX dans la requête de consolidations ; `corpus:sync` met à jour `version` dans `aiact.json` et reconstruit les quatre documents ensemble. Citations connues au catalogue (`INSTRUMENTS`) par leur numéro ; `get_article` sur « AI Act » rend toujours `32024R1689`.
 
 ## Détail `donnees`
 
