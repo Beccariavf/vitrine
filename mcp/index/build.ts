@@ -87,7 +87,7 @@ export function corporaNonIndexables(rootDir: string): CorpusNonIndexable[] {
   return exclus;
 }
 
-/** Lit tous les `data/corpus/<corpus>/unites.jsonl`, dans l'ordre des fichiers. */
+/** Lit les `data/corpus/<corpus>/unites.jsonl`, sauf les corpus déclarés non indexables. */
 export function lireUnites(rootDir: string): Unite[] {
   const racineCorpus = join(rootDir, "data", "corpus");
   if (!existsSync(racineCorpus)) {

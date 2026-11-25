@@ -109,7 +109,11 @@ export function motivationDe(source: string): string {
   return index < 0 ? "" : source.slice(index + 1).trim();
 }
 
-/** Découpe un texte en fragments de 600 à 1 200 caractères, sans perte. */
+/**
+ * Découpe un texte en fragments : paragraphes regroupés jusqu'à 1 200
+ * caractères, un paragraphe long restant seul, fragment court possible quand le
+ * suivant ne tient pas ; aucun caractère n'est perdu, les blancs sont normalisés.
+ */
 export function decouperAvis(texte: string): string[] {
   const paragraphes = texte
     .replace(/\r\n?/g, "\n")

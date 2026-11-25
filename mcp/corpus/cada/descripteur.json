@@ -21,5 +21,5 @@
   },
   "url_texte": "https://www.cada.fr/{numero}",
   "url_texte_verifiee": true,
-  "url_texte_note": "Motif https://www.cada.fr/<numéro canonique à 9 chiffres> : les numéros à 8 chiffres redirigent en 301 vers cette forme, vérifiée en direct le 2026-11-25 sur 201302257, 201401326 et 201603641 (200, avis et date conformes). Les fiches que le site ne publie pas répondent 403 : chaque lien de 39 003 avis n'est pas vérifié un par un."
+  "url_texte_note": "Motif https://www.cada.fr/<numéro canonique à 9 chiffres> : les numéros à 8 chiffres redirigent en 301 vers cette forme, vérifiée en direct le 2026-11-25 sur 201302257, 201401326 et 201603641 (3 sur 3, 200, avis et date conformes). La publication des fiches n'est pas exhaustive : celles que le site ne publie pas répondent 403, chaque lien de 39 003 avis n'est donc pas vérifié un par un."
 }
