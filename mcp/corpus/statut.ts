@@ -57,6 +57,7 @@ const CORPUS_TEXTES: readonly string[] = [
   "ccs",
   "adequation",
   "donnees",
+  "sante_ue",
 ];
 
 /** Corpus dont chaque unité est une décision rendue, quel que soit le statut source. */

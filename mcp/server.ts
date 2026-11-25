@@ -45,12 +45,13 @@ const ACTES_UE =
 const PERIMETRE_REFUS = `(périmètre : ${PERIMETRE})`;
 
 const CONSIGNE_PROVENANCE =
-  "Le texte rendu vient des vingt et un corpus locaux (RGPD `32016R0679`, AI Act `32024R1689`, " +
+  "Le texte rendu vient des vingt-deux corpus locaux (RGPD `32016R0679`, AI Act `32024R1689`, " +
   "ePrivacy `32002L0058`, directive police-justice `32016L0680`, règlement 2018/1725 " +
   "`32018R1725`, règlement procédural RGPD `32025R2518`, clauses contractuelles types " +
   "`32021D0914` (transferts) et `32021D0915` (sous-traitance, art. 28), décisions d'adéquation `adequation`, " +
   "textes UE de l'économie des données `donnees` (Data Act `32023R2854`, DGA `32022R0868`, " +
-  "directive Open Data `32019L1024`, ensembles de forte valeur `32023R0138`…), LIL " +
+  "directive Open Data `32019L1024`, ensembles de forte valeur `32023R0138`…), espace européen des " +
+  "données de santé `sante_ue` (règlement (UE) 2025/327 et ses règlements d'exécution), LIL " +
   "`LEGITEXT000006068624`, textes français d'application `textes_fr`, textes en préparation et " +
   "affaires pendantes `preparation`, délibérations CNIL `cnil`, " +
   "avis et conseils de la CADA `cada` (sélection thématique : réutilisation, ouverture, " +
@@ -125,7 +126,7 @@ const CONSIGNE_PERIMETRE =
   "(`corpus[].couverture`). Chaque corpus dit sa fraîcheur : `veille: true` pour les corpus " +
   "revérifiés par la synchronisation (`cnil`, `ce`, `cc`, `cjue`), avec `a_jour_au`, la dernière " +
   "synchronisation réussie (`null` si aucune) ; `veille: false` pour un instantané fixe jamais " +
-  "revérifié (`rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `donnees`, `lil`, `textes_fr`, `preparation`, `constit`, `cepd`, `cnil_doctrine`), daté par `arrete_le` ou non daté (`null`) ; " +
+  "revérifié (`rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `donnees`, `sante_ue`, `lil`, `textes_fr`, `preparation`, `constit`, `cepd`, `cnil_doctrine`), daté par `arrete_le` ou non daté (`null`) ; " +
   "`inconnu: true` dit qu'un corpus demandé n'existe pas localement et que rien n'y a été interrogé. Ne " +
   "jamais présenter un instantané fixe comme à jour. Le rappeler au lecteur. Une absence de " +
   "résultat ne prouve jamais que la règle n'existe pas : elle peut être hors du périmètre, exclue " +
@@ -145,14 +146,16 @@ const CONSIGNE_DECISIONS_CITEES =
   `${chiffresCitationsDecisions()}`;
 
 const CONSIGNE_SERVEUR =
-  "Serveur de lecture et de recherche sur vingt et un corpus juridiques : le RGPD " +
+  "Serveur de lecture et de recherche sur vingt-deux corpus juridiques : le RGPD " +
   "(corpus `rgpd`, CELEX 32016R0679), l'AI Act (corpus `aiact`, CELEX 32024R1689), " +
   `${ACTES_UE}` +
   ", les clauses contractuelles types pour les transferts hors UE et la sous-traitance (corpus " +
   "`ccs`, CELEX `32021D0914` et `32021D0915`) et les décisions d'adéquation, en vigueur et abrogées (corpus `adequation`), " +
   "les textes UE de l'économie des données (corpus `donnees` : Data Act `32023R2854`, DGA " +
   "`32022R0868`, directive Open Data `32019L1024`, ensembles de forte valeur `32023R0138`, libre " +
-  "circulation `32018R1807`, recommandation clauses types `32026H2394`, logos DGA `32023R1622`), la loi " +
+  "circulation `32018R1807`, recommandation clauses types `32026H2394`, logos DGA `32023R1622`), " +
+  "l'espace européen des données de santé (corpus `sante_ue` : règlement (UE) 2025/327 et règlements " +
+  "d'exécution `32026R0771`, `32026R2083` et `32026R2098`), la loi " +
   "Informatique et Libertés (corpus `lil`, LEGITEXT000006068624), les textes français " +
   "d'application (corpus `textes_fr` : décret 2019-536 LEGITEXT000038567662 en entier, Code pénal " +
   "LEGITEXT000006070719 articles 226-1, 226-8-1, 226-13, 226-16 à 226-24 et chapitre 323 ; CPCE " +
@@ -479,7 +482,7 @@ export function createServer(deps: ServerDeps): McpServer {
       title: "Dire à quelle date le corpus est à jour",
       description:
         "Rend la date de la dernière synchronisation réussie depuis la veille (`a_jour_au`), " +
-        "la fenêtre de veille, l'inventaire des vingt et un corpus avec leurs comptes, les documents " +
+        "la fenêtre de veille, l'inventaire des vingt-deux corpus avec leurs comptes, les documents " +
         "manquants et l'état des sources et de l'index. Chaque corpus porte `couverture`, le bloc que " +
         "déclare son manifeste — sources, bornes et exclusions — : c'est la cible du renvoi " +
         "`perimetre.exclusions` des autres outils. Les clés d'exclusion varient selon le corpus " +
@@ -504,13 +507,14 @@ export function createServer(deps: ServerDeps): McpServer {
   serveur.registerTool(
     "search",
     {
-      title: "Chercher dans les vingt et un corpus juridiques",
+      title: "Chercher dans les vingt-deux corpus juridiques",
       description:
         "Cherche par le sens dans le RGPD, l'AI Act, la directive ePrivacy, la directive " +
         "police-justice, le règlement 2018/1725, le règlement procédural RGPD, les clauses " +
         "contractuelles types de transfert et de sous-traitance, les décisions d'adéquation, " +
         "les textes UE de l'économie des données (Data Act, DGA, directive Open Data, ensembles " +
-        "de forte valeur, libre circulation, recommandation clauses types, logos DGA), la LIL, " +
+        "de forte valeur, libre circulation, recommandation clauses types, logos DGA), " +
+        "l'espace européen des données de santé (règlement (UE) 2025/327, EHDS), la LIL, " +
         "les textes français d'application, " +
         "les textes en préparation et les affaires pendantes, les délibérations de la CNIL " +
         "(sanctions, avis, recommandations et lignes directrices), les avis et conseils de la CADA, " +
@@ -526,7 +530,7 @@ export function createServer(deps: ServerDeps): McpServer {
         "devant, mais aucun considérant n'est retiré du résultat. " +
         "Une question qui cite un article rend cet article exact, sans recherche vectorielle. " +
         "`corpus` borne la recherche à une collection (`rgpd`, `aiact`, `eprivacy`, `police`, " +
-        "`eudpr`, `rgpdproc`, `ccs`, `adequation`, `donnees`, `cnil`, `cada`, `cnil_doctrine`, `lil`, `textes_fr`, `preparation`, `ce`, `constit`, `cepd`, " +
+        "`eudpr`, `rgpdproc`, `ccs`, `adequation`, `donnees`, `sante_ue`, `cnil`, `cada`, `cnil_doctrine`, `lil`, `textes_fr`, `preparation`, `ce`, `constit`, `cepd`, " +
         "`cc`, `cjue`, `metadonnees`) " +
         "et prime sur tout nom de document présent dans la question. " +
         "`nature` borne une recherche CNIL à une nature (`Sanction`, `Avis`, " +
@@ -569,7 +573,7 @@ export function createServer(deps: ServerDeps): McpServer {
           .optional()
           .describe(
             "Restreint la recherche à une collection : rgpd, aiact, eprivacy, police, eudpr, " +
-              "rgpdproc, ccs, adequation, donnees, cnil, cnil_doctrine, lil, textes_fr, preparation, ce, constit, cepd, cc ou " +
+              "rgpdproc, ccs, adequation, donnees, sante_ue, cnil, cnil_doctrine, lil, textes_fr, preparation, ce, constit, cepd, cc ou " +
               "cjue ; cnil couvre les sanctions, avis, recommandations et lignes directrices, " +
               "cnil_doctrine les guides, référentiels, fiches pratiques IA et listes AIPD (extraits " +
               "non modifiés, CC BY-ND 4.0), " +
@@ -666,7 +670,7 @@ async function main(): Promise<void> {
 
   await serveur.connect(transport);
   process.stderr.write(
-    "Serveur MCP des vingt et un corpus (RGPD, AI Act, ePrivacy, 2016/680, 2018/1725, 2025/2518, CCS, adéquation, textes UE de l'économie des données, CNIL, CADA, doctrine CNIL, LIL, textes français, préparation, CE, Conseil constitutionnel, CEPD, CC, CJUE, métadonnées du guichet unique) prêt sur stdio " +
+    "Serveur MCP des vingt-deux corpus (RGPD, AI Act, ePrivacy, 2016/680, 2018/1725, 2025/2518, CCS, adéquation, textes UE de l'économie des données, EHDS, CNIL, CADA, doctrine CNIL, LIL, textes français, préparation, CE, Conseil constitutionnel, CEPD, CC, CJUE, métadonnées du guichet unique) prêt sur stdio " +
       "(six outils : get_article, get_decision, search, decisions_citant, decisions_citant_decision, etat_corpus) " +
       `— recherche ${recherche}` +
       (recherche === "lexicale" ? " (sans modèle à la requête)" : "") +

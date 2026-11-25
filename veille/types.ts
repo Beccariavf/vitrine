@@ -31,7 +31,7 @@ export type Entry = {
    */
   version?: string;
   /** Nature de la nouveauté détectée ; `eurlex` seulement. */
-  categorie?: "consolidation" | "adequation" | "clauses_types" | "modification";
+  categorie?: "consolidation" | "adequation" | "clauses_types" | "acte_execution" | "modification";
   /** Date de l'acte, de la consolidation ou de la décision détectée ; `eurlex` et `constit`. */
   date_acte?: string;
   /** Numéro de la décision, tel que la source l'écrit (`2018-765 DC`) ; `constit` seulement. */

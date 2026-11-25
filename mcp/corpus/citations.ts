@@ -252,6 +252,49 @@ const INSTRUMENTS: readonly Instrument[] = [
     ],
   },
   {
+    libelle: "EHDS",
+    identifiant: "32025R0327",
+    nature: "règlement",
+    url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32025R0327",
+    alias: [
+      `règlement ${QUALIFICATIF}(?:n[o°] ?)?2025/327`,
+      "règlement relatif à l'espace européen des données de santé",
+      "espace européen des données de santé",
+      "EHDS",
+    ],
+    sigle: ["EHDS"],
+  },
+  {
+    libelle: "2026/771",
+    identifiant: "32026R0771",
+    nature: "règlement",
+    url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32026R0771",
+    alias: [
+      `règlement d'exécution ${PARENTHESE} (?:n[o°] ?)?2026/771`,
+      `règlement d'exécution (?:n[o°] ?)?2026/771`,
+    ],
+  },
+  {
+    libelle: "2026/2083",
+    identifiant: "32026R2083",
+    nature: "règlement",
+    url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32026R2083",
+    alias: [
+      `règlement d'exécution ${PARENTHESE} (?:n[o°] ?)?2026/2083`,
+      `règlement d'exécution (?:n[o°] ?)?2026/2083`,
+    ],
+  },
+  {
+    libelle: "2026/2098",
+    identifiant: "32026R2098",
+    nature: "règlement",
+    url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32026R2098",
+    alias: [
+      `règlement d'exécution ${PARENTHESE} (?:n[o°] ?)?2026/2098`,
+      `règlement d'exécution (?:n[o°] ?)?2026/2098`,
+    ],
+  },
+  {
     libelle: "loi 78-17",
     identifiant: "LEGITEXT000006068624",
     nature: "loi",
@@ -356,7 +399,8 @@ const PAR_LIBELLE = new Map(INSTRUMENTS.map((instrument) => [instrument.libelle,
  */
 export const PERIMETRE =
   "RGPD, AI Act, ePrivacy, directive 2016/680, règlement 2018/1725, règlement procédural RGPD, " +
-  "clauses contractuelles types, décisions d'adéquation, textes UE de l'économie des données, LIL, " +
+  "clauses contractuelles types, décisions d'adéquation, textes UE de l'économie des données, " +
+  "espace européen des données de santé (EHDS), LIL, " +
   "textes français d'application, textes en préparation et affaires pendantes, CNIL, CADA, doctrine CNIL, " +
   "CEPD, Conseil d'État, Conseil constitutionnel, Cour de cassation, CJUE";
 
@@ -619,7 +663,7 @@ const ARTICLE = new RegExp(`\\b(?:articles?|art\\.?) (${LISTE})`, "gi");
 const LISTE_ANCRÉE = new RegExp(`^(?:${LISTE})`, "i");
 
 /** Connecteur qui fait suivre l'article de son instrument. */
-const CONNECTEUR = /^(?:du|de la|de l['’]|des|of(?: the)?) /i;
+const CONNECTEUR = /^(?:du |de la |de l['’]|des |of(?: the)? )/i;
 
 /**
  * Anaphore : « du même règlement », « de la même directive ». Le qualificatif

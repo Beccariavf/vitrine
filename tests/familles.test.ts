@@ -4,10 +4,10 @@ import { FAMILLES, FAMILLES_LEGENDE, familleDeSource } from "../src/lib/familles
 import { PASTILLES } from "./contrastes.ts";
 
 const SOURCES_VEILLE = ["cnil", "cnil_doctrine", "cjeu", "anssi", "cepd", "arcep", "commission", "commission-dma", "arcom", "cetat", "constit", "judilibre", "legi", "eurlex"];
-const CORPUS = ["rgpd", "aiact", "eprivacy", "police", "eudpr", "rgpdproc", "ccs", "donnees", "lil", "textes_fr", "preparation", "adequation", "cnil", "cnil_doctrine", "cada", "cepd", "cjue", "ce", "constit", "cc", "metadonnees"];
+const CORPUS = ["rgpd", "aiact", "eprivacy", "police", "eudpr", "rgpdproc", "ccs", "donnees", "sante_ue", "lil", "textes_fr", "preparation", "adequation", "cnil", "cnil_doctrine", "cada", "cepd", "cjue", "ce", "constit", "cc", "metadonnees"];
 
 describe("familleDeSource", () => {
-  it("range les sources de veille et les vingt et un corpus dans une famille nommée", () => {
+  it("range les sources de veille et les vingt-deux corpus dans une famille nommée", () => {
     const attendu: Record<string, string> = {
       cnil: "autorites",
       cnil_doctrine: "autorites",
@@ -35,6 +35,7 @@ describe("familleDeSource", () => {
       rgpdproc: "textes",
       ccs: "textes",
       donnees: "textes",
+      sante_ue: "textes",
       lil: "textes",
       textes_fr: "textes",
       preparation: "ue",

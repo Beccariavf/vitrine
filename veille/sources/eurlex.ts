@@ -3,9 +3,9 @@
  * des actes du corpus et nouveaux actes (décision d'adéquation, clauses types,
  * acte modifiant un acte suivi).
  *
- * Tout se lit dans CELLAR par SPARQL — EUR-Lex bloque les robots. Trois requêtes
- * groupées suffisent, une par catégorie : aucune n'est faite acte par acte.
- * Le module est hors ligne : l'appelant fournit `fetchImpl` ou les réponses.
+ * Tout se lit dans CELLAR par SPARQL — EUR-Lex bloque les robots. Quatre
+ * requêtes groupées suffisent, une par catégorie : aucune n'est faite acte par
+ * acte. Le module est hors ligne : l'appelant fournit `fetchImpl` ou les réponses.
  */
 
 import { createHash } from "node:crypto";
@@ -60,6 +60,19 @@ export function dateMinDe(adequation: DescripteurAdequation): string {
 
 /** Actes dont une décision d'adéquation peut être prise : RGPD et 2016/680. */
 export const BASES_ADEQUATION = ["32016R0679", "32016L0680"] as const;
+
+/**
+ * Base des actes d'exécution et délégués de l'EHDS : tout acte pris sur le
+ * fondement du règlement (UE) 2025/327.
+ */
+export const BASE_ACTES_EXECUTION_SANTE = "32025R0327";
+
+/**
+ * Borne des actes pris sur le fondement de l'EHDS : son entrée en vigueur. Les
+ * actes déjà portés par un descripteur sont écartés par leur CELEX ; tout autre
+ * acte du fondement est signalé, l'échéance des bases ouvertes étant mars 2027.
+ */
+export const DATE_MIN_ACTES_EXECUTION = "2025-03-26";
 
 /** Actes dont la modification déclenche une entrée. */
 export const ACTES_MODIFIES = ["32016R0679", "32002L0058", "32016L0680", "32018R1725"] as const;
@@ -179,6 +192,57 @@ SELECT DISTINCT ?celex ?date ?title ?lang ?repealsCelex WHERE {
     OPTIONAL { ?repeals cdm:resource_legal_id_celex ?repealsCelex }
   }
 }`;
+}
+
+/**
+ * Requête des actes pris sur le fondement de l'EHDS : règlements d'exécution et
+ * actes délégués, un seul balayage pour toutes les bases encore ouvertes.
+ */
+export function requeteActesExecution(dateMin: string = DATE_MIN_ACTES_EXECUTION): string {
+  return `PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT DISTINCT ?celex ?date ?title ?lang WHERE {
+  ?work cdm:resource_legal_based_on_resource_legal ?base .
+  ?base cdm:resource_legal_id_celex ?baseId .
+  FILTER(STR(?baseId) = "${BASE_ACTES_EXECUTION_SANTE}")
+  ?work cdm:resource_legal_id_celex ?celex .
+  ?work cdm:work_date_document ?date .
+  ?work cdm:resource_legal_type ?type .
+  FILTER(STR(?type) = "R")
+  FILTER(STRSTARTS(STR(?celex), "3"))
+  FILTER(?date >= "${dateMin}"^^xsd:date)
+  OPTIONAL { ?work cdm:work_title ?title . BIND(LANG(?title) AS ?lang) }
+}`;
+}
+
+/**
+ * Entrées des actes d'exécution de l'EHDS absents des descripteurs. Ils entrent
+ * au corpus `sante_ue` par leur seule détection : le corpus les dit `manquant`
+ * tant que leur descripteur n'est pas ajouté à la main.
+ */
+export function detecterActesExecution(
+  actes: readonly ActeSuivi[],
+  actesListes: readonly ActeListe[],
+  datePasse: string,
+): Entry[] {
+  const connus = new Set(actes.map((acte) => acte.document));
+  const entrees: Entry[] = [];
+  for (const acte of actesListes) {
+    if (connus.has(acte.celex)) continue;
+    entrees.push(
+      entree({
+        categorie: "acte_execution",
+        document: acte.celex,
+        reference: acte.celex,
+        date: acte.date,
+        datePasse,
+        title: `Acte d'exécution de l'EHDS (${dateFr(acte.date)})`,
+        officialTitle: acte.titre ?? `Acte d'exécution ${acte.celex}`,
+        themes: [themeDeCorpus("sante_ue")],
+      }),
+    );
+  }
+  return entrees;
 }
 
 /** Requête des actes modificatifs : une seule pour les quatre actes suivis. */
@@ -498,6 +562,7 @@ export async function fetchSparql(
 export type ReponsesEurlex = {
   consolidations?: unknown;
   nouveaux?: unknown;
+  actesExecution?: unknown;
   modifications?: unknown;
 };
 
@@ -536,9 +601,10 @@ export async function passeEurlex(options: PasseEurlexOptions = {}): Promise<Res
     return fournie !== undefined ? fournie : fetchSparql(endpoint, requete, categorie, fetchImpl);
   };
 
-  const [consolidationsLues, nouveauxLus, modificationsLues] = await Promise.all([
+  const [consolidationsLues, nouveauxLus, actesExecutionLus, modificationsLues] = await Promise.all([
     lire("consolidations", requeteConsolidations(actes)),
     lire("nouveaux", requeteNouveauxActes(dateMin)),
+    lire("actesExecution", requeteActesExecution()),
     lire("modifications", requeteModifications(dateMin)),
   ]);
 
@@ -551,12 +617,13 @@ export async function passeEurlex(options: PasseEurlexOptions = {}): Promise<Res
   );
 
   return {
-    raw: [consolidationsLues, nouveauxLus, modificationsLues].map((reponse) =>
+    raw: [consolidationsLues, nouveauxLus, actesExecutionLus, modificationsLues].map((reponse) =>
       JSON.stringify(reponse, null, 2),
     ),
     entries: [
       ...detecterConsolidations(actes, consolidations, datePasse),
       ...detecterModifications(actes, consolidations, lireModifications(modificationsLues), datePasse),
+      ...detecterActesExecution(actes, lireNouveauxActes(actesExecutionLus), datePasse),
       ...nouvelles,
     ],
     warnings: avertissements,

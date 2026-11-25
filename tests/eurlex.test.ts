@@ -8,9 +8,12 @@ import type { Entry } from "../veille/types.ts";
 import type { FetchLike } from "../veille/fetch.ts";
 import {
   ACTES_MODIFIES,
+  BASE_ACTES_EXECUTION_SANTE,
   BASES_ADEQUATION,
   DATE_MIN,
+  DATE_MIN_ACTES_EXECUTION,
   actesSuivis,
+  detecterActesExecution,
   detecterConsolidations,
   detecterModifications,
   detecterNouveauxActes,
@@ -22,6 +25,7 @@ import {
   lireModifications,
   lireNouveauxActes,
   passeEurlex,
+  requeteActesExecution,
   requeteConsolidations,
   requeteModifications,
   requeteNouveauxActes,
@@ -42,6 +46,7 @@ const fixture = (chemin: string): unknown =>
 
 const CONSOLIDATIONS = fixture("./fixtures/eurlex/consolidations.json");
 const NOUVEAUX = fixture("./fixtures/eurlex/nouveaux-actes.json");
+const ACTES_EXECUTION = fixture("./fixtures/eurlex/actes-execution-sante.json");
 const MODIFICATIONS = fixture("./fixtures/eurlex/modifications.json");
 const XHTML = readFileSync(new URL("./fixtures/eurlex/adequation-nouvelle.xhtml", import.meta.url), "utf8");
 
@@ -172,6 +177,12 @@ describe("requêtes CELLAR des actes de l'Union", () => {
     assert.match(nouveaux, /resource_legal_based_on_resource_legal/);
     assert.match(nouveaux, /"D"/);
 
+    const actesExecution = requeteActesExecution();
+    assert.match(actesExecution, new RegExp(BASE_ACTES_EXECUTION_SANTE));
+    assert.match(actesExecution, new RegExp(DATE_MIN_ACTES_EXECUTION));
+    assert.match(actesExecution, /resource_legal_based_on_resource_legal/);
+    assert.match(actesExecution, /"R"/);
+
     const modifications = requeteModifications(DATE_MIN);
     for (const base of ACTES_MODIFIES) assert.match(modifications, new RegExp(base));
     assert.match(modifications, /resource_legal_amends_resource_legal/);
@@ -282,6 +293,24 @@ describe("détection des actes de l'Union", () => {
     assert.match(avertissements[0] ?? "", /32026D0403/);
   });
 
+  it("signale un acte d'exécution pris sur le fondement de l'EHDS et l'écarte une fois au corpus", () => {
+    const entrees = detecterActesExecution(
+      actesSuivis(),
+      lireNouveauxActes(ACTES_EXECUTION),
+      DATE_PASSE,
+    );
+    assert.deepEqual(
+      entrees.map((entree) => [entree.categorie, entree.document]),
+      [["acte_execution", "32027R0001"]],
+    );
+    assert.equal(entrees[0]?.title, "Acte d'exécution de l'EHDS (15/01/2027)");
+    assert.equal(entrees[0]?.publishedAt, `${DATE_PASSE}T12:00:00.000Z`);
+    assert.equal(
+      corpusDeLEntree({ source: "eurlex", document: "32027R0001", categorie: "acte_execution" }),
+      "sante_ue",
+    );
+  });
+
   it("n'ajoute pas une décision déjà déclarée au descripteur d'adéquation", () => {
     const adequation: DescripteurAdequation = {
       ...lireDescripteurAdequation(),
@@ -372,14 +401,23 @@ describe("passe de veille eurlex", () => {
       reponses: {
         consolidations: CONSOLIDATIONS,
         nouveaux: NOUVEAUX,
+        actesExecution: ACTES_EXECUTION,
         modifications: MODIFICATIONS,
       },
     });
     rmSync(dossier, { recursive: true, force: true });
-    assert.equal(resultat.raw.length, 3);
+    assert.equal(resultat.raw.length, 4);
     assert.equal(resultat.warnings.length, 1);
     const categories = resultat.entries.map((entree) => entree.categorie);
-    assert.deepEqual(categories, ["consolidation", "modification", "modification", "adequation", "adequation", "clauses_types"]);
+    assert.deepEqual(categories, [
+      "consolidation",
+      "modification",
+      "modification",
+      "acte_execution",
+      "adequation",
+      "adequation",
+      "clauses_types",
+    ]);
     assert.equal(resultat.entries.every((entree) => entree.publishedAt === `${DATE_PASSE}T12:00:00.000Z`), true);
   });
 
@@ -847,6 +885,44 @@ describe("corpus:sync et les actes de l'Union", () => {
       assert.deepEqual(cibles, ["32026D0400"]);
       assert.equal(rapport.sources.find((source) => source.source === "adequation")?.statut, "ok");
       assert.equal(rapport.documents[0]?.corpus, "adequation");
+      assert.equal(rapport.documents[0]?.statut, "manquant");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("vise un acte d'exécution de l'EHDS au corpus sante_ue et le laisse manquant", async () => {
+    const root = racine();
+    try {
+      ecrireEntree(root, {
+        id: "eurlex-acte-execution",
+        source: "eurlex",
+        title: "Acte d'exécution de l'EHDS (15/01/2027)",
+        officialTitle: "COMMISSION IMPLEMENTING REGULATION (EU) 2027/1",
+        url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32027R0001",
+        publishedAt: "2026-11-14T12:00:00.000Z",
+        summary: null,
+        references: [],
+        themes: ["donnees-personnelles"],
+        document: "32027R0001",
+        categorie: "acte_execution",
+        date_acte: "2027-01-15",
+      });
+      const cibles: Array<string | null> = [];
+      const rapport = await syncCorpus({
+        rootDir: root,
+        date: "2026-11-14",
+        depuis: "2026-11-01",
+        agents: {
+          sante_ue: async (cible) => {
+            cibles.push(cible?.entree?.document ?? null);
+            return { ecrit: false, message: "acte d'exécution détecté, descripteur à ajouter à la main" };
+          },
+        },
+        embedder: embedderFactice(),
+      });
+      assert.deepEqual(cibles, ["32027R0001"]);
+      assert.equal(rapport.documents[0]?.corpus, "sante_ue");
       assert.equal(rapport.documents[0]?.statut, "manquant");
     } finally {
       rmSync(root, { recursive: true, force: true });

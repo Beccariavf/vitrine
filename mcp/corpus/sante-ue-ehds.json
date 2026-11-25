@@ -1,0 +1,21 @@
+{
+  "document": "32025R0327",
+  "corpus": "sante_ue",
+  "nom": "EHDS",
+  "titre": "Règlement (UE) 2025/327 du Parlement européen et du Conseil du 11 février 2025 relatif à l'espace européen des données de santé et modifiant la directive 2011/24/UE et le règlement (UE) 2024/2847",
+  "langue": "fra",
+  "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32025R0327",
+  "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+  "date_acte": "2025-02-11",
+  "date_publication": "2025-03-05",
+  "date_debut": "2027-03-26",
+  "date_fin": null,
+  "statut": "en_vigueur",
+  "version": "32025R0327",
+  "date_consolidation": null,
+  "articles_attendus": 105,
+  "considerants_attendus": 115,
+  "annexes_attendues": 4,
+  "parseur": "sante_ue",
+  "note_application": "Application échelonnée lue à l'article 105 : application générale le 2027-03-26 ; le 2029-03-26 pour les articles 3 à 15, 23 § 2 à 6 et 25 à 27, 47 à 49 sur les catégories prioritaires a), b) et c) de l'article 14 § 1 et le chapitre IV ; le 2031-03-26 pour ces mêmes articles sur les catégories d), e) et f), le chapitre III aux systèmes de DME mis en service (article 26 § 2) et l'article 51 § 1 b), f), g), m) et p) ; le 2035-03-26 pour l'article 75 § 5. Par dérogation, l'article 55 § 6, l'article 70, l'article 73 § 5, l'article 75 § 1 et 12, l'article 77 § 4 et l'article 78 § 6 s'appliquent dès le 2027-03-26."
+}

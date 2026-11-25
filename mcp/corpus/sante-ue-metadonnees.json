@@ -1,0 +1,20 @@
+{
+  "document": "32026R2098",
+  "corpus": "sante_ue",
+  "nom": "Métadonnées EHDS",
+  "titre": "Règlement d'exécution (UE) 2026/2098 de la Commission du 18 septembre 2026 fixant les éléments minimaux de métadonnées et leurs caractéristiques que doivent fournir les détenteurs de données de santé pour les descriptions des ensembles de données aux fins de l'utilisation secondaire des données de santé électroniques, tel que prévu par l'article 77, paragraphe 4, du règlement (UE) 2025/327 établissant l'espace européen des données de santé",
+  "langue": "fra",
+  "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32026R2098",
+  "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+  "date_acte": "2026-09-18",
+  "date_publication": "2026-09-21",
+  "date_debut": "2029-03-26",
+  "date_fin": null,
+  "statut": "en_vigueur",
+  "version": "32026R2098",
+  "date_consolidation": null,
+  "articles_attendus": 4,
+  "considerants_attendus": 7,
+  "annexes_attendues": 1,
+  "parseur": "sante_ue"
+}

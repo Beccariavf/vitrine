@@ -222,7 +222,7 @@ describe("les descripteurs", () => {
 
     assert.deepEqual(
       descripteurs.map((descripteur) => descripteur.corpus),
-      ["aiact", "ccs", "ccs", "donnees", "donnees", "donnees", "donnees", "donnees", "donnees", "donnees", "eprivacy", "eudpr", "police", "rgpd", "rgpdproc"],
+      ["aiact", "ccs", "ccs", "donnees", "donnees", "donnees", "donnees", "donnees", "donnees", "donnees", "eprivacy", "eudpr", "police", "rgpd", "rgpdproc", "sante_ue", "sante_ue", "sante_ue", "sante_ue"],
     );
     assert.deepEqual(
       { articles: rgpd?.articles_attendus, considerants: rgpd?.considerants_attendus },

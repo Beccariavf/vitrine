@@ -10,7 +10,8 @@
  * - chaque annexe (`anx_I`, `anx_1`…) en une unité `annexe`, son texte entier.
  *
  * Les comptes viennent du descripteur : une capture incomplète lève avant toute
- * écriture, et aucun acte n'entre au corpus par approximation.
+ * écriture, et aucun acte n'entre au corpus par approximation. Le découpage ne
+ * dépend pas du corpus : `sante_ue` l'emploie tel quel.
  */
 
 import { contenuDiv, estConsolide, parseCellar, texteVisible } from "../parse.ts";

@@ -1,0 +1,19 @@
+{
+  "document": "32026R2083",
+  "corpus": "sante_ue",
+  "nom": "MaSanté@UE",
+  "titre": "Règlement d'exécution (UE) 2026/2083 de la Commission du 18 septembre 2026 sur MaSanté@UE",
+  "langue": "fra",
+  "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32026R2083",
+  "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+  "date_acte": "2026-09-18",
+  "date_publication": "2026-09-21",
+  "date_debut": "2027-03-26",
+  "date_fin": null,
+  "statut": "en_vigueur",
+  "version": "32026R2083",
+  "date_consolidation": null,
+  "articles_attendus": 19,
+  "considerants_attendus": 27,
+  "parseur": "sante_ue"
+}

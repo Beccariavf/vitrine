@@ -39,14 +39,29 @@ export const INSTRUCTION_CNIL =
 export const INSTRUCTION_CONSTIT =
   "Instruction : retrouve les passages d'une décision du Conseil constitutionnel qui répondent à la question\nRequête : ";
 
+/**
+ * Instruction de requête propre à l'espace européen des données de santé. Le
+ * vocabulaire de santé (« utilisation secondaire », « DME », « ORAD ») est
+ * étranger au RGPD : sans elle, « finalités interdites de l'utilisation
+ * secondaire » reste sous le seuil de refus du produit. Aucune mesure sur un jeu
+ * `dev` : le corpus suit le repli, sans promesse chiffrée.
+ */
+export const INSTRUCTION_SANTE_UE =
+  "Instruction : retrouve les passages du règlement sur l'espace européen des données de santé qui répondent à la question\nRequête : ";
+
 /** Instructions connues par identifiant CELEX et par nom de corpus. */
 export const INSTRUCTIONS_REQUETE: Record<string, string> = {
   "32016R0679": INSTRUCTION_REQUETE,
   "32024R1689": INSTRUCTION_AIAct,
+  "32025R0327": INSTRUCTION_SANTE_UE,
+  "32026R0771": INSTRUCTION_SANTE_UE,
+  "32026R2083": INSTRUCTION_SANTE_UE,
+  "32026R2098": INSTRUCTION_SANTE_UE,
   rgpd: INSTRUCTION_REQUETE,
   aiact: INSTRUCTION_AIAct,
   cnil: INSTRUCTION_CNIL,
   constit: INSTRUCTION_CONSTIT,
+  sante_ue: INSTRUCTION_SANTE_UE,
 };
 
 export type OllamaEmbedderOptions = {

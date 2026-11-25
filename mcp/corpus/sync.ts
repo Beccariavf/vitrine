@@ -305,6 +305,17 @@ export function agentsParDefaut(
       return { ecrit: resultat.ecrit, message: resultat.message };
     },
     donnees: agentActe("donnees"),
+    sante_ue: async (cible) => {
+      // Un acte d'exécution détecté n'a pas encore de descripteur : le corpus le
+      // dit manquant, l'ajout se fait à la main (même limite que les clauses types).
+      if (cible?.entree?.categorie === "acte_execution") {
+        return {
+          ecrit: false,
+          message: `${cible.entree.document ?? "acte d'exécution"} détecté, descripteur à ajouter à la main`,
+        };
+      }
+      return agentActe("sante_ue")(cible);
+    },
   };
 
   function agentActe(corpus: string): AgentSync {

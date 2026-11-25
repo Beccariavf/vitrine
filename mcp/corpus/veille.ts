@@ -34,6 +34,7 @@ export type CorpusVeille =
   | "ccs"
   | "adequation"
   | "donnees"
+  | "sante_ue"
   | "cada";
 
 /** Sources de veille dont l'identifiant est aussi le corpus qu'elles alimentent. */
@@ -60,6 +61,7 @@ export const CORPUS_ACTES: readonly CorpusVeille[] = [
   "ccs",
   "adequation",
   "donnees",
+  "sante_ue",
 ];
 
 /** Actes de base suivis par la veille `eurlex` : CELEX → corpus. */
@@ -79,16 +81,23 @@ export const CORPUS_ACTES_UE: Readonly<Record<string, CorpusVeille>> = {
   "32018R1807": "donnees",
   "32026H2394": "donnees",
   "32023R1622": "donnees",
+  "32025R0327": "sante_ue",
+  "32026R0771": "sante_ue",
+  "32026R2083": "sante_ue",
+  "32026R2098": "sante_ue",
 };
 
 /**
  * Corpus visé par une entrée `eurlex` que son seul CELEX ne désigne pas : une
  * décision d'adéquation neuve et une décision de clauses types neuve entrent
- * respectivement dans `adequation` et `ccs`.
+ * respectivement dans `adequation` et `ccs` ; un acte d'exécution pris sur le
+ * fondement de l'EHDS est visé au corpus `sante_ue`, où il reste `manquant`
+ * tant qu'aucun descripteur ne le porte.
  */
 export const CORPUS_PAR_CATEGORIE: Readonly<Record<string, CorpusVeille>> = {
   adequation: "adequation",
   clauses_types: "ccs",
+  acte_execution: "sante_ue",
 };
 
 /** Une entrée `legi` vise le corpus du texte qu'elle porte. */
