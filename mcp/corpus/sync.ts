@@ -252,9 +252,7 @@ export function agentsParDefaut(
       const resultat = await syncCada({ rootDir });
       return {
         ecrit: resultat.ecrit,
-        message:
-          `${resultat.documents} document(s), ${resultat.unites} fragment(s)` +
-          (resultat.volume.indexable ? "" : ", index non construit (volume)"),
+        message: `${resultat.documents} document(s), ${resultat.unites} fragment(s)`,
       };
     },
     lil: async () => {
@@ -495,16 +493,13 @@ function sourcesALancer(documents: DocumentRapport[]): Set<CorpusVeille> {
 
 function reindexer(
   resultat: ResultatBuild,
-): Pick<IndexRapport, "mode" | "ajoutees" | "modifiees" | "supprimees" | "inchangees" | "exclus"> {
+): Pick<IndexRapport, "mode" | "ajoutees" | "modifiees" | "supprimees" | "inchangees"> {
   return {
     mode: resultat.mode,
     ajoutees: resultat.delta.ajoutees,
     modifiees: resultat.delta.modifiees,
     supprimees: resultat.delta.supprimees,
     inchangees: resultat.delta.inchangees,
-    ...(resultat.exclus === undefined || resultat.exclus.length === 0
-      ? {}
-      : { exclus: resultat.exclus.map(({ corpus, motif }) => ({ corpus, motif })) }),
   };
 }
 

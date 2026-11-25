@@ -14,12 +14,16 @@
     "modifiee_le": "2026-08-14"
   },
   "licence": "fr-lo",
-  "date_min": "2016-10-08",
+  "selection": {
+    "motif": "r[ée]utilis|code source|algorithm|open data|donn[ée]es publiques|L\\.? ?312-1|L\\.? ?311-3-1|L\\.? ?32[1-7]-|base de donn[ée]es|format (?:ouvert|[ée]lectronique)|mise en ligne",
+    "champs": ["Avis", "Objet", "Mots clés"],
+    "date_min": ["2010-01-01", "2016-10-08"]
+  },
   "volume": {
     "unites_index": 117701,
     "fragments_max": 35300
   },
   "url_texte": "https://www.cada.fr/{numero}",
   "url_texte_verifiee": true,
-  "url_texte_note": "Motif https://www.cada.fr/<numéro canonique à 9 chiffres> : les numéros à 8 chiffres redirigent en 301 vers cette forme, vérifiée en direct le 2026-11-25 sur 201302257, 201401326 et 201603641 (3 sur 3, 200, avis et date conformes). La publication des fiches n'est pas exhaustive : celles que le site ne publie pas répondent 403, chaque lien de 39 003 avis n'est donc pas vérifié un par un."
+  "url_texte_note": "Motif https://www.cada.fr/<numéro canonique à 9 chiffres> : les numéros à 8 chiffres redirigent en 301 vers cette forme, vérifiée en direct le 2026-11-25 sur 201302257, 201401326 et 201603641 (3 sur 3, 200, avis et date conformes). La publication des fiches n'est pas exhaustive : celles que le site ne publie pas répondent 403, chaque lien des 3 918 avis retenus n'est donc pas vérifié un par un."
 }

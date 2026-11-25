@@ -11,6 +11,7 @@ import {
   dateIso,
   deciderVolume,
   decouperAvis,
+  exclusionsDe,
   lireDescripteur,
   lireLigne,
   mesurer,
@@ -26,7 +27,6 @@ import type { RessourceCada } from "../mcp/corpus/cada/source.ts";
 import { idEntree, passeCada } from "../veille/sources/cada.ts";
 import { statutApplication } from "../mcp/corpus/statut.ts";
 import { corpusDeLEntree } from "../mcp/corpus/veille.ts";
-import { search } from "../mcp/tools.ts";
 import type { FetchLike } from "../veille/fetch.ts";
 
 const FIXTURE = fileURLToPath(new URL("./fixtures/cada/avis.csv", import.meta.url));
@@ -44,12 +44,19 @@ after(() => {
   for (const dossier of racines) rmSync(dossier, { recursive: true, force: true });
 });
 
-/** Descripteur de test, avec le plafond de volume demandé. */
-function descripteurTest(fragmentsMax: number, dateMin = "2016-10-08"): DescripteurCada {
+/** Descripteur de test, avec le plafond de volume et la sélection demandés. */
+function descripteurTest(
+  fragmentsMax: number,
+  options: { motif?: string; dateMin?: string[] } = {},
+): DescripteurCada {
   const descripteur = lireDescripteur(DESCRIPTEUR_FIXTURE);
   return {
     ...descripteur,
-    date_min: dateMin,
+    selection: {
+      motif: options.motif ?? descripteur.selection.motif,
+      champs: descripteur.selection.champs,
+      date_min: options.dateMin ?? descripteur.selection.date_min,
+    },
     volume: { ...descripteur.volume, fragments_max: fragmentsMax },
   };
 }
@@ -289,42 +296,68 @@ describe("découpage et unités", () => {
 });
 
 describe("mesure et règle de volume", () => {
-  it("compte lignes, documents, fragments, exclusions et anomalies", () => {
+  it("compte lignes, documents, fragments, sélection, exclusions et anomalies", () => {
     const records = lireCsv(readFileSync(FIXTURE, "utf8"));
     const colonnes = colonnesDe(records[0] ?? []);
-    const mesure = mesurer(records.slice(1), colonnes);
+    const mesure = mesurer(records.slice(1), colonnes, descripteurTest(35300));
     assert.equal(mesure.lignes_lues, 5);
     assert.equal(mesure.documents, 5);
+    assert.equal(mesure.documents_selection, 5);
     assert.equal(mesure.fragments_total, 9);
+    assert.equal(mesure.fragments_selection, 9);
     assert.equal(mesure.fragments.get("201400004"), 3);
     assert.deepEqual(anomaliesDe(mesure).map((anomalie) => anomalie.lignes), [1]);
   });
 
-  it("tranche tout, sous-ensemble, ou sous-ensemble trop gros", () => {
+  it("retient une ligne par le motif et écarte une autre, hors ligne", () => {
     const records = lireCsv(readFileSync(FIXTURE, "utf8"));
-    const mesure = mesurer(records.slice(1), colonnesDe(records[0] ?? []));
+    const colonnes = colonnesDe(records[0] ?? []);
+    const descripteur = descripteurTest(35300, { motif: "réutilisation" });
+    const mesure = mesurer(records.slice(1), colonnes, descripteur);
+    assert.equal(mesure.documents, 5);
+    assert.equal(mesure.documents_selection, 1);
+    assert.equal(mesure.fragments_selection, 1);
+    assert.deepEqual([...mesure.selection], ["202400003"]);
+    const exclusions = exclusionsDe(mesure, deciderVolume(mesure, descripteur));
+    assert.deepEqual(
+      exclusions.map((exclusion) => [exclusion.motif, exclusion.lignes]),
+      [["hors sélection thématique", 4]],
+    );
+  });
 
-    const tout = deciderVolume(mesure, descripteurTest(9));
-    assert.equal(tout.decision, "tout");
-    assert.equal(tout.indexable, true);
-    assert.equal(tout.fragments_retenus, 9);
+  it("tranche la sélection thématique, puis les seuils de date", () => {
+    const records = lireCsv(readFileSync(FIXTURE, "utf8"));
+    const colonnes = colonnesDe(records[0] ?? []);
+    const mesure = mesurer(records.slice(1), colonnes, descripteurTest(9));
 
-    const sousEnsemble = deciderVolume(mesure, descripteurTest(7));
-    assert.equal(sousEnsemble.decision, "sous_ensemble");
-    assert.equal(sousEnsemble.indexable, true);
-    assert.equal(sousEnsemble.fragments_retenus, 6);
-    assert.ok(sousEnsemble.part_index > 0);
+    const selection = deciderVolume(mesure, descripteurTest(9));
+    assert.equal(selection.decision, "selection");
+    assert.equal(selection.date_min, null);
+    assert.equal(selection.fragments_retenus, 9);
 
-    const trop = deciderVolume(mesure, descripteurTest(5));
-    assert.equal(trop.decision, "sous_ensemble_non_indexe");
-    assert.equal(trop.indexable, false);
-    assert.equal(trop.fragments_retenus, 6);
+    const seuil = deciderVolume(mesure, descripteurTest(7));
+    assert.equal(seuil.decision, "selection_date");
+    assert.equal(seuil.date_min, "2016-10-08");
+    assert.equal(seuil.fragments_retenus, 6);
+    assert.equal(seuil.depassement, 0);
+    assert.ok(seuil.part_index > 0);
+
+    const dernier = deciderVolume(mesure, descripteurTest(5));
+    assert.equal(dernier.decision, "selection_date");
+    assert.equal(dernier.date_min, "2016-10-08");
+    assert.equal(dernier.fragments_retenus, 6);
+    assert.equal(dernier.depassement, 1);
+    assert.match(dernier.regle, /dépassement de 1 fragment/);
   });
 
   it("compte une ligne dupliquée comme exclusion, sans doubler le document", () => {
     const records = lireCsv(readFileSync(FIXTURE, "utf8"));
     const colonnes = colonnesDe(records[0] ?? []);
-    const mesure = mesurer([...(records.slice(1) as string[][]), records[1] as string[]], colonnes);
+    const mesure = mesurer(
+      [...(records.slice(1) as string[][]), records[1] as string[]],
+      colonnes,
+      descripteurTest(35300),
+    );
     assert.equal(mesure.documents, 5);
     assert.equal(mesure.motifs.get("numéro dupliqué"), 1);
   });
@@ -346,7 +379,8 @@ describe("synchronisation du corpus", () => {
     assert.equal(essai.documents, 4);
     assert.equal(essai.unites, 6);
     assert.equal(essai.fragments_total, 9);
-    assert.equal(essai.volume.decision, "sous_ensemble");
+    assert.equal(essai.volume.decision, "selection_date");
+    assert.equal(essai.volume.date_min, "2016-10-08");
     assert.deepEqual(
       essai.exclusions.map((exclusion) => [exclusion.motif, exclusion.lignes]),
       [["antérieur au 2016-10-08", 1]],
@@ -368,9 +402,10 @@ describe("synchronisation du corpus", () => {
       source: { fichier: string; sha256: string };
       couverture: {
         lignes_lues: number;
+        selection: { motif: string; champs: string[] };
         exclusions: { motif: string; lignes: number }[];
         anomalies: { lignes: number; constat: string }[];
-        volume: { decision: string; indexable: boolean };
+        volume: { decision: string; date_min: string | null; fragments_retenus: number };
         bornes: { debut: string; fin: string };
       };
     };
@@ -386,7 +421,13 @@ describe("synchronisation du corpus", () => {
     assert.deepEqual(manifeste.couverture.bornes, { debut: "2024-04-18", fin: "2024-04-20" });
     assert.equal(manifeste.couverture.anomalies[0]?.lignes, 1);
     assert.match(manifeste.couverture.anomalies[0]?.constat ?? "", /Sanction/);
-    assert.equal(manifeste.couverture.volume.indexable, true);
+    assert.deepEqual(manifeste.couverture.selection, {
+      motif: "commission",
+      champs: ["Avis", "Objet", "Mots clés"],
+    });
+    assert.equal(manifeste.couverture.volume.decision, "selection_date");
+    assert.equal(manifeste.couverture.volume.date_min, "2016-10-08");
+    assert.equal(manifeste.couverture.volume.fragments_retenus, 6);
 
     const etat = lireEtat(join(root, "data", "corpus", "cada", "etat.json"));
     assert.equal(etat?.sha256, sha256);
@@ -422,6 +463,30 @@ describe("synchronisation du corpus", () => {
     assert.equal(second.anomalies.length, 1);
   });
 
+  it("relit le même fichier quand la règle de sélection change, sans le retélécharger", async () => {
+    const root = racine();
+    const { taille } = installerFixture(root);
+    const ressource = ressourceFixture("a".repeat(40), taille);
+    await syncCada({
+      rootDir: root,
+      descripteurPath: ecrireDescripteur(root, descripteurTest(7)),
+      ressource,
+      fetchImpl: fetchInterdit,
+    });
+
+    const resultat = await syncCada({
+      rootDir: root,
+      descripteurPath: ecrireDescripteur(root, descripteurTest(7, { motif: "réutilisation" })),
+      ressource,
+      fetchImpl: fetchInterdit,
+    });
+    assert.equal(resultat.relu, true);
+    assert.equal(resultat.documents, 1);
+    assert.equal(resultat.unites, 1);
+    assert.equal(resultat.delta.documents_ajoutes, 0);
+    assert.equal(resultat.delta.documents_supprimes, 3);
+  });
+
   it("ne réécrit que le document ajouté, sans réembarquer les autres", async () => {
     const root = racine();
     const { chemin, taille } = installerFixture(root);
@@ -453,19 +518,21 @@ describe("synchronisation du corpus", () => {
     assert.equal(resultat.delta.unites_inchangees, 6);
   });
 
-  it("écrit le corpus mais le dit non indexable quand le sous-ensemble dépasse le plafond", async () => {
+  it("déclare le dépassement quand le dernier seuil ne suffit pas", async () => {
     const root = racine();
     const { chemin } = installerFixture(root);
     const descripteur = ecrireDescripteur(root, descripteurTest(5));
     const resultat = await syncCada({ rootDir: root, descripteurPath: descripteur, fichier: chemin });
-    assert.equal(resultat.volume.decision, "sous_ensemble_non_indexe");
-    assert.equal(resultat.volume.indexable, false);
+    assert.equal(resultat.volume.decision, "selection_date");
+    assert.equal(resultat.volume.date_min, "2016-10-08");
+    assert.equal(resultat.volume.fragments_retenus, 6);
+    assert.equal(resultat.volume.depassement, 1);
     assert.equal(resultat.unites, 6);
     const manifeste = JSON.parse(
       readFileSync(join(root, "data", "corpus", "cada", "manifest.json"), "utf8"),
-    ) as { couverture: { volume: { indexable: boolean; motif: string } } };
-    assert.equal(manifeste.couverture.volume.indexable, false);
-    assert.match(manifeste.couverture.volume.motif, /index n'est pas construit/);
+    ) as { couverture: { volume: { depassement: number; regle: string } } };
+    assert.equal(manifeste.couverture.volume.depassement, 1);
+    assert.match(manifeste.couverture.volume.regle, /dépassement de 1 fragment/);
   });
 });
 
@@ -564,36 +631,5 @@ describe("veille de la ressource CADA", () => {
     assert.equal(corpusDeLEntree({ source: "cada" }), "cada");
     assert.equal(statutApplication("cada", "Avis", "Avis"), "adoptee");
     assert.equal(statutApplication("cada", "Conseil", "Conseil"), "adoptee");
-  });
-
-  it("dit non indexé quand la recherche vise un corpus déclaré tel", async () => {
-    const root = racine();
-    mkdirSync(join(root, "data", "corpus", "cada"), { recursive: true });
-    writeFileSync(
-      join(root, "data", "corpus", "cada", "manifest.json"),
-      `${JSON.stringify({
-        corpus: "cada",
-        documents: 4,
-        unites: 6,
-        arrete_le: "2024-04-18",
-        couverture: { volume: { indexable: false, motif: "volume mesuré au-delà du plafond" } },
-      })}\n`,
-      "utf8",
-    );
-    const resultat = await search(
-      root,
-      { question: "communication du code source d'un logiciel d'une administration", corpus: "cada" },
-      {
-        embedder: {
-          model: "factice",
-          dim: 4,
-          embedPassages: async (textes) => textes.map(() => [1, 0, 0, 0]),
-          embedQuery: async () => [1, 0, 0, 0],
-        },
-      },
-    );
-    assert.equal(resultat.niveau_confiance, "aucun_resultat_fiable");
-    assert.deepEqual(resultat.passages, []);
-    assert.match(resultat.message ?? "", /présent mais non indexé/);
   });
 });

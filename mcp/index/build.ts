@@ -42,63 +42,22 @@ export type ResultatBuild = {
   mode: "complet" | "incremental";
   /** Renseigné en mode complet quand l'index existant n'était pas réutilisable. */
   raison?: string;
-  /** Corpus déclarés non indexables, laissés hors de l'index avec leur motif. */
-  exclus?: CorpusNonIndexable[];
 };
 
 export function cheminIndex(rootDir: string): string {
   return join(rootDir, INDEX_RELATIF);
 }
 
-/** Un corpus déclaré non indexable par son manifeste, avec le motif déclaré. */
-export type CorpusNonIndexable = { corpus: string; motif: string; unites: number };
-
-/**
- * Corpus dont le manifeste déclare `couverture.volume.indexable: false` : le
- * volume a été mesuré et la décision est de ne pas construire l'index. Le
- * fichier d'unités peut exister — il est produit par la synchronisation — mais
- * `lireUnites` ne le charge pas, et `npm run corpus:index` ne les embarque pas.
- */
-export function corporaNonIndexables(rootDir: string): CorpusNonIndexable[] {
-  const racineCorpus = join(rootDir, "data", "corpus");
-  if (!existsSync(racineCorpus)) return [];
-  const exclus: CorpusNonIndexable[] = [];
-  for (const entree of readdirSync(racineCorpus, { withFileTypes: true })) {
-    if (!entree.isDirectory()) continue;
-    const chemin = join(racineCorpus, entree.name, "manifest.json");
-    if (!existsSync(chemin)) continue;
-    try {
-      const manifeste = JSON.parse(readFileSync(chemin, "utf8")) as {
-        unites?: unknown;
-        couverture?: { volume?: { indexable?: unknown; motif?: unknown } };
-      };
-      const volume = manifeste.couverture?.volume;
-      if (volume?.indexable !== false) continue;
-      exclus.push({
-        corpus: entree.name,
-        motif: typeof volume.motif === "string" ? volume.motif : "volume déclaré non indexable",
-        unites: typeof manifeste.unites === "number" ? manifeste.unites : 0,
-      });
-    } catch {
-      // Un manifeste illisible ne rend pas le corpus non indexable : l'index
-      // lira ses unités comme avant, et l'erreur sera dite ailleurs.
-    }
-  }
-  return exclus;
-}
-
-/** Lit les `data/corpus/<corpus>/unites.jsonl`, sauf les corpus déclarés non indexables. */
+/** Lit les `data/corpus/<corpus>/unites.jsonl`. */
 export function lireUnites(rootDir: string): Unite[] {
   const racineCorpus = join(rootDir, "data", "corpus");
   if (!existsSync(racineCorpus)) {
     throw new Error(`Corpus introuvable sous ${racineCorpus}. Lancez « npm run corpus:build ».`);
   }
 
-  const exclus = new Set(corporaNonIndexables(rootDir).map((corpus) => corpus.corpus));
   const unites: Unite[] = [];
   for (const entree of readdirSync(racineCorpus, { withFileTypes: true })) {
     if (!entree.isDirectory()) continue;
-    if (exclus.has(entree.name)) continue;
     const chemin = join(racineCorpus, entree.name, "unites.jsonl");
     if (!existsSync(chemin)) continue;
     for (const ligne of readFileSync(chemin, "utf8").split("\n")) {
@@ -832,7 +791,6 @@ export async function buildIndex(rootDir: string, embedder: Embedder): Promise<R
     throw new Error("Aucune unité à indexer. Lancez « npm run corpus:build ».");
   }
 
-  const exclus = corporaNonIndexables(rootDir);
   const chemin = cheminIndex(rootDir);
   const empreintes = new Map(unites.map((unite) => [unite.ref, empreinteUnite(unite, embedder)]));
   const existant = ouvrirExistant(chemin, embedder);
@@ -851,7 +809,6 @@ export async function buildIndex(rootDir: string, embedder: Embedder): Promise<R
       },
       mode: "complet",
       raison: existant.raison,
-      exclus,
     };
   }
 
@@ -882,7 +839,6 @@ export async function buildIndex(rootDir: string, embedder: Embedder): Promise<R
         metaModifiees: delta.metaModifiees.length,
       },
       mode: "incremental",
-      exclus,
     };
   } finally {
     existant.db.close();
@@ -898,18 +854,12 @@ function valeurDe(nom: string, argv: string[]): string | undefined {
 /** Journal stderr : le mode, la raison et les quatre comptes du delta. */
 export function formaterJournal(resultat: ResultatBuild, embedder: Embedder): string {
   const raison = resultat.raison === undefined ? "" : ` (${resultat.raison})`;
-  const exclus =
-    resultat.exclus === undefined || resultat.exclus.length === 0
-      ? ""
-      : ` ; hors index : ${resultat.exclus
-          .map((corpus) => `${corpus.corpus} (${corpus.motif})`)
-          .join(", ")}`;
   return (
     `${resultat.unites} unités indexées dans ${resultat.chemin} ` +
     `(${embedder.model}, ${embedder.dim} dimensions, ${resultat.mode}${raison}) : ` +
     `${resultat.delta.ajoutees} ajoutées, ${resultat.delta.modifiees} modifiées, ` +
     `${resultat.delta.supprimees} supprimées, ${resultat.delta.inchangees} inchangées, ` +
-    `${resultat.delta.metaModifiees} métadonnées rafraîchies${exclus}\n`
+    `${resultat.delta.metaModifiees} métadonnées rafraîchies\n`
   );
 }
 

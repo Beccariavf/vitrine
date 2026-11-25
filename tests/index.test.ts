@@ -437,49 +437,6 @@ describe("buildIndex", () => {
     }
   });
 
-  it("laisse hors index un corpus qui déclare son volume non indexable", async () => {
-    const root = tempRoot();
-    try {
-      ecrireCorpus(root, "rgpd", SIX);
-      ecrireCorpus(root, "cada", [
-        {
-          ...unite(1, "communication du code source d'un logiciel"),
-          corpus: "cada",
-          document: "202400001",
-          ref: "202400001#f0",
-          niveau: "fragment",
-        },
-      ]);
-      writeFileSync(
-        join(root, "data", "corpus", "cada", "manifest.json"),
-        `${JSON.stringify({
-          corpus: "cada",
-          unites: 1,
-          couverture: { volume: { indexable: false, motif: "volume mesuré au-delà du plafond" } },
-        })}\n`,
-        "utf8",
-      );
-
-      const resultat = await buildIndex(root, embedderFactice());
-      assert.equal(resultat.unites, 6);
-      assert.deepEqual(resultat.exclus?.map((corpus) => corpus.corpus), ["cada"]);
-      assert.equal(lireUnites(root).some((unite) => unite.corpus === "cada"), false);
-      assert.match(formaterJournal(resultat, embedderFactice()), /hors index : cada/);
-
-      const index = openIndex(resultat.chemin);
-      try {
-        const compte = index.db.prepare("SELECT count(*) AS n FROM unites WHERE corpus = 'cada'").get() as {
-          n: number;
-        };
-        assert.equal(compte.n, 0);
-      } finally {
-        index.db.close();
-      }
-    } finally {
-      rmSync(root, { recursive: true, force: true });
-    }
-  });
-
   it("construit l'index, son meta et ses six unités", async () => {
     const root = tempRoot();
     try {

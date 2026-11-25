@@ -105,8 +105,6 @@ export type IndexRapport = {
   supprimees?: number;
   inchangees?: number;
   message?: string;
-  /** Corpus déclarés non indexables, laissés hors de l'index avec leur motif. */
-  exclus?: { corpus: string; motif: string }[];
 };
 
 export type CorpusRapport = {

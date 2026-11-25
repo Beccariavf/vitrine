@@ -2,9 +2,10 @@
   "fichier": "cada-2026-08-14.csv",
   "sha256": "6862177e33c43967d3f9e1460509aa7eeb1828ee8919bbead16710cf6a2f4da3",
   "lu_le": "2026-11-25",
+  "empreinte_descripteur": "f0b11b24415e1cd306c6f1fffb3bfea55678f78566e0ca0d792992d8c01b53d3",
   "lignes_lues": 60941,
-  "documents": 39003,
-  "unites": 175319,
+  "documents": 3918,
+  "unites": 35396,
   "ressource": {
     "id": "3a6d6fe3-8548-43ed-ad09-72052771447c",
     "url": "https://static.data.gouv.fr/resources/avis-et-conseils-de-la-cada/20260814-172417/cada-2026-08-14.csv",

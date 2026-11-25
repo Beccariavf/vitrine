@@ -35,11 +35,6 @@ data/raw/cnil/
 # Corpus CADA : CSV consolidé non commité (189 Mo), récupéré par npm run cada:sync
 data/raw/cada/
 
-# Corpus CADA : 175 319 fragments (240 Mo) dépassent la limite GitHub de 100 Mo
-# par fichier ; le fichier est produit par `npm run cada:sync`, le manifeste et
-# l'état sont versionnés.
-data/corpus/cada/unites.jsonl
-
 # Doctrine CNIL : PDF et cache de cnil.fr non commités, récupérés par npm run cnil-doctrine:sync
 data/raw/cnil-doctrine/
 

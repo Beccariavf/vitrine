@@ -22,8 +22,15 @@ export type DescripteurCada = {
   jeu: { id: string; url: string; api: string };
   ressource: { id: string; titre: string; url: string; sha1: string; modifiee_le: string };
   licence: string;
-  /** Seuil de la règle de volume : les avis antérieurs ne sont pas retenus. */
-  date_min: string;
+  /** Sélection thématique déclarée, appliquée à toutes les dates. */
+  selection: {
+    /** Expression régulière, insensible à la casse. */
+    motif: string;
+    /** Colonnes du CSV où chercher le motif. */
+    champs: string[];
+    /** Seuils de date appliqués dans l'ordre si la sélection dépasse le plafond. */
+    date_min: string[];
+  };
   volume: { unites_index: number; fragments_max: number };
   /** Motif d'URL officielle, `{numero}` remplacé par le numéro de dossier. */
   url_texte: string;
@@ -66,19 +73,26 @@ export type ExclusionCada = { motif: string; lignes: number };
 /** Anomalie de typage déclarée, jamais renommée. */
 export type AnomalieCada = { constat: string; lignes: number; traitement: string };
 
-/** Décision de volume : tout retenir, sous-ensemble indexable, ou sous-ensemble trop gros. */
-export type DecisionVolume = "tout" | "sous_ensemble" | "sous_ensemble_non_indexe";
+/** Décision de volume : la sélection thématique seule, ou bornée par une date. */
+export type DecisionVolume = "selection" | "selection_date";
 
-/** Ce que la règle de volume a mesuré. */
+/** Ce que la règle de volume a mesuré et retenu, et la règle appliquée. */
 export type VolumeCada = {
+  /** Fragments de tout le corpus valide, toutes dates. */
   fragments_total: number;
+  /** Fragments de la seule sélection thématique, toutes dates. */
+  fragments_selection: number;
   fragments_retenus: number;
   plafond: number;
-  /** Part des unités déjà indexées que le sous-ensemble représenterait. */
+  /** Part des unités déjà indexées que les fragments retenus représenteraient. */
   part_index: number;
   decision: DecisionVolume;
-  indexable: boolean;
-  motif: string;
+  /** Seuil de date appliqué en plus du motif ; `null` quand toutes les dates sont gardées. */
+  date_min: string | null;
+  /** Règle effectivement appliquée, dite au manifeste. */
+  regle: string;
+  /** Fragments au-delà du plafond quand le dernier seuil ne suffit pas ; zéro sinon. */
+  depassement: number;
 };
 
 /** Lit le descripteur ; le chemin par défaut est celui du dépôt. */
@@ -132,6 +146,32 @@ export function colonnesDe(enTete: readonly string[]): Map<string, number> {
     index.set(colonne, position);
   }
   return index;
+}
+
+/** Compile le motif déclaré de la sélection thématique, insensible à la casse. */
+export function motifSelection(descripteur: DescripteurCada): RegExp {
+  return new RegExp(descripteur.selection.motif, "i");
+}
+
+/**
+ * Vrai si un des champs déclarés de la ligne porte le motif de sélection. Le
+ * motif s'applique toutes dates confondues ; une colonne déclarée absente est
+ * une erreur de descripteur, jamais un silence.
+ */
+export function estSelectionne(
+  champs: readonly string[],
+  colonnes: Map<string, number>,
+  motif: RegExp,
+  descripteur: DescripteurCada,
+): boolean {
+  for (const champ of descripteur.selection.champs) {
+    const position = colonnes.get(champ);
+    if (position === undefined) {
+      throw new Error(`Colonne « ${champ} » de la sélection absente du CSV de la CADA.`);
+    }
+    if (motif.test(champs[position] ?? "")) return true;
+  }
+  return false;
 }
 
 /** Une ligne mappée ou le motif de son rejet. */
@@ -234,8 +274,16 @@ export type MesureCada = {
   fragments: Map<string, number>;
   /** Dates des lignes valides, par numéro de dossier. */
   dates: Map<string, string>;
+  /** Numéros de dossier retenus par la sélection thématique. */
+  selection: Set<string>;
+  /** Documents valides, toutes dates et tous thèmes. */
   documents: number;
+  /** Documents retenus par la sélection thématique, toutes dates. */
+  documents_selection: number;
+  /** Fragments de tous les documents valides. */
   fragments_total: number;
+  /** Fragments de la seule sélection thématique. */
+  fragments_selection: number;
   motifs: Map<string, number>;
   anomalies: Map<string, number>;
   borne_min: string | null;
@@ -248,8 +296,11 @@ export function creerMesure(): MesureCada {
     lignes_lues: 0,
     fragments: new Map(),
     dates: new Map(),
+    selection: new Set(),
     documents: 0,
+    documents_selection: 0,
     fragments_total: 0,
+    fragments_selection: 0,
     motifs: new Map(),
     anomalies: new Map(),
     borne_min: null,
@@ -257,11 +308,17 @@ export function creerMesure(): MesureCada {
   };
 }
 
-/** Ajoute une ligne à la mesure ; une ligne invalide est comptée par son motif. */
+/**
+ * Ajoute une ligne à la mesure ; une ligne invalide est comptée par son motif,
+ * et une ligne valide hors sélection thématique est comptée à part, sans
+ * jamais entrer dans les fragments du corpus.
+ */
 export function ajouterLigne(
   mesure: MesureCada,
   champs: readonly string[],
   colonnes: Map<string, number>,
+  motif: RegExp,
+  descripteur: DescripteurCada,
 ): void {
   if (champs.length === 0) return;
   mesure.lignes_lues += 1;
@@ -285,95 +342,131 @@ export function ajouterLigne(
   }
   if (mesure.borne_min === null || document.date < mesure.borne_min) mesure.borne_min = document.date;
   if (mesure.borne_max === null || document.date > mesure.borne_max) mesure.borne_max = document.date;
+  if (!estSelectionne(champs, colonnes, motif, descripteur)) return;
+  mesure.selection.add(document.numero);
+  mesure.documents_selection += 1;
+  mesure.fragments_selection += fragments;
 }
 
 /**
  * Mesure le corpus sans garder les textes : lignes lues, fragments par
- * document, exclusions et anomalies. C'est ce passage qui tranche le volume
- * avant toute écriture.
+ * document, sélection thématique, exclusions et anomalies. C'est ce passage qui
+ * tranche le volume avant toute écriture.
  */
 export function mesurer(
   lignes: Iterable<readonly string[]>,
   colonnes: Map<string, number>,
+  descripteur: DescripteurCada,
 ): MesureCada {
   const mesure = creerMesure();
-  for (const champs of lignes) ajouterLigne(mesure, champs, colonnes);
+  const motif = motifSelection(descripteur);
+  for (const champs of lignes) ajouterLigne(mesure, champs, colonnes, motif, descripteur);
   return mesure;
 }
 
-/** Exclusions triées : motif puis nombre décroissant, comme les autres corpus. */
-export function exclusionsDe(mesure: MesureCada, dateMin: string): ExclusionCada[] {
+/**
+ * Exclusions triées : motif puis nombre décroissant, comme les autres corpus.
+ * La sélection thématique et le seuil de date appliqué sont comptés à part,
+ * chaque ligne écartée ne l'étant qu'une fois.
+ */
+export function exclusionsDe(mesure: MesureCada, volume: VolumeCada): ExclusionCada[] {
   const exclusions: ExclusionCada[] = [...mesure.motifs.entries()].map(([motif, lignes]) => ({
     motif,
     lignes,
   }));
-  if (dateMin !== "" && (mesure.fragments_total > 0 || mesure.documents > 0)) {
+  const horsSelection = mesure.documents - mesure.documents_selection;
+  if (horsSelection > 0) {
+    exclusions.push({ motif: "hors sélection thématique", lignes: horsSelection });
+  }
+  if (volume.date_min !== null) {
     let anterieurs = 0;
-    for (const [numero, date] of mesure.dates) {
-      if (date < dateMin) anterieurs += 1;
+    for (const numero of mesure.selection) {
+      const date = mesure.dates.get(numero);
+      if (date !== undefined && date < volume.date_min) anterieurs += 1;
     }
-    if (anterieurs > 0) exclusions.push({ motif: `antérieur au ${dateMin}`, lignes: anterieurs });
+    if (anterieurs > 0) {
+      exclusions.push({ motif: `antérieur au ${volume.date_min}`, lignes: anterieurs });
+    }
   }
   return exclusions.sort(
     (gauche, droite) => droite.lignes - gauche.lignes || gauche.motif.localeCompare(droite.motif, "fr"),
   );
 }
 
+/** Fragments de la sélection dont la date atteint un seuil. */
+function fragmentsDepuis(mesure: MesureCada, seuil: string): number {
+  let retenus = 0;
+  for (const numero of mesure.selection) {
+    const date = mesure.dates.get(numero);
+    if (date !== undefined && date >= seuil) retenus += mesure.fragments.get(numero) ?? 0;
+  }
+  return retenus;
+}
+
 /**
- * Tranche la règle de volume. Tout retenir quand le corpus tient sous le
- * plafond ; sinon retenir les documents au seuil `date_min` ; si le
- * sous-ensemble dépasse encore le plafond, il est conservé mais reste hors
- * index (le nombre est dit, rien n'est tronqué en silence).
+ * Tranche la règle de volume. Retenir la sélection thématique, toutes dates
+ * confondues ; si elle dépasse le plafond, appliquer les seuils de date déclarés
+ * dans l'ordre jusqu'à repasser sous le plafond. Si le dernier seuil ne suffit
+ * pas, la règle s'arrête là, le dépassement est déclaré et rien n'est tronqué en
+ * silence.
  */
 export function deciderVolume(mesure: MesureCada, descripteur: DescripteurCada): VolumeCada {
   const plafond = descripteur.volume.fragments_max;
   const part = (fragments: number): number =>
-    descripteur.volume.unites_index === 0
-      ? 0
-      : fragments / descripteur.volume.unites_index;
+    descripteur.volume.unites_index === 0 ? 0 : fragments / descripteur.volume.unites_index;
+  const base = {
+    fragments_total: mesure.fragments_total,
+    fragments_selection: mesure.fragments_selection,
+    plafond,
+  };
 
-  if (mesure.fragments_total <= plafond) {
+  const selection =
+    `${mesure.documents_selection} document(s), ${mesure.fragments_selection} fragment(s)`;
+  if (mesure.fragments_selection <= plafond) {
     return {
-      fragments_total: mesure.fragments_total,
-      fragments_retenus: mesure.fragments_total,
-      plafond,
-      part_index: part(mesure.fragments_total),
-      decision: "tout",
-      indexable: true,
-      motif: `${mesure.fragments_total} fragments ≤ ${plafond} : tout le corpus est retenu`,
+      ...base,
+      fragments_retenus: mesure.fragments_selection,
+      part_index: part(mesure.fragments_selection),
+      decision: "selection",
+      date_min: null,
+      regle: `sélection thématique (${selection}) ≤ ${plafond} : toutes dates retenues`,
+      depassement: 0,
     };
   }
 
-  let retenus = 0;
-  for (const [numero, fragments] of mesure.fragments) {
-    const date = mesure.dates.get(numero);
-    if (date !== undefined && date >= descripteur.date_min) retenus += fragments;
-  }
-
-  if (retenus <= plafond) {
-    return {
-      fragments_total: mesure.fragments_total,
-      fragments_retenus: retenus,
-      plafond,
-      part_index: part(retenus),
-      decision: "sous_ensemble",
-      indexable: true,
-      motif:
-        `${mesure.fragments_total} fragments > ${plafond} : seuls les avis du ${descripteur.date_min} ` +
-        `et après sont retenus (${retenus} fragments)`,
-    };
+  let dernierSeuil: string | null = null;
+  let dernierCompte = mesure.fragments_selection;
+  for (const seuil of descripteur.selection.date_min) {
+    dernierSeuil = seuil;
+    dernierCompte = fragmentsDepuis(mesure, seuil);
+    if (dernierCompte <= plafond) {
+      return {
+        ...base,
+        fragments_retenus: dernierCompte,
+        part_index: part(dernierCompte),
+        decision: "selection_date",
+        date_min: seuil,
+        regle:
+          `sélection thématique (${selection}) > ${plafond} : seuls les avis du ${seuil} ` +
+          `et après sont retenus (${dernierCompte} fragments)`,
+        depassement: 0,
+      };
+    }
   }
 
   return {
-    fragments_total: mesure.fragments_total,
-    fragments_retenus: retenus,
-    plafond,
-    part_index: part(retenus),
-    decision: "sous_ensemble_non_indexe",
-    indexable: false,
-    motif:
-      `${mesure.fragments_total} fragments > ${plafond} ; le sous-ensemble du ${descripteur.date_min} ` +
-      `et après en compte encore ${retenus} > ${plafond} : il est conservé, l'index n'est pas construit`,
+    ...base,
+    fragments_retenus: dernierCompte,
+    part_index: part(dernierCompte),
+    decision: "selection_date",
+    date_min: dernierSeuil,
+    regle:
+      `sélection thématique (${selection}) > ${plafond} ; ` +
+      (dernierSeuil === null
+        ? `aucun seuil de date n'est déclaré`
+        : `avec le seuil du ${dernierSeuil} elle compte encore ${dernierCompte} fragments`) +
+      ` : dépassement de ${dernierCompte - plafond} fragment(s) déclaré, rien n'est tronqué`,
+    depassement: dernierCompte - plafond,
   };
 }
 

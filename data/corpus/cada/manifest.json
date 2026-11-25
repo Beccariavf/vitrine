@@ -1,67 +1,50 @@
 {
   "corpus": "cada",
   "nom": "CADA",
-  "documents": 39003,
-  "unites": 175319,
+  "documents": 3918,
+  "unites": 35396,
   "par_nature": {
     "Avis": {
-      "documents": 37284,
-      "unites": 166388
+      "documents": 3686,
+      "unites": 33694
     },
     "Conseil": {
-      "documents": 1719,
-      "unites": 8931
+      "documents": 232,
+      "unites": 1702
     }
   },
   "par_sens": {
-    "(vide)": 6,
-    "Défavorable": 3361,
-    "Défavorable, Défavorable": 2,
-    "Défavorable, Favorable": 22,
-    "Défavorable, Favorable, Favorable": 15,
-    "Défavorable, Favorable, Sans objet": 73,
-    "Défavorable, Incompétence": 4,
-    "Défavorable, Irrecevable": 3,
-    "Défavorable, Sans objet": 16,
-    "Défavorable, Sans objet, Favorable": 1,
-    "Favorable": 21862,
-    "Favorable, Défavorable": 260,
-    "Favorable, Défavorable, Favorable": 6,
-    "Favorable, Défavorable, Incompétence": 2,
-    "Favorable, Défavorable, Irrecevable": 1,
+    "(vide)": 2,
+    "Défavorable": 351,
+    "Défavorable, Défavorable": 1,
+    "Défavorable, Favorable": 9,
+    "Défavorable, Favorable, Favorable": 12,
+    "Défavorable, Favorable, Sans objet": 72,
+    "Défavorable, Incompétence": 1,
+    "Défavorable, Sans objet": 9,
+    "Favorable": 2521,
+    "Favorable, Défavorable": 23,
+    "Favorable, Défavorable, Favorable": 4,
     "Favorable, Défavorable, Sans objet": 8,
-    "Favorable, Favorable": 1471,
-    "Favorable, Incompétence": 222,
-    "Favorable, Incompétence, Défavorable": 1,
-    "Favorable, Incompétence, Favorable": 1,
-    "Favorable, Incompétence, Sans objet": 1,
-    "Favorable, Irrecevable": 151,
-    "Favorable, Irrecevable, Sans objet": 1,
-    "Favorable, Sans objet": 380,
-    "Favorable, Sans objet, Favorable": 1,
-    "Incompétence": 2160,
-    "Incompétence, Défavorable": 2,
+    "Favorable, Favorable": 168,
+    "Favorable, Incompétence": 22,
+    "Favorable, Irrecevable": 19,
+    "Favorable, Sans objet": 23,
+    "Incompétence": 124,
     "Incompétence, Défavorable, Favorable": 1,
-    "Incompétence, Favorable": 6,
-    "Incompétence, Favorable, Favorable": 1,
-    "Incompétence, Incompétence": 1,
-    "Incompétence, Irrecevable": 4,
-    "Incompétence, Sans objet": 2,
-    "Irrecevable": 1325,
-    "Irrecevable, Favorable": 6,
+    "Incompétence, Favorable": 2,
+    "Incompétence, Irrecevable": 1,
+    "Irrecevable": 159,
     "Irrecevable, Sans objet": 1,
-    "Sans objet": 7612,
-    "Sans objet, Défavorable": 2,
+    "Sans objet": 383,
     "Sans objet, Défavorable, Favorable, Favorable": 1,
-    "Sans objet, Favorable": 6,
-    "Sans objet, Favorable, Favorable": 1,
-    "Sans objet, Irrecevable": 1
+    "Sans objet, Favorable": 1
   },
   "decoupage": "local — paragraphes regroupés jusqu'à 1 200 caractères, un paragraphe long restant seul ; fragment plus court quand le suivant ne tient pas ; aucun caractère perdu, blancs normalisés",
   "arrete_le": "2024-04-18",
   "url_texte": "https://www.cada.fr/{numero}",
   "url_texte_verifiee": true,
-  "url_texte_note": "Motif https://www.cada.fr/<numéro canonique à 9 chiffres> : les numéros à 8 chiffres redirigent en 301 vers cette forme, vérifiée en direct le 2026-11-25 sur 201302257, 201401326 et 201603641 (3 sur 3, 200, avis et date conformes). La publication des fiches n'est pas exhaustive : celles que le site ne publie pas répondent 403, chaque lien de 39 003 avis n'est donc pas vérifié un par un.",
+  "url_texte_note": "Motif https://www.cada.fr/<numéro canonique à 9 chiffres> : les numéros à 8 chiffres redirigent en 301 vers cette forme, vérifiée en direct le 2026-11-25 sur 201302257, 201401326 et 201603641 (3 sur 3, 200, avis et date conformes). La publication des fiches n'est pas exhaustive : celles que le site ne publie pas répondent 403, chaque lien des 3 918 avis retenus n'est donc pas vérifié un par un.",
   "source": {
     "jeu": "https://www.data.gouv.fr/fr/datasets/avis-et-conseils-de-la-cada/",
     "jeu_id": "53698f37a3a729239d2036a0",
@@ -83,10 +66,22 @@
       "fin": "2024-04-18"
     },
     "lignes_lues": 60941,
+    "selection": {
+      "motif": "r[ée]utilis|code source|algorithm|open data|donn[ée]es publiques|L\\.? ?312-1|L\\.? ?311-3-1|L\\.? ?32[1-7]-|base de donn[ée]es|format (?:ouvert|[ée]lectronique)|mise en ligne",
+      "champs": [
+        "Avis",
+        "Objet",
+        "Mots clés"
+      ]
+    },
     "exclusions": [
       {
+        "motif": "hors sélection thématique",
+        "lignes": 56333
+      },
+      {
         "motif": "antérieur au 2016-10-08",
-        "lignes": 21937
+        "lignes": 689
       },
       {
         "motif": "texte vide",
@@ -102,16 +97,18 @@
     ],
     "volume": {
       "fragments_total": 241420,
-      "fragments_retenus": 175319,
+      "fragments_selection": 39098,
       "plafond": 35300,
-      "part_index": 1.4895285511592935,
-      "decision": "sous_ensemble_non_indexe",
-      "indexable": false,
-      "motif": "241420 fragments > 35300 ; le sous-ensemble du 2016-10-08 et après en compte encore 175319 > 35300 : il est conservé, l'index n'est pas construit"
+      "fragments_retenus": 35396,
+      "part_index": 0.30072811615874123,
+      "decision": "selection_date",
+      "date_min": "2016-10-08",
+      "regle": "sélection thématique (4607 document(s), 39098 fragment(s)) > 35300 ; avec le seuil du 2016-10-08 elle compte encore 35396 fragments : dépassement de 96 fragment(s) déclaré, rien n'est tronqué",
+      "depassement": 96
     },
     "comptes": {
-      "documents": 39003,
-      "unites": 175319
+      "documents": 3918,
+      "unites": 35396
     }
   }
 }

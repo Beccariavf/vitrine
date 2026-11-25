@@ -898,7 +898,7 @@ export function corpusDeNiveau(demande: { corpus?: string; document?: string }):
 export type SearchDemande = {
   question: string;
   k?: number;
-  /** Restreint la recherche à une collection : `rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `donnees`, `cnil`, `cada` (présent, non indexé), `cnil_doctrine`, `lil`, `textes_fr`, `preparation`, `ce`, `constit`, `cepd`, `cc`, `cjue`, `metadonnees`. */
+  /** Restreint la recherche à une collection : `rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `donnees`, `cnil`, `cada`, `cnil_doctrine`, `lil`, `textes_fr`, `preparation`, `ce`, `constit`, `cepd`, `cc`, `cjue`, `metadonnees`. */
   corpus?: string;
   /** Restreint la recherche à un document précis. */
   document?: string;
@@ -1214,16 +1214,6 @@ export async function search(
 /** Recherche sans périmètre : `search` l'ajoute à chaque sortie. */
 type RechercheBrute = Omit<ResultatRechercheOutil, "perimetre">;
 
-/** Motif déclaré d'un corpus que son manifeste dit non indexable ; `null` sinon. */
-function motifNonIndexe(rootDir: string, corpus: string): string | null {
-  const manifeste = lireManifestes(rootDir).get(corpus);
-  const volume = (
-    manifeste?.couverture as { volume?: { indexable?: unknown; motif?: unknown } } | undefined
-  )?.volume;
-  if (volume?.indexable !== false) return null;
-  return typeof volume.motif === "string" ? volume.motif : "volume déclaré non indexable";
-}
-
 async function chercher(
   rootDir: string,
   demande: SearchDemande,
@@ -1231,20 +1221,6 @@ async function chercher(
   deps: SearchDeps,
 ): Promise<RechercheBrute> {
   const corpus = demande.corpus;
-  // Un corpus présent mais déclaré non indexé n'a aucun passage à chercher :
-  // le dire, plutôt que de laisser croire qu'aucun passage n'existe.
-  if (corpus !== undefined) {
-    const motif = motifNonIndexe(rootDir, corpus);
-    if (motif !== null) {
-      return {
-        niveau_confiance: "aucun_resultat_fiable",
-        passages: [],
-        message:
-          `Le corpus « ${corpus} » est présent mais non indexé (${motif}) : aucun passage ` +
-          "n'est servi tant que le volume n'a pas été arbitré.",
-      };
-    }
-  }
   // La confiance ne peut certifier un corpus que la question ou l'appel nomme.
   const corpusBorne = corpus !== undefined || document !== undefined;
   // Un document connu mais absent du corpus n'a aucun passage à chercher : le

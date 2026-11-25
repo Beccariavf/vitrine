@@ -14,7 +14,11 @@
     "modifiee_le": "2026-08-14"
   },
   "licence": "fr-lo",
-  "date_min": "2016-10-08",
+  "selection": {
+    "motif": "commission",
+    "champs": ["Avis", "Objet", "Mots clés"],
+    "date_min": ["2010-01-01", "2016-10-08"]
+  },
   "volume": {
     "unites_index": 9,
     "fragments_max": 7

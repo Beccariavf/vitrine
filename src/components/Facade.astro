@@ -17,9 +17,7 @@ const grilleLarge = colonnesLarge === 10 ? "@[50rem]:grid-cols-10" : "@[50rem]:g
 
 /** Une colonne par collection : étages calculés au build, du rez-de-chaussée vers le haut. */
 const colonnes = sources.map((source) => {
-  // Un corpus déclaré non indexable garde un seul étage : sa hauteur ne doit
-  // pas dire qu'il sert des passages.
-  const etages = source.indexe ? etagesFacade(source.unites) : 1;
+  const etages = etagesFacade(source.unites);
   return {
     ...source,
     famille: familleDeSource(source.corpus),
@@ -29,11 +27,7 @@ const colonnes = sources.map((source) => {
 });
 
 const resume = `Façade du corpus, une colonne par collection, hauteur selon le nombre de passages indexés, en échelle logarithmique : ${colonnes
-  .map((colonne) =>
-    colonne.indexe
-      ? `${colonne.libelle}, ${nombre.format(colonne.unites)} passages`
-      : `${colonne.libelle}, corpus présent, non indexé`,
-  )
+  .map((colonne) => `${colonne.libelle}, ${nombre.format(colonne.unites)} passages`)
   .join(" ; ")}.`;
 ---
 
@@ -49,7 +43,7 @@ const resume = `Façade du corpus, une colonne par collection, hauteur selon le 
         ]}
       >
         {colonnes.map((colonne) => (
-          <div data-colonne={colonne.corpus} data-famille={colonne.famille.id} data-indexe={colonne.indexe ? "oui" : "non"} class="flex min-w-0 flex-col">
+          <div data-colonne={colonne.corpus} data-famille={colonne.famille.id} class="flex min-w-0 flex-col">
             <div class="facade-hauteur flex flex-col justify-end" style={`--etages-max: ${ETAGES_MAX}`}>
               <div class="overflow-hidden rounded-t-[10px]">
                 {colonne.etages.map((aplat) => (
@@ -68,7 +62,7 @@ const resume = `Façade du corpus, une colonne par collection, hauteur selon le 
               {colonne.libelle}
             </p>
             <p class="mt-0.5 text-[0.625rem] text-encre-douce tabular-nums sm:text-[0.6875rem]">
-              {colonne.indexe ? `${nombre.format(colonne.unites)} passages` : "non indexé (volume)"}
+              {`${nombre.format(colonne.unites)} passages`}
             </p>
           </div>
         ))}

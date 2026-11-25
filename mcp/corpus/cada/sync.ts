@@ -7,6 +7,7 @@
  * qu'après validation de tous ses fragments.
  */
 
+import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -19,9 +20,11 @@ import {
   colonnesDe,
   creerMesure,
   deciderVolume,
+  estSelectionne,
   exclusionsDe,
   lireDescripteur,
   lireLigne,
+  motifSelection,
   unitesCada,
 } from "./parse.ts";
 import type {
@@ -55,6 +58,8 @@ export type EtatCada = {
   fichier: string;
   sha256: string;
   lu_le: string;
+  /** Empreinte du descripteur : une règle changée force la relecture. */
+  empreinte_descripteur?: string;
   lignes_lues: number;
   documents: number;
   unites: number;
@@ -100,6 +105,8 @@ export type ManifesteCada = {
     date: string | null;
     bornes: { debut: string | null; fin: string | null };
     lignes_lues: number;
+    /** Motif et champs de la sélection thématique déclarée. */
+    selection: { motif: string; champs: string[] };
     exclusions: ExclusionCada[];
     anomalies: AnomalieCada[];
     volume: VolumeCada;
@@ -184,6 +191,11 @@ function ecrireSiChange(chemin: string, contenu: string): boolean {
     if (existsSync(temporaire)) rmSync(temporaire, { force: true });
   }
   return true;
+}
+
+/** Empreinte du descripteur : toute règle changée force la relecture du fichier. */
+function empreinteDescripteur(descripteur: DescripteurCada): string {
+  return createHash("sha256").update(JSON.stringify(descripteur)).digest("hex");
 }
 
 /** Lit `unites.jsonl` s'il existe ; un corpus absent vaut une liste vide. */
@@ -373,6 +385,7 @@ export async function syncCada(options: SyncOptions = {}): Promise<ResultatCada>
   const cheminManifeste = join(rootDir, DOSSIER_CORPUS, "manifest.json");
   const etat = lireEtat(cheminEtat);
   const passe = options.date ?? new Date().toISOString().slice(0, 10);
+  const empreinte = empreinteDescripteur(descripteur);
 
   let ressource: RessourceCada;
   let chemin: string;
@@ -401,34 +414,45 @@ export async function syncCada(options: SyncOptions = {}): Promise<ResultatCada>
     fichierLu = nomFichier(ressource);
 
     const local = join(rootDir, DOSSIER_BRUT, fichierLu);
-    const fichierIdentique =
+    const memeFichier =
       etat !== null &&
       etat.sha256 !== "" &&
       memeRessource(etat.ressource, ressource) &&
       existsSync(local) &&
       (await sha256Fichier(local)) === etat.sha256;
 
-    if (fichierIdentique) {
+    if (memeFichier && etat.empreinte_descripteur === empreinte) {
       const exclusions = exclusionsDuManifeste(cheminManifeste);
       const volume = volumeDuManifeste(cheminManifeste);
       return resultatInchange(etat, volume, exclusions, anomaliesDuManifeste(cheminManifeste));
     }
 
-    const telecharge = await telechargerRessource(ressource, join(rootDir, DOSSIER_BRUT), options.fetchBinaire);
-    chemin = telecharge.chemin;
-    sha256 = telecharge.sha256;
+    if (memeFichier) {
+      // Seule la règle a changé : le fichier local est relu, pas retéléchargé.
+      chemin = local;
+      sha256 = etat.sha256;
+    } else {
+      const telecharge = await telechargerRessource(
+        ressource,
+        join(rootDir, DOSSIER_BRUT),
+        options.fetchBinaire,
+      );
+      chemin = telecharge.chemin;
+      sha256 = telecharge.sha256;
+    }
   }
 
   // Premier passage en flux : mesure complète, sans garder les textes.
   const mesure = creerMesure();
+  const motif = motifSelection(descripteur);
   let colonnes: Map<string, number> | null = null;
   for await (const ligne of lignesUtiles(chemin)) {
     colonnes ??= ligne.colonnes;
-    ajouterLigne(mesure, ligne.champs, ligne.colonnes);
+    ajouterLigne(mesure, ligne.champs, ligne.colonnes, motif, descripteur);
   }
   if (colonnes === null) throw new Error(`CSV vide ou sans en-tête : ${chemin}`);
   const volume = deciderVolume(mesure, descripteur);
-  const exclusions = exclusionsDe(mesure, volume.decision === "tout" ? "" : descripteur.date_min);
+  const exclusions = exclusionsDe(mesure, volume);
   const anomalies = anomaliesDe(mesure);
 
   // Second passage en flux : les unités des seuls documents retenus.
@@ -441,7 +465,8 @@ export async function syncCada(options: SyncOptions = {}): Promise<ResultatCada>
     const document = lecture.document;
     if (vus.has(document.numero)) continue;
     vus.add(document.numero);
-    if (volume.decision !== "tout" && document.date < descripteur.date_min) continue;
+    if (!estSelectionne(champs, colonnes, motif, descripteur)) continue;
+    if (volume.date_min !== null && document.date < volume.date_min) continue;
     retenus.set(document.numero, document);
     unites.push(...unitesCada(document, descripteur));
   }
@@ -499,6 +524,7 @@ export async function syncCada(options: SyncOptions = {}): Promise<ResultatCada>
       date: ressource.modifiee_le,
       bornes: { debut, fin },
       lignes_lues: mesure.lignes_lues,
+      selection: { motif: descripteur.selection.motif, champs: descripteur.selection.champs },
       exclusions,
       anomalies,
       volume,
@@ -510,6 +536,7 @@ export async function syncCada(options: SyncOptions = {}): Promise<ResultatCada>
     fichier: fichierLu,
     sha256,
     lu_le: passe,
+    empreinte_descripteur: empreinte,
     lignes_lues: mesure.lignes_lues,
     documents,
     unites: unites.length,
@@ -581,12 +608,14 @@ function volumeDuManifeste(chemin: string): VolumeCada {
   }
   return {
     fragments_total: 0,
+    fragments_selection: 0,
     fragments_retenus: 0,
     plafond: 0,
     part_index: 0,
-    decision: "sous_ensemble_non_indexe",
-    indexable: false,
-    motif: "volume inconnu : manifeste absent",
+    decision: "selection_date",
+    date_min: null,
+    regle: "volume inconnu : manifeste absent",
+    depassement: 0,
   };
 }
 
@@ -603,7 +632,7 @@ export function formaterResultat(resultat: ResultatCada, dryRun: boolean): strin
     `${resultat.unites} fragment(s)` +
     (exclusions === "" ? "" : ` (${exclusions})`) +
     (anomalies === "" ? "" : ` ; anomalies : ${anomalies}`) +
-    ` ; volume : ${resultat.volume.motif}` +
+    ` ; volume : ${resultat.volume.regle}` +
     ` ; ${resultat.delta.documents_ajoutes} document(s) ajouté(s), ` +
     `${resultat.delta.documents_remplaces} remplacé(s), ${resultat.delta.documents_inchanges} inchangé(s)` +
     `${dryRun ? " — dry-run, rien n'est écrit" : resultat.ecrit ? " — corpus réécrit" : " — corpus inchangé"}`
