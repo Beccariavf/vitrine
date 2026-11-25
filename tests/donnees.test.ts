@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 import { actesSuivis, requeteConsolidations } from "../veille/sources/eurlex.ts";
+import { synchroniserActeUe } from "../mcp/corpus/actes-ue.ts";
 import { lireDescripteurs } from "../mcp/corpus/build.ts";
 import { documentsPresents, extraireCitations, marquerPresence } from "../mcp/corpus/citations.ts";
 import { parseDonnees } from "../mcp/corpus/donnees/parse.ts";
@@ -173,5 +174,11 @@ describe("corpus donnees", () => {
     assert.equal(article.trouve, true);
     assert.equal(article.trouve ? article.numero : null, "unique");
     assert.equal(article.trouve ? article.corpus : null, "donnees");
+  });
+
+  it("n'exige pas de descripteur à plat quand aucune consolidation n'est à appliquer", async () => {
+    const resultat = await synchroniserActeUe({ rootDir: ROOT, corpus: "donnees" });
+    assert.equal(resultat.ecrit, false);
+    assert.match(resultat.message, /aucune version consolidée à appliquer/);
   });
 });

@@ -101,14 +101,16 @@ export type SynchroniserActeOptions = {
  * corpus. Rejouer la même version reconstruit sans réécrire le descripteur.
  */
 export async function synchroniserActeUe(options: SynchroniserActeOptions): Promise<ResultatActeUe> {
+  // Rien à appliquer : on ne lit pas le descripteur, qu'un corpus à plusieurs
+  // documents ne porte pas à plat (`donnees`, `ccs`).
+  if (options.version === undefined) {
+    return { ecrit: false, message: "aucune version consolidée à appliquer" };
+  }
   const chemin =
     options.descripteurPath ?? cheminDescripteur(options.corpus, ICI, options.document);
   const avant = readFileSync(chemin, "utf8");
   const descripteur = JSON.parse(avant) as Descripteur;
 
-  if (options.version === undefined) {
-    return { ecrit: false, message: "aucune version consolidée à appliquer" };
-  }
   const date = dateDeConsolidation(options.version);
   if (date === null) {
     throw new Error(`Version consolidée illisible : ${options.version}`);
