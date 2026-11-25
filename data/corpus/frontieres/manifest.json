@@ -1,0 +1,416 @@
+{
+  "corpus": "frontieres",
+  "nom": "Textes UE de frontière",
+  "documents": [
+    {
+      "document": "31996L0009",
+      "titre": "Directive 96/9/CE du Parlement européen et du Conseil du 11 mars 1996 concernant la protection juridique des bases de données",
+      "langue": "fra",
+      "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:31996L0009",
+      "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+      "date_acte": "1996-03-11",
+      "date_publication": "1996-03-27",
+      "date_debut": "1996-04-16",
+      "date_fin": null,
+      "statut": "en_vigueur",
+      "note_application": "Aucune clause d'entrée en vigueur dans l'acte : entrée en vigueur le vingtième jour suivant la publication (article 297 TFUE) ; transposition au plus tard le 1998-01-01 (article 16). Les considérants sont lus dans le HTML patrimonial de l'acte d'origine, qui n'a ni ancre ELI ni bloc de préambule.",
+      "version": "01996L0009-20190606",
+      "date_consolidation": "2019-06-06",
+      "snapshot": "20552ee70e874b19f12379f1ab688cdcef5f93002eacdb3c0ab1c16ed86755cc.xhtml",
+      "considerants_source": "31996L0009",
+      "snapshot_considerants": "dc9b5738bfd938ccd02777996275ad9b2f1d19b101ef9df4cf4630e5fa347acb.xhtml",
+      "unites": 77,
+      "couverture": {
+        "source": "CELLAR — publications.europa.eu/resource/celex/01996L0009-20190606",
+        "date_publication": "1996-03-27",
+        "bornes": {
+          "debut": "1996-04-16",
+          "fin": null
+        },
+        "statut": "en_vigueur",
+        "types_retenus": [
+          "article",
+          "considérant"
+        ],
+        "exclusions": [],
+        "comptes": {
+          "articles": 17,
+          "considerants": 60
+        },
+        "version": "01996L0009-20190606",
+        "date_consolidation": "2019-06-06"
+      }
+    },
+    {
+      "document": "32016L0943",
+      "titre": "Directive (UE) 2016/943 du Parlement européen et du Conseil du 8 juin 2016 sur la protection des savoir-faire et des informations commerciales non divulgués (secrets d'affaires) contre l'obtention, l'utilisation et la divulgation illicites",
+      "langue": "fra",
+      "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32016L0943",
+      "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+      "date_acte": "2016-06-08",
+      "date_publication": "2016-06-15",
+      "date_debut": "2016-07-05",
+      "date_fin": null,
+      "statut": "en_vigueur",
+      "note_application": "CELLAR ne sert aucune version consolidée de l'acte au 2026-11-25 : l'acte d'origine est rendu ; transposition au plus tard le 2018-06-09 (article 19).",
+      "version": "32016L0943",
+      "date_consolidation": null,
+      "snapshot": "0b3f8df35b30b5627b58aa57dd9dce7ed8e55bd31980c62cdfe5ab82079fc9b7.xhtml",
+      "unites": 61,
+      "couverture": {
+        "source": "CELLAR — publications.europa.eu/resource/celex/32016L0943",
+        "date_publication": "2016-06-15",
+        "bornes": {
+          "debut": "2016-07-05",
+          "fin": null
+        },
+        "statut": "en_vigueur",
+        "types_retenus": [
+          "article",
+          "considérant"
+        ],
+        "exclusions": [],
+        "comptes": {
+          "articles": 21,
+          "considerants": 40
+        },
+        "version": "32016L0943",
+        "date_consolidation": null
+      }
+    },
+    {
+      "document": "32019L0790",
+      "titre": "Directive (UE) 2019/790 du Parlement européen et du Conseil du 17 avril 2019 sur le droit d'auteur et les droits voisins dans le marché unique numérique et modifiant les directives 96/9/CE et 2001/29/CE",
+      "langue": "fra",
+      "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32019L0790",
+      "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+      "date_acte": "2019-04-17",
+      "date_publication": "2019-05-17",
+      "date_debut": "2019-06-06",
+      "date_fin": null,
+      "statut": "en_vigueur",
+      "note_application": "CELLAR ne sert aucune version consolidée de l'acte au 2026-11-25 : l'acte d'origine est rendu, en entier ; transposition au plus tard le 2021-06-07 (article 29).",
+      "version": "32019L0790",
+      "date_consolidation": null,
+      "snapshot": "7fcfafd1a5005376fa92bd447714c1db7719afce90cc3ca64fcc2d66416e2989.xhtml",
+      "unites": 118,
+      "couverture": {
+        "source": "CELLAR — publications.europa.eu/resource/celex/32019L0790",
+        "date_publication": "2019-05-17",
+        "bornes": {
+          "debut": "2019-06-06",
+          "fin": null
+        },
+        "statut": "en_vigueur",
+        "types_retenus": [
+          "article",
+          "considérant"
+        ],
+        "exclusions": [],
+        "comptes": {
+          "articles": 32,
+          "considerants": 86
+        },
+        "version": "32019L0790",
+        "date_consolidation": null
+      }
+    },
+    {
+      "document": "32019R1020",
+      "titre": "Règlement (UE) 2019/1020 du Parlement européen et du Conseil du 20 juin 2019 sur la surveillance du marché et la conformité des produits, et modifiant la directive 2004/42/CE et les règlements (CE) n° 765/2008 et (UE) n° 305/2011",
+      "langue": "fra",
+      "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32019R1020",
+      "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+      "date_acte": "2019-06-20",
+      "date_publication": "2019-06-25",
+      "date_debut": "2019-07-15",
+      "date_fin": null,
+      "statut": "en_vigueur",
+      "note_application": "Applicable à partir du 2021-07-16 ; les articles 29 à 33 et 36 à partir du 2021-01-01 (article 44).",
+      "version": "02019R1020-20260812",
+      "date_consolidation": "2026-08-12",
+      "snapshot": "3445a4abc0389c8092d11947be4cdad269c8d4642af5e8a79eb05425c8f0d365.xhtml",
+      "considerants_source": "32019R1020",
+      "snapshot_considerants": "f865dba30c2a71f5adbe4712f3ce1ff4abdcfdda2b8e7c967c42592e8588128a.xhtml",
+      "unites": 115,
+      "couverture": {
+        "source": "CELLAR — publications.europa.eu/resource/celex/02019R1020-20260812",
+        "date_publication": "2019-06-25",
+        "bornes": {
+          "debut": "2019-07-15",
+          "fin": null
+        },
+        "statut": "en_vigueur",
+        "types_retenus": [
+          "article",
+          "considérant",
+          "annexe"
+        ],
+        "exclusions": [],
+        "comptes": {
+          "articles": 44,
+          "considerants": 68,
+          "annexes": 3
+        },
+        "version": "02019R1020-20260812",
+        "date_consolidation": "2026-08-12"
+      }
+    },
+    {
+      "document": "32022R2065",
+      "titre": "Règlement (UE) 2022/2065 du Parlement européen et du Conseil du 19 octobre 2022 relatif à un marché unique des services numériques et modifiant la directive 2000/31/CE (règlement sur les services numériques)",
+      "langue": "fra",
+      "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32022R2065",
+      "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+      "date_acte": "2022-10-19",
+      "date_publication": "2022-10-27",
+      "date_debut": "2022-11-16",
+      "date_fin": null,
+      "statut": "en_vigueur",
+      "note_application": "Applicable à partir du 2024-02-17 ; l'article 24 paragraphes 2, 3 et 6, l'article 33 paragraphes 3 à 6, l'article 37 paragraphe 7, l'article 40 paragraphe 13, l'article 43 et le chapitre IV, sections 4, 5 et 6 à partir du 2022-11-16 (article 93).",
+      "version": "02022R2065-20221027",
+      "date_consolidation": "2022-10-27",
+      "snapshot": "2cb8cde262761b0e87458b5cfcf575e8732c4df40d2e00d0b440429bd12b95f9.xhtml",
+      "considerants_source": "32022R2065",
+      "snapshot_considerants": "a9322171176b363cc596fd47fdadf0828158b31f23d56f140432ca586f84e4da.xhtml",
+      "unites": 249,
+      "couverture": {
+        "source": "CELLAR — publications.europa.eu/resource/celex/02022R2065-20221027",
+        "date_publication": "2022-10-27",
+        "bornes": {
+          "debut": "2022-11-16",
+          "fin": null
+        },
+        "statut": "en_vigueur",
+        "types_retenus": [
+          "article",
+          "considérant"
+        ],
+        "exclusions": [],
+        "comptes": {
+          "articles": 93,
+          "considerants": 156
+        },
+        "version": "02022R2065-20221027",
+        "date_consolidation": "2022-10-27"
+      }
+    },
+    {
+      "document": "32023R1230",
+      "titre": "Règlement (UE) 2023/1230 du Parlement européen et du Conseil du 14 juin 2023 sur les machines, abrogeant la directive 2006/42/CE du Parlement européen et du Conseil et la directive 73/361/CEE du Conseil",
+      "langue": "fra",
+      "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32023R1230",
+      "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+      "date_acte": "2023-06-14",
+      "date_publication": "2023-06-29",
+      "date_debut": "2023-07-19",
+      "date_fin": null,
+      "statut": "en_vigueur",
+      "note_application": "Applicable à partir du 2027-01-14 ; les articles 26 à 42 à partir du 2024-01-14, l'article 50 paragraphe 1 à partir du 2023-10-14, l'article 6 paragraphe 7 et les articles 48 et 52 à partir du 2023-07-13, l'article 6 paragraphes 2 à 6, 8 et 11, l'article 47 et l'article 53 paragraphe 3 à partir du 2024-07-14 (article 54).",
+      "version": "02023R1230-20260727",
+      "date_consolidation": "2026-07-27",
+      "snapshot": "7004de601dd9b45ca0e6604d80c778233646bc472a1e98c749386fd62a17d340.xhtml",
+      "considerants_source": "32023R1230",
+      "snapshot_considerants": "30411a608dc9280e1fc20ce19d600506ac2ac72b6893ce10af34a386fc782200.xhtml",
+      "unites": 157,
+      "couverture": {
+        "source": "CELLAR — publications.europa.eu/resource/celex/02023R1230-20260727",
+        "date_publication": "2023-06-29",
+        "bornes": {
+          "debut": "2023-07-19",
+          "fin": null
+        },
+        "statut": "en_vigueur",
+        "types_retenus": [
+          "article",
+          "considérant",
+          "annexe"
+        ],
+        "exclusions": [],
+        "comptes": {
+          "articles": 59,
+          "considerants": 86,
+          "annexes": 12
+        },
+        "version": "02023R1230-20260727",
+        "date_consolidation": "2026-07-27"
+      }
+    },
+    {
+      "document": "32023L2225",
+      "titre": "Directive (UE) 2023/2225 du Parlement européen et du Conseil du 18 octobre 2023 relative aux contrats de crédit aux consommateurs et abrogeant la directive 2008/48/CE",
+      "langue": "fra",
+      "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32023L2225",
+      "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+      "date_acte": "2023-10-18",
+      "date_publication": "2023-10-30",
+      "date_debut": "2023-11-19",
+      "date_fin": null,
+      "statut": "en_vigueur",
+      "note_application": "Transposition au plus tard le 2025-11-20 ; les mesures s'appliquent à partir du 2026-11-20 (article 48).",
+      "version": "02023L2225-20231030",
+      "date_consolidation": "2023-10-30",
+      "snapshot": "dd0e6fc93c4391487d00e97e1e814b4837ec3f6272b9a90f1245e2da0047998d.xhtml",
+      "considerants_source": "32023L2225",
+      "snapshot_considerants": "aad6cbf701747ab2f145b5f87aaec68254bf52a488147dbb31d7b92f01a9ea4d.xhtml",
+      "unites": 152,
+      "couverture": {
+        "source": "CELLAR — publications.europa.eu/resource/celex/02023L2225-20231030",
+        "date_publication": "2023-10-30",
+        "bornes": {
+          "debut": "2023-11-19",
+          "fin": null
+        },
+        "statut": "en_vigueur",
+        "types_retenus": [
+          "article",
+          "considérant",
+          "annexe"
+        ],
+        "exclusions": [],
+        "comptes": {
+          "articles": 50,
+          "considerants": 98,
+          "annexes": 4
+        },
+        "version": "02023L2225-20231030",
+        "date_consolidation": "2023-10-30"
+      }
+    },
+    {
+      "document": "32024L2831",
+      "titre": "Directive (UE) 2024/2831 du Parlement européen et du Conseil du 23 octobre 2024 relative à l'amélioration des conditions de travail dans le cadre du travail via une plateforme",
+      "langue": "fra",
+      "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32024L2831",
+      "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+      "date_acte": "2024-10-23",
+      "date_publication": "2024-11-11",
+      "date_debut": "2024-12-01",
+      "date_fin": null,
+      "statut": "en_vigueur",
+      "note_application": "La consolidation 02024L2831-20241111 n'est servie qu'en anglais : l'acte d'origine français est rendu ; transposition au plus tard le 2026-12-02 (article 29).",
+      "version": "32024L2831",
+      "date_consolidation": null,
+      "snapshot": "d672cf74980aaabecab54a5b863cf222cb33f0d539abde03cb2bb5d1afee7680.xhtml",
+      "unites": 105,
+      "couverture": {
+        "source": "CELLAR — publications.europa.eu/resource/celex/32024L2831",
+        "date_publication": "2024-11-11",
+        "bornes": {
+          "debut": "2024-12-01",
+          "fin": null
+        },
+        "statut": "en_vigueur",
+        "types_retenus": [
+          "article",
+          "considérant"
+        ],
+        "exclusions": [],
+        "comptes": {
+          "articles": 32,
+          "considerants": 73
+        },
+        "version": "32024L2831",
+        "date_consolidation": null
+      }
+    },
+    {
+      "document": "32024L2853",
+      "titre": "Directive (UE) 2024/2853 du Parlement européen et du Conseil du 23 octobre 2024 relative à la responsabilité du fait des produits défectueux et abrogeant la directive 85/374/CEE du Conseil",
+      "langue": "fra",
+      "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32024L2853",
+      "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+      "date_acte": "2024-10-23",
+      "date_publication": "2024-11-18",
+      "date_debut": "2024-12-08",
+      "date_fin": null,
+      "statut": "en_vigueur",
+      "note_application": "Transposition au plus tard le 2026-12-09 (article 22).",
+      "version": "02024L2853-20241118",
+      "date_consolidation": "2024-11-18",
+      "snapshot": "ff66f223893f39804fa00c6b4101963c11378a037462fb507f63ef51bf015546.xhtml",
+      "considerants_source": "32024L2853",
+      "snapshot_considerants": "585baab598dde61174a7d024343f252c3d47d3a27d101851aab122378540e4e2.xhtml",
+      "unites": 89,
+      "couverture": {
+        "source": "CELLAR — publications.europa.eu/resource/celex/02024L2853-20241118",
+        "date_publication": "2024-11-18",
+        "bornes": {
+          "debut": "2024-12-08",
+          "fin": null
+        },
+        "statut": "en_vigueur",
+        "types_retenus": [
+          "article",
+          "considérant",
+          "annexe"
+        ],
+        "exclusions": [],
+        "comptes": {
+          "articles": 24,
+          "considerants": 64,
+          "annexes": 1
+        },
+        "version": "02024L2853-20241118",
+        "date_consolidation": "2024-11-18"
+      }
+    },
+    {
+      "document": "32024R2847",
+      "titre": "Règlement (UE) 2024/2847 du Parlement européen et du Conseil du 23 octobre 2024 concernant des exigences de cybersécurité horizontales pour les produits comportant des éléments numériques et modifiant les règlements (UE) n° 168/2013 et (UE) 2019/1020 et la directive (UE) 2020/1828 (règlement sur la cyberrésilience)",
+      "langue": "fra",
+      "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32024R2847",
+      "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+      "date_acte": "2024-10-23",
+      "date_publication": "2024-11-20",
+      "date_debut": "2024-12-10",
+      "date_fin": null,
+      "statut": "en_vigueur",
+      "note_application": "Applicable à partir du 2027-12-11 ; l'article 14 à partir du 2026-09-11 et le chapitre IV (articles 35 à 51) à partir du 2026-06-11 (article 71).",
+      "version": "02024R2847-20241120",
+      "date_consolidation": "2024-11-20",
+      "snapshot": "fab9479cdcc9251b6c0ffe3f271358ac8a9297d6ede59ab56c7a5882d1363888.xhtml",
+      "considerants_source": "32024R2847",
+      "snapshot_considerants": "f915847db1e990a4e4862abb914974ede1ae01d2bc6bcf0189384e3a571df986.xhtml",
+      "unites": 209,
+      "couverture": {
+        "source": "CELLAR — publications.europa.eu/resource/celex/02024R2847-20241120",
+        "date_publication": "2024-11-20",
+        "bornes": {
+          "debut": "2024-12-10",
+          "fin": null
+        },
+        "statut": "en_vigueur",
+        "types_retenus": [
+          "article",
+          "considérant",
+          "annexe"
+        ],
+        "exclusions": [],
+        "comptes": {
+          "articles": 71,
+          "considerants": 130,
+          "annexes": 8
+        },
+        "version": "02024R2847-20241120",
+        "date_consolidation": "2024-11-20"
+      }
+    }
+  ],
+  "unites": 1332,
+  "couverture": {
+    "source": "CELLAR — publications.europa.eu/resource/celex/01996L0009-20190606, 32016L0943, 32019L0790, 02019R1020-20260812, 02022R2065-20221027, 02023R1230-20260727, 02023L2225-20231030, 32024L2831, 02024L2853-20241118, 02024R2847-20241120",
+    "types_retenus": [
+      "article",
+      "considérant",
+      "annexe"
+    ],
+    "exclusions": [],
+    "comptes": {
+      "documents": 10,
+      "articles": 443,
+      "considerants": 861,
+      "annexes": 28
+    }
+  }
+}

@@ -31,10 +31,24 @@ export const SOURCE_ID = "eurlex";
 /** Matière unique des actes de protection des données. */
 export const THEME = "donnees-personnelles";
 
-/** Matière d'une consolidation : l'AI Act se rattache à l'IA, l'économie des données à sa matière, les autres aux données personnelles. */
-export function themeDeCorpus(corpus: string): string {
+/**
+ * Matière d'une consolidation : l'AI Act se rattache à l'IA, l'économie des
+ * données à sa matière, les textes de frontière à celle de leur acte (le CRA à la
+ * cybersécurité, le DSA aux plateformes, le reste aux données non personnelles),
+ * les autres aux données personnelles.
+ */
+/** Matière d'un texte de frontière : le CRA à la cybersécurité, le DSA aux plateformes, le reste aux données non personnelles. */
+const THEMES_FRONTIERES: Readonly<Record<string, string>> = {
+  "32024R2847": "cybersecurite",
+  "32022R2065": "plateformes",
+};
+
+export function themeDeCorpus(corpus: string, document?: string): string {
   if (corpus === "aiact") return "ia";
   if (corpus === "donnees") return "donnees-non-personnelles";
+  if (corpus === "frontieres") {
+    return (document === undefined ? undefined : THEMES_FRONTIERES[document]) ?? "donnees-non-personnelles";
+  }
   return THEME;
 }
 
@@ -426,7 +440,7 @@ export function detecterConsolidations(
         title: `${acte.nom} : nouvelle version consolidée du ${dateFr(derniere.date)}`,
         officialTitle: acte.titre,
         version: derniere.version,
-        themes: [themeDeCorpus(acte.corpus)],
+        themes: [themeDeCorpus(acte.corpus, acte.document)],
       }),
     );
   }
@@ -519,7 +533,7 @@ export function detecterModifications(
         datePasse,
         title: `${acte.nom} : acte modificatif ${modification.celex} du ${dateFr(modification.date)}`,
         officialTitle: modification.titre ?? acte.titre,
-        themes: [themeDeCorpus(acte.corpus)],
+        themes: [themeDeCorpus(acte.corpus, acte.document)],
         ...(version === undefined ? {} : { version }),
       }),
     );

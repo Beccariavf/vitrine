@@ -317,6 +317,7 @@ export function agentsParDefaut(
       }
       return agentActe("sante_ue")(cible);
     },
+    frontieres: agentActe("frontieres"),
   };
 
   function agentActe(corpus: string): AgentSync {

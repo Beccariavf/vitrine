@@ -51,6 +51,17 @@ export const INSTRUCTION_CONSTIT =
 export const INSTRUCTION_SANTE_UE =
   "Instruction : retrouve les passages du règlement sur l'espace européen des données de santé qui répondent à la question\nRequête : ";
 
+/**
+ * Instruction de requête propre aux textes de frontière, lue quand `corpus` ou
+ * `document` borne la requête. Le vocabulaire de ces actes (produits,
+ * responsabilité, cybersécurité, bases de données) est étranger au RGPD : sans
+ * elle, la question sur la notification d'une vulnérabilité exploitée du CRA
+ * reste sous le seuil bas de confiance alors que l'article 14 est le premier
+ * résultat.
+ */
+export const INSTRUCTION_FRONTIERES =
+  "Instruction : retrouve les passages des textes européens sur les produits, la responsabilité, la cybersécurité, la propriété intellectuelle et les plateformes qui répondent à la question\nRequête : ";
+
 /** Instructions connues par identifiant CELEX et par nom de corpus. */
 export const INSTRUCTIONS_REQUETE: Record<string, string> = {
   "32016R0679": INSTRUCTION_REQUETE,
@@ -59,11 +70,22 @@ export const INSTRUCTIONS_REQUETE: Record<string, string> = {
   "32026R0771": INSTRUCTION_SANTE_UE,
   "32026R2083": INSTRUCTION_SANTE_UE,
   "32026R2098": INSTRUCTION_SANTE_UE,
+  "32019R1020": INSTRUCTION_FRONTIERES,
+  "32024L2853": INSTRUCTION_FRONTIERES,
+  "32024R2847": INSTRUCTION_FRONTIERES,
+  "32023R1230": INSTRUCTION_FRONTIERES,
+  "31996L0009": INSTRUCTION_FRONTIERES,
+  "32016L0943": INSTRUCTION_FRONTIERES,
+  "32019L0790": INSTRUCTION_FRONTIERES,
+  "32022R2065": INSTRUCTION_FRONTIERES,
+  "32024L2831": INSTRUCTION_FRONTIERES,
+  "32023L2225": INSTRUCTION_FRONTIERES,
   rgpd: INSTRUCTION_REQUETE,
   aiact: INSTRUCTION_AIAct,
   cnil: INSTRUCTION_CNIL,
   constit: INSTRUCTION_CONSTIT,
   sante_ue: INSTRUCTION_SANTE_UE,
+  frontieres: INSTRUCTION_FRONTIERES,
 };
 
 export type OllamaEmbedderOptions = {

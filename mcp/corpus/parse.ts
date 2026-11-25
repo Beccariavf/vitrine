@@ -34,7 +34,7 @@ export type Descripteur = {
   /** Nombre d'annexes que la capture doit porter (`donnees`). */
   annexes_attendues?: number;
   /** Parseur dédié, quand le corpus n'est pas un acte CELLAR ordinaire. */
-  parseur?: "ccs" | "donnees" | "sante_ue";
+  parseur?: "ccs" | "donnees" | "sante_ue" | "frontieres";
   /**
    * CELEX effectivement récupéré : une version consolidée (`0…-AAAAMMJJ`) ou
    * l'acte d'origine quand aucune consolidation française n'existe. Absent :
@@ -227,7 +227,8 @@ function premierManquant(numeros: Set<number>, total: number): number | null {
   return null;
 }
 
-function uniteDe(
+/** Unité d'un article ou d'un considérant, avec son ancre ELI et son lien. */
+export function uniteDe(
   descripteur: Descripteur,
   niveau: Niveau,
   numero: string,
