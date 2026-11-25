@@ -30,9 +30,9 @@ export function normaliserNumero(numero: string | number): string | null {
   ).exec(brut);
   if (trouve === null) return null;
   // La DILA détache parfois le suffixe de lettre par une espace (« L1121-16-1 A ») :
-  // il reste un article distinct de « L1121-16-1 ». Seule une majuscule compte,
-  // pour ne pas lire « du » après un numéro.
-  const detache = /^\s+([A-Z]{1,2})(?![A-Za-zÀ-ÿ])/.exec(brut.slice(trouve[0].length));
+  // il reste un article distinct de « L1121-16-1 ». Seule une majuscule non suivie
+  // d'un point compte, pour ne pas lire « C. pén. » ni « du » après un numéro.
+  const detache = /^\s+([A-Z]{1,2})(?![A-Za-zÀ-ÿ.])/.exec(brut.slice(trouve[0].length));
   const lettre = trouve[4] === undefined
     ? (detache?.[1] === undefined ? "" : `-${detache[1]}`)
     : `-${trouve[4].toUpperCase()}`;

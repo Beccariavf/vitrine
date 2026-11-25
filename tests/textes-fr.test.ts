@@ -820,6 +820,9 @@ describe("les articles de santé ajoutés et les articles existants", () => {
     assert.equal(normaliserNumero("L1121-16-1-A"), "L1121-16-1-A");
     assert.equal(normaliserNumero("L1121-16-1"), "L1121-16-1");
     assert.equal(normaliserNumero("L. 34-5 du CPCE"), "L34-5");
+    // Une abréviation de code après le numéro n'est pas un suffixe d'article.
+    assert.equal(normaliserNumero("article 226-13 C. pén."), "226-13");
+    assert.equal(normaliserNumero("article 9 C. civ."), "9");
 
     const simple = getArticle(RACINE, { document: CSP, numero: "L1121-16-1" });
     const suffixe = getArticle(RACINE, { document: CSP, numero: "L1121-16-1 A" });
@@ -827,6 +830,9 @@ describe("les articles de santé ajoutés et les articles existants", () => {
     assert.equal(suffixe.trouve && suffixe.numero, "L1121-16-1 A");
     assert.notEqual(simple.trouve && simple.ref, suffixe.trouve && suffixe.ref);
     assert.equal(referenceExacte("L'article L. 1121-16-1 A du CSP"), "L. 1121-16-1 A");
+    assert.equal(referenceExacte("L'article L. 1121-16-1-A du CSP"), "L. 1121-16-1-A");
+    assert.equal(referenceExacte("l'article 226-13 C. pén."), "226-13");
+    assert.equal(referenceExacte("l'article 9 C. civ."), "9");
   });
 
   it("attribue les articles ajoutés et les dit au corpus", () => {

@@ -397,7 +397,7 @@ export function avecMarquageDoctrine(rootDir: string, passages: Passage[]): Pass
  */
 export function referenceExacte(question: string): string | null {
   const reference = new RegExp(
-    `\\b(?:article|art\\.?)\\s*((?:[LRD]\\.?\\s*)?\\d+(?:-\\d+)*(?:\\s*(?:${SUFFIXE_ARTICLE})\\b)?(?:\\s+[A-Z](?![A-Za-zÀ-ÿ]))?)`,
+    `\\b(?:article|art\\.?)\\s*((?:[LRD]\\.?\\s*)?\\d+(?:-\\d+)*(?:\\s*(?:${SUFFIXE_ARTICLE})\\b)?(?:[\\s-]+[A-Z](?![A-Za-zÀ-ÿ.]))?)`,
     "i",
   ).exec(question);
   return reference === null ? null : (reference[1] ?? "");
