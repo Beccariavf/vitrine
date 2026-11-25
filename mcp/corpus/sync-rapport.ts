@@ -10,44 +10,15 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, w
 import { dirname, join } from "node:path";
 import { formaterAutorites } from "./hors-corpus.ts";
 import type { ClassementHorsCorpus } from "./hors-corpus.ts";
-import type { CorpusVeille } from "./veille.ts";
+import { ORDRE_SOURCES, SOURCES_SOUS_VEILLE } from "./registre.ts";
+import type { CorpusVeille } from "./registre.ts";
 
 /**
- * Sources que `npm run corpus:sync` revérifie sur signal, dans leur ordre
- * d'exécution. `cnil`, `ce`, `cc` et `cjue` le sont à chaque passe et portent la
- * fraîcheur ; `cnil_doctrine`, `cepd`, `constit`, `lil`, `textes_fr`, `cada`, la
- * préparation et les corpus d'actes n'y entrent que sur une entrée de veille.
+ * Sources que `npm run corpus:sync` revérifie sur signal, dans l'ordre du
+ * registre. Les corpus sous veille à chaque passe portent la fraîcheur ; les
+ * autres n'entrent dans la passe que sur une entrée de veille.
  */
-export const ORDRE_SOURCES: readonly CorpusVeille[] = [
-  "cnil",
-  "cnil_doctrine",
-  "ce",
-  "constit",
-  "cc",
-  "preparation",
-  "cjue",
-  "cepd",
-  "lil",
-  "textes_fr",
-  "rgpd",
-  "aiact",
-  "eprivacy",
-  "police",
-  "eudpr",
-  "rgpdproc",
-  "ccs",
-  "adequation",
-  "donnees",
-  "sante_ue",
-  "cada",
-];
-
-/**
- * Corpus dont `a_jour_au` couvre la fraîcheur : chaque passe les revérifie.
- * `lil` et `textes_fr` en sont exclus, leur synchronisation attendant le signal
- * de `npm run veille:textes-fr`.
- */
-export const SOURCES_SOUS_VEILLE: readonly CorpusVeille[] = ["cnil", "ce", "cc", "cjue"];
+export { ORDRE_SOURCES, SOURCES_SOUS_VEILLE };
 
 /** Manifestes lisibles sous `data/corpus/`, par nom de corpus ; un manifeste illisible est ignoré. */
 export function lireManifestes(rootDir: string): Map<string, Record<string, unknown>> {

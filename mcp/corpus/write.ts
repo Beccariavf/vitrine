@@ -55,7 +55,7 @@ export type DocumentCorpus = {
   origine?: OrigineConsiderants;
 };
 
-/** Manifeste d'un corpus qui porte plusieurs documents (`ccs`, `donnees`, `sante_ue`). */
+/** Manifeste d'un corpus qui porte plusieurs documents. */
 export type ManifesteCorpus = {
   corpus: string;
   nom: string;

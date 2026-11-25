@@ -25,7 +25,7 @@ export const BANDE_ARTICLE = 0.02;
 export type ResultatRecherche = {
   ref: string;
   document: string;
-  /** Collection d'appartenance : `rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `donnees`, `sante_ue`, `cnil`, `cada`, `lil`, `textes_fr`, `ce`, `constit`, `cepd`, `cc`, `cjue`. */
+  /** Collection d'appartenance, un nom du registre (`mcp/corpus/registre.ts`). */
   corpus: string;
   niveau: string;
   numero: string;
@@ -53,7 +53,7 @@ export type ResultatRecherche = {
 export type SearchOptions = {
   k: number;
   /**
-   * Restreint à une collection (`rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `donnees`, `sante_ue`, `cnil`, `cada`, `lil`, `textes_fr`, `ce`, `constit`, `cepd`, `cc`, `cjue`) ;
+   * Restreint à une collection, un nom du registre (`mcp/corpus/registre.ts`) ;
    * absent, tous les corpus répondent.
    */
   corpus?: string;

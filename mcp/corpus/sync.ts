@@ -59,6 +59,7 @@ import type {
   StatutDocument,
 } from "./sync-rapport.ts";
 import { commandesLaunchctl, installerPlanificateur } from "./sync-planificateur.ts";
+import { CORPUS_A_ECARTES } from "./registre.ts";
 
 /** Racine du dépôt, résolue depuis ce fichier et non depuis le répertoire courant. */
 export const RACINE = fileURLToPath(new URL("../..", import.meta.url));
@@ -338,14 +339,6 @@ export function agentsParDefaut(
     };
   }
 }
-
-/** Corpus qui publient la liste de leurs documents écartés. */
-const CORPUS_A_ECARTES: readonly CorpusVeille[] = [
-  "cjue",
-  "cepd",
-  "cnil_doctrine",
-  "preparation",
-];
 
 /** Documents écartés, corpus par corpus ; seuls ceux qui publient la liste en ont une. */
 function ecartesDesCorpus(rootDir: string): Map<string, Map<string, string>> {

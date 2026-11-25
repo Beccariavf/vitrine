@@ -2,6 +2,8 @@
  * Une couleur = une famille de source : la même partout (veille, accueil, façade).
  * La couleur ne porte jamais seule le sens : chaque famille a aussi son libellé.
  */
+import { CORPUS } from "../../mcp/corpus/registre.ts";
+
 export type FamilleId = "textes" | "autorites" | "ue" | "juridictions" | "autre";
 
 export type Famille = {
@@ -68,36 +70,15 @@ export const FAMILLES_LEGENDE: readonly Famille[] = [FAMILLES.textes, FAMILLES.a
 
 /** Sources de veille (`data/entries/`) et corpus du connecteur (`data/corpus/`). */
 const FAMILLE_DE_SOURCE: Readonly<Record<string, FamilleId>> = {
-  rgpd: "textes",
-  aiact: "textes",
-  eprivacy: "textes",
-  police: "textes",
-  eudpr: "textes",
-  rgpdproc: "textes",
-  donnees: "textes",
-  sante_ue: "textes",
-  ccs: "textes",
-  lil: "textes",
-  textes_fr: "textes",
-  preparation: "ue",
-  adequation: "ue",
-  cnil: "autorites",
-  cnil_doctrine: "autorites",
-  cada: "autorites",
+  ...Object.fromEntries(CORPUS.map((corpus) => [corpus.nom, corpus.famille])),
   anssi: "autorites",
   arcep: "autorites",
   arcom: "autorites",
-  cepd: "ue",
-  cjue: "ue",
   cjeu: "ue",
   commission: "ue",
   "commission-dma": "ue",
   cetat: "juridictions",
   judilibre: "juridictions",
-  ce: "juridictions",
-  constit: "juridictions",
-  cc: "juridictions",
-  metadonnees: "autre",
   legi: "textes",
   eurlex: "ue",
 };

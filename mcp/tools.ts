@@ -959,7 +959,7 @@ export function corpusDeNiveau(demande: { corpus?: string; document?: string }):
 export type SearchDemande = {
   question: string;
   k?: number;
-  /** Restreint la recherche à une collection : `rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `donnees`, `sante_ue`, `cnil`, `cada`, `cnil_doctrine`, `lil`, `textes_fr`, `preparation`, `ce`, `constit`, `cepd`, `cc`, `cjue`, `metadonnees`. */
+  /** Restreint la recherche à une collection, un nom du registre (`mcp/corpus/registre.ts`). */
   corpus?: string;
   /** Restreint la recherche à un document précis. */
   document?: string;

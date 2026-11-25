@@ -23,6 +23,7 @@ import {
   normaliserIdentifiant,
 } from "./citations.ts";
 import type { ArticlesCouverts, Citation } from "./citations.ts";
+import { corpusDeclare } from "./registre.ts";
 
 /** Citations d'une autorité citante, pour un document hors corpus. */
 export type AutoriteCitations = { autorite: string; citations: number };
@@ -52,20 +53,11 @@ export type CitationsParCorpus = readonly {
 
 /**
  * Libellé humain d'une autorité citante : `etat_corpus` s'adresse à un juriste,
- * les identifiants de corpus restent ceux de l'inventaire.
+ * les identifiants de corpus restent ceux de l'inventaire. Le libellé vient du
+ * registre, comme celui du connecteur.
  */
-const AUTORITES: Readonly<Record<string, string>> = {
-  cnil: "CNIL",
-  ce: "Conseil d'État",
-  constit: "Conseil constitutionnel",
-  cc: "Cour de cassation",
-  cjue: "CJUE",
-  cepd: "CEPD",
-};
-
-/** Libellé d'une autorité ; un corpus inconnu garde son identifiant. */
 export function autoriteDe(corpus: string): string {
-  return AUTORITES[corpus] ?? corpus;
+  return corpusDeclare(corpus)?.libelle ?? corpus;
 }
 
 /**
