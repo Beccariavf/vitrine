@@ -130,8 +130,15 @@ describe("la liste des textes en préparation", () => {
     for (const acte of DESCRIPTEUR.actes_suivis) {
       assert.ok(requete.includes(`"${acte.celex}"`), acte.celex);
     }
-    assert.equal(DESCRIPTEUR.actes_suivis.length, 21);
-    for (const celex of ["32023R2854", "32025R0327", "32024R2847", "32022R2065"]) {
+    assert.equal(DESCRIPTEUR.actes_suivis.length, 23);
+    for (const celex of [
+      "32023R2854",
+      "32025R0327",
+      "32024R2847",
+      "32022R2065",
+      "32024L2831",
+      "32023L2225",
+    ]) {
       assert.ok(
         DESCRIPTEUR.actes_suivis.some((acte) => acte.celex === celex),
         `acte suivi ${celex}`,
@@ -478,7 +485,7 @@ describe("la passe de préparation", () => {
     assert.equal(manifeste.couverture.comptes.affaires, 2);
     assert.equal(manifeste.couverture.comptes.affaires_presumees, 1);
     assert.equal(manifeste.couverture.presomption_annees, 3);
-    assert.equal(manifeste.couverture.actes_suivis.length, 21);
+    assert.equal(manifeste.couverture.actes_suivis.length, 23);
     assert.ok(manifeste.couverture.actes_suivis.includes("32023R2854"));
     assert.deepEqual(manifeste.couverture.propositions_ajoutees, ["52026PC0502"]);
     assert.match(manifeste.couverture.selection, /proposition modifiant un acte suivi/);

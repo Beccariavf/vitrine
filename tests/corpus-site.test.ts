@@ -27,7 +27,7 @@ after(() => {
 });
 
 describe("sourcesCorpus", () => {
-  it("rend les vingt-deux collections committées dans l'ordre textes, autorités, juridictions", () => {
+  it("rend les vingt-trois collections committées dans l'ordre textes, autorités, juridictions", () => {
     const sources = sourcesCorpus(ROOT);
     assert.deepEqual(
       sources.map((source) => source.libelle),
@@ -40,6 +40,7 @@ describe("sourcesCorpus", () => {
         "Règlement procédural RGPD",
         "Textes UE de l'économie des données",
         "Espace européen des données de santé",
+        "Textes UE de frontière (produits, responsabilité, propriété intellectuelle, plateformes)",
         "Clauses contractuelles types",
         "Loi Informatique et Libertés",
         "Textes français d'application",

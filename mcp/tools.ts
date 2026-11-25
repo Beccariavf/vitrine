@@ -612,6 +612,86 @@ const ALIAS_ACTES_UE: ReadonlyArray<{ document: string; texte: readonly RegExp[]
     texte: [/\breglement d execution (?:ue )?(?:n )?2026 2098\b/],
     compact: [/32026r2098/],
   },
+  {
+    document: "32024R2847",
+    texte: [
+      /\bcra\b/,
+      /\bcyber ?resilience act\b/,
+      /\breglement (?:ue )?(?:n )?2024 2847\b/,
+    ],
+    compact: [/32024r2847/],
+  },
+  {
+    document: "32023R1230",
+    texte: [/\breglement (?:sur les )?machines\b/, /\breglement (?:ue )?(?:n )?2023 1230\b/],
+    compact: [/32023r1230/],
+  },
+  {
+    document: "32019R1020",
+    texte: [
+      /\breglement (?:sur la )?surveillance du marche\b/,
+      /\breglement (?:ue )?(?:n )?2019 1020\b/,
+    ],
+    compact: [/32019r1020/],
+  },
+  {
+    document: "32024L2853",
+    texte: [
+      /\bdirective (?:sur la )?responsabilite du fait des produits\b/,
+      /\bdirective (?:ue )?(?:n )?2024 2853\b/,
+    ],
+    compact: [/32024l2853/],
+  },
+  {
+    document: "31996L0009",
+    texte: [
+      /\bdirective (?:sur la protection juridique des )?bases de donnees\b/,
+      /\bdirective (?:ce )?(?:n )?96 9(?: ce)?\b/,
+    ],
+    compact: [/31996l0009/],
+  },
+  {
+    document: "32016L0943",
+    texte: [
+      /\bdirective (?:sur la protection des )?secrets? d(?:es)? affaires\b/,
+      /\bdirective (?:ue )?(?:n )?2016 943\b/,
+    ],
+    compact: [/32016l0943/],
+  },
+  {
+    document: "32019L0790",
+    texte: [
+      /\bdirective (?:sur le )?droit d auteur\b/,
+      /\bdirective (?:ue )?(?:n )?2019 790\b/,
+    ],
+    compact: [/32019l0790/],
+  },
+  {
+    document: "32022R2065",
+    texte: [
+      /\bdsa\b/,
+      /\breglement sur les services numeriques\b/,
+      /\bdigital services act\b/,
+      /\breglement (?:ue )?(?:n )?2022 2065\b/,
+    ],
+    compact: [/32022r2065/],
+  },
+  {
+    document: "32024L2831",
+    texte: [
+      /\bdirective (?:sur le )?travail via (?:une )?plateforme\b/,
+      /\bdirective (?:ue )?(?:n )?2024 2831\b/,
+    ],
+    compact: [/32024l2831/],
+  },
+  {
+    document: "32023L2225",
+    texte: [
+      /\bdirective (?:sur le )?credit a la consommation\b/,
+      /\bdirective (?:ue )?(?:n )?2023 2225\b/,
+    ],
+    compact: [/32023l2225/],
+  },
 ];
 
 /**
@@ -712,6 +792,16 @@ const NOMS_DOCUMENTS: Record<string, string> = {
   "32026R0771": "règlement d'exécution 2026/771 (comité de l'EEDS)",
   "32026R2083": "règlement d'exécution 2026/2083 (MaSanté@UE)",
   "32026R2098": "règlement d'exécution 2026/2098 (métadonnées EHDS)",
+  "32024R2847": "CRA",
+  "32023R1230": "règlement machines",
+  "32019R1020": "règlement surveillance du marché",
+  "32024L2853": "directive responsabilité du fait des produits",
+  "31996L0009": "directive bases de données",
+  "32016L0943": "directive secret des affaires",
+  "32019L0790": "directive droit d'auteur",
+  "32022R2065": "DSA",
+  "32024L2831": "directive travail via plateforme",
+  "32023L2225": "directive crédit à la consommation",
   LEGITEXT000038567662: "décret 2019-536",
   LEGITEXT000006070719: "Code pénal",
   LEGITEXT000006070987: "CPCE",

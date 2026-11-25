@@ -35,7 +35,7 @@ describe("registre des corpus", () => {
       assert.ok(corpus.descriptionProvenance !== "", `${corpus.nom} : description provenance`);
       assert.ok(corpus.descriptionRecherche !== "", `${corpus.nom} : description recherche`);
     }
-    assert.equal(NOMBRE_CORPUS, 22);
+    assert.equal(NOMBRE_CORPUS, 23);
   });
 
   it("garde la description du serveur identique à celle d'avant le registre", () => {
@@ -56,7 +56,7 @@ describe("registre des corpus", () => {
   });
 
   it("compte les corpus en toutes lettres, sans nombre en dur", () => {
-    assert.equal(nombreEnLettres(NOMBRE_CORPUS), "vingt-deux");
+    assert.equal(nombreEnLettres(NOMBRE_CORPUS), "vingt-trois");
     assert.equal(nombreEnLettres(0), "zéro");
     assert.equal(nombreEnLettres(1), "un");
     assert.equal(nombreEnLettres(21), "vingt et un");
@@ -73,9 +73,9 @@ describe("registre des corpus", () => {
       PERIMETRE,
       "RGPD, AI Act, ePrivacy, directive 2016/680, règlement 2018/1725, règlement procédural RGPD, " +
         "clauses contractuelles types, décisions d'adéquation, textes UE de l'économie des données, " +
-        "espace européen des données de santé (EHDS), LIL, textes français d'application, " +
-        "textes en préparation et affaires pendantes, CNIL, CADA, doctrine CNIL, CEPD, Conseil d'État, " +
-        "Conseil constitutionnel, Cour de cassation, CJUE",
+        "espace européen des données de santé (EHDS), textes UE de frontière, LIL, " +
+        "textes français d'application, textes en préparation et affaires pendantes, CNIL, CADA, " +
+        "doctrine CNIL, CEPD, Conseil d'État, Conseil constitutionnel, Cour de cassation, CJUE",
     );
   });
 });
