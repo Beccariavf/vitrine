@@ -3,22 +3,22 @@
   "nom": "Cour de cassation",
   "titre": "Décisions de la Cour de cassation relatives aux données personnelles",
   "source": "PISTE — Judilibre /search et /decision",
-  "date_extraction": "2026-11-19",
+  "date_extraction": "2026-11-25",
   "licence": "Licence Ouverte 2.0 (Etalab), conditions générales d'utilisation Judilibre",
-  "documents": 405,
-  "fragments": 8225,
-  "documents_lus": 1352,
-  "doublons_recherche": 709,
+  "documents": 735,
+  "fragments": 15670,
+  "documents_lus": 1827,
+  "doublons_recherche": 747,
   "exclusions": {
     "date_invalide": 0,
-    "hors_sujet": 947,
+    "hors_sujet": 1092,
     "texte_vide": 0
   },
   "couverture": {
     "source": "PISTE — Judilibre /search et /decision",
     "periode": {
-      "date_min": "1986-07-21",
-      "date_max": "2026-11-18"
+      "date_min": "1980-06-09",
+      "date_max": "2026-11-24"
     },
     "champs": "text",
     "requetes": [
@@ -43,45 +43,285 @@
       "violation de données",
       "conservation des données",
       "responsable du traitement",
-      "CNIL"
+      "CNIL",
+      "code des relations entre le public et l'administration",
+      "communication des documents administratifs",
+      "accès aux documents administratifs",
+      "secret des affaires",
+      "producteur de base de données",
+      "intelligence artificielle",
+      "directive 96/9",
+      "loi n° 68-678",
+      "code du patrimoine",
+      "L. 151-1 du code de commerce",
+      "L. 341-1 du code de la propriété intellectuelle"
     ],
     "filtre": {
-      "mots_cles": [
-        "rgpd",
-        "règlement général sur la protection des données",
-        "règlement (ue) 2016/679",
-        "règlement (ue) n° 2016/679",
-        "règlement n° 2016/679",
-        "règlement 2016/679",
-        "2016/679",
-        "directive 95/46",
-        "loi n° 78-17",
-        "loi 78-17",
-        "informatique et libertés",
-        "données personnelles",
-        "données à caractère personnel",
-        "protection des données",
-        "commission nationale de l'informatique et des libertés",
-        "eprivacy",
-        "traitement de données",
-        "données de connexion"
-      ],
-      "occurrences_min": 2,
-      "visa_pertinent": true
+      "historique": {
+        "mots_cles": [
+          "rgpd",
+          "règlement général sur la protection des données",
+          "règlement (ue) 2016/679",
+          "règlement (ue) n° 2016/679",
+          "règlement n° 2016/679",
+          "règlement 2016/679",
+          "2016/679",
+          "directive 95/46",
+          "loi n° 78-17",
+          "loi 78-17",
+          "informatique et libertés",
+          "données personnelles",
+          "données à caractère personnel",
+          "protection des données",
+          "commission nationale de l'informatique et des libertés",
+          "eprivacy",
+          "traitement de données",
+          "données de connexion"
+        ],
+        "occurrences_min": 2,
+        "visa_pertinent": true
+      },
+      "elargi": {
+        "criteres": [
+          {
+            "cle": "crpa-livre-iii",
+            "libelle": "CRPA, livre III (L. 300-1 à L. 327-1)",
+            "articles": "\\bl 3(?:0\\d|1\\d|2[0-7]) \\d+",
+            "contexte": "\\bcode des relations\\b"
+          },
+          {
+            "cle": "loi-51-711",
+            "libelle": "loi n° 51-711 (statistique publique)",
+            "articles": "\\bloi (?:n )?51 711\\b|\\bloi du 7 juin 1951\\b"
+          },
+          {
+            "cle": "loi-68-678",
+            "libelle": "loi n° 68-678 (communication de documents entre administrations)",
+            "articles": "\\bloi (?:n )?68 678\\b|\\bloi du 26 juillet 1968\\b"
+          },
+          {
+            "cle": "patrimoine-livre-ii",
+            "libelle": "Code du patrimoine, livre II (archives)",
+            "articles": "\\bl 21[1-7] \\d+",
+            "contexte": "\\bcode du patrimoine\\b"
+          },
+          {
+            "cle": "commerce-secret-affaires",
+            "libelle": "Code de commerce, L. 151-1 et suivants (secret des affaires)",
+            "articles": "\\bl 15[1-4] \\d+",
+            "contexte": "\\bcode (?:de|du) commerce\\b"
+          },
+          {
+            "cle": "cpi-bases-donnees",
+            "libelle": "CPI, L. 341-1 et suivants (bases de données)",
+            "articles": "\\bl 34[1-3] \\d+",
+            "contexte": "\\bcode de la propriete intellectuelle\\b"
+          },
+          {
+            "cle": "cpi-fouille-textes",
+            "libelle": "CPI, L. 122-5-3 (fouille de textes et de données)",
+            "articles": "\\bl 122 5 3\\b",
+            "contexte": "\\bcode de la propriete intellectuelle\\b"
+          },
+          {
+            "cle": "csp-donnees-sante",
+            "libelle": "CSP, L. 1110-4, L. 1111-8, L. 1460-1, L. 1461-1 (données de santé)",
+            "articles": "\\bl (?:1110 4|1111 8|1460 1|1461 1|1462 1)\\b",
+            "contexte": "\\bcode de la sante publique\\b"
+          },
+          {
+            "cle": "penal-226-13",
+            "libelle": "Code pénal, article 226-13 (secret professionnel)",
+            "articles": "\\b226 13\\b",
+            "contexte": "\\bcode penal\\b"
+          },
+          {
+            "cle": "data-act",
+            "libelle": "Data Act (règlement (UE) 2023/2854)",
+            "articles": "\\b2023 2854\\b"
+          },
+          {
+            "cle": "dga",
+            "libelle": "DGA (règlement (UE) 2022/868)",
+            "articles": "\\b2022 868\\b"
+          },
+          {
+            "cle": "open-data",
+            "libelle": "directive Open Data (UE) 2019/1024",
+            "articles": "\\b2019 1024\\b"
+          },
+          {
+            "cle": "libre-circulation",
+            "libelle": "libre circulation des données (UE) 2018/1807",
+            "articles": "\\b2018 1807\\b"
+          },
+          {
+            "cle": "ai-act",
+            "libelle": "AI Act (règlement (UE) 2024/1689)",
+            "articles": "\\b2024 1689\\b"
+          },
+          {
+            "cle": "ehds",
+            "libelle": "EHDS (règlement (UE) 2025/327)",
+            "articles": "\\b2025 327\\b"
+          },
+          {
+            "cle": "directive-bases-donnees",
+            "libelle": "directive 96/9/CE (bases de données)",
+            "articles": "\\bdirective 96 9\\b"
+          },
+          {
+            "cle": "directive-secret-affaires",
+            "libelle": "directive (UE) 2016/943 (secret des affaires)",
+            "articles": "\\b2016 943\\b"
+          },
+          {
+            "cle": "directive-droit-auteur",
+            "libelle": "directive (UE) 2019/790 (droit d'auteur)",
+            "articles": "\\b2019 790\\b"
+          },
+          {
+            "cle": "cra",
+            "libelle": "CRA (règlement (UE) 2024/2847)",
+            "articles": "\\b2024 2847\\b"
+          },
+          {
+            "cle": "dsa",
+            "libelle": "DSA (règlement (UE) 2022/2065)",
+            "articles": "\\b2022 2065\\b"
+          },
+          {
+            "cle": "responsabilite-produits",
+            "libelle": "responsabilité du fait des produits (UE) 2024/2853",
+            "articles": "\\b2024 2853\\b"
+          },
+          {
+            "cle": "reutilisation-informations-publiques",
+            "libelle": "réutilisation des informations publiques",
+            "expressions": [
+              "réutilisation des informations publiques"
+            ]
+          },
+          {
+            "cle": "reutilisation-documents-administratifs",
+            "libelle": "réutilisation des documents administratifs",
+            "expressions": [
+              "réutilisation des documents administratifs"
+            ]
+          },
+          {
+            "cle": "secret-des-affaires",
+            "libelle": "secret des affaires",
+            "expressions": [
+              "secret des affaires"
+            ]
+          },
+          {
+            "cle": "fouille-de-textes",
+            "libelle": "fouille de textes et de données",
+            "expressions": [
+              "fouille de textes et de données"
+            ]
+          },
+          {
+            "cle": "hebergeur-donnees-sante",
+            "libelle": "hébergeur de données de santé",
+            "expressions": [
+              "hébergeur de données de santé"
+            ]
+          },
+          {
+            "cle": "snds",
+            "libelle": "système national des données de santé",
+            "expressions": [
+              "système national des données de santé"
+            ]
+          },
+          {
+            "cle": "intelligence-artificielle",
+            "libelle": "intelligence artificielle",
+            "expressions": [
+              "intelligence artificielle"
+            ]
+          },
+          {
+            "cle": "ehds-expression",
+            "libelle": "espace européen des données de santé",
+            "expressions": [
+              "espace européen des données de santé"
+            ]
+          },
+          {
+            "cle": "droit-sui-generis",
+            "libelle": "droit sui generis",
+            "expressions": [
+              "droit sui generis"
+            ]
+          },
+          {
+            "cle": "communication-documents-administratifs",
+            "libelle": "communication des documents administratifs",
+            "expressions": [
+              "communication des documents administratifs"
+            ]
+          },
+          {
+            "cle": "acces-documents-administratifs",
+            "libelle": "accès aux documents administratifs",
+            "expressions": [
+              "accès aux documents administratifs"
+            ]
+          },
+          {
+            "cle": "base-donnees-producteur",
+            "libelle": "base de données et producteur",
+            "expressions": [
+              "base de données",
+              "producteur"
+            ],
+            "toutes": true
+          }
+        ]
+      },
+      "union": "décision retenue par le filtre historique ou par un critère élargi",
+      "ajouts_par_critere": {
+        "acces-documents-administratifs": 7,
+        "base-donnees-producteur": 17,
+        "commerce-secret-affaires": 16,
+        "communication-documents-administratifs": 4,
+        "cpi-bases-donnees": 12,
+        "crpa-livre-iii": 11,
+        "csp-donnees-sante": 12,
+        "directive-bases-donnees": 5,
+        "directive-secret-affaires": 1,
+        "droit-sui-generis": 8,
+        "intelligence-artificielle": 7,
+        "loi-68-678": 3,
+        "patrimoine-livre-ii": 8,
+        "penal-226-13": 10,
+        "secret-des-affaires": 265
+      },
+      "deja_presents_par_critere": {
+        "base-donnees-producteur": 1,
+        "cpi-bases-donnees": 1,
+        "droit-sui-generis": 1,
+        "penal-226-13": 5,
+        "secret-des-affaires": 5
+      }
     },
     "veille": {
       "entrees": 6,
-      "ajoutees": 1,
+      "ajoutees": 0,
       "retenues": 6
     },
     "exclusions": {
       "date_invalide": 0,
-      "hors_sujet": 947,
+      "hors_sujet": 1092,
       "texte_vide": 0
     },
     "introuvables": [],
     "reprise": {
-      "en_cache": 1352,
+      "en_cache": 1827,
       "en_attente": 0
     }
   }
