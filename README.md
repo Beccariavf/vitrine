@@ -60,7 +60,7 @@ node mcp/eval/citations.ts cnil --taille 5                                      
 node mcp/eval/citations.ts --classement                                         # classement réel des documents cités absents du corpus, sans écrire (hors CI)
 ```
 
-Le MCP lit le RGPD, l'AI Act, la LIL, les délibérations de la CNIL, les avis de la CADA, les décisions du Conseil
+Le MCP lit le RGPD, l'AI Act, la LIL, les délibérations de la CNIL, les avis et conseils de la CADA, les décisions du Conseil
 d'État, les lignes directrices du CEPD, les décisions de la Cour de cassation et celles de la CJUE
 par passage exact et par recherche sémantique, avec provenance. Seule
 la recherche sémantique exige Ollama sur `127.0.0.1:11434` et le modèle `leoipulsar/harrier-0.6b`
