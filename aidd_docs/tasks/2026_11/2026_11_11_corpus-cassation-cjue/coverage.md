@@ -1,20 +1,20 @@
 # Couverture des corpus
 
-Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les corpus inchangés, 15 novembre pour `metadonnees`, 25 novembre pour `donnees`), jamais recopiés depuis un autre rapport.
+Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les corpus inchangés, 15 novembre pour `metadonnees`, 25 novembre pour `donnees`, `cnil` et `cepd`), jamais recopiés depuis un autre rapport.
 
 | Corpus | Documents | Fragments | Période | Source | Licence |
 |---|---:|---:|---|---|---|
 | `rgpd` | 1 acte | 272 (99 articles + 173 considérants) | publication 2016-05-04 ; applicable depuis 2018-05-25 | CELLAR / EUR-Lex, CELEX `32016R0679` | Décision 2011/833/UE (CC BY 4.0) |
 | `aiact` | 1 acte | 299 (119 articles de la consolidation `02024R1689-20260727` + 180 considérants de l'acte d'origine) | publication 2024-07-12 ; en vigueur depuis 2024-08-01 | CELLAR / EUR-Lex, CELEX `32024R1689` | Décision 2011/833/UE (CC BY 4.0) |
 | `donnees` | 7 actes | 470 (125 articles, 325 considérants, 3 points, 17 annexes) | actes du 2018-11-14 au 2026-10-29 ; publication du 2018-11-28 au 2026-11-06 | CELLAR / EUR-Lex, CELEX `32023R2854`, `32022R0868`, `32019L1024`, `32023R0138`, `32018R1807`, `32026H2394`, `32023R1622` | Décision 2011/833/UE (CC BY 4.0) |
-| `cnil` | 3 245 | 29 299 | arrêté au 2026-10-30 | DINUM (historique) + DILA (incréments) | DINUM : `etalab-2.0` et `lov2`, écart déclaré ; DILA : Licence Ouverte 2.0 |
+| `cnil` | 3 260 (dont 14 délibérations supplémentaires) | 29 698 (dont 325) | arrêté au 2026-11-17 | DINUM (historique) + DILA (incréments) | DINUM : `etalab-2.0` et `lov2`, écart déclaré ; DILA : Licence Ouverte 2.0 |
 | `cnil_doctrine` | 56 (30 guides, 26 référentiels) | 4 459 | documents datés de 2019-11-21 à 2026-11-14 ; 2 listes AIPD laissées au corpus `cnil` | cnil.fr — pages de référence (guides, référentiels, listes AIPD) | CC BY-ND 4.0, marquage par fragment ; listes AIPD en Licence Ouverte via `cnil` |
 | `lil` | 1 | 133 articles en vigueur | version consolidée au 2026-10-01 ; consultée le 2026-11-09 | PISTE — Légifrance `/consult/legiPart` | Licence Ouverte 2.0 (Etalab) |
 | `textes_fr` | 12 (40 blocs) | 626 articles en vigueur (décret 2019-536 : 166 ; Code pénal : 31 — 226-16 à 226-24, 226-1, 226-8-1, 226-13, chapitre 323 ; CPCE L32-3, L34-1, L34-5 : 3 ; Code du travail : 5 ; Code de la santé publique : 394 — L1110, L1111, L1121 à L1126, L1130 à L1133, L1141, SNDS L1460/L1461, L1470, L6316, articles isolés et parties réglementaires R1110, R1111, R1461, R1470, R6316 ; Code de la sécurité sociale : 3 ; Code des assurances : 2 ; CGCT : 1 ; Code de la sécurité intérieure titre V du livre II : 18 ; Code monétaire et financier : 1 ; CRPA : 1 ; Code civil art. 9 : 1) ; 37 abrogés écartés | consultés le 2026-11-25 | PISTE — Légifrance `/consult/legiPart`, `/consult/code`, `/consult/getArticleWithIdAndNum` | Licence Ouverte 2.0 (Etalab) |
 | `preparation` | 12 propositions + 135 affaires pendantes | 147 (12 propositions, 135 affaires ; 37 affaires présumées) | propositions 2022-03-22 → 2026-11-11 ; affaires 2019-01-07 → 2026-10-02 | CELLAR / EUR-Lex, SPARQL et communications du Journal officiel en XHTML | Décision 2011/833/UE (CC BY 4.0) |
 | `ce` | 1 594 | 20 774 | 1982-03-12 → 2026-10-27 | DILA — JADE, fonds `publie` et `inedit` | Licence Ouverte 2.0 (Etalab) |
 | `constit` | 108 | 5 775 | 1982-12-14 → 2026-08-14 | DILA — CONSTIT, XML Légifrance | Licence Ouverte 2.0 (Etalab) |
-| `cepd` | 328 | 20 287 | 2018-04-11 → 2026-11-10 | CEPD, sitemap des pages `_fr` et `_en` et PDF | Régime ouvert (notice de copyright du CEPD) |
+| `cepd` | 330 (dont 2 avis législatifs hors sitemap) | 20 509 (dont 222) | 2018-04-11 → 2026-11-10 | CEPD, sitemap des pages `_fr` et `_en` et PDF | Régime ouvert (notice de copyright du CEPD) |
 | `cc` | 403 | 8 194 | 1986-07-21 → 2026-11-10 | PISTE — Judilibre `/search` et `/decision` | Licence Ouverte 2.0 (Etalab) et CGU Judilibre |
 | `cjue` | 251 | 23 460 | 1999-10-14 → 2026-11-05 | CELLAR / EUR-Lex — SPARQL `PDON` + notions `4.11.01` et `2.04` + 4 CELEX, XHTML français puis anglais, repli HTML patrimonial | Décision 2011/833/UE (CC BY 4.0) |
 | `metadonnees` | 1 595 identifiants (1 597 notices) | 1 597 notices, aucun texte | 2018-09-12 → 2026-08-10 | CEPD — registre des décisions définitives du guichet unique (art. 60 RGPD) ; source CEDH (HUDOC) arrêtée, motif au manifeste | Notice de copyright du CEPD |
@@ -80,6 +80,14 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 - 22 entrées écartées, toutes motivées (dont deux pages courtes, doublons de WP242 et WP260) : 7 sans PDF, 3 versions obsolètes (doublons anglais d'un même numéro), 2 où la page ne sert que l'annexe, 1 PDF sans rapport avec le document (WP242, dont la pièce jointe est une décision danoise) et 9 documents de la liste d'endossement du G29 (8 hébergés hors du site du CEPD, WP263 porté par un document EDPB hors des rubriques). 10 sont comptés `documents_sans_texte_ecartes`.
 - La page d'endossement du G29 (16 documents) est rapprochée du corpus : 6 retenus, dont WP260 et cinq WP (259, 250, 244, 264, 256) représentés par leur successeur EDPB (`successeurs: 5`) ; 10 écartés, dont 8 hébergés sur `ec.europa.eu`, hors de la notice de copyright du CEPD.
 - Licence : régime ouvert de la notice de copyright du CEPD ; chaque fragment porte son URL de page et son chemin `CEPD > <type> > <titre>`, et le serveur ne produit aucun résumé.
+- Ajout du 25 novembre 2026 (#135) : deux avis législatifs hors sitemap, opinion 3/2019 (essais cliniques, 23 janvier 2019) et avis conjoint CEPD-CEPS 03/2022 (EHDS, 12 juillet 2022), déclarés dans `documents_supplementaires` avec le type `avis_legislatif`. `npm run cepd:sync -- --supplementaires` les a ajoutés sans relire les 328 documents du sitemap : 222 fragments ajoutés, 0 unité modifiée ou supprimée. Les deux PDF servis sont français (156 `fr`, 174 `en`).
+
+## Détail `cnil`
+
+- Ajout du 25 novembre 2026 (#135) : quatorze délibérations de nature `Référentiel/Règlement type/Norme` retenues hors du filtre de natures, listées au descripteur dans `deliberations_supplementaires` : MR-001 à MR-008, référentiel entrepôts 2021-118, référentiel vigilances 2019-057, et les quatre délibérations du 19 mars 2026 (2026-049 annexe sécurité, 2026-050 MR-001 révisée, 2026-051 MR-003 révisée, 2026-052 annexe contrôle qualité).
+- Le corpus passe de 3 245 à 3 260 documents et de 29 299 à 29 698 fragments : 325 lignes ajoutées, 0 supprimée ou modifiée (vérifié au diff de `unites.jsonl`), les comptes attendus du filtre de natures restant la base. `couverture.exclusions` descend de 35 167 à 34 842 lignes.
+- 2018-153 (MR-001) et 2018-154 (MR-003) restent au corpus avec le statut « Remplacée par 2026-050 » et « Remplacée par 2026-051 » ; `objets` donne le libellé de chaque délibération, porté au `chemin`. Aucune délibération déclarée absente des sources.
+- Les PDF compagnons (grilles, versions annotées, FAQ vigilances) ne sont pas listés sur une page de référence déjà lue et restent hors périmètre, déclarés ici.
 
 ## Détail `cnil_doctrine`
 
