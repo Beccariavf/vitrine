@@ -72,11 +72,39 @@ export function codeSynthetique(texte: TexteFr): unknown {
   return sectionSynthetique(texte, route.sctCid, [...new Set([route.premier, route.dernier])]);
 }
 
+/** Réponse `/consult/legiPart` réduite : les deux bornes d'une plage, sinon deux articles. */
+export function legiPartSynthetique(texte: TexteFr): unknown {
+  const route = texte.route;
+  if (route.type !== "legiPart") {
+    throw new Error(`${texte.cle} : route legiPart attendue`);
+  }
+  const nums =
+    route.plage === undefined
+      ? ["1", "2"]
+      : [...new Set([route.plage.premier, route.plage.dernier])];
+  return {
+    id: `${texte.textId}_01-01-2025`,
+    title: texte.titre,
+    dateDebutVersion: "2025-01-01",
+    sections: [],
+    articles: nums.map((num) => ({
+      id: identifiantSynthetique(texte.textId, num),
+      num,
+      content: `<p>Texte de l'article ${num}.</p>`,
+      pathTitle: [],
+      etat: "VIGUEUR",
+      dateDebut: "2021-01-01",
+      dateFin: null,
+    })),
+  };
+}
+
 /**
  * Une réponse par entrée du descripteur, dans l'ordre de celui-ci. Les captures
  * réelles sont reprises telles quelles ; toute autre entrée reçoit sa réponse
- * synthétique. Une route `legiPart` sans capture réelle lève : elle ne peut pas
- * être inventée compacte sans fausser les comptes.
+ * synthétique. Une route `legiPart` sans capture réelle reçoit deux articles,
+ * bornes de sa plage quand elle en a une : les comptes restent ceux du
+ * descripteur réduit.
  */
 export function reponsesSynthetiques(
   descripteur: DescripteurTextesFr,
@@ -97,7 +125,7 @@ export function reponsesSynthetiques(
         sectionSynthetique(texte, section.sctCid, section.nums),
       );
     } else {
-      throw new Error(`${texte.cle} : aucune capture réelle pour une route legiPart`);
+      reponses[texte.cle] = legiPartSynthetique(texte);
     }
   }
   return reponses;
@@ -123,7 +151,9 @@ export function reponseParCorps(
 ): unknown {
   for (const texte of descripteur.textes) {
     const route = texte.route;
-    if (route.type === "code") {
+    if (route.type === "legiPart") {
+      if (corps.textId === texte.textId) return reponses[texte.cle];
+    } else if (route.type === "code") {
       if (corps.textId === texte.textId && corps.sctCid === route.sctCid) return reponses[texte.cle];
     } else if (route.type === "article") {
       if (corps.id === texte.textId && corps.num === route.num) return reponses[texte.cle];

@@ -60,6 +60,12 @@ const CMF = "LEGITEXT000006072026";
 const CRPA = "LEGITEXT000031366350";
 const CIVIL = "LEGITEXT000006070721";
 const SECURITE_SOCIALE = "LEGITEXT000006073189";
+const PATRIMOINE = "LEGITEXT000006074236";
+const COMMERCE = "LEGITEXT000005634379";
+const CPI = "LEGITEXT000006069414";
+const LOI_51_711 = "LEGITEXT000006068104";
+const LOI_68_678 = "LEGITEXT000006068321";
+const SREN = "LEGITEXT000049565770";
 
 /** Nombre d'articles d'une réponse réduite : 2 pour une section, toute la liste sinon. */
 function compteReduit(texte: TexteFr): number {
@@ -91,6 +97,9 @@ function descripteurReduit(root: string): string {
 function numerosAttendus(texte: TexteFr): string[] {
   const route = texte.route;
   if (route.type === "code") return [...new Set([route.premier, route.dernier])];
+  if (route.type === "legiPart") {
+    return route.plage === undefined ? ["1", "2"] : [...new Set([route.plage.premier, route.plage.dernier])];
+  }
   if (route.type === "articles") return [...route.nums];
   if (route.type === "article") return [route.num];
   if (route.type === "codeArticles") return route.sections.flatMap((section) => section.nums);
@@ -196,6 +205,48 @@ describe("la lecture des textes français d'application", () => {
     const part = lireSectionDeCode(racine, "SECTION-DUPLIQUEE");
     assert.deepEqual(part.articles.map((element) => element.id), ["LEGIARTI000000000002"]);
     assert.equal(part.articles[0]?.content, "<p>Texte en vigueur.</p>");
+  });
+
+  it("borne une loi lue en entier à sa plage et retire les numéros déjà couverts", () => {
+    const article = (num: string) => ({
+      id: `LEGIARTI${num.replace(/\W/g, "")}`,
+      num,
+      content: `<p>Texte de l'article ${num}.</p>`,
+      pathTitle: [],
+      etat: "VIGUEUR",
+      dateDebut: "2024-05-23",
+      dateFin: null,
+    });
+    const reponse = {
+      id: "LEGITEXT000049565770_15-11-2024",
+      sections: [],
+      articles: ["25", "26", "39", "40"].map(article),
+    };
+    const texte: TexteFr = {
+      cle: "loi",
+      nom: "Loi",
+      titre: "Loi",
+      textId: SREN,
+      url: "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000049565770",
+      url_article: "https://www.legifrance.gouv.fr/loda/id/{id}",
+      perimetre: "articles 26 à 39",
+      route: { type: "legiPart", plage: { premier: "26", dernier: "39" } },
+      attendus: { articles: 2 },
+    };
+    const bornee = lireTexte(texte, reponse, "textes_fr", "2026-11-25");
+    assert.deepEqual(bornee.unites.map((unite) => unite.numero), ["26", "39"]);
+
+    const exclu = lireTexte(
+      { ...texte, route: { type: "legiPart" }, exclure: ["L311-3-1"] },
+      {
+        id: "LEGITEXT000031366350_28-05-2026",
+        sections: [],
+        articles: [article("L311-3-1"), article("L311-4")],
+      },
+      "textes_fr",
+      "2026-11-25",
+    );
+    assert.deepEqual(exclu.unites.map((unite) => unite.numero), ["L311-4"]);
   });
 });
 
@@ -728,6 +779,16 @@ describe("les outils sur les textes français d'application", () => {
       documentsNommes("le code des relations entre le public et l'administration"),
       [CRPA],
     );
+    assert.deepEqual(documentsNommes("le CRPA"), [CRPA]);
+    assert.deepEqual(documentsNommes("le code du patrimoine"), [PATRIMOINE]);
+    assert.deepEqual(documentsNommes("le code de commerce"), [COMMERCE]);
+    assert.deepEqual(documentsNommes("le code de la propriété intellectuelle"), [CPI]);
+    assert.deepEqual(documentsNommes("le CPI"), [CPI]);
+    assert.deepEqual(documentsNommes("la loi n° 51-711"), [LOI_51_711]);
+    assert.deepEqual(documentsNommes("la loi du 7 juin 1951"), [LOI_51_711]);
+    assert.deepEqual(documentsNommes("la loi n° 68-678"), [LOI_68_678]);
+    assert.deepEqual(documentsNommes("la loi SREN"), [SREN]);
+    assert.deepEqual(documentsNommes("la loi n° 2024-449"), [SREN]);
     assert.deepEqual(documentsNommes("l'article 9 du code civil"), [CIVIL]);
     assert.deepEqual(documentsNommes("l'article L. 161-28-1 CSS"), [SECURITE_SOCIALE]);
     assert.equal(statutApplication("textes_fr", "VIGUEUR"), "en_vigueur");
@@ -833,6 +894,16 @@ describe("les articles de santé ajoutés et les articles existants", () => {
     assert.equal(referenceExacte("L'article L. 1121-16-1-A du CSP"), "L. 1121-16-1-A");
     assert.equal(referenceExacte("l'article 226-13 C. pén."), "226-13");
     assert.equal(referenceExacte("l'article 9 C. civ."), "9");
+
+    // L'étoile est une marque de procédure : R*311-12 et R. 311-12 sont le même article.
+    assert.equal(normaliserNumero("R*311-12"), "R311-12");
+    assert.equal(normaliserNumero("R. 311-12"), "R311-12");
+    const etoile = getArticle(RACINE, { document: CRPA, numero: "R*311-12" });
+    const sansEtoile = getArticle(RACINE, { document: CRPA, numero: "R. 311-12" });
+    assert.equal(etoile.trouve && etoile.numero, "R*311-12");
+    assert.equal(sansEtoile.trouve && sansEtoile.ref, etoile.trouve && etoile.ref);
+    assert.equal(getArticle(RACINE, { document: PATRIMOINE, numero: "R*212-38" }).trouve, true);
+    assert.equal(referenceExacte("L'article R*311-12 du CRPA"), "R*311-12");
   });
 
   it("attribue les articles ajoutés et les dit au corpus", () => {
@@ -856,6 +927,29 @@ describe("les articles de santé ajoutés et les articles existants", () => {
       assert.deepEqual(
         rendues.map((element) => [element.document, element.hors_corpus]),
         [[document, false]],
+      );
+    }
+  });
+
+  it("attribue les textes de l'accès et de la réutilisation des données", () => {
+    const citation = (texte: string) => avecPresence(RACINE, extraireCitations(texte));
+    for (const [texte, document, articles] of [
+      ["L'article L. 321-1 du code des relations entre le public et l'administration ouvre la réutilisation.", CRPA, ["L. 321-1"]],
+      ["L'article L. 151-1 du code de commerce définit le secret des affaires.", COMMERCE, ["L. 151-1"]],
+      ["L'article 6 de la loi n° 51-711 impose le secret statistique.", LOI_51_711, ["6"]],
+      ["L'article 1er de la loi n° 68-678 interdit la communication à l'étranger.", LOI_68_678, ["1er"]],
+      ["L'article L. 211-1 du code du patrimoine régit les archives publiques.", PATRIMOINE, ["L. 211-1"]],
+      ["L'article L. 342-1 du CPI protège le producteur de bases de données.", CPI, ["L. 342-1"]],
+      ["L'article L. 122-5-3 du code de la propriété intellectuelle autorise la fouille de textes.", CPI, ["L. 122-5-3"]],
+      ["L'article 26 de la loi SREN encadre les pratiques commerciales dans le cloud.", SREN, ["26"]],
+      ["L'article R*311-12 du CRPA fixe les modalités de communication.", CRPA, ["R*311-12"]],
+      ["L'article R. 311-12 du CRPA fixe les modalités de communication.", CRPA, ["R. 311-12"]],
+      ["L'article R*212-38 du code du patrimoine vise les archives du Conseil constitutionnel.", PATRIMOINE, ["R*212-38"]],
+    ] as const) {
+      assert.deepEqual(
+        citation(texte).map((element) => [element.document, element.articles, element.hors_corpus]),
+        [[document, articles, false]],
+        texte,
       );
     }
   });

@@ -161,7 +161,9 @@ export function manifesteTextesFr(
       date_debut_version: lecture.dateDebutVersion,
       perimetre: lecture.texte.perimetre,
       articles_couverts:
-        lecture.texte.route.type === "legiPart" ? null : lecture.unites.map((unite) => unite.numero),
+        lecture.texte.route.type === "legiPart" && lecture.texte.route.plage === undefined
+          ? null
+          : lecture.unites.map((unite) => unite.numero),
       articles_en_vigueur: lecture.unites.length,
       articles_abroges_ecartes: lecture.abroges,
       versions_remplacees: historiques.get(lecture.texte.cle) ?? [],
