@@ -13,6 +13,8 @@
       "date_debut": "2019-05-28",
       "date_fin": null,
       "statut": "en_vigueur",
+      "version": "32018R1807",
+      "date_consolidation": null,
       "snapshot": "824cb1f78059006585c7ddb068db69fac4c528b81a5cb24b97fe4aab1ec9926a.xhtml",
       "unites": 48,
       "couverture": {
@@ -31,7 +33,9 @@
         "comptes": {
           "articles": 9,
           "considerants": 39
-        }
+        },
+        "version": "32018R1807",
+        "date_consolidation": null
       }
     },
     {
@@ -45,6 +49,8 @@
       "date_debut": "2019-07-16",
       "date_fin": null,
       "statut": "en_vigueur",
+      "version": "32019L1024",
+      "date_consolidation": null,
       "snapshot": "727db8dead6cc0fd406d2f6bb8e391db068aeca62bc2df648eedefba32c60a99.xhtml",
       "unites": 98,
       "couverture": {
@@ -65,7 +71,9 @@
           "articles": 21,
           "considerants": 74,
           "annexes": 3
-        }
+        },
+        "version": "32019L1024",
+        "date_consolidation": null
       }
     },
     {
@@ -79,6 +87,8 @@
       "date_debut": "2023-09-24",
       "date_fin": null,
       "statut": "en_vigueur",
+      "version": "32022R0868",
+      "date_consolidation": null,
       "snapshot": "c52193e9f9ce869bbc46b0b6c4481721e0db1bd8c467cdd29b97417fa8a01cc4.xhtml",
       "unites": 101,
       "couverture": {
@@ -97,7 +107,9 @@
         "comptes": {
           "articles": 38,
           "considerants": 63
-        }
+        },
+        "version": "32022R0868",
+        "date_consolidation": null
       }
     },
     {
@@ -111,6 +123,8 @@
       "date_debut": "2024-06-09",
       "date_fin": null,
       "statut": "en_vigueur",
+      "version": "32023R0138",
+      "date_consolidation": null,
       "snapshot": "53bf7c59773f7bd6db8e117363bd90bff9fdad39421db66fb4ce4cd6ca356de3.xhtml",
       "unites": 21,
       "couverture": {
@@ -131,7 +145,9 @@
           "articles": 6,
           "considerants": 14,
           "annexes": 1
-        }
+        },
+        "version": "32023R0138",
+        "date_consolidation": null
       }
     },
     {
@@ -145,6 +161,8 @@
       "date_debut": "2023-08-30",
       "date_fin": null,
       "statut": "en_vigueur",
+      "version": "32023R1622",
+      "date_consolidation": null,
       "snapshot": "5ebb5ce59ebb601a4d4ecd85c2cf46ea356659b855271e13cfb92adfdc46a525.xhtml",
       "unites": 4,
       "couverture": {
@@ -165,7 +183,9 @@
           "articles": 1,
           "considerants": 2,
           "annexes": 1
-        }
+        },
+        "version": "32023R1622",
+        "date_consolidation": null
       }
     },
     {
@@ -179,6 +199,8 @@
       "date_debut": "2025-09-12",
       "date_fin": null,
       "statut": "en_vigueur",
+      "version": "32023R2854",
+      "date_consolidation": null,
       "snapshot": "176b9f61e1ddd5f1115e0056b87be564d8a12f8914a2569ce79ac1274bfbd687.xhtml",
       "unites": 169,
       "couverture": {
@@ -197,7 +219,9 @@
         "comptes": {
           "articles": 50,
           "considerants": 119
-        }
+        },
+        "version": "32023R2854",
+        "date_consolidation": null
       }
     },
     {
@@ -211,6 +235,8 @@
       "date_debut": "2026-10-29",
       "date_fin": null,
       "statut": "adoptee",
+      "version": "32026H2394",
+      "date_consolidation": null,
       "snapshot": "e8c44f432d3a4cbfc5ab7886482eeb9236665575df8f752e6e1e8014f6c12586.xhtml",
       "unites": 29,
       "couverture": {
@@ -232,7 +258,9 @@
           "considerants": 14,
           "points": 3,
           "annexes": 12
-        }
+        },
+        "version": "32026H2394",
+        "date_consolidation": null
       }
     }
   ],

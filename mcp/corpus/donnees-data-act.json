@@ -11,6 +11,8 @@
   "date_debut": "2025-09-12",
   "date_fin": null,
   "statut": "en_vigueur",
+  "version": "32023R2854",
+  "date_consolidation": null,
   "articles_attendus": 50,
   "considerants_attendus": 119,
   "parseur": "donnees"

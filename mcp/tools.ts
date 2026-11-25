@@ -397,7 +397,7 @@ export function avecMarquageDoctrine(rootDir: string, passages: Passage[]): Pass
  */
 export function referenceExacte(question: string): string | null {
   const reference = new RegExp(
-    `\\b(?:article|art\\.?)\\s*((?:[LRD]\\.?\\s*)?\\d+(?:-\\d+)*(?:\\s*(?:${SUFFIXE_ARTICLE})\\b)?)`,
+    `\\b(?:article|art\\.?)\\s*(unique\\b|(?:[LRD]\\.?\\s*)?\\d+(?:-\\d+)*(?:\\s*(?:${SUFFIXE_ARTICLE})\\b)?)`,
     "i",
   ).exec(question);
   return reference === null ? null : (reference[1] ?? "");
@@ -499,6 +499,65 @@ const ALIAS_ACTES_UE: ReadonlyArray<{ document: string; texte: readonly RegExp[]
     ],
     compact: [/32021d0915/],
   },
+  {
+    document: "32023R2854",
+    texte: [
+      /\bdata act\b/,
+      /\breglement sur les donnees\b/,
+      /\breglement (?:ue )?(?:n )?2023 2854\b/,
+    ],
+    compact: [/32023r2854/],
+  },
+  {
+    document: "32022R0868",
+    texte: [
+      /\bdga\b/,
+      /\breglement sur la gouvernance (?:europeenne )?des donnees\b/,
+      /\breglement (?:ue )?(?:n )?2022 868\b/,
+    ],
+    compact: [/32022r0868/],
+  },
+  {
+    document: "32019L1024",
+    texte: [
+      /\bdirective open data\b/,
+      /\bdirective sur les donnees ouvertes\b/,
+      /\bdirective (?:ue )?(?:n )?2019 1024\b/,
+    ],
+    compact: [/32019l1024/],
+  },
+  {
+    document: "32023R0138",
+    texte: [
+      /\bensembles? de donnees de (?:forte|haute) valeur\b/,
+      /\breglement d execution (?:ue )?(?:n )?2023 138\b/,
+    ],
+    compact: [/32023r0138/],
+  },
+  {
+    document: "32018R1807",
+    texte: [
+      /\blibre (?:flux|circulation) des donnees\b/,
+      /\breglement (?:ue )?(?:n )?2018 1807\b/,
+    ],
+    compact: [/32018r1807/],
+  },
+  {
+    document: "32026H2394",
+    texte: [
+      /\brecommandation (?:ue )?(?:n )?2026 2394\b/,
+      /\bclauses types (?:du )?data act\b/,
+    ],
+    compact: [/32026h2394/],
+  },
+  {
+    document: "32023R1622",
+    texte: [
+      /\blogos (?:dga|de la dga|du dga)\b/,
+      /\breglement d execution (?:ue )?(?:n )?2023 1622\b/,
+    ],
+    compact: [/32023r1622/],
+  },
 ];
 
 /**
@@ -561,6 +620,13 @@ const NOMS_DOCUMENTS: Record<string, string> = {
   "32025R2518": "règlement procédural RGPD",
   "32021D0914": "clauses contractuelles types (transfert)",
   "32021D0915": "clauses contractuelles types (sous-traitance)",
+  "32023R2854": "Data Act",
+  "32022R0868": "DGA",
+  "32019L1024": "directive Open Data",
+  "32023R0138": "ensembles de forte valeur",
+  "32018R1807": "libre circulation des données",
+  "32026H2394": "recommandation clauses types Data Act",
+  "32023R1622": "logos DGA",
   LEGITEXT000038567662: "décret 2019-536",
   LEGITEXT000006070719: "Code pénal",
   LEGITEXT000006070987: "CPCE",
@@ -680,17 +746,20 @@ function dateValide(date: string): boolean {
 }
 
 /**
- * Lit un article exact dans le corpus de `document`. Avec `date`, réservée à la
- * LIL, rend la version applicable à cette date depuis `versions.jsonl` (hors
- * ligne) ; sans date, le comportement est celui du corpus en vigueur. Un alias
- * de la LIL est résolu sur les deux chemins.
+ * Lit un article exact dans le corpus de `document`. Un nom d'instrument
+ * (`Data Act`, `RGPD`, `code pénal`…) est résolu par `documentNomme` ; un
+ * identifiant reste tel quel. Avec `date`, réservée à la LIL, rend la version
+ * applicable à cette date depuis `versions.jsonl` (hors ligne) ; sans date, le
+ * comportement est celui du corpus en vigueur. Un alias de la LIL est résolu sur
+ * les deux chemins.
  */
 export function getArticle(
   rootDir: string,
   demande: { document: string; numero: string | number; date?: string },
 ): ResultatArticle {
-  const lil = estDocumentLil(demande.document);
-  const document = lil ? LIL : demande.document;
+  const nomme = documentNomme(demande.document) ?? demande.document;
+  const lil = estDocumentLil(nomme);
+  const document = lil ? LIL : nomme;
   if (demande.date === undefined) {
     return articleEnVigueur(rootDir, { document, numero: demande.numero });
   }

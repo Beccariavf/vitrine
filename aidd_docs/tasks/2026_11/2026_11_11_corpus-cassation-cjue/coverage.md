@@ -67,8 +67,8 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 ## Détail `donnees`
 
 - Sept actes lus sur CELLAR en XHTML français, corpus multi-documents (un descripteur par acte, manifeste à `documents[]`) : Data Act `32023R2854` (50 articles, 119 considérants), DGA `32022R0868` (38, 63), directive Open Data `32019L1024` (21, 74, 3 annexes), ensembles de forte valeur `32023R0138` (6, 14, 1 annexe), libre circulation `32018R1807` (9, 39), recommandation clauses types `32026H2394` (14 considérants, 3 points, 12 annexes), logos DGA `32023R1622` (1 article unique, 2 considérants, 1 annexe).
-- Cellar SPARQL liste trois consolidations (`02023R2854-20231222`, `02022R0868-20220603`, `02023R0138-20230120`) ; aucune n'a de datastream XHTML servi (`cellar:… does not hold a content datastream of the requested type`). Les sept descripteurs rendent donc l'acte d'origine.
-- `parseur: donnees` : `parseCellar` pour les articles et considérants, plus l'article unique (`art_unique`), les points numérotés `enc_1` (`point_N`) et une unité par annexe (`anx_*`). Les annexes ne sont pas découpées en clauses : l'annexe II de la recommandation pèse ~100 000 caractères.
+- Cellar SPARQL liste trois consolidations (`02023R2854-20231222`, `02022R0868-20220603`, `02023R0138-20230120`) ; aucune n'a de datastream XHTML servi (constaté le 2026-11-25 : `cellar:… does not hold a content datastream of the requested type`). Les sept descripteurs rendent donc l'acte d'origine, `version` = CELEX et `date_consolidation: null`.
+- `parseur: donnees` : `parseCellar` pour les articles et considérants, plus l'article unique (`art_unique`, URL `#art`), les points numérotés `enc_1` (`point_N`, URL `#enc_1`) et une unité par annexe (`anx_*`). Les annexes ne sont pas découpées en clauses : l'annexe II de la recommandation pèse ~100 000 caractères.
 - Veille : `eurlex` suit les sept CELEX et la matière est `donnees-non-personnelles` ; citations connues au catalogue (`INSTRUMENTS`).
 
 ## Détail `cepd`

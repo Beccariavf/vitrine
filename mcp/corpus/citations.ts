@@ -578,11 +578,11 @@ const BALAYAGES = INSTRUMENTS.map((instrument) => ({ instrument, motif: balayage
  * « l'article 4-2° de la loi » cite l'article 4, point 2°.
  */
 const NUMERO =
-  "(?:[LRD]\\. ?)?\\d{1,4}(?:er)?(?:[.-]\\d{1,4}(?!°))*(?:\\(\\d{1,4}\\)|\\([a-z]\\))*";
+  "(?:unique|(?:[LRD]\\. ?)?\\d{1,4}(?:er)?(?:[.-]\\d{1,4}(?!°))*(?:\\(\\d{1,4}\\)|\\([a-z]\\))*)";
 
 /** Le même jeton, pour relire une liste déjà reconnue et en extraire les numéros. */
 const JETON_ARTICLE = new RegExp(
-  "(?:[LRD]\\. ?)?\\d+(?:er)?(?:[.-]\\d+)*(?:\\(\\d{1,4}\\)|\\([a-z]\\))*",
+  "(?:unique|(?:[LRD]\\. ?)?\\d+(?:er)?(?:[.-]\\d+)*(?:\\(\\d{1,4}\\)|\\([a-z]\\))*)",
   "gi",
 );
 

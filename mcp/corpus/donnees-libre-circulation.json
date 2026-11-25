@@ -11,6 +11,8 @@
   "date_debut": "2019-05-28",
   "date_fin": null,
   "statut": "en_vigueur",
+  "version": "32018R1807",
+  "date_consolidation": null,
   "articles_attendus": 9,
   "considerants_attendus": 39,
   "parseur": "donnees"

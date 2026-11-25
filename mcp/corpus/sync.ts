@@ -289,7 +289,6 @@ export function agentsParDefaut(
     eudpr: agentActe("eudpr"),
     rgpdproc: agentActe("rgpdproc"),
     ccs: agentActe("ccs"),
-    donnees: agentActe("donnees"),
     adequation: async (cible) => {
       if (cible?.entree === null || cible?.entree === undefined) {
         throw new Error("entrée eurlex absente : décision d'adéquation inconnue");
@@ -297,6 +296,7 @@ export function agentsParDefaut(
       const resultat = await synchroniserAdequation({ rootDir, entree: cible.entree });
       return { ecrit: resultat.ecrit, message: resultat.message };
     },
+    donnees: agentActe("donnees"),
   };
 
   function agentActe(corpus: string): AgentSync {

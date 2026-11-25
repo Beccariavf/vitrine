@@ -241,7 +241,9 @@ export function createServer(deps: ServerDeps): McpServer {
       description:
         "Rend le texte exact d'un article du RGPD, de l'AI Act, de la directive ePrivacy, de la " +
         "directive police-justice, du règlement 2018/1725, du règlement procédural RGPD, des " +
-        "décisions 2021/914 et 2021/915 sur les clauses contractuelles types, de la " +
+        "décisions 2021/914 et 2021/915 sur les clauses contractuelles types, des textes UE de " +
+        "l'économie des données (Data Act, DGA, directive Open Data, ensembles de forte valeur, " +
+        "libre circulation, recommandation clauses types, logos DGA), de la " +
         "LIL ou d'un texte français d'application (décret 2019-536, Code pénal 226-16 à 226-24, " +
         "226-1, 226-8-1 et chapitre 323, CPCE L32-3, L34-1 et L34-5, Code du travail, Code de la " +
         "santé publique, Code de la sécurité intérieure (vidéoprotection), Code monétaire et " +
@@ -270,14 +272,17 @@ export function createServer(deps: ServerDeps): McpServer {
             "Identifiant du document : 32016R0679 (RGPD), 32024R1689 (AI Act), 32002L0058 " +
               "(ePrivacy), 32016L0680 (directive police-justice), 32018R1725 (règlement " +
               "2018/1725), 32025R2518 (règlement procédural RGPD), 32021D0914 (clauses contractuelles " +
-              "types, transfert), 32021D0915 (clauses contractuelles types, sous-traitance), LEGITEXT000006068624 (LIL), " +
+              "types, transfert), 32021D0915 (clauses contractuelles types, sous-traitance), " +
+              "32023R2854 (Data Act), 32022R0868 (DGA), 32019L1024 (directive Open Data), " +
+              "32023R0138 (ensembles de forte valeur), 32018R1807 (libre circulation), " +
+              "32026H2394 (recommandation clauses types), 32023R1622 (logos DGA), LEGITEXT000006068624 (LIL), " +
               "LEGITEXT000038567662 (décret 2019-536), LEGITEXT000006070719 (Code pénal), " +
               "LEGITEXT000006070987 (CPCE), LEGITEXT000006072050 (Code du travail), " +
               "LEGITEXT000006072665 (Code de la santé publique), LEGITEXT000025503132 (Code de la " +
               "sécurité intérieure), LEGITEXT000006072026 (Code monétaire et financier), " +
               "LEGITEXT000031366350 (CRPA) ou LEGITEXT000006070721 (Code civil)",
           ),
-        numero: z.string().describe("Numéro d'article, par exemple 17, 15 bis, 26-1, 226-16 ou L34-5"),
+        numero: z.string().describe("Numéro d'article, par exemple 17, 15 bis, 26-1, 226-16, L34-5 ou unique"),
         date: z
           .string()
           .optional()
@@ -516,7 +521,11 @@ export function createServer(deps: ServerDeps): McpServer {
         "de la ponctuation (« RGPD », « R.G.P.D. », « règlement général sur la protection des données », " +
         "« règlement général », « règlement (UE) 2016/679 », « AI Act », « IA Act », « règlement IA », " +
         "« règlement européen sur l'intelligence artificielle », « règlement (UE) 2024/1689 », « LIL », " +
-        "« loi informatique et libertés », « loi 78-17 », « loi n° 78-17 », « décret 2019-536 », « CPCE », " +
+        "« loi informatique et libertés », « loi 78-17 », « loi n° 78-17 », « Data Act », " +
+        "« règlement (UE) 2023/2854 », « DGA », « règlement (UE) 2022/868 », « directive Open Data », " +
+        "« directive (UE) 2019/1024 », « ensembles de forte valeur », « règlement d'exécution (UE) 2023/138 », " +
+        "« libre circulation des données », « règlement (UE) 2018/1807 », « recommandation (UE) 2026/2394 », " +
+        "« logos DGA », « règlement d'exécution (UE) 2023/1622 », « décret 2019-536 », « CPCE », " +
         "« code des postes et des communications électroniques », « code pénal », « code du travail », " +
         "« code de la santé publique », « code de la sécurité intérieure », « code monétaire et " +
         "financier », « code des relations entre le public et l'administration », « code civil ») ; la " +
@@ -525,7 +534,8 @@ export function createServer(deps: ServerDeps): McpServer {
         "Si aucun document n'est nommé et que le numéro cité n'existe que dans un corpus, l'article " +
         "est rendu avec le niveau `incertain` et un message qui nomme ce corpus. " +
         "Si le numéro existe dans plusieurs documents, chaque article est rendu avec sa provenance " +
-        "et le niveau est `incertain` ; préciser `document` ou nommer le corpus lève l'ambiguïté. " +
+        "et le niveau est `incertain` ; préciser `document` (ou son CELEX) lève l'ambiguïté, un " +
+        "corpus comme `donnees` ou `ccs` portant plusieurs documents. " +
         "En recherche lexicale seule (`VITRINE_RECHERCHE=lexicale`), les passages portent " +
         "`rang_lexical` (1 = meilleur) et aucune `distance` ni `similarite` ; le niveau reste " +
         "`incertain` hors appariement exact, un score BM25 ne prouvant pas la pertinence. " +
@@ -559,6 +569,9 @@ export function createServer(deps: ServerDeps): McpServer {
             "Restreint la recherche à un document : 32016R0679 (RGPD), 32024R1689 (AI Act), " +
               "32002L0058 (ePrivacy), 32016L0680, 32018R1725, 32025R2518, 32021D0914 (clauses " +
               "contractuelles types, transfert), 32021D0915 (clauses contractuelles types, sous-traitance), " +
+              "32023R2854 (Data Act), 32022R0868 (DGA), 32019L1024 (directive Open Data), " +
+              "32023R0138 (ensembles de forte valeur), 32018R1807 (libre circulation), " +
+              "32026H2394 (recommandation clauses types), 32023R1622 (logos DGA), " +
               "LEGITEXT000006068624 (LIL), LEGITEXT000038567662 (décret 2019-536), LEGITEXT000006070719 (Code pénal), LEGITEXT000006070987 (CPCE), LEGITEXT000006072050 (Code du travail), LEGITEXT000006072665 (Code de la santé publique), LEGITEXT000025503132 (Code de la sécurité intérieure), LEGITEXT000006072026 (Code monétaire et financier), LEGITEXT000031366350 (CRPA), LEGITEXT000006070721 (Code civil), un identifiant CNILTEXT, un identifiant CONSTEXT (constit), un identifiant Judilibre (cc) " +
               "ou un CELEX de jurisprudence (cjue) ; absent, tous les corpus répondent, sauf une " +
               "formule générique qui nomme une famille sans décision (« les clauses contractuelles " +

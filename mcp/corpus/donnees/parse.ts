@@ -30,6 +30,8 @@ function uniteDe(
   ancre: string,
   chemin: string,
   texte: string,
+  /** Ancre de l'URL quand celle du `ref` n'existe pas dans la capture (`art`, `enc_1`). */
+  urlAncre: string = ancre,
 ): Unite {
   return {
     ref: `${descripteur.document}#${ancre}`,
@@ -43,7 +45,7 @@ function uniteDe(
     date_debut: descripteur.date_debut,
     date_fin: descripteur.date_fin,
     statut: descripteur.statut,
-    url: `${descripteur.url}#${ancre}`,
+    url: `${descripteur.url}#${urlAncre}`,
   };
 }
 
@@ -67,6 +69,7 @@ function pointsOperation(xhtml: string, descripteur: Descripteur): Unite[] {
           `point_${rang}`,
           `${descripteur.nom} > Recommandation`,
           texte,
+          "enc_1",
         ),
       );
     }
@@ -116,7 +119,7 @@ function articleUnique(xhtml: string, descripteur: Descripteur): Unite | null {
   if (contenu === null) return null;
   const texte = texteVisible(contenu);
   if (texte === "") throw new Error(`Article unique vide dans ${descripteur.document}`);
-  return uniteDe(descripteur, "article", "unique", "art_unique", descripteur.nom, texte);
+  return uniteDe(descripteur, "article", "unique", "art_unique", descripteur.nom, texte, "art");
 }
 
 /**

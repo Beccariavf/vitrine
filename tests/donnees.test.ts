@@ -11,7 +11,7 @@ import { documentsPresents, extraireCitations, marquerPresence } from "../mcp/co
 import { parseDonnees } from "../mcp/corpus/donnees/parse.ts";
 import type { Descripteur, Unite } from "../mcp/corpus/parse.ts";
 import { statutApplication } from "../mcp/corpus/statut.ts";
-import { getArticle } from "../mcp/tools.ts";
+import { documentsNommes, getArticle, referenceExacte } from "../mcp/tools.ts";
 import { writeCorpusMulti } from "../mcp/corpus/write.ts";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
@@ -180,5 +180,52 @@ describe("corpus donnees", () => {
     const resultat = await synchroniserActeUe({ rootDir: ROOT, corpus: "donnees" });
     assert.equal(resultat.ecrit, false);
     assert.match(resultat.message, /aucune version consolidée à appliquer/);
+  });
+
+  it("résout le nom des actes dans les outils", () => {
+    assert.deepEqual(documentsNommes("le Data Act et la DGA"), ["32023R2854", "32022R0868"]);
+    assert.deepEqual(documentsNommes("l'article 24 du Data Act"), ["32023R2854"]);
+    assert.equal(referenceExacte("l'article 24 du Data Act"), "24");
+
+    const article = getArticle(ROOT, { document: "Data Act", numero: "24" });
+    assert.equal(article.trouve, true);
+    assert.equal(article.trouve ? article.corpus : null, "donnees");
+  });
+
+  it("extrait et attribue une citation de l'article unique des logos DGA", () => {
+    const citations = extraireCitations(
+      "l'article unique du règlement d'exécution (UE) 2023/1622",
+    );
+    assert.equal(citations.length, 1);
+    assert.equal(citations[0]?.document, "32023R1622");
+    assert.deepEqual(citations[0]?.articles, ["unique"]);
+    assert.equal(marquerPresence(documentsPresents(ROOT), citations)[0]?.hors_corpus, false);
+  });
+
+  it("pointe chaque unité par une ancre qui existe dans sa capture", () => {
+    const manifeste = JSON.parse(
+      readFileSync(join(ROOT, "data", "corpus", "donnees", "manifest.json"), "utf8"),
+    ) as { documents: { document: string; snapshot: string }[] };
+    const captures = new Map(
+      manifeste.documents.map((document) => [
+        document.document,
+        readFileSync(
+          join(ROOT, "data", "raw", document.snapshot.slice(0, 2), document.snapshot),
+          "utf8",
+        ),
+      ]),
+    );
+    const unites = readFileSync(join(ROOT, "data", "corpus", "donnees", "unites.jsonl"), "utf8")
+      .split("\n")
+      .filter((ligne) => ligne.trim() !== "")
+      .map((ligne) => JSON.parse(ligne) as Unite);
+    assert.equal(unites.length, 470);
+
+    for (const unite of unites) {
+      const fragment = unite.url.split("#")[1];
+      const capture = captures.get(unite.document);
+      assert.ok(fragment !== undefined && capture !== undefined, unite.ref);
+      assert.ok(capture?.includes(`id="${fragment}"`), `${unite.ref} → #${fragment}`);
+    }
   });
 });
