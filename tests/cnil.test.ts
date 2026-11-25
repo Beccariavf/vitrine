@@ -966,3 +966,110 @@ describe("la synchronisation DILA", () => {
     }
   });
 });
+
+describe("les délibérations supplémentaires", () => {
+  /** Deux MR en nature « Référentiel » : la 2018-153 est remplacée par la 2026-050. */
+  const REFERENTIELS: LigneDinum[] = [
+    {
+      ...LIGNES[0]!,
+      doc_id: "CNILTEXT000037202328",
+      chunk_index: 0,
+      number: "2018-155",
+      text: "MR-004 : recherches n'impliquant pas la personne humaine.",
+      date: "2018-05-03",
+      status: "VIGUEUR",
+      nature_delib: "Référentiel/Règlement type/Norme",
+    },
+    {
+      ...LIGNES[0]!,
+      doc_id: "CNILTEXT000037202354",
+      chunk_index: 0,
+      number: "2018-153",
+      text: "MR-001 : recherches avec recueil du consentement.",
+      date: "2018-05-03",
+      status: "ABROGE",
+      nature_delib: "Référentiel/Règlement type/Norme",
+    },
+  ];
+  const DESCRIPTEUR_SUPPLEMENTAIRE: DescripteurCnil = {
+    ...DESCRIPTEUR,
+    deliberations_supplementaires: ["2018-155", "2018-153", "2026-999"],
+    remplacements: { "2018-153": "2026-050" },
+    objets: {},
+  };
+  const DESCRIPTEUR_BASE: DescripteurCnil = {
+    ...DESCRIPTEUR,
+    deliberations_supplementaires: [],
+    remplacements: {},
+    objets: {},
+  };
+
+  it("retient une délibération supplémentaire malgré sa nature, sans la renommer", () => {
+    const { unites } = unitesDinum([...LIGNES, ...REFERENTIELS], DESCRIPTEUR_SUPPLEMENTAIRE);
+    const mr004 = unites.find((unite) => unite.numero === "2018-155");
+
+    assert.ok(mr004, "la délibération 2018-155 entre au corpus");
+    assert.equal(mr004.nature, "Référentiel/Règlement type/Norme");
+    assert.equal(
+      mr004.chemin,
+      "CNIL > Référentiel/Règlement type/Norme > Délibération 2018-155",
+    );
+    assert.equal(
+      unites.filter((unite) => unite.numero === "2018-155").length,
+      1,
+      "un fragment par ligne, pas de doublon",
+    );
+  });
+
+  it("marque une MR remplacée sans la supprimer", () => {
+    const { unites } = unitesDinum([...LIGNES, ...REFERENTIELS], DESCRIPTEUR_SUPPLEMENTAIRE);
+    const mr001 = unites.filter((unite) => unite.numero === "2018-153");
+    const mr004 = unites.filter((unite) => unite.numero === "2018-155");
+
+    assert.equal(mr001.length, 1);
+    assert.equal(mr001[0]?.statut, "Remplacée par 2026-050");
+    assert.equal(mr004[0]?.statut, "VIGUEUR", "un numéro non remplacé garde son statut");
+  });
+
+  it("ne change pas les documents déjà retenus", () => {
+    const avant = unitesDinum(LIGNES, DESCRIPTEUR_BASE).unites;
+    const apres = unitesDinum([...LIGNES, ...REFERENTIELS], DESCRIPTEUR_SUPPLEMENTAIRE).unites;
+    const supplementaires = new Set(REFERENTIELS.map((ligne) => ligne.doc_id));
+
+    assert.deepEqual(
+      apres.filter((unite) => !supplementaires.has(unite.document)),
+      avant,
+    );
+  });
+
+  it("ne compte plus les lignes supplémentaires comme écartées", () => {
+    const avant = unitesDinum([...LIGNES, ...REFERENTIELS], DESCRIPTEUR_BASE).exclusions;
+    const apres = unitesDinum([...LIGNES, ...REFERENTIELS], DESCRIPTEUR_SUPPLEMENTAIRE).exclusions;
+
+    assert.deepEqual(avant, [{ nature: "Référentiel/Règlement type/Norme", lignes: 2 }]);
+    assert.deepEqual(apres, []);
+  });
+
+  it("déclare les numéros retenus, les documents trouvés et ceux qui manquent", () => {
+    const { unites, exclusions } = unitesDinum(
+      [...LIGNES, ...REFERENTIELS],
+      DESCRIPTEUR_SUPPLEMENTAIRE,
+    );
+    const manifeste = manifesteCnil(
+      DESCRIPTEUR_SUPPLEMENTAIRE,
+      unites,
+      FICHIERS,
+      ETAT_VIDE,
+      DESCRIPTEUR.natures,
+      exclusions,
+    );
+
+    assert.deepEqual(manifeste.couverture.deliberations_supplementaires, {
+      numeros: ["2018-155", "2018-153", "2026-999"],
+      documents: ["CNILTEXT000037202328", "CNILTEXT000037202354"],
+      absentes: ["2026-999"],
+      remplacements: { "2018-153": "2026-050" },
+      objets: {},
+    });
+  });
+});

@@ -84,12 +84,16 @@ const NATURE_JURIDICTION = "JURIDICTION";
 /** Nature d'une unité du corpus `metadonnees` : une décision d'autorité, adoptée. */
 const NATURE_AUTORITE = "AUTORITE";
 
-/** Natures CNIL d'une doctrine — avis, recommandation, lignes directrices — : elle est adoptée. */
+/** Natures CNIL d'une doctrine — avis, recommandation, lignes directrices, référentiel — : elle est adoptée. */
 const NATURES_DOCTRINE: readonly string[] = [
   "AVIS",
   "RECOMMANDATION",
   "RECOMMANDATION_LIGNES_DIRECTRICES",
+  "REFERENTIEL_REGLEMENT_TYPE_NORME",
 ];
+
+/** Préfixe du statut posé sur une MR remplacée : « Remplacée par 2026-050 ». */
+const STATUT_REMPLACEE = "REMPLACEE_PAR";
 
 /**
  * Forme comparable d'une valeur de source : majuscules, sans diacritique,
@@ -171,6 +175,8 @@ export function statutApplication(
   }
   if (collection === "cnil") {
     if (STATUTS_SANS_EFFET.includes(source)) return "abroge";
+    // Une MR remplacée garde son texte : elle ne s'applique plus.
+    if (source.startsWith(STATUT_REMPLACEE)) return "abroge";
     // Une délibération modifiée n'est rendue ici que dans sa version d'origine.
     if (source !== "VIGUEUR") return "inconnu";
     const natureComparable = formeComparable(nature);

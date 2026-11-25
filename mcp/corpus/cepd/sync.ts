@@ -25,6 +25,7 @@ import type {
   DescripteurCePd,
   DocumentG29Liste,
   DocumentListe,
+  DocumentSupplementaire,
   FetchHtml,
   FetchJson,
   HebergementG29,
@@ -152,6 +153,11 @@ export type ManifesteCePd = {
     versions_ecartees: number;
     /** Documents écartés, avec leur URL, leur slug, leur type et le motif. */
     documents_ecartes: DocumentEcart[];
+    /** Documents ajoutés hors sitemap : leur déclaration et les slugs présents. */
+    documents_supplementaires: {
+      declares: DocumentSupplementaire[];
+      documents: string[];
+    };
   };
 };
 
@@ -161,6 +167,11 @@ export type SyncCePdOptions = {
   dryRun?: boolean;
   /** Nombre maximal de documents retenus après sélection des versions. */
   limite?: number;
+  /**
+   * N'ajoute que les documents déclarés `documents_supplementaires` au corpus
+   * existant, sans relire ni remplacer les documents du sitemap.
+   */
+  supplementairesSeulement?: boolean;
   /** Ne garde que les documents datés au moins de ce jour (`AAAA-MM-JJ`). */
   depuis?: string;
   /** Date de liste consignée ; par défaut, le jour courant. */
@@ -219,6 +230,25 @@ function ecrireSiChange(chemin: string, contenu: string): boolean {
   return true;
 }
 
+/** Corpus et manifeste déjà écrits ; absents, ils valent une liste vide. */
+export function lireCorpusExistant(rootDir: string): {
+  unites: Unite[];
+  manifeste: ManifesteCePd | null;
+} {
+  const cheminUnites = join(rootDir, DOSSIER_CORPUS, "unites.jsonl");
+  const cheminManifeste = join(rootDir, DOSSIER_CORPUS, "manifest.json");
+  const unites = existsSync(cheminUnites)
+    ? readFileSync(cheminUnites, "utf8")
+        .split("\n")
+        .filter((ligne) => ligne.trim() !== "")
+        .map((ligne) => JSON.parse(ligne) as Unite)
+    : [];
+  const manifeste = existsSync(cheminManifeste)
+    ? (JSON.parse(readFileSync(cheminManifeste, "utf8")) as ManifesteCePd)
+    : null;
+  return { unites, manifeste };
+}
+
 /** Manifeste du corpus : comptes, versions écartées et couverture déclarée. */
 export function manifesteCePd(
   descripteur: DescripteurCePd,
@@ -242,6 +272,7 @@ export function manifesteCePd(
     documentsLastmod: Record<string, string | null>;
     g29: BlocG29 | null;
     documentsEcartes: DocumentEcart[];
+    documentsSupplementaires: { declares: DocumentSupplementaire[]; documents: string[] };
     dateMin: string | null;
     dateMax: string | null;
   },
@@ -290,6 +321,7 @@ export function manifesteCePd(
       documents_sans_texte_ecartes: comptes.documentsSansTexte,
       versions_ecartees: comptes.versionsEcartees,
       documents_ecartes: comptes.documentsEcartes,
+      documents_supplementaires: comptes.documentsSupplementaires,
     },
   };
 }
@@ -433,11 +465,12 @@ function rapprocherG29(
   };
 }
 
-/** Comptes vides des cinq types. */
+/** Comptes vides des six types. */
 function comptesVides(): ComptesParType {
   return {
     lignes_directrices: { documents: 0, fragments: 0 },
     avis_art64: { documents: 0, fragments: 0 },
+    avis_legislatif: { documents: 0, fragments: 0 },
     decision_art65: { documents: 0, fragments: 0 },
     recommandation: { documents: 0, fragments: 0 },
     g29_repris: { documents: 0, fragments: 0 },
@@ -547,7 +580,11 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
   const descripteur = lireDescripteur(
     options.descripteurPath ?? join(ICI, "descripteur.json"),
   );
-  const dateListe = options.date ?? dateDuJour();
+  const supplementairesSeulement = options.supplementairesSeulement === true;
+  const existant = lireCorpusExistant(rootDir);
+  const dateListe = supplementairesSeulement
+    ? (existant.manifeste?.date_liste ?? options.date ?? dateDuJour())
+    : (options.date ?? dateDuJour());
   if (!DATE_ISO.test(dateListe) || Number.isNaN(Date.parse(dateListe))) {
     throw new Error(`Date de liste attendue AAAA-MM-JJ ; reçue « ${dateListe} »`);
   }
@@ -562,14 +599,54 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
   const delai = options.delaiEntreRequetesMs ?? descripteur.delai_entre_requetes_ms ?? 0;
   const attendre = options.attendre ?? ((ms: number): Promise<void> =>
     new Promise((reussir) => setTimeout(reussir, ms)));
-  const liste = await listerAvecRepli(descripteur, options, journal);
+  const liste: ResultatListe = supplementairesSeulement
+    ? {
+        documents: [],
+        pages: 0,
+        via: existant.manifeste?.via ?? "sitemap",
+        sitemapPages: existant.manifeste?.sitemap_pages ?? [],
+        tentatives: journal,
+      }
+    : await listerAvecRepli(descripteur, options, journal);
   const documentsEcartes: DocumentEcart[] = [];
   // Documents sans texte lisible : page, date, PDF ou extraction.
   let sansTexte = 0;
 
   const documentsListe: DocumentListe[] = [];
+  // Les documents déclarés hors sitemap ne sont relus qu'en mode ciblé : le
+  // sitemap ne les liste pas, et les relire à chaque passe coûterait leur PDF.
+  // Ils suivent la même page de document et le même enrichissement que les
+  // autres, pour porter titre, date et PDF réels.
+  const supplementaires = descripteur.documents_supplementaires ?? [];
+  if (supplementairesSeulement) {
+    const auCorpus = new Set(existant.unites.map((unite) => unite.document));
+    for (const document of supplementaires) {
+      const slug = slugSecurise(document.url);
+      if (auCorpus.has(slug)) continue;
+      const base: DocumentListe = {
+        type: document.type,
+        url: document.url,
+        titre: "",
+        date: null,
+        pdfUrl: null,
+      };
+      try {
+        const html = await chargerPageDocument(document.url, descripteur, options, journal);
+        documentsListe.push(enrichirDocument(base, html));
+      } catch (error) {
+        sansTexte += 1;
+        documentsEcartes.push({
+          url: document.url,
+          slug,
+          type: document.type,
+          raison: `page illisible : ${messageErreur(error)}`,
+        });
+      }
+      if (delai > 0) await attendre(delai);
+    }
+  }
   for (const document of liste.documents) {
-    if (liste.via === "sitemap") {
+    if (liste.via === "sitemap" || supplementairesSeulement) {
       try {
         const html = await chargerPageDocument(document.url, descripteur, options, journal);
         documentsListe.push(enrichirDocument(document, html));
@@ -588,6 +665,20 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
     }
     // Requête polie : un délai entre deux pages, jamais dans les tests.
     if (delai > 0) await attendre(delai);
+  }
+
+  // Rejouer `--supplementaires` quand tout est déjà au corpus n'écrit rien :
+  // le corpus existant est rendu tel quel, sans erreur ni nouvelle liste.
+  if (supplementairesSeulement && documentsListe.length === 0 && existant.unites.length > 0) {
+    return {
+      documents: new Set(existant.unites.map((unite) => unite.document)).size,
+      fragments: existant.unites.length,
+      versionsEcartees: existant.manifeste?.versions_ecartees ?? 0,
+      documentsSansTexte: existant.manifeste?.documents_sans_texte_ecartes ?? 0,
+      pages: 0,
+      ecrit: false,
+      tentatives: journal,
+    };
   }
 
   const prepares: DocumentPrepare[] = [];
@@ -631,10 +722,9 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
   );
 
   const extraireTexte = options.extraireTexte ?? extraireTextePdf;
-  const unites: Unite[] = [];
+  let unites: Unite[] = [];
   const documentsAvecTexte: DocumentPrepare[] = [];
-  const languesPdf: Record<LanguePdf, number> = { fr: 0, en: 0, autre: 0 };
-  const documentsLangues: Record<string, LanguePdf> = {};
+  const languesNouvelles: Record<string, LanguePdf> = {};
 
   for (const document of choix) {
     try {
@@ -692,8 +782,7 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
       // Un PDF sans suffixe de langue suit la langue de sa page : c'est elle
       // qui a décidé du repli français → anglais.
       const langue = languePdf(pdfUrl) === "autre" ? (document.langue ?? "autre") : languePdf(pdfUrl);
-      languesPdf[langue] += 1;
-      documentsLangues[document.slug] = langue;
+      languesNouvelles[document.slug] = langue;
     } catch (error) {
       sansTexte += 1;
       documentsEcartes.push({
@@ -706,6 +795,19 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
       if (delai > 0) await attendre(delai);
     }
   }
+
+  const slugsSupplementaires = new Set(
+    supplementaires.map((document) => slugSecurise(document.url)),
+  );
+  const produits = new Set(unites.map((unite) => unite.document));
+  // Une synchronisation complète ne relit pas les documents déclarés hors
+  // sitemap : leurs unités validées restent au corpus. Le mode ciblé conserve
+  // en plus tous les documents que le sitemap ne relit pas dans cette passe.
+  const conservees = existant.unites.filter((unite) => {
+    if (produits.has(unite.document)) return false;
+    return supplementairesSeulement || slugsSupplementaires.has(unite.document);
+  });
+  unites = supplementairesSeulement ? [...conservees, ...unites] : [...unites, ...conservees];
 
   if (unites.length === 0) {
     throw new Error(
@@ -721,21 +823,51 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
   const documentsTypes: Record<string, TypeDocument> = {};
   const documentsVersions: Record<string, string> = {};
   const documentsLastmod: Record<string, string | null> = {};
+  const documentsLangues: Record<string, LanguePdf> = {};
+  const languesPdf: Record<LanguePdf, number> = { fr: 0, en: 0, autre: 0 };
   const fragmentsParDocument = new Map<string, number>();
   for (const unite of unites) {
     fragmentsParDocument.set(unite.document, (fragmentsParDocument.get(unite.document) ?? 0) + 1);
   }
+  // Les métadonnées des unités conservées viennent du manifeste précédent ;
+  // celles des documents relus, de cette passe.
+  const meta = new Map<
+    string,
+    { type: TypeDocument; langue: LanguePdf; version: string; lastmod: string | null }
+  >();
+  const conserveesSet = new Set(conservees.map((unite) => unite.document));
+  if (existant.manifeste !== null) {
+    for (const [slug, type] of Object.entries(existant.manifeste.documents_types ?? {})) {
+      if (!conserveesSet.has(slug)) continue;
+      meta.set(slug, {
+        type,
+        langue: existant.manifeste.documents_langues?.[slug] ?? "autre",
+        version: existant.manifeste.documents_versions?.[slug] ?? "finale",
+        lastmod: existant.manifeste.documents_lastmod?.[slug] ?? null,
+      });
+    }
+  }
   for (const document of documentsAvecTexte) {
-    comptesParType[document.type].documents += 1;
-    comptesParType[document.type].fragments += fragmentsParDocument.get(document.slug) ?? 0;
-    documentsTypes[document.slug] = document.type;
-    documentsVersions[document.slug] = signatureVersion(document);
-    documentsLastmod[document.slug] = document.lastmod ?? null;
+    meta.set(document.slug, {
+      type: document.type,
+      langue: languesNouvelles[document.slug] ?? "autre",
+      version: signatureVersion(document),
+      lastmod: document.lastmod ?? null,
+    });
+  }
+  for (const [slug, informations] of meta) {
+    comptesParType[informations.type].documents += 1;
+    comptesParType[informations.type].fragments += fragmentsParDocument.get(slug) ?? 0;
+    documentsTypes[slug] = informations.type;
+    documentsVersions[slug] = informations.version;
+    documentsLastmod[slug] = informations.lastmod;
+    documentsLangues[slug] = informations.langue;
+    languesPdf[informations.langue] += 1;
   }
   const typesRetenus = TYPES_DOCUMENT.filter((type) => comptesParType[type].documents > 0);
 
-  let g29: BlocG29 | null = null;
-  if (descripteur.url_endossement !== undefined) {
+  let g29: BlocG29 | null = existant.manifeste?.g29 ?? null;
+  if (descripteur.url_endossement !== undefined && !supplementairesSeulement) {
     const http = {
       ...(options.fetchHtml === undefined ? {} : { fetchHtml: options.fetchHtml }),
       ...(options.attendre === undefined ? {} : { attendre: options.attendre }),
@@ -766,6 +898,21 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
     }
   }
   const via = liste.via;
+  // Le mode ciblé ajoute au corpus existant : les écarts et les documents sans
+  // texte de la passe s'ajoutent à ceux qu'il portait déjà.
+  const ecartesPrecedents = supplementairesSeulement
+    ? (existant.manifeste?.couverture.documents_ecartes ?? [])
+    : [];
+  const ecartesTous = [...ecartesPrecedents, ...documentsEcartes];
+  const versionsEcartees =
+    (supplementairesSeulement ? (existant.manifeste?.versions_ecartees ?? 0) : 0) + ecartes.length;
+  const sansTexteTotal =
+    (supplementairesSeulement ? (existant.manifeste?.documents_sans_texte_ecartes ?? 0) : 0) +
+    sansTexte;
+  const supplementairesManifeste = {
+    declares: [...(descripteur.documents_supplementaires ?? [])],
+    documents: [...slugsSupplementaires].filter((slug) => documentsTypes[slug] !== undefined).sort(),
+  };
   const manifeste = manifesteCePd(
     descripteur,
     dateListe,
@@ -777,8 +924,8 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
       pages: liste.pages,
       documents,
       fragments: unites.length,
-      versionsEcartees: ecartes.length,
-      documentsSansTexte: sansTexte,
+      versionsEcartees,
+      documentsSansTexte: sansTexteTotal,
       typesRetenus,
       comptesParType,
       languesPdf,
@@ -787,7 +934,8 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
       documentsVersions,
       documentsLastmod,
       g29,
-      documentsEcartes,
+      documentsEcartes: ecartesTous,
+      documentsSupplementaires: supplementairesManifeste,
       dateMin: dates[0] ?? null,
       dateMax: dates.at(-1) ?? null,
     },
@@ -827,6 +975,7 @@ function valeurDe(nom: string, argv: string[]): string | undefined {
 
 async function main(argv: string[]): Promise<void> {
   const dryRun = argv.includes("--dry-run");
+  const supplementairesSeulement = argv.includes("--supplementaires");
   const limite = valeurDe("--limite", argv);
   const depuis = valeurDe("--depuis", argv);
   const rootDir = valeurDe("--root", argv);
@@ -844,6 +993,7 @@ async function main(argv: string[]): Promise<void> {
       ...(depuis === undefined ? {} : { depuis }),
       ...(date === undefined ? {} : { date }),
       ...(pageMax === undefined ? {} : { pageMax: Number.parseInt(pageMax, 10) }),
+      ...(supplementairesSeulement ? { supplementairesSeulement } : {}),
       dryRun,
       journal,
     });

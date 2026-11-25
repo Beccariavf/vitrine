@@ -46,6 +46,7 @@ export function slugDe(url: string): string {
 /** Préfixe canonique du numéro, par type de document. */
 export function prefixeNumero(titre: string, type: TypeDocument): string {
   if (type === "avis_art64") return "Avis";
+  if (type === "avis_legislatif") return "Avis";
   if (type === "decision_art65") {
     return /\b(?:urgent|urgence|d['’]urgence)\b/i.test(titre)
       ? "Décision contraignante d'urgence"
