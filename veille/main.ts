@@ -19,6 +19,7 @@ import { passeConstit } from "./sources/constit.ts";
 import { passeDoctrine } from "./sources/cnil-doctrine.ts";
 import { passePreparation } from "./sources/preparation.ts";
 import { passeCada } from "./sources/cada.ts";
+import { SOURCES_CORPUS } from "../mcp/corpus/registre.ts";
 import { flushUsage } from "./piste.ts";
 import { assignThemes, readThemes } from "./themes.ts";
 import type { Theme } from "./themes.ts";
@@ -258,6 +259,24 @@ export const SOURCES: AnySource[] = [
     },
   },
 ];
+
+/**
+ * Sources qui alimentent un corpus ; `legi` est servi par la passe séparée
+ * `npm run veille:textes-fr`, pas par cette passe.
+ */
+const SOURCES_HORS_PASSE = new Set(["legi"]);
+
+// Le registre déclare les sources de chaque corpus : une source ajoutée au
+// registre sans être branchée ici arrête le démarrage plutôt que de laisser la
+// veille croire qu'elle sera lue.
+for (const id of SOURCES_CORPUS) {
+  if (SOURCES_HORS_PASSE.has(id)) continue;
+  if (!SOURCES.some((source) => source.id === id)) {
+    throw new Error(
+      `Source de veille « ${id} » déclarée par le registre des corpus mais non branchée dans veille/main.ts`,
+    );
+  }
+}
 
 export type RunOptions = {
   fetchImpl: FetchLike;

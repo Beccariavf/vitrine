@@ -12,6 +12,8 @@
  * textes en préparation ; `pendant` les affaires pendantes (#56).
  */
 
+import { corpusDeclare } from "./registre.ts";
+
 /** Vocabulaire uniforme du statut d'application, sans accents comme les autres valeurs du serveur. */
 export type StatutApplication =
   | "en_vigueur"
@@ -43,25 +45,6 @@ export function mentionPreparation(statut: StatutApplication): string {
   if (statut === "pendant") return "Affaire pendante — aucune décision rendue";
   return "Texte en préparation — statut non reconnu";
 }
-
-/** Corpus dont le statut source dit l'applicabilité du texte. */
-const CORPUS_TEXTES: readonly string[] = [
-  "rgpd",
-  "aiact",
-  "lil",
-  "eprivacy",
-  "police",
-  "eudpr",
-  "rgpdproc",
-  "textes_fr",
-  "ccs",
-  "adequation",
-  "donnees",
-  "sante_ue",
-];
-
-/** Corpus dont chaque unité est une décision rendue, quel que soit le statut source. */
-const CORPUS_JURIDICTIONNELS: readonly string[] = ["ce", "constit", "cc", "cjue"];
 
 /** Statuts de source d'un texte, ramenés au vocabulaire uniforme. */
 const STATUTS_TEXTES = new Map<string, StatutApplication>([
@@ -155,55 +138,56 @@ export function statutApplication(
   const collection = String(corpus ?? "")
     .trim()
     .toLowerCase();
+  const declare = corpusDeclare(collection);
+  if (declare === undefined) return "inconnu";
   const source = formeComparable(statut);
   // La préparation ne rend jamais applicable un texte proposé, ni rendue une
-  // affaire pendante : la branche précède les textes et ne connaît que ces deux
-  // statuts ; tout le reste est `inconnu`.
-  if (collection === "preparation") {
-    if (source === "PROPOSE") return "propose";
-    if (source === "PENDANT") return "pendant";
-    return "inconnu";
+  // affaire pendante : la branche ne connaît que ces deux statuts ; tout le
+  // reste est `inconnu`.
+  switch (declare.regleStatut) {
+    case "preparation":
+      if (source === "PROPOSE") return "propose";
+      if (source === "PENDANT") return "pendant";
+      return "inconnu";
+    case "texte":
+      return STATUTS_TEXTES.get(source) ?? "inconnu";
+    case "juridiction":
+      return "rendue";
+    // La doctrine publiée (guides, référentiels, listes AIPD) est adoptée par la
+    // CNIL ; un statut sans effet la retire. Le reste n'est pas reconnu.
+    case "cnil_doctrine":
+      if (STATUTS_SANS_EFFET.includes(source)) return "abroge";
+      return source === "PUBLIE" ? "adoptee" : "inconnu";
+    case "cnil": {
+      if (STATUTS_SANS_EFFET.includes(source)) return "abroge";
+      // Une MR remplacée garde son texte : elle ne s'applique plus.
+      if (source.startsWith(STATUT_REMPLACEE)) return "abroge";
+      // Une délibération modifiée n'est rendue ici que dans sa version d'origine.
+      if (source !== "VIGUEUR") return "inconnu";
+      const natureComparable = formeComparable(nature);
+      if (natureComparable === NATURE_SANCTION) return "rendue";
+      if (NATURES_DOCTRINE.includes(natureComparable)) return "adoptee";
+      // Une nature absente ou inconnue ne dit pas si la délibération est rendue ou adoptée.
+      return "inconnu";
+    }
+    case "cepd":
+      if (STATUTS_SANS_EFFET.includes(source)) return "abroge";
+      // Un avis art. 64, une décision art. 65, une recommandation ou une ligne
+      // directrice adoptés sont adoptés ; un texte en consultation n'est pas adopté.
+      if (STATUTS_CEPD_ADOPTES.includes(source)) return "adoptee";
+      if (STATUTS_CEPD_CONSULTATION.includes(source)) return "propose";
+      return "inconnu";
+    case "metadonnees": {
+      // Le corpus ne porte que des métadonnées : le statut suit la nature du
+      // document cité, jamais son texte, que le serveur ne connaît pas.
+      const natureComparable = formeComparable(nature);
+      if (natureComparable === NATURE_JURIDICTION) return "rendue";
+      if (natureComparable === NATURE_AUTORITE) return "adoptee";
+      return "inconnu";
+    }
+    // Un avis ou un conseil de la CADA est adopté par la commission ; la source
+    // ne publie pas d'autre état.
+    case "cada":
+      return "adoptee";
   }
-  if (CORPUS_TEXTES.includes(collection)) {
-    return STATUTS_TEXTES.get(source) ?? "inconnu";
-  }
-  if (CORPUS_JURIDICTIONNELS.includes(collection)) return "rendue";
-  // La doctrine publiée (guides, référentiels, listes AIPD) est adoptée par la
-  // CNIL ; un statut sans effet la retire. Le reste n'est pas reconnu.
-  if (collection === "cnil_doctrine") {
-    if (STATUTS_SANS_EFFET.includes(source)) return "abroge";
-    return source === "PUBLIE" ? "adoptee" : "inconnu";
-  }
-  if (collection === "cnil") {
-    if (STATUTS_SANS_EFFET.includes(source)) return "abroge";
-    // Une MR remplacée garde son texte : elle ne s'applique plus.
-    if (source.startsWith(STATUT_REMPLACEE)) return "abroge";
-    // Une délibération modifiée n'est rendue ici que dans sa version d'origine.
-    if (source !== "VIGUEUR") return "inconnu";
-    const natureComparable = formeComparable(nature);
-    if (natureComparable === NATURE_SANCTION) return "rendue";
-    if (NATURES_DOCTRINE.includes(natureComparable)) return "adoptee";
-    // Une nature absente ou inconnue ne dit pas si la délibération est rendue ou adoptée.
-    return "inconnu";
-  }
-  if (collection === "cepd") {
-    if (STATUTS_SANS_EFFET.includes(source)) return "abroge";
-    // Un avis art. 64, une décision art. 65, une recommandation ou une ligne
-    // directrice adoptés sont adoptés ; un texte en consultation n'est pas adopté.
-    if (STATUTS_CEPD_ADOPTES.includes(source)) return "adoptee";
-    if (STATUTS_CEPD_CONSULTATION.includes(source)) return "propose";
-    return "inconnu";
-  }
-  if (collection === "metadonnees") {
-    // Le corpus ne porte que des métadonnées : le statut suit la nature du
-    // document cité, jamais son texte, que le serveur ne connaît pas.
-    const natureComparable = formeComparable(nature);
-    if (natureComparable === NATURE_JURIDICTION) return "rendue";
-    if (natureComparable === NATURE_AUTORITE) return "adoptee";
-    return "inconnu";
-  }
-  // Un avis ou un conseil de la CADA est adopté par la commission ; la source
-  // ne publie pas d'autre état.
-  if (collection === "cada") return "adoptee";
-  return "inconnu";
 }

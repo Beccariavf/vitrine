@@ -41,7 +41,7 @@ const ICI = dirname(fileURLToPath(import.meta.url));
 
 /**
  * Chemin du descripteur d'un acte suivi. Un corpus à plusieurs documents
- * (`ccs`, `donnees`, `sante_ue`) en porte un par CELEX : `document` le désigne, sinon le descripteur
+ * en porte un par CELEX : `document` le désigne, sinon le descripteur
  * `mcp/corpus/<corpus>.json` est rendu.
  */
 export function cheminDescripteur(corpus: string, dossier: string = ICI, document?: string): string {
@@ -102,7 +102,7 @@ export type SynchroniserActeOptions = {
  */
 export async function synchroniserActeUe(options: SynchroniserActeOptions): Promise<ResultatActeUe> {
   // Rien à appliquer : on ne lit pas le descripteur, qu'un corpus à plusieurs
-  // documents ne porte pas à plat (`donnees`, `ccs`, `sante_ue`).
+  // documents ne porte pas à plat.
   if (options.version === undefined) {
     return { ecrit: false, message: "aucune version consolidée à appliquer" };
   }

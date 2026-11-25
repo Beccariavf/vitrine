@@ -25,6 +25,7 @@ import { join } from "node:path";
 import type { Unite } from "./parse.ts";
 import { citeArticle, formeArticle } from "./articles.ts";
 import type { Article } from "./articles.ts";
+import { CORPUS_DECISIONS, PERIMETRE } from "./registre.ts";
 
 /** Un instrument cité, avec ses articles et son lien officiel. */
 export type Citation = {
@@ -474,14 +475,10 @@ const PAR_LIBELLE = new Map(INSTRUMENTS.map((instrument) => [instrument.libelle,
 
 /**
  * Les corpus du serveur, dans l'ordre de la phrase de refus. Aucune date de
- * fraîcheur : le refus d'un document absent ne porte que le périmètre.
+ * fraîcheur : le refus d'un document absent ne porte que le périmètre. Les
+ * libellés et l'ordre viennent du registre.
  */
-export const PERIMETRE =
-  "RGPD, AI Act, ePrivacy, directive 2016/680, règlement 2018/1725, règlement procédural RGPD, " +
-  "clauses contractuelles types, décisions d'adéquation, textes UE de l'économie des données, " +
-  "espace européen des données de santé (EHDS), LIL, " +
-  "textes français d'application, textes en préparation et affaires pendantes, CNIL, CADA, doctrine CNIL, " +
-  "CEPD, Conseil d'État, Conseil constitutionnel, Cour de cassation, CJUE";
+export { PERIMETRE };
 
 /** Forme comparable d'un identifiant : majuscules, sans espace. */
 export function normaliserIdentifiant(identifiant: string): string {
@@ -684,11 +681,11 @@ export function absenceDuDocument(rootDir: string, document: string): string | n
 }
 
 /** Les corpus dont les documents sont des décisions, seuls porteurs de citations. */
-export const CORPUS_DECISIONS: readonly string[] = ["cnil", "ce", "constit", "cc", "cjue", "cepd"];
+export { CORPUS_DECISIONS };
 
 /** Vrai si le corpus porte des décisions citant des textes. */
 export function estCorpusDecision(corpus: string): boolean {
-  return CORPUS_DECISIONS.includes(corpus);
+  return (CORPUS_DECISIONS as readonly string[]).includes(corpus);
 }
 
 /** Lien officiel d'un instrument, `null` quand le libellé est inconnu. */
