@@ -24,6 +24,7 @@ import { texteVisible } from "../parse.ts";
 import {
   chargerPdf,
   chargerTexte,
+  estPdf,
   extraireDocuments,
   lireDescripteur,
   parcourirReference,
@@ -43,6 +44,7 @@ import {
   deliberationDuDocument,
   deliberationsCitees,
   mentionContraire,
+  slugDe,
   slugUnique,
   texteFiche,
   unitesDoctrine,
@@ -98,6 +100,13 @@ export type CouvertParCnil = {
   document: string;
 };
 
+/** Document déjà listé par une autre page de référence, donc non dupliqué. */
+export type CouvertParDoctrine = {
+  type: TypeDoctrine;
+  titre: string;
+  url: string;
+};
+
 export type DocumentEcart = {
   url: string;
   titre: string;
@@ -112,6 +121,8 @@ export type ManifesteDoctrine = {
   liste_reference: {
     type: TypeDoctrine;
     url: string;
+    /** `page` : page de résultats relue ; `liste` : liste explicite déclarée. */
+    origine: "page" | "liste";
     consulte_le: string;
     /** Documents que la page a listés, retenus ou non. */
     listes: number;
@@ -129,6 +140,8 @@ export type ManifesteDoctrine = {
   couverts_par_type: Record<TypeDoctrine, number>;
   documents_par_type: Record<TypeDoctrine, DocumentManifeste[]>;
   couverts_par_cnil: CouvertParCnil[];
+  /** Documents déjà listés ailleurs au corpus, non dupliqués. */
+  couverts_par_doctrine: CouvertParDoctrine[];
   documents_ecartes: DocumentEcart[];
   mention: string;
   licence: string;
@@ -143,6 +156,7 @@ export type ManifesteDoctrine = {
     types: Record<TypeDoctrine, number>;
     couverts_par_type: Record<TypeDoctrine, number>;
     couverts_par_cnil: number;
+    couverts_par_doctrine: number;
     documents_ecartes: number;
     mentions_contraires: number;
     licence_note: string;
@@ -176,6 +190,7 @@ export type ResultatDoctrine = {
   documents: number;
   fragments: number;
   couverts: number;
+  couverts_doctrine: number;
   ecartes: number;
   pagesLues: number;
   ecrit: boolean;
@@ -339,6 +354,74 @@ export function lireCorpusCnil(rootDir: string): Map<string, string> {
   return numeros;
 }
 
+/** Entrée du manifeste précédent, gardée telle quelle quand le texte n'a pas bougé. */
+export type DocumentPrecedent = DocumentManifeste & Record<string, unknown>;
+
+/**
+ * Documents déjà au corpus, par URL. Leur entrée sert de base à un document
+ * dont le texte n'a pas changé : une nouvelle passe ne le redate pas et ne
+ * remplace pas l'empreinte de sa capture.
+ */
+export function lireDocumentsPrecedents(rootDir: string): Map<string, DocumentPrecedent> {
+  const chemin = join(rootDir, DOSSIER_CORPUS, "manifest.json");
+  const documents = new Map<string, DocumentPrecedent>();
+  if (!existsSync(chemin)) return documents;
+  let manifeste: unknown;
+  try {
+    manifeste = JSON.parse(readFileSync(chemin, "utf8"));
+  } catch {
+    return documents;
+  }
+  if (typeof manifeste !== "object" || manifeste === null) return documents;
+  const parType = (manifeste as { documents_par_type?: unknown }).documents_par_type;
+  if (typeof parType !== "object" || parType === null) return documents;
+  for (const liste of Object.values(parType)) {
+    if (!Array.isArray(liste)) continue;
+    for (const document of liste) {
+      if (typeof document !== "object" || document === null) continue;
+      const url = (document as { url?: unknown }).url;
+      if (typeof url !== "string") continue;
+      documents.set(url, document as DocumentPrecedent);
+    }
+  }
+  return documents;
+}
+
+/**
+ * Empreinte du texte de chaque document du corpus précédent, lue dans
+ * `unites.jsonl` : elle décide si un document a réellement changé, sans se
+ * laisser tromper par le chrome volatil d'une page HTML.
+ */
+export function lireTextesPrecedents(rootDir: string): Map<string, string> {
+  const chemin = join(rootDir, DOSSIER_CORPUS, "unites.jsonl");
+  const empreintes = new Map<string, string>();
+  if (!existsSync(chemin)) return empreintes;
+  const morceaux = new Map<string, string[]>();
+  for (const ligne of readFileSync(chemin, "utf8").split("\n")) {
+    if (ligne.trim() === "") continue;
+    let unite: { ref?: unknown; document?: unknown; texte?: unknown };
+    try {
+      unite = JSON.parse(ligne) as { ref?: unknown; document?: unknown; texte?: unknown };
+    } catch {
+      continue;
+    }
+    if (
+      typeof unite.ref !== "string" ||
+      typeof unite.document !== "string" ||
+      typeof unite.texte !== "string"
+    ) {
+      continue;
+    }
+    const liste = morceaux.get(unite.document) ?? [];
+    liste.push(`${unite.ref}\n${unite.texte}\n`);
+    morceaux.set(unite.document, liste);
+  }
+  for (const [document, liste] of morceaux) {
+    empreintes.set(document, sha256(liste.join("")));
+  }
+  return empreintes;
+}
+
 /** Texte lisible d'une page de document : sa zone principale, balises retirées. */
 export function texteDePage(html: string): string {
   const main = /<main\b[\s\S]*?<\/main>/i.exec(html);
@@ -363,13 +446,14 @@ type Candidat = {
 /** Un document retenu, sa représentation, son empreinte et son texte. */
 type DocumentLu = {
   candidat: Candidat;
-  slug: string;
   titre: string;
   date_acte: string;
   date_source: "document" | "extraction";
   representation: "pdf" | "page";
   snapshot: string;
   texte: string;
+  /** Nombre de lettres du texte retenu, pour le seuil et le plafond déclarés. */
+  lettres: number;
 };
 
 /**
@@ -426,9 +510,10 @@ export async function syncDoctrine(
     // Ce que la page de référence a listé, retenu ou non : une fiche refusée
     // reste comptée ici, puis déclarée dans `documents_ecartes`.
     let listes = 0;
-    const entreeReference = {
+    const entreeReference: ManifesteDoctrine["liste_reference"][number] = {
       type: reference.type,
       url: reference.url,
+      origine: reference.liens === "urls" ? "liste" : "page",
       consulte_le: date,
       listes,
       documents: 0,
@@ -494,30 +579,83 @@ export async function syncDoctrine(
         });
       }
     }
+    for (const document of liste.documents) {
+      listes += 1;
+      const titre = document.titre.trim();
+      if (estPdf(document.url, descripteur.domaine)) {
+        candidats.push({
+          type: reference.type,
+          url: document.url,
+          titre,
+          pdf: { url: document.url, titre },
+          pageHtml: null,
+          pageTexte: null,
+          reference,
+        });
+        continue;
+      }
+      let html: string;
+      try {
+        html = await lirePage(document.url);
+      } catch (error) {
+        // Une page déclarée et refusée est dite, jamais oubliée.
+        ecartes.push({
+          url: document.url,
+          titre,
+          raison: error instanceof Error ? error.message : String(error),
+        });
+        continue;
+      }
+      const pdf =
+        document.pdf === undefined
+          ? pdfVersionFiche(html, document.url, descripteur.domaine, titre)
+          : { url: document.pdf, titre };
+      candidats.push({
+        type: reference.type,
+        url: document.url,
+        titre,
+        pdf,
+        pageHtml: html,
+        pageTexte: texteDePage(html),
+        reference,
+      });
+    }
     entreeReference.listes = listes;
   }
 
   const vus = new Set<string>();
+  const doublons: Candidat[] = [];
   const uniques = candidats.filter((candidat) => {
-    if (vus.has(candidat.url)) return false;
+    if (vus.has(candidat.url)) {
+      doublons.push(candidat);
+      return false;
+    }
     vus.add(candidat.url);
     return true;
   });
   if (uniques.length === 0) {
     throw new Error("Aucun document de doctrine listé : les pages de référence ont changé ?");
   }
+  const couvertsParDoctrine: CouvertParDoctrine[] = doublons.map((candidat) => ({
+    type: candidat.type,
+    titre: candidat.titre.trim(),
+    url: candidat.url,
+  }));
 
   const corpusCnil = lireCorpusCnil(rootDir);
+  const precedents = lireDocumentsPrecedents(rootDir);
+  const textesPrecedents = lireTextesPrecedents(rootDir);
   const extraireTexte = options.extraireTexte ?? extraireTextePdf;
-  const unites: Unite[] = [];
   const documentsParType: Record<TypeDoctrine, DocumentManifeste[]> = {
     guide: [],
     referentiel: [],
     liste_aipd: [],
     fiche_ia: [],
+    doctrine_ia: [],
   };
   const couverts: CouvertParCnil[] = [];
   const pris = new Set<string>();
+  const lus: DocumentLu[] = [];
 
   for (const candidat of uniques) {
     const url = candidat.url;
@@ -573,64 +711,157 @@ export async function syncDoctrine(
       representation = "page";
     }
 
+    // Une page ou un PDF trop court n'est pas une position de fond : il est
+    // déclaré avec sa mesure, jamais retenu pour grossir la liste.
+    const seuil = candidat.reference.seuil_lettres;
+    if (seuil !== undefined && lettres(texte) < seuil) {
+      ecartes.push({
+        url,
+        titre,
+        raison: `moins de ${seuil} lettres (${lettres(texte)})`,
+      });
+      continue;
+    }
+
     const contraire = mentionContraire(texte);
     if (contraire !== null) {
       ecartes.push({ url, titre, raison: contraire });
       continue;
     }
 
+    // La couverture par une délibération ne vaut que pour les listes AIPD, qui
+    // sont la délibération elle-même : une position sur l'IA cite des
+    // délibérations sans être l'une d'elles.
     const citees = [
       ...deliberationsCitees(candidat.pageTexte ?? ""),
       ...deliberationsCitees(texte),
     ];
-    const couvert = deliberationDuDocument(titre, citees, corpusCnil);
+    const couvert =
+      candidat.type === "liste_aipd"
+        ? deliberationDuDocument(titre, citees, corpusCnil)
+        : null;
     if (couvert !== null) {
       couverts.push({ type: candidat.type, titre, url, ...couvert });
       continue;
     }
 
-    // La page retenue est conservée comme preuve, adressée par son empreinte,
-    // sous `data/raw/` (non commité), comme les PDF.
-    if (ecrire && representation === "page" && candidat.pageHtml !== null) {
-      ecrireOctets(join(brutDir, "page", `${empreinte}.html`), new TextEncoder().encode(candidat.pageHtml));
-    }
-
     const dateDocument = datePage ?? dateDuDocument(texte);
-    const dateActe = dateDocument ?? date;
-    const slug = slugUnique(url, pris);
-    const lu: DocumentLu = {
+    const precedent = precedents.get(url);
+    // Un texte inchangé garde la date de sa première extraction : une nouvelle
+    // passe ne le redate pas. Un contenu réédité reprend la date du jour.
+    const dateActe =
+      dateDocument ??
+      (precedent !== undefined &&
+      precedent.snapshot === empreinte &&
+      precedent.date_source === "extraction"
+        ? precedent.date_acte
+        : date);
+    lus.push({
       candidat,
-      slug,
-      titre: titre === "" ? slug : titre,
+      titre: titre === "" ? slugDe(url) : titre,
       date_acte: dateActe,
       date_source: dateDocument === null ? "extraction" : "document",
       representation,
       snapshot: empreinte,
       texte,
-    };
+      lettres: lettres(texte),
+    });
+  }
+
+  // Plafond déclaré par page de référence : les documents les plus substantiels
+  // restent, les autres sont déclarés avec leur mesure.
+  const gardes = new Set<DocumentLu>();
+  const parReference = new Map<PageReference, DocumentLu[]>();
+  for (const lu of lus) {
+    const liste = parReference.get(lu.candidat.reference) ?? [];
+    liste.push(lu);
+    parReference.set(lu.candidat.reference, liste);
+  }
+  for (const [reference, documentsLus] of parReference) {
+    const plafond = reference.plafond;
+    if (plafond === undefined || documentsLus.length <= plafond) {
+      for (const lu of documentsLus) gardes.add(lu);
+      continue;
+    }
+    const tries = [...documentsLus].sort(
+      (gauche, droite) =>
+        droite.lettres - gauche.lettres ||
+        gauche.candidat.url.localeCompare(droite.candidat.url),
+    );
+    for (const lu of tries.slice(0, plafond)) gardes.add(lu);
+    for (const lu of tries.slice(plafond)) {
+      ecartes.push({
+        url: lu.candidat.url,
+        titre: lu.titre,
+        raison: `plafond de ${plafond} documents : moins substantiel que les ${plafond} retenus`,
+      });
+    }
+  }
+
+  const unites: Unite[] = [];
+  for (const lu of lus) {
+    if (!gardes.has(lu)) continue;
+    const url = lu.candidat.url;
+    // La page retenue est conservée comme preuve, adressée par son empreinte,
+    // sous `data/raw/` (non commité), comme les PDF.
+    if (ecrire && lu.representation === "page" && lu.candidat.pageHtml !== null) {
+      ecrireOctets(
+        join(brutDir, "page", `${lu.snapshot}.html`),
+        new TextEncoder().encode(lu.candidat.pageHtml),
+      );
+    }
+    const slug = slugUnique(url, pris);
     const fragments = unitesDoctrine(
       {
         type: lu.candidat.type,
         url,
         titre: lu.titre,
-        slug: lu.slug,
+        slug,
         date_acte: lu.date_acte,
       },
-      texte,
+      lu.texte,
       descripteur,
     );
     unites.push(...fragments);
-    documentsParType[candidat.type].push({
-      slug: lu.slug,
-      type: candidat.type,
+    const empreinteTexte = sha256(
+      fragments.map((fragment) => `${fragment.ref}\n${fragment.texte}\n`).join(""),
+    );
+    const entreePrecedente = precedents.get(url);
+    if (
+      entreePrecedente !== undefined &&
+      textesPrecedents.get(slug) === empreinteTexte
+    ) {
+      // Le texte est identique : l'entrée existante garde son empreinte de
+      // capture, sa date d'acte et sa date d'extraction. Seuls le type,
+      // l'intitulé, le lien et la licence, qui viennent du descripteur, suivent.
+      documentsParType[lu.candidat.type].push({
+        ...entreePrecedente,
+        type: lu.candidat.type,
+        titre: lu.titre,
+        url,
+        fragments: fragments.length,
+        representation: lu.representation,
+        pdf: lu.candidat.pdf?.url ?? null,
+        licence: descripteur.licence,
+        licence_url: descripteur.licence_url,
+        source: descripteur.source,
+      });
+      continue;
+    }
+    documentsParType[lu.candidat.type].push({
+      slug,
+      type: lu.candidat.type,
       titre: lu.titre,
       url,
       snapshot: lu.snapshot,
       date_acte: lu.date_acte,
       date_source: lu.date_source,
-      date_extraction: date,
+      date_extraction:
+        precedents.get(url)?.snapshot === lu.snapshot
+          ? (precedents.get(url)?.date_extraction ?? date)
+          : date,
       representation: lu.representation,
-      pdf: candidat.pdf?.url ?? null,
+      pdf: lu.candidat.pdf?.url ?? null,
       licence: descripteur.licence,
       licence_url: descripteur.licence_url,
       source: descripteur.source,
@@ -652,12 +883,14 @@ export async function syncDoctrine(
     referentiel: documentsParType.referentiel.length,
     liste_aipd: documentsParType.liste_aipd.length,
     fiche_ia: documentsParType.fiche_ia.length,
+    doctrine_ia: documentsParType.doctrine_ia.length,
   };
   const couvertsParType: Record<TypeDoctrine, number> = {
     guide: couverts.filter((couvert) => couvert.type === "guide").length,
     referentiel: couverts.filter((couvert) => couvert.type === "referentiel").length,
     liste_aipd: couverts.filter((couvert) => couvert.type === "liste_aipd").length,
     fiche_ia: couverts.filter((couvert) => couvert.type === "fiche_ia").length,
+    doctrine_ia: couverts.filter((couvert) => couvert.type === "doctrine_ia").length,
   };
   const compteParReference = new Map<PageReference, number>();
   const parUrl = new Map(uniques.map((candidat) => [candidat.url, candidat]));
@@ -666,6 +899,7 @@ export async function syncDoctrine(
     ...documentsParType.referentiel,
     ...documentsParType.liste_aipd,
     ...documentsParType.fiche_ia,
+    ...documentsParType.doctrine_ia,
   ]) {
     const candidat = parUrl.get(document.url);
     if (candidat === undefined) continue;
@@ -676,6 +910,9 @@ export async function syncDoctrine(
     if (candidat === undefined) continue;
     compteParReference.set(candidat.reference, (compteParReference.get(candidat.reference) ?? 0) + 1);
   }
+  for (const doublon of doublons) {
+    compteParReference.set(doublon.reference, (compteParReference.get(doublon.reference) ?? 0) + 1);
+  }
   const listeReference = references.map((entree, index) => {
     const reference = descripteur.pages_reference[index];
     return {
@@ -684,6 +921,12 @@ export async function syncDoctrine(
     };
   });
   const documentsListes = references.reduce((total, entree) => total + entree.listes, 0);
+  const ecartesParUrl = new Map<string, DocumentEcart>();
+  for (const declare of descripteur.documents_ecartes ?? []) {
+    ecartesParUrl.set(declare.url, declare);
+  }
+  for (const ecarte of ecartes) ecartesParUrl.set(ecarte.url, ecarte);
+  const tousEcartes = [...ecartesParUrl.values()];
 
   const manifeste: ManifesteDoctrine = {
     corpus: descripteur.corpus,
@@ -699,13 +942,14 @@ export async function syncDoctrine(
     couverts_par_type: couvertsParType,
     documents_par_type: documentsParType,
     couverts_par_cnil: couverts,
-    documents_ecartes: ecartes,
+    couverts_par_doctrine: couvertsParDoctrine,
+    documents_ecartes: tousEcartes,
     mention: descripteur.mention,
     licence: descripteur.licence,
     licence_url: descripteur.licence_url,
     source: descripteur.source,
     couverture: {
-      source: "CNIL — guides, référentiels, fiches IA et listes AIPD (cnil.fr)",
+      source: "CNIL — guides, référentiels, fiches IA, doctrine IA et listes AIPD (cnil.fr)",
       date_liste: date,
       date_extraction: date,
       pages_reference: descripteur.pages_reference.map((reference) => reference.url),
@@ -713,8 +957,9 @@ export async function syncDoctrine(
       types,
       couverts_par_type: couvertsParType,
       couverts_par_cnil: couverts.length,
-      documents_ecartes: ecartes.length,
-      mentions_contraires: ecartes.filter((ecarte) => ecarte.raison.startsWith("mention contraire")).length,
+      couverts_par_doctrine: couvertsParDoctrine.length,
+      documents_ecartes: tousEcartes.length,
+      mentions_contraires: tousEcartes.filter((ecarte) => ecarte.raison.startsWith("mention contraire")).length,
       licence_note:
         "Les textes de cnil.fr sont sous CC BY-ND 4.0 sauf mention contraire ; " +
         "l'heuristique écarte une mention contraire explicite. Aucune mention de licence distincte " +
@@ -742,7 +987,8 @@ export async function syncDoctrine(
     documents,
     fragments: unites.length,
     couverts: couverts.length,
-    ecartes: ecartes.length,
+    couverts_doctrine: couvertsParDoctrine.length,
+    ecartes: tousEcartes.length,
     pagesLues,
     ecrit,
   };
@@ -771,7 +1017,8 @@ async function main(argv: string[]): Promise<void> {
     });
     process.stderr.write(
       `${resultat.documents} document(s), ${resultat.fragments} fragment(s), ` +
-        `${resultat.couverts} couvert(s) par le corpus CNIL, ${resultat.ecartes} écarté(s), ` +
+        `${resultat.couverts} couvert(s) par le corpus CNIL, ` +
+        `${resultat.couverts_doctrine} couvert(s) par une autre liste, ${resultat.ecartes} écarté(s), ` +
         `${resultat.pagesLues} page(s) de résultats lues` +
         `${dryRun ? " — dry-run, rien n'est écrit" : resultat.ecrit ? " — corpus réécrit" : " — corpus inchangé"}\n`,
     );

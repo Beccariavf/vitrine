@@ -41,6 +41,8 @@ import { statutApplication } from "../mcp/corpus/statut.ts";
 const ICI = fileURLToPath(new URL(".", import.meta.url));
 const FIXTURES = join(ICI, "fixtures", "cnil-doctrine");
 const DESCRIPTEUR = lireDescripteur(join(ICI, "..", "mcp", "corpus", "cnil-doctrine", "descripteur.json"));
+/** Base des descripteurs simulés : les exclusions déclarées du vrai descripteur ne comptent pas. */
+const { documents_ecartes: _documentsEcartes, ...DESCRIPTEUR_SIMULE } = DESCRIPTEUR;
 
 function fixture(nom: string): string {
   return readFileSync(join(FIXTURES, nom), "utf8");
@@ -275,6 +277,31 @@ describe("fiches IA de la CNIL", () => {
       ),
       null,
       "un PDF d'une autre fiche n'est pas la version de celle-ci",
+    );
+  });
+
+  it("retire les commandes d'impression et l'encart de contribution", () => {
+    const html = [
+      "<main>",
+      '<div class="ctn-gen">',
+      "<h1>Se mettre en conformité</h1>",
+      "<p class='ctn-gen-auteur'>28 mars 2022</p>",
+      '<div class="ctn-gen-after">',
+      "<p>Attribuer les responsabilités et documenter son traitement.</p>",
+      '<p class="rtecenter"><button id="print" onclick="window.print();" title="Imprimer">Imprimer cette check-list</button></p>',
+      '<p class="rtecenter"><em>Aucune information n\'est collectée par la CNIL.</em></p>',
+      "</div>",
+      '<div class="ctn-gen-mise-avant clearfix"><h2><span>Dossier du LINC</span></h2><div><p>Le Laboratoire d’innovation numérique a publié un dossier en quatre volets.</p></div></div>',
+      '<div class="ctn-gen-mise-avant clearfix"><h2><span>Vous souhaitez contribuer ?</span></h2><div><p>Écrivez à ia[@]cnil.fr</p></div></div>',
+      "</div>",
+      "</main>",
+    ].join("");
+    const texte = texteFiche(html);
+    assert.match(texte, /Attribuer les responsabilités/);
+    assert.match(texte, /Dossier du LINC/, "un encart de doctrine survit au nettoyage");
+    assert.doesNotMatch(
+      texte,
+      /Imprimer cette check-list|Aucune information|Vous souhaitez contribuer|Écrivez à ia/,
     );
   });
 
@@ -518,7 +545,7 @@ describe("synchronisation de la doctrine CNIL", () => {
       motif_pdf: "liste",
     };
     const descripteur: DescripteurDoctrine = {
-      ...DESCRIPTEUR,
+      ...DESCRIPTEUR_SIMULE,
       domaine: "exemple.test",
       pages_reference: [reference],
     };
@@ -582,7 +609,7 @@ describe("synchronisation de la doctrine CNIL", () => {
     const manifeste = JSON.parse(
       readFileSync(join(racine, "data", "corpus", "cnil_doctrine", "manifest.json"), "utf8"),
     ) as {
-      liste_reference: { type: string; url: string; consulte_le: string; documents: number }[];
+      liste_reference: { type: string; url: string; origine: string; consulte_le: string; documents: number }[];
       consulte_le: string;
       types: Record<string, number>;
       couverts_par_type: Record<string, number>;
@@ -599,18 +626,26 @@ describe("synchronisation de la doctrine CNIL", () => {
       {
         type: "liste_aipd",
         url: "https://exemple.test/fr/listes-aipd",
+        origine: "page",
         consulte_le: "2026-11-14",
         listes: 3,
         documents: 2,
       },
     ]);
     assert.equal(manifeste.consulte_le, "2026-11-14");
-    assert.deepEqual(manifeste.types, { guide: 0, referentiel: 0, liste_aipd: 1, fiche_ia: 0 });
+    assert.deepEqual(manifeste.types, {
+      guide: 0,
+      referentiel: 0,
+      liste_aipd: 1,
+      fiche_ia: 0,
+      doctrine_ia: 0,
+    });
     assert.deepEqual(manifeste.couverts_par_type, {
       guide: 0,
       referentiel: 0,
       liste_aipd: 1,
       fiche_ia: 0,
+      doctrine_ia: 0,
     });
     assert.deepEqual(manifeste.couverts_par_cnil, [
       {
@@ -653,7 +688,7 @@ describe("synchronisation de la doctrine CNIL", () => {
       pages_max: 1,
       liens: "pdf",
     };
-    ecrire(racine, "descripteur.json", JSON.stringify({ ...DESCRIPTEUR, domaine: "exemple.test", pages_reference: [reference] }));
+    ecrire(racine, "descripteur.json", JSON.stringify({ ...DESCRIPTEUR_SIMULE, domaine: "exemple.test", pages_reference: [reference] }));
 
     let liste = [
       '<a href="https://exemple.test/docs/guide-a.pdf">Guide A</a>',
@@ -704,7 +739,7 @@ describe("synchronisation de la doctrine CNIL", () => {
     ecrire(
       racine,
       "descripteur.json",
-      JSON.stringify({ ...DESCRIPTEUR, domaine: "exemple.test", validite_jours: 7, pages_reference: [reference] }),
+      JSON.stringify({ ...DESCRIPTEUR_SIMULE, domaine: "exemple.test", validite_jours: 7, pages_reference: [reference] }),
     );
     const fetchHtml: FetchHtml = async () => ({
       ok: true,
@@ -747,7 +782,7 @@ describe("synchronisation de la doctrine CNIL", () => {
     ecrire(
       racine,
       "descripteur.json",
-      JSON.stringify({ ...DESCRIPTEUR, domaine: "exemple.test", pages_reference: [reference] }),
+      JSON.stringify({ ...DESCRIPTEUR_SIMULE, domaine: "exemple.test", pages_reference: [reference] }),
     );
 
     const pageA = "https://exemple.test/fr/fiche-annotations";
@@ -917,14 +952,17 @@ describe("synchronisation de la doctrine CNIL", () => {
     );
   });
 
-  it("laisse les 56 documents déjà au corpus inchangés", () => {
-    const attendus = JSON.parse(fixture("documents-2026-11-21.json")) as {
+  function verifierDocumentsFiges(nomFixture: string): void {
+    const attendus = JSON.parse(fixture(nomFixture)) as {
       documents: number;
       documents_par_slug: Record<string, { fragments: number; type: string; sha256: string }>;
     };
     const manifeste = JSON.parse(
       readFileSync(join(ICI, "..", "data", "corpus", "cnil_doctrine", "manifest.json"), "utf8"),
-    ) as { documents_par_type: Record<string, { slug: string; fragments: number }[]> };
+    ) as {
+      types: Record<string, number>;
+      documents_par_type: Record<string, { slug: string; fragments: number }[]>;
+    };
     const textes = new Map<string, string[]>();
     for (const ligne of readFileSync(
       join(ICI, "..", "data", "corpus", "cnil_doctrine", "unites.jsonl"),
@@ -938,7 +976,7 @@ describe("synchronisation de la doctrine CNIL", () => {
       textes.set(unite.document, liste);
     }
 
-    assert.equal(attendus.documents, 56);
+    assert.equal(attendus.documents, Object.keys(attendus.documents_par_slug).length);
     for (const [slug, attendu] of Object.entries(attendus.documents_par_slug)) {
       const document = manifeste.documents_par_type[attendu.type]?.find((entree) => entree.slug === slug);
       assert.ok(document !== undefined, `document disparu : ${slug}`);
@@ -955,6 +993,297 @@ describe("synchronisation de la doctrine CNIL", () => {
         .map((document) => document.slug),
     );
     for (const slug of Object.keys(attendus.documents_par_slug)) assert.ok(slugs.has(slug));
+  }
+
+  it("ingère une liste explicite de doctrine IA, avec seuil et plafond", async () => {
+    const racine = racineTemporaire();
+    const rubrique = "https://exemple.test/fr/intelligence-artificielle";
+    const pageA = "https://exemple.test/fr/position-a";
+    const pageB = "https://exemple.test/fr/note-b";
+    const pdfB = "https://exemple.test/sites/default/files/note-b.pdf";
+    const pageC = "https://exemple.test/fr/courte-c";
+    const pageD = "https://exemple.test/fr/position-d";
+    const reference: PageReference = {
+      type: "doctrine_ia",
+      url: rubrique,
+      pages_max: 1,
+      liens: "urls",
+      seuil_lettres: 1500,
+      plafond: 2,
+      urls: [
+        { url: pageA, titre: "Position A" },
+        { url: pageB, titre: "Note B", pdf: pdfB },
+        { url: pageC, titre: "Courte C" },
+        { url: pageD, titre: "Position D" },
+      ],
+    };
+    ecrire(
+      racine,
+      "descripteur.json",
+      JSON.stringify({ ...DESCRIPTEUR_SIMULE, domaine: "exemple.test", pages_reference: [reference] }),
+    );
+
+    const htmlDoc = (titre: string, date: string, corps: string): string =>
+      [
+        "<main>",
+        '<div class="ctn-gen">',
+        `<h1>${titre}</h1>`,
+        `<p class='ctn-gen-auteur'>${date}</p>`,
+        '<div class="ctn-gen-after">',
+        `<p>${corps}</p>`,
+        "</div>",
+        "</div>",
+        "</main>",
+      ].join("");
+    const pages: Record<string, string> = {
+      [pageA]: htmlDoc("Position A", "18 novembre 2024", "A".repeat(2200)),
+      [pageB]: htmlDoc("Note B", "20 juillet 2026", "Résumé court de la note."),
+      [pageC]: htmlDoc("Courte C", "11 juillet 2025", "C".repeat(120)),
+      [pageD]: htmlDoc("Position D", "19 novembre 2024", "D".repeat(1800)),
+    };
+    const demandees: string[] = [];
+    const fetchHtml: FetchHtml = async (url) => {
+      demandees.push(url);
+      const html = pages[url];
+      if (html === undefined) return { ok: false, status: 404, text: async () => "" };
+      return { ok: true, status: 200, text: async () => html };
+    };
+    const fetchPdf: FetchPdf = async () => {
+      const octets = new TextEncoder().encode("%PDF-1.4\n% fixture\n");
+      return { ok: true, status: 200, arrayBuffer: async () => octets.buffer.slice(0) as ArrayBuffer };
+    };
+
+    const resultat = await syncDoctrine({
+      rootDir: racine,
+      descripteurPath: join(racine, "descripteur.json"),
+      date: "2026-11-25",
+      fetchHtml,
+      fetchPdf,
+      extraireTexte: async (_octets, url) =>
+        url === pdfB ? "Texte intégral de la note B.".repeat(120) : "",
+      attendre: async () => {},
+      delaiMs: 0,
+    });
+
+    assert.equal(resultat.documents, 2, "les deux documents les plus substantiels sont retenus");
+    assert.ok(
+      !demandees.includes(rubrique),
+      "la rubrique qui a établi la liste n'est pas une page de résultats à relire",
+    );
+
+    const manifeste = JSON.parse(
+      readFileSync(join(racine, "data", "corpus", "cnil_doctrine", "manifest.json"), "utf8"),
+    ) as {
+      types: Record<string, number>;
+      liste_reference: { listes: number; documents: number }[];
+      documents_par_type: Record<
+        string,
+        { slug: string; url: string; representation: string; pdf: string | null; date_acte: string; date_source: string }[]
+      >;
+      documents_ecartes: { url: string; raison: string }[];
+    };
+    assert.equal(manifeste.types.doctrine_ia, 2);
+    assert.deepEqual(manifeste.liste_reference[0], {
+      type: "doctrine_ia",
+      url: rubrique,
+      origine: "liste",
+      consulte_le: "2026-11-25",
+      listes: 4,
+      documents: 2,
+    });
+
+    const documents = manifeste.documents_par_type.doctrine_ia ?? [];
+    const a = documents.find((document) => document.url === pageA);
+    const b = documents.find((document) => document.url === pageB);
+    assert.ok(
+      a !== undefined && b !== undefined,
+      JSON.stringify({
+        documents: documents.map((document) => document.url),
+        ecartes: manifeste.documents_ecartes,
+      }),
+    );
+    assert.equal(a.representation, "page");
+    assert.equal(a.date_acte, "2024-11-18");
+    assert.equal(a.date_source, "document");
+    assert.equal(b.representation, "pdf");
+    assert.equal(b.pdf, pdfB);
+    assert.equal(b.date_acte, "2026-07-20", "la page date la note lue dans son PDF");
+
+    const raisons = new Map(manifeste.documents_ecartes.map((ecarte) => [ecarte.url, ecarte.raison]));
+    assert.match(raisons.get(pageC) ?? "", /moins de 1500 lettres/);
+    assert.match(raisons.get(pageD) ?? "", /plafond de 2 documents/);
+
+    const unites = readFileSync(
+      join(racine, "data", "corpus", "cnil_doctrine", "unites.jsonl"),
+      "utf8",
+    )
+      .split("\n")
+      .filter(Boolean)
+      .map((ligne) => JSON.parse(ligne) as { document: string; chemin: string; texte: string });
+    assert.match(unites[0]?.chemin ?? "", /^Doctrine CNIL > Doctrine IA > Position A/);
+    assert.ok(
+      unites
+        .filter((unite) => unite.document === "note-b")
+        .some((unite) => /Texte intégral de la note B/.test(unite.texte)),
+      "le texte de la note vient du PDF déclaré",
+    );
+  });
+
+  it("dédoublonne par URL et déclare le document couvert par une autre liste", async () => {
+    const racine = racineTemporaire();
+    const pageA = "https://exemple.test/fr/position-a";
+    const fiches: PageReference = {
+      type: "fiche_ia",
+      url: "https://exemple.test/fr/fiches-pratiques-ia",
+      pages_max: 1,
+      liens: "fiches",
+    };
+    const doctrine: PageReference = {
+      type: "doctrine_ia",
+      url: "https://exemple.test/fr/intelligence-artificielle",
+      pages_max: 1,
+      liens: "urls",
+      urls: [{ url: pageA, titre: "Position A" }],
+    };
+    ecrire(
+      racine,
+      "descripteur.json",
+      JSON.stringify({
+        ...DESCRIPTEUR_SIMULE,
+        domaine: "exemple.test",
+        pages_reference: [fiches, doctrine],
+      }),
+    );
+
+    const listeFiches = [
+      "<main>",
+      '<div class="row"><div class="col-sm-3 left"><p class="number">Fiche 1</p></div>',
+      `<div class="col-sm-9 right"><h3>Position A</h3><a href="${pageA}">&gt; En savoir plus</a></div></div>`,
+      "</main>",
+    ].join("");
+    const pageHtml = [
+      "<main>",
+      '<div class="ctn-gen">',
+      "<h1>Position A</h1>",
+      "<p class='ctn-gen-auteur'>18 novembre 2024</p>",
+      `<div class="ctn-gen-after"><p>${"A".repeat(1800)}</p></div>`,
+      "</div>",
+      "</main>",
+    ].join("");
+    const fetchHtml: FetchHtml = async (url) => {
+      const html =
+        url === fiches.url ? listeFiches : url === pageA ? pageHtml : undefined;
+      if (html === undefined) return { ok: false, status: 404, text: async () => "" };
+      return { ok: true, status: 200, text: async () => html };
+    };
+
+    const resultat = await syncDoctrine({
+      rootDir: racine,
+      descripteurPath: join(racine, "descripteur.json"),
+      date: "2026-11-25",
+      fetchHtml,
+      extraireTexte: async () => "",
+      attendre: async () => {},
+      delaiMs: 0,
+    });
+
+    assert.equal(resultat.documents, 1);
+    assert.equal(resultat.couverts_doctrine, 1);
+    const manifeste = JSON.parse(
+      readFileSync(join(racine, "data", "corpus", "cnil_doctrine", "manifest.json"), "utf8"),
+    ) as {
+      types: Record<string, number>;
+      couverts_par_doctrine: { type: string; titre: string; url: string }[];
+      liste_reference: { listes: number; documents: number }[];
+    };
+    assert.equal(manifeste.types.fiche_ia, 1);
+    assert.equal(manifeste.types.doctrine_ia, 0);
+    assert.deepEqual(manifeste.couverts_par_doctrine, [
+      { type: "doctrine_ia", titre: "Position A", url: pageA },
+    ]);
+    assert.equal(manifeste.liste_reference[1]?.documents, 1, "le doublon est déclaré couvert");
+  });
+
+  it("garde la date d'extraction d'un document inchangé et la renouvelle s'il change", async () => {
+    const racine = racineTemporaire();
+    const page = "https://exemple.test/fr/position-a";
+    const reference: PageReference = {
+      type: "doctrine_ia",
+      url: "https://exemple.test/fr/intelligence-artificielle",
+      pages_max: 1,
+      liens: "urls",
+      urls: [{ url: page, titre: "Position A" }],
+    };
+    ecrire(
+      racine,
+      "descripteur.json",
+      JSON.stringify({ ...DESCRIPTEUR_SIMULE, domaine: "exemple.test", pages_reference: [reference] }),
+    );
+    let corps = "A".repeat(1800);
+    const fetchHtml: FetchHtml = async () => ({
+      ok: true,
+      status: 200,
+      text: async () =>
+        [
+          "<main>",
+          '<div class="ctn-gen">',
+          "<h1>Position A</h1>",
+          `<div class="ctn-gen-after"><p>${corps}</p></div>`,
+          "</div>",
+          "</main>",
+        ].join(""),
+    });
+    const commun = {
+      rootDir: racine,
+      descripteurPath: join(racine, "descripteur.json"),
+      fetchHtml,
+      extraireTexte: async () => "",
+      attendre: async () => {},
+      delaiMs: 0,
+    };
+    const lireDates = (): { acte: string; extraction: string } => {
+      const manifeste = JSON.parse(
+        readFileSync(join(racine, "data", "corpus", "cnil_doctrine", "manifest.json"), "utf8"),
+      ) as {
+        documents_par_type: Record<
+          string,
+          { date_acte: string; date_extraction: string; date_source: string }[]
+        >;
+      };
+      const document = manifeste.documents_par_type.doctrine_ia?.[0];
+      return {
+        acte: document?.date_acte ?? "",
+        extraction: document?.date_extraction ?? "",
+      };
+    };
+
+    await syncDoctrine({ ...commun, date: "2026-11-21" });
+    assert.deepEqual(lireDates(), { acte: "2026-11-21", extraction: "2026-11-21" });
+    await syncDoctrine({ ...commun, date: "2026-11-25" });
+    assert.deepEqual(
+      lireDates(),
+      { acte: "2026-11-21", extraction: "2026-11-21" },
+      "un texte inchangé n'est pas redaté",
+    );
+    corps = "B".repeat(1800);
+    await syncDoctrine({ ...commun, date: "2026-11-25" });
+    assert.deepEqual(
+      lireDates(),
+      { acte: "2026-11-25", extraction: "2026-11-25" },
+      "un texte réédité reprend la date de la passe",
+    );
+  });
+
+  it("laisse les 56 documents déjà au corpus inchangés", () => {
+    verifierDocumentsFiges("documents-2026-11-21.json");
+  });
+
+  it("laisse les 18 fiches IA déjà au corpus inchangées", () => {
+    verifierDocumentsFiges("fiches-ia-2026-11-25.json");
+    const manifeste = JSON.parse(
+      readFileSync(join(ICI, "..", "data", "corpus", "cnil_doctrine", "manifest.json"), "utf8"),
+    ) as { types: Record<string, number> };
+    assert.equal(manifeste.types.fiche_ia, 18, "aucune fiche ajoutée ni retirée");
   });
 
   it("lit le numéro d'une délibération depuis un corpus cnil réduit", () => {
