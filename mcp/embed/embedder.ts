@@ -54,13 +54,14 @@ export const INSTRUCTION_SANTE_UE =
 /**
  * Instruction de requête propre aux textes de frontière, lue quand `corpus` ou
  * `document` borne la requête. Le vocabulaire de ces actes (produits,
- * responsabilité, cybersécurité, bases de données) est étranger au RGPD : sans
- * elle, la question sur la notification d'une vulnérabilité exploitée du CRA
- * reste sous le seuil bas de confiance alors que l'article 14 est le premier
- * résultat.
+ * responsabilité, cybersécurité, bases de données) est étranger au RGPD, et la
+ * question d'un juriste vise la règle : sans instruction, la notification d'une
+ * vulnérabilité exploitée du CRA reste sous le seuil bas de confiance ; en
+ * visant l'article, l'article 7 de 96/9 entre dans le top 5 au lieu d'en sortir.
+ * Calibrée sur les deux questions de référence de #139, sans jeu `dev`.
  */
 export const INSTRUCTION_FRONTIERES =
-  "Instruction : retrouve les passages des textes européens sur les produits, la responsabilité, la cybersécurité, la propriété intellectuelle et les plateformes qui répondent à la question\nRequête : ";
+  "Instruction : retrouve l'article du texte européen de frontière qui énonce la règle répondant à la question\nRequête : ";
 
 /** Instructions connues par identifiant CELEX et par nom de corpus. */
 export const INSTRUCTIONS_REQUETE: Record<string, string> = {

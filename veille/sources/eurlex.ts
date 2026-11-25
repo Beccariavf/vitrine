@@ -31,18 +31,17 @@ export const SOURCE_ID = "eurlex";
 /** Matière unique des actes de protection des données. */
 export const THEME = "donnees-personnelles";
 
-/**
- * Matière d'une consolidation : l'AI Act se rattache à l'IA, l'économie des
- * données à sa matière, les textes de frontière à celle de leur acte (le CRA à la
- * cybersécurité, le DSA aux plateformes, le reste aux données non personnelles),
- * les autres aux données personnelles.
- */
 /** Matière d'un texte de frontière : le CRA à la cybersécurité, le DSA aux plateformes, le reste aux données non personnelles. */
 const THEMES_FRONTIERES: Readonly<Record<string, string>> = {
   "32024R2847": "cybersecurite",
   "32022R2065": "plateformes",
 };
 
+/**
+ * Matière d'une consolidation : l'AI Act se rattache à l'IA, l'économie des
+ * données à sa matière, les textes de frontière à celle de leur acte, les autres
+ * aux données personnelles.
+ */
 export function themeDeCorpus(corpus: string, document?: string): string {
   if (corpus === "aiact") return "ia";
   if (corpus === "donnees") return "donnees-non-personnelles";
