@@ -1798,6 +1798,7 @@ describe("synchronisation du corpus", () => {
           "adequation",
           "donnees",
           "sante_ue",
+          "frontieres",
           "cada",
         ],
       );
@@ -1915,6 +1916,7 @@ describe("synchronisation du corpus", () => {
       "donnees",
       "eprivacy",
       "eudpr",
+      "frontieres",
       "lil",
       "police",
       "preparation",
