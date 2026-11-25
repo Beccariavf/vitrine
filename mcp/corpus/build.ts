@@ -81,7 +81,7 @@ async function construire(
   let origine: OrigineConsiderants | undefined;
   if (descripteur.parseur === "ccs") {
     unites = parseCcs(contenu, descripteur);
-  } else if (descripteur.parseur === "donnees") {
+  } else if (descripteur.parseur === "donnees" || descripteur.parseur === "sante_ue") {
     unites = parseDonnees(contenu, descripteur);
   } else if (estConsolide(descripteur)) {
     if (compterConsiderantsConsolide(contenu) === 0 && descripteur.considerants_attendus > 0) {
@@ -119,6 +119,7 @@ const NOMS_CORPUS: Readonly<Record<string, string>> = {
   aiact: "AI Act et actes d'application",
   ccs: "Clauses contractuelles types",
   donnees: "Textes UE de l'économie des données",
+  sante_ue: "Espace européen des données de santé",
 };
 
 /**

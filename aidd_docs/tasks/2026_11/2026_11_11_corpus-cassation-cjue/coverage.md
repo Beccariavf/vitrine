@@ -1,12 +1,13 @@
 # Couverture des corpus
 
-Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les corpus inchangés, 15 novembre pour `metadonnees`, 25 novembre pour `aiact`, `donnees`, `cnil`, `cepd` et `cada`), jamais recopiés depuis un autre rapport.
+Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les corpus inchangés, 15 novembre pour `metadonnees`, 25 novembre pour `aiact`, `donnees`, `sante_ue`, `cnil`, `cepd` et `cada`), jamais recopiés depuis un autre rapport.
 
 | Corpus | Documents | Fragments | Période | Source | Licence |
 |---|---:|---:|---|---|---|
 | `rgpd` | 1 acte | 272 (99 articles + 173 considérants) | publication 2016-05-04 ; applicable depuis 2018-05-25 | CELLAR / EUR-Lex, CELEX `32016R0679` | Décision 2011/833/UE (CC BY 4.0) |
 | `aiact` | 4 actes | 377 (AI Act 299 : 119 articles de la consolidation `02024R1689-20260727` + 180 considérants de l'acte d'origine ; 2026/2487 : 10 articles + 26 considérants ; 2025/454 : 20 + 13 ; 2026/2274 : 2 + 6 + 1 annexe) | AI Act publication 2024-07-12, en vigueur depuis 2024-08-01 ; actes d'application du 2025-03-07 au 2026-11-10, publication du 2025-03-10 au 2026-11-11 | CELLAR / EUR-Lex, CELEX `32024R1689`, `32025R0454`, `32026D2274`, `32026R2487` | Décision 2011/833/UE (CC BY 4.0) |
 | `donnees` | 7 actes | 470 (125 articles, 325 considérants, 3 points, 17 annexes) | actes du 2018-11-14 au 2026-10-29 ; publication du 2018-11-28 au 2026-11-06 | CELLAR / EUR-Lex, CELEX `32023R2854`, `32022R0868`, `32019L1024`, `32023R0138`, `32018R1807`, `32026H2394`, `32023R1622` | Décision 2011/833/UE (CC BY 4.0) |
+| `sante_ue` | 4 actes | 306 (139 articles, 162 considérants, 5 annexes) | actes du 2025-02-11 au 2026-09-18 ; publication du 2025-03-05 au 2026-09-21 ; 2026-04-28 (entrée en vigueur) → 2029-03-26 (application) | CELLAR / EUR-Lex, CELEX `32025R0327`, `32026R0771`, `32026R2083`, `32026R2098` | Décision 2011/833/UE (CC BY 4.0) |
 | `cnil` | 3 260 (dont 14 délibérations supplémentaires) | 29 698 (dont 325) | arrêté au 2026-11-17 | DINUM (historique) + DILA (incréments) | DINUM : `etalab-2.0` et `lov2`, écart déclaré ; DILA : Licence Ouverte 2.0 |
 | `cada` | 3 918 | 35 396 | 2016-10-20 → 2024-04-18 ; sélection thématique (4 607 avis / 39 098 fragments) : 56 333 lignes hors thème, 689 avis antérieurs au 2016-10-08 et 1 sans texte écartés ; 96 fragments au-dessus du plafond de 35 300, dépassement déclaré | data.gouv.fr — ressource consolidée du 2026-08-14 (API) | Licence Ouverte 2.0 |
 | `cnil_doctrine` | 56 (30 guides, 26 référentiels) | 4 459 | documents datés de 2019-11-21 à 2026-11-14 ; 2 listes AIPD laissées au corpus `cnil` | cnil.fr — pages de référence (guides, référentiels, listes AIPD) | CC BY-ND 4.0, marquage par fragment ; listes AIPD en Licence Ouverte via `cnil` |
@@ -78,6 +79,16 @@ Comptes lus dans les `manifest.json` du 14 novembre 2026 (13 novembre pour les c
 - Cellar SPARQL liste trois consolidations (`02023R2854-20231222`, `02022R0868-20220603`, `02023R0138-20230120`) ; aucune n'a de datastream XHTML servi (constaté le 2026-11-25 : `cellar:… does not hold a content datastream of the requested type`). Les sept descripteurs rendent donc l'acte d'origine, `version` = CELEX et `date_consolidation: null`.
 - `parseur: donnees` : `parseCellar` pour les articles et considérants, plus l'article unique (`art_unique`, URL `#art`), les points numérotés `enc_1` (`point_N`, URL `#enc_1`) et une unité par annexe (`anx_*`). Les annexes ne sont pas découpées en clauses : l'annexe II de la recommandation pèse ~100 000 caractères.
 - Veille : `eurlex` suit les sept CELEX et la matière est `donnees-non-personnelles` ; citations connues au catalogue (`INSTRUMENTS`).
+
+## Détail `sante_ue`
+
+- Quatre actes lus sur CELLAR en XHTML français, corpus multi-documents : EHDS `32025R0327` (105 articles, 115 considérants, 4 annexes), règlement d'exécution `32026R0771` sur le comité de l'EEDS (11, 13), règlement d'exécution `32026R2083` sur MaSanté@UE (19, 27), règlement d'exécution `32026R2098` sur les métadonnées minimales de l'article 77 § 4 (4, 7, 1 annexe).
+- `date_debut` est la date d'application générale lue à l'article final de chaque acte : 2027-03-26 pour l'EHDS, 2026-04-28 pour `2026/771` (entrée en vigueur, faute de date d'application propre), 2027-03-26 pour `2026/2083`, 2029-03-26 pour `2026/2098`. L'échelonnement de l'EHDS (2029, 2031, 2035) est déclaré à `documents[].note_application`, jamais recopié par article.
+- Découpage : `parseur: sante_ue` réutilise `parseDonnees` (articles et considérants par `parseCellar`, une unité par annexe) ; aucune capture n'a d'article unique.
+- Consolidations : CELLAR ne liste que `02025R0327-20250305`, version du jour de publication ; les quatre descripteurs rendent l'acte d'origine.
+- Veille : quatrième requête `eurlex` sur `resource_legal_based_on_resource_legal` (`32025R0327`, type `R`, depuis 2025-03-26). Les trois actes d'exécution déjà au corpus sont filtrés par CELEX ; `32026R2099`, adopté le 2026-09-21, est détecté et visé au corpus sans y être entré (périmètre de #137).
+- Citations : EHDS et les trois règlements d'exécution sont au catalogue `INSTRUMENTS` ; « règlement (UE) 2025/327 », « EHDS » et « espace européen des données de santé » sont attribués et marqués présents.
+- Aucune mesure sur un jeu `dev` : seuils de repli `0,69 / 0,74 / 0,01`, sans promesse chiffrée. L'instruction de requête `INSTRUCTION_SANTE_UE` est propre au corpus.
 
 ## Détail `cepd`
 

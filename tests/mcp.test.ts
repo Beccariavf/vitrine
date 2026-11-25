@@ -1816,9 +1816,10 @@ describe("les documents cités absents du corpus", () => {
   const MESSAGE_EPRIVACY =
     "ePrivacy (32002L0058) est absent de mon corpus (périmètre : RGPD, AI Act, ePrivacy, " +
     "directive 2016/680, règlement 2018/1725, règlement procédural RGPD, clauses contractuelles " +
-    "types, décisions d'adéquation, textes UE de l'économie des données, LIL, textes français " +
-    "d'application, textes en préparation et affaires pendantes, CNIL, CADA, doctrine CNIL, CEPD, " +
-    "Conseil d'État, Conseil constitutionnel, Cour de cassation, CJUE).";
+    "types, décisions d'adéquation, textes UE de l'économie des données, espace européen des " +
+    "données de santé (EHDS), LIL, textes français d'application, textes en préparation et affaires " +
+    "pendantes, CNIL, CADA, doctrine CNIL, CEPD, Conseil d'État, Conseil constitutionnel, Cour de " +
+    "cassation, CJUE).";
 
   /** Décision citant le RGPD, la LIL et l'ePrivacy, sous une racine qui ne porte que les deux premiers. */
   function racine(unites: Unite[]): string {

@@ -36,6 +36,8 @@ export type Manifeste = {
   considerants_source?: string;
   /** Nom du snapshot brut de cet acte d'origine, adressé par son `sha256`. */
   snapshot_considerants?: string;
+  /** Échelonnement de l'application, quand `date_debut` ne dit que la date générale. */
+  note_application?: string;
   /** Nom du fichier rendu par `writeRaw`, adressé par son `sha256`. */
   snapshot: string;
   unites: number;
@@ -53,7 +55,7 @@ export type DocumentCorpus = {
   origine?: OrigineConsiderants;
 };
 
-/** Manifeste d'un corpus qui porte plusieurs documents (`ccs`). */
+/** Manifeste d'un corpus qui porte plusieurs documents (`ccs`, `donnees`, `sante_ue`). */
 export type ManifesteCorpus = {
   corpus: string;
   nom: string;
@@ -118,6 +120,9 @@ function manifesteDeDocument(
     date_debut: descripteur.date_debut,
     date_fin: descripteur.date_fin,
     statut: descripteur.statut,
+    ...(descripteur.note_application === undefined
+      ? {}
+      : { note_application: descripteur.note_application }),
     ...(descripteur.version === undefined
       ? {}
       : { version: descripteur.version, date_consolidation: descripteur.date_consolidation ?? null }),

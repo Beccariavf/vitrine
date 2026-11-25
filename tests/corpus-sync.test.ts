@@ -1797,6 +1797,7 @@ describe("synchronisation du corpus", () => {
           "ccs",
           "adequation",
           "donnees",
+          "sante_ue",
           "cada",
         ],
       );
@@ -1919,6 +1920,7 @@ describe("synchronisation du corpus", () => {
       "preparation",
       "rgpd",
       "rgpdproc",
+      "sante_ue",
       "textes_fr",
     ]);
     const resultat = await agents.cc();
