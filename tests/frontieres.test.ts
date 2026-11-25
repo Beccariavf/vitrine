@@ -287,12 +287,25 @@ describe("corpus frontieres", () => {
     }
   });
 
+  it("n'attribue rien sur un préfixe de sigle ou de numéro", () => {
+    for (const texte of [
+      "L'article 18 du même règlement s'applique dans une société démocratique.",
+      "l'article 5 de la directive 96/92/CE",
+      "l'article 5 de la directive 96/94/CE",
+      "l'article 40 du DSAC",
+      "l'article 5 du règlement machines-outils",
+    ]) {
+      assert.deepEqual(extraireCitations(texte), [], texte);
+    }
+  });
+
   it("nomme un acte de frontière dans une question", () => {
     const cas: Array<[string, string]> = [
       ["l'article 14 du CRA", "32024R2847"],
       ["le Cyber Resilience Act", "32024R2847"],
       ["le règlement machines", "32023R1230"],
       ["le DSA", "32022R2065"],
+      ["le règlement sur les services numériques", "32022R2065"],
       ["la directive bases de données", "31996L0009"],
       ["la directive secret des affaires", "32016L0943"],
       ["la directive droit d'auteur", "32019L0790"],
@@ -321,7 +334,7 @@ describe("corpus frontieres", () => {
     for (const document of CELEX) {
       assert.equal(INSTRUCTIONS_REQUETE[document], INSTRUCTION_FRONTIERES, document);
     }
-    assert.match(INSTRUCTION_FRONTIERES, /produits, la responsabilité/);
+    assert.match(INSTRUCTION_FRONTIERES, /l'article du texte européen de frontière/);
   });
 
   it("garde chaque annexe adressable dans sa capture", () => {    const parDocument = new Map(manifeste().documents.map((document) => [document.document, document]));

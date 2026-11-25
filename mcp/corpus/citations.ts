@@ -338,9 +338,9 @@ const INSTRUMENTS: readonly Instrument[] = [
       `règlement ${QUALIFICATIF}(?:n[o°] ?)?2024/2847`,
       "règlement sur la cyberrésilience",
       "Cyber Resilience Act",
-      "CRA",
+      "\\bCRA\\b",
     ],
-    sigle: ["CRA"],
+    sigle: ["\\bCRA\\b"],
   },
   {
     libelle: "règlement machines",
@@ -349,7 +349,7 @@ const INSTRUMENTS: readonly Instrument[] = [
     url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32023R1230",
     alias: [
       `règlement ${QUALIFICATIF}(?:n[o°] ?)?2023/1230`,
-      "règlement machines",
+      "règlement machines(?!-)",
     ],
   },
   {
@@ -359,8 +359,8 @@ const INSTRUMENTS: readonly Instrument[] = [
     url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32019R1020",
     alias: [
       `règlement ${QUALIFICATIF}(?:n[o°] ?)?2019/1020`,
-      "règlement sur la surveillance du marché",
-      "règlement surveillance du marché",
+      "règlement sur la surveillance du marché(?!-)",
+      "règlement surveillance du marché(?!-)",
     ],
   },
   {
@@ -380,7 +380,7 @@ const INSTRUMENTS: readonly Instrument[] = [
     nature: "directive",
     url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:31996L0009",
     alias: [
-      `directive ${QUALIFICATIF}(?:n[o°] ?)?96/9(?:/(?:${INSTITUTION}))?`,
+      `directive ${QUALIFICATIF}(?:n[o°] ?)?96/9(?:/(?:${INSTITUTION}))?\\b`,
       "directive sur la protection juridique des bases de données",
       "directive bases de données",
     ],
@@ -415,9 +415,9 @@ const INSTRUMENTS: readonly Instrument[] = [
       `règlement ${QUALIFICATIF}(?:n[o°] ?)?2022/2065`,
       "règlement sur les services numériques",
       "Digital Services Act",
-      "DSA",
+      "\\bDSA\\b",
     ],
-    sigle: ["DSA"],
+    sigle: ["\\bDSA\\b"],
   },
   {
     libelle: "directive travail via plateforme",
