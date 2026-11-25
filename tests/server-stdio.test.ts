@@ -71,6 +71,20 @@ describe("le serveur MCP sur stdio", () => {
         instructions.includes("etat_corpus"),
         "les instructions nomment l'outil de fraîcheur",
       );
+
+      // Appel réel : `etat_corpus` ne lit ni Ollama ni l'index, donc reste hors ligne.
+      const reponse = await client.callTool({ name: "etat_corpus", arguments: {} });
+      const texte = (reponse.content as Array<{ type: string; text?: string }>)[0]?.text ?? "";
+      const etat = JSON.parse(texte) as {
+        corpus: Array<{ corpus: string; gouvernance: string[] }>;
+        champs_gouvernance: Record<string, string[]>;
+      };
+      assert.ok(etat.champs_gouvernance.ia?.includes("aiact"));
+      assert.ok(etat.champs_gouvernance.sante?.includes("sante_ue"));
+      assert.deepEqual(
+        etat.corpus.find((entree) => entree.corpus === "cnil")?.gouvernance,
+        ["personnelles", "ia", "sante"],
+      );
     } finally {
       await client.close();
     }
