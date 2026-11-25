@@ -53,6 +53,10 @@ type DefinitionCorpus = {
   descriptionProvenance: string;
   /** Séparateur qui précède ce fragment dans la provenance ; « , » par défaut. */
   separateurProvenance?: string;
+  /** Fragment de la description de l'outil `search`, dans l'ordre du tableau. */
+  descriptionRecherche: string;
+  /** Séparateur qui précède ce fragment dans la description de `search` ; « , » par défaut. */
+  separateurRecherche?: string;
   /** Rang d'affichage du connecteur, textes puis autorités puis juridictions. */
   rangSite: number;
   /** Rang dans l'énumération `veille: false` de la consigne de périmètre ; absent, non énuméré. */
@@ -96,6 +100,7 @@ const DEFINITIONS = [
     commandeSync: "npm run corpus:build -- --document rgpd",
     descriptionServeur: "le RGPD (corpus `rgpd`, CELEX 32016R0679)",
     descriptionProvenance: "RGPD `32016R0679`",
+    descriptionRecherche: "le RGPD",
     rangSite: 1,
     rangPerimetre: 1,
     libellePerimetre: "RGPD",
@@ -115,6 +120,7 @@ const DEFINITIONS = [
     commandeSync: "npm run corpus:build -- --document aiact",
     descriptionServeur: "l'AI Act (corpus `aiact`, CELEX 32024R1689)",
     descriptionProvenance: "AI Act `32024R1689`",
+    descriptionRecherche: "l'AI Act",
     rangSite: 2,
     rangPerimetre: 2,
     libellePerimetre: "AI Act",
@@ -134,6 +140,7 @@ const DEFINITIONS = [
     commandeSync: "npm run corpus:build -- --document eprivacy",
     descriptionServeur: "la directive ePrivacy (corpus `eprivacy`, CELEX 32002L0058)",
     descriptionProvenance: "ePrivacy `32002L0058`",
+    descriptionRecherche: "la directive ePrivacy",
     rangSite: 3,
     rangPerimetre: 3,
     libellePerimetre: "ePrivacy",
@@ -153,6 +160,7 @@ const DEFINITIONS = [
     commandeSync: "npm run corpus:build -- --document police",
     descriptionServeur: "la directive police-justice (corpus `police`, CELEX 32016L0680)",
     descriptionProvenance: "directive police-justice `32016L0680`",
+    descriptionRecherche: "la directive police-justice",
     rangSite: 4,
     rangPerimetre: 4,
     libellePerimetre: "directive 2016/680",
@@ -173,6 +181,7 @@ const DEFINITIONS = [
     descriptionServeur:
       "le règlement 2018/1725 des institutions de l'Union (corpus `eudpr`, CELEX 32018R1725)",
     descriptionProvenance: "règlement 2018/1725 `32018R1725`",
+    descriptionRecherche: "le règlement 2018/1725",
     rangSite: 5,
     rangPerimetre: 5,
     libellePerimetre: "règlement 2018/1725",
@@ -192,6 +201,7 @@ const DEFINITIONS = [
     commandeSync: "npm run corpus:build -- --document rgpdproc",
     descriptionServeur: "le règlement procédural RGPD (corpus `rgpdproc`, CELEX 32025R2518)",
     descriptionProvenance: "règlement procédural RGPD `32025R2518`",
+    descriptionRecherche: "le règlement procédural RGPD",
     rangSite: 6,
     rangPerimetre: 6,
     libellePerimetre: "règlement procédural RGPD",
@@ -214,6 +224,7 @@ const DEFINITIONS = [
       "`ccs`, CELEX `32021D0914` et `32021D0915`)",
     descriptionProvenance:
       "clauses contractuelles types `32021D0914` (transferts) et `32021D0915` (sous-traitance, art. 28)",
+    descriptionRecherche: "les clauses contractuelles types de transfert et de sous-traitance",
     rangSite: 9,
     rangPerimetre: 7,
     libellePerimetre: "clauses contractuelles types",
@@ -235,6 +246,7 @@ const DEFINITIONS = [
     descriptionServeur: "les décisions d'adéquation, en vigueur et abrogées (corpus `adequation`)",
     separateurServeur: " et ",
     descriptionProvenance: "décisions d'adéquation `adequation`",
+    descriptionRecherche: "les décisions d'adéquation",
     rangSite: 13,
     rangPerimetre: 8,
     libellePerimetre: "décisions d'adéquation",
@@ -248,7 +260,7 @@ const DEFINITIONS = [
     nom: "donnees",
     libelle: "Textes UE de l'économie des données",
     type: "texte",
-    gouvernance: ["non_personnelles"],
+    gouvernance: ["non_personnelles", "personnelles"],
     famille: "textes",
     regleStatut: "texte",
     commandeSync: "npm run corpus:build -- --document donnees",
@@ -259,6 +271,9 @@ const DEFINITIONS = [
     descriptionProvenance:
       "textes UE de l'économie des données `donnees` (Data Act `32023R2854`, DGA `32022R0868`, " +
       "directive Open Data `32019L1024`, ensembles de forte valeur `32023R0138`…)",
+    descriptionRecherche:
+      "les textes UE de l'économie des données (Data Act, DGA, directive Open Data, ensembles " +
+      "de forte valeur, libre circulation, recommandation clauses types, logos DGA)",
     rangSite: 7,
     rangPerimetre: 9,
     libellePerimetre: "textes UE de l'économie des données",
@@ -289,6 +304,7 @@ const DEFINITIONS = [
       "d'exécution `32026R0771`, `32026R2083` et `32026R2098`)",
     descriptionProvenance:
       "espace européen des données de santé `sante_ue` (règlement (UE) 2025/327 et ses règlements d'exécution)",
+    descriptionRecherche: "l'espace européen des données de santé (règlement (UE) 2025/327, EHDS)",
     rangSite: 8,
     rangPerimetre: 10,
     libellePerimetre: "espace européen des données de santé (EHDS)",
@@ -309,6 +325,7 @@ const DEFINITIONS = [
     commandeSync: "npm run lil:sync",
     descriptionServeur: "la loi Informatique et Libertés (corpus `lil`, LEGITEXT000006068624)",
     descriptionProvenance: "LIL `LEGITEXT000006068624`",
+    descriptionRecherche: "la LIL",
     rangSite: 10,
     rangPerimetre: 11,
     libellePerimetre: "LIL",
@@ -341,6 +358,9 @@ const DEFINITIONS = [
       "LEGITEXT000031366350 L311-3-1 ; Code civil LEGITEXT000006070721 article 9)",
     descriptionProvenance:
       "textes français d'application `textes_fr` (accès aux documents administratifs, réutilisation, " +
+      "archives, secret statistique et des affaires, bases de données)",
+    descriptionRecherche:
+      "les textes français d'application (accès aux documents administratifs, réutilisation, " +
       "archives, secret statistique et des affaires, bases de données)",
     rangSite: 11,
     rangPerimetre: 12,
@@ -377,6 +397,7 @@ const DEFINITIONS = [
       "les textes en préparation et les affaires pendantes (corpus `preparation` : propositions de " +
       "modification des actes du corpus et affaires CJUE pendantes)",
     descriptionProvenance: "textes en préparation et affaires pendantes `preparation`",
+    descriptionRecherche: "les textes en préparation et les affaires pendantes",
     rangSite: 12,
     rangPerimetre: 13,
     libellePerimetre: "textes en préparation et affaires pendantes",
@@ -395,6 +416,7 @@ const DEFINITIONS = [
     descriptionServeur:
       "les délibérations de la CNIL (corpus `cnil`, natures Sanction, Avis et Recommandation/Lignes directrices)",
     descriptionProvenance: "délibérations CNIL `cnil`",
+    descriptionRecherche: "les délibérations de la CNIL (sanctions, avis, recommandations et lignes directrices)",
     rangSite: 14,
     rangPerimetre: 14,
     libellePerimetre: "CNIL",
@@ -418,6 +440,7 @@ const DEFINITIONS = [
       "publiques)",
     descriptionProvenance:
       "avis et conseils de la CADA `cada` (sélection thématique : réutilisation, ouverture, algorithmes et code source des données publiques)",
+    descriptionRecherche: "les avis et conseils de la CADA",
     rangSite: 16,
     rangPerimetre: 15,
     libellePerimetre: "CADA",
@@ -436,6 +459,7 @@ const DEFINITIONS = [
       "les guides, référentiels, fiches pratiques IA et listes AIPD de la CNIL (corpus `cnil_doctrine`, extraits " +
       "non modifiés sous CC BY-ND 4.0)",
     descriptionProvenance: "doctrine CNIL `cnil_doctrine`",
+    descriptionRecherche: "les guides, référentiels, fiches pratiques IA et listes AIPD de la CNIL (corpus `cnil_doctrine`)",
     rangSite: 15,
     rangPerimetre: 16,
     libellePerimetre: "doctrine CNIL",
@@ -453,6 +477,7 @@ const DEFINITIONS = [
     commandeSync: "npm run ce:sync",
     descriptionServeur: "les décisions du Conseil d'État (corpus `ce`)",
     descriptionProvenance: "décisions du Conseil d'État `ce`",
+    descriptionRecherche: "les décisions du Conseil d'État",
     rangSite: 19,
     rangPerimetre: 18,
     libellePerimetre: "Conseil d'État",
@@ -472,6 +497,7 @@ const DEFINITIONS = [
     commandeSync: "npm run constit:sync",
     descriptionServeur: "les décisions DC et QPC du Conseil constitutionnel (corpus `constit`)",
     descriptionProvenance: "décisions DC et QPC du Conseil constitutionnel `constit`",
+    descriptionRecherche: "les décisions DC et QPC du Conseil constitutionnel",
     rangSite: 20,
     rangPerimetre: 19,
     libellePerimetre: "Conseil constitutionnel",
@@ -492,6 +518,7 @@ const DEFINITIONS = [
       "les documents du CEPD (corpus `cepd` : lignes directrices, avis art. 64, décisions art. 65, recommandations)",
     descriptionProvenance:
       "documents du CEPD `cepd` (lignes directrices, avis art. 64, décisions art. 65, recommandations, G29 repris)",
+    descriptionRecherche: "les documents du CEPD",
     rangSite: 17,
     rangPerimetre: 17,
     libellePerimetre: "CEPD",
@@ -511,6 +538,7 @@ const DEFINITIONS = [
     commandeSync: "npm run cc:sync",
     descriptionServeur: "les décisions de la Cour de cassation sur les données personnelles (corpus `cc`)",
     descriptionProvenance: "décisions de la Cour de cassation `cc`",
+    descriptionRecherche: "les décisions de la Cour de cassation sur les données personnelles",
     rangSite: 21,
     rangPerimetre: 20,
     libellePerimetre: "Cour de cassation",
@@ -530,6 +558,7 @@ const DEFINITIONS = [
     commandeSync: "npm run cjue:sync",
     descriptionServeur: "celles de la CJUE (corpus `cjue`)",
     descriptionProvenance: "décisions de la CJUE `cjue`",
+    descriptionRecherche: "celles de la CJUE",
     rangSite: 18,
     rangPerimetre: 21,
     libellePerimetre: "CJUE",
@@ -553,6 +582,10 @@ const DEFINITIONS = [
       "CEDH arrêtée, aucune notice CEDH)",
     descriptionProvenance: "et notices du guichet unique `metadonnees`",
     separateurProvenance: " ",
+    descriptionRecherche:
+      "et les métadonnées des décisions du guichet unique (corpus `metadonnees`, aucun texte de décision ; " +
+      "source CEDH arrêtée)",
+    separateurRecherche: " ",
     rangSite: 22,
     sources: [],
     sansVeille: "instantané du registre art. 60, resynchronisation manuelle `metadonnees:sync`",
@@ -632,6 +665,14 @@ export function descriptionProvenance(): string {
   return CORPUS.map(
     (corpus, index) =>
       `${index === 0 ? "" : (corpus.separateurProvenance ?? ", ")}${corpus.descriptionProvenance}`,
+  ).join("");
+}
+
+/** Description de l'outil `search` : fragments du registre, dans le même ordre. */
+export function descriptionRecherche(): string {
+  return CORPUS.map(
+    (corpus, index) =>
+      `${index === 0 ? "" : (corpus.separateurRecherche ?? ", ")}${corpus.descriptionRecherche}`,
   ).join("");
 }
 

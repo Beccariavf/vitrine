@@ -17,6 +17,11 @@ const DESCRIPTION_ATTENDUE = readFileSync(
   join(RACINE, "tests", "fixtures", "description-serveur.txt"),
   "utf8",
 );
+const SCRIPTS = (
+  JSON.parse(readFileSync(join(RACINE, "package.json"), "utf8")) as {
+    scripts: Record<string, string>;
+  }
+).scripts;
 
 describe("registre des corpus", () => {
   it("déclare chaque corpus une seule fois, avec ses propriétés obligatoires", () => {
@@ -34,6 +39,19 @@ describe("registre des corpus", () => {
 
   it("garde la description du serveur identique à celle d'avant le registre", () => {
     assert.equal(CONSIGNE_SERVEUR, DESCRIPTION_ATTENDUE);
+  });
+
+  it("nomme une commande de synchronisation qui existe dans package.json", () => {
+    for (const corpus of CORPUS) {
+      const commande = /^npm run ([^\s]+)(.*)$/.exec(corpus.commandeSync);
+      assert.ok(commande !== null, `${corpus.nom} : commande illisible « ${corpus.commandeSync} »`);
+      const [, script, reste] = commande;
+      assert.ok(SCRIPTS[script!] !== undefined, `${corpus.nom} : script absent « ${script} »`);
+      if (script === "corpus:build") {
+        const document = /-- --document ([a-z_]+)$/.exec(reste ?? "")?.[1];
+        assert.equal(document, corpus.nom, `${corpus.nom} : --document`);
+      }
+    }
   });
 
   it("compte les corpus en toutes lettres, sans nombre en dur", () => {
@@ -69,7 +87,7 @@ describe("registre des corpus", () => {
 const EXEMPTS = new Map([
   [
     "mcp/corpus/parse.ts",
-    "sélecteur de parseur : les valeurs ccs, donnees et sante_ue sont des noms de parseur, pas une liste de corpus",
+    "sélecteur de parseur : ccs, donnees et sante_ue y nomment la valeur de `parseur` qui lit le document, pas une liste de corpus",
   ],
 ]);
 

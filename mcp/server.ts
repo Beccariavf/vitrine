@@ -19,6 +19,7 @@ import {
   NOMS_SITE,
   SOURCES_SOUS_VEILLE,
   descriptionProvenance,
+  descriptionRecherche,
   descriptionServeur,
   nombreEnLettres,
 } from "./corpus/registre.ts";
@@ -470,22 +471,7 @@ export function createServer(deps: ServerDeps): McpServer {
     {
       title: `Chercher dans les ${nombreEnLettres(NOMBRE_CORPUS)} corpus juridiques`,
       description:
-        "Cherche par le sens dans le RGPD, l'AI Act, la directive ePrivacy, la directive " +
-        "police-justice, le règlement 2018/1725, le règlement procédural RGPD, les clauses " +
-        "contractuelles types de transfert et de sous-traitance, les décisions d'adéquation, " +
-        "les textes UE de l'économie des données (Data Act, DGA, directive Open Data, ensembles " +
-        "de forte valeur, libre circulation, recommandation clauses types, logos DGA), " +
-        "l'espace européen des données de santé (règlement (UE) 2025/327, EHDS), la LIL, " +
-        "les textes français d'application (accès aux documents administratifs, réutilisation, " +
-        "archives, secret statistique et des affaires, bases de données), " +
-        "les textes en préparation et les affaires pendantes, les délibérations de la CNIL " +
-        "(sanctions, avis, recommandations et lignes directrices), les avis et conseils de la CADA, " +
-        "les guides, référentiels, fiches " +
-        "pratiques IA et listes AIPD de la CNIL (corpus `cnil_doctrine`), les décisions du Conseil d'État, " +
-        "les décisions DC et QPC du Conseil constitutionnel, les documents du CEPD, les " +
-        "décisions de la Cour de cassation sur les données personnelles, celles de la CJUE, et les " +
-        "métadonnées des décisions du guichet unique (corpus `metadonnees`, aucun texte de décision ; " +
-        "source CEDH arrêtée), et rend " +
+        `Cherche par le sens dans ${descriptionRecherche()}, et rend ` +
         "les passages les plus proches avec leur " +
         "provenance et un niveau de confiance (confiant, incertain, aucun_resultat_fiable). " +
         "L'article pose la règle et le considérant l'éclaire : à pertinence comparable, l'article passe " +

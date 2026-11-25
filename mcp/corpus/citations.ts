@@ -25,6 +25,7 @@ import { join } from "node:path";
 import type { Unite } from "./parse.ts";
 import { citeArticle, formeArticle } from "./articles.ts";
 import type { Article } from "./articles.ts";
+import { CORPUS_DECISIONS, PERIMETRE } from "./registre.ts";
 
 /** Un instrument cité, avec ses articles et son lien officiel. */
 export type Citation = {
@@ -437,8 +438,6 @@ const INSTRUMENTS: readonly Instrument[] = [
 ];
 
 const PAR_LIBELLE = new Map(INSTRUMENTS.map((instrument) => [instrument.libelle, instrument]));
-
-import { CORPUS_DECISIONS, PERIMETRE } from "./registre.ts";
 
 /**
  * Les corpus du serveur, dans l'ordre de la phrase de refus. Aucune date de
