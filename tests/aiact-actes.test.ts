@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
 import { actesSuivis, requeteConsolidations } from "../veille/sources/eurlex.ts";
-import { synchroniserActeUe } from "../mcp/corpus/actes-ue.ts";
+import { cheminDescripteur, synchroniserActeUe } from "../mcp/corpus/actes-ue.ts";
 import { buildCorpusSet, lireDescripteurs } from "../mcp/corpus/build.ts";
 import { documentsPresents, extraireCitations, marquerPresence } from "../mcp/corpus/citations.ts";
 import { corpusDeLEntree } from "../mcp/corpus/veille.ts";
@@ -133,6 +133,20 @@ describe("corpus aiact multi-documents", () => {
         celex,
       );
     }
+    const dossier = join(ROOT, "mcp", "corpus");
+    assert.equal(cheminDescripteur("aiact", dossier, AI_ACT), join(dossier, "aiact.json"));
+    assert.equal(
+      cheminDescripteur("aiact", dossier, "32026R2487"),
+      join(dossier, "aiact-bacs-a-sable.json"),
+    );
+    assert.equal(
+      cheminDescripteur("aiact", dossier, "32025R0454"),
+      join(dossier, "aiact-groupe-scientifique.json"),
+    );
+    assert.equal(
+      cheminDescripteur("aiact", dossier, "32026D2274"),
+      join(dossier, "aiact-norme-en-18286.json"),
+    );
   });
 
   it("attribue chaque acte par son numéro, et le dit présent au corpus", () => {
