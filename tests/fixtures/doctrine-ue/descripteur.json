@@ -1,0 +1,111 @@
+{
+  "corpus": "doctrine_ue",
+  "nom": "Doctrine de la Commission",
+  "titre": "Doctrine de la Commission (fixture)",
+  "source": "Source : Commission européenne",
+  "mention": "extrait non modifié",
+  "licence": "CC BY 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by/4.0/deed.fr",
+  "licence_note": "Fixture de test hors ligne.",
+  "validite_jours": 7,
+  "tentatives": 1,
+  "delai_ms": 1,
+  "liste_reference": [
+    {
+      "titre": "AI Act",
+      "url": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai",
+      "consulte_le": "2026-11-25"
+    }
+  ],
+  "documents_ecartes": [
+    {
+      "url": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai",
+      "titre": "AI Act",
+      "raison": "page de politique générale"
+    }
+  ],
+  "non_recuperes": [
+    {
+      "titre": "Formulaire en DOCX",
+      "url": "https://ec.europa.eu/newsroom/dae/redirection/document/1",
+      "raison": "publié uniquement en DOCX"
+    }
+  ],
+  "documents": [
+    {
+      "cle": "doc-final",
+      "type": "lignes_directrices",
+      "titre": "Lignes directrices finales",
+      "statut": "final",
+      "date_acte": "2025-07-29",
+      "date_source": "document",
+      "date_publication": "2025-02-04",
+      "version": "C(2025) 5052 final",
+      "verifier": "C(2025) 5052 final",
+      "langue": "fr",
+      "format": "pdf",
+      "url": "https://digital-strategy.ec.europa.eu/en/library/final",
+      "source": "https://ec.europa.eu/newsroom/dae/redirection/document/final",
+      "remplace": ["doc-projet"]
+    },
+    {
+      "cle": "doc-projet",
+      "type": "projet_lignes_directrices",
+      "titre": "Projet de lignes directrices",
+      "statut": "projet",
+      "date_acte": "2026-05-08",
+      "date_source": "page",
+      "date_publication": "2026-05-08",
+      "version": "projet du 8 mai 2026",
+      "langue": "en",
+      "format": "pdf",
+      "url": "https://digital-strategy.ec.europa.eu/en/library/projet",
+      "source": "https://ec.europa.eu/newsroom/dae/redirection/document/projet",
+      "remplace_par": "doc-final"
+    },
+    {
+      "cle": "doc-qr",
+      "type": "questions_reponses",
+      "titre": "Questions-réponses",
+      "statut": "final",
+      "date_acte": "2026-07-24",
+      "date_source": "page",
+      "date_publication": "2026-07-24",
+      "version": "mise à jour du 24 juillet 2026",
+      "langue": "en",
+      "format": "html",
+      "url": "https://digital-strategy.ec.europa.eu/en/faqs/qr",
+      "source": "https://digital-strategy.ec.europa.eu/en/faqs/qr"
+    },
+    {
+      "cle": "doc-cellar",
+      "type": "lignes_directrices",
+      "titre": "Lignes directrices publiées au Journal officiel",
+      "statut": "final",
+      "date_acte": "2026-11-12",
+      "date_source": "document",
+      "date_publication": "2026-11-12",
+      "version": "C/2026/6005",
+      "verifier": "C/2026/6005",
+      "langue": "fr",
+      "format": "cellar",
+      "celex": "52026XC06005",
+      "url": "https://digital-strategy.ec.europa.eu/en/library/jo",
+      "source": "https://publications.europa.eu/resource/celex/52026XC06005"
+    },
+    {
+      "cle": "doc-absent",
+      "type": "modele",
+      "titre": "Modèle non récupérable",
+      "statut": "final",
+      "date_acte": "2025-09-26",
+      "date_source": "page",
+      "date_publication": "2025-09-26",
+      "version": "publication du 26 septembre 2025",
+      "langue": "en",
+      "format": "pdf",
+      "url": "https://digital-strategy.ec.europa.eu/en/library/absent",
+      "source": "https://ec.europa.eu/newsroom/dae/redirection/document/absent"
+    }
+  ]
+}

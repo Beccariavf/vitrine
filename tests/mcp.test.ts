@@ -1819,7 +1819,7 @@ describe("les documents cités absents du corpus", () => {
     "types, décisions d'adéquation, textes UE de l'économie des données, espace européen des " +
     "données de santé (EHDS), LIL, textes français d'application, textes en préparation et affaires " +
     "pendantes, CNIL, CADA, doctrine CNIL, CEPD, Conseil d'État, Conseil constitutionnel, Cour de " +
-    "cassation, CJUE).";
+    "cassation, CJUE, doctrine de la Commission).";
 
   /** Décision citant le RGPD, la LIL et l'ePrivacy, sous une racine qui ne porte que les deux premiers. */
   function racine(unites: Unite[]): string {

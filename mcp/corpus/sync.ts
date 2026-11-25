@@ -19,6 +19,7 @@ import type { Embedder } from "../embed/embedder.ts";
 import { classementHorsCorpus } from "./hors-corpus.ts";
 import { syncIncrements } from "./cnil/sync.ts";
 import { syncDoctrine } from "./cnil-doctrine/sync.ts";
+import { syncDoctrineUe } from "./doctrine-ue/sync.ts";
 import { syncCe } from "./ce/sync.ts";
 import { syncCePd } from "./cepd/sync.ts";
 import { syncConstit } from "./constit/sync.ts";
@@ -167,6 +168,15 @@ export function agentsParDefaut(
         message:
           `${resultat.documents} document(s), ${resultat.fragments} fragment(s), ` +
           `${resultat.couverts} couvert(s) par le corpus CNIL, ${resultat.ecartes} écarté(s)`,
+      };
+    },
+    doctrine_ue: async () => {
+      const resultat = await syncDoctrineUe({ rootDir });
+      return {
+        ecrit: resultat.ecrit,
+        message:
+          `${resultat.documents} document(s), ${resultat.fragments} fragment(s), ` +
+          `${resultat.nonRecuperes} non récupéré(s)`,
       };
     },
     ce: async () => {

@@ -27,7 +27,7 @@ after(() => {
 });
 
 describe("sourcesCorpus", () => {
-  it("rend les vingt-deux collections committées dans l'ordre textes, autorités, juridictions", () => {
+  it("rend les vingt-trois collections committées dans l'ordre textes, autorités, juridictions", () => {
     const sources = sourcesCorpus(ROOT);
     assert.deepEqual(
       sources.map((source) => source.libelle),
@@ -54,6 +54,7 @@ describe("sourcesCorpus", () => {
         "Conseil constitutionnel",
         "Cour de cassation",
         "Guichet unique (métadonnées)",
+        "Doctrine de la Commission",
       ],
     );
     assert.ok(sources.every((source) => source.documents > 0));

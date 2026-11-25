@@ -1,0 +1,9 @@
+FR FRCOMMISSION EUROPÉENNE Bruxelles, le 8.5.2026 Projet de lignes directrices sur les obligations de transparence
+
+1. INTRODUCTION
+
+Le présent projet expose l'interprétation de la Commission sur les obligations de transparence applicables aux systèmes d'IA interactifs et génératifs. Il a été soumis à la consultation des parties prenantes avant l'adoption de la version finale.
+
+2. OBLIGATIONS DES FOURNISSEURS
+
+Les fournisseurs veillent à informer les personnes qu'elles interagissent avec un système d'IA et marquent les contenus synthétiques de manière lisible par machine afin d'en permettre la détection.

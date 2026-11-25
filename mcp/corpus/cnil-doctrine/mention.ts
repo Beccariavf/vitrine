@@ -54,13 +54,16 @@ function estObjet(valeur: unknown): valeur is Record<string, unknown> {
 }
 
 /**
- * Marquage par slug de document, lu dans le manifeste `cnil_doctrine`. Un
- * manifeste absent ou illisible rend une carte vide : le corpus n'est alors pas
- * interrogeable, et aucun passage ne peut être rendu sans marquage.
+ * Marquage par slug de document, lu dans le manifeste d'un corpus de doctrine.
+ * Un manifeste absent ou illisible rend une carte vide : le corpus n'est alors
+ * pas interrogeable, et aucun passage ne peut être rendu sans marquage.
  */
-export function mentionsDoctrine(rootDir: string): Map<string, MentionDoctrine> {
+export function mentionsDoctrine(
+  rootDir: string,
+  corpus: string = "cnil_doctrine",
+): Map<string, MentionDoctrine> {
   const mentions = new Map<string, MentionDoctrine>();
-  const chemin = join(rootDir, "data", "corpus", "cnil_doctrine", "manifest.json");
+  const chemin = join(rootDir, "data", "corpus", corpus, "manifest.json");
   if (!existsSync(chemin)) return mentions;
   let manifeste: ManifesteDoctrine;
   try {

@@ -33,7 +33,8 @@ export type RegleStatut =
   | "cepd"
   | "cada"
   | "preparation"
-  | "metadonnees";
+  | "metadonnees"
+  | "doctrine_ue";
 
 type DefinitionCorpus = {
   nom: string;
@@ -591,6 +592,28 @@ const DEFINITIONS = [
     rangSite: 22,
     sources: [],
     sansVeille: "instantané du registre art. 60, resynchronisation manuelle `metadonnees:sync`",
+  },
+  {
+    nom: "doctrine_ue",
+    libelle: "Doctrine de la Commission",
+    type: "doctrine",
+    gouvernance: ["ia", "non_personnelles"],
+    famille: "ue",
+    regleStatut: "doctrine_ue",
+    commandeSync: "npm run corpus:sync:doctrine-ue",
+    descriptionServeur:
+      "la doctrine de la Commission sur l'IA et les données (corpus `doctrine_ue` : lignes directrices, " +
+      "codes de bonne pratique, modèles et questions-réponses, extraits non modifiés sous CC BY 4.0)",
+    descriptionProvenance: "doctrine de la Commission `doctrine_ue`",
+    descriptionRecherche:
+      "la doctrine de la Commission sur l'IA et les données (lignes directrices, codes de bonne pratique, " +
+      "modèles et questions-réponses)",
+    rangSite: 23,
+    rangPerimetre: 22,
+    libellePerimetre: "doctrine de la Commission",
+    sources: [],
+    sansVeille: "liste explicite de documents, resynchronisation manuelle `corpus:sync:doctrine-ue`",
+    publieEcartes: true,
   },
 ] as const satisfies readonly DefinitionCorpus[];
 

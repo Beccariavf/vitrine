@@ -38,6 +38,9 @@ data/raw/cada/
 # Doctrine CNIL : PDF et cache de cnil.fr non commités, récupérés par npm run cnil-doctrine:sync
 data/raw/cnil-doctrine/
 
+# Doctrine de la Commission : PDF, pages et cache non commités, récupérés par npm run corpus:sync:doctrine-ue
+data/raw/doctrine-ue/
+
 # Corpus LIL : snapshot legiPart non commité, récupéré par npm run lil:sync
 data/raw/lil/
 

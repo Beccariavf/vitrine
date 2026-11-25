@@ -158,6 +158,15 @@ export function statutApplication(
     case "cnil_doctrine":
       if (STATUTS_SANS_EFFET.includes(source)) return "abroge";
       return source === "PUBLIE" ? "adoptee" : "inconnu";
+    // La doctrine de la Commission est adoptée quand sa version est finale ; un
+    // projet est proposé, et un projet remplacé ne s'applique plus. Le reste
+    // n'est pas reconnu.
+    case "doctrine_ue":
+      if (STATUTS_SANS_EFFET.includes(source)) return "abroge";
+      if (source.startsWith("PROJET_REMPLACE_PAR")) return "abroge";
+      if (source === "FINAL" || source === "PUBLIE") return "adoptee";
+      if (source === "PROJET") return "propose";
+      return "inconnu";
     case "cnil": {
       if (STATUTS_SANS_EFFET.includes(source)) return "abroge";
       // Une MR remplacée garde son texte : elle ne s'applique plus.

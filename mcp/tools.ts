@@ -371,20 +371,28 @@ function avecCitations(rootDir: string, passages: Passage[]): Passage[] {
 }
 
 /**
- * Ajoute le marquage de licence aux passages de doctrine. Un passage du corpus
- * `cnil_doctrine` sans marquage au manifeste lève : mieux vaut une réponse en
+ * Ajoute le marquage de licence aux passages de doctrine. Un passage d'un
+ * corpus de doctrine sans marquage au manifeste lève : mieux vaut une réponse en
  * erreur qu'un extrait partagé sans attribution.
  */
 export function avecMarquageDoctrine(rootDir: string, passages: Passage[]): Passage[] {
-  if (!passages.some((passage) => passage.corpus === "cnil_doctrine")) return passages;
-  const mentions = mentionsDoctrine(rootDir);
+  // Les corpus dont chaque extrait porte une licence à mentionner au rendu.
+  const corpusMarques: readonly string[] = ["cnil_doctrine", "doctrine_ue"];
+  const concernes = passages.filter((passage) => corpusMarques.includes(passage.corpus));
+  if (concernes.length === 0) return passages;
+  const mentions = new Map<string, MentionDoctrine>();
+  for (const corpus of new Set(concernes.map((passage) => passage.corpus))) {
+    for (const [slug, mention] of mentionsDoctrine(rootDir, corpus)) {
+      mentions.set(`${corpus}:${slug}`, mention);
+    }
+  }
   return passages.map((passage) => {
-    if (passage.corpus !== "cnil_doctrine") return passage;
-    const marquage = mentions.get(passage.document);
+    if (!corpusMarques.includes(passage.corpus)) return passage;
+    const marquage = mentions.get(`${passage.corpus}:${passage.document}`);
     if (marquage === undefined) {
       throw new Error(
         `Marquage de licence introuvable pour ${passage.document} : ` +
-          "le manifeste de data/corpus/cnil_doctrine ne le porte pas. Lancez « npm run cnil-doctrine:sync ».",
+          `le manifeste de data/corpus/${passage.corpus} ne le porte pas. Lancez sa commande de synchronisation.`,
       );
     }
     return { ...passage, marquage };

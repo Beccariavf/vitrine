@@ -1,0 +1,19 @@
+FR FRCOMMISSION EUROPÉENNE Bruxelles, le 29.7.2025 C(2025) 5052 final COMMUNICATION DE LA COMMISSION Lignes directrices sur les pratiques interdites en matière d'intelligence artificielle au sens du règlement (UE) 2024/1689 (règlement sur l'IA)
+
+1. CONTEXTE ET OBJECTIFS
+
+Les présentes lignes directrices exposent l'interprétation que la Commission retient des pratiques interdites par l'article 5 du règlement sur l'IA. Elles ne sont pas juridiquement contraignantes ; seule la Cour de justice de l'Union européenne peut donner une interprétation faisant autorité du droit de l'Union.
+
+2. PRATIQUES INTERDITES
+
+2.1. Manipulation préjudiciable
+
+Un système d'IA qui a recours à des techniques subliminales, délibérément manipulatrices ou trompeuses, avec pour objectif ou effet d'altérer substantiellement le comportement d'une personne, est interdit lorsqu'il cause ou peut causer un préjudice important.
+
+2.2. Reconnaissance des émotions sur le lieu de travail
+
+Un système d'IA qui peut reconnaître ou déduire des émotions ne doit pas être utilisé par des déployeurs sur les lieux de travail ou dans les établissements d'enseignement, sauf pour des raisons médicales ou de sécurité.
+
+3. ARTICULATION AVEC LES AUTRES DISPOSITIONS
+
+Les interdictions de l'article 5 s'appliquent depuis le 2 février 2025. Les pratiques relevant de la catégorie b bis ou b ter ne s'appliquent qu'à compter du 2 décembre 2026.
