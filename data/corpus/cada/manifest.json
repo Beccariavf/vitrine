@@ -57,11 +57,11 @@
     "Sans objet, Favorable, Favorable": 1,
     "Sans objet, Irrecevable": 1
   },
-  "decoupage": "local — fragments de 600 à 1 200 caractères, un paragraphe long restant seul",
+  "decoupage": "local — paragraphes regroupés jusqu'à 1 200 caractères, un paragraphe long restant seul ; fragment plus court quand le suivant ne tient pas ; aucun caractère perdu, blancs normalisés",
   "arrete_le": "2024-04-18",
   "url_texte": "https://www.cada.fr/{numero}",
   "url_texte_verifiee": true,
-  "url_texte_note": "Motif vérifié sur trois avis (20132257, 20141326, 20163641) : les copies archivées de cada.fr/<numéro> répondent 200 et portent l'avis, sa date et son administration ; cada.fr répond 403 aux robots, le direct n'a donc pas été relu.",
+  "url_texte_note": "Motif https://www.cada.fr/<numéro canonique à 9 chiffres> : les numéros à 8 chiffres redirigent en 301 vers cette forme, vérifiée en direct le 2026-11-25 sur 201302257, 201401326 et 201603641 (200, avis et date conformes). Les fiches que le site ne publie pas répondent 403 : chaque lien de 39 003 avis n'est pas vérifié un par un.",
   "source": {
     "jeu": "https://www.data.gouv.fr/fr/datasets/avis-et-conseils-de-la-cada/",
     "jeu_id": "53698f37a3a729239d2036a0",
@@ -104,7 +104,7 @@
       "fragments_total": 241420,
       "fragments_retenus": 175319,
       "plafond": 35300,
-      "part_index": 1.4895412064570943,
+      "part_index": 1.4895285511592935,
       "decision": "sous_ensemble_non_indexe",
       "indexable": false,
       "motif": "241420 fragments > 35300 ; le sous-ensemble du 2016-10-08 et après en compte encore 175319 > 35300 : il est conservé, l'index n'est pas construit"

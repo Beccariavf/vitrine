@@ -56,6 +56,12 @@ describe("sourcesCorpus", () => {
       ],
     );
     assert.ok(sources.every((source) => source.documents > 0));
+    assert.equal(sources.find((source) => source.corpus === "cada")?.indexe, false);
+    assert.ok(
+      sources
+        .filter((source) => source.corpus !== "cada")
+        .every((source) => source.indexe),
+    );
   });
 
   it("rend une liste vide sans data/corpus/", () => {

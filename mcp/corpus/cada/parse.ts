@@ -4,9 +4,11 @@
  *
  * Un document est un avis ou un conseil ; son numéro de dossier est son
  * identifiant. Le texte est copié, jamais reformulé : le découpage reprend
- * celui des incréments DILA de la CNIL (paragraphes regroupés de 600 à 1 200
- * caractères, un paragraphe plus long restant seul), et les fragments joints par
- * une espace redonnent le texte d'origine.
+ * celui des incréments DILA de la CNIL (`decouperParagraphes`) — les
+ * paragraphes sont regroupés jusqu'à 1 200 caractères, un paragraphe plus long
+ * reste seul, et un fragment plus court que 600 apparaît quand le paragraphe
+ * suivant ne tient pas. Aucun caractère n'est perdu ; les blancs sont
+ * normalisés.
  */
 
 import { readFileSync } from "node:fs";
@@ -22,7 +24,7 @@ export type DescripteurCada = {
   licence: string;
   /** Seuil de la règle de volume : les avis antérieurs ne sont pas retenus. */
   date_min: string;
-  volume: { unites_index: number; part_max: number; fragments_max: number };
+  volume: { unites_index: number; fragments_max: number };
   /** Motif d'URL officielle, `{numero}` remplacé par le numéro de dossier. */
   url_texte: string;
   url_texte_verifiee: boolean;
@@ -49,16 +51,12 @@ export type DocumentCada = {
   numero: string;
   administration: string;
   nature: string;
-  annee: string;
   /** Date de séance en ISO (`AAAA-MM-JJ`). */
   date: string;
-  seance: string;
-  objet: string;
   theme: string;
   motsCles: string[];
   sens: string;
   motivation: string;
-  partie: string;
   texte: string;
 };
 
@@ -162,10 +160,7 @@ export function lireLigne(champs: readonly string[], colonnes: Map<string, numbe
       numero,
       administration: valeur("Administration"),
       nature: valeur("Type"),
-      annee: valeur("Année"),
       date,
-      seance,
-      objet: valeur("Objet"),
       theme: valeur("Thème et sous thème"),
       motsCles: valeur("Mots clés")
         .split(",")
@@ -173,7 +168,6 @@ export function lireLigne(champs: readonly string[], colonnes: Map<string, numbe
         .filter((mot) => mot !== ""),
       sens: sensDe(sensSource),
       motivation: motivationDe(sensSource),
-      partie: valeur("Partie"),
       texte,
     },
   };
@@ -188,11 +182,22 @@ export function estAnomalie(nature: string): boolean {
 }
 
 /**
+ * Forme canonique d'un numéro de dossier sur cada.fr : neuf chiffres, l'année
+ * puis cinq chiffres. Les fiches à huit chiffres redirigent en 301 vers cette
+ * forme ; `19840002` → `198400002`, `202402142` inchangé.
+ */
+export function numeroCanonique(numero: string): string {
+  const annee = numero.slice(0, 4);
+  const reste = numero.slice(4).padStart(5, "0");
+  return `${annee}${reste}`;
+}
+
+/**
  * Une unité par fragment. `chemin` porte la nature, le numéro, l'administration
  * et le sens ; la ref est `<numéro>#f<n>`, la numérotation venant de nous.
  */
 export function unitesCada(document: DocumentCada, descripteur: DescripteurCada): Unite[] {
-  const url = descripteur.url_texte.replace("{numero}", document.numero);
+  const url = descripteur.url_texte.replace("{numero}", numeroCanonique(document.numero));
   return decouperAvis(document.texte).map((texte, index) => ({
     ref: `${document.numero}#f${index}`,
     document: document.numero,

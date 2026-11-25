@@ -53,7 +53,7 @@ const CONSIGNE_PROVENANCE =
   "directive Open Data `32019L1024`, ensembles de forte valeur `32023R0138`…), LIL " +
   "`LEGITEXT000006068624`, textes français d'application `textes_fr`, textes en préparation et " +
   "affaires pendantes `preparation`, délibérations CNIL `cnil`, " +
-  "avis et conseils de la CADA `cada`, " +
+  "avis et conseils de la CADA `cada` (présent, non indexé par décision de volume), " +
   "doctrine CNIL `cnil_doctrine`, décisions du Conseil d'État `ce`, décisions DC et QPC du Conseil constitutionnel `constit`, documents " +
   "du CEPD `cepd` (lignes directrices, avis art. 64, décisions art. 65, recommandations, G29 repris), décisions de la Cour de cassation `cc`, décisions de la CJUE " +
   "`cjue` et notices du guichet unique `metadonnees`), jamais d'une génération. Citer la référence et l'URL rendues. " +
@@ -164,7 +164,7 @@ const CONSIGNE_SERVEUR =
   "modification des actes du corpus et affaires CJUE pendantes), " +
   "les délibérations de la CNIL " +
   "(corpus `cnil`, natures Sanction, Avis et Recommandation/Lignes directrices), " +
-  "les avis et conseils de la CADA (corpus `cada` : natures Avis et Conseil), " +
+  "les avis et conseils de la CADA (corpus `cada` : natures Avis et Conseil ; présent, non indexé par décision de volume), " +
   "les guides, " +
   "référentiels, fiches pratiques IA et listes AIPD de la CNIL (corpus `cnil_doctrine`, extraits " +
   "non modifiés sous CC BY-ND 4.0), les décisions du " +
@@ -173,8 +173,9 @@ const CONSIGNE_SERVEUR =
   "sur les données personnelles (corpus `cc`), celles de la CJUE (corpus `cjue`), et les métadonnées des " +
   "décisions définitives du guichet unique (corpus `metadonnees`, sans aucun texte de décision ; source " +
   "CEDH arrêtée, aucune notice CEDH). Les outils de " +
-  "recherche acceptent les paramètres `corpus` et `nature` ; sans eux, la recherche couvre les vingt et une " +
-  "collections et toutes les natures. Un document nommé dans la question (sigle ou nom ordinaire, " +
+  "recherche acceptent les paramètres `corpus` et `nature` ; sans eux, la recherche couvre les vingt " +
+  "collections indexées et toutes les natures ; le corpus `cada` est présent et déclaré non indexé " +
+  "(volume, voir son manifeste), il n'est donc pas servi. Un document nommé dans la question (sigle ou nom ordinaire, " +
   "casse et ponctuation indifférentes) est honoré quand `document` et `corpus` sont absents ; sans " +
   "nom, une référence exacte qui n'existe que dans un corpus est `incertain` et le corpus est " +
   "nommé. `get_decision` rend une sanction par identifiant CNILTEXT ou par numéro SAN-…, sa partie " +
@@ -516,7 +517,7 @@ export function createServer(deps: ServerDeps): McpServer {
         "devant, mais aucun considérant n'est retiré du résultat. " +
         "Une question qui cite un article rend cet article exact, sans recherche vectorielle. " +
         "`corpus` borne la recherche à une collection (`rgpd`, `aiact`, `eprivacy`, `police`, " +
-        "`eudpr`, `rgpdproc`, `ccs`, `adequation`, `donnees`, `cnil`, `cada`, `cnil_doctrine`, `lil`, `textes_fr`, `preparation`, `ce`, `constit`, `cepd`, " +
+        "`eudpr`, `rgpdproc`, `ccs`, `adequation`, `donnees`, `cnil`, `cada` (présent, non indexé), `cnil_doctrine`, `lil`, `textes_fr`, `preparation`, `ce`, `constit`, `cepd`, " +
         "`cc`, `cjue`, `metadonnees`) " +
         "et prime sur tout nom de document présent dans la question. " +
         "`nature` borne une recherche CNIL à une nature (`Sanction`, `Avis`, " +

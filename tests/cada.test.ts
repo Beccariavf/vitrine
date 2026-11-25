@@ -15,6 +15,7 @@ import {
   lireLigne,
   mesurer,
   motivationDe,
+  numeroCanonique,
   sensDe,
   unitesCada,
 } from "../mcp/corpus/cada/parse.ts";
@@ -25,6 +26,7 @@ import type { RessourceCada } from "../mcp/corpus/cada/source.ts";
 import { idEntree, passeCada } from "../veille/sources/cada.ts";
 import { statutApplication } from "../mcp/corpus/statut.ts";
 import { corpusDeLEntree } from "../mcp/corpus/veille.ts";
+import { search } from "../mcp/tools.ts";
 import type { FetchLike } from "../veille/fetch.ts";
 
 const FIXTURE = fileURLToPath(new URL("./fixtures/cada/avis.csv", import.meta.url));
@@ -163,7 +165,6 @@ describe("champs d'une ligne", () => {
     assert.equal(document.numero, "202400001");
     assert.equal(document.nature, "Avis");
     assert.equal(document.date, "2024-04-18");
-    assert.equal(document.seance, "18/04/2024");
     assert.equal(document.administration, "Préfecture de la Somme");
     assert.equal(document.sens, "Favorable");
     assert.equal(document.motivation, "Communication");
@@ -241,6 +242,34 @@ describe("découpage et unités", () => {
     assert.deepEqual(unite?.mots_cles, ["Document administratif"]);
     assert.equal(unite?.url, "https://www.cada.fr/202400001");
     assert.match(unite?.chemin ?? "", /CADA > Avis > 202400001 > Préfecture de la Somme > Favorable/);
+  });
+
+  it("rend le lien canonique à neuf chiffres, celui des fiches cada.fr", () => {
+    assert.equal(numeroCanonique("20132257"), "201302257");
+    assert.equal(numeroCanonique("19840002"), "198400002");
+    assert.equal(numeroCanonique("202402142"), "202402142");
+    const descripteur = descripteurTest(35300);
+    const records = lireCsv(readFileSync(FIXTURE, "utf8"));
+    const colonnes = colonnesDe(records[0] ?? []);
+    const lecture = lireLigne(
+      [
+        "20132257",
+        "Conseil départemental du Cantal",
+        "Conseil",
+        "2013",
+        "23/05/2013",
+        "",
+        "",
+        "",
+        "Sans objet",
+        "III",
+        "La commission a examiné la demande.",
+      ],
+      colonnes,
+    );
+    assert.equal(lecture.genre, "document");
+    if (lecture.genre !== "document") return;
+    assert.equal(unitesCada(lecture.document, descripteur)[0]?.url, "https://www.cada.fr/201302257");
   });
 
   it("refuse une unité sans texte, sans date ou de référence dupliquée", () => {
@@ -393,7 +422,7 @@ describe("synchronisation du corpus", () => {
     assert.equal(second.anomalies.length, 1);
   });
 
-  it("n'indexe que les nouveaux avis lors d'une ressource mise à jour", async () => {
+  it("ne réécrit que le document ajouté, sans réembarquer les autres", async () => {
     const root = racine();
     const { chemin, taille } = installerFixture(root);
     const descripteur = ecrireDescripteur(root, descripteurTest(7));
@@ -535,5 +564,36 @@ describe("veille de la ressource CADA", () => {
     assert.equal(corpusDeLEntree({ source: "cada" }), "cada");
     assert.equal(statutApplication("cada", "Avis", "Avis"), "adoptee");
     assert.equal(statutApplication("cada", "Conseil", "Conseil"), "adoptee");
+  });
+
+  it("dit non indexé quand la recherche vise un corpus déclaré tel", async () => {
+    const root = racine();
+    mkdirSync(join(root, "data", "corpus", "cada"), { recursive: true });
+    writeFileSync(
+      join(root, "data", "corpus", "cada", "manifest.json"),
+      `${JSON.stringify({
+        corpus: "cada",
+        documents: 4,
+        unites: 6,
+        arrete_le: "2024-04-18",
+        couverture: { volume: { indexable: false, motif: "volume mesuré au-delà du plafond" } },
+      })}\n`,
+      "utf8",
+    );
+    const resultat = await search(
+      root,
+      { question: "communication du code source d'un logiciel d'une administration", corpus: "cada" },
+      {
+        embedder: {
+          model: "factice",
+          dim: 4,
+          embedPassages: async (textes) => textes.map(() => [1, 0, 0, 0]),
+          embedQuery: async () => [1, 0, 0, 0],
+        },
+      },
+    );
+    assert.equal(resultat.niveau_confiance, "aucun_resultat_fiable");
+    assert.deepEqual(resultat.passages, []);
+    assert.match(resultat.message ?? "", /présent mais non indexé/);
   });
 });

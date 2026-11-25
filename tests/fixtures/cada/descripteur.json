@@ -17,7 +17,6 @@
   "date_min": "2016-10-08",
   "volume": {
     "unites_index": 9,
-    "part_max": 0.3,
     "fragments_max": 7
   },
   "url_texte": "https://www.cada.fr/{numero}",

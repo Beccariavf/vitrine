@@ -16,11 +16,10 @@
   "licence": "fr-lo",
   "date_min": "2016-10-08",
   "volume": {
-    "unites_index": 117700,
-    "part_max": 0.3,
+    "unites_index": 117701,
     "fragments_max": 35300
   },
   "url_texte": "https://www.cada.fr/{numero}",
   "url_texte_verifiee": true,
-  "url_texte_note": "Motif vérifié sur trois avis (20132257, 20141326, 20163641) : les copies archivées de cada.fr/<numéro> répondent 200 et portent l'avis, sa date et son administration ; cada.fr répond 403 aux robots, le direct n'a donc pas été relu."
+  "url_texte_note": "Motif https://www.cada.fr/<numéro canonique à 9 chiffres> : les numéros à 8 chiffres redirigent en 301 vers cette forme, vérifiée en direct le 2026-11-25 sur 201302257, 201401326 et 201603641 (200, avis et date conformes). Les fiches que le site ne publie pas répondent 403 : chaque lien de 39 003 avis n'est pas vérifié un par un."
 }

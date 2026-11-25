@@ -2,6 +2,7 @@
 const SOURCE_LABELS: Record<string, string> = {
   cnil: "CNIL",
   cnil_doctrine: "CNIL — doctrine",
+  cada: "CADA",
   cjeu: "CJUE",
   anssi: "ANSSI",
   cepd: "CEPD",

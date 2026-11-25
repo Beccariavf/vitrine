@@ -7,7 +7,7 @@
  * qu'après validation de tous ses fragments.
  */
 
-import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import type { FetchLike } from "../../../veille/fetch.ts";
@@ -388,9 +388,9 @@ export async function syncCada(options: SyncOptions = {}): Promise<ResultatCada>
       id: descripteur.ressource.id,
       titre: descripteur.ressource.titre,
       url: descripteur.ressource.url,
-      sha1: descripteur.ressource.sha1,
-      modifiee_le: descripteur.ressource.modifiee_le,
-      taille: null,
+      sha1: null,
+      modifiee_le: null,
+      taille: statSync(chemin).size,
     };
   } else {
     const resolution =
@@ -474,7 +474,9 @@ export async function syncCada(options: SyncOptions = {}): Promise<ResultatCada>
     unites: unites.length,
     par_nature: comptes.parNature,
     par_sens: comptes.parSens,
-    decoupage: "local — fragments de 600 à 1 200 caractères, un paragraphe long restant seul",
+    decoupage:
+      "local — paragraphes regroupés jusqu'à 1 200 caractères, un paragraphe long restant seul ; " +
+      "fragment plus court quand le suivant ne tient pas ; aucun caractère perdu, blancs normalisés",
     arrete_le: fin ?? passe,
     url_texte: descripteur.url_texte,
     url_texte_verifiee: descripteur.url_texte_verifiee,

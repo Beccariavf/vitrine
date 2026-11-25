@@ -1,4 +1,4 @@
-import { inventaireCorpus } from "../../mcp/corpus/sync-rapport.ts";
+import { inventaireCorpus, lireManifestes } from "../../mcp/corpus/sync-rapport.ts";
 
 /** Une collection du connecteur, telle que le site l'affiche. */
 export type SourceCorpus = {
@@ -9,6 +9,8 @@ export type SourceCorpus = {
   documents: number;
   /** Unités indexées : articles, considérants ou fragments. */
   unites: number;
+  /** Faux quand le manifeste déclare le corpus non indexable (volume). */
+  indexe: boolean;
   /** Date d'arrêté de la collection ; `null` pour un texte consolidé sans date. */
   arrete_le: string | null;
 };
@@ -47,12 +49,14 @@ const LIBELLE = new Map(LIBELLES);
  * Un corpus inconnu garde son identifiant et passe après les connus.
  */
 export function sourcesCorpus(rootDir: string = process.cwd()): SourceCorpus[] {
+  const manifestes = lireManifestes(rootDir);
   return inventaireCorpus(rootDir)
     .map((item) => ({
       corpus: item.corpus,
       libelle: LIBELLE.get(item.corpus) ?? item.corpus,
       documents: item.documents,
       unites: item.unites,
+      indexe: indexable(manifestes.get(item.corpus)),
       arrete_le: item.arrete_le,
     }))
     .sort(
@@ -60,6 +64,17 @@ export function sourcesCorpus(rootDir: string = process.cwd()): SourceCorpus[] {
         (RANG.get(gauche.corpus) ?? LIBELLES.length) - (RANG.get(droite.corpus) ?? LIBELLES.length) ||
         gauche.corpus.localeCompare(droite.corpus),
     );
+}
+
+/**
+ * Un corpus est indexé sauf quand son manifeste déclare
+ * `couverture.volume.indexable: false` : la règle de volume a tranché de ne pas
+ * construire l'index, et la façade ne doit pas compter ses fragments comme des
+ * passages servis.
+ */
+function indexable(manifeste: Record<string, unknown> | undefined): boolean {
+  const volume = (manifeste?.couverture as { volume?: { indexable?: unknown } } | undefined)?.volume;
+  return volume?.indexable !== false;
 }
 
 /** Étages les plus hauts d'une colonne de la façade ; la plus basse en a un. */
