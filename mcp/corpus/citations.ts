@@ -357,7 +357,52 @@ const INSTRUMENTS: readonly Instrument[] = [
     identifiant: "LEGITEXT000031366350",
     nature: "code",
     url: "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000031366350",
-    alias: ["code des relations entre le public et l'administration"],
+    alias: ["code des relations entre le public et l'administration", "CRPA"],
+    sigle: ["CRPA"],
+  },
+  {
+    libelle: "code du patrimoine",
+    identifiant: "LEGITEXT000006074236",
+    nature: "code",
+    url: "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006074236",
+    alias: ["code du patrimoine"],
+  },
+  {
+    libelle: "code de commerce",
+    identifiant: "LEGITEXT000005634379",
+    nature: "code",
+    url: "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000005634379",
+    alias: ["code de commerce"],
+  },
+  {
+    libelle: "code de la propriété intellectuelle",
+    identifiant: "LEGITEXT000006069414",
+    nature: "code",
+    url: "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006069414",
+    alias: ["code de la propriété intellectuelle", "CPI"],
+    sigle: ["CPI"],
+  },
+  {
+    libelle: "loi 51-711",
+    identifiant: "LEGITEXT000006068104",
+    nature: "loi",
+    url: "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000006068104",
+    alias: ["loi (?:n[o°] ?)?51-711", "loi du 7 juin 1951"],
+  },
+  {
+    libelle: "loi 68-678",
+    identifiant: "LEGITEXT000006068321",
+    nature: "loi",
+    url: "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000006068321",
+    alias: ["loi (?:n[o°] ?)?68-678"],
+  },
+  {
+    libelle: "loi SREN",
+    identifiant: "LEGITEXT000049565770",
+    nature: "loi",
+    url: "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000049565770",
+    alias: ["loi (?:n[o°] ?)?2024-449", "loi SREN"],
+    sigle: ["SREN"],
   },
   {
     libelle: "code civil",
@@ -645,11 +690,11 @@ const BALAYAGES = INSTRUMENTS.map((instrument) => ({ instrument, motif: balayage
  * « l'article 4-2° de la loi » cite l'article 4, point 2°.
  */
 const NUMERO =
-  "(?:unique|(?:[LRD]\\. ?)?\\d{1,4}(?:er)?(?:[.-]\\d{1,4}(?!°))*(?:\\(\\d{1,4}\\)|\\([a-z]\\))*)";
+  "(?:unique|(?:[LRD]\\*?\\.? ?)?\\d{1,4}(?:er)?(?:[.-]\\d{1,4}(?!°))*(?:\\(\\d{1,4}\\)|\\([a-z]\\))*)";
 
 /** Le même jeton, pour relire une liste déjà reconnue et en extraire les numéros. */
 const JETON_ARTICLE = new RegExp(
-  "(?:unique|(?:[LRD]\\. ?)?\\d+(?:er)?(?:[.-]\\d+)*(?:\\(\\d{1,4}\\)|\\([a-z]\\))*)",
+  "(?:unique|(?:[LRD]\\*?\\.? ?)?\\d+(?:er)?(?:[.-]\\d+)*(?:\\(\\d{1,4}\\)|\\([a-z]\\))*)",
   "gi",
 );
 

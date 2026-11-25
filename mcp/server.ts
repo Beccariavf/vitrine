@@ -52,7 +52,8 @@ const CONSIGNE_PROVENANCE =
   "textes UE de l'économie des données `donnees` (Data Act `32023R2854`, DGA `32022R0868`, " +
   "directive Open Data `32019L1024`, ensembles de forte valeur `32023R0138`…), espace européen des " +
   "données de santé `sante_ue` (règlement (UE) 2025/327 et ses règlements d'exécution), LIL " +
-  "`LEGITEXT000006068624`, textes français d'application `textes_fr`, textes en préparation et " +
+  "`LEGITEXT000006068624`, textes français d'application `textes_fr` (accès aux documents " +
+  "administratifs, réutilisation, archives, secret statistique et des affaires, bases de données), textes en préparation et " +
   "affaires pendantes `preparation`, délibérations CNIL `cnil`, " +
   "avis et conseils de la CADA `cada` (sélection thématique : réutilisation, ouverture, " +
   "algorithmes et code source des données publiques), " +
@@ -186,8 +187,8 @@ const CONSIGNE_SERVEUR =
   "sur les données personnelles (corpus `cc`), celles de la CJUE (corpus `cjue`), et les métadonnées des " +
   "décisions définitives du guichet unique (corpus `metadonnees`, sans aucun texte de décision ; source " +
   "CEDH arrêtée, aucune notice CEDH). Les outils de " +
-  "recherche acceptent les paramètres `corpus` et `nature` ; sans eux, la recherche couvre les vingt " +
-  "et une collections indexées et toutes les natures. Un document nommé dans la question (sigle ou nom ordinaire, " +
+  "recherche acceptent les paramètres `corpus` et `nature` ; sans eux, la recherche couvre les vingt-deux " +
+  "collections indexées et toutes les natures. Un document nommé dans la question (sigle ou nom ordinaire, " +
   "casse et ponctuation indifférentes) est honoré quand `document` et `corpus` sont absents ; sans " +
   "nom, une référence exacte qui n'existe que dans un corpus est `incertain` et le corpus est " +
   "nommé. `get_decision` rend une sanction par identifiant CNILTEXT ou par numéro SAN-…, sa partie " +
@@ -515,7 +516,8 @@ export function createServer(deps: ServerDeps): McpServer {
         "les textes UE de l'économie des données (Data Act, DGA, directive Open Data, ensembles " +
         "de forte valeur, libre circulation, recommandation clauses types, logos DGA), " +
         "l'espace européen des données de santé (règlement (UE) 2025/327, EHDS), la LIL, " +
-        "les textes français d'application, " +
+        "les textes français d'application (accès aux documents administratifs, réutilisation, " +
+        "archives, secret statistique et des affaires, bases de données), " +
         "les textes en préparation et les affaires pendantes, les délibérations de la CNIL " +
         "(sanctions, avis, recommandations et lignes directrices), les avis et conseils de la CADA, " +
         "les guides, référentiels, fiches " +

@@ -397,7 +397,7 @@ export function avecMarquageDoctrine(rootDir: string, passages: Passage[]): Pass
  */
 export function referenceExacte(question: string): string | null {
   const reference = new RegExp(
-    `\\b(?:article|art\\.?)\\s*(unique\\b|(?:[LRD]\\.?\\s*)?\\d+(?:-\\d+)*(?:\\s*(?:${SUFFIXE_ARTICLE})\\b)?(?:[\\s-]+[A-Z](?![A-Za-zÀ-ÿ.]))?)`,
+    `\\b(?:article|art\\.?)\\s*(unique\\b|(?:[LRD]\\*?\\.?\\s*)?\\d+(?:-\\d+)*(?:\\s*(?:${SUFFIXE_ARTICLE})\\b)?(?:[\\s-]+[A-Z](?![A-Za-zÀ-ÿ.]))?)`,
     "i",
   ).exec(question);
   return reference === null ? null : (reference[1] ?? "");
@@ -642,6 +642,21 @@ const ALIAS_CODES_FRANCAIS: ReadonlyArray<{ document: string; texte: readonly Re
   {
     document: "LEGITEXT000006070633",
     texte: [/\bcode general des collectivites territoriales\b/, /\bcgct\b/],
+  },
+  { document: "LEGITEXT000006074236", texte: [/\bcode du patrimoine\b/] },
+  { document: "LEGITEXT000005634379", texte: [/\bcode de commerce\b/] },
+  {
+    document: "LEGITEXT000006069414",
+    texte: [/\bcode de la propriete intellectuelle\b/, /\bcpi\b/],
+  },
+  {
+    document: "LEGITEXT000006068104",
+    texte: [/\bloi (?:n )?51 711\b/, /\bloi du 7 juin 1951\b/],
+  },
+  { document: "LEGITEXT000006068321", texte: [/\bloi (?:n )?68 678\b/] },
+  {
+    document: "LEGITEXT000049565770",
+    texte: [/\bloi (?:n )?2024 449\b/, /\bloi sren\b/, /\bsren\b/],
   },
 ];
 /** Fin du titre du décret 2019-536 : la loi 78-17 qu'il applique n'est pas nommée pour elle-même. */

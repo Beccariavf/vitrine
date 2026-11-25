@@ -20,7 +20,7 @@ import type { PisteSession } from "../piste.ts";
 import type { Entry } from "../types.ts";
 import { lireLegiPart, objet, texte } from "../../mcp/corpus/lil/parse.ts";
 import type { ArticleLil, DescripteurLil, LegiPart } from "../../mcp/corpus/lil/parse.ts";
-import { budgetPasse, lireArticleParNumero, lireSectionDeCode } from "../../mcp/corpus/textes-fr/parse.ts";
+import { budgetPasse, dansPlage, lireArticleParNumero, lireSectionDeCode } from "../../mcp/corpus/textes-fr/parse.ts";
 import { normaliserNumero } from "../../mcp/corpus/articles.ts";
 import type { DescripteurTextesFr } from "../../mcp/corpus/textes-fr/parse.ts";
 
@@ -47,7 +47,7 @@ export const THEME = "donnees-personnelles";
 
 /** Comment la version d'un texte se lit chez PISTE. */
 type RouteDetection =
-  | { type: "legiPart" }
+  | { type: "legiPart"; plage?: { premier: string; dernier: string } }
   | { type: "code"; sctCid: string }
   | { type: "article"; num: string }
   | { type: "articles"; nums: string[] }
@@ -66,6 +66,8 @@ export type TexteSuivi = {
   /** Modèle d'URL d'article portant `{id}`. */
   urlArticle: string;
   route: RouteDetection;
+  /** Numéros couverts par un autre bloc du même texte : la détection les ignore. */
+  exclure?: readonly string[];
   /**
    * `articles` compare les `LEGIARTI…` en vigueur article par article ;
    * `version` compare l'identifiant consolidé du texte, seule donnée que rend
@@ -113,7 +115,9 @@ export function textesSuivis(
                       nums: [...section.nums],
                     })),
                   }
-                : { type: "legiPart" };
+                : texteFr.route.type === "legiPart" && texteFr.route.plage !== undefined
+                  ? { type: "legiPart", plage: { ...texteFr.route.plage } }
+                  : { type: "legiPart" };
     suivis.push({
       cle: texteFr.cle,
       nom: texteFr.nom,
@@ -123,6 +127,7 @@ export function textesSuivis(
       urlArticle: texteFr.url_article,
       route,
       comparaison: texteFr.detection !== undefined ? "version" : "articles",
+      ...(texteFr.exclure === undefined ? {} : { exclure: texteFr.exclure }),
     });
   }
 
@@ -310,11 +315,31 @@ function partDesSections(
   };
 }
 
-/** Lit une réponse selon la route du texte. */
+/** Lit une réponse selon la route du texte, puis retire les numéros exclus. */
 export function lireVersion(texteSuivi: TexteSuivi, reponse: unknown, date: string): VersionLue {
+  const lue = lireSelonRoute(texteSuivi, reponse, date);
+  const exclus = texteSuivi.exclure;
+  if (exclus === undefined || exclus.length === 0) return lue;
+  const retires = new Set(exclus.map(normaliserNumero));
+  for (const numero of [...lue.articles.keys()]) {
+    if (!retires.has(normaliserNumero(numero))) continue;
+    lue.articles.delete(numero);
+    lue.dates.delete(numero);
+  }
+  return lue;
+}
+
+function lireSelonRoute(texteSuivi: TexteSuivi, reponse: unknown, date: string): VersionLue {
   switch (texteSuivi.route.type) {
-    case "legiPart":
-      return articlesEnVigueur(lireLegiPart(reponse));
+    case "legiPart": {
+      const part = lireLegiPart(reponse);
+      if (texteSuivi.route.plage === undefined) return articlesEnVigueur(part);
+      const { premier, dernier } = texteSuivi.route.plage;
+      return articlesEnVigueur({
+        ...part,
+        articles: part.articles.filter((article) => dansPlage(article.num, premier, dernier)),
+      });
+    }
     case "code":
       return articlesEnVigueur(lireSectionDeCode(reponse, texteSuivi.route.sctCid));
     case "article":

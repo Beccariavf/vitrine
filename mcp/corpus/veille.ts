@@ -112,6 +112,12 @@ export const CORPUS_PAR_DOCUMENT: Readonly<Record<string, CorpusVeille>> = {
   LEGITEXT000006072026: "textes_fr",
   LEGITEXT000031366350: "textes_fr",
   LEGITEXT000006070721: "textes_fr",
+  LEGITEXT000006074236: "textes_fr",
+  LEGITEXT000005634379: "textes_fr",
+  LEGITEXT000006069414: "textes_fr",
+  LEGITEXT000006068104: "textes_fr",
+  LEGITEXT000006068321: "textes_fr",
+  LEGITEXT000049565770: "textes_fr",
 };
 
 /**
