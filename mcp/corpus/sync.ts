@@ -289,6 +289,7 @@ export function agentsParDefaut(
     eudpr: agentActe("eudpr"),
     rgpdproc: agentActe("rgpdproc"),
     ccs: agentActe("ccs"),
+    donnees: agentActe("donnees"),
     adequation: async (cible) => {
       if (cible?.entree === null || cible?.entree === undefined) {
         throw new Error("entrée eurlex absente : décision d'adéquation inconnue");

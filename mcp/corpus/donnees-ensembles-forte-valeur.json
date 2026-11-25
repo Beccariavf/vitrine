@@ -1,0 +1,18 @@
+{
+  "document": "32023R0138",
+  "corpus": "donnees",
+  "nom": "Ensembles de forte valeur",
+  "titre": "Règlement d'exécution (UE) 2023/138 de la Commission du 21 décembre 2022 établissant une liste d'ensembles de données de forte valeur spécifiques et les modalités de leur publication et de leur réutilisation",
+  "langue": "fra",
+  "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32023R0138",
+  "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+  "date_acte": "2022-12-21",
+  "date_publication": "2023-01-20",
+  "date_debut": "2024-06-09",
+  "date_fin": null,
+  "statut": "en_vigueur",
+  "articles_attendus": 6,
+  "considerants_attendus": 14,
+  "annexes_attendues": 1,
+  "parseur": "donnees"
+}

@@ -37,6 +37,7 @@ export const ORDRE_SOURCES: readonly CorpusVeille[] = [
   "rgpdproc",
   "ccs",
   "adequation",
+  "donnees",
 ];
 
 /**

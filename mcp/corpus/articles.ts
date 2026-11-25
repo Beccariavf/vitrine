@@ -22,6 +22,9 @@ export function normaliserNumero(numero: string | number): string | null {
     .trim()
     .replace(/^(?:articles?|art\.?)\s*/i, "")
     .replace(/^(?:n[°o]|§)\s*/i, "");
+  // L'article unique d'un règlement d'exécution n'a pas de numéro : il se cite
+  // « article unique » et le corpus le porte tel quel.
+  if (/^unique$/i.test(brut)) return "unique";
   const trouve = new RegExp(
     "^(?:([LRD])\\.?\\s*)?(\\d+)(?:er)?((?:-\\d+)*)" +
       "(?:-([A-Z]{1,2})(?![A-Za-zÀ-ÿ])|([a-z])(?![A-Za-zÀ-ÿ]))?" +

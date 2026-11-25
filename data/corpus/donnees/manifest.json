@@ -1,0 +1,257 @@
+{
+  "corpus": "donnees",
+  "nom": "Textes UE de l'économie des données",
+  "documents": [
+    {
+      "document": "32018R1807",
+      "titre": "Règlement (UE) 2018/1807 du Parlement européen et du Conseil du 14 novembre 2018 établissant un cadre applicable au libre flux des données à caractère non personnel dans l'Union européenne",
+      "langue": "fra",
+      "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32018R1807",
+      "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+      "date_acte": "2018-11-14",
+      "date_publication": "2018-11-28",
+      "date_debut": "2019-05-28",
+      "date_fin": null,
+      "statut": "en_vigueur",
+      "snapshot": "824cb1f78059006585c7ddb068db69fac4c528b81a5cb24b97fe4aab1ec9926a.xhtml",
+      "unites": 48,
+      "couverture": {
+        "source": "CELLAR — publications.europa.eu/resource/celex/32018R1807",
+        "date_publication": "2018-11-28",
+        "bornes": {
+          "debut": "2019-05-28",
+          "fin": null
+        },
+        "statut": "en_vigueur",
+        "types_retenus": [
+          "article",
+          "considérant"
+        ],
+        "exclusions": [],
+        "comptes": {
+          "articles": 9,
+          "considerants": 39
+        }
+      }
+    },
+    {
+      "document": "32019L1024",
+      "titre": "Directive (UE) 2019/1024 du Parlement européen et du Conseil du 20 juin 2019 concernant les données ouvertes et la réutilisation des informations du secteur public",
+      "langue": "fra",
+      "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32019L1024",
+      "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+      "date_acte": "2019-06-20",
+      "date_publication": "2019-06-26",
+      "date_debut": "2019-07-16",
+      "date_fin": null,
+      "statut": "en_vigueur",
+      "snapshot": "727db8dead6cc0fd406d2f6bb8e391db068aeca62bc2df648eedefba32c60a99.xhtml",
+      "unites": 98,
+      "couverture": {
+        "source": "CELLAR — publications.europa.eu/resource/celex/32019L1024",
+        "date_publication": "2019-06-26",
+        "bornes": {
+          "debut": "2019-07-16",
+          "fin": null
+        },
+        "statut": "en_vigueur",
+        "types_retenus": [
+          "article",
+          "considérant",
+          "annexe"
+        ],
+        "exclusions": [],
+        "comptes": {
+          "articles": 21,
+          "considerants": 74,
+          "annexes": 3
+        }
+      }
+    },
+    {
+      "document": "32022R0868",
+      "titre": "Règlement (UE) 2022/868 du Parlement européen et du Conseil du 30 mai 2022 portant sur la gouvernance européenne des données et modifiant le règlement (UE) 2018/1724 (règlement sur la gouvernance des données)",
+      "langue": "fra",
+      "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32022R0868",
+      "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+      "date_acte": "2022-05-30",
+      "date_publication": "2022-06-03",
+      "date_debut": "2023-09-24",
+      "date_fin": null,
+      "statut": "en_vigueur",
+      "snapshot": "c52193e9f9ce869bbc46b0b6c4481721e0db1bd8c467cdd29b97417fa8a01cc4.xhtml",
+      "unites": 101,
+      "couverture": {
+        "source": "CELLAR — publications.europa.eu/resource/celex/32022R0868",
+        "date_publication": "2022-06-03",
+        "bornes": {
+          "debut": "2023-09-24",
+          "fin": null
+        },
+        "statut": "en_vigueur",
+        "types_retenus": [
+          "article",
+          "considérant"
+        ],
+        "exclusions": [],
+        "comptes": {
+          "articles": 38,
+          "considerants": 63
+        }
+      }
+    },
+    {
+      "document": "32023R0138",
+      "titre": "Règlement d'exécution (UE) 2023/138 de la Commission du 21 décembre 2022 établissant une liste d'ensembles de données de forte valeur spécifiques et les modalités de leur publication et de leur réutilisation",
+      "langue": "fra",
+      "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32023R0138",
+      "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+      "date_acte": "2022-12-21",
+      "date_publication": "2023-01-20",
+      "date_debut": "2024-06-09",
+      "date_fin": null,
+      "statut": "en_vigueur",
+      "snapshot": "53bf7c59773f7bd6db8e117363bd90bff9fdad39421db66fb4ce4cd6ca356de3.xhtml",
+      "unites": 21,
+      "couverture": {
+        "source": "CELLAR — publications.europa.eu/resource/celex/32023R0138",
+        "date_publication": "2023-01-20",
+        "bornes": {
+          "debut": "2024-06-09",
+          "fin": null
+        },
+        "statut": "en_vigueur",
+        "types_retenus": [
+          "article",
+          "considérant",
+          "annexe"
+        ],
+        "exclusions": [],
+        "comptes": {
+          "articles": 6,
+          "considerants": 14,
+          "annexes": 1
+        }
+      }
+    },
+    {
+      "document": "32023R1622",
+      "titre": "Règlement d'exécution (UE) 2023/1622 de la Commission du 9 août 2023 relatif à la conception de logos communs permettant d'identifier les prestataires de services d'intermédiation de données et les organisations altruistes en matière de données reconnus dans l'Union",
+      "langue": "fra",
+      "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32023R1622",
+      "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+      "date_acte": "2023-08-09",
+      "date_publication": "2023-08-10",
+      "date_debut": "2023-08-30",
+      "date_fin": null,
+      "statut": "en_vigueur",
+      "snapshot": "5ebb5ce59ebb601a4d4ecd85c2cf46ea356659b855271e13cfb92adfdc46a525.xhtml",
+      "unites": 4,
+      "couverture": {
+        "source": "CELLAR — publications.europa.eu/resource/celex/32023R1622",
+        "date_publication": "2023-08-10",
+        "bornes": {
+          "debut": "2023-08-30",
+          "fin": null
+        },
+        "statut": "en_vigueur",
+        "types_retenus": [
+          "article",
+          "considérant",
+          "annexe"
+        ],
+        "exclusions": [],
+        "comptes": {
+          "articles": 1,
+          "considerants": 2,
+          "annexes": 1
+        }
+      }
+    },
+    {
+      "document": "32023R2854",
+      "titre": "Règlement (UE) 2023/2854 du Parlement européen et du Conseil du 13 décembre 2023 concernant des règles harmonisées portant sur l'équité de l'accès aux données et de l'utilisation des données et modifiant le règlement (UE) 2017/2394 et la directive (UE) 2020/1828 (règlement sur les données)",
+      "langue": "fra",
+      "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32023R2854",
+      "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+      "date_acte": "2023-12-13",
+      "date_publication": "2023-12-22",
+      "date_debut": "2025-09-12",
+      "date_fin": null,
+      "statut": "en_vigueur",
+      "snapshot": "176b9f61e1ddd5f1115e0056b87be564d8a12f8914a2569ce79ac1274bfbd687.xhtml",
+      "unites": 169,
+      "couverture": {
+        "source": "CELLAR — publications.europa.eu/resource/celex/32023R2854",
+        "date_publication": "2023-12-22",
+        "bornes": {
+          "debut": "2025-09-12",
+          "fin": null
+        },
+        "statut": "en_vigueur",
+        "types_retenus": [
+          "article",
+          "considérant"
+        ],
+        "exclusions": [],
+        "comptes": {
+          "articles": 50,
+          "considerants": 119
+        }
+      }
+    },
+    {
+      "document": "32026H2394",
+      "titre": "Recommandation (UE) 2026/2394 de la Commission du 29 octobre 2026 relative aux clauses contractuelles types non contraignantes concernant l'accès aux données et l'utilisation des données et aux clauses contractuelles standards non contraignantes pour les contrats d'informatique en nuage",
+      "langue": "fra",
+      "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32026H2394",
+      "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+      "date_acte": "2026-10-29",
+      "date_publication": "2026-11-06",
+      "date_debut": "2026-10-29",
+      "date_fin": null,
+      "statut": "adoptee",
+      "snapshot": "e8c44f432d3a4cbfc5ab7886482eeb9236665575df8f752e6e1e8014f6c12586.xhtml",
+      "unites": 29,
+      "couverture": {
+        "source": "CELLAR — publications.europa.eu/resource/celex/32026H2394",
+        "date_publication": "2026-11-06",
+        "bornes": {
+          "debut": "2026-10-29",
+          "fin": null
+        },
+        "statut": "adoptee",
+        "types_retenus": [
+          "considérant",
+          "point",
+          "annexe"
+        ],
+        "exclusions": [],
+        "comptes": {
+          "articles": 0,
+          "considerants": 14,
+          "points": 3,
+          "annexes": 12
+        }
+      }
+    }
+  ],
+  "unites": 470,
+  "couverture": {
+    "source": "CELLAR — publications.europa.eu/resource/celex/32018R1807, 32019L1024, 32022R0868, 32023R0138, 32023R1622, 32023R2854, 32026H2394",
+    "types_retenus": [
+      "article",
+      "considérant",
+      "point",
+      "annexe"
+    ],
+    "exclusions": [],
+    "comptes": {
+      "documents": 7,
+      "articles": 125,
+      "considerants": 325,
+      "points": 3,
+      "annexes": 17
+    }
+  }
+}

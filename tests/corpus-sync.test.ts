@@ -1796,6 +1796,7 @@ describe("synchronisation du corpus", () => {
           "rgpdproc",
           "ccs",
           "adequation",
+          "donnees",
         ],
       );
       assert.equal(rapport.sources[0]?.statut, "panne");
@@ -1908,6 +1909,7 @@ describe("synchronisation du corpus", () => {
       "cnil",
       "cnil_doctrine",
       "constit",
+      "donnees",
       "eprivacy",
       "eudpr",
       "lil",

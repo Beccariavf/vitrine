@@ -1,0 +1,17 @@
+{
+  "document": "32023R2854",
+  "corpus": "donnees",
+  "nom": "Data Act",
+  "titre": "Règlement (UE) 2023/2854 du Parlement européen et du Conseil du 13 décembre 2023 concernant des règles harmonisées portant sur l'équité de l'accès aux données et de l'utilisation des données et modifiant le règlement (UE) 2017/2394 et la directive (UE) 2020/1828 (règlement sur les données)",
+  "langue": "fra",
+  "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32023R2854",
+  "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+  "date_acte": "2023-12-13",
+  "date_publication": "2023-12-22",
+  "date_debut": "2025-09-12",
+  "date_fin": null,
+  "statut": "en_vigueur",
+  "articles_attendus": 50,
+  "considerants_attendus": 119,
+  "parseur": "donnees"
+}

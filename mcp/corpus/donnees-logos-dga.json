@@ -1,0 +1,18 @@
+{
+  "document": "32023R1622",
+  "corpus": "donnees",
+  "nom": "Logos DGA",
+  "titre": "Règlement d'exécution (UE) 2023/1622 de la Commission du 9 août 2023 relatif à la conception de logos communs permettant d'identifier les prestataires de services d'intermédiation de données et les organisations altruistes en matière de données reconnus dans l'Union",
+  "langue": "fra",
+  "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32023R1622",
+  "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+  "date_acte": "2023-08-09",
+  "date_publication": "2023-08-10",
+  "date_debut": "2023-08-30",
+  "date_fin": null,
+  "statut": "en_vigueur",
+  "articles_attendus": 1,
+  "considerants_attendus": 2,
+  "annexes_attendues": 1,
+  "parseur": "donnees"
+}
