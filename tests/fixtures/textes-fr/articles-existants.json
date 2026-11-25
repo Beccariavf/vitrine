@@ -1,0 +1,1584 @@
+[
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "151-1",
+    "ref": "LEGIARTI000051501855",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000051501855",
+    "texte_sha256": "689b92eed08663570fdd9e20eecd96d27c4905eaa1573f3a25869582601ba591"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "156",
+    "ref": "LEGIARTI000038567874",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567874",
+    "texte_sha256": "adb59327aff45dcc3df2b8b25f6d06e724e6a256173c835203c0df2be639f85e"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "157",
+    "ref": "LEGIARTI000038567896",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567896",
+    "texte_sha256": "e59201138780c086216ad372cb1a43c2dc14d38f25548923286ccc8170c3485b"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "158",
+    "ref": "LEGIARTI000038567894",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567894",
+    "texte_sha256": "8bfa7b65399efa00b1374c5931316645f8344739b650c5dda460f7d13d2e45bd"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "159",
+    "ref": "LEGIARTI000038567898",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567898",
+    "texte_sha256": "6dcdfd1a458a76fccff691b5a93fb8b24b91994088d96ca3b95225215cf7d5ae"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "160",
+    "ref": "LEGIARTI000038567900",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567900",
+    "texte_sha256": "123f80da20ee264424a152fb056eb9a8a4cf24cdf543ae71753d08850f3df1c7"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "152",
+    "ref": "LEGIARTI000052209416",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000052209416",
+    "texte_sha256": "1f47a6624db1d6ec6d1b6f47193dd34501a0db3b98b315ed38d180236d24fbf6"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "153",
+    "ref": "LEGIARTI000038567870",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567870",
+    "texte_sha256": "4209f14359b2947570ee13e64025839ddc6e9486aecada9a4c0f89e1a6ede1f4"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "154",
+    "ref": "LEGIARTI000052209421",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000052209421",
+    "texte_sha256": "94aeb0b4e73e3a1300f463f413362041539b3a16f836c4f0de35294d3eeca408"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "155",
+    "ref": "LEGIARTI000038567866",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567866",
+    "texte_sha256": "9590b5f564411336be72dc539423316cf6b4515df2121ba2fa4c5bbfc899b6ce"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "140",
+    "ref": "LEGIARTI000038567838",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567838",
+    "texte_sha256": "8716d862194a4006341144d4a685af7540e02743389d1e8708fbb4eabc4c3b51"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "141",
+    "ref": "LEGIARTI000038568046",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568046",
+    "texte_sha256": "02ce7cbf53581defe3ba854f3ac4fdf2182b4751f69bf54609b144c9209294ed"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "142",
+    "ref": "LEGIARTI000038568062",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568062",
+    "texte_sha256": "98064bcf51ccf9cd04798bea5d5a2724b538ce0d137336de77fffea0c99172eb"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "143",
+    "ref": "LEGIARTI000038568048",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568048",
+    "texte_sha256": "712701340ede48ffd57d35544fd03ae747f6337c8937e8e095e019873c74fd92"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "144",
+    "ref": "LEGIARTI000038568064",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568064",
+    "texte_sha256": "a0019de8e10a0a876d15614d409947d9e41fe5624994194ce49ef87ddf30dede"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "145",
+    "ref": "LEGIARTI000038568066",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568066",
+    "texte_sha256": "f865aae36523f31f4eeab0c240244775d31394cc9a545fa3df605b34c14d6ef1"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "146",
+    "ref": "LEGIARTI000038567758",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567758",
+    "texte_sha256": "c27fe342e0d4500e12a4cec856d06d2a5fcd5399a1e50d8d0b3198637e0176b7"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "147",
+    "ref": "LEGIARTI000038567760",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567760",
+    "texte_sha256": "56d515baa315db9153adcd44d2b00f4d3dc74887f681d691a341c6f4967a84b4"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "148",
+    "ref": "LEGIARTI000038567776",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567776",
+    "texte_sha256": "b418742d49b7d71df9eeb42ea0bc3910d62fd1a516b4a95c70640d867039761a"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "149",
+    "ref": "LEGIARTI000038567774",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567774",
+    "texte_sha256": "2a2a11664abb25bb5cd8ae063346fe82151df5b234b6439b87cb073ae147bd38"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "150",
+    "ref": "LEGIARTI000038567800",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567800",
+    "texte_sha256": "090f5a20f453d0c4878c37d39180060907af9a79def5a57fd485460187ea4872"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "151",
+    "ref": "LEGIARTI000038567802",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567802",
+    "texte_sha256": "a9e0783f17f28f7f03fda4f9ff0fe39533867c4e1c8f3e72a420a2b6c8eceab8"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "129",
+    "ref": "LEGIARTI000038567992",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567992",
+    "texte_sha256": "b42bd4e7073082bf02607ecc1cadb48ed35d5854201acef1c1fdeed76fa9208b"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "130",
+    "ref": "LEGIARTI000038567994",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567994",
+    "texte_sha256": "c9bb4ae86791317b612161ea8c1f528d69a8d600d91653db787f6cabc92bc35a"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "131",
+    "ref": "LEGIARTI000038567996",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567996",
+    "texte_sha256": "8721777f34f91787bff5a89f3a7cee99b3278153f43fdf93ab10daf334ec8d43"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "132",
+    "ref": "LEGIARTI000038567990",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567990",
+    "texte_sha256": "0e2a7fa7396622814d73f15d157c2bcbd50346a60647a7aefcbf81455d683528"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "133",
+    "ref": "LEGIARTI000038568010",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568010",
+    "texte_sha256": "1e68fa0d53c745e4fda68bdab04d068c42191ebadf1c2362b28a847ab0d79cee"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "134",
+    "ref": "LEGIARTI000038568018",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568018",
+    "texte_sha256": "520d4f4360b0d008f58ac167d21c207370983517c9fce354262f340badf73715"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "135",
+    "ref": "LEGIARTI000038567998",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567998",
+    "texte_sha256": "7a186f8b36d0b3090f25a048704ac73718064906fe3f2dca1a1f0143d32c2fd2"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "136",
+    "ref": "LEGIARTI000038568030",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568030",
+    "texte_sha256": "b25b80083b749cb791b617e63723dd8c370e96f6dcc1591379a6cb21317e45fc"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "137",
+    "ref": "LEGIARTI000038568032",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568032",
+    "texte_sha256": "016525dd65c21166049b91f6b50981b04d6c2028f887da312f1918709c2d4ec5"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "138",
+    "ref": "LEGIARTI000038568034",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568034",
+    "texte_sha256": "acc04ec1dd831c433f68c0e42ceeb59c64802671813cee321a66dbcfd20e7514"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "139",
+    "ref": "LEGIARTI000038568044",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568044",
+    "texte_sha256": "be9e67f5a0ba61dd42472bdb733aa77e4b7c52a213f9629e0ac87d8b281265c6"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "71",
+    "ref": "LEGIARTI000038567836",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567836",
+    "texte_sha256": "e8531e4e55cd66de2c5d10f48642992ed3bfb2637065ba168358a90e69433e33"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "72",
+    "ref": "LEGIARTI000038567980",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567980",
+    "texte_sha256": "9d1361f5a1c47cc9165c2821c3858599edbe57735f5a541c063ea8535877d03b"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "73",
+    "ref": "LEGIARTI000038567982",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567982",
+    "texte_sha256": "70e8300c5fe41e9591161dc1af0cbbb1361af7ab24b9fae21f1881a861d5e471"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "74",
+    "ref": "LEGIARTI000038567946",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567946",
+    "texte_sha256": "78a295e7c1b0f439bf95c009d7a3293a4e43e353cd84e1c0a144a44e5d9c0e83"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "75",
+    "ref": "LEGIARTI000038567984",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567984",
+    "texte_sha256": "43aed4780e8b80d5b07ecbba5c45c8c25a07f601d8679f1753cd4e914740e4db"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "76",
+    "ref": "LEGIARTI000045511253",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000045511253",
+    "texte_sha256": "0924c785b66baf70dd9dcf87cefdc76b71866fcf125d4fd23afdca851da326fe"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "77",
+    "ref": "LEGIARTI000038568004",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568004",
+    "texte_sha256": "09a3c13130b445bb2951e9fb8e142d1e61511b3bcb77a483a2593cb00b1fd492"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "78",
+    "ref": "LEGIARTI000038568006",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568006",
+    "texte_sha256": "301162277b19ae41e38f489361cba64fc8cc96191a0e9cd57b35052a43acfbe8"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "79",
+    "ref": "LEGIARTI000038568000",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568000",
+    "texte_sha256": "4cc83fe4088ab4d074fb4c19b4d104ba8de8de0398895938cda5fa60a65f84c8"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "80",
+    "ref": "LEGIARTI000038568008",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568008",
+    "texte_sha256": "24cc6cfaab4ce0ea6cf5c59ae6cb80f70529c4f312571c0f42de1e8034ffd79c"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "81",
+    "ref": "LEGIARTI000038568022",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568022",
+    "texte_sha256": "c76e7001cb99fdddc666a25abdccc2c45396566f70de98bc9d696d607609767b"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "82",
+    "ref": "LEGIARTI000038568024",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568024",
+    "texte_sha256": "18426bdd7ee76d3ac64779464b8ee391b87fb58971803d784f54a7605749ae73"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "83",
+    "ref": "LEGIARTI000038568036",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568036",
+    "texte_sha256": "c56588294b8602cf9d8cd20362c5ed4c9bd9631c53d84ed439406c9eed6a8197"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "84",
+    "ref": "LEGIARTI000038568020",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568020",
+    "texte_sha256": "1c38c07dd9f8677c39a7d2adb36832ec70e70c7d796489c59fb312bff511f522"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "85",
+    "ref": "LEGIARTI000038568050",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568050",
+    "texte_sha256": "834603dfae5d0a4d72c2b7deca250f7314ab716a63463f6d617d2ab05bb160f3"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "86",
+    "ref": "LEGIARTI000038568016",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568016",
+    "texte_sha256": "95796d600f827344d604fd30dd9885273fe9bf87ab4c49211b6efa6e99021484"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "87",
+    "ref": "LEGIARTI000038568026",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568026",
+    "texte_sha256": "1c32aadce87fe11041975e76e37309a1c48218059493554d50810b5209d804df"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "88",
+    "ref": "LEGIARTI000041883477",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000041883477",
+    "texte_sha256": "6680162231d972b2c2e36c31a6f55475d7c5357c8581d746e4a7e689aa617f3f"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "89",
+    "ref": "LEGIARTI000041883469",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000041883469",
+    "texte_sha256": "05fe2337606b12c2d760e98f7fef236283a59e92d8d6b3b9b0b6309c1214e6e8"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "90",
+    "ref": "LEGIARTI000041883463",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000041883463",
+    "texte_sha256": "4cd392caaaa732d343ff5613795ab6fb5fa871a1af31aae2a5f96fe1f8caa1a6"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "91",
+    "ref": "LEGIARTI000041883459",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000041883459",
+    "texte_sha256": "5c4db2a6197f5a4639ecc1f7d884b48696457e512462d0766f2095c9a905d941"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "92",
+    "ref": "LEGIARTI000041883454",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000041883454",
+    "texte_sha256": "c7bdbce312a2dae05f1aa3b507b625d25d89c94a41b9da933175300754db121c"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "93",
+    "ref": "LEGIARTI000041883448",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000041883448",
+    "texte_sha256": "fcc3ce720e89410acc69020324aa41fd49736c3e72e4531f733b4fe16931a9c5"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "94",
+    "ref": "LEGIARTI000041883443",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000041883443",
+    "texte_sha256": "277b7cd4fc9ed048963c096dceea2e8f4aa22988bcbeae73267713163e401871"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "95",
+    "ref": "LEGIARTI000041883438",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000041883438",
+    "texte_sha256": "af8f04b271e160a7ba87c39245a3f15475e054fafe960b96c1ded40678a81ad3"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "96",
+    "ref": "LEGIARTI000041883436",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000041883436",
+    "texte_sha256": "14476244e4a2be30668e8c8ba9b22669a72fafb7dd8d32c8a636691b54690d3e"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "97",
+    "ref": "LEGIARTI000041883432",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000041883432",
+    "texte_sha256": "14595bd6fbb580fe3c99614f3c82c12d2779b0e998c03db3dd8c9e683caa4932"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "98",
+    "ref": "LEGIARTI000041883430",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000041883430",
+    "texte_sha256": "68e9e851e3a7da86b4e1e0e3e889c194da565a4475b7ffa13d047fd24f0dfb99"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "99",
+    "ref": "LEGIARTI000041883428",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000041883428",
+    "texte_sha256": "a3f8ca9b3d723873b81a33578fdc547cea99f1fcd835c0f9b47b10a6da11ce5c"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "100",
+    "ref": "LEGIARTI000041883426",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000041883426",
+    "texte_sha256": "23c539b25d8aa166ebea515dbaccd8a502491f1055b3578f6250a00509b9924d"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "101",
+    "ref": "LEGIARTI000041883422",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000041883422",
+    "texte_sha256": "c309b88ee69e8865e10a5f28253b0813a73624fc041ead32c421cebf7564add7"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "102",
+    "ref": "LEGIARTI000038567860",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567860",
+    "texte_sha256": "423f7d86245c8e7044851b6e397e178bec1aeedbf92c4776dbdae8687eedb091"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "103",
+    "ref": "LEGIARTI000038567862",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567862",
+    "texte_sha256": "d31cfccd0da349cf493ba4bd95258420ab26c63d7d348028453700eb75e963e8"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "104",
+    "ref": "LEGIARTI000038567864",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567864",
+    "texte_sha256": "91e627b59a445dace888b052b2a270507eef8acb95b5b8433e6819f9b9662d3a"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "105",
+    "ref": "LEGIARTI000038567890",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567890",
+    "texte_sha256": "afad2a5cfd0b71d628bd81af3f309985df3c4daf6297c912306c497d67d6c635"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "106",
+    "ref": "LEGIARTI000038567892",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567892",
+    "texte_sha256": "3b94fb4fc181746b86ef554159ebb2747b0669ba302cb89f71dec48d5127b77f"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "107",
+    "ref": "LEGIARTI000038567882",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567882",
+    "texte_sha256": "beaa771d62683e34f70fbaddbc1a2668ba44f0eaaf5e61a63090a26613d2a0d8"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "108",
+    "ref": "LEGIARTI000041883418",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000041883418",
+    "texte_sha256": "383e1266d17f2e1642457d70b984b0fd510af4cd09b5b1f588900cb284259a4d"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "109",
+    "ref": "LEGIARTI000041883414",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000041883414",
+    "texte_sha256": "44f67c149f03934347776027cf33dacadb8485311d1c889d4985ff6c5a812aa6"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "110",
+    "ref": "LEGIARTI000038568042",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568042",
+    "texte_sha256": "8d98ca31b591fba4242e286e5f841ad8e0b3cc132a6241ac28b2293a308563d2"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "112",
+    "ref": "LEGIARTI000038568058",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568058",
+    "texte_sha256": "ec528b5812cace53337657154e12005a11427984fed083b13a0533469dd3b8fa"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "113",
+    "ref": "LEGIARTI000038568074",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568074",
+    "texte_sha256": "1c843be4083325a0e582dbfa1167a51df234827278f47cafaf3cde50cc51d4cc"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "114",
+    "ref": "LEGIARTI000038568076",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568076",
+    "texte_sha256": "a3e7faac19c45bc493077e7b7914bbb552fb9812150316535585deb0e22d3790"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "115",
+    "ref": "LEGIARTI000038568072",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568072",
+    "texte_sha256": "1f94d247c898cd6513f0033b278d79c4675c1b5e3d4e7c95727a592ebc640e0b"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "116",
+    "ref": "LEGIARTI000038568052",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568052",
+    "texte_sha256": "11fbed42ed100ebbba8f0af07df9b6c06d4ce6a8251e2d737a4273e5555f2eda"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "117",
+    "ref": "LEGIARTI000038567902",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567902",
+    "texte_sha256": "34feb9cbf9652d45025c74fdc5ecd837bb13532663bad84ea1140bcfc6148f2b"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "118",
+    "ref": "LEGIARTI000038567920",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567920",
+    "texte_sha256": "1de9d69fa71a160cb44b8cc7c60334a5cdda0ef45c05afcb57258af5d1885be5"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "119",
+    "ref": "LEGIARTI000038567922",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567922",
+    "texte_sha256": "6bc36ef05538222b44fb96a9a683dbd682401c8219a9f1b9aa9f3f7b9b25cd27"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "120",
+    "ref": "LEGIARTI000038567934",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567934",
+    "texte_sha256": "afd9812d6823e64db40c5c6048b5e7f169ec87f85a2ec7ca1063074f3486ba65"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "121",
+    "ref": "LEGIARTI000038567936",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567936",
+    "texte_sha256": "d5b76f61bd321556a92f58e3f8f019f2aae7fedbe86d03a150181ce5c80158d8"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "122",
+    "ref": "LEGIARTI000038567918",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567918",
+    "texte_sha256": "2cafb612fc416b9ba4bc880cc4ddd183e32e3e35ab951731a2f60b9857f2f3f4"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "123",
+    "ref": "LEGIARTI000038567956",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567956",
+    "texte_sha256": "be9593fb99cae67cc89ae8b1782f540b54a9a6918ad207e8b83eb6bdf2eec32e"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "124",
+    "ref": "LEGIARTI000038567958",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567958",
+    "texte_sha256": "71462ce24dc1d105090ce387058a3ca3a04e3acc3751ca3f1a0583217b619881"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "125",
+    "ref": "LEGIARTI000038567972",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567972",
+    "texte_sha256": "5f97921568888c28eb3552609454f07baf241891a70e741927be12c880e9d4e6"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "126",
+    "ref": "LEGIARTI000038567974",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567974",
+    "texte_sha256": "bab8794d7385ed287e1fd7564b0b37e152c2afb448cee9d9aae51ef6ef01b2b8"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "127",
+    "ref": "LEGIARTI000038567960",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567960",
+    "texte_sha256": "0b15bc72bae86de2d0d34f08e13036fdbd3ce8b5968a506afaca581ec099d91d"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "128",
+    "ref": "LEGIARTI000038567976",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567976",
+    "texte_sha256": "d8f86ece59eb67b2f6117884876ae8e82d5c009dc64cfa01a4d504b52315a676"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "1",
+    "ref": "LEGIARTI000038567804",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567804",
+    "texte_sha256": "3258f2d16c3de38264cefed89ac5d36d3f0a573272f782d500d918869cd0c79d"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "2",
+    "ref": "LEGIARTI000038567812",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567812",
+    "texte_sha256": "0a7a6a2446a6e2de4db2ffa08d35435c8e40d9f2cc17e5f719b92603e1d155f2"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "3",
+    "ref": "LEGIARTI000038567814",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567814",
+    "texte_sha256": "cff6668d8b9f0ce8c563a59ba4de20280ddb9d12c9fcff3f25b75b5b294087ac"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "4",
+    "ref": "LEGIARTI000038567816",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567816",
+    "texte_sha256": "8d8c1fde4c2899f8739990d3664b40bdd8088d58c69e3b33f42c57540f022d35"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "5",
+    "ref": "LEGIARTI000052209381",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000052209381",
+    "texte_sha256": "e98cb6f024115f223e31f1710415896f23b92e3ef1d7a387467f3caafe99f293"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "6",
+    "ref": "LEGIARTI000052209386",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000052209386",
+    "texte_sha256": "9c8ac09d46fa9f884103df350f11f987506a85951e91f6c7053d9b60de598160"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "7",
+    "ref": "LEGIARTI000038567820",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567820",
+    "texte_sha256": "fd4aaa2bb7ccc48b27f342590fd53753b487ea4daa5200259add7f3b48241333"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "8",
+    "ref": "LEGIARTI000038567842",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567842",
+    "texte_sha256": "5418fc8464de0d619f9cca307b577c740fca38fdf24fde3476d2a6e0b1ec178a"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "9",
+    "ref": "LEGIARTI000038567844",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567844",
+    "texte_sha256": "52f00c8cf1c67ea86c5d765bd3472b7b00350932527ac0c02966b82483eeff3a"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "10",
+    "ref": "LEGIARTI000038567846",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567846",
+    "texte_sha256": "9a5185c905574207664557be16738a9eff16a497d284aa0c74e61644360bb59b"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "11",
+    "ref": "LEGIARTI000038567840",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567840",
+    "texte_sha256": "c3b66d51f30d5cfc4fcbce44c2904b571f5e26c1fc205212434e07e9cf66332e"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "12",
+    "ref": "LEGIARTI000038567876",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567876",
+    "texte_sha256": "e35f56da6b24e98ab18dfee30f6f2f2898bdc871dbc5fb5b2916cefa3c7acfbb"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "13",
+    "ref": "LEGIARTI000038567878",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567878",
+    "texte_sha256": "a52c492fdaa53754f93ab96a9dd68ed957adbd4d86aec1cd3d7564cd6f52e198"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "14",
+    "ref": "LEGIARTI000038567880",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567880",
+    "texte_sha256": "26cae100fc8ee6d2ff8adadf530869b0115a6a9ae442c4fb7e313b01d50307a6"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "15",
+    "ref": "LEGIARTI000038567906",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567906",
+    "texte_sha256": "9d8c7c60023b923d1f46867a3f1bdb9d0a7f109265a63b2186351e01a15bd566"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "16",
+    "ref": "LEGIARTI000038567768",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567768",
+    "texte_sha256": "bbd6b5d7e46d8061f2f8b4d7c37df3628d851c67aabba84c9feb22066507f274"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "17",
+    "ref": "LEGIARTI000038567770",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567770",
+    "texte_sha256": "2a2b439c654b41a743dea098e3806d31bdfb16b95a77c259ec9e001b51a86641"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "18",
+    "ref": "LEGIARTI000038567772",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567772",
+    "texte_sha256": "a4c47c39ecd0a4e500098da13d9467444521b2c661cf536c8e07f96e101e5374"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "19",
+    "ref": "LEGIARTI000038567766",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567766",
+    "texte_sha256": "7c2df16a564b1c3600655e158a1651a63eab97a70966f3b9beb7f54e628f17ca"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "20",
+    "ref": "LEGIARTI000038567784",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567784",
+    "texte_sha256": "8be808d39528c493fe6616c76d455151644fb530a0f40c89a7592635d3e5499d"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "21",
+    "ref": "LEGIARTI000038567786",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567786",
+    "texte_sha256": "627e68c3100aad9b948361b579624eac3a61d9d1dc2c96122a7b4a1877eaa590"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "22",
+    "ref": "LEGIARTI000038567788",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567788",
+    "texte_sha256": "d3b01592fc0f26de6f13242f0e73abcdb094aa8467c00a534c02f271b4e29d3f"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "23",
+    "ref": "LEGIARTI000038568038",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568038",
+    "texte_sha256": "8f17efe851e024690a86b8951a052f88f29fea8bc1f395d3470272c5d92d7b30"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "24",
+    "ref": "LEGIARTI000038568054",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568054",
+    "texte_sha256": "b81521a13eaac9f0a3f6ecee4332eb257eca4fb1a265a17017fba6d64e14f5e1"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "25",
+    "ref": "LEGIARTI000038568068",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568068",
+    "texte_sha256": "c693075650300e4893464c80fa5f32fa0a817f76caec06c88414e683f4a27627"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "26",
+    "ref": "LEGIARTI000052209390",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000052209390",
+    "texte_sha256": "05f608fa82eeb24317b8cceaf1eeb4e708179bc232164532d939ab87efcb26e7"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "27",
+    "ref": "LEGIARTI000038568060",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568060",
+    "texte_sha256": "d3cdbf89e65fc2baec166fc5310a1e661448246e81f80cfb1c6bf3c9d07a2138"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "28",
+    "ref": "LEGIARTI000039343081",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000039343081",
+    "texte_sha256": "263337587b787c4c614b270e314059b2eeace50fc52ca17acc348242e7ba8716"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "29",
+    "ref": "LEGIARTI000038567764",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567764",
+    "texte_sha256": "0c31d4bd57b026d65772eba5cea0ae42031ce1293f6e1ef326e72f992c5712c1"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "30",
+    "ref": "LEGIARTI000038567780",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567780",
+    "texte_sha256": "19299a03af756a2ca22349b20977b8302aecd73498b56f657f3bf71b5397b756"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "31",
+    "ref": "LEGIARTI000038567782",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567782",
+    "texte_sha256": "87b3323bd7534e75d9c8335d70bfd7ddcebe759b0f497ed64e3056a461ead6c6"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "32",
+    "ref": "LEGIARTI000038567806",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567806",
+    "texte_sha256": "1d252a52abf93d960332b2a3dfe6ad80b6f1790ab463c500c25da9907295934c"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "33",
+    "ref": "LEGIARTI000038567808",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567808",
+    "texte_sha256": "bd6bb8a8ac3e0e35adf74636115049b000394a5959acece796cfe2fe63e1a110"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "34",
+    "ref": "LEGIARTI000038567824",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567824",
+    "texte_sha256": "349d918bc74f0caf1005eb47e89e4eb8369d79c39a1ffad2606eae1fd4d97aaa"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "35",
+    "ref": "LEGIARTI000038567826",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567826",
+    "texte_sha256": "47dbfea453645ca1e99cb6d04807f9de59aa2c6bd77895e1378fde3d781e5f76"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "36",
+    "ref": "LEGIARTI000038567850",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567850",
+    "texte_sha256": "b7667ae54c6ba6fae357a54967c72cfd0b6038277ef105f6b13c423a40fa9c23"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "37",
+    "ref": "LEGIARTI000038567852",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567852",
+    "texte_sha256": "0c618f5a493b3e3a3a47bbbc78ae4b3ffab75db3ca5278e80f731bd5e428f22d"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "38",
+    "ref": "LEGIARTI000045544790",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000045544790",
+    "texte_sha256": "2add63d4dfd2b0fb411c377228367bc4b919f20a086b8cddcf57877614256ed8"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "38-1",
+    "ref": "LEGIARTI000052209057",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000052209057",
+    "texte_sha256": "238508b3e33b99c1d846cd204d5f92d3b489e52c54da7f90071edc8ada8b2c9d"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "39",
+    "ref": "LEGIARTI000045544817",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000045544817",
+    "texte_sha256": "43212b868a878f32525fd9aed1396398c012378d29e4466b6a624ff9c7ce11ef"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "40",
+    "ref": "LEGIARTI000045544812",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000045544812",
+    "texte_sha256": "e6914b47c33e697ecad9f00bc86070ff5878b0045b886dd4cb41f3278a7c76c9"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "41",
+    "ref": "LEGIARTI000045544810",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000045544810",
+    "texte_sha256": "46dada43efa89f31daf6788f5fa868d81673786505a3cff8ff4e98f6933f81b3"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "42",
+    "ref": "LEGIARTI000045544808",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000045544808",
+    "texte_sha256": "f1bb73255ad14167c01b33212a05da1bb6b7a2d8ee7207701f6fd4c8f4cd6c3d"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "43",
+    "ref": "LEGIARTI000045544806",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000045544806",
+    "texte_sha256": "fd722c0004d2a124269fc1106d297e9b5180b952c6c54d4eefed8ec9233d2561"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "44",
+    "ref": "LEGIARTI000045544802",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000045544802",
+    "texte_sha256": "adc9d178ff199880610600be3e2fd2135b739af916abff7a3eb7ca8892b4f5f0"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "45",
+    "ref": "LEGIARTI000045544798",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000045544798",
+    "texte_sha256": "6ab0783698685e7dcae32fadff6d4c5ecdcb7182c031bcf786781a102bada38c"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "45-1",
+    "ref": "LEGIARTI000045541785",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000045541785",
+    "texte_sha256": "10275d416cdda9bf9b725a5b8b847dd28fd6007efd5b31512908742eed04ae13"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "45-2",
+    "ref": "LEGIARTI000045541787",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000045541787",
+    "texte_sha256": "3d4ea84be76981f3d20e0950eb040261272f7eba24d712eb69a99205c3af9990"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "46",
+    "ref": "LEGIARTI000045544822",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000045544822",
+    "texte_sha256": "ff7937cd23d426c29d4994ebd75ce0eb976a4903e797388768df477ff01e8efa"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "47",
+    "ref": "LEGIARTI000045544826",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000045544826",
+    "texte_sha256": "5cd226273f45ea6a8fe92c504d116908798c9b933b8f285bd6b8941687f9ba5c"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "47-1",
+    "ref": "LEGIARTI000045542443",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000045542443",
+    "texte_sha256": "dab7e44d5bc683a9c800a472329c37dee944d03276de196955eeef3ae7f30dcc"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "47-2",
+    "ref": "LEGIARTI000052202208",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000052202208",
+    "texte_sha256": "2f90734b0f5a1774dda77cf7ecdb4678f718bde81f6fccdf8ab00d472cfcaf69"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "47-3",
+    "ref": "LEGIARTI000052202210",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000052202210",
+    "texte_sha256": "a7229dcea62b2d4c76fe965dcc9f94e79db19dcc6e8a5c4e993c1fce0a2107f4"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "48",
+    "ref": "LEGIARTI000045544834",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000045544834",
+    "texte_sha256": "5e36848aab3474b3a6cbefcc01e47760620725b5ed9c049103869f7d85563487"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "49",
+    "ref": "LEGIARTI000038567950",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567950",
+    "texte_sha256": "8f0bf9a619f0d1f5e963574105421e3520941112b23567c626ec9a790faeb597"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "50",
+    "ref": "LEGIARTI000045544836",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000045544836",
+    "texte_sha256": "317ae4fa6a4ab697498440ad62870f12be58dc094b15435a596359bdfed84b25"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "51",
+    "ref": "LEGIARTI000045544838",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000045544838",
+    "texte_sha256": "fcbe32c5be9bad89a08f15b3da60fdc121388801cdf4861a0da88e5a5319dd32"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "52",
+    "ref": "LEGIARTI000045544843",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000045544843",
+    "texte_sha256": "64d0cb237ef84d5f089eafed928ddf2e75625edc9b5dd0f0fd1ecd3de32c4b94"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "53",
+    "ref": "LEGIARTI000045544847",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000045544847",
+    "texte_sha256": "cd13ecb1b0f6a08b51481fab8f837f4329161b944a7de45c907944fb25ac8aca"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "54",
+    "ref": "LEGIARTI000045544851",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000045544851",
+    "texte_sha256": "2170def7647db42176e3a7467818260976fd990eec06747dbb9da726b937a2ff"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "55",
+    "ref": "LEGIARTI000045544853",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000045544853",
+    "texte_sha256": "e249bd8c150abcdbf9eefd06ea05e57ec8d802d9caf64b78259d1f12bc1eb4cd"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "56",
+    "ref": "LEGIARTI000045544855",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000045544855",
+    "texte_sha256": "34946b60bd5c2371b14c15d3902076e807b438636deb1894ba86b4836138fe36"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "57",
+    "ref": "LEGIARTI000038567988",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567988",
+    "texte_sha256": "f1b8f43de1d78bfab8d67160bd778bcb217bdfde08d317751a95e94a23b83fc0"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "58",
+    "ref": "LEGIARTI000045544857",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000045544857",
+    "texte_sha256": "156f7f78b19e53ceba9f5ff8b6c9fb255266023d112d8bb1f4066ece9fe3a765"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "59",
+    "ref": "LEGIARTI000045544861",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000045544861",
+    "texte_sha256": "1ffc8e67e7d2c05284cef85a12c8b1a3439b5e61c73d846ee6221010ac89ea6d"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "60",
+    "ref": "LEGIARTI000038568014",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038568014",
+    "texte_sha256": "d42671604854dda38d9bedf16c94a5f28f052e605a25c187f143c8866666527e"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "61",
+    "ref": "LEGIARTI000038567910",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567910",
+    "texte_sha256": "bd7b404cdfd00d4f8f68604bd65f9036684c3c54da57a97c55607dce547d9cc7"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "62",
+    "ref": "LEGIARTI000038567924",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567924",
+    "texte_sha256": "c598db934b667bc767323ab54d18004e8a7556068a93a1eac7b3d61afeca8f44"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "63",
+    "ref": "LEGIARTI000038567926",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567926",
+    "texte_sha256": "92caf1a446bd32eac4177278223c27751de7ba7c76b5986de7a00726492fbfa8"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "64",
+    "ref": "LEGIARTI000038567928",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567928",
+    "texte_sha256": "5d1b49b4ec534b4f88803790daa05b6a79ffbe62a3d45a6c01add791419e20da"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "65",
+    "ref": "LEGIARTI000038567940",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567940",
+    "texte_sha256": "0d2368e2fd242a0a9de682a81d6ffba1df9d1567ff01d822f9122c570ff01895"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "66",
+    "ref": "LEGIARTI000038567942",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567942",
+    "texte_sha256": "c4aa831679f5d33c85a6e4662c59c0ff323c8395c4e9e6a449aedf6cc501fb49"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "67",
+    "ref": "LEGIARTI000038567944",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567944",
+    "texte_sha256": "148b5dfc1d1fb4fa1f231f1095c3a35bc29c97a69ea2c62edae0d86a81647f58"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "68",
+    "ref": "LEGIARTI000038567938",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567938",
+    "texte_sha256": "a17c1abcf15365f301a589a3b7da5cdf21f44980704196f8fff00ab5e97159e0"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "69",
+    "ref": "LEGIARTI000038567962",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567962",
+    "texte_sha256": "7842c46c432185a80578431a96cdcee308a82430f3e362083205c77dee298902"
+  },
+  {
+    "document": "LEGITEXT000038567662",
+    "numero": "70",
+    "ref": "LEGIARTI000038567964",
+    "url": "https://www.legifrance.gouv.fr/loda/id/LEGIARTI000038567964",
+    "texte_sha256": "9cac48657ad0277536c38eb8e0654d6bc96df50a875e14f4dfbc5de8fd1f620b"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "226-16",
+    "ref": "LEGIARTI000049578542",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000049578542",
+    "texte_sha256": "ce1b831babe7327e46fc278d77845a431423466100043f3dada2efb3cc8aac49"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "226-16-1",
+    "ref": "LEGIARTI000006417961",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006417961",
+    "texte_sha256": "31916141558710f625180d88e8062573e07c0dbb04a340daabcf4c29a2d75597"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "226-16-2",
+    "ref": "LEGIARTI000043534245",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043534245",
+    "texte_sha256": "72e18d1c3211e10899fb5d44705b544fe47a2bc4113f72446c4ebe8485cec428"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "226-17",
+    "ref": "LEGIARTI000037825504",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000037825504",
+    "texte_sha256": "63240a85850845f15720b952621f1a176cef9a8ecdc04af0b7ed36c44c673f0b"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "226-17-1",
+    "ref": "LEGIARTI000037825500",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000037825500",
+    "texte_sha256": "c0f84cb64c00bba5512708674ee2c2bd909b1b8e3b8dbdf992c7e10c92006906"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "226-18",
+    "ref": "LEGIARTI000006417968",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006417968",
+    "texte_sha256": "006d92b9341b72a3297f4a5f5344f1348679f02d3c82012e93290ff53a395cbc"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "226-18-1",
+    "ref": "LEGIARTI000006417969",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006417969",
+    "texte_sha256": "54eae80fd334d29ff2fbfd2445b7a223e6a44d6525a72f48d8be827863c16ffb"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "226-19",
+    "ref": "LEGIARTI000037825496",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000037825496",
+    "texte_sha256": "2f38169498f85c7aa8b750b95aa1606b05733f94656718cf51ec444840d4a4e5"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "226-19-1",
+    "ref": "LEGIARTI000006417973",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006417973",
+    "texte_sha256": "7e5ebf0fccbf6cefc8b4b539cfe824b9652077a946f064f7994d2c2ff8edafca"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "226-20",
+    "ref": "LEGIARTI000006417977",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006417977",
+    "texte_sha256": "470c6499087fc49aa721858cb7264ada64be5446fb321ecb189dd7c79c1fa602"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "226-21",
+    "ref": "LEGIARTI000006417981",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006417981",
+    "texte_sha256": "72c56114ccb356b6eb9f52c8dbc7ae8e8aa3fe8428b6f41e459bf6d7397c73f6"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "226-22",
+    "ref": "LEGIARTI000006417984",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006417984",
+    "texte_sha256": "cb688715e7740fce76a07aae1c6100987520e5a66742e53fa02e274a6b141482"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "226-22-1",
+    "ref": "LEGIARTI000037825492",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000037825492",
+    "texte_sha256": "60d7cc78fde1c1138ecce1ac7b1d31c85989b117ac4c1a410618cfe83e4144ad"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "226-22-2",
+    "ref": "LEGIARTI000037825487",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000037825487",
+    "texte_sha256": "83565377386645af357aa5e807b5d0f6f70c0a8de90cb148d98a85a7b34e42c9"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "226-23",
+    "ref": "LEGIARTI000037825482",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000037825482",
+    "texte_sha256": "edd0f108b9bebf210452cb58546fab91525377551ea3347b0e92b3b29e3675d6"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "226-24",
+    "ref": "LEGIARTI000020630874",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000020630874",
+    "texte_sha256": "c697ec8088646630936fd02b533d01ce7b9168c19665a5e8a1cb41b3e75b7f66"
+  },
+  {
+    "document": "LEGITEXT000006070987",
+    "numero": "L34-5",
+    "ref": "LEGIARTI000042155961",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042155961",
+    "texte_sha256": "a9ecf1c6c324cf1910a0fa1a1e803cb022116965c06cd23dc5ff5c9000d08430"
+  },
+  {
+    "document": "LEGITEXT000006072050",
+    "numero": "L1121-1",
+    "ref": "LEGIARTI000006900785",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006900785",
+    "texte_sha256": "66e0e62346361860b4355bace477249f9c05bb7369ac990aa76a67a98ea3a98f"
+  },
+  {
+    "document": "LEGITEXT000006072050",
+    "numero": "L1222-4",
+    "ref": "LEGIARTI000006900861",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006900861",
+    "texte_sha256": "fa1e638f270a0a210890cc2c91f7c95dafbe3219efca478cdb62b7dffc22fbdb"
+  },
+  {
+    "document": "LEGITEXT000006072050",
+    "numero": "L2312-38",
+    "ref": "LEGIARTI000035610275",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000035610275",
+    "texte_sha256": "c94a84c82e0e119b4262a0631792dc2b1d0969fb4757268ed28ae68d736a39e2"
+  },
+  {
+    "document": "LEGITEXT000006072665",
+    "numero": "L1110-4",
+    "ref": "LEGIARTI000043895798",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043895798",
+    "texte_sha256": "0d0651275cb72562ea5a79e6b000246180e9e64e8ff429fe10c616054ff64ef0"
+  },
+  {
+    "document": "LEGITEXT000006072665",
+    "numero": "L1111-7",
+    "ref": "LEGIARTI000042685313",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042685313",
+    "texte_sha256": "c46311e081f4edcc16a8299678a85ebb99f9e4259f1d2869e30140fe14a4e9e2"
+  },
+  {
+    "document": "LEGITEXT000006072665",
+    "numero": "L1111-8",
+    "ref": "LEGIARTI000049577902",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000049577902",
+    "texte_sha256": "e6e0dbb35770ab358bec3c818b5cab7244c3430e63f29fa6e60882a8c9d1a230"
+  },
+  {
+    "document": "LEGITEXT000025503132",
+    "numero": "L251-1",
+    "ref": "LEGIARTI000047569469",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047569469",
+    "texte_sha256": "21cf90cc6606064efa800610a58da099a3868f8e74afe687d4df7b86ce3d4c41"
+  },
+  {
+    "document": "LEGITEXT000025503132",
+    "numero": "L251-2",
+    "ref": "LEGIARTI000047569457",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047569457",
+    "texte_sha256": "0921f7f15abfb373797ab9cfe83125fe19d3d7aff7a32c21cef30fec77f770f4"
+  },
+  {
+    "document": "LEGITEXT000025503132",
+    "numero": "L251-3",
+    "ref": "LEGIARTI000047569452",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047569452",
+    "texte_sha256": "d552e46a00e70ccb54e69efb95613013d63bebb394e02951470e5a9be787d8f7"
+  },
+  {
+    "document": "LEGITEXT000025503132",
+    "numero": "L251-4",
+    "ref": "LEGIARTI000038314822",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038314822",
+    "texte_sha256": "28432caac844b2c336cedb50d31edb74e3a276e6c836dcc878a6da137d5d068c"
+  },
+  {
+    "document": "LEGITEXT000025503132",
+    "numero": "L251-8",
+    "ref": "LEGIARTI000025505422",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000025505422",
+    "texte_sha256": "faca1d4b6963d2e7dc4b68f701e04b42cd39865d85461499c957f38e1aeb7727"
+  },
+  {
+    "document": "LEGITEXT000025503132",
+    "numero": "L252-1",
+    "ref": "LEGIARTI000047569446",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047569446",
+    "texte_sha256": "4a1c499b38def473043b87b6cd6744b3ecd6fb08b48c6df442aa00882b9e9c24"
+  },
+  {
+    "document": "LEGITEXT000025503132",
+    "numero": "L252-2",
+    "ref": "LEGIARTI000047569434",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047569434",
+    "texte_sha256": "83e5e2b6c2e365b17c57541ddf49ed64dd37b6260eaaaf81d591a35d5aa274d3"
+  },
+  {
+    "document": "LEGITEXT000025503132",
+    "numero": "L252-3",
+    "ref": "LEGIARTI000043540807",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043540807",
+    "texte_sha256": "782e6a73020a788656b3b9e3ceb180b0823320e32979bc541e1cf5d09e079fa6"
+  },
+  {
+    "document": "LEGITEXT000025503132",
+    "numero": "L252-4",
+    "ref": "LEGIARTI000047569431",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047569431",
+    "texte_sha256": "25e615d7b9832a06766ee7f8757407b2c3c3f434049cf59bd6c8fb0ada010975"
+  },
+  {
+    "document": "LEGITEXT000025503132",
+    "numero": "L252-5",
+    "ref": "LEGIARTI000025505435",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000025505435",
+    "texte_sha256": "e2b7aaae9ea232e3038eddb276a8317d1989d105150ddbcbe0d3b273bda119cf"
+  },
+  {
+    "document": "LEGITEXT000025503132",
+    "numero": "L252-6",
+    "ref": "LEGIARTI000025505437",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000025505437",
+    "texte_sha256": "1557e5f278c543935dcba8078f0412100fff5e716afce20c442eeb5c4ae96fd3"
+  },
+  {
+    "document": "LEGITEXT000025503132",
+    "numero": "L252-7",
+    "ref": "LEGIARTI000025505439",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000025505439",
+    "texte_sha256": "5112cb9d2f3c653a402aaaa5b28eabef8a67cd0f90585cf2a3eb4b2eabd3d1a8"
+  },
+  {
+    "document": "LEGITEXT000025503132",
+    "numero": "L253-1",
+    "ref": "LEGIARTI000025505443",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000025505443",
+    "texte_sha256": "f54e103751480bee202394edb34f8516b33bb1bd50f3ff53bb4b652be80ba914"
+  },
+  {
+    "document": "LEGITEXT000025503132",
+    "numero": "L253-3",
+    "ref": "LEGIARTI000047569421",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047569421",
+    "texte_sha256": "0485e95e86cf4681ab70a42b1531ff08ca372863578c00a68e746638f3de41d5"
+  },
+  {
+    "document": "LEGITEXT000025503132",
+    "numero": "L253-4",
+    "ref": "LEGIARTI000047569416",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047569416",
+    "texte_sha256": "02cf93cc72940577bcb0966de8a3010ba503baa1dcc3becd5545e1d4dc63a098"
+  },
+  {
+    "document": "LEGITEXT000025503132",
+    "numero": "L253-5",
+    "ref": "LEGIARTI000047569413",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047569413",
+    "texte_sha256": "5870702d92cd75ebbf1b7c6c66e90600cbf59b1c66d77af55fd4d5483a090bd1"
+  },
+  {
+    "document": "LEGITEXT000025503132",
+    "numero": "L254-1",
+    "ref": "LEGIARTI000047569400",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047569400",
+    "texte_sha256": "bc9ca214ad5f3db298f671983b8d7e24430a7dbc9b7ec5fa79d3b60f00de4142"
+  },
+  {
+    "document": "LEGITEXT000025503132",
+    "numero": "L255-1",
+    "ref": "LEGIARTI000047569388",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047569388",
+    "texte_sha256": "4911ae2fd0093dabe801c67d8411cc067195a64c3eaa701379a596110a487dae"
+  },
+  {
+    "document": "LEGITEXT000006072026",
+    "numero": "L561-45",
+    "ref": "LEGIARTI000020196371",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000020196371",
+    "texte_sha256": "44337211656d2044aecf695bface68c99afab9d65426dd3494003ea140e29f1b"
+  },
+  {
+    "document": "LEGITEXT000031366350",
+    "numero": "L311-3-1",
+    "ref": "LEGIARTI000033205535",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000033205535",
+    "texte_sha256": "1e12c4cc37f2da4fa21a179dad884291cc6172b92992775e0a956c9d4f3a3c03"
+  },
+  {
+    "document": "LEGITEXT000006070721",
+    "numero": "9",
+    "ref": "LEGIARTI000006419288",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006419288",
+    "texte_sha256": "b9a0df51985ea46e8b270ac3ff1e7627babe79df7f6297e79cdcbd189f972bb1"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "226-1",
+    "ref": "LEGIARTI000049312755",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000049312755",
+    "texte_sha256": "54e86ddf49ce5e328501f5bc49190e484f7c4a013a3dbbed7de3a2b4e32c2a84"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "226-8-1",
+    "ref": "LEGIARTI000049567458",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000049567458",
+    "texte_sha256": "18e1702764763be005b54737803eac827f94297d72daa39c22e0bd90185793f1"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "323-1",
+    "ref": "LEGIARTI000047052655",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047052655",
+    "texte_sha256": "2ca3a9609dfb3ecfa6c1db023f096bd2a1cc373056a34b70f14c011add3e8b00"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "323-2",
+    "ref": "LEGIARTI000030939443",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000030939443",
+    "texte_sha256": "969a8e9b5fb9df53a76c8a9c1d020de56b8f15b113fe7e84f5d428c489e4bd95"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "323-3",
+    "ref": "LEGIARTI000030939448",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000030939448",
+    "texte_sha256": "c7a709461687a2b5ccd2861033180d2759d062382da525743b63afb3a280c13f"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "323-3-1",
+    "ref": "LEGIARTI000028345220",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000028345220",
+    "texte_sha256": "04c834fbc239522e1e730548f876f3bce32958e8f39b882ef8c3e0075acd1f0a"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "323-3-2",
+    "ref": "LEGIARTI000051742358",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051742358",
+    "texte_sha256": "65f193cce79fd2440732e3c74757a6a7fd0ff4bcf4d2bfa7317cd126373a42d1"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "323-4",
+    "ref": "LEGIARTI000006418325",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006418325",
+    "texte_sha256": "0ddf6dd6cc56821bc4a380d5cf752f31b3ad99cc7b26682167cb0e8331e4cf32"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "323-4-1",
+    "ref": "LEGIARTI000047052660",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047052660",
+    "texte_sha256": "5e42df417cc08710094ce74fef99cf0e5542377f60d5bc0794751a7aef9707b4"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "323-4-2",
+    "ref": "LEGIARTI000047048173",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047048173",
+    "texte_sha256": "d23e318ddcaa99ab624ff53b276a23531f5180aa2468f365dde2c67f34bc6db5"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "323-5",
+    "ref": "LEGIARTI000006418326",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006418326",
+    "texte_sha256": "691a02cc7f7e0a2ca68fa775f08d5f15aae1a1406afd6cd2cb962112fc52f966"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "323-6",
+    "ref": "LEGIARTI000020630782",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000020630782",
+    "texte_sha256": "4eb88b4d030c072ddcc7fb83cab900b46a4a519fe78b33cb6dbe005f14b57136"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "323-7",
+    "ref": "LEGIARTI000006418329",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006418329",
+    "texte_sha256": "a7219fce306d07db0517d31e00a748af6f531a03596e68ff6e7994b90356a49b"
+  },
+  {
+    "document": "LEGITEXT000006070719",
+    "numero": "323-8",
+    "ref": "LEGIARTI000030938304",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000030938304",
+    "texte_sha256": "f01e3358514e2b5dd12f7d56918842bdf7014f8d2d5450421e36e50d248120d9"
+  },
+  {
+    "document": "LEGITEXT000006070987",
+    "numero": "L32-3",
+    "ref": "LEGIARTI000051830325",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051830325",
+    "texte_sha256": "2f51ce06dbfdaef3ebd6eac8b1b010fd59cf5f481e9c9ca7bc13c015791a780a"
+  },
+  {
+    "document": "LEGITEXT000006070987",
+    "numero": "L34-1",
+    "ref": "LEGIARTI000051741279",
+    "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051741279",
+    "texte_sha256": "249a27c008f6df918a526d22bcfbef37d1194768acbe6a621384f2f4f1bc6718"
+  }
+]

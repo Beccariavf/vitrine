@@ -1,9 +1,16 @@
 import { strict as assert } from "node:assert";
+import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
-import { articlesCouverts, citationAuCorpus, documentsPresents } from "../mcp/corpus/citations.ts";
+import {
+  articlesCouverts,
+  avecPresence,
+  citationAuCorpus,
+  documentsPresents,
+  extraireCitations,
+} from "../mcp/corpus/citations.ts";
 import { classerCitations } from "../mcp/corpus/hors-corpus.ts";
 import { statutApplication } from "../mcp/corpus/statut.ts";
 import {
@@ -57,7 +64,8 @@ function compteReduit(texte: TexteFr): number {
   const route = texte.route;
   if (route.type === "articles") return route.nums.length;
   if (route.type === "codeArticles") return route.sections.reduce((total, section) => total + section.nums.length, 0);
-  if (route.type === "code" || route.type === "legiPart") return 2;
+  if (route.type === "code") return new Set([route.premier, route.dernier]).size;
+  if (route.type === "legiPart") return 2;
   return 1;
 }
 
@@ -71,6 +79,27 @@ function descripteurReduit(root: string): string {
   writeFileSync(chemin, JSON.stringify(descripteur), "utf8");
   return chemin;
 }
+
+/**
+ * Numéros attendus d'une réponse réduite, lus sur le descripteur : les bornes de
+ * la section pour une route `code`, la liste pour `articles`, l'article pour
+ * `article`. Une capture réelle (décret, Code pénal 226-16, CPCE L34-5) garde
+ * ses numéros, écrits ici.
+ */
+function numerosAttendus(texte: TexteFr): string[] {
+  const route = texte.route;
+  if (route.type === "code") return [...new Set([route.premier, route.dernier])];
+  if (route.type === "articles") return [...route.nums];
+  if (route.type === "article") return [route.num];
+  if (route.type === "codeArticles") return route.sections.flatMap((section) => section.nums);
+  return [];
+}
+
+const CAPTURES_REELLES: Readonly<Record<string, string[]>> = {
+  "decret-2019-536": ["151-1", "157"],
+  "code-penal-226-16": ["226-16", "226-24"],
+  "cpce-l34-5": ["L34-5"],
+};
 
 const EMBEDDER_INTERDIT: Embedder = {
   model: "factice",
@@ -113,6 +142,10 @@ describe("la lecture des textes français d'application", () => {
     assert.equal(dansPlage("226-15", "226-16", "226-24"), false);
     assert.equal(dansPlage("226-25", "226-16", "226-24"), false);
     assert.equal(dansPlage("L34-5", "226-16", "226-24"), false);
+    // Un chapitre réglementaire porte aussi ses décrets d'application.
+    assert.equal(dansPlage("D1110-3-1", "R1110-1", "R1110-16"), true);
+    // La DILA détache parfois le suffixe de lettre par une espace.
+    assert.equal(dansPlage("L1121-16-1 A", "L1121-1", "L1121-17"), true);
   });
 
   it("ne garde que la section visée du Code pénal, avec son chemin", () => {
@@ -142,33 +175,9 @@ describe("la synchronisation des textes français d'application", () => {
         .trim()
         .split("\n")
         .map((ligne) => JSON.parse(ligne) as Record<string, unknown>);
-      assert.deepEqual(
-        unites.map((unite) => unite.numero),
-        [
-          "151-1",
-          "157",
-          "226-16",
-          "226-24",
-          "L34-5",
-          "L1121-1",
-          "L1222-4",
-          "L2312-38",
-          "L1110-4",
-          "L1111-7",
-          "L1111-8",
-          "L251-1",
-          "L255-1",
-          "L561-45",
-          "L311-3-1",
-          "9",
-          "226-1",
-          "226-8-1",
-          "323-1",
-          "323-8",
-          "L32-3",
-          "L34-1",
-        ],
-      );
+      const attendues = DESCRIPTEUR_REEL.textes.flatMap((texte) => CAPTURES_REELLES[texte.cle] ?? numerosAttendus(texte));
+      assert.deepEqual(unites.map((unite) => unite.numero), attendues);
+      assert.equal(new Set(unites.map((unite) => unite.ref)).size, unites.length);
       assert.ok(unites.every((unite) => unite.corpus === "textes_fr" && unite.statut === "VIGUEUR"));
       const cpce = unites.find((unite) => unite.numero === "L34-5");
       assert.equal(cpce?.document, CPCE);
@@ -178,52 +187,29 @@ describe("la synchronisation des textes français d'application", () => {
       const manifeste = JSON.parse(
         readFileSync(join(root, "data/corpus/textes_fr/manifest.json"), "utf8"),
       ) as ManifesteTextesFr;
-      // Neuf documents, treize blocs : le Code pénal et le CPCE en ont plusieurs.
-      assert.equal(manifeste.documents, 9);
-      assert.equal(manifeste.textes.length, 13);
-      assert.equal(manifeste.unites, 22);
-      assert.equal(new Set(manifeste.textes.map((texte) => texte.cle)).size, 13);
+      // Un document par `text_id` distinct, un bloc par entrée du descripteur.
+      const documents = new Set(DESCRIPTEUR_REEL.textes.map((texte) => texte.textId));
+      assert.equal(manifeste.documents, documents.size);
+      assert.equal(manifeste.textes.length, DESCRIPTEUR_REEL.textes.length);
+      assert.equal(manifeste.unites, attendues.length);
+      assert.equal(
+        new Set(manifeste.textes.map((texte) => texte.cle)).size,
+        DESCRIPTEUR_REEL.textes.length,
+      );
       // Article 157 : date de début ouverte à la DILA, datée par le texte, jamais par la version.
       const final = unites.find((unite) => unite.numero === "157");
       assert.equal(final?.date_acte, "2019-05-29");
       assert.equal(final?.date_debut, "");
       assert.equal(manifeste.couverture.articles_abroges_ecartes, 2);
       assert.deepEqual(
-        manifeste.textes.map((texte) => [texte.cle, texte.text_id]),
-        [
-          ["decret-2019-536", DECRET],
-          ["code-penal-226-16", PENAL],
-          ["cpce-l34-5", CPCE],
-          ["code-travail", TRAVAIL],
-          ["csp", CSP],
-          ["csi-videoprotection", CSI],
-          ["cmf-l561-45", CMF],
-          ["crpa-l311-3-1", CRPA],
-          ["code-civil-9", CIVIL],
-          ["code-penal-226", PENAL],
-          ["code-penal-323", PENAL],
-          ["cpce-l32-3", CPCE],
-          ["cpce-l34-1", CPCE],
-        ],
+        manifeste.textes.map((texte) => texte.text_id),
+        DESCRIPTEUR_REEL.textes.map((texte) => texte.textId),
       );
-      assert.deepEqual(
-        manifeste.textes.map((texte) => [texte.cle, texte.articles_couverts]),
-        [
-          ["decret-2019-536", null],
-          ["code-penal-226-16", ["226-16", "226-24"]],
-          ["cpce-l34-5", ["L34-5"]],
-          ["code-travail", ["L1121-1", "L1222-4", "L2312-38"]],
-          ["csp", ["L1110-4", "L1111-7", "L1111-8"]],
-          ["csi-videoprotection", ["L251-1", "L255-1"]],
-          ["cmf-l561-45", ["L561-45"]],
-          ["crpa-l311-3-1", ["L311-3-1"]],
-          ["code-civil-9", ["9"]],
-          ["code-penal-226", ["226-1", "226-8-1"]],
-          ["code-penal-323", ["323-1", "323-8"]],
-          ["cpce-l32-3", ["L32-3"]],
-          ["cpce-l34-1", ["L34-1"]],
-        ],
-      );
+      // Une liste porte ses numéros, dans l'ordre du descripteur.
+      const travail = manifeste.textes.find((texte) => texte.cle === "code-travail");
+      assert.deepEqual(travail?.articles_couverts, ["L1121-1", "L1222-4", "L1226-2", "L2312-38", "L4624-8"]);
+      const penal226 = manifeste.textes.find((texte) => texte.cle === "code-penal-226");
+      assert.deepEqual(penal226?.articles_couverts, ["226-1", "226-8-1", "226-13"]);
       // Les trois entrées d'origine gardent leur périmètre et leurs comptes.
       assert.deepEqual(
         manifeste.textes.slice(0, 3).map((texte) => [
@@ -252,15 +238,14 @@ describe("la synchronisation des textes français d'application", () => {
       ) as ManifesteTextesFr;
       const travail = manifeste.textes.find((texte) => texte.cle === "code-travail");
       assert.ok(travail !== undefined);
+      const numerosTravail = ["L1121-1", "L1222-4", "L1226-2", "L2312-38", "L4624-8"];
       // Une version par identifiant lu, dans l'ordre du descripteur, jointe par `+`.
       assert.equal(
         travail.version,
-        ["L1121-1", "L1222-4", "L2312-38"]
-          .map((numero) => identifiantSynthetique(TRAVAIL, numero))
-          .join("+"),
+        numerosTravail.map((numero) => identifiantSynthetique(TRAVAIL, numero)).join("+"),
       );
       assert.equal(travail.date_debut_version, null);
-      assert.equal(travail.articles_en_vigueur, 3);
+      assert.equal(travail.articles_en_vigueur, numerosTravail.length);
       assert.equal(travail.snapshot, "2026-11-14/code-travail.json");
 
       const unites = readFileSync(join(root, "data/corpus/textes_fr/unites.jsonl"), "utf8")
@@ -270,7 +255,7 @@ describe("la synchronisation des textes français d'application", () => {
         .filter((unite) => unite.document === TRAVAIL);
       assert.deepEqual(
         unites.map((unite) => unite.url),
-        ["L1121-1", "L1222-4", "L2312-38"].map(
+        numerosTravail.map(
           (numero) => `https://www.legifrance.gouv.fr/codes/article_lc/${identifiantSynthetique(TRAVAIL, numero)}`,
         ),
       );
@@ -385,7 +370,7 @@ describe("la synchronisation des textes français d'application", () => {
       }[];
       assert.deepEqual(
         cache.map((element) => element.article.num),
-        ["L1121-1", "L1222-4", "L2312-38"],
+        ["L1121-1", "L1222-4", "L1226-2", "L2312-38", "L4624-8"],
       );
       const resultat = await syncTextesFr({
         rootDir: root,
@@ -739,10 +724,10 @@ describe("la présence d'un texte couvert en partie", () => {
     const root = await racineSynchronisee();
     try {
       const couverts = articlesCouverts(root);
-      // Le Code pénal a trois blocs : 226-16 à 226-24, 226-1 et 226-8-1, 323. Aucun n'efface les autres.
-      assert.deepEqual(couverts.get(PENAL), ["226-16", "226-24", "226-1", "226-8-1", "323-1", "323-8"]);
+      // Le Code pénal a trois blocs : 226-16 à 226-24, 226-1, 226-8-1 et 226-13, 323. Aucun n'efface les autres.
+      assert.deepEqual(couverts.get(PENAL), ["226-16", "226-24", "226-1", "226-8-1", "226-13", "323-1", "323-8"]);
       assert.deepEqual(couverts.get(CPCE), ["L34-5", "L32-3", "L34-1"]);
-      assert.deepEqual(couverts.get(TRAVAIL), ["L1121-1", "L1222-4", "L2312-38"]);
+      assert.deepEqual(couverts.get(TRAVAIL), ["L1121-1", "L1222-4", "L1226-2", "L2312-38", "L4624-8"]);
       // Un texte entier (le décret) reste hors de la carte.
       assert.equal(couverts.has(DECRET), false);
 
@@ -767,5 +752,57 @@ describe("la présence d'un texte couvert en partie", () => {
       couverts,
     );
     assert.deepEqual(classement.map((document) => [document.document, document.citations]), [[CPCE, 1]]);
+  });
+});
+
+describe("les articles de santé ajoutés et les articles existants", () => {
+  const RACINE = new URL("..", import.meta.url).pathname;
+
+  it("garde ref, texte et url des articles déjà au corpus avant #133", () => {
+    const attendus = JSON.parse(
+      readFileSync(new URL("./fixtures/textes-fr/articles-existants.json", import.meta.url), "utf8"),
+    ) as { document: string; numero: string; ref: string; url: string; texte_sha256: string }[];
+    const unites = readFileSync(join(RACINE, "data/corpus/textes_fr/unites.jsonl"), "utf8")
+      .trim()
+      .split("\n")
+      .map((ligne) => JSON.parse(ligne) as { document: string; numero: string; ref: string; url: string; texte: string });
+    for (const attendu of attendus) {
+      const unite = unites.find(
+        (candidat) => candidat.document === attendu.document && candidat.numero === attendu.numero,
+      );
+      assert.ok(unite !== undefined, `${attendu.document} ${attendu.numero} absent`);
+      assert.equal(unite.ref, attendu.ref, `${attendu.numero} : ref`);
+      assert.equal(unite.url, attendu.url, `${attendu.numero} : url`);
+      assert.equal(
+        createHash("sha256").update(unite.texte, "utf8").digest("hex"),
+        attendu.texte_sha256,
+        `${attendu.numero} : texte`,
+      );
+    }
+  });
+
+  it("attribue les articles ajoutés et les dit au corpus", () => {
+    const citation = (texte: string) => avecPresence(RACINE, extraireCitations(texte));
+    const snds = citation("L'article L. 1461-1 du code de la santé publique définit le SNDS.");
+    assert.deepEqual(
+      snds.map((element) => [element.document, element.articles, element.hors_corpus]),
+      [[CSP, ["L. 1461-1"], false]],
+    );
+    const secret = citation("L'article 226-13 du code pénal punit la révélation du secret.");
+    assert.deepEqual(
+      secret.map((element) => [element.document, element.articles, element.hors_corpus]),
+      [[PENAL, ["226-13"], false]],
+    );
+    for (const [texte, document] of [
+      ["L'article L. 161-28-1 du code de la sécurité sociale crée le SNIIRAM.", "LEGITEXT000006073189"],
+      ["L'article L. 2223-42 du code général des collectivités territoriales vise le certificat de décès.", "LEGITEXT000006070633"],
+      ["L'article L. 113-2 du code des assurances impose la déclaration du risque.", "LEGITEXT000006073984"],
+    ] as const) {
+      const rendues = citation(texte);
+      assert.deepEqual(
+        rendues.map((element) => [element.document, element.hors_corpus]),
+        [[document, false]],
+      );
+    }
   });
 });

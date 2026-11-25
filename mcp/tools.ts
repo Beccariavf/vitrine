@@ -545,6 +545,15 @@ const ALIAS_CODES_FRANCAIS: ReadonlyArray<{ document: string; texte: readonly Re
     texte: [/\bcode des relations entre le public et l administration\b/, /\bcrpa\b/],
   },
   { document: "LEGITEXT000006070721", texte: [/\bcode civil\b/] },
+  {
+    document: "LEGITEXT000006073189",
+    texte: [/\bcode de la securite sociale\b/],
+  },
+  { document: "LEGITEXT000006073984", texte: [/\bcode des assurances\b/] },
+  {
+    document: "LEGITEXT000006070633",
+    texte: [/\bcode general des collectivites territoriales\b/, /\bcgct\b/],
+  },
 ];
 /** Fin du titre du décret 2019-536 : la loi 78-17 qu'il applique n'est pas nommée pour elle-même. */
 const TITRE_DECRET_2019_536 =
@@ -570,6 +579,9 @@ const NOMS_DOCUMENTS: Record<string, string> = {
   LEGITEXT000006072026: "Code monétaire et financier",
   LEGITEXT000031366350: "CRPA",
   LEGITEXT000006070721: "Code civil",
+  LEGITEXT000006073189: "Code de la sécurité sociale",
+  LEGITEXT000006073984: "Code des assurances",
+  LEGITEXT000006070633: "CGCT",
 };
 
 function libelleDocument(document: string): string {

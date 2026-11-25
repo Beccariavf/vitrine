@@ -148,10 +148,17 @@ const CONSIGNE_SERVEUR =
   "`ccs`, CELEX `32021D0914` et `32021D0915`) et les décisions d'adéquation, en vigueur et abrogées (corpus `adequation`), la loi " +
   "Informatique et Libertés (corpus `lil`, LEGITEXT000006068624), les textes français " +
   "d'application (corpus `textes_fr` : décret 2019-536 LEGITEXT000038567662 en entier, Code pénal " +
-  "LEGITEXT000006070719 articles 226-16 à 226-24, 226-1 et 226-8-1, chapitre 323 ; CPCE " +
+  "LEGITEXT000006070719 articles 226-1, 226-8-1, 226-13, 226-16 à 226-24 et chapitre 323 ; CPCE " +
   "LEGITEXT000006070987 articles L32-3, L34-1 et L34-5 ; Code du travail LEGITEXT000006072050 " +
-  "L1121-1, L1222-4 et L2312-38 ; Code de la santé publique LEGITEXT000006072665 L1110-4, " +
-  "L1111-7 et L1111-8 ; Code de la sécurité intérieure LEGITEXT000025503132 titre V du livre II " +
+  "L1121-1, L1222-4, L1226-2, L2312-38 et L4624-8 ; Code de la santé publique " +
+  "LEGITEXT000006072665 droits de la personne et information des usagers (L1110, L1111), " +
+  "recherches impliquant la personne humaine (L1121 à L1126), génétique (L1130 à L1133), " +
+  "assurance et droit à l'oubli (L1141), données de santé (L1460, L1461, L1462-1, L1470), " +
+  "déclaration obligatoire (L3113-1), pharmacovigilance (L5121-22), télésanté (L6316) et leurs " +
+  "parties réglementaires R1110, R1111, R1461, R1470 et R6316 ; Code de la sécurité sociale " +
+  "LEGITEXT000006073189 L161-28-1, L161-31 et L315-1 ; Code des assurances " +
+  "LEGITEXT000006073984 L113-2 et L133-1 ; CGCT LEGITEXT000006070633 L2223-42 ; Code de la " +
+  "sécurité intérieure LEGITEXT000025503132 titre V du livre II " +
   "(vidéoprotection) ; Code monétaire et financier LEGITEXT000006072026 L561-45 ; CRPA " +
   "LEGITEXT000031366350 L311-3-1 ; Code civil LEGITEXT000006070721 article 9), " +
   "les textes en préparation et les affaires pendantes (corpus `preparation` : propositions de " +

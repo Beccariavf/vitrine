@@ -1,0 +1,810 @@
+{
+  "date": "2026-11-25",
+  "calls": [
+    {
+      "source": "piste",
+      "endpoint": "oauth",
+      "status": 200,
+      "durationMs": 208,
+      "at": "2026-11-25T14:08:44.158Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 2315,
+      "at": "2026-11-25T14:08:46.474Z"
+    },
+    {
+      "source": "piste",
+      "endpoint": "oauth",
+      "status": 200,
+      "durationMs": 322,
+      "at": "2026-11-25T14:10:53.659Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 652,
+      "at": "2026-11-25T14:10:54.314Z"
+    },
+    {
+      "source": "piste",
+      "endpoint": "oauth",
+      "status": 200,
+      "durationMs": 206,
+      "at": "2026-11-25T14:11:33.554Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 240,
+      "at": "2026-11-25T14:11:33.796Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 210,
+      "at": "2026-11-25T14:11:34.022Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 162,
+      "at": "2026-11-25T14:11:34.208Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 118,
+      "at": "2026-11-25T14:11:34.327Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 170,
+      "at": "2026-11-25T14:11:34.498Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 141,
+      "at": "2026-11-25T14:11:34.649Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 132,
+      "at": "2026-11-25T14:11:34.799Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 133,
+      "at": "2026-11-25T14:11:34.932Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 110,
+      "at": "2026-11-25T14:11:35.042Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 159,
+      "at": "2026-11-25T14:11:35.246Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 145,
+      "at": "2026-11-25T14:11:35.542Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 128,
+      "at": "2026-11-25T14:11:35.678Z"
+    },
+    {
+      "source": "piste",
+      "endpoint": "oauth",
+      "status": 200,
+      "durationMs": 161,
+      "at": "2026-11-25T14:14:01.983Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "legiPart",
+      "status": 200,
+      "durationMs": 246,
+      "at": "2026-11-25T14:14:02.230Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 272,
+      "at": "2026-11-25T14:14:02.797Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 121,
+      "at": "2026-11-25T14:14:03.330Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 123,
+      "at": "2026-11-25T14:14:03.458Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 133,
+      "at": "2026-11-25T14:14:03.592Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 129,
+      "at": "2026-11-25T14:14:03.722Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 146,
+      "at": "2026-11-25T14:14:03.871Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 132,
+      "at": "2026-11-25T14:14:04.004Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 455,
+      "at": "2026-11-25T14:14:04.467Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 546,
+      "at": "2026-11-25T14:14:09.606Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 579,
+      "at": "2026-11-25T14:14:15.177Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 406,
+      "at": "2026-11-25T14:14:20.348Z"
+    },
+    {
+      "source": "piste",
+      "endpoint": "oauth",
+      "status": 200,
+      "durationMs": 252,
+      "at": "2026-11-25T14:15:30.146Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 823,
+      "at": "2026-11-25T14:15:30.970Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 476,
+      "at": "2026-11-25T14:15:36.822Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 186,
+      "at": "2026-11-25T14:15:42.732Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 552,
+      "at": "2026-11-25T14:15:43.289Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 461,
+      "at": "2026-11-25T14:15:48.067Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 434,
+      "at": "2026-11-25T14:15:54.562Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 419,
+      "at": "2026-11-25T14:16:00.363Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 346,
+      "at": "2026-11-25T14:16:05.374Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 480,
+      "at": "2026-11-25T14:16:11.448Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 453,
+      "at": "2026-11-25T14:16:17.420Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 515,
+      "at": "2026-11-25T14:16:23.932Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 262,
+      "at": "2026-11-25T14:16:29.362Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 137,
+      "at": "2026-11-25T14:16:29.501Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 148,
+      "at": "2026-11-25T14:16:29.654Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 342,
+      "at": "2026-11-25T14:16:29.998Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 629,
+      "at": "2026-11-25T14:16:38.191Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 658,
+      "at": "2026-11-25T14:16:46.894Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 520,
+      "at": "2026-11-25T14:16:51.776Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 357,
+      "at": "2026-11-25T14:16:57.485Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 191,
+      "at": "2026-11-25T14:17:02.260Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 151,
+      "at": "2026-11-25T14:17:02.426Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 121,
+      "at": "2026-11-25T14:17:02.551Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 104,
+      "at": "2026-11-25T14:17:02.684Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 130,
+      "at": "2026-11-25T14:17:02.814Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 163,
+      "at": "2026-11-25T14:17:02.981Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 162,
+      "at": "2026-11-25T14:17:03.146Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 126,
+      "at": "2026-11-25T14:17:04.235Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 146,
+      "at": "2026-11-25T14:17:04.382Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 140,
+      "at": "2026-11-25T14:17:04.523Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 121,
+      "at": "2026-11-25T14:17:04.649Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 130,
+      "at": "2026-11-25T14:17:04.785Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 99,
+      "at": "2026-11-25T14:17:04.885Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 168,
+      "at": "2026-11-25T14:17:05.131Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 134,
+      "at": "2026-11-25T14:17:05.546Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 109,
+      "at": "2026-11-25T14:17:05.656Z"
+    },
+    {
+      "source": "piste",
+      "endpoint": "oauth",
+      "status": 200,
+      "durationMs": 203,
+      "at": "2026-11-25T14:17:51.176Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "legiPart",
+      "status": 200,
+      "durationMs": 258,
+      "at": "2026-11-25T14:17:51.434Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "search",
+      "status": 200,
+      "durationMs": 694,
+      "at": "2026-11-25T14:17:52.296Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 153,
+      "at": "2026-11-25T14:17:52.450Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 124,
+      "at": "2026-11-25T14:17:53.026Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 157,
+      "at": "2026-11-25T14:17:53.196Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 135,
+      "at": "2026-11-25T14:17:53.331Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 123,
+      "at": "2026-11-25T14:17:53.454Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 146,
+      "at": "2026-11-25T14:17:53.621Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 168,
+      "at": "2026-11-25T14:17:53.789Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 363,
+      "at": "2026-11-25T14:17:54.157Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 469,
+      "at": "2026-11-25T14:17:59.188Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 407,
+      "at": "2026-11-25T14:18:04.442Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 424,
+      "at": "2026-11-25T14:18:09.399Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 422,
+      "at": "2026-11-25T14:18:14.527Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 402,
+      "at": "2026-11-25T14:18:19.927Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 300,
+      "at": "2026-11-25T14:18:25.572Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 359,
+      "at": "2026-11-25T14:18:25.948Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 436,
+      "at": "2026-11-25T14:18:31.033Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 485,
+      "at": "2026-11-25T14:18:36.977Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 438,
+      "at": "2026-11-25T14:18:43.287Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 539,
+      "at": "2026-11-25T14:18:49.194Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 2262,
+      "at": "2026-11-25T14:18:56.526Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 449,
+      "at": "2026-11-25T14:19:02.136Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 429,
+      "at": "2026-11-25T14:19:07.147Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 232,
+      "at": "2026-11-25T14:19:12.830Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 129,
+      "at": "2026-11-25T14:19:12.964Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 142,
+      "at": "2026-11-25T14:19:13.116Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 412,
+      "at": "2026-11-25T14:19:13.530Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 689,
+      "at": "2026-11-25T14:19:18.645Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 393,
+      "at": "2026-11-25T14:19:24.460Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 404,
+      "at": "2026-11-25T14:19:31.542Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 632,
+      "at": "2026-11-25T14:19:36.968Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 234,
+      "at": "2026-11-25T14:19:42.170Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 155,
+      "at": "2026-11-25T14:19:42.333Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 134,
+      "at": "2026-11-25T14:19:42.477Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 180,
+      "at": "2026-11-25T14:19:42.690Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 133,
+      "at": "2026-11-25T14:19:42.824Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 102,
+      "at": "2026-11-25T14:19:42.928Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 170,
+      "at": "2026-11-25T14:19:43.117Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 169,
+      "at": "2026-11-25T14:19:43.888Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 139,
+      "at": "2026-11-25T14:19:44.030Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 86,
+      "at": "2026-11-25T14:19:44.117Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 139,
+      "at": "2026-11-25T14:19:44.257Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 86,
+      "at": "2026-11-25T14:19:44.344Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 207,
+      "at": "2026-11-25T14:19:44.551Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "code",
+      "status": 200,
+      "durationMs": 218,
+      "at": "2026-11-25T14:19:44.895Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 124,
+      "at": "2026-11-25T14:19:45.528Z"
+    },
+    {
+      "source": "legifrance",
+      "endpoint": "getArticleWithIdAndNum",
+      "status": 200,
+      "durationMs": 140,
+      "at": "2026-11-25T14:19:45.669Z"
+    }
+  ]
+}
