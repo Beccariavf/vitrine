@@ -62,6 +62,16 @@
       "url": "https://digital-strategy.ec.europa.eu/en/consultations/ai-act-commission-issues-draft-guidance-and-reporting-template-serious-ai-incidents-and-seeks",
       "titre": "AI Act: Commission issues draft guidance and reporting template on serious AI incidents",
       "raison": "page de consultation ; le projet de guide et le modèle qu'elle publie sont retenus"
+    },
+    {
+      "url": "https://digital-strategy.ec.europa.eu/en/library/commission-opinion-assessment-code-practice-transparency-ai-generated-content",
+      "titre": "Commission opinion on the assessment of the Code of Practice on Transparency of AI-generated Content",
+      "raison": "avis de la Commission sur l'adéquation du code, pas un document de doctrine sur l'IA ou les données"
+    },
+    {
+      "url": "https://health.ec.europa.eu/document/download/b78a17d7-e3cd-4943-851d-e02a2f22bbb4_en?filename=mdcg_2025-6_en.pdf",
+      "titre": "Interplay between the Medical Devices Regulation (MDR) & In vitro Diagnostic Medical Devices Regulation (IVDR) and the AI Act",
+      "raison": "guide d'articulation MDR/IVDR et AI Act publié par la DG SANTE, hors du périmètre IA et données de la Commission (DG CNECT)"
     }
   ],
   "non_recuperes": [
@@ -133,7 +143,7 @@
       "statut": "final",
       "date_acte": "2026-11-12",
       "date_source": "document",
-      "date_publication": "2026-11-12",
+      "date_publication": "2026-07-20",
       "version": "C/2026/6005",
       "verifier": "C/2026/6005",
       "langue": "fr",
@@ -141,7 +151,9 @@
       "celex": "52026XC06005",
       "url": "https://digital-strategy.ec.europa.eu/en/library/guidelines-transparency-obligations-providers-and-deployers-ai-systems",
       "source": "https://publications.europa.eu/resource/celex/52026XC06005",
-      "remplace": ["projet-lignes-directrices-art-50"]
+      "remplace": [
+        "projet-lignes-directrices-art-50"
+      ]
     },
     {
       "cle": "projet-lignes-directrices-art-50",
@@ -349,12 +361,27 @@
       "statut": "final",
       "date_acte": "2026-07-24",
       "date_source": "page",
-      "date_publication": "2026-07-24",
+      "date_publication": null,
       "version": "mise à jour du 24 juillet 2026",
       "langue": "en",
       "format": "html",
       "url": "https://digital-strategy.ec.europa.eu/en/faqs/transparency-obligations-under-article-50-ai-act",
       "source": "https://digital-strategy.ec.europa.eu/en/faqs/transparency-obligations-under-article-50-ai-act"
+    },
+    {
+      "cle": "q-r-navigating-ai-act",
+      "type": "questions_reponses",
+      "titre": "Questions-réponses — parcours dans le règlement sur l'IA (Navigating the AI Act)",
+      "titre_source": "Navigating the AI Act",
+      "statut": "final",
+      "date_acte": "2026-10-20",
+      "date_source": "page",
+      "date_publication": null,
+      "version": "mise à jour du 20 octobre 2026",
+      "langue": "en",
+      "format": "html",
+      "url": "https://digital-strategy.ec.europa.eu/en/faqs/navigating-ai-act",
+      "source": "https://digital-strategy.ec.europa.eu/en/faqs/navigating-ai-act"
     },
     {
       "cle": "faq-data-act",

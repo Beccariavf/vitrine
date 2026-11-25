@@ -12,9 +12,10 @@ import {
   unitesDoctrineUe,
   verifierVersion,
 } from "../mcp/corpus/doctrine-ue/parse.ts";
-import { syncDoctrineUe } from "../mcp/corpus/doctrine-ue/sync.ts";
+import { extraireTextePdf, syncDoctrineUe } from "../mcp/corpus/doctrine-ue/sync.ts";
 import type { ManifesteDoctrineUe } from "../mcp/corpus/doctrine-ue/sync.ts";
 import { statutApplication } from "../mcp/corpus/statut.ts";
+import { mentionsDoctrine } from "../mcp/corpus/cnil-doctrine/mention.ts";
 
 const ICI = fileURLToPath(new URL(".", import.meta.url));
 const FIXTURES = join(ICI, "fixtures", "doctrine-ue");
@@ -146,6 +147,17 @@ describe("doctrine de la Commission — texte", () => {
     );
   });
 
+  it("extrait le texte d'un vrai PDF, sans plancher arbitraire", async () => {
+    const octets = new Uint8Array(readFileSync(join(ICI, "fixtures", "cepd", "guideline.pdf")));
+    const texte = await extraireTextePdf(octets, "https://example.org/guideline.pdf");
+    assert.ok(texte.length > 2000);
+    assert.ok(/\p{L}/u.test(texte));
+    await assert.rejects(
+      () => extraireTextePdf(new TextEncoder().encode("pas un pdf"), "https://example.org/x.pdf"),
+      /n'est pas un PDF/,
+    );
+  });
+
   it("range les statuts de la doctrine de la Commission", () => {
     assert.equal(statutApplication("doctrine_ue", "final"), "adoptee");
     assert.equal(statutApplication("doctrine_ue", "projet"), "propose");
@@ -209,12 +221,56 @@ describe("doctrine de la Commission — synchronisation hors ligne", () => {
     )
       .split("\n")
       .filter((ligne) => ligne.trim() !== "")
-      .map((ligne) => JSON.parse(ligne) as { document: string; statut: string });
+      .map((ligne) => JSON.parse(ligne) as { document: string; statut: string; date_acte: string });
     assert.ok(
       unites
         .filter((unite) => unite.document === "doc-projet")
         .every((unite) => unite.statut === "Projet remplacé par doc-final"),
     );
     assert.ok(unites.some((unite) => unite.document === "doc-cellar"));
+    const qr = manifeste.documents_par_type.questions_reponses[0];
+    assert.equal(qr?.date_acte, "2026-11-25");
+    assert.ok(
+      unites
+        .filter((unite) => unite.document === "doc-qr")
+        .every((unite) => unite.date_acte === "2026-11-25"),
+    );
+
+    // Une page vivante inchangée garde sa date et ses unités.
+    const unitesAvant = readFileSync(
+      join(racine, "data", "corpus", "doctrine_ue", "unites.jsonl"),
+      "utf8",
+    );
+    const second = await syncDoctrineUe({
+      rootDir: racine,
+      descripteurPath: DESCRIPTEUR,
+      date: "2026-11-26",
+      fetchPdf: async (url) => {
+        if (url.includes("absent")) return reponsePdf(new Uint8Array(), 404);
+        return reponsePdf(new TextEncoder().encode("%PDF-1.4\nfixture"));
+      },
+      fetchHtml: async () => reponseTexte(PAGE_QR),
+      lireCellar: async () => JOURNAL,
+      extraireTexte: async (_octets, url) => (url.includes("projet") ? PROJET : LIGNES),
+      attendre: async () => undefined,
+    });
+    assert.ok(second.fragments > 0);
+    assert.equal(
+      readFileSync(join(racine, "data", "corpus", "doctrine_ue", "unites.jsonl"), "utf8"),
+      unitesAvant,
+    );
+    const apres = JSON.parse(
+      readFileSync(join(racine, "data", "corpus", "doctrine_ue", "manifest.json"), "utf8"),
+    ) as ManifesteDoctrineUe;
+    assert.equal(apres.documents_par_type.questions_reponses[0]?.date_acte, "2026-11-25");
+  });
+
+  it("lit le marquage CC BY 4.0 du corpus réel au rendu", () => {
+    const racine = fileURLToPath(new URL("..", import.meta.url));
+    const mentions = mentionsDoctrine(racine, "doctrine_ue");
+    assert.ok(mentions.size > 0);
+    const mention = mentions.get("faq-data-act");
+    assert.equal(mention?.licence, "CC BY 4.0");
+    assert.match(mention?.mention ?? "", /extrait non modifié · CC BY 4\.0 · https:/);
   });
 });

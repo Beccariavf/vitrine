@@ -46,7 +46,9 @@
       "format": "pdf",
       "url": "https://digital-strategy.ec.europa.eu/en/library/final",
       "source": "https://ec.europa.eu/newsroom/dae/redirection/document/final",
-      "remplace": ["doc-projet"]
+      "remplace": [
+        "doc-projet"
+      ]
     },
     {
       "cle": "doc-projet",
@@ -69,8 +71,8 @@
       "titre": "Questions-réponses",
       "statut": "final",
       "date_acte": "2026-07-24",
-      "date_source": "page",
-      "date_publication": "2026-07-24",
+      "date_source": "extraction",
+      "date_publication": null,
       "version": "mise à jour du 24 juillet 2026",
       "langue": "en",
       "format": "html",

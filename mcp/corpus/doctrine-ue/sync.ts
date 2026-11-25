@@ -17,9 +17,8 @@
 
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { resolve } from "node:path";
 import { extractText } from "unpdf";
 import { estPdf, normaliserTextePdf } from "../cepd/pdf.ts";
 import type { Unite } from "../parse.ts";
@@ -33,7 +32,7 @@ import type {
   NonRecupere,
   TypeDoctrineUe,
 } from "./liste.ts";
-import { texteDepuisHtml, unitesDoctrineUe, validerUnites, verifierVersion } from "./parse.ts";
+import { texteDepuisHtml, unitesDoctrineUe, validerUnites, verifierPage, verifierVersion } from "./parse.ts";
 
 const ICI = dirname(fileURLToPath(import.meta.url));
 
@@ -239,6 +238,7 @@ function creerTelechargeur(
   ecrire: boolean,
   date: string,
   validite: number,
+  tentatives: number,
 ): {
   pdf(url: string): Promise<{ octets: Uint8Array; sha256: string }>;
   texte(
@@ -254,6 +254,7 @@ function creerTelechargeur(
     ...(options.attendre === undefined ? {} : { attendre: options.attendre }),
     ...(options.delaiMs === undefined ? {} : { delaiMs: options.delaiMs }),
     ...(options.pauseEntreMs === undefined ? {} : { pauseEntreMs: options.pauseEntreMs }),
+    tentatives,
     userAgent: AGENT,
   };
   const memoriser = (url: string, fichier: string, empreinte: string): void => {
@@ -365,14 +366,14 @@ async function lireDocument(
     const celex = document.celex ?? "";
     const url = `https://publications.europa.eu/resource/celex/${celex}`;
     const lu = await telechargeur.texte(url, "cellar", celex);
-    return {
-      texte: texteDepuisHtml(lu.texte, { cellar: true }),
-      snapshot: lu.sha256,
-      source: url,
-    };
+    const texte = texteDepuisHtml(lu.texte, { cellar: true });
+    verifierPage(texte, url);
+    return { texte, snapshot: lu.sha256, source: url };
   }
   const lu = await telechargeur.texte(document.source, "page");
-  return { texte: texteDepuisHtml(lu.texte), snapshot: lu.sha256, source: document.source };
+  const texte = texteDepuisHtml(lu.texte);
+  verifierPage(texte, document.source);
+  return { texte, snapshot: lu.sha256, source: document.source };
 }
 
 /** Raison lisible d'une erreur. */
@@ -403,7 +404,15 @@ export async function syncDoctrineUe(
   const ecrire = options.dryRun !== true;
   const delai = options.delaiMs ?? descripteur.delai_ms;
   const validite = options.rafraichir === true ? 0 : Math.max(0, options.validite_jours ?? descripteur.validite_jours);
-  const telechargeur = creerTelechargeur(brutDir, cache, options, ecrire, date, validite);
+  const telechargeur = creerTelechargeur(
+    brutDir,
+    cache,
+    options,
+    ecrire,
+    date,
+    validite,
+    options.tentatives ?? descripteur.tentatives,
+  );
   const extraireTexte = options.extraireTexte ?? extraireTextePdf;
   const precedents = lireDocumentsPrecedents(rootDir);
 
@@ -429,18 +438,28 @@ export async function syncDoctrineUe(
       continue;
     }
 
+    // Une page vivante est datée du jour où son contenu a été lu pour la
+    // première fois : un texte inchangé garde sa date, une réédition la renouvelle.
+    const precedent = precedents.get(document.cle);
+    const memeContenu = precedent !== undefined && precedent.snapshot === ressource.snapshot;
+    const dateActe =
+      document.date_source === "extraction"
+        ? (memeContenu ? (precedent.date_acte ?? date) : date)
+        : document.date_acte;
     let fragments: Unite[];
     try {
-      fragments = unitesDoctrineUe(document, ressource.texte, descripteur.corpus, descripteur.nom);
+      fragments = unitesDoctrineUe(
+        document,
+        ressource.texte,
+        descripteur.corpus,
+        descripteur.nom,
+        dateActe,
+      );
     } catch (error) {
       nonRecuperes.push({ titre: document.titre, url: document.url, raison: raison(error) });
       continue;
     }
     unites.push(...fragments);
-
-    const precedent = precedents.get(document.cle);
-    const memeContenu = precedent !== undefined && precedent.snapshot === ressource.snapshot;
-    const dateActe = document.date_source === "extraction" ? date : document.date_acte;
     const entree: DocumentManifeste = {
       cle: document.cle,
       slug: document.cle,

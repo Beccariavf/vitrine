@@ -613,7 +613,6 @@ const DEFINITIONS = [
     libellePerimetre: "doctrine de la Commission",
     sources: [],
     sansVeille: "liste explicite de documents, resynchronisation manuelle `corpus:sync:doctrine-ue`",
-    publieEcartes: true,
   },
 ] as const satisfies readonly DefinitionCorpus[];
 
