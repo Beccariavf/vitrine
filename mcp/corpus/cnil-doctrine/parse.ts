@@ -24,6 +24,7 @@ const LIBELLES: Record<TypeDoctrine, string> = {
   referentiel: "Référentiels",
   liste_aipd: "Listes AIPD",
   fiche_ia: "Fiches IA",
+  doctrine_ia: "Doctrine IA",
 };
 
 /** Marques d'une licence contraire à la CC BY-ND, cherchées dans le texte. */

@@ -1,7 +1,7 @@
 {
   "corpus": "cnil_doctrine",
   "nom": "Doctrine CNIL",
-  "titre": "Guides, référentiels et listes AIPD de la CNIL",
+  "titre": "Guides, référentiels, fiches et doctrine IA de la CNIL",
   "domaine": "www.cnil.fr",
   "source": "Source : CNIL – https://www.cnil.fr",
   "mention": "extrait non modifié",
@@ -42,6 +42,207 @@
       "url": "https://www.cnil.fr/fr/les-fiches-pratiques-ia",
       "pages_max": 1,
       "liens": "fiches"
+    },
+    {
+      "type": "doctrine_ia",
+      "url": "https://www.cnil.fr/fr/intelligence-artificielle",
+      "pages_max": 1,
+      "liens": "urls",
+      "seuil_lettres": 1500,
+      "plafond": 25,
+      "urls": [
+        {
+          "url": "https://www.cnil.fr/fr/cameras-augmentees-espaces-publics",
+          "titre": "Les caméras « augmentées » ou algorithmiques dans l’espace public"
+        },
+        {
+          "url": "https://www.cnil.fr/fr/cameras-augmentees-espaces-publics-position-cnil",
+          "titre": "Caméras dites « augmentées » dans les espaces publics : la position de la CNIL",
+          "pdf": "https://www.cnil.fr/sites/default/files/atoms/files/cameras-intelligentes-augmentees_position_cnil.pdf"
+        },
+        {
+          "url": "https://www.cnil.fr/fr/conformite-camera-augmentee-caisses-automatiques",
+          "titre": "Caméras augmentées aux caisses automatiques : comment se conformer au RGPD ?"
+        },
+        {
+          "url": "https://www.cnil.fr/fr/les-cameras-augmentees-dans-les-habitacles-des-vehicules-de-transport-de-marchandises",
+          "titre": "Les caméras « augmentées » dans les habitacles des véhicules de transport de marchandises"
+        },
+        {
+          "url": "https://www.cnil.fr/fr/cameras-augmentees-pour-estimer-lage-dans-les-bureaux-de-tabac-la-cnil-precise-sa-position",
+          "titre": "Caméras « augmentées » pour estimer l’âge dans les bureaux de tabac : la CNIL précise sa position"
+        },
+        {
+          "url": "https://www.cnil.fr/fr/les-questions-reponses-de-la-cnil-sur-lutilisation-dun-systeme-dia-generative",
+          "titre": "Les questions-réponses de la CNIL sur l’utilisation d’un système d’IA générative"
+        },
+        {
+          "url": "https://www.cnil.fr/fr/comment-deployer-une-ia-generative-la-cnil-apporte-de-premieres-precisions",
+          "titre": "Comment déployer une IA générative ? La CNIL apporte de premières précisions"
+        },
+        {
+          "url": "https://www.cnil.fr/fr/ia-agentique-cnil-cianum-note",
+          "titre": "IA agentique et données personnelles : la CNIL et le Conseil de l’IA et du Numérique publient une note exploratoire",
+          "pdf": "https://www.cnil.fr/sites/default/files/2026-07/ia-cianum-cnil.pdf"
+        },
+        {
+          "url": "https://www.cnil.fr/fr/ia-et-sante-developper-et-evaluer-des-systemes-ia-conformes",
+          "titre": "IA et santé : développer et évaluer des systèmes d’IA en conformité avec la réglementation"
+        },
+        {
+          "url": "https://www.cnil.fr/fr/intelligence-artificielle/ia-comment-etre-en-conformite-avec-le-rgpd",
+          "titre": "IA : comment être en conformité avec le RGPD ?"
+        },
+        {
+          "url": "https://www.cnil.fr/fr/intelligence-artificielle-lavis-de-la-cnil-et-de-ses-homologues-sur-le-futur-reglement-europeen",
+          "titre": "Intelligence artificielle : l’avis de la CNIL et de ses homologues sur le futur règlement européen"
+        },
+        {
+          "url": "https://www.cnil.fr/fr/intelligence-artificielle-le-plan-daction-de-la-cnil",
+          "titre": "Intelligence artificielle : le plan d’action de la CNIL"
+        },
+        {
+          "url": "https://www.cnil.fr/fr/accompagnement-des-professionnels-le-programme-de-travail-de-la-cnil-pour-2026",
+          "titre": "Accompagnement des professionnels : le programme de travail de la CNIL pour 2026"
+        },
+        {
+          "url": "https://www.cnil.fr/fr/declaration-commune-sur-la-gouvernance-fiable-des-donnees-pour-lia",
+          "titre": "Déclaration commune sur la gouvernance fiable des données pour l’IA : vingt autorités de protection des données s’engagent pour une IA innovante et protectrice de la vie privée"
+        },
+        {
+          "url": "https://www.cnil.fr/fr/ia-generative-le-g7-des-autorites-de-protection-des-donnees-adopte-une-declaration-commune",
+          "titre": "IA générative : le G7 des autorités de protection des données adopte une déclaration commune"
+        },
+        {
+          "url": "https://www.cnil.fr/fr/intelligence-artificielle/guide/introduction",
+          "titre": "Introduction au guide d’auto-évaluation pour les systèmes d’IA"
+        },
+        {
+          "url": "https://www.cnil.fr/fr/intelligence-artificielle/guide/se-poser-les-bonnes-questions-avant-dutiliser-un-systeme-dintelligence-artificielle",
+          "titre": "Se poser les bonnes questions avant d’utiliser un système d’intelligence artificielle"
+        },
+        {
+          "url": "https://www.cnil.fr/fr/intelligence-artificielle/guide/collecter-et-qualifier-les-donnees-dentrainement",
+          "titre": "Collecter et qualifier les données d’entraînement"
+        },
+        {
+          "url": "https://www.cnil.fr/fr/intelligence-artificielle/guide/developper-et-entrainer-un-algorithme",
+          "titre": "Développer et entraîner un algorithme"
+        },
+        {
+          "url": "https://www.cnil.fr/fr/intelligence-artificielle/guide/utiliser-un-systeme-dia-en-production",
+          "titre": "Utiliser un système d’IA en production"
+        },
+        {
+          "url": "https://www.cnil.fr/fr/intelligence-artificielle/guide/securiser-le-traitement",
+          "titre": "Sécuriser le traitement"
+        },
+        {
+          "url": "https://www.cnil.fr/fr/intelligence-artificielle/guide/permettre-le-bon-exercice-de-leurs-droits-par-les-personnes",
+          "titre": "Permettre le bon exercice de leurs droits par les personnes"
+        },
+        {
+          "url": "https://www.cnil.fr/fr/intelligence-artificielle/guide/se-mettre-en-conformite",
+          "titre": "Se mettre en conformité"
+        }
+      ]
+    }
+  ],
+  "documents_ecartes": [
+    {
+      "url": "https://www.cnil.fr/fr/deploiement-de-cameras-augmentees-dans-les-espaces-publics-la-cnil-publie-sa-position",
+      "titre": "Déploiement de caméras « augmentées » dans les espaces publics : la CNIL publie sa position",
+      "raison": "annonce de la position du 19 juillet 2022, déjà retenue par sa page"
+    },
+    {
+      "url": "https://www.cnil.fr/fr/cameras-augmentees-vos-droits",
+      "titre": "Caméras augmentées aux caisses automatiques : quels sont vos droits ?",
+      "raison": "page de droits du public, pas une position"
+    },
+    {
+      "url": "https://www.cnil.fr/fr/ia-et-rgpd-la-cnil-publie-ses-nouvelles-recommandations-pour-accompagner-une-innovation-responsable",
+      "titre": "IA et RGPD : la CNIL publie ses nouvelles recommandations pour accompagner une innovation responsable",
+      "raison": "annonce des fiches pratiques IA déjà au corpus"
+    },
+    {
+      "url": "https://www.cnil.fr/fr/recommandations-developpement-ia-interet-legitime",
+      "titre": "Développement des systèmes d’IA : la CNIL publie ses recommandations sur l’intérêt légitime",
+      "raison": "annonce des fiches pratiques IA déjà au corpus"
+    },
+    {
+      "url": "https://www.cnil.fr/fr/ia-finalisation-recommandations-developpement-des-systemes-ia",
+      "titre": "IA : la CNIL finalise ses recommandations sur le développement des systèmes d’IA et annonce ses futurs travaux",
+      "raison": "annonce des fiches pratiques IA déjà au corpus"
+    },
+    {
+      "url": "https://www.cnil.fr/fr/accompagnement-des-professionnels-le-programme-de-travail-de-la-cnil-pour-2025",
+      "titre": "Accompagnement des professionnels : le programme de travail de la CNIL pour 2025",
+      "raison": "programme de travail 2025 remplacé par celui de 2026"
+    },
+    {
+      "url": "https://www.cnil.fr/fr/ia-mineurs-cybersecurite-quotidien-numerique-la-cnil-publie-son-plan-strategique-2025-2028",
+      "titre": "IA, mineurs, cybersécurité, quotidien numérique : la CNIL publie son plan stratégique 2025-2028",
+      "raison": "plan stratégique général, l’IA n’en est qu’un axe"
+    },
+    {
+      "url": "https://www.cnil.fr/fr/intelligence-artificielle/guide",
+      "titre": "Guide d’auto-évaluation pour les systèmes d’intelligence artificielle (IA)",
+      "raison": "sommaire de moins de 1500 caractères ; ses chapitres sont retenus"
+    },
+    {
+      "url": "https://www.cnil.fr/fr/intelligence-artificielle/guide/conformite-des-systemes-dia-les-autres-guides-outils-et-bonnes-pratiques",
+      "titre": "Conformité des systèmes d’IA : les autres guides, outils et bonnes pratiques",
+      "raison": "liste de ressources externes, pas une position"
+    },
+    {
+      "url": "https://www.cnil.fr/fr/ia-comment-se-mettre-en-conformite",
+      "titre": "IA - Comment se mettre en conformité ?",
+      "raison": "page de carrefour de moins de 1500 caractères"
+    },
+    {
+      "url": "https://www.cnil.fr/fr/intelligence-artificielle/intelligence-artificielle-de-quoi-parle-t-on",
+      "titre": "Intelligence artificielle, de quoi parle-t-on ?",
+      "raison": "page de vulgarisation, pas une position"
+    },
+    {
+      "url": "https://www.cnil.fr/fr/intelligence-artificielle/glossaire-ia",
+      "titre": "Glossaire de l’intelligence artificielle (IA)",
+      "raison": "glossaire, pas une position"
+    },
+    {
+      "url": "https://www.cnil.fr/fr/intelligence-artificielle/la-cnil-publie-ressources-grand-public-professionnels",
+      "titre": "Intelligence artificielle : la CNIL publie un ensemble de ressources pour le grand public et les professionnels",
+      "raison": "annonce de ressources, pas une position"
+    },
+    {
+      "url": "https://www.cnil.fr/fr/utiliser-lia-generative-dans-les-tpe-et-pme",
+      "titre": "Utiliser l’IA générative dans les TPE et PME",
+      "raison": "page de renvoi vers quatre fiches, pas une position"
+    },
+    {
+      "url": "https://www.cnil.fr/fr/ia-generative-et-vie-privee-affiche-coproduite-pipc-cnil",
+      "titre": "« IA générative et vie privée » : une affiche coproduite par la PIPC et la CNIL",
+      "raison": "affiche de sensibilisation, pas une position"
+    },
+    {
+      "url": "https://www.cnil.fr/fr/cepd-ia-generative-chaines-blocs",
+      "titre": "Le CEPD met en lumière l’anonymisation et le moissonnage pour l’IA générative",
+      "raison": "actualité du CEPD, corpus cepd"
+    },
+    {
+      "url": "https://www.cnil.fr/fr/technologies/intelligence-artificielle-ia",
+      "titre": "Intelligence artificielle (IA)",
+      "raison": "page de rubrique, pas un document"
+    },
+    {
+      "url": "https://www.cnil.fr/fr/intelligence-artificielle/autres-ressources",
+      "titre": "Les autres ressources sur le thème de l’IA",
+      "raison": "liste d’actualités, pas un document"
+    },
+    {
+      "url": "https://www.cnil.fr/fr/intelligence-artificielle",
+      "titre": "Intelligence artificielle",
+      "raison": "liste d’actualités de la rubrique, pas un document"
     }
   ]
 }

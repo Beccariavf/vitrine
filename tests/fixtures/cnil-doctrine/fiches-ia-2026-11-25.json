@@ -1,0 +1,95 @@
+{
+  "documents": 18,
+  "documents_par_slug": {
+    "ia-liste-de-verification": {
+      "fragments": 26,
+      "type": "fiche_ia",
+      "sha256": "1eb070173f208f64c277674d24ae49e1ad8803b37cde64a0b118190a4d73db12"
+    },
+    "developpement-des-systemes-dia-les-recommandations-de-la-cnil-pour-respecter-le-rgpd": {
+      "fragments": 84,
+      "type": "fiche_ia",
+      "sha256": "0ca6136464d334e50f063d97800b1f79ad2a459b35d68e91b211261e5a7933a3"
+    },
+    "quel-est-le-perimetre-des-fiches-pratiques-sur-lia": {
+      "fragments": 19,
+      "type": "fiche_ia",
+      "sha256": "2355a5af59a7ea7e97193b68876d1c6452b631e67f93fe68e3771453188e7b8d"
+    },
+    "determiner-le-regime-juridique-applicable": {
+      "fragments": 8,
+      "type": "fiche_ia",
+      "sha256": "1956504abba046e2b19b28962f2d399925ca4cf27dad85f953ff36a1f48dfb13"
+    },
+    "definir-une-finalite-0": {
+      "fragments": 23,
+      "type": "fiche_ia",
+      "sha256": "2926675ecf63582003f17863a4af600fa523698c196ce4939558a5d2732b8eeb"
+    },
+    "determiner-la-qualification-juridique-des-fournisseurs-de-systemes-dia": {
+      "fragments": 16,
+      "type": "fiche_ia",
+      "sha256": "268eda54ad9aad9eee84826e7caeefc7d2507761881a738552a89e4e3150655a"
+    },
+    "assurer-que-le-traitement-est-licite": {
+      "fragments": 25,
+      "type": "fiche_ia",
+      "sha256": "c3eb18b2d26a0d763132b2588fabe280859215cafd4230074b5d321af27911e1"
+    },
+    "assurer-que-le-traitement-est-licite-reutilisation-des-donnees": {
+      "fragments": 31,
+      "type": "fiche_ia",
+      "sha256": "8d2dc58885dcd1f436e0d5b4bf51840318e48bf5b86dcfa41e0076edd1f87253"
+    },
+    "realiser-une-analyse-dimpact-si-necessaire": {
+      "fragments": 28,
+      "type": "fiche_ia",
+      "sha256": "b155a11f5fbea2cd2484da89b2fc1af66620c8cb0ec84d8fd57bc0a04eb00bed"
+    },
+    "tenir-compte-de-la-protection-des-donnees-dans-la-conception-du-systeme": {
+      "fragments": 28,
+      "type": "fiche_ia",
+      "sha256": "3be8918b4ba943b4705b4e0ac4ec014dd66f7b2f9aeb9f5419636ea4b445aaab"
+    },
+    "tenir-compte-de-la-protection-des-donnees-dans-la-collecte-et-la-gestion-des-donnees": {
+      "fragments": 35,
+      "type": "fiche_ia",
+      "sha256": "90522e66b934ffbafb698c1e4649258a4edc915b774ffe9b1adcd54f44ac699b"
+    },
+    "base-legale-interet-legitime-developpement-systeme": {
+      "fragments": 60,
+      "type": "fiche_ia",
+      "sha256": "136be9b3b4c943861c39e5935e37052fe6922b8081c00b901593eb0663ce2f73"
+    },
+    "focus-interet-legitime-collecte-par-moissonnage": {
+      "fragments": 23,
+      "type": "fiche_ia",
+      "sha256": "8c382633e9b42c8625a82c5ed60c446545c789a03df698e3b3ba7d0b498b5da2"
+    },
+    "ia-informer-les-personnes-concernees": {
+      "fragments": 36,
+      "type": "fiche_ia",
+      "sha256": "a074f38e8a539ef0865ec7ee5c43a2d78fc302f3b9723b4bb9f2aa2fe60facf4"
+    },
+    "ia-respecter-lexercice-des-droits-des-personnes": {
+      "fragments": 45,
+      "type": "fiche_ia",
+      "sha256": "487751fd2b9e5eb1776b42a9c8dc28d3b8093b8be2035c3e9f7c28872130c25b"
+    },
+    "ia-annoter-les-donnees": {
+      "fragments": 35,
+      "type": "fiche_ia",
+      "sha256": "dac8c42259c26a12e2030478096724a7f8efd12f3e8e9b79fb73aa65541f1cd6"
+    },
+    "ia-garantir-la-securite-du-developpement": {
+      "fragments": 33,
+      "type": "fiche_ia",
+      "sha256": "4900e34e1b28f31f52f3bd285e1eb720d4239afb24822238ba7c93ed4cc319f5"
+    },
+    "ia-analyser-le-statut-dun-modele-dia-au-regard-du-rgpd": {
+      "fragments": 56,
+      "type": "fiche_ia",
+      "sha256": "bfc6edf256fa48788e36cc2615e8b677f816c374cd57781cd2fc0452a5442809"
+    }
+  }
+}

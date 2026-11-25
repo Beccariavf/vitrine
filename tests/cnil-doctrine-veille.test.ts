@@ -67,6 +67,7 @@ after(() => {
 type Manifeste = {
   documents_par_type: Record<string, { slug: string; titre: string; url: string }[]>;
   couverts_par_cnil: { type: string; titre: string; url: string }[];
+  couverts_par_doctrine: { type: string; titre: string; url: string }[];
   documents_ecartes: { url: string; titre: string; raison: string }[];
 };
 
@@ -235,6 +236,68 @@ describe("veille de la doctrine CNIL", () => {
 
     assert.deepEqual(resultat.entries, []);
     assert.match(resultat.notes.join(" "), /1 écarté\(s\) par la synchronisation/);
+  });
+
+  it("suit une liste explicite de doctrine IA sans relire la rubrique", async () => {
+    const racine = racineAvecManifeste(null);
+    const rubrique = "https://www.cnil.fr/fr/intelligence-artificielle";
+    const pageA = "https://www.cnil.fr/fr/position-a";
+    const pageB = "https://www.cnil.fr/fr/note-b";
+    const reference: DescripteurDoctrine["pages_reference"][number] = {
+      type: "doctrine_ia",
+      url: rubrique,
+      pages_max: 1,
+      liens: "urls",
+      urls: [
+        { url: pageA, titre: "Position A" },
+        { url: pageB, titre: "Note B" },
+      ],
+    };
+
+    let appels = 0;
+    const resultat = await passeDoctrine({
+      rootDir: racine,
+      descripteur: descripteur(reference),
+      fetchHtml: async () => {
+        appels += 1;
+        return { ok: false, status: 500, text: async () => "" };
+      },
+      attendre: async () => {},
+      maintenant: PASSE,
+    });
+
+    assert.equal(appels, 0, "la liste explicite ne demande aucune page");
+    assert.equal(resultat.entries.length, 2);
+    assert.ok(resultat.entries.every((entree) => entree.motif === "nouveau"));
+    assert.ok(resultat.entries.every((entree) => entree.type === "doctrine_ia"));
+    const position = resultat.entries.find((entree) => entree.title === "Position A");
+    assert.ok(position !== undefined);
+    assert.equal(position.url, pageA);
+    assert.equal(position.version, pageA, "la page est la version constatée");
+    assert.equal(position.summary, null);
+
+    const connus = manifesteReel();
+    connus.documents_ecartes = [];
+    connus.couverts_par_doctrine = [];
+    connus.documents_par_type.doctrine_ia = [
+      { slug: "position-a", titre: "Position A", url: pageA },
+      { slug: "note-b", titre: "Note B", url: pageB },
+    ];
+    const seconde = await passe(racineAvecManifeste(connus), descripteur(reference), {});
+    assert.deepEqual(seconde.entries, []);
+    assert.match(seconde.notes.join(" "), /2 inchangé\(s\)/);
+
+    const couverts = manifesteReel();
+    couverts.documents_ecartes = [];
+    couverts.documents_par_type.doctrine_ia = [
+      { slug: "note-b", titre: "Note B", url: pageB },
+    ];
+    couverts.couverts_par_doctrine = [
+      { type: "doctrine_ia", titre: "Position A", url: pageA },
+    ];
+    const troisieme = await passe(racineAvecManifeste(couverts), descripteur(reference), {});
+    assert.deepEqual(troisieme.entries, []);
+    assert.match(troisieme.notes.join(" "), /1 couvert\(s\) par une autre liste/);
   });
 
   it("compte un premier corpus comme entièrement nouveau, sans manifeste", async () => {

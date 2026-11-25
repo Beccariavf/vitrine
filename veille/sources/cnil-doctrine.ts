@@ -23,7 +23,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { chargerTexte, extraireDocuments, lireDescripteur, parcourirReference } from "../../mcp/corpus/cnil-doctrine/liste.ts";
+import { chargerTexte, documentsExplicites, extraireDocuments, lireDescripteur, parcourirReference } from "../../mcp/corpus/cnil-doctrine/liste.ts";
 import type {
   DescripteurDoctrine,
   FetchHtml,
@@ -61,6 +61,9 @@ export type DocumentManifeste = {
 /** Délibération du corpus `cnil` : ni dupliquée ni signalée par la veille. */
 type CouvertParCnil = { type?: unknown; titre?: unknown; url?: unknown };
 
+/** Document déjà listé par une autre page de référence du corpus. */
+type CouvertParDoctrine = { type?: unknown; titre?: unknown; url?: unknown };
+
 /** Document que la synchronisation a écarté ; il ne sera pas ingesté. */
 type DocumentEcart = { url?: unknown; titre?: unknown };
 
@@ -68,6 +71,7 @@ type DocumentEcart = { url?: unknown; titre?: unknown };
 export type ManifesteDoctrineLu = {
   documents_par_type?: Partial<Record<TypeDoctrine, DocumentManifeste[]>>;
   couverts_par_cnil?: CouvertParCnil[];
+  couverts_par_doctrine?: CouvertParDoctrine[];
   documents_ecartes?: DocumentEcart[];
 };
 
@@ -131,6 +135,9 @@ export function lireManifeste(chemin: string): ManifesteDoctrineLu | null {
     ...(Array.isArray(manifeste.couverts_par_cnil)
       ? { couverts_par_cnil: manifeste.couverts_par_cnil }
       : {}),
+    ...(Array.isArray(manifeste.couverts_par_doctrine)
+      ? { couverts_par_doctrine: manifeste.couverts_par_doctrine }
+      : {}),
     ...(Array.isArray(manifeste.documents_ecartes)
       ? { documents_ecartes: manifeste.documents_ecartes }
       : {}),
@@ -193,6 +200,18 @@ export function documentsDuManifeste(
 export function couvertsDuManifeste(manifeste: ManifesteDoctrineLu | null): Set<string> {
   const couverts = new Set<string>();
   for (const couvert of manifeste?.couverts_par_cnil ?? []) {
+    if (typeof couvert.type !== "string" || typeof couvert.titre !== "string") continue;
+    couverts.add(cleDocument(couvert.type, couvert.titre));
+  }
+  return couverts;
+}
+
+/** Documents déjà listés par une autre page de référence, donc couverts. */
+export function couvertsDoctrineDuManifeste(
+  manifeste: ManifesteDoctrineLu | null,
+): Set<string> {
+  const couverts = new Set<string>();
+  for (const couvert of manifeste?.couverts_par_doctrine ?? []) {
     if (typeof couvert.type !== "string" || typeof couvert.titre !== "string") continue;
     couverts.add(cleDocument(couvert.type, couvert.titre));
   }
@@ -272,6 +291,14 @@ export async function documentsListes(
   };
 
   for (const reference of descripteur.pages_reference) {
+    // Une liste explicite ne demande aucune page : chaque document déclaré est
+    // déjà l'URL que la veille compare au manifeste.
+    if (reference.liens === "urls") {
+      for (const document of documentsExplicites(reference, descripteur.domaine)) {
+        ajouter(reference.type, { url: document.url, titre: document.titre });
+      }
+      continue;
+    }
     const liste = await parcourirReference(reference, descripteur.domaine, http);
     pagesLues += liste.pagesLues;
     for (const pdf of liste.pdfs) ajouter(reference.type, pdf);
@@ -324,12 +351,14 @@ export async function passeDoctrine(
   const manifeste = lireManifeste(options.manifestePath ?? join(rootDir, MANIFESTE));
   const connus = documentsDuManifeste(manifeste);
   const couverts = couvertsDuManifeste(manifeste);
+  const couvertsDoctrine = couvertsDoctrineDuManifeste(manifeste);
   const ecartes = ecartesDuManifeste(manifeste);
 
   const entries: Entry[] = [];
   const pris = new Set<string>();
   let inchanges = 0;
   let couvertsParCnil = 0;
+  let couvertsParDoctrine = 0;
   let ecartesConnus = 0;
 
   for (const document of documents) {
@@ -337,6 +366,10 @@ export async function passeDoctrine(
     const cle = cleDocument(document.type, titre);
     if (couverts.has(cle)) {
       couvertsParCnil += 1;
+      continue;
+    }
+    if (couvertsDoctrine.has(cle)) {
+      couvertsParDoctrine += 1;
       continue;
     }
     if (ecartes.has(document.pdf.url)) {
@@ -367,6 +400,7 @@ export async function passeDoctrine(
     notes: [
       `${SOURCE_ID} : ${documents.length} document(s) listé(s), ${nouveaux} nouveau(x), ` +
         `${modifies} modifié(s), ${inchanges} inchangé(s), ${couvertsParCnil} couvert(s) par le corpus CNIL, ` +
+        `${couvertsParDoctrine} couvert(s) par une autre liste, ` +
         `${ecartesConnus} écarté(s) par la synchronisation, ${pagesLues} page(s) lue(s)`,
     ],
   };

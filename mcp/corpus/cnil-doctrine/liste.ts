@@ -26,14 +26,21 @@ function titreVisible(fragment: string): string {
 }
 
 /** Type de doctrine retenu. */
-export type TypeDoctrine = "guide" | "referentiel" | "liste_aipd" | "fiche_ia";
+export type TypeDoctrine = "guide" | "referentiel" | "liste_aipd" | "fiche_ia" | "doctrine_ia";
 
 /** Comment une page de référence expose ses documents. */
-export type ModeLiens = "pdf" | "page" | "fiches";
+export type ModeLiens = "pdf" | "page" | "fiches" | "urls";
+
+/**
+ * Un document déclaré en liste explicite : sa page, ou son PDF, et le PDF
+ * officiel qui porte son texte quand la page ne sert qu'à le présenter.
+ */
+export type DocumentExplicite = LienDocument & { pdf?: string };
 
 /** Une page de référence déclarée au descripteur. */
 export type PageReference = {
   type: TypeDoctrine;
+  /** Page consultée ; pour `liens: "urls"`, la rubrique qui a établi la liste. */
   url: string;
   /** Nombre de pages de résultats essayées au plus. */
   pages_max: number;
@@ -42,6 +49,19 @@ export type PageReference = {
   motif_page?: string;
   /** Motif du nom de fichier PDF retenu, tous modes confondus. */
   motif_pdf?: string;
+  /** Documents d'une liste explicite, pour `liens: "urls"`. */
+  urls?: DocumentExplicite[];
+  /** Une page ou un PDF plus court que ce seuil est déclaré et non retenu. */
+  seuil_lettres?: number;
+  /** Nombre de documents retenus au plus ; les autres sont déclarés. */
+  plafond?: number;
+};
+
+/** Un document écarté avant même d'être lu, déclaré au descripteur. */
+export type DocumentEcartDeclare = {
+  url: string;
+  titre: string;
+  raison: string;
 };
 
 export type DescripteurDoctrine = {
@@ -59,6 +79,8 @@ export type DescripteurDoctrine = {
   tentatives: number;
   delai_ms: number;
   pages_reference: PageReference[];
+  /** Pages ou PDF examinés puis écartés, avec leur motif, hors des pages de référence. */
+  documents_ecartes?: DocumentEcartDeclare[];
 };
 
 /** Réponse texte minimale d'un `fetch`, injectable en test. */
@@ -135,7 +157,7 @@ export function estDomaine(url: string, domaine: string): boolean {
 }
 
 /** Vrai si le lien est un PDF servi par le domaine déclaré (avec ou sans `www`). */
-function estPdf(url: string, domaine: string): boolean {
+export function estPdf(url: string, domaine: string): boolean {
   if (!estDomaine(url, domaine)) return false;
   try {
     return new URL(url).pathname.toLowerCase().endsWith(".pdf");
@@ -273,6 +295,7 @@ export function extraireDocuments(
   domaine: string,
 ): { pdfs: LienDocument[]; pages: LienDocument[] } {
   if (reference.liens === "fiches") return extraireFiches(html, pageUrl, domaine);
+  if (reference.liens === "urls") return { pdfs: [], pages: [] };
   const pdfs = new Map<string, LienDocument>();
   const pages = new Map<string, LienDocument>();
   const motifPage =
@@ -404,7 +427,16 @@ export async function parcourirReference(
   reference: PageReference,
   domaine: string,
   options: OptionsHttp = {},
-): Promise<{ pdfs: LienDocument[]; pages: LienDocument[]; pagesLues: number }> {
+): Promise<{
+  pdfs: LienDocument[];
+  pages: LienDocument[];
+  documents: DocumentExplicite[];
+  pagesLues: number;
+}> {
+  if (reference.liens === "urls") {
+    const documents = documentsExplicites(reference, domaine);
+    return { pdfs: [], pages: [], documents, pagesLues: 0 };
+  }
   const pdfs = new Map<string, LienDocument>();
   const pages = new Map<string, LienDocument>();
   let pagesLues = 0;
@@ -438,7 +470,42 @@ export async function parcourirReference(
     if (nouveaux === 0) break;
   }
 
-  return { pdfs: [...pdfs.values()], pages: [...pages.values()], pagesLues };
+  return { pdfs: [...pdfs.values()], pages: [...pages.values()], documents: [], pagesLues };
+}
+
+/**
+ * Documents d'une liste explicite : URL rendue absolue, domaine vérifié,
+ * première occurrence gardée. Le PDF officiel éventuel est vérifié de même.
+ * Une liste vide ou une URL hors domaine lève plutôt que de perdre un document.
+ */
+export function documentsExplicites(
+  reference: PageReference,
+  domaine: string,
+): DocumentExplicite[] {
+  const declares = reference.urls ?? [];
+  if (declares.length === 0) {
+    throw new Error(`Liste explicite vide pour « ${reference.url} »`);
+  }
+  const documents = new Map<string, DocumentExplicite>();
+  for (const declare of declares) {
+    const url = urlAbsolue(declare.url, reference.url);
+    if (url === null || !estDomaine(url, domaine)) {
+      throw new Error(`Document hors du domaine ${domaine} : « ${declare.url} »`);
+    }
+    const titre = declare.titre.trim();
+    if (titre === "") throw new Error(`Document sans intitulé : « ${declare.url} »`);
+    if (documents.has(url)) continue;
+    let pdf: string | undefined;
+    if (declare.pdf !== undefined) {
+      const absolu = urlAbsolue(declare.pdf, reference.url);
+      if (absolu === null || !estDomaine(absolu, domaine) || !estPdf(absolu, domaine)) {
+        throw new Error(`PDF hors du domaine ${domaine} : « ${declare.pdf} »`);
+      }
+      pdf = absolu;
+    }
+    documents.set(url, pdf === undefined ? { url, titre } : { url, titre, pdf });
+  }
+  return [...documents.values()];
 }
 
 /** Lit le descripteur de la doctrine CNIL. */
