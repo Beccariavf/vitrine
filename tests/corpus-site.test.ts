@@ -40,6 +40,7 @@ describe("sourcesCorpus", () => {
         "Règlement procédural RGPD",
         "Textes UE de l'économie des données",
         "Espace européen des données de santé",
+        "Textes UE de frontière (produits, responsabilité, propriété intellectuelle, plateformes)",
         "Clauses contractuelles types",
         "Loi Informatique et Libertés",
         "Textes français d'application",

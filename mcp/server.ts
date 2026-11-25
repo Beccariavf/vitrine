@@ -13,8 +13,10 @@ import type { ModeRecherche } from "./tools.ts";
 import { LIMITE_DEFAUT, LIMITE_MAX, decisionsCitant } from "./corpus/citants.ts";
 import { PERIMETRE } from "./corpus/citations.ts";
 import {
+  CHAMPS_GOUVERNANCE,
   CORPUS_DECISIONS,
   CORPUS_INSTANTANES,
+  LIBELLES_GOUVERNANCE,
   NOMBRE_CORPUS,
   NOMS_SITE,
   SOURCES_SOUS_VEILLE,
@@ -22,6 +24,7 @@ import {
   descriptionRecherche,
   descriptionServeur,
   nombreEnLettres,
+  resumeGouvernance,
 } from "./corpus/registre.ts";
 import {
   FAMILLES,
@@ -145,7 +148,9 @@ const CONSIGNE_DECISIONS_CITEES =
   `${chiffresCitationsDecisions()}`;
 
 export const CONSIGNE_SERVEUR =
-  `Serveur de lecture et de recherche sur ${nombreEnLettres(NOMBRE_CORPUS)} corpus juridiques : ` +
+  "Serveur de lecture et de recherche juridiques, organisé par champ de gouvernance de la donnée — " +
+  `${CHAMPS_GOUVERNANCE.map((champ) => LIBELLES_GOUVERNANCE[champ]).join(", ")}. ` +
+  `Par champ, les corpus concernés : ${resumeGouvernance()}. Corpus : ` +
   `${descriptionServeur()}. Les outils de ` +
   "recherche acceptent les paramètres `corpus` et `nature` ; sans eux, la recherche couvre les " +
   `${nombreEnLettres(NOMBRE_CORPUS)} collections indexées et toutes les natures. Un document nommé dans la question (sigle ou nom ordinaire, ` +
@@ -451,7 +456,10 @@ export function createServer(deps: ServerDeps): McpServer {
         "(`exclusions`, `documents_ecartes`, `versions_ecartees`, `articles_abroges_ecartes`…). " +
         "Chaque corpus porte aussi `veille` : les sources qui l'alimentent avec leur " +
         "`derniere_lecture_reussie` (null quand la veille n'a jamais été lue ici, donc « jamais lue »), " +
-        "ou `absente.raison` quand aucune source ne le couvre. `hors_corpus` porte le classement des " +
+        "ou `absente.raison` quand aucune source ne le couvre. `gouvernance` donne les champs de " +
+        "gouvernance de chaque corpus (données personnelles, non personnelles, IA, santé) et " +
+        "`champs_gouvernance` le résumé par champ du catalogue du registre, y compris un corpus " +
+        "absent localement ; tous deux dérivent du registre. `hors_corpus` porte le classement des " +
         "documents hors corpus : ceux que les décisions citent sans qu'ils soient au corpus, par " +
         "nombre de décisions citantes décroissant (`citations`), avec les autorités qui les citent et " +
         "leur compte ; un document " +

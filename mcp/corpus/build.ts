@@ -8,6 +8,7 @@ import { estConsolide, compterConsiderantsConsolide, parseCellar, parseConsolide
 import type { Descripteur, Unite } from "./parse.ts";
 import { parseCcs } from "./ccs/parse.ts";
 import { parseDonnees } from "./donnees/parse.ts";
+import { considerantsOrigine, parseFrontieres } from "./frontieres/parse.ts";
 import { writeCorpus, writeCorpusMulti } from "./write.ts";
 import type { DocumentCorpus, OrigineConsiderants } from "./write.ts";
 import { corpusDeclare } from "./registre.ts";
@@ -78,6 +79,12 @@ async function construire(
       ? await fetchCellar(descripteur.version ?? descripteur.document, descripteur.langue, options.fetchImpl)
       : readFileSync(fixturePath, "utf8");
 
+  /** Acte d'origine, quand une consolidation sans préambule lui emprunte ses considérants. */
+  const lireOrigine = async (): Promise<string> =>
+    options.origineFixturePath === undefined
+      ? await fetchCellar(descripteur.document, descripteur.langue, options.fetchImpl)
+      : readFileSync(options.origineFixturePath, "utf8");
+
   let unites: Unite[];
   let origine: OrigineConsiderants | undefined;
   if (descripteur.parseur === "ccs") {
@@ -85,23 +92,33 @@ async function construire(
   } else if (descripteur.parseur === "donnees" || descripteur.parseur === "sante_ue") {
     unites = parseDonnees(contenu, descripteur);
   } else if (estConsolide(descripteur)) {
+    // Le corps d'une consolidation se découpe selon le parseur du corpus ; les
+    // annexes d'un texte de frontière s'y ajoutent.
+    const corps = (source: string, declaration: Descripteur): Unite[] =>
+      declaration.parseur === "frontieres"
+        ? parseFrontieres(source, declaration)
+        : parseConsolide(source, declaration);
     if (compterConsiderantsConsolide(contenu) === 0 && descripteur.considerants_attendus > 0) {
-      const contenuOrigine =
-        options.origineFixturePath === undefined
-          ? await fetchCellar(descripteur.document, descripteur.langue, options.fetchImpl)
-          : readFileSync(options.origineFixturePath, "utf8");
+      const contenuOrigine = await lireOrigine();
       // Les considérants viennent de l'acte d'origine : leur lien pointe cet acte,
       // même quand le descripteur sert l'URL de la consolidation.
       const descripteurOrigine = { ...descripteur, url: urlVersion(descripteur.document) };
-      const considerants = parseCellar(contenuOrigine, descripteurOrigine, "considérants").filter(
-        (unite) => unite.niveau === "considérant",
-      );
-      const articles = parseConsolide(contenu, { ...descripteur, considerants_attendus: 0 });
-      unites = [...considerants, ...articles];
+      const considerants =
+        descripteur.parseur === "frontieres"
+          ? considerantsOrigine(contenuOrigine, descripteurOrigine)
+          : parseCellar(contenuOrigine, descripteurOrigine, "considérants").filter(
+              (unite) => unite.niveau === "considérant",
+            );
+      unites = [
+        ...considerants,
+        ...corps(contenu, { ...descripteur, considerants_attendus: 0 }),
+      ];
       origine = { document: descripteur.document, snapshotPath: writeRaw(rootDir, contenuOrigine, "xhtml") };
     } else {
-      unites = parseConsolide(contenu, descripteur);
+      unites = corps(contenu, descripteur);
     }
+  } else if (descripteur.parseur === "frontieres") {
+    unites = parseFrontieres(contenu, descripteur);
   } else {
     unites = parseCellar(contenu, descripteur);
   }

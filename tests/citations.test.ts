@@ -569,9 +569,9 @@ describe("la présence des documents cités", () => {
           "ePrivacy (32002L0058) est absent de mon corpus (périmètre : RGPD, AI Act, ePrivacy, " +
             "directive 2016/680, règlement 2018/1725, règlement procédural RGPD, clauses contractuelles " +
             "types, décisions d'adéquation, textes UE de l'économie des données, espace européen des " +
-            "données de santé (EHDS), LIL, textes français d'application, textes en préparation et affaires " +
-            "pendantes, CNIL, CADA, doctrine CNIL, CEPD, Conseil d'État, Conseil constitutionnel, Cour de " +
-            "cassation, CJUE, doctrine de la Commission).",
+            "données de santé (EHDS), textes UE de frontière, LIL, textes français d'application, " +
+            "textes en préparation et affaires pendantes, CNIL, CADA, doctrine CNIL, CEPD, Conseil " +
+            "d'État, Conseil constitutionnel, Cour de cassation, CJUE, doctrine de la Commission).",
         );
       }
     } finally {
