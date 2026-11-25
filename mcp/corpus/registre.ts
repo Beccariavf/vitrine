@@ -667,6 +667,8 @@ const DEFINITIONS = [
     nom: "doctrine_ue",
     libelle: "Doctrine de la Commission",
     type: "doctrine",
+    // Le Bureau de l'IA porte la doctrine de l'AI Act ; la FAQ Data Act et le
+    // guide des données de véhicules portent sur les données non personnelles.
     gouvernance: ["ia", "non_personnelles"],
     famille: "ue",
     regleStatut: "doctrine_ue",
