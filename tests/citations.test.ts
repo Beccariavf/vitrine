@@ -598,6 +598,9 @@ describe("la présence des documents cités", () => {
       "LEGITEXT000006072026",
       "LEGITEXT000031366350",
       "LEGITEXT000006070721",
+      "LEGITEXT000006073189",
+      "LEGITEXT000006073984",
+      "LEGITEXT000006070633",
     ]) {
       assert.equal(presents.has(present), true, present);
       assert.equal(absenceDuDocument(root, present), null, present);
@@ -608,7 +611,7 @@ describe("la présence des documents cités", () => {
     assert.equal(couverts.get("LEGITEXT000006070719")?.[0], "226-16");
     assert.ok(couverts.get("LEGITEXT000006070719")?.includes("226-1"));
     assert.ok(couverts.get("LEGITEXT000006070719")?.includes("323-1"));
-    assert.deepEqual(couverts.get("LEGITEXT000006072050"), ["L1121-1", "L1222-4", "L2312-38"]);
+    assert.deepEqual(couverts.get("LEGITEXT000006072050"), ["L1121-1", "L1222-4", "L1226-2", "L2312-38", "L4624-8"]);
     assert.deepEqual(couverts.get("LEGITEXT000006070721"), ["9"]);
     assert.equal(couverts.has("LEGITEXT000038567662"), false);
     assert.equal(presents.has("31995L0046"), false);

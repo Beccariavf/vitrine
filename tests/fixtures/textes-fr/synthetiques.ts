@@ -69,7 +69,7 @@ export function codeSynthetique(texte: TexteFr): unknown {
   if (route.type !== "code") {
     throw new Error(`${texte.cle} : route code attendue`);
   }
-  return sectionSynthetique(texte, route.sctCid, [route.premier, route.dernier]);
+  return sectionSynthetique(texte, route.sctCid, [...new Set([route.premier, route.dernier])]);
 }
 
 /**

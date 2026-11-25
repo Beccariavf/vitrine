@@ -323,6 +323,29 @@ const INSTRUMENTS: readonly Instrument[] = [
     url: "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006070721",
     alias: ["code civil"],
   },
+  {
+    libelle: "code de la sécurité sociale",
+    identifiant: "LEGITEXT000006073189",
+    nature: "code",
+    url: "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006073189",
+    alias: ["code de la sécurité sociale"],
+    sigle: ["CSS"],
+  },
+  {
+    libelle: "code des assurances",
+    identifiant: "LEGITEXT000006073984",
+    nature: "code",
+    url: "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006073984",
+    alias: ["code des assurances"],
+  },
+  {
+    libelle: "code général des collectivités territoriales",
+    identifiant: "LEGITEXT000006070633",
+    nature: "code",
+    url: "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006070633",
+    alias: ["code général des collectivités territoriales"],
+    sigle: ["CGCT"],
+  },
 ];
 
 const PAR_LIBELLE = new Map(INSTRUMENTS.map((instrument) => [instrument.libelle, instrument]));
@@ -726,8 +749,8 @@ function numerosArticles(liste: string): string[] {
 
 /**
  * Un numéro d'article du code pénal entre-t-il dans le périmètre du corpus
- * `textes_fr` : 226-1, 226-8-1, 226-16 à 226-24 et 323-1 à 323-8, suffixes bis
- * (`323-4-1`) compris. Tout autre article du code reste dehors.
+ * `textes_fr` : 226-1, 226-8-1, 226-13, 226-16 à 226-24 et 323-1 à 323-8,
+ * suffixes bis (`323-4-1`) compris. Tout autre article du code reste dehors.
  */
 function numeroPenalRetenu(article: string): boolean {
   const trouve = /^(\d+)(?:-(\d+))?(?:-(.+))?$/.exec(article);
@@ -738,6 +761,7 @@ function numeroPenalRetenu(article: string): boolean {
   if (majeur === 226) {
     if (mineur === 1) return suffixe === undefined;
     if (mineur === 8) return suffixe === "1";
+    if (mineur === 13) return suffixe === undefined;
     // 226-16 à 226-24, suffixes numériques compris (`226-16-1`, `226-22-2`).
     return mineur >= 16 && mineur <= 24 && (suffixe === undefined || /^\d+$/.test(suffixe));
   }
