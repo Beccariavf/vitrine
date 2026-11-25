@@ -11,7 +11,7 @@ import { documentsPresents, extraireCitations, marquerPresence } from "../mcp/co
 import { parseDonnees } from "../mcp/corpus/donnees/parse.ts";
 import type { Descripteur, Unite } from "../mcp/corpus/parse.ts";
 import { statutApplication } from "../mcp/corpus/statut.ts";
-import { documentsNommes, getArticle, referenceExacte } from "../mcp/tools.ts";
+import { documentsNommes, getArticle, referenceExacte, search } from "../mcp/tools.ts";
 import { writeCorpusMulti } from "../mcp/corpus/write.ts";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
@@ -247,6 +247,26 @@ describe("corpus donnees", () => {
     }
     assert.equal(unites.filter((unite) => unite.ref === "32023R1622#art_unique").length, 1);
     assert.equal(unites.filter((unite) => unite.niveau === "point").length, 3);
+  });
+
+  it("résout le paramètre document de search sans ouvrir l'index sur un article exact", async () => {
+    const resultat = await search(
+      ROOT,
+      { question: "l'article 24", document: "Data Act" },
+      {
+        embedder: {
+          model: "test",
+          dim: 1,
+          embedPassages: async () => [],
+          embedQuery: async () => {
+            throw new Error("l'embedder ne doit pas être appelé");
+          },
+        },
+      },
+    );
+    assert.equal(resultat.niveau_confiance, "confiant");
+    assert.deepEqual(resultat.passages.map((passage) => passage.document), ["32023R2854"]);
+    assert.deepEqual(resultat.passages.map((passage) => passage.numero), ["24"]);
   });
 
   it("refuse une capture consolidée plutôt que de la découper à l'aveugle", () => {
