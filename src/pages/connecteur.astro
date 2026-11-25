@@ -8,6 +8,7 @@ import { lireDemo } from "../lib/demo.ts";
 import {
   CHAMPS_GOUVERNANCE,
   LIBELLES_GOUVERNANCE,
+  NOMS_SITE,
   corpusDeclare,
   corpusDuChamp,
 } from "../../mcp/corpus/registre.ts";
@@ -16,10 +17,16 @@ const sources = sourcesCorpus();
 const demo = lireDemo();
 
 /** Table corpus → champs, dérivée du registre : aucune liste recopiée ici. */
+const RANG_SITE = new Map(NOMS_SITE.map((nom, index) => [nom, index]));
 const champsGouvernance = CHAMPS_GOUVERNANCE.map((champ) => ({
   champ,
   libelle: LIBELLES_GOUVERNANCE[champ],
-  corpus: corpusDuChamp(champ).map((nom) => corpusDeclare(nom)?.libelle ?? nom),
+  corpus: corpusDuChamp(champ)
+    .sort(
+      (gauche, droite) =>
+        (RANG_SITE.get(gauche) ?? NOMS_SITE.length) - (RANG_SITE.get(droite) ?? NOMS_SITE.length),
+    )
+    .map((nom) => corpusDeclare(nom)?.libelle ?? nom),
 }));
 
 /** Dates en français, à l'heure UTC : les mêmes au build comme en test. */
@@ -157,6 +164,8 @@ const titreSection = "text-[clamp(1.75rem,3.2vw,2.5rem)] leading-[1.1] font-medi
     </div>
     <p class="mt-4 max-w-2xl text-[0.9375rem] leading-relaxed text-encre-douce">
       Une collection peut relever de plusieurs champs : cette correspondance est celle du serveur.
+      Le connecteur reste centré sur les données personnelles et couvre les autres champs par les
+      textes, la doctrine et le contentieux déjà au corpus.
     </p>
   </section>
 

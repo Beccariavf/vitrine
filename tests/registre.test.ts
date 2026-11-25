@@ -65,9 +65,10 @@ describe("registre des corpus", () => {
     assert.equal(nombreEnLettres(71), "soixante et onze");
     assert.equal(nombreEnLettres(80), "quatre-vingts");
     assert.equal(nombreEnLettres(99), "quatre-vingt-dix-neuf");
-    assert.ok(CONSIGNE_SERVEUR.includes("Serveur de gouvernance de la donnée"));
+    assert.ok(CONSIGNE_SERVEUR.startsWith("Serveur de lecture et de recherche juridiques"));
+    assert.ok(CONSIGNE_SERVEUR.includes("gouvernance de la donnée"));
     assert.ok(CONSIGNE_SERVEUR.includes(resumeGouvernance()));
-    assert.equal(CONSIGNE_SERVEUR.includes("Serveur de lecture et de recherche"), false);
+    assert.equal(CONSIGNE_SERVEUR.includes("Serveur de lecture et de recherche sur"), false);
     assert.throws(() => nombreEnLettres(100), /hors bornes/);
     assert.throws(() => nombreEnLettres(-1), /hors bornes/);
   });
@@ -177,13 +178,20 @@ describe("aucune liste de corpus hors du registre", () => {
 
 const CHAMPS = new Set<string>(CHAMPS_GOUVERNANCE);
 
+/** Vrai quand un nom est employé en position de clé d'objet ou de tableau. */
+function estCle(texte: string, nom: string): boolean {
+  return new RegExp(`(?:^|[{,\\s])${nom}\\s*:`, "u").test(texte);
+}
+
 /** Vrai quand un fragment associe un champ de gouvernance à un nom de corpus. */
 function estCorrespondanceGouvernance(texte: string): boolean {
   const trouves = litteraux(texte);
   const champNomme =
     trouves.some((valeur) => CHAMPS.has(valeur)) ||
     CHAMPS_GOUVERNANCE.some((champ) => new RegExp(`\\b${champ}\\b`, "u").test(texte));
-  return champNomme && trouves.some((valeur) => NOMS.has(valeur));
+  const corpusNomme =
+    trouves.some((valeur) => NOMS.has(valeur)) || [...NOMS].some((nom) => estCle(texte, nom));
+  return champNomme && corpusNomme;
 }
 
 /**

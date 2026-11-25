@@ -64,18 +64,18 @@ describe("gouvernance de la donnée", () => {
   });
 
   it("résume la correspondance par champ dans la description du serveur", () => {
-    const resume = resumeGouvernance();
-    assert.ok(CONSIGNE_SERVEUR.startsWith("Serveur de gouvernance de la donnée"));
-    assert.ok(CONSIGNE_SERVEUR.includes(resume));
+    const attendu = CHAMPS_GOUVERNANCE.map(
+      (champ) =>
+        `${LIBELLES_GOUVERNANCE[champ]} — ` +
+        `${ATTENDU[champ].map((nom) => `\`${nom}\``).join(", ")}`,
+    ).join(" ; ");
+    assert.equal(resumeGouvernance(), attendu);
+    assert.ok(CONSIGNE_SERVEUR.startsWith("Serveur de lecture et de recherche juridiques"));
+    assert.ok(CONSIGNE_SERVEUR.includes("gouvernance de la donnée"));
+    assert.ok(CONSIGNE_SERVEUR.includes(attendu));
     for (const champ of CHAMPS_GOUVERNANCE) {
-      assert.ok(resume.includes(LIBELLES_GOUVERNANCE[champ]), `libellé du champ ${champ}`);
-      const premier = CORPUS.find((corpus) => corpus.nom === ATTENDU[champ][0]);
-      assert.ok(
-        premier !== undefined && resume.includes(premier.libelle),
-        `premier corpus du champ ${champ}`,
-      );
+      assert.ok(resumeGouvernance().includes(LIBELLES_GOUVERNANCE[champ]), `libellé ${champ}`);
     }
-    assert.equal(resume.includes("hors-registre"), false);
   });
 
   it("rend la gouvernance de chaque corpus et le résumé dans etat_corpus", () => {

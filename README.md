@@ -348,6 +348,9 @@ laisse `a_jour_au` inchangé, et l'index est réessayé à la passe suivante. Un
 `couverture.documents_ecartes` est `ecarte` et ne relance pas la CJUE. `--dry-run` n'écrit rien et
 `--json` rend le rapport brut ; `--date` date le rapport et la fenêtre de la passe (les sources
 consignent leur propre date), `etat_corpus` expose le même état au client MCP, sans réseau ni index.
+Chaque corpus y porte aussi `gouvernance`, ses champs de gouvernance (données personnelles, non
+personnelles, IA, santé), et `champs_gouvernance` en donne le résumé par champ : les deux dérivent
+du registre des corpus, qu'ils décrivent même quand un corpus est absent localement.
 Chaque corpus y porte `veille` : les sources dérivées du raccord de veille (`mcp/corpus/veille.ts`)
 avec leur `derniere_lecture_reussie`, lue dans `data/veille/etat.json` que `npm run veille` écrit à
 chaque passe pour les sources lues sans erreur (`null` : jamais lue sur cette machine), ou

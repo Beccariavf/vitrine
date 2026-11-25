@@ -11,6 +11,12 @@
  * le serveur. Le champ de gouvernance est la seule table corpus → champs :
  * `etat_corpus`, la description du serveur et la page connecteur en dérivent
  * leur correspondance.
+ *
+ * Règle d'attribution : un champ est déclaré quand la collection en porte une
+ * part identifiable — texte de fond, doctrine ou contentieux —, pas pour une
+ * mention incidente. Un texte fondateur reste dans son champ principal (le RGPD
+ * en données personnelles, l'AI Act en IA), et l'ordre de la liste n'exprime
+ * aucune priorité. La table est curatée à la main, jamais déduite d'un comptage.
  */
 
 export type TypeCorpus = "texte" | "decision" | "doctrine" | "preparation" | "metadonnees";
@@ -443,8 +449,10 @@ const DEFINITIONS = [
     nom: "preparation",
     libelle: "Textes en préparation et affaires pendantes",
     type: "preparation",
-    // Les propositions et affaires suivies touchent les quatre champs : Omnibus
-    // données, lignes directrices IA, mise en œuvre de l'EHDS, modifications du RGPD.
+    // Les propositions et affaires suivies touchent les quatre champs : Digital
+    // Omnibus `52025PC0837` (personnelles et non personnelles), Cloud and AI
+    // Development Act `52026PC0502` (IA), proposition MDR/IVDR `52025PC1023`
+    // (santé, et annexe I de l'AI Act).
     gouvernance: ["personnelles", "non_personnelles", "ia", "sante"],
     famille: "ue",
     regleStatut: "preparation",
@@ -721,13 +729,13 @@ export function gouvernanceDuCorpus(nom: string): ChampGouvernance[] {
   return [...(corpusDeclare(nom)?.gouvernance ?? [])];
 }
 
-/** Résumé par champ pour la description du serveur : « données personnelles — … ; … ». */
+/** Résumé par champ pour la description du serveur : « données personnelles — `rgpd`, … ». */
 export function resumeGouvernance(): string {
-  const libelle = new Map(CORPUS.map((corpus) => [corpus.nom, corpus.libelle]));
-  return CHAMPS_GOUVERNANCE.map((champ) => {
-    const corpus = corpusDuChamp(champ).map((nom) => libelle.get(nom) ?? nom);
-    return `${LIBELLES_GOUVERNANCE[champ]} — ${corpus.join(", ")}`;
-  }).join(" ; ");
+  return CHAMPS_GOUVERNANCE.map(
+    (champ) =>
+      `${LIBELLES_GOUVERNANCE[champ]} — ` +
+      `${corpusDuChamp(champ).map((nom) => `\`${nom}\``).join(", ")}`,
+  ).join(" ; ");
 }
 
 /**
