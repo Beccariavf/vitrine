@@ -667,6 +667,20 @@ export async function syncCePd(options: SyncCePdOptions = {}): Promise<ResultatC
     if (delai > 0) await attendre(delai);
   }
 
+  // Rejouer `--supplementaires` quand tout est déjà au corpus n'écrit rien :
+  // le corpus existant est rendu tel quel, sans erreur ni nouvelle liste.
+  if (supplementairesSeulement && documentsListe.length === 0 && existant.unites.length > 0) {
+    return {
+      documents: new Set(existant.unites.map((unite) => unite.document)).size,
+      fragments: existant.unites.length,
+      versionsEcartees: existant.manifeste?.versions_ecartees ?? 0,
+      documentsSansTexte: existant.manifeste?.documents_sans_texte_ecartes ?? 0,
+      pages: 0,
+      ecrit: false,
+      tentatives: journal,
+    };
+  }
+
   const prepares: DocumentPrepare[] = [];
   for (const document of documentsListe) {
     try {

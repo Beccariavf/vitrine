@@ -1595,4 +1595,81 @@ describe("les documents supplémentaires du CEPD", () => {
       rmSync(racine, { recursive: true, force: true });
     }
   });
+
+  it("reste idempotent et survit à une synchronisation complète", async () => {
+    const racine = racineTemporaire();
+    const descripteurPath = join(racine, "descripteur.json");
+    const lireUnites = (): Unite[] =>
+      readFileSync(join(racine, "data", "corpus", "cepd", "unites.jsonl"), "utf8")
+        .split("\n")
+        .filter((ligne) => ligne !== "")
+        .map((ligne) => JSON.parse(ligne) as Unite);
+    try {
+      await syncCePd({
+        rootDir: racine,
+        date: DATE,
+        fetchHtml: fauxHtml(SYNC_PAGES),
+        fetchPdf: fauxPdf(PDF),
+        extraireTexte: async () => TEXTE,
+        attendre: async () => {},
+        tentatives: 1,
+      });
+      writeFileSync(
+        descripteurPath,
+        JSON.stringify({
+          ...DESCRIPTEUR,
+          documents_supplementaires: [{ url: AVIS_LEGISLATIF, type: "avis_legislatif" }],
+        }),
+      );
+      const ajout = await syncCePd({
+        rootDir: racine,
+        descripteurPath,
+        supplementairesSeulement: true,
+        fetchHtml: fauxHtml(new Map([[AVIS_LEGISLATIF, PAGE_AVIS]])),
+        fetchPdf: fauxPdf(PDF),
+        extraireTexte: async () => TEXTE,
+        attendre: async () => {},
+        tentatives: 1,
+      });
+      assert.equal(ajout.ecrit, true);
+      const apresAjout = lireUnites();
+
+      // Rejoué tel quel : rien à ajouter, rien n'est écrit ni demandé au réseau.
+      const rejoue = await syncCePd({
+        rootDir: racine,
+        descripteurPath,
+        supplementairesSeulement: true,
+        fetchHtml: async () => ({ ok: false, status: 500, text: async () => "" }),
+        fetchPdf: async () => ({ ok: false, status: 500, arrayBuffer: async () => new ArrayBuffer(0) }),
+        extraireTexte: async () => TEXTE,
+        attendre: async () => {},
+        tentatives: 1,
+      });
+      assert.equal(rejoue.ecrit, false);
+      assert.equal(rejoue.documents, 5);
+      assert.deepEqual(lireUnites(), apresAjout);
+
+      // Une synchronisation complète ne relit pas les documents déclarés hors
+      // sitemap : elle conserve leurs unités déjà validées.
+      await syncCePd({
+        rootDir: racine,
+        descripteurPath,
+        date: DATE,
+        fetchHtml: fauxHtml(SYNC_PAGES),
+        fetchPdf: fauxPdf(PDF),
+        extraireTexte: async () => TEXTE,
+        attendre: async () => {},
+        tentatives: 1,
+      });
+      const apresComplete = lireUnites();
+      assert.equal(new Set(apresComplete.map((unite) => unite.document)).size, 5);
+      assert.deepEqual(
+        apresComplete.filter((unite) => !unite.document.startsWith("opinion-32019")),
+        apresAjout.filter((unite) => !unite.document.startsWith("opinion-32019")),
+      );
+      assert.ok(apresComplete.some((unite) => unite.document.startsWith("opinion-32019")));
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
+  });
 });
