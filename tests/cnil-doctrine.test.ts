@@ -280,6 +280,29 @@ describe("fiches IA de la CNIL", () => {
     );
   });
 
+  it("retire les commandes d'impression et l'encart de contribution", () => {
+    const html = [
+      "<main>",
+      '<div class="ctn-gen">',
+      "<h1>Se mettre en conformité</h1>",
+      "<p class='ctn-gen-auteur'>28 mars 2022</p>",
+      '<div class="ctn-gen-after">',
+      "<p>Attribuer les responsabilités et documenter son traitement.</p>",
+      '<p class="rtecenter"><button id="print" onclick="window.print();" title="Imprimer">Imprimer cette check-list</button></p>',
+      '<p class="rtecenter"><em>Aucune information n\'est collectée par la CNIL.</em></p>',
+      "</div>",
+      '<div class="ctn-gen-mise-avant clearfix"><h2><span>Vous souhaitez contribuer ?</span></h2><div><p>Écrivez à ia[@]cnil.fr</p></div></div>',
+      "</div>",
+      "</main>",
+    ].join("");
+    const texte = texteFiche(html);
+    assert.match(texte, /Attribuer les responsabilités/);
+    assert.doesNotMatch(
+      texte,
+      /Imprimer cette check-list|Aucune information|Vous souhaitez contribuer|Écrivez à ia/,
+    );
+  });
+
   it("lit une date de page en français et laisse une valeur illisible telle quelle", () => {
     assert.equal(dateFrancaise("22 juillet 2025"), "2025-07-22");
     assert.equal(dateFrancaise("2024-04-08"), "2024-04-08");
@@ -584,7 +607,7 @@ describe("synchronisation de la doctrine CNIL", () => {
     const manifeste = JSON.parse(
       readFileSync(join(racine, "data", "corpus", "cnil_doctrine", "manifest.json"), "utf8"),
     ) as {
-      liste_reference: { type: string; url: string; consulte_le: string; documents: number }[];
+      liste_reference: { type: string; url: string; origine: string; consulte_le: string; documents: number }[];
       consulte_le: string;
       types: Record<string, number>;
       couverts_par_type: Record<string, number>;
@@ -601,6 +624,7 @@ describe("synchronisation de la doctrine CNIL", () => {
       {
         type: "liste_aipd",
         url: "https://exemple.test/fr/listes-aipd",
+        origine: "page",
         consulte_le: "2026-11-14",
         listes: 3,
         documents: 2,
@@ -933,7 +957,10 @@ describe("synchronisation de la doctrine CNIL", () => {
     };
     const manifeste = JSON.parse(
       readFileSync(join(ICI, "..", "data", "corpus", "cnil_doctrine", "manifest.json"), "utf8"),
-    ) as { documents_par_type: Record<string, { slug: string; fragments: number }[]> };
+    ) as {
+      types: Record<string, number>;
+      documents_par_type: Record<string, { slug: string; fragments: number }[]>;
+    };
     const textes = new Map<string, string[]>();
     for (const ligne of readFileSync(
       join(ICI, "..", "data", "corpus", "cnil_doctrine", "unites.jsonl"),
@@ -1057,6 +1084,7 @@ describe("synchronisation de la doctrine CNIL", () => {
     assert.deepEqual(manifeste.liste_reference[0], {
       type: "doctrine_ia",
       url: rubrique,
+      origine: "liste",
       consulte_le: "2026-11-25",
       listes: 4,
       documents: 2,
@@ -1080,7 +1108,7 @@ describe("synchronisation de la doctrine CNIL", () => {
     assert.equal(b.date_acte, "2026-07-20", "la page date la note lue dans son PDF");
 
     const raisons = new Map(manifeste.documents_ecartes.map((ecarte) => [ecarte.url, ecarte.raison]));
-    assert.match(raisons.get(pageC) ?? "", /moins de 1500 caractères/);
+    assert.match(raisons.get(pageC) ?? "", /moins de 1500 lettres/);
     assert.match(raisons.get(pageD) ?? "", /plafond de 2 documents/);
 
     const unites = readFileSync(
@@ -1211,20 +1239,37 @@ describe("synchronisation de la doctrine CNIL", () => {
       attendre: async () => {},
       delaiMs: 0,
     };
-    const lireDate = (): string => {
+    const lireDates = (): { acte: string; extraction: string } => {
       const manifeste = JSON.parse(
         readFileSync(join(racine, "data", "corpus", "cnil_doctrine", "manifest.json"), "utf8"),
-      ) as { documents_par_type: Record<string, { date_acte: string; date_source: string }[]> };
-      return manifeste.documents_par_type.doctrine_ia?.[0]?.date_acte ?? "";
+      ) as {
+        documents_par_type: Record<
+          string,
+          { date_acte: string; date_extraction: string; date_source: string }[]
+        >;
+      };
+      const document = manifeste.documents_par_type.doctrine_ia?.[0];
+      return {
+        acte: document?.date_acte ?? "",
+        extraction: document?.date_extraction ?? "",
+      };
     };
 
     await syncDoctrine({ ...commun, date: "2026-11-21" });
-    assert.equal(lireDate(), "2026-11-21");
+    assert.deepEqual(lireDates(), { acte: "2026-11-21", extraction: "2026-11-21" });
     await syncDoctrine({ ...commun, date: "2026-11-25" });
-    assert.equal(lireDate(), "2026-11-21", "un texte inchangé n'est pas redaté");
+    assert.deepEqual(
+      lireDates(),
+      { acte: "2026-11-21", extraction: "2026-11-21" },
+      "un texte inchangé n'est pas redaté",
+    );
     corps = "B".repeat(1800);
     await syncDoctrine({ ...commun, date: "2026-11-25" });
-    assert.equal(lireDate(), "2026-11-25", "un texte réédité reprend la date de la passe");
+    assert.deepEqual(
+      lireDates(),
+      { acte: "2026-11-25", extraction: "2026-11-25" },
+      "un texte réédité reprend la date de la passe",
+    );
   });
 
   it("laisse les 56 documents déjà au corpus inchangés", () => {
@@ -1233,6 +1278,10 @@ describe("synchronisation de la doctrine CNIL", () => {
 
   it("laisse les 18 fiches IA déjà au corpus inchangées", () => {
     verifierDocumentsFiges("fiches-ia-2026-11-25.json");
+    const manifeste = JSON.parse(
+      readFileSync(join(ICI, "..", "data", "corpus", "cnil_doctrine", "manifest.json"), "utf8"),
+    ) as { types: Record<string, number> };
+    assert.equal(manifeste.types.fiche_ia, 18, "aucune fiche ajoutée ni retirée");
   });
 
   it("lit le numéro d'une délibération depuis un corpus cnil réduit", () => {

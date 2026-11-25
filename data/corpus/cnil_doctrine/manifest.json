@@ -6,6 +6,7 @@
     {
       "type": "guide",
       "url": "https://www.cnil.fr/fr/mediatheque?field_scald_collection_tid=29",
+      "origine": "page",
       "consulte_le": "2026-11-25",
       "listes": 26,
       "documents": 26
@@ -13,6 +14,7 @@
     {
       "type": "guide",
       "url": "https://www.cnil.fr/fr/guides-aipd",
+      "origine": "page",
       "consulte_le": "2026-11-25",
       "listes": 4,
       "documents": 4
@@ -20,6 +22,7 @@
     {
       "type": "referentiel",
       "url": "https://www.cnil.fr/fr/autres-referentiels",
+      "origine": "page",
       "consulte_le": "2026-11-25",
       "listes": 26,
       "documents": 26
@@ -27,6 +30,7 @@
     {
       "type": "liste_aipd",
       "url": "https://www.cnil.fr/fr/listes-des-traitements-pour-lesquels-une-aipd-est-requise-ou-non",
+      "origine": "page",
       "consulte_le": "2026-11-25",
       "listes": 2,
       "documents": 2
@@ -34,6 +38,7 @@
     {
       "type": "fiche_ia",
       "url": "https://www.cnil.fr/fr/les-fiches-pratiques-ia",
+      "origine": "page",
       "consulte_le": "2026-11-25",
       "listes": 18,
       "documents": 18
@@ -41,22 +46,23 @@
     {
       "type": "doctrine_ia",
       "url": "https://www.cnil.fr/fr/intelligence-artificielle",
+      "origine": "liste",
       "consulte_le": "2026-11-25",
-      "listes": 23,
-      "documents": 23
+      "listes": 27,
+      "documents": 25
     }
   ],
   "consulte_le": "2026-11-25",
   "date_extraction": "2026-11-25",
-  "documents_listes": 99,
-  "documents": 97,
-  "fragments": 5516,
+  "documents_listes": 103,
+  "documents": 99,
+  "fragments": 5621,
   "types": {
     "guide": 30,
     "referentiel": 26,
     "liste_aipd": 0,
     "fiche_ia": 18,
-    "doctrine_ia": 23
+    "doctrine_ia": 25
   },
   "couverts_par_type": {
     "guide": 0,
@@ -1387,6 +1393,70 @@
         "fragments": 69
       },
       {
+        "slug": "bilan-bac-a-sable-ia-services-publics",
+        "type": "doctrine_ia",
+        "titre": "Intelligence artificielle et services publics : la CNIL publie le bilan de son « bac à sable »",
+        "url": "https://www.cnil.fr/fr/bilan-bac-a-sable-IA-services-publics",
+        "snapshot": "04fdaecd83d689253fd39b52ba69cb105fd922e20d560b6f982441ce1d3255f3",
+        "date_acte": "2025-04-11",
+        "date_source": "document",
+        "date_extraction": "2026-11-25",
+        "representation": "pdf",
+        "pdf": "https://www.cnil.fr/sites/default/files/2025-04/bac_a_sable_recommandations.pdf",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
+        "fragments": 73
+      },
+      {
+        "slug": "gouvernance-des-donnees-et-ia-cinq-autorites-de-protection-des-donnees-sengagent",
+        "type": "doctrine_ia",
+        "titre": "Gouvernance des données et IA : cinq autorités de protection des données s’engagent pour une IA innovante et protectrice de la vie privée",
+        "url": "https://www.cnil.fr/fr/gouvernance-des-donnees-et-ia-cinq-autorites-de-protection-des-donnees-sengagent",
+        "snapshot": "967f1e9c4721c7f3746c80b6daf02d56b0c21345abdbc209e1a598b39d213b48",
+        "date_acte": "2025-02-11",
+        "date_source": "document",
+        "date_extraction": "2026-11-25",
+        "representation": "page",
+        "pdf": null,
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
+        "fragments": 4
+      },
+      {
+        "slug": "entree-en-vigueur-du-reglement-europeen-sur-lia-les-premieres-questions-reponses-de-la-cnil",
+        "type": "doctrine_ia",
+        "titre": "Entrée en vigueur du règlement européen sur l’IA : les premières questions-réponses de la CNIL",
+        "url": "https://www.cnil.fr/fr/entree-en-vigueur-du-reglement-europeen-sur-lia-les-premieres-questions-reponses-de-la-cnil",
+        "snapshot": "4655c94ccf113ef9ff5ac0df7a0aa6dffb3d781efddde32e8154836b611ff334",
+        "date_acte": "2024-07-12",
+        "date_source": "document",
+        "date_extraction": "2026-11-25",
+        "representation": "page",
+        "pdf": null,
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
+        "fragments": 31
+      },
+      {
+        "slug": "deux-faq-utilisation-des-systemes-dia-scolaire",
+        "type": "doctrine_ia",
+        "titre": "La CNIL publie deux FAQ sur l’utilisation des systèmes d’IA dans les établissements scolaires",
+        "url": "https://www.cnil.fr/fr/deux-faq-utilisation-des-systemes-dia-scolaire",
+        "snapshot": "025fe8ffbb4d867465d1e236b0a44add5a1be9864bc0ddf2fb928c74bc2dddc6",
+        "date_acte": "2025-06-20",
+        "date_source": "document",
+        "date_extraction": "2026-11-25",
+        "representation": "page",
+        "pdf": null,
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
+        "fragments": 8
+      },
+      {
         "slug": "ia-et-sante-developper-et-evaluer-des-systemes-ia-conformes",
         "type": "doctrine_ia",
         "titre": "IA et santé : développer et évaluer des systèmes d’IA en conformité avec la réglementation",
@@ -1407,7 +1477,7 @@
         "type": "doctrine_ia",
         "titre": "IA : comment être en conformité avec le RGPD ?",
         "url": "https://www.cnil.fr/fr/intelligence-artificielle/ia-comment-etre-en-conformite-avec-le-rgpd",
-        "snapshot": "0e1fdcad4328ba57536a8f3a9c22b723da6968d8072fc87ae347aba597893de3",
+        "snapshot": "947b34e3b3dd1c2f9f5421c2e474620649c0b9a4148740ba0970e0cb5b2d4729",
         "date_acte": "2022-04-05",
         "date_source": "document",
         "date_extraction": "2026-11-25",
@@ -1416,14 +1486,14 @@
         "licence": "CC BY-ND 4.0",
         "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
         "source": "Source : CNIL – https://www.cnil.fr",
-        "fragments": 45
+        "fragments": 44
       },
       {
         "slug": "intelligence-artificielle-lavis-de-la-cnil-et-de-ses-homologues-sur-le-futur-reglement-europeen",
         "type": "doctrine_ia",
         "titre": "Intelligence artificielle : l’avis de la CNIL et de ses homologues sur le futur règlement européen",
         "url": "https://www.cnil.fr/fr/intelligence-artificielle-lavis-de-la-cnil-et-de-ses-homologues-sur-le-futur-reglement-europeen",
-        "snapshot": "7d838bbc12b7eb0324c7422a406a3097c079337a9b278af616f25e868eac428e",
+        "snapshot": "0a6ffffb2bff5752d1b334143553731198728d68f0943885a5f921309965c519",
         "date_acte": "2021-07-08",
         "date_source": "document",
         "date_extraction": "2026-11-25",
@@ -1432,14 +1502,14 @@
         "licence": "CC BY-ND 4.0",
         "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
         "source": "Source : CNIL – https://www.cnil.fr",
-        "fragments": 10
+        "fragments": 9
       },
       {
         "slug": "intelligence-artificielle-le-plan-daction-de-la-cnil",
         "type": "doctrine_ia",
         "titre": "Intelligence artificielle : le plan d’action de la CNIL",
         "url": "https://www.cnil.fr/fr/intelligence-artificielle-le-plan-daction-de-la-cnil",
-        "snapshot": "6fec491496732af0804c797ccb6fa1323d88bff35db305a3f51a206ceddc6aa7",
+        "snapshot": "31a2a77e9b152404ab01055b0bf752cba76beebe738a143513344be36af53f25",
         "date_acte": "2023-05-16",
         "date_source": "document",
         "date_extraction": "2026-11-25",
@@ -1448,7 +1518,7 @@
         "licence": "CC BY-ND 4.0",
         "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
         "source": "Source : CNIL – https://www.cnil.fr",
-        "fragments": 20
+        "fragments": 19
       },
       {
         "slug": "accompagnement-des-professionnels-le-programme-de-travail-de-la-cnil-pour-2026",
@@ -1499,27 +1569,11 @@
         "fragments": 4
       },
       {
-        "slug": "introduction",
-        "type": "doctrine_ia",
-        "titre": "Introduction au guide d’auto-évaluation pour les systèmes d’IA",
-        "url": "https://www.cnil.fr/fr/intelligence-artificielle/guide/introduction",
-        "snapshot": "25b4608ddbdf1f0bb373091769e621c41f5cb16c0c0612900d54d27615baf6d4",
-        "date_acte": "2022-03-28",
-        "date_source": "document",
-        "date_extraction": "2026-11-25",
-        "representation": "page",
-        "pdf": null,
-        "licence": "CC BY-ND 4.0",
-        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
-        "source": "Source : CNIL – https://www.cnil.fr",
-        "fragments": 3
-      },
-      {
         "slug": "se-poser-les-bonnes-questions-avant-dutiliser-un-systeme-dintelligence-artificielle",
         "type": "doctrine_ia",
         "titre": "Se poser les bonnes questions avant d’utiliser un système d’intelligence artificielle",
         "url": "https://www.cnil.fr/fr/intelligence-artificielle/guide/se-poser-les-bonnes-questions-avant-dutiliser-un-systeme-dintelligence-artificielle",
-        "snapshot": "d0eca4fa7a205e78471095669e4a6ef748ee0fee53f0e237c1dca8e6b5d5b64c",
+        "snapshot": "f1556a534cab32dbae86cb3a011256d99429a3a0ff84aca65cf630c0edda729a",
         "date_acte": "2022-04-05",
         "date_source": "document",
         "date_extraction": "2026-11-25",
@@ -1535,7 +1589,7 @@
         "type": "doctrine_ia",
         "titre": "Collecter et qualifier les données d’entraînement",
         "url": "https://www.cnil.fr/fr/intelligence-artificielle/guide/collecter-et-qualifier-les-donnees-dentrainement",
-        "snapshot": "07ecef30ace96d46ae530a0b498460e6709aaf26be17ff476b902ecda62574e9",
+        "snapshot": "e08efdf62b6d35136023a6356c8ab117086cb45f45390ef98314e5f910e0ecfb",
         "date_acte": "2022-03-28",
         "date_source": "document",
         "date_extraction": "2026-11-25",
@@ -1551,7 +1605,7 @@
         "type": "doctrine_ia",
         "titre": "Développer et entraîner un algorithme",
         "url": "https://www.cnil.fr/fr/intelligence-artificielle/guide/developper-et-entrainer-un-algorithme",
-        "snapshot": "1973150d8392d78c1d110ac00db4566ea5effaf6d58b6330e1b91f315311a0f7",
+        "snapshot": "117d62995946879e592eb27f6d9b3fb33824621d75d8ff8ee5fde4bc4f227091",
         "date_acte": "2022-03-28",
         "date_source": "document",
         "date_extraction": "2026-11-25",
@@ -1567,7 +1621,7 @@
         "type": "doctrine_ia",
         "titre": "Utiliser un système d’IA en production",
         "url": "https://www.cnil.fr/fr/intelligence-artificielle/guide/utiliser-un-systeme-dia-en-production",
-        "snapshot": "f7eb5f7833c5f85fd97523befb6be982bda4af867e615503277ffe8162445c7a",
+        "snapshot": "65c563d205b28387f89160d4900c70b2f36b6917e7ff13272c403cb88825540a",
         "date_acte": "2022-03-28",
         "date_source": "document",
         "date_extraction": "2026-11-25",
@@ -1576,14 +1630,14 @@
         "licence": "CC BY-ND 4.0",
         "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
         "source": "Source : CNIL – https://www.cnil.fr",
-        "fragments": 10
+        "fragments": 9
       },
       {
         "slug": "securiser-le-traitement",
         "type": "doctrine_ia",
         "titre": "Sécuriser le traitement",
         "url": "https://www.cnil.fr/fr/intelligence-artificielle/guide/securiser-le-traitement",
-        "snapshot": "cc0e57450e8565f6a51f0b56bdc78220a377724543f8c7bbd8fbc679e8100516",
+        "snapshot": "5b1c16cc85aa099ddcad95636d0760b01bd30dd0ab3c9cc0df2929491e8d06bf",
         "date_acte": "2022-03-28",
         "date_source": "document",
         "date_extraction": "2026-11-25",
@@ -1599,7 +1653,7 @@
         "type": "doctrine_ia",
         "titre": "Permettre le bon exercice de leurs droits par les personnes",
         "url": "https://www.cnil.fr/fr/intelligence-artificielle/guide/permettre-le-bon-exercice-de-leurs-droits-par-les-personnes",
-        "snapshot": "5c75b36b7cc58cbb782eb7cd8004132369b9f0b363de2d9d8657f3db6d2d96bd",
+        "snapshot": "f106276c72bf98901e77e4763d04fdc6fb3bbe535076d2d68ebaccf8aec1f5c2",
         "date_acte": "2022-03-28",
         "date_source": "document",
         "date_extraction": "2026-11-25",
@@ -1609,22 +1663,6 @@
         "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
         "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 9
-      },
-      {
-        "slug": "se-mettre-en-conformite",
-        "type": "doctrine_ia",
-        "titre": "Se mettre en conformité",
-        "url": "https://www.cnil.fr/fr/intelligence-artificielle/guide/se-mettre-en-conformite",
-        "snapshot": "f1eaf3cf93b0e7117d4c3470af398530d88a5a485afb32cfa1d497cbe2818897",
-        "date_acte": "2022-03-28",
-        "date_source": "document",
-        "date_extraction": "2026-11-25",
-        "representation": "page",
-        "pdf": null,
-        "licence": "CC BY-ND 4.0",
-        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
-        "source": "Source : CNIL – https://www.cnil.fr",
-        "fragments": 4
       }
     ]
   },
@@ -1740,6 +1778,16 @@
       "url": "https://www.cnil.fr/fr/intelligence-artificielle",
       "titre": "Intelligence artificielle",
       "raison": "liste d’actualités de la rubrique, pas un document"
+    },
+    {
+      "url": "https://www.cnil.fr/fr/intelligence-artificielle/guide/introduction",
+      "titre": "Introduction au guide d’auto-évaluation pour les systèmes d’IA",
+      "raison": "plafond de 25 documents : moins substantiel que les 25 retenus"
+    },
+    {
+      "url": "https://www.cnil.fr/fr/intelligence-artificielle/guide/se-mettre-en-conformite",
+      "titre": "Se mettre en conformité",
+      "raison": "plafond de 25 documents : moins substantiel que les 25 retenus"
     }
   ],
   "mention": "extrait non modifié",
@@ -1758,13 +1806,13 @@
       "https://www.cnil.fr/fr/les-fiches-pratiques-ia",
       "https://www.cnil.fr/fr/intelligence-artificielle"
     ],
-    "documents_listes": 99,
+    "documents_listes": 103,
     "types": {
       "guide": 30,
       "referentiel": 26,
       "liste_aipd": 0,
       "fiche_ia": 18,
-      "doctrine_ia": 23
+      "doctrine_ia": 25
     },
     "couverts_par_type": {
       "guide": 0,
@@ -1775,7 +1823,7 @@
     },
     "couverts_par_cnil": 2,
     "couverts_par_doctrine": 0,
-    "documents_ecartes": 19,
+    "documents_ecartes": 21,
     "mentions_contraires": 0,
     "licence_note": "Les textes de cnil.fr sont sous CC BY-ND 4.0 sauf mention contraire ; l'heuristique écarte une mention contraire explicite. Aucune mention de licence distincte n'est portée par les documents retenus ; un document co-édité avec un tiers garde le crédit du site et son lien, seule mention fournie par la source."
   }

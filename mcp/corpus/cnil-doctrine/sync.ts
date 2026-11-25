@@ -121,6 +121,8 @@ export type ManifesteDoctrine = {
   liste_reference: {
     type: TypeDoctrine;
     url: string;
+    /** `page` : page de résultats relue ; `liste` : liste explicite déclarée. */
+    origine: "page" | "liste";
     consulte_le: string;
     /** Documents que la page a listés, retenus ou non. */
     listes: number;
@@ -508,9 +510,10 @@ export async function syncDoctrine(
     // Ce que la page de référence a listé, retenu ou non : une fiche refusée
     // reste comptée ici, puis déclarée dans `documents_ecartes`.
     let listes = 0;
-    const entreeReference = {
+    const entreeReference: ManifesteDoctrine["liste_reference"][number] = {
       type: reference.type,
       url: reference.url,
+      origine: reference.liens === "urls" ? "liste" : "page",
       consulte_le: date,
       listes,
       documents: 0,
@@ -715,7 +718,7 @@ export async function syncDoctrine(
       ecartes.push({
         url,
         titre,
-        raison: `moins de ${seuil} caractères (${lettres(texte)})`,
+        raison: `moins de ${seuil} lettres (${lettres(texte)})`,
       });
       continue;
     }

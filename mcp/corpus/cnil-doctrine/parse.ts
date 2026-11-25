@@ -165,6 +165,8 @@ export function texteFiche(html: string): string {
     // (« Texte reference », « Document reference »).
     /<div\b[^>]*class=["'](?:[^"']*\s)?ctn-gen-documents(?:\s[^"']*)?["'][^>]*>/i,
     /<div\b[^>]*class=["'](?:[^"']*\s)?text-hide(?:\s[^"']*)?["'][^>]*>/i,
+    // Encart « Vous souhaitez contribuer ? Écrivez à ia@cnil.fr », hors doctrine.
+    /<div\b[^>]*class=["'](?:[^"']*\s)?ctn-gen-mise-avant(?:\s[^"']*)?["'][^>]*>/i,
   ].reduce(sansBloc, corps);
   const sansOutils = sansChrome
     .replace(/<script\b[\s\S]*?<\/script>/gi, " ")
@@ -174,6 +176,16 @@ export function texteFiche(html: string): string {
     // pas du texte de doctrine ; les boutons de glossaire, eux, portent un terme.
     .replace(
       /<button\b[^>]*class=["'][^"']*\bctn-gen-ascenseur-collapse\b[^"']*["'][\s\S]*?<\/button>/gi,
+      " ",
+    )
+    // Boutons d'impression et note de confidentialité de la check-list : des
+    // commandes de page, pas des recommandations.
+    .replace(
+      /<button\b[^>]*(?:\bid=["']print["']|class=["'][^"']*\b(?:print-btn|icon-print)\b[^"']*["'])[^>]*>[\s\S]*?<\/button>/gi,
+      " ",
+    )
+    .replace(
+      /<p\b[^>]*>\s*<em>\s*Aucune information n['’]est collectée par la CNIL\.?\s*<\/em>\s*<\/p>/gi,
       " ",
     );
   const avecSauts = sansOutils
