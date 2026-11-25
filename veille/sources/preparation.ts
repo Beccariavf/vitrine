@@ -35,6 +35,7 @@ import {
 } from "../../mcp/corpus/preparation/liste.ts";
 import type { DescripteurPreparation } from "../../mcp/corpus/preparation/liste.ts";
 import { lireDescripteurPreparation } from "../../mcp/corpus/preparation/sync.ts";
+import { ORDRE_CORPUS_ACTES } from "../../mcp/corpus/registre.ts";
 import { actesSuivis, dateFr } from "./eurlex.ts";
 
 /** Identifiant de la source de veille. */
@@ -55,22 +56,6 @@ export const DESCRIPTEUR_PREPARATION = join(
   "descripteur.json",
 );
 export const DOSSIER_DESCRIPTEURS = join(ICI, "..", "..", "mcp", "corpus");
-
-/**
- * Ordre de préférence quand un acte adopté touche plusieurs corpus de textes :
- * l'acte de base de la protection des données d'abord, puis ses voisins.
- */
-const ORDRE_CORPUS_ACTES = [
-  "rgpd",
-  "aiact",
-  "eprivacy",
-  "police",
-  "eudpr",
-  "rgpdproc",
-  "ccs",
-  "donnees",
-  "sante_ue",
-];
 
 /**
  * Un document suivi, lu dans le corpus de préparation. Son statut de corpus
@@ -385,7 +370,7 @@ export function corpusVise(
     .map((base) => corpus.get(base))
     .filter((vise): vise is CorpusVise => vise !== undefined);
   const rangs = touchés
-    .map((vise) => ({ vise, rang: ORDRE_CORPUS_ACTES.indexOf(vise.corpus) }))
+    .map((vise) => ({ vise, rang: (ORDRE_CORPUS_ACTES as readonly string[]).indexOf(vise.corpus) }))
     .filter(({ rang }) => rang >= 0)
     .sort((gauche, droite) => gauche.rang - droite.rang || gauche.vise.corpus.localeCompare(droite.vise.corpus));
   return rangs[0]?.vise ?? null;

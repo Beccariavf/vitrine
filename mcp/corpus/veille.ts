@@ -12,149 +12,27 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import type { Entry } from "../../veille/types.ts";
 import { slugDe } from "./cnil-doctrine/parse.ts";
+import {
+  CORPUS_ACTES,
+  CORPUS_ACTES_UE,
+  CORPUS_PAR_CATEGORIE,
+  CORPUS_PAR_DOCUMENT,
+  CORPUS_PAR_SOURCE,
+  CORPUS_SANS_VEILLE,
+  SOURCES_PAR_CORPUS,
+  corpusDeclare,
+} from "./registre.ts";
+import type { CorpusVeille } from "./registre.ts";
 
-/** Sources de veille dont l'identifiant désigne un document du corpus. */
-export type CorpusVeille =
-  | "cnil"
-  | "cnil_doctrine"
-  | "ce"
-  | "constit"
-  | "cc"
-  | "cjue"
-  | "cepd"
-  | "preparation"
-  | "lil"
-  | "textes_fr"
-  | "rgpd"
-  | "aiact"
-  | "eprivacy"
-  | "police"
-  | "eudpr"
-  | "rgpdproc"
-  | "ccs"
-  | "adequation"
-  | "donnees"
-  | "sante_ue"
-  | "cada";
-
-/** Sources de veille dont l'identifiant est aussi le corpus qu'elles alimentent. */
-export const CORPUS_PAR_SOURCE: Readonly<Record<string, CorpusVeille>> = {
-  cnil: "cnil",
-  cnil_doctrine: "cnil_doctrine",
-  cetat: "ce",
-  constit: "constit",
-  judilibre: "cc",
-  cjeu: "cjue",
-  cepd: "cepd",
-  preparation: "preparation",
-  cada: "cada",
-};
-
-/** Corpus d'actes de l'Union : ils ne portent pas la fraîcheur globale. */
-export const CORPUS_ACTES: readonly CorpusVeille[] = [
-  "rgpd",
-  "aiact",
-  "eprivacy",
-  "police",
-  "eudpr",
-  "rgpdproc",
-  "ccs",
-  "adequation",
-  "donnees",
-  "sante_ue",
-];
-
-/** Actes de base suivis par la veille `eurlex` : CELEX → corpus. */
-export const CORPUS_ACTES_UE: Readonly<Record<string, CorpusVeille>> = {
-  "32016R0679": "rgpd",
-  "32024R1689": "aiact",
-  "32025R0454": "aiact",
-  "32026D2274": "aiact",
-  "32026R2487": "aiact",
-  "32002L0058": "eprivacy",
-  "32016L0680": "police",
-  "32018R1725": "eudpr",
-  "32025R2518": "rgpdproc",
-  "32021D0914": "ccs",
-  "32021D0915": "ccs",
-  "32023R2854": "donnees",
-  "32022R0868": "donnees",
-  "32019L1024": "donnees",
-  "32023R0138": "donnees",
-  "32018R1807": "donnees",
-  "32026H2394": "donnees",
-  "32023R1622": "donnees",
-  "32025R0327": "sante_ue",
-  "32026R0771": "sante_ue",
-  "32026R2083": "sante_ue",
-  "32026R2098": "sante_ue",
-};
-
-/**
- * Corpus visé par une entrée `eurlex` que son seul CELEX ne désigne pas : une
- * décision d'adéquation neuve et une décision de clauses types neuve entrent
- * respectivement dans `adequation` et `ccs` ; un acte d'exécution pris sur le
- * fondement de l'EHDS est visé au corpus `sante_ue`, où il reste `manquant`
- * tant qu'aucun descripteur ne le porte.
- */
-export const CORPUS_PAR_CATEGORIE: Readonly<Record<string, CorpusVeille>> = {
-  adequation: "adequation",
-  clauses_types: "ccs",
-  acte_execution: "sante_ue",
-};
-
-/** Une entrée `legi` vise le corpus du texte qu'elle porte. */
-export const CORPUS_PAR_DOCUMENT: Readonly<Record<string, CorpusVeille>> = {
-  LEGITEXT000006068624: "lil",
-  LEGITEXT000038567662: "textes_fr",
-  LEGITEXT000006070719: "textes_fr",
-  LEGITEXT000006070987: "textes_fr",
-  LEGITEXT000006072050: "textes_fr",
-  LEGITEXT000006072665: "textes_fr",
-  LEGITEXT000025503132: "textes_fr",
-  LEGITEXT000006072026: "textes_fr",
-  LEGITEXT000031366350: "textes_fr",
-  LEGITEXT000006070721: "textes_fr",
-  LEGITEXT000006074236: "textes_fr",
-  LEGITEXT000005634379: "textes_fr",
-  LEGITEXT000006069414: "textes_fr",
-  LEGITEXT000006068104: "textes_fr",
-  LEGITEXT000006068321: "textes_fr",
-  LEGITEXT000049565770: "textes_fr",
-};
-
-/**
- * Sources de veille qui alimentent chaque corpus : l'inverse des trois tables
- * de raccord, jamais une liste tenue à la main. Un corpus qui n'y figure pas et
- * que `CORPUS_SANS_VEILLE` ne justifie pas est signalé par `etat_corpus`.
- */
-export const SOURCES_PAR_CORPUS: Readonly<Record<string, readonly string[]>> = (() => {
-  const agregat = new Map<string, Set<string>>();
-  const ajouter = (corpus: string | undefined, source: string): void => {
-    if (corpus === undefined) return;
-    const sources = agregat.get(corpus) ?? new Set<string>();
-    sources.add(source);
-    agregat.set(corpus, sources);
-  };
-  for (const [source, corpus] of Object.entries(CORPUS_PAR_SOURCE)) ajouter(corpus, source);
-  for (const corpus of Object.values(CORPUS_PAR_DOCUMENT)) ajouter(corpus, "legi");
-  for (const corpus of Object.values(CORPUS_ACTES_UE)) ajouter(corpus, "eurlex");
-  for (const corpus of Object.values(CORPUS_PAR_CATEGORIE)) ajouter(corpus, "eurlex");
-  return Object.fromEntries(
-    [...agregat.entries()]
-      .sort(([gauche], [droite]) => gauche.localeCompare(droite))
-      .map(([corpus, sources]) => [corpus, [...sources].sort()]),
-  );
-})();
-
-/**
- * Corpus qu'aucune source de veille n'alimente, avec la raison dite au client.
- * `metadonnees` est un instantané du registre : il ne se resynchronise que par
- * sa commande, aucun flux ne le signale.
- */
-export const CORPUS_SANS_VEILLE: Readonly<Record<string, string>> = {
-  metadonnees:
-    "instantané du registre art. 60, resynchronisation manuelle `metadonnees:sync`",
+export type { CorpusVeille };
+export {
+  CORPUS_ACTES,
+  CORPUS_ACTES_UE,
+  CORPUS_PAR_CATEGORIE,
+  CORPUS_PAR_DOCUMENT,
+  CORPUS_PAR_SOURCE,
+  CORPUS_SANS_VEILLE,
+  SOURCES_PAR_CORPUS,
 };
 
 const ID_CETAT = /^CETATEXT\d+$/;
@@ -223,19 +101,23 @@ export function corpusDeLEntree(
   entry: Pick<Entry, "source"> & { document?: string; categorie?: Entry["categorie"] },
 ): CorpusVeille | null {
   if (entry.source === "legi") {
-    return entry.document === undefined ? null : (CORPUS_PAR_DOCUMENT[entry.document] ?? null);
+    return entry.document === undefined
+      ? null
+      : ((CORPUS_PAR_DOCUMENT[entry.document] as CorpusVeille | undefined) ?? null);
   }
   if (entry.source === "eurlex") {
     if (entry.categorie !== undefined) {
-      const parCategorie = CORPUS_PAR_CATEGORIE[entry.categorie];
+      const parCategorie = CORPUS_PAR_CATEGORIE[entry.categorie] as CorpusVeille | undefined;
       if (parCategorie !== undefined) return parCategorie;
     }
-    return entry.document === undefined ? null : (CORPUS_ACTES_UE[entry.document] ?? null);
+    return entry.document === undefined
+      ? null
+      : ((CORPUS_ACTES_UE[entry.document] as CorpusVeille | undefined) ?? null);
   }
   // Une actualité du flux CEPD ne vise aucun document du corpus ; seule une
   // entrée qui porte son slug y entre.
   if (entry.source === "cepd") return entry.document === undefined ? null : "cepd";
-  return CORPUS_PAR_SOURCE[entry.source] ?? null;
+  return (CORPUS_PAR_SOURCE[entry.source] as CorpusVeille | undefined) ?? null;
 }
 
 /** Forme comparable d'une URL : sans barre finale, sans fragment ni requête. */
@@ -566,12 +448,7 @@ export function indexerVersionsCorpus(rootDir: string): Map<string, Set<string>>
  */
 export function documentsEcartes(rootDir: string, corpus: string): Map<string, string> {
   const ecartes = new Map<string, string>();
-  if (
-    corpus !== "cjue" &&
-    corpus !== "cepd" &&
-    corpus !== "cnil_doctrine" &&
-    corpus !== "preparation"
-  ) {
+  if (corpusDeclare(corpus)?.publieEcartes !== true) {
     return ecartes;
   }
   const chemin = join(rootDir, "data", "corpus", corpus, "manifest.json");

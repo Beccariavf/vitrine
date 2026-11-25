@@ -13,6 +13,17 @@ import type { ModeRecherche } from "./tools.ts";
 import { LIMITE_DEFAUT, LIMITE_MAX, decisionsCitant } from "./corpus/citants.ts";
 import { PERIMETRE } from "./corpus/citations.ts";
 import {
+  CORPUS_DECISIONS,
+  CORPUS_INSTANTANES,
+  NOMBRE_CORPUS,
+  NOMS_SITE,
+  SOURCES_SOUS_VEILLE,
+  descriptionProvenance,
+  descriptionRecherche,
+  descriptionServeur,
+  nombreEnLettres,
+} from "./corpus/registre.ts";
+import {
   FAMILLES,
   LIMITE_DEFAUT as LIMITE_DEFAUT_DECISIONS,
   LIMITE_MAX as LIMITE_MAX_DECISIONS,
@@ -35,31 +46,17 @@ function chiffresCitationsDecisions(): string {
 /** Racine du dépôt, résolue depuis ce fichier et jamais depuis le répertoire courant. */
 export const RACINE = fileURLToPath(new URL("..", import.meta.url));
 
-/** Les quatre actes de l'Union qui encadrent le RGPD, avec leur corpus et leur CELEX. */
-const ACTES_UE =
-  "la directive ePrivacy (corpus `eprivacy`, CELEX 32002L0058), la directive police-justice " +
-  "(corpus `police`, CELEX 32016L0680), le règlement 2018/1725 des institutions de l'Union (corpus " +
-  "`eudpr`, CELEX 32018R1725), le règlement procédural RGPD (corpus `rgpdproc`, CELEX 32025R2518)";
-
 /** Phrase de refus d'un instrument connu absent du corpus, celle que `citations.ts` rend. */
 const PERIMETRE_REFUS = `(périmètre : ${PERIMETRE})`;
 
+/** Liste de noms de corpus, chacun entre accents graves, pour les descriptions d'outils. */
+function nomsEnCode(noms: readonly string[]): string {
+  return noms.map((nom) => `\`${nom}\``).join(", ");
+}
+
 const CONSIGNE_PROVENANCE =
-  "Le texte rendu vient des vingt-deux corpus locaux (RGPD `32016R0679`, AI Act `32024R1689`, " +
-  "ePrivacy `32002L0058`, directive police-justice `32016L0680`, règlement 2018/1725 " +
-  "`32018R1725`, règlement procédural RGPD `32025R2518`, clauses contractuelles types " +
-  "`32021D0914` (transferts) et `32021D0915` (sous-traitance, art. 28), décisions d'adéquation `adequation`, " +
-  "textes UE de l'économie des données `donnees` (Data Act `32023R2854`, DGA `32022R0868`, " +
-  "directive Open Data `32019L1024`, ensembles de forte valeur `32023R0138`…), espace européen des " +
-  "données de santé `sante_ue` (règlement (UE) 2025/327 et ses règlements d'exécution), LIL " +
-  "`LEGITEXT000006068624`, textes français d'application `textes_fr` (accès aux documents " +
-  "administratifs, réutilisation, archives, secret statistique et des affaires, bases de données), textes en préparation et " +
-  "affaires pendantes `preparation`, délibérations CNIL `cnil`, " +
-  "avis et conseils de la CADA `cada` (sélection thématique : réutilisation, ouverture, " +
-  "algorithmes et code source des données publiques), " +
-  "doctrine CNIL `cnil_doctrine`, décisions du Conseil d'État `ce`, décisions DC et QPC du Conseil constitutionnel `constit`, documents " +
-  "du CEPD `cepd` (lignes directrices, avis art. 64, décisions art. 65, recommandations, G29 repris), décisions de la Cour de cassation `cc`, décisions de la CJUE " +
-  "`cjue` et notices du guichet unique `metadonnees`), jamais d'une génération. Citer la référence et l'URL rendues. " +
+  `Le texte rendu vient des ${nombreEnLettres(NOMBRE_CORPUS)} corpus locaux ` +
+  `(${descriptionProvenance()}), jamais d'une génération. Citer la référence et l'URL rendues. ` +
   "Respecter le niveau de confiance : « aucun_resultat_fiable » signifie qu'il faut le dire au " +
   "lecteur, pas inventer un passage.";
 
@@ -108,7 +105,8 @@ const CONSIGNE_STATUT_APPLICATION =
   "que la version rendue n'est pas nécessairement celle en vigueur ; jamais que le texte s'applique.";
 
 const CONSIGNE_CITATIONS =
-  "Chaque décision rendue par `search` (corpus `cnil`, `ce`, `constit`, `cc`, `cjue` et `cepd`), et " +
+  "Chaque décision rendue par `search` (corpus " +
+  `${nomsEnCode(CORPUS_DECISIONS)}), et ` +
   "par `get_decision` pour la CNIL, porte `citations` : la liste des instruments et articles reconnus dans son texte, non " +
   "exhaustive, chacun avec l'identifiant du document visé (`document`, `32016R0679`…), son lien " +
   "officiel (`url`, `null` quand il est inconnu) et `hors_corpus` (`true` quand ce document n'est " +
@@ -125,9 +123,9 @@ const CONSIGNE_PERIMETRE =
   "Chaque réponse porte `perimetre` : les corpus interrogés (`corpus`), le document quand l'appel " +
   "y est borné, et `exclusions`, un renvoi vers les exclusions déclarées que rend `etat_corpus` " +
   "(`corpus[].couverture`). Chaque corpus dit sa fraîcheur : `veille: true` pour les corpus " +
-  "revérifiés par la synchronisation (`cnil`, `ce`, `cc`, `cjue`), avec `a_jour_au`, la dernière " +
+  `revérifiés par la synchronisation (${nomsEnCode(SOURCES_SOUS_VEILLE)}), avec \`a_jour_au\`, la dernière ` +
   "synchronisation réussie (`null` si aucune) ; `veille: false` pour un instantané fixe jamais " +
-  "revérifié (`rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `donnees`, `sante_ue`, `lil`, `textes_fr`, `preparation`, `constit`, `cepd`, `cnil_doctrine`), daté par `arrete_le` ou non daté (`null`) ; " +
+  `revérifié (${nomsEnCode(CORPUS_INSTANTANES)}), daté par \`arrete_le\` ou non daté (\`null\`) ; ` +
   "`inconnu: true` dit qu'un corpus demandé n'existe pas localement et que rien n'y a été interrogé. Ne " +
   "jamais présenter un instantané fixe comme à jour. Le rappeler au lecteur. Une absence de " +
   "résultat ne prouve jamais que la règle n'existe pas : elle peut être hors du périmètre, exclue " +
@@ -146,50 +144,11 @@ const CONSIGNE_DECISIONS_CITEES =
   "La liste est non exhaustive : une liste vide ne prouve pas que la décision ne cite rien. " +
   `${chiffresCitationsDecisions()}`;
 
-const CONSIGNE_SERVEUR =
-  "Serveur de lecture et de recherche sur vingt-deux corpus juridiques : le RGPD " +
-  "(corpus `rgpd`, CELEX 32016R0679), l'AI Act et ses actes d'application (corpus `aiact`, " +
-  "CELEX 32024R1689, `32025R0454`, `32026D2274`, `32026R2487`), " +
-  `${ACTES_UE}` +
-  ", les clauses contractuelles types pour les transferts hors UE et la sous-traitance (corpus " +
-  "`ccs`, CELEX `32021D0914` et `32021D0915`) et les décisions d'adéquation, en vigueur et abrogées (corpus `adequation`), " +
-  "les textes UE de l'économie des données (corpus `donnees` : Data Act `32023R2854`, DGA " +
-  "`32022R0868`, directive Open Data `32019L1024`, ensembles de forte valeur `32023R0138`, libre " +
-  "circulation `32018R1807`, recommandation clauses types `32026H2394`, logos DGA `32023R1622`), " +
-  "l'espace européen des données de santé (corpus `sante_ue` : règlement (UE) 2025/327 et règlements " +
-  "d'exécution `32026R0771`, `32026R2083` et `32026R2098`), la loi " +
-  "Informatique et Libertés (corpus `lil`, LEGITEXT000006068624), les textes français " +
-  "d'application (corpus `textes_fr` : décret 2019-536 LEGITEXT000038567662 en entier, Code pénal " +
-  "LEGITEXT000006070719 articles 226-1, 226-8-1, 226-13, 226-16 à 226-24 et chapitre 323 ; CPCE " +
-  "LEGITEXT000006070987 articles L32-3, L34-1 et L34-5 ; Code du travail LEGITEXT000006072050 " +
-  "L1121-1, L1222-4, L1226-2, L2312-38 et L4624-8 ; Code de la santé publique " +
-  "LEGITEXT000006072665 droits de la personne et information des usagers (L1110, L1111), " +
-  "recherches impliquant la personne humaine (L1121 à L1126), génétique (L1130 à L1133), " +
-  "assurance et droit à l'oubli (L1141), données de santé (L1460, L1461, L1462-1, L1470), " +
-  "déclaration obligatoire (L3113-1), pharmacovigilance (L5121-22), télésanté (L6316) et leurs " +
-  "parties réglementaires R1110, R1111, R1461, R1470 et R6316 ; Code de la sécurité sociale " +
-  "LEGITEXT000006073189 L161-28-1, L161-31 et L315-1 ; Code des assurances " +
-  "LEGITEXT000006073984 L113-2 et L133-1 ; CGCT LEGITEXT000006070633 L2223-42 ; Code de la " +
-  "sécurité intérieure LEGITEXT000025503132 titre V du livre II " +
-  "(vidéoprotection) ; Code monétaire et financier LEGITEXT000006072026 L561-45 ; CRPA " +
-  "LEGITEXT000031366350 L311-3-1 ; Code civil LEGITEXT000006070721 article 9), " +
-  "les textes en préparation et les affaires pendantes (corpus `preparation` : propositions de " +
-  "modification des actes du corpus et affaires CJUE pendantes), " +
-  "les délibérations de la CNIL " +
-  "(corpus `cnil`, natures Sanction, Avis et Recommandation/Lignes directrices), " +
-  "les avis et conseils de la CADA (corpus `cada` : natures Avis et Conseil ; sélection " +
-  "thématique sur la réutilisation, l'ouverture, les algorithmes et le code source des données " +
-  "publiques), " +
-  "les guides, " +
-  "référentiels, fiches pratiques IA et listes AIPD de la CNIL (corpus `cnil_doctrine`, extraits " +
-  "non modifiés sous CC BY-ND 4.0), les décisions du " +
-  "Conseil d'État (corpus `ce`), les décisions DC et QPC du Conseil constitutionnel (corpus " +
-  "`constit`), les documents du CEPD (corpus `cepd` : lignes directrices, avis art. 64, décisions art. 65, recommandations), les décisions de la Cour de cassation " +
-  "sur les données personnelles (corpus `cc`), celles de la CJUE (corpus `cjue`), et les métadonnées des " +
-  "décisions définitives du guichet unique (corpus `metadonnees`, sans aucun texte de décision ; source " +
-  "CEDH arrêtée, aucune notice CEDH). Les outils de " +
-  "recherche acceptent les paramètres `corpus` et `nature` ; sans eux, la recherche couvre les vingt-deux " +
-  "collections indexées et toutes les natures. Un document nommé dans la question (sigle ou nom ordinaire, " +
+export const CONSIGNE_SERVEUR =
+  `Serveur de lecture et de recherche sur ${nombreEnLettres(NOMBRE_CORPUS)} corpus juridiques : ` +
+  `${descriptionServeur()}. Les outils de ` +
+  "recherche acceptent les paramètres `corpus` et `nature` ; sans eux, la recherche couvre les " +
+  `${nombreEnLettres(NOMBRE_CORPUS)} collections indexées et toutes les natures. Un document nommé dans la question (sigle ou nom ordinaire, ` +
   "casse et ponctuation indifférentes) est honoré quand `document` et `corpus` sont absents ; sans " +
   "nom, une référence exacte qui n'existe que dans un corpus est `incertain` et le corpus est " +
   "nommé. `get_decision` rend une sanction par identifiant CNILTEXT ou par numéro SAN-…, sa partie " +
@@ -484,7 +443,8 @@ export function createServer(deps: ServerDeps): McpServer {
       title: "Dire à quelle date le corpus est à jour",
       description:
         "Rend la date de la dernière synchronisation réussie depuis la veille (`a_jour_au`), " +
-        "la fenêtre de veille, l'inventaire des vingt-deux corpus avec leurs comptes, les documents " +
+        "la fenêtre de veille, l'inventaire des " +
+        `${nombreEnLettres(NOMBRE_CORPUS)} corpus avec leurs comptes, les documents ` +
         "manquants et l'état des sources et de l'index. Chaque corpus porte `couverture`, le bloc que " +
         "déclare son manifeste — sources, bornes et exclusions — : c'est la cible du renvoi " +
         "`perimetre.exclusions` des autres outils. Les clés d'exclusion varient selon le corpus " +
@@ -509,32 +469,15 @@ export function createServer(deps: ServerDeps): McpServer {
   serveur.registerTool(
     "search",
     {
-      title: "Chercher dans les vingt-deux corpus juridiques",
+      title: `Chercher dans les ${nombreEnLettres(NOMBRE_CORPUS)} corpus juridiques`,
       description:
-        "Cherche par le sens dans le RGPD, l'AI Act, la directive ePrivacy, la directive " +
-        "police-justice, le règlement 2018/1725, le règlement procédural RGPD, les clauses " +
-        "contractuelles types de transfert et de sous-traitance, les décisions d'adéquation, " +
-        "les textes UE de l'économie des données (Data Act, DGA, directive Open Data, ensembles " +
-        "de forte valeur, libre circulation, recommandation clauses types, logos DGA), " +
-        "l'espace européen des données de santé (règlement (UE) 2025/327, EHDS), la LIL, " +
-        "les textes français d'application (accès aux documents administratifs, réutilisation, " +
-        "archives, secret statistique et des affaires, bases de données), " +
-        "les textes en préparation et les affaires pendantes, les délibérations de la CNIL " +
-        "(sanctions, avis, recommandations et lignes directrices), les avis et conseils de la CADA, " +
-        "les guides, référentiels, fiches " +
-        "pratiques IA et listes AIPD de la CNIL (corpus `cnil_doctrine`), les décisions du Conseil d'État, " +
-        "les décisions DC et QPC du Conseil constitutionnel, les documents du CEPD, les " +
-        "décisions de la Cour de cassation sur les données personnelles, celles de la CJUE, et les " +
-        "métadonnées des décisions du guichet unique (corpus `metadonnees`, aucun texte de décision ; " +
-        "source CEDH arrêtée), et rend " +
+        `Cherche par le sens dans ${descriptionRecherche()}, et rend ` +
         "les passages les plus proches avec leur " +
         "provenance et un niveau de confiance (confiant, incertain, aucun_resultat_fiable). " +
         "L'article pose la règle et le considérant l'éclaire : à pertinence comparable, l'article passe " +
         "devant, mais aucun considérant n'est retiré du résultat. " +
         "Une question qui cite un article rend cet article exact, sans recherche vectorielle. " +
-        "`corpus` borne la recherche à une collection (`rgpd`, `aiact`, `eprivacy`, `police`, " +
-        "`eudpr`, `rgpdproc`, `ccs`, `adequation`, `donnees`, `sante_ue`, `cnil`, `cada`, `cnil_doctrine`, `lil`, `textes_fr`, `preparation`, `ce`, `constit`, `cepd`, " +
-        "`cc`, `cjue`, `metadonnees`) " +
+        `\`corpus\` borne la recherche à une collection (${nomsEnCode(NOMS_SITE)}) ` +
         "et prime sur tout nom de document présent dans la question. " +
         "`nature` borne une recherche CNIL à une nature (`Sanction`, `Avis`, " +
         "`Recommandation/Lignes directrices`) ; sans lui, toutes les natures répondent. " +
@@ -575,9 +518,8 @@ export function createServer(deps: ServerDeps): McpServer {
           .string()
           .optional()
           .describe(
-            "Restreint la recherche à une collection : rgpd, aiact, eprivacy, police, eudpr, " +
-              "rgpdproc, ccs, adequation, donnees, sante_ue, cnil, cnil_doctrine, lil, textes_fr, preparation, ce, constit, cepd, cc ou " +
-              "cjue ; cnil couvre les sanctions, avis, recommandations et lignes directrices, " +
+            `Restreint la recherche à une collection : ${NOMS_SITE.join(", ")} ; ` +
+              "cnil couvre les sanctions, avis, recommandations et lignes directrices, " +
               "cnil_doctrine les guides, référentiels, fiches pratiques IA et listes AIPD (extraits " +
               "non modifiés, CC BY-ND 4.0), " +
               "constit les décisions DC et QPC, metadonnees les notices du guichet unique " +
@@ -673,7 +615,7 @@ async function main(): Promise<void> {
 
   await serveur.connect(transport);
   process.stderr.write(
-    "Serveur MCP des vingt-deux corpus (RGPD, AI Act, ePrivacy, 2016/680, 2018/1725, 2025/2518, CCS, adéquation, textes UE de l'économie des données, EHDS, CNIL, CADA, doctrine CNIL, LIL, textes français, préparation, CE, Conseil constitutionnel, CEPD, CC, CJUE, métadonnées du guichet unique) prêt sur stdio " +
+    `Serveur MCP des ${nombreEnLettres(NOMBRE_CORPUS)} corpus prêt sur stdio ` +
       "(six outils : get_article, get_decision, search, decisions_citant, decisions_citant_decision, etat_corpus) " +
       `— recherche ${recherche}` +
       (recherche === "lexicale" ? " (sans modèle à la requête)" : "") +

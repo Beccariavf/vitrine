@@ -10,6 +10,7 @@ import { parseCcs } from "./ccs/parse.ts";
 import { parseDonnees } from "./donnees/parse.ts";
 import { writeCorpus, writeCorpusMulti } from "./write.ts";
 import type { DocumentCorpus, OrigineConsiderants } from "./write.ts";
+import { corpusDeclare } from "./registre.ts";
 
 const ICI = dirname(fileURLToPath(import.meta.url));
 
@@ -114,13 +115,11 @@ async function construire(
   };
 }
 
-/** Nom d'un corpus qui porte plusieurs documents, pour son manifeste. */
-const NOMS_CORPUS: Readonly<Record<string, string>> = {
-  aiact: "AI Act et actes d'application",
-  ccs: "Clauses contractuelles types",
-  donnees: "Textes UE de l'économie des données",
-  sante_ue: "Espace européen des données de santé",
-};
+/** Nom d'un corpus qui porte plusieurs documents, lu dans le registre. */
+function nomDuCorpus(corpus: string): string {
+  const declare = corpusDeclare(corpus);
+  return declare?.nomManifeste ?? declare?.libelle ?? corpus;
+}
 
 /**
  * Écrit les documents construits, un corpus à la fois. Un corpus qui n'a qu'un
@@ -152,7 +151,7 @@ function ecrireCorpus(
           gauche.descripteur.date_acte.localeCompare(droite.descripteur.date_acte) ||
           gauche.descripteur.document.localeCompare(droite.descripteur.document),
       );
-      ecrit = writeCorpusMulti(rootDir, corpus, NOMS_CORPUS[corpus] ?? corpus, ordonne);
+      ecrit = writeCorpusMulti(rootDir, corpus, nomDuCorpus(corpus), ordonne);
     }
     for (const construction of ordonne) {
       resultats.set(construction, {

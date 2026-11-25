@@ -47,7 +47,7 @@ function dateDuJour(instant = new Date()): string {
 /** Corpus demandé, refusé s'il n'est pas un corpus de décisions. */
 export function lireCorpus(valeur: string | undefined): string {
   if (valeur === undefined || valeur === "") throw new Error(USAGE);
-  if (!CORPUS_DECISIONS.includes(valeur)) {
+  if (!(CORPUS_DECISIONS as readonly string[]).includes(valeur)) {
     throw new Error(
       `Corpus « ${valeur} » hors périmètre : les citations ne se lisent que pour ` +
         `${CORPUS_DECISIONS.join(", ")}.`,

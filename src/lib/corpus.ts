@@ -1,4 +1,5 @@
 import { inventaireCorpus } from "../../mcp/corpus/sync-rapport.ts";
+import { NOMS_SITE, CORPUS } from "../../mcp/corpus/registre.ts";
 
 /** Une collection du connecteur, telle que le site l'affiche. */
 export type SourceCorpus = {
@@ -13,34 +14,9 @@ export type SourceCorpus = {
   arrete_le: string | null;
 };
 
-/** Ordre fixe : textes, autorités, juridictions. */
-const LIBELLES: ReadonlyArray<readonly [string, string]> = [
-  ["rgpd", "RGPD"],
-  ["aiact", "AI Act"],
-  ["eprivacy", "Directive ePrivacy"],
-  ["police", "Directive police-justice"],
-  ["eudpr", "Règlement 2018/1725"],
-  ["rgpdproc", "Règlement procédural RGPD"],
-  ["donnees", "Textes UE de l'économie des données"],
-  ["sante_ue", "Espace européen des données de santé"],
-  ["ccs", "Clauses contractuelles types"],
-  ["lil", "Loi Informatique et Libertés"],
-  ["textes_fr", "Textes français d'application"],
-  ["preparation", "Textes en préparation et affaires pendantes"],
-  ["adequation", "Décisions d'adéquation"],
-  ["cnil", "CNIL"],
-  ["cnil_doctrine", "Doctrine CNIL"],
-  ["cada", "CADA"],
-  ["cepd", "CEPD"],
-  ["cjue", "CJUE"],
-  ["ce", "Conseil d'État"],
-  ["constit", "Conseil constitutionnel"],
-  ["cc", "Cour de cassation"],
-  ["metadonnees", "Guichet unique (métadonnées)"],
-];
-
-const RANG = new Map(LIBELLES.map(([corpus], index) => [corpus, index]));
-const LIBELLE = new Map(LIBELLES);
+/** Ordre et libellés du registre : textes, autorités, juridictions. */
+const RANG = new Map<string, number>(NOMS_SITE.map((nom, index) => [nom, index]));
+const LIBELLE = new Map<string, string>(CORPUS.map((corpus) => [corpus.nom, corpus.libelle]));
 
 /**
  * Les collections présentes sous `data/corpus/`, lues par `inventaireCorpus` :
@@ -58,7 +34,8 @@ export function sourcesCorpus(rootDir: string = process.cwd()): SourceCorpus[] {
     }))
     .sort(
       (gauche, droite) =>
-        (RANG.get(gauche.corpus) ?? LIBELLES.length) - (RANG.get(droite.corpus) ?? LIBELLES.length) ||
+        (RANG.get(gauche.corpus) ?? NOMS_SITE.length) -
+          (RANG.get(droite.corpus) ?? NOMS_SITE.length) ||
         gauche.corpus.localeCompare(droite.corpus),
     );
 }
