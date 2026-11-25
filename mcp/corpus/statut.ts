@@ -56,6 +56,7 @@ const CORPUS_TEXTES: readonly string[] = [
   "textes_fr",
   "ccs",
   "adequation",
+  "donnees",
 ];
 
 /** Corpus dont chaque unité est une décision rendue, quel que soit le statut source. */
@@ -66,6 +67,8 @@ const STATUTS_TEXTES = new Map<string, StatutApplication>([
   ["EN_VIGUEUR", "en_vigueur"],
   ["VIGUEUR", "en_vigueur"],
   ["ABROGE", "abroge"],
+  // Une recommandation n'a pas de force obligatoire : elle est adoptée, pas en vigueur.
+  ["ADOPTEE", "adoptee"],
   ["PROJET", "propose"],
   ["PROPOSE", "propose"],
   ["PROPOSITION", "propose"],

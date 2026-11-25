@@ -222,7 +222,7 @@ describe("les descripteurs", () => {
 
     assert.deepEqual(
       descripteurs.map((descripteur) => descripteur.corpus),
-      ["aiact", "ccs", "ccs", "eprivacy", "eudpr", "police", "rgpd", "rgpdproc"],
+      ["aiact", "ccs", "ccs", "donnees", "donnees", "donnees", "donnees", "donnees", "donnees", "donnees", "eprivacy", "eudpr", "police", "rgpd", "rgpdproc"],
     );
     assert.deepEqual(
       { articles: rgpd?.articles_attendus, considerants: rgpd?.considerants_attendus },
@@ -347,7 +347,7 @@ describe("buildCorpusSet", () => {
     try {
       await assert.rejects(
         buildCorpusSet({ rootDir: root, document: "lil" }),
-        /Aucun descripteur pour « lil » : aiact, ccs, eprivacy, eudpr, police, rgpd, rgpdproc/,
+        /Aucun descripteur pour « lil » : aiact, ccs, donnees, eprivacy, eudpr, police, rgpd, rgpdproc/,
       );
       assert.equal(existsSync(join(root, "data")), false);
     } finally {

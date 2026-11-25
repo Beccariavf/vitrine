@@ -1,0 +1,19 @@
+{
+  "document": "32018R1807",
+  "corpus": "donnees",
+  "nom": "Libre circulation des données",
+  "titre": "Règlement (UE) 2018/1807 du Parlement européen et du Conseil du 14 novembre 2018 établissant un cadre applicable au libre flux des données à caractère non personnel dans l'Union européenne",
+  "langue": "fra",
+  "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32018R1807",
+  "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+  "date_acte": "2018-11-14",
+  "date_publication": "2018-11-28",
+  "date_debut": "2019-05-28",
+  "date_fin": null,
+  "statut": "en_vigueur",
+  "version": "32018R1807",
+  "date_consolidation": null,
+  "articles_attendus": 9,
+  "considerants_attendus": 39,
+  "parseur": "donnees"
+}

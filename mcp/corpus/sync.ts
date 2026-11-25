@@ -296,6 +296,7 @@ export function agentsParDefaut(
       const resultat = await synchroniserAdequation({ rootDir, entree: cible.entree });
       return { ecrit: resultat.ecrit, message: resultat.message };
     },
+    donnees: agentActe("donnees"),
   };
 
   function agentActe(corpus: string): AgentSync {
