@@ -10,7 +10,7 @@ export type CouvertureActe = {
   statut: string;
   types_retenus: string[];
   exclusions: string[];
-  comptes: { articles: number; considerants: number; clauses?: number };
+  comptes: { articles: number; considerants: number; clauses?: number; points?: number; annexes?: number };
   /** CELEX rendu et date de sa consolidation ; présents quand le descripteur les déclare. */
   version?: string;
   date_consolidation?: string | null;
@@ -98,10 +98,14 @@ function manifesteDeDocument(
   const articles = unites.filter((unite) => unite.niveau === "article").length;
   const considerants = unites.filter((unite) => unite.niveau === "considérant").length;
   const clauses = unites.filter((unite) => unite.niveau === "clause").length;
+  const points = unites.filter((unite) => unite.niveau === "point").length;
+  const annexes = unites.filter((unite) => unite.niveau === "annexe").length;
   const types = [
     ...(articles > 0 ? ["article"] : []),
     ...(considerants > 0 ? ["considérant"] : []),
     ...(clauses > 0 ? ["clause"] : []),
+    ...(points > 0 ? ["point"] : []),
+    ...(annexes > 0 ? ["annexe"] : []),
   ];
   return {
     document: descripteur.document,
@@ -136,6 +140,8 @@ function manifesteDeDocument(
         articles,
         considerants,
         ...(clauses > 0 ? { clauses } : {}),
+        ...(points > 0 ? { points } : {}),
+        ...(annexes > 0 ? { annexes } : {}),
       },
       ...(descripteur.version === undefined
         ? {}
@@ -184,7 +190,7 @@ export function writeCorpusMulti(
   );
   const unites = documents.flatMap((document) => document.unites);
 
-  const types = ["article", "considérant", "clause"].filter((niveau) =>
+  const types = ["article", "considérant", "clause", "point", "annexe"].filter((niveau) =>
     documents.some((document) => document.unites.some((unite) => unite.niveau === niveau)),
   );
   const comptes: Record<string, number> = { documents: documents.length };

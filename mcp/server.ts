@@ -45,10 +45,12 @@ const ACTES_UE =
 const PERIMETRE_REFUS = `(périmètre : ${PERIMETRE})`;
 
 const CONSIGNE_PROVENANCE =
-  "Le texte rendu vient des dix-huit corpus locaux (RGPD `32016R0679`, AI Act `32024R1689`, " +
+  "Le texte rendu vient des vingt corpus locaux (RGPD `32016R0679`, AI Act `32024R1689`, " +
   "ePrivacy `32002L0058`, directive police-justice `32016L0680`, règlement 2018/1725 " +
   "`32018R1725`, règlement procédural RGPD `32025R2518`, clauses contractuelles types " +
-  "`32021D0914` (transferts) et `32021D0915` (sous-traitance, art. 28), décisions d'adéquation `adequation`, LIL " +
+  "`32021D0914` (transferts) et `32021D0915` (sous-traitance, art. 28), décisions d'adéquation `adequation`, " +
+  "textes UE de l'économie des données `donnees` (Data Act `32023R2854`, DGA `32022R0868`, " +
+  "directive Open Data `32019L1024`, ensembles de forte valeur `32023R0138`…), LIL " +
   "`LEGITEXT000006068624`, textes français d'application `textes_fr`, textes en préparation et " +
   "affaires pendantes `preparation`, délibérations CNIL `cnil`, " +
   "doctrine CNIL `cnil_doctrine`, décisions du Conseil d'État `ce`, décisions DC et QPC du Conseil constitutionnel `constit`, documents " +
@@ -121,7 +123,7 @@ const CONSIGNE_PERIMETRE =
   "(`corpus[].couverture`). Chaque corpus dit sa fraîcheur : `veille: true` pour les corpus " +
   "revérifiés par la synchronisation (`cnil`, `ce`, `cc`, `cjue`), avec `a_jour_au`, la dernière " +
   "synchronisation réussie (`null` si aucune) ; `veille: false` pour un instantané fixe jamais " +
-  "revérifié (`rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `lil`, `textes_fr`, `preparation`, `constit`, `cepd`, `cnil_doctrine`), daté par `arrete_le` ou non daté (`null`) ; " +
+  "revérifié (`rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `donnees`, `lil`, `textes_fr`, `preparation`, `constit`, `cepd`, `cnil_doctrine`), daté par `arrete_le` ou non daté (`null`) ; " +
   "`inconnu: true` dit qu'un corpus demandé n'existe pas localement et que rien n'y a été interrogé. Ne " +
   "jamais présenter un instantané fixe comme à jour. Le rappeler au lecteur. Une absence de " +
   "résultat ne prouve jamais que la règle n'existe pas : elle peut être hors du périmètre, exclue " +
@@ -141,11 +143,14 @@ const CONSIGNE_DECISIONS_CITEES =
   `${chiffresCitationsDecisions()}`;
 
 const CONSIGNE_SERVEUR =
-  "Serveur de lecture et de recherche sur dix-huit corpus juridiques : le RGPD " +
+  "Serveur de lecture et de recherche sur vingt corpus juridiques : le RGPD " +
   "(corpus `rgpd`, CELEX 32016R0679), l'AI Act (corpus `aiact`, CELEX 32024R1689), " +
   `${ACTES_UE}` +
   ", les clauses contractuelles types pour les transferts hors UE et la sous-traitance (corpus " +
-  "`ccs`, CELEX `32021D0914` et `32021D0915`) et les décisions d'adéquation, en vigueur et abrogées (corpus `adequation`), la loi " +
+  "`ccs`, CELEX `32021D0914` et `32021D0915`) et les décisions d'adéquation, en vigueur et abrogées (corpus `adequation`), " +
+  "les textes UE de l'économie des données (corpus `donnees` : Data Act `32023R2854`, DGA " +
+  "`32022R0868`, directive Open Data `32019L1024`, ensembles de forte valeur `32023R0138`, libre " +
+  "circulation `32018R1807`, recommandation clauses types `32026H2394`, logos DGA `32023R1622`), la loi " +
   "Informatique et Libertés (corpus `lil`, LEGITEXT000006068624), les textes français " +
   "d'application (corpus `textes_fr` : décret 2019-536 LEGITEXT000038567662 en entier, Code pénal " +
   "LEGITEXT000006070719 articles 226-1, 226-8-1, 226-13, 226-16 à 226-24 et chapitre 323 ; CPCE " +
@@ -172,7 +177,7 @@ const CONSIGNE_SERVEUR =
   "sur les données personnelles (corpus `cc`), celles de la CJUE (corpus `cjue`), et les métadonnées des " +
   "décisions définitives du guichet unique (corpus `metadonnees`, sans aucun texte de décision ; source " +
   "CEDH arrêtée, aucune notice CEDH). Les outils de " +
-  "recherche acceptent les paramètres `corpus` et `nature` ; sans eux, la recherche couvre les dix-huit " +
+  "recherche acceptent les paramètres `corpus` et `nature` ; sans eux, la recherche couvre les vingt " +
   "collections et toutes les natures. Un document nommé dans la question (sigle ou nom ordinaire, " +
   "casse et ponctuation indifférentes) est honoré quand `document` et `corpus` sont absents ; sans " +
   "nom, une référence exacte qui n'existe que dans un corpus est `incertain` et le corpus est " +
@@ -243,7 +248,9 @@ export function createServer(deps: ServerDeps): McpServer {
       description:
         "Rend le texte exact d'un article du RGPD, de l'AI Act, de la directive ePrivacy, de la " +
         "directive police-justice, du règlement 2018/1725, du règlement procédural RGPD, des " +
-        "décisions 2021/914 et 2021/915 sur les clauses contractuelles types, de la " +
+        "décisions 2021/914 et 2021/915 sur les clauses contractuelles types, des textes UE de " +
+        "l'économie des données (Data Act, DGA, directive Open Data, ensembles de forte valeur, " +
+        "libre circulation, recommandation clauses types, logos DGA), de la " +
         "LIL ou d'un texte français d'application (décret 2019-536, Code pénal 226-16 à 226-24, " +
         "226-1, 226-8-1 et chapitre 323, CPCE L32-3, L34-1 et L34-5, Code du travail, Code de la " +
         "santé publique, Code de la sécurité intérieure (vidéoprotection), Code monétaire et " +
@@ -272,14 +279,17 @@ export function createServer(deps: ServerDeps): McpServer {
             "Identifiant du document : 32016R0679 (RGPD), 32024R1689 (AI Act), 32002L0058 " +
               "(ePrivacy), 32016L0680 (directive police-justice), 32018R1725 (règlement " +
               "2018/1725), 32025R2518 (règlement procédural RGPD), 32021D0914 (clauses contractuelles " +
-              "types, transfert), 32021D0915 (clauses contractuelles types, sous-traitance), LEGITEXT000006068624 (LIL), " +
+              "types, transfert), 32021D0915 (clauses contractuelles types, sous-traitance), " +
+              "32023R2854 (Data Act), 32022R0868 (DGA), 32019L1024 (directive Open Data), " +
+              "32023R0138 (ensembles de forte valeur), 32018R1807 (libre circulation), " +
+              "32026H2394 (recommandation clauses types), 32023R1622 (logos DGA), LEGITEXT000006068624 (LIL), " +
               "LEGITEXT000038567662 (décret 2019-536), LEGITEXT000006070719 (Code pénal), " +
               "LEGITEXT000006070987 (CPCE), LEGITEXT000006072050 (Code du travail), " +
               "LEGITEXT000006072665 (Code de la santé publique), LEGITEXT000025503132 (Code de la " +
               "sécurité intérieure), LEGITEXT000006072026 (Code monétaire et financier), " +
               "LEGITEXT000031366350 (CRPA) ou LEGITEXT000006070721 (Code civil)",
           ),
-        numero: z.string().describe("Numéro d'article, par exemple 17, 15 bis, 26-1, 226-16 ou L34-5"),
+        numero: z.string().describe("Numéro d'article, par exemple 17, 15 bis, 26-1, 226-16, L34-5 ou unique"),
         date: z
           .string()
           .optional()
@@ -463,7 +473,7 @@ export function createServer(deps: ServerDeps): McpServer {
       title: "Dire à quelle date le corpus est à jour",
       description:
         "Rend la date de la dernière synchronisation réussie depuis la veille (`a_jour_au`), " +
-        "la fenêtre de veille, l'inventaire des dix-huit corpus avec leurs comptes, les documents " +
+        "la fenêtre de veille, l'inventaire des vingt corpus avec leurs comptes, les documents " +
         "manquants et l'état des sources et de l'index. Chaque corpus porte `couverture`, le bloc que " +
         "déclare son manifeste — sources, bornes et exclusions — : c'est la cible du renvoi " +
         "`perimetre.exclusions` des autres outils. Les clés d'exclusion varient selon le corpus " +
@@ -488,11 +498,14 @@ export function createServer(deps: ServerDeps): McpServer {
   serveur.registerTool(
     "search",
     {
-      title: "Chercher dans les dix-huit corpus juridiques",
+      title: "Chercher dans les vingt corpus juridiques",
       description:
         "Cherche par le sens dans le RGPD, l'AI Act, la directive ePrivacy, la directive " +
         "police-justice, le règlement 2018/1725, le règlement procédural RGPD, les clauses " +
-        "contractuelles types de transfert et de sous-traitance, les décisions d'adéquation, la LIL, les textes français d'application, " +
+        "contractuelles types de transfert et de sous-traitance, les décisions d'adéquation, " +
+        "les textes UE de l'économie des données (Data Act, DGA, directive Open Data, ensembles " +
+        "de forte valeur, libre circulation, recommandation clauses types, logos DGA), la LIL, " +
+        "les textes français d'application, " +
         "les textes en préparation et les affaires pendantes, les délibérations de la CNIL " +
         "(sanctions, avis, recommandations et lignes directrices), les guides, référentiels, fiches " +
         "pratiques IA et listes AIPD de la CNIL (corpus `cnil_doctrine`), les décisions du Conseil d'État, " +
@@ -506,7 +519,7 @@ export function createServer(deps: ServerDeps): McpServer {
         "devant, mais aucun considérant n'est retiré du résultat. " +
         "Une question qui cite un article rend cet article exact, sans recherche vectorielle. " +
         "`corpus` borne la recherche à une collection (`rgpd`, `aiact`, `eprivacy`, `police`, " +
-        "`eudpr`, `rgpdproc`, `ccs`, `adequation`, `cnil`, `cnil_doctrine`, `lil`, `textes_fr`, `preparation`, `ce`, `constit`, `cepd`, " +
+        "`eudpr`, `rgpdproc`, `ccs`, `adequation`, `donnees`, `cnil`, `cnil_doctrine`, `lil`, `textes_fr`, `preparation`, `ce`, `constit`, `cepd`, " +
         "`cc`, `cjue`, `metadonnees`) " +
         "et prime sur tout nom de document présent dans la question. " +
         "`nature` borne une recherche CNIL à une nature (`Sanction`, `Avis`, " +
@@ -516,7 +529,11 @@ export function createServer(deps: ServerDeps): McpServer {
         "de la ponctuation (« RGPD », « R.G.P.D. », « règlement général sur la protection des données », " +
         "« règlement général », « règlement (UE) 2016/679 », « AI Act », « IA Act », « règlement IA », " +
         "« règlement européen sur l'intelligence artificielle », « règlement (UE) 2024/1689 », « LIL », " +
-        "« loi informatique et libertés », « loi 78-17 », « loi n° 78-17 », « décret 2019-536 », « CPCE », " +
+        "« loi informatique et libertés », « loi 78-17 », « loi n° 78-17 », « Data Act », " +
+        "« règlement (UE) 2023/2854 », « DGA », « règlement (UE) 2022/868 », « directive Open Data », " +
+        "« directive (UE) 2019/1024 », « ensembles de forte valeur », « règlement d'exécution (UE) 2023/138 », " +
+        "« libre circulation des données », « règlement (UE) 2018/1807 », « recommandation (UE) 2026/2394 », " +
+        "« logos DGA », « règlement d'exécution (UE) 2023/1622 », « décret 2019-536 », « CPCE », " +
         "« code des postes et des communications électroniques », « code pénal », « code du travail », " +
         "« code de la santé publique », « code de la sécurité intérieure », « code monétaire et " +
         "financier », « code des relations entre le public et l'administration », « code civil ») ; la " +
@@ -525,7 +542,8 @@ export function createServer(deps: ServerDeps): McpServer {
         "Si aucun document n'est nommé et que le numéro cité n'existe que dans un corpus, l'article " +
         "est rendu avec le niveau `incertain` et un message qui nomme ce corpus. " +
         "Si le numéro existe dans plusieurs documents, chaque article est rendu avec sa provenance " +
-        "et le niveau est `incertain` ; préciser `document` ou nommer le corpus lève l'ambiguïté. " +
+        "et le niveau est `incertain` ; préciser `document` (ou son CELEX) lève l'ambiguïté, un " +
+        "corpus comme `donnees` ou `ccs` portant plusieurs documents. " +
         "En recherche lexicale seule (`VITRINE_RECHERCHE=lexicale`), les passages portent " +
         "`rang_lexical` (1 = meilleur) et aucune `distance` ni `similarite` ; le niveau reste " +
         "`incertain` hors appariement exact, un score BM25 ne prouvant pas la pertinence. " +
@@ -544,7 +562,7 @@ export function createServer(deps: ServerDeps): McpServer {
           .optional()
           .describe(
             "Restreint la recherche à une collection : rgpd, aiact, eprivacy, police, eudpr, " +
-              "rgpdproc, ccs, adequation, cnil, cnil_doctrine, lil, textes_fr, preparation, ce, constit, cepd, cc ou " +
+              "rgpdproc, ccs, adequation, donnees, cnil, cnil_doctrine, lil, textes_fr, preparation, ce, constit, cepd, cc ou " +
               "cjue ; cnil couvre les sanctions, avis, recommandations et lignes directrices, " +
               "cnil_doctrine les guides, référentiels, fiches pratiques IA et listes AIPD (extraits " +
               "non modifiés, CC BY-ND 4.0), " +
@@ -559,6 +577,9 @@ export function createServer(deps: ServerDeps): McpServer {
             "Restreint la recherche à un document : 32016R0679 (RGPD), 32024R1689 (AI Act), " +
               "32002L0058 (ePrivacy), 32016L0680, 32018R1725, 32025R2518, 32021D0914 (clauses " +
               "contractuelles types, transfert), 32021D0915 (clauses contractuelles types, sous-traitance), " +
+              "32023R2854 (Data Act), 32022R0868 (DGA), 32019L1024 (directive Open Data), " +
+              "32023R0138 (ensembles de forte valeur), 32018R1807 (libre circulation), " +
+              "32026H2394 (recommandation clauses types), 32023R1622 (logos DGA), " +
               "LEGITEXT000006068624 (LIL), LEGITEXT000038567662 (décret 2019-536), LEGITEXT000006070719 (Code pénal), LEGITEXT000006070987 (CPCE), LEGITEXT000006072050 (Code du travail), LEGITEXT000006072665 (Code de la santé publique), LEGITEXT000025503132 (Code de la sécurité intérieure), LEGITEXT000006072026 (Code monétaire et financier), LEGITEXT000031366350 (CRPA), LEGITEXT000006070721 (Code civil), un identifiant CNILTEXT, un identifiant CONSTEXT (constit), un identifiant Judilibre (cc) " +
               "ou un CELEX de jurisprudence (cjue) ; absent, tous les corpus répondent, sauf une " +
               "formule générique qui nomme une famille sans décision (« les clauses contractuelles " +
@@ -638,7 +659,7 @@ async function main(): Promise<void> {
 
   await serveur.connect(transport);
   process.stderr.write(
-    "Serveur MCP des dix-huit corpus (RGPD, AI Act, ePrivacy, 2016/680, 2018/1725, 2025/2518, CCS, adéquation, CNIL, doctrine CNIL, LIL, textes français, préparation, CE, Conseil constitutionnel, CEPD, CC, CJUE, métadonnées du guichet unique) prêt sur stdio " +
+    "Serveur MCP des vingt corpus (RGPD, AI Act, ePrivacy, 2016/680, 2018/1725, 2025/2518, CCS, adéquation, textes UE de l'économie des données, CNIL, doctrine CNIL, LIL, textes français, préparation, CE, Conseil constitutionnel, CEPD, CC, CJUE, métadonnées du guichet unique) prêt sur stdio " +
       "(six outils : get_article, get_decision, search, decisions_citant, decisions_citant_decision, etat_corpus) " +
       `— recherche ${recherche}` +
       (recherche === "lexicale" ? " (sans modèle à la requête)" : "") +

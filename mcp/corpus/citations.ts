@@ -54,7 +54,7 @@ export type Attribution = {
 };
 
 /** Nature d'un instrument : le mot qui porte son type, pour une anaphore. */
-type Nature = "règlement" | "directive" | "loi" | "code" | "décision";
+type Nature = "règlement" | "directive" | "loi" | "code" | "décision" | "recommandation";
 
 type Instrument = {
   /** Libellé court rendu, aussi court que la forme citée. */
@@ -184,6 +184,74 @@ const INSTRUMENTS: readonly Instrument[] = [
     ],
   },
   {
+    libelle: "Data Act",
+    identifiant: "32023R2854",
+    nature: "règlement",
+    url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32023R2854",
+    alias: [
+      `règlement ${QUALIFICATIF}(?:n[o°] ?)?2023/2854`,
+      "règlement sur les données",
+      "Data Act",
+    ],
+    sigle: ["Data Act"],
+  },
+  {
+    libelle: "DGA",
+    identifiant: "32022R0868",
+    nature: "règlement",
+    url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32022R0868",
+    alias: [
+      `règlement ${QUALIFICATIF}(?:n[o°] ?)?2022/868`,
+      "règlement sur la gouvernance (?:européenne )?des données",
+      "DGA",
+    ],
+    sigle: ["DGA"],
+  },
+  {
+    libelle: "directive Open Data",
+    identifiant: "32019L1024",
+    nature: "directive",
+    url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32019L1024",
+    alias: [
+      `directive ${QUALIFICATIF}(?:n[o°] ?)?2019/1024`,
+      "directive sur les données ouvertes",
+    ],
+  },
+  {
+    libelle: "2023/138",
+    identifiant: "32023R0138",
+    nature: "règlement",
+    url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32023R0138",
+    alias: [
+      `règlement d'exécution ${PARENTHESE} (?:n[o°] ?)?2023/138`,
+      `règlement d'exécution (?:n[o°] ?)?2023/138`,
+    ],
+  },
+  {
+    libelle: "2018/1807",
+    identifiant: "32018R1807",
+    nature: "règlement",
+    url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32018R1807",
+    alias: [`règlement ${QUALIFICATIF}(?:n[o°] ?)?2018/1807`],
+  },
+  {
+    libelle: "2026/2394",
+    identifiant: "32026H2394",
+    nature: "recommandation",
+    url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32026H2394",
+    alias: [`recommandation ${QUALIFICATIF}(?:n[o°] ?)?2026/2394`],
+  },
+  {
+    libelle: "2023/1622",
+    identifiant: "32023R1622",
+    nature: "règlement",
+    url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32023R1622",
+    alias: [
+      `règlement d'exécution ${PARENTHESE} (?:n[o°] ?)?2023/1622`,
+      `règlement d'exécution (?:n[o°] ?)?2023/1622`,
+    ],
+  },
+  {
     libelle: "loi 78-17",
     identifiant: "LEGITEXT000006068624",
     nature: "loi",
@@ -288,9 +356,9 @@ const PAR_LIBELLE = new Map(INSTRUMENTS.map((instrument) => [instrument.libelle,
  */
 export const PERIMETRE =
   "RGPD, AI Act, ePrivacy, directive 2016/680, règlement 2018/1725, règlement procédural RGPD, " +
-  "clauses contractuelles types, décisions d'adéquation, LIL, textes français d'application, " +
-  "textes en préparation et affaires pendantes, CNIL, doctrine CNIL, CEPD, Conseil d'État, " +
-  "Conseil constitutionnel, Cour de cassation, CJUE";
+  "clauses contractuelles types, décisions d'adéquation, textes UE de l'économie des données, LIL, " +
+  "textes français d'application, textes en préparation et affaires pendantes, CNIL, doctrine CNIL, " +
+  "CEPD, Conseil d'État, Conseil constitutionnel, Cour de cassation, CJUE";
 
 /** Forme comparable d'un identifiant : majuscules, sans espace. */
 export function normaliserIdentifiant(identifiant: string): string {
@@ -533,11 +601,11 @@ const BALAYAGES = INSTRUMENTS.map((instrument) => ({ instrument, motif: balayage
  * « l'article 4-2° de la loi » cite l'article 4, point 2°.
  */
 const NUMERO =
-  "(?:[LRD]\\. ?)?\\d{1,4}(?:er)?(?:[.-]\\d{1,4}(?!°))*(?:\\(\\d{1,4}\\)|\\([a-z]\\))*";
+  "(?:unique|(?:[LRD]\\. ?)?\\d{1,4}(?:er)?(?:[.-]\\d{1,4}(?!°))*(?:\\(\\d{1,4}\\)|\\([a-z]\\))*)";
 
 /** Le même jeton, pour relire une liste déjà reconnue et en extraire les numéros. */
 const JETON_ARTICLE = new RegExp(
-  "(?:[LRD]\\. ?)?\\d+(?:er)?(?:[.-]\\d+)*(?:\\(\\d{1,4}\\)|\\([a-z]\\))*",
+  "(?:unique|(?:[LRD]\\. ?)?\\d+(?:er)?(?:[.-]\\d+)*(?:\\(\\d{1,4}\\)|\\([a-z]\\))*)",
   "gi",
 );
 

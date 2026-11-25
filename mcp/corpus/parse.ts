@@ -29,8 +29,12 @@ export type Descripteur = {
   considerants_attendus: number;
   /** Nombre de clauses que l'annexe doit porter ; seules les décisions de clauses types en déclarent. */
   clauses_attendues?: number;
+  /** Nombre de points numérotés que la partie opératoire doit porter (recommandation `donnees`). */
+  points_attendus?: number;
+  /** Nombre d'annexes que la capture doit porter (`donnees`). */
+  annexes_attendues?: number;
   /** Parseur dédié, quand le corpus n'est pas un acte CELLAR ordinaire. */
-  parseur?: "ccs";
+  parseur?: "ccs" | "donnees";
   /**
    * CELEX effectivement récupéré : une version consolidée (`0…-AAAAMMJJ`) ou
    * l'acte d'origine quand aucune consolidation française n'existe. Absent :
@@ -45,11 +49,22 @@ export type Descripteur = {
 
 /**
  * `fragment` désigne un découpage de texte long, propre à la CNIL ; `clause`
- * l'annexe de 2021/914 ; `proposition` et `affaire` les unités de la préparation ;
- * `notice` une unité qui ne porte que des métadonnées — le corpus `metadonnees`
- * ne connaît pas le contenu des décisions qu'il cite.
+ * l'annexe de 2021/914 ; `point` la partie opératoire numérotée d'une
+ * recommandation et `annexe` une annexe entière d'un acte de l'économie des
+ * données ; `proposition` et `affaire` les unités de la préparation ; `notice`
+ * une unité qui ne porte que des métadonnées — le corpus `metadonnees` ne
+ * connaît pas le contenu des décisions qu'il cite.
  */
-export type Niveau = "article" | "considérant" | "fragment" | "clause" | "proposition" | "affaire" | "notice";
+export type Niveau =
+  | "article"
+  | "considérant"
+  | "fragment"
+  | "clause"
+  | "point"
+  | "annexe"
+  | "proposition"
+  | "affaire"
+  | "notice";
 
 /** Origine d'un fragment CNIL : l'historique DINUM ou un incrément DILA. */
 export type Origine = "dinum" | "dila";

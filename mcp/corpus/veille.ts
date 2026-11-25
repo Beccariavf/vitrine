@@ -32,7 +32,8 @@ export type CorpusVeille =
   | "eudpr"
   | "rgpdproc"
   | "ccs"
-  | "adequation";
+  | "adequation"
+  | "donnees";
 
 /** Sources de veille dont l'identifiant est aussi le corpus qu'elles alimentent. */
 export const CORPUS_PAR_SOURCE: Readonly<Record<string, CorpusVeille>> = {
@@ -56,6 +57,7 @@ export const CORPUS_ACTES: readonly CorpusVeille[] = [
   "rgpdproc",
   "ccs",
   "adequation",
+  "donnees",
 ];
 
 /** Actes de base suivis par la veille `eurlex` : CELEX → corpus. */
@@ -68,6 +70,13 @@ export const CORPUS_ACTES_UE: Readonly<Record<string, CorpusVeille>> = {
   "32025R2518": "rgpdproc",
   "32021D0914": "ccs",
   "32021D0915": "ccs",
+  "32023R2854": "donnees",
+  "32022R0868": "donnees",
+  "32019L1024": "donnees",
+  "32023R0138": "donnees",
+  "32018R1807": "donnees",
+  "32026H2394": "donnees",
+  "32023R1622": "donnees",
 };
 
 /**

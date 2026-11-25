@@ -31,9 +31,11 @@ export const SOURCE_ID = "eurlex";
 /** Matière unique des actes de protection des données. */
 export const THEME = "donnees-personnelles";
 
-/** Matière d'une consolidation : l'AI Act se rattache à l'IA, les autres aux données. */
+/** Matière d'une consolidation : l'AI Act se rattache à l'IA, l'économie des données à sa matière, les autres aux données personnelles. */
 export function themeDeCorpus(corpus: string): string {
-  return corpus === "aiact" ? "ia" : THEME;
+  if (corpus === "aiact") return "ia";
+  if (corpus === "donnees") return "donnees-non-personnelles";
+  return THEME;
 }
 
 /** Point d'accès SPARQL de CELLAR, partagé avec le corpus CJUE. */

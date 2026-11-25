@@ -397,7 +397,7 @@ export function avecMarquageDoctrine(rootDir: string, passages: Passage[]): Pass
  */
 export function referenceExacte(question: string): string | null {
   const reference = new RegExp(
-    `\\b(?:article|art\\.?)\\s*((?:[LRD]\\.?\\s*)?\\d+(?:-\\d+)*(?:\\s*(?:${SUFFIXE_ARTICLE})\\b)?(?:[\\s-]+[A-Z](?![A-Za-zÀ-ÿ.]))?)`,
+    `\\b(?:article|art\\.?)\\s*(unique\\b|(?:[LRD]\\.?\\s*)?\\d+(?:-\\d+)*(?:\\s*(?:${SUFFIXE_ARTICLE})\\b)?(?:[\\s-]+[A-Z](?![A-Za-zÀ-ÿ.]))?)`,
     "i",
   ).exec(question);
   return reference === null ? null : (reference[1] ?? "");
@@ -499,6 +499,65 @@ const ALIAS_ACTES_UE: ReadonlyArray<{ document: string; texte: readonly RegExp[]
     ],
     compact: [/32021d0915/],
   },
+  {
+    document: "32023R2854",
+    texte: [
+      /\bdata act\b/,
+      /\breglement sur les donnees\b/,
+      /\breglement (?:ue )?(?:n )?2023 2854\b/,
+    ],
+    compact: [/32023r2854/],
+  },
+  {
+    document: "32022R0868",
+    texte: [
+      /\bdga\b/,
+      /\breglement sur la gouvernance (?:europeenne )?des donnees\b/,
+      /\breglement (?:ue )?(?:n )?2022 868\b/,
+    ],
+    compact: [/32022r0868/],
+  },
+  {
+    document: "32019L1024",
+    texte: [
+      /\bdirective open data\b/,
+      /\bdirective sur les donnees ouvertes\b/,
+      /\bdirective (?:ue )?(?:n )?2019 1024\b/,
+    ],
+    compact: [/32019l1024/],
+  },
+  {
+    document: "32023R0138",
+    texte: [
+      /\bensembles? de (?:donnees de )?(?:forte|haute) valeur\b/,
+      /\breglement d execution (?:ue )?(?:n )?2023 138\b/,
+    ],
+    compact: [/32023r0138/],
+  },
+  {
+    document: "32018R1807",
+    texte: [
+      /\blibre (?:flux|circulation) des donnees\b/,
+      /\breglement (?:ue )?(?:n )?2018 1807\b/,
+    ],
+    compact: [/32018r1807/],
+  },
+  {
+    document: "32026H2394",
+    texte: [
+      /\brecommandation (?:ue )?(?:n )?2026 2394\b/,
+      /\bclauses types (?:du )?data act\b/,
+    ],
+    compact: [/32026h2394/],
+  },
+  {
+    document: "32023R1622",
+    texte: [
+      /\blogos (?:dga|de la dga|du dga)\b/,
+      /\breglement d execution (?:ue )?(?:n )?2023 1622\b/,
+    ],
+    compact: [/32023r1622/],
+  },
 ];
 
 /**
@@ -570,6 +629,13 @@ const NOMS_DOCUMENTS: Record<string, string> = {
   "32025R2518": "règlement procédural RGPD",
   "32021D0914": "clauses contractuelles types (transfert)",
   "32021D0915": "clauses contractuelles types (sous-traitance)",
+  "32023R2854": "Data Act",
+  "32022R0868": "DGA",
+  "32019L1024": "directive Open Data",
+  "32023R0138": "ensembles de forte valeur",
+  "32018R1807": "libre circulation des données",
+  "32026H2394": "recommandation clauses types Data Act",
+  "32023R1622": "logos DGA",
   LEGITEXT000038567662: "décret 2019-536",
   LEGITEXT000006070719: "Code pénal",
   LEGITEXT000006070987: "CPCE",
@@ -594,6 +660,22 @@ function libelleDocument(document: string): string {
  * l'AI Act » en nomme deux, et l'appelant doit alors distinguer « aucun nom » de
  * « plusieurs noms » dans ses messages.
  */
+/** Une occurrence d'un alias dans la question normalisée. */
+type NomTrouve = { document: string; debut: number; fin: number };
+
+/** Toutes les occurrences des alias d'un document, positions comprises. */
+function occurrences(texte: string, document: string, alias: readonly RegExp[]): NomTrouve[] {
+  const trouves: NomTrouve[] = [];
+  for (const motif of alias) {
+    const global = new RegExp(motif.source, motif.flags.includes("g") ? motif.flags : `${motif.flags}g`);
+    for (const trouve of texte.matchAll(global)) {
+      if (trouve.index === undefined || trouve[0] === "") continue;
+      trouves.push({ document, debut: trouve.index, fin: trouve.index + trouve[0].length });
+    }
+  }
+  return trouves;
+}
+
 export function documentsNommes(question: string): string[] {
   const texteBrut = normaliserTexte(question);
   // Le titre complet du décret nomme la loi 78-17 : il ne nomme que le décret.
@@ -601,34 +683,37 @@ export function documentsNommes(question: string): string[] {
   const compact = compacter(texte);
   const texteRgpd = texte.replace(NOM_PROCEDURAL_RGPD, " ");
   const compactRgpd = compacter(texteRgpd);
-  const documents = new Set<string>();
-  if (
-    ALIAS_RGPD_TEXTE.some((alias) => alias.test(texteRgpd)) ||
-    ALIAS_RGPD_COMPACT.some((alias) => alias.test(compactRgpd))
-  ) {
-    documents.add("32016R0679");
-  }
-  if (
-    ALIAS_AIA_TEXTE.some((alias) => alias.test(texte)) ||
-    ALIAS_AIA_COMPACT.some((alias) => alias.test(compact))
-  ) {
-    documents.add("32024R1689");
-  }
-  if (ALIAS_LIL_TEXTE.some((alias) => alias.test(texte))) {
-    documents.add("LEGITEXT000006068624");
-  }
+  const trouves = [
+    ...occurrences(texte, "32016R0679", ALIAS_RGPD_TEXTE),
+    ...occurrences(texte, "32024R1689", ALIAS_AIA_TEXTE),
+    ...occurrences(texte, "LEGITEXT000006068624", ALIAS_LIL_TEXTE),
+    ...ALIAS_ACTES_UE.flatMap((acte) => occurrences(texte, acte.document, acte.texte)),
+    ...occurrences(texte, "LEGITEXT000038567662", ALIAS_DECRET_2019_536),
+    ...occurrences(texte, "LEGITEXT000006070987", ALIAS_CPCE_TEXTE),
+    ...occurrences(texte, "LEGITEXT000006070719", ALIAS_CODE_PENAL),
+    ...ALIAS_CODES_FRANCAIS.flatMap((code) => occurrences(texte, code.document, code.texte)),
+  ];
+  // Un alias contenu dans un alias plus long d'un autre document cède le pas :
+  // « logos DGA » nomme 2023/1622, pas la DGA ; « clauses types Data Act » la
+  // recommandation, pas le Data Act.
+  const retenus = trouves.filter(
+    (trouve) =>
+      !trouves.some(
+        (autre) =>
+          autre.document !== trouve.document &&
+          autre.debut <= trouve.debut &&
+          trouve.fin <= autre.fin &&
+          autre.fin - autre.debut > trouve.fin - trouve.debut,
+      ),
+  );
+  const documents = retenus.sort((gauche, droite) => gauche.debut - droite.debut).map((trouve) => trouve.document);
+  // Un CELEX compact n'a pas de position comparable aux mots : il s'ajoute après.
+  if (ALIAS_RGPD_COMPACT.some((alias) => alias.test(compactRgpd))) documents.push("32016R0679");
+  if (ALIAS_AIA_COMPACT.some((alias) => alias.test(compact))) documents.push("32024R1689");
   for (const acte of ALIAS_ACTES_UE) {
-    if (acte.texte.some((alias) => alias.test(texte)) || acte.compact.some((alias) => alias.test(compact))) {
-      documents.add(acte.document);
-    }
+    if (acte.compact.some((alias) => alias.test(compact))) documents.push(acte.document);
   }
-  if (ALIAS_DECRET_2019_536.some((alias) => alias.test(texte))) documents.add("LEGITEXT000038567662");
-  if (ALIAS_CPCE_TEXTE.some((alias) => alias.test(texte))) documents.add("LEGITEXT000006070987");
-  if (ALIAS_CODE_PENAL.some((alias) => alias.test(texte))) documents.add("LEGITEXT000006070719");
-  for (const code of ALIAS_CODES_FRANCAIS) {
-    if (code.texte.some((alias) => alias.test(texte))) documents.add(code.document);
-  }
-  return [...documents];
+  return [...new Set(documents)];
 }
 
 /**
@@ -692,17 +777,20 @@ function dateValide(date: string): boolean {
 }
 
 /**
- * Lit un article exact dans le corpus de `document`. Avec `date`, réservée à la
- * LIL, rend la version applicable à cette date depuis `versions.jsonl` (hors
- * ligne) ; sans date, le comportement est celui du corpus en vigueur. Un alias
- * de la LIL est résolu sur les deux chemins.
+ * Lit un article exact dans le corpus de `document`. Un nom d'instrument
+ * (`Data Act`, `RGPD`, `code pénal`…) est résolu par `documentNomme` ; un
+ * identifiant reste tel quel. Avec `date`, réservée à la LIL, rend la version
+ * applicable à cette date depuis `versions.jsonl` (hors ligne) ; sans date, le
+ * comportement est celui du corpus en vigueur. Un alias de la LIL est résolu sur
+ * les deux chemins.
  */
 export function getArticle(
   rootDir: string,
   demande: { document: string; numero: string | number; date?: string },
 ): ResultatArticle {
-  const lil = estDocumentLil(demande.document);
-  const document = lil ? LIL : demande.document;
+  const nomme = documentNomme(demande.document) ?? demande.document;
+  const lil = estDocumentLil(nomme);
+  const document = lil ? LIL : nomme;
   if (demande.date === undefined) {
     return articleEnVigueur(rootDir, { document, numero: demande.numero });
   }
@@ -822,7 +910,7 @@ export function corpusDeNiveau(demande: { corpus?: string; document?: string }):
 export type SearchDemande = {
   question: string;
   k?: number;
-  /** Restreint la recherche à une collection : `rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `cnil`, `cnil_doctrine`, `lil`, `textes_fr`, `preparation`, `ce`, `constit`, `cepd`, `cc`, `cjue`, `metadonnees`. */
+  /** Restreint la recherche à une collection : `rgpd`, `aiact`, `eprivacy`, `police`, `eudpr`, `rgpdproc`, `ccs`, `adequation`, `donnees`, `cnil`, `cnil_doctrine`, `lil`, `textes_fr`, `preparation`, `ce`, `constit`, `cepd`, `cc`, `cjue`, `metadonnees`. */
   corpus?: string;
   /** Restreint la recherche à un document précis. */
   document?: string;
@@ -1101,10 +1189,17 @@ export async function search(
   const effective: SearchDemande =
     corpusImplicite === null ? demande : { ...demande, corpus: corpusImplicite };
   const document =
-    effective.document ??
+    (effective.document === undefined
+      ? undefined
+      : (documentNomme(effective.document) ?? effective.document)) ??
     (effective.corpus === undefined ? documentNomme(effective.question) : null) ??
     undefined;
-  const resultat = await chercher(rootDir, effective, document, deps);
+  const resultat = await chercher(
+    rootDir,
+    document === undefined ? effective : { ...effective, document },
+    document,
+    deps,
+  );
   const lexical = deps.recherche === "lexicale";
   return {
     ...resultat,

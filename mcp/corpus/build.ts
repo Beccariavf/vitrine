@@ -7,6 +7,7 @@ import { fetchCellar } from "./fetch.ts";
 import { estConsolide, compterConsiderantsConsolide, parseCellar, parseConsolide, urlVersion } from "./parse.ts";
 import type { Descripteur, Unite } from "./parse.ts";
 import { parseCcs } from "./ccs/parse.ts";
+import { parseDonnees } from "./donnees/parse.ts";
 import { writeCorpus, writeCorpusMulti } from "./write.ts";
 import type { DocumentCorpus, OrigineConsiderants } from "./write.ts";
 
@@ -80,6 +81,8 @@ async function construire(
   let origine: OrigineConsiderants | undefined;
   if (descripteur.parseur === "ccs") {
     unites = parseCcs(contenu, descripteur);
+  } else if (descripteur.parseur === "donnees") {
+    unites = parseDonnees(contenu, descripteur);
   } else if (estConsolide(descripteur)) {
     if (compterConsiderantsConsolide(contenu) === 0 && descripteur.considerants_attendus > 0) {
       const contenuOrigine =
@@ -112,7 +115,10 @@ async function construire(
 }
 
 /** Nom d'un corpus qui porte plusieurs documents, pour son manifeste. */
-const NOMS_CORPUS: Readonly<Record<string, string>> = { ccs: "Clauses contractuelles types" };
+const NOMS_CORPUS: Readonly<Record<string, string>> = {
+  ccs: "Clauses contractuelles types",
+  donnees: "Textes UE de l'économie des données",
+};
 
 /**
  * Écrit les documents construits, un corpus à la fois. Un corpus qui n'a qu'un

@@ -60,7 +60,7 @@ export const DOSSIER_DESCRIPTEURS = join(ICI, "..", "..", "mcp", "corpus");
  * Ordre de préférence quand un acte adopté touche plusieurs corpus de textes :
  * l'acte de base de la protection des données d'abord, puis ses voisins.
  */
-const ORDRE_CORPUS_ACTES = ["rgpd", "aiact", "eprivacy", "police", "eudpr", "rgpdproc", "ccs"];
+const ORDRE_CORPUS_ACTES = ["rgpd", "aiact", "eprivacy", "police", "eudpr", "rgpdproc", "ccs", "donnees"];
 
 /**
  * Un document suivi, lu dans le corpus de préparation. Son statut de corpus

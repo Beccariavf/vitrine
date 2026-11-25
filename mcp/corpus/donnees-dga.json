@@ -1,0 +1,19 @@
+{
+  "document": "32022R0868",
+  "corpus": "donnees",
+  "nom": "DGA",
+  "titre": "Règlement (UE) 2022/868 du Parlement européen et du Conseil du 30 mai 2022 portant sur la gouvernance européenne des données et modifiant le règlement (UE) 2018/1724 (règlement sur la gouvernance des données)",
+  "langue": "fra",
+  "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32022R0868",
+  "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+  "date_acte": "2022-05-30",
+  "date_publication": "2022-06-03",
+  "date_debut": "2023-09-24",
+  "date_fin": null,
+  "statut": "en_vigueur",
+  "version": "32022R0868",
+  "date_consolidation": null,
+  "articles_attendus": 38,
+  "considerants_attendus": 63,
+  "parseur": "donnees"
+}
