@@ -24,6 +24,7 @@ const LIBELLES: Record<TypeDoctrine, string> = {
   referentiel: "Référentiels",
   liste_aipd: "Listes AIPD",
   fiche_ia: "Fiches IA",
+  doctrine_ia: "Doctrine IA",
 };
 
 /** Marques d'une licence contraire à la CC BY-ND, cherchées dans le texte. */
@@ -137,6 +138,29 @@ function sansBloc(html: string, ouverture: RegExp): string {
 }
 
 /**
+ * Retire les encarts « Vous souhaitez contribuer ? Écrivez à ia@cnil.fr ».
+ * Le même bloc `ctn-gen-mise-avant` porte ailleurs un contenu de doctrine
+ * (dossier du LINC, actions de la CNIL) : seul l'encart de contribution part.
+ */
+function sansEncartsContribution(html: string): string {
+  const ouverture =
+    /<div\b[^>]*class=["'](?:[^"']*\s)?ctn-gen-mise-avant(?:\s[^"']*)?["'][^>]*>/i;
+  let resultat = "";
+  let reste = html;
+  for (;;) {
+    const bloc = blocDiv(reste, ouverture);
+    if (bloc === null) return resultat + reste;
+    const position = reste.indexOf(bloc);
+    resultat += reste.slice(0, position);
+    const contribution = /vous\s+souhaitez\s+contribuer|écrivez\s+à\s+ia\s*\[@\]\s*cnil\.fr/i.test(
+      bloc,
+    );
+    resultat += contribution ? " " : bloc;
+    reste = reste.slice(position + bloc.length);
+  }
+}
+
+/**
  * Texte de la zone principale d'une fiche IA : le corps de l'article, ses
  * intertitres et ses paragraphes, sans navigation, sans outils de page et sans
  * pied de page. La conversion est technique (balises, entités, blancs) ; le
@@ -165,7 +189,7 @@ export function texteFiche(html: string): string {
     /<div\b[^>]*class=["'](?:[^"']*\s)?ctn-gen-documents(?:\s[^"']*)?["'][^>]*>/i,
     /<div\b[^>]*class=["'](?:[^"']*\s)?text-hide(?:\s[^"']*)?["'][^>]*>/i,
   ].reduce(sansBloc, corps);
-  const sansOutils = sansChrome
+  const sansOutils = sansEncartsContribution(sansChrome)
     .replace(/<script\b[\s\S]*?<\/script>/gi, " ")
     .replace(/<style\b[\s\S]*?<\/style>/gi, " ")
     .replace(/<nav\b[\s\S]*?<\/nav>/gi, " ")
@@ -173,6 +197,16 @@ export function texteFiche(html: string): string {
     // pas du texte de doctrine ; les boutons de glossaire, eux, portent un terme.
     .replace(
       /<button\b[^>]*class=["'][^"']*\bctn-gen-ascenseur-collapse\b[^"']*["'][\s\S]*?<\/button>/gi,
+      " ",
+    )
+    // Boutons d'impression et note de confidentialité de la check-list : des
+    // commandes de page, pas des recommandations.
+    .replace(
+      /<button\b[^>]*(?:\bid=["']print["']|class=["'][^"']*\b(?:print-btn|icon-print)\b[^"']*["'])[^>]*>[\s\S]*?<\/button>/gi,
+      " ",
+    )
+    .replace(
+      /<p\b[^>]*>\s*<em>\s*Aucune information n['’]est collectée par la CNIL\.?\s*<\/em>\s*<\/p>/gi,
       " ",
     );
   const avecSauts = sansOutils
