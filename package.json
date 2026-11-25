@@ -20,6 +20,7 @@
     "backfill": "node veille/backfill.ts",
     "corpus:build": "node mcp/corpus/build.ts",
     "adequation:build": "node mcp/corpus/adequation/build.ts",
+    "cada:sync": "node mcp/corpus/cada/sync.ts",
     "corpus:index": "node mcp/index/build.ts",
     "corpus:sync": "node mcp/corpus/sync.ts",
     "ce:sync": "node mcp/corpus/ce/sync.ts",

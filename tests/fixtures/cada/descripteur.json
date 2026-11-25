@@ -1,0 +1,26 @@
+{
+  "corpus": "cada",
+  "nom": "CADA",
+  "jeu": {
+    "id": "53698f37a3a729239d2036a0",
+    "url": "https://www.data.gouv.fr/fr/datasets/avis-et-conseils-de-la-cada/",
+    "api": "https://www.data.gouv.fr/api/1/datasets/53698f37a3a729239d2036a0/"
+  },
+  "ressource": {
+    "id": "3a6d6fe3-8548-43ed-ad09-72052771447c",
+    "titre": "Ensemble consolidé des avis et conseils de la CADA",
+    "url": "https://static.data.gouv.fr/resources/avis-et-conseils-de-la-cada/20260814-172417/cada-2026-08-14.csv",
+    "sha1": "68f5c7923e2a4af8fbaae54a71710443babb1e11",
+    "modifiee_le": "2026-08-14"
+  },
+  "licence": "fr-lo",
+  "date_min": "2016-10-08",
+  "volume": {
+    "unites_index": 9,
+    "part_max": 0.3,
+    "fragments_max": 7
+  },
+  "url_texte": "https://www.cada.fr/{numero}",
+  "url_texte_verifiee": true,
+  "url_texte_note": "Fixture : motif vérifié sur trois avis du corpus réel."
+}

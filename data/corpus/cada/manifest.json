@@ -1,0 +1,117 @@
+{
+  "corpus": "cada",
+  "nom": "CADA",
+  "documents": 39003,
+  "unites": 175319,
+  "par_nature": {
+    "Avis": {
+      "documents": 37284,
+      "unites": 166388
+    },
+    "Conseil": {
+      "documents": 1719,
+      "unites": 8931
+    }
+  },
+  "par_sens": {
+    "(vide)": 6,
+    "Défavorable": 3361,
+    "Défavorable, Défavorable": 2,
+    "Défavorable, Favorable": 22,
+    "Défavorable, Favorable, Favorable": 15,
+    "Défavorable, Favorable, Sans objet": 73,
+    "Défavorable, Incompétence": 4,
+    "Défavorable, Irrecevable": 3,
+    "Défavorable, Sans objet": 16,
+    "Défavorable, Sans objet, Favorable": 1,
+    "Favorable": 21862,
+    "Favorable, Défavorable": 260,
+    "Favorable, Défavorable, Favorable": 6,
+    "Favorable, Défavorable, Incompétence": 2,
+    "Favorable, Défavorable, Irrecevable": 1,
+    "Favorable, Défavorable, Sans objet": 8,
+    "Favorable, Favorable": 1471,
+    "Favorable, Incompétence": 222,
+    "Favorable, Incompétence, Défavorable": 1,
+    "Favorable, Incompétence, Favorable": 1,
+    "Favorable, Incompétence, Sans objet": 1,
+    "Favorable, Irrecevable": 151,
+    "Favorable, Irrecevable, Sans objet": 1,
+    "Favorable, Sans objet": 380,
+    "Favorable, Sans objet, Favorable": 1,
+    "Incompétence": 2160,
+    "Incompétence, Défavorable": 2,
+    "Incompétence, Défavorable, Favorable": 1,
+    "Incompétence, Favorable": 6,
+    "Incompétence, Favorable, Favorable": 1,
+    "Incompétence, Incompétence": 1,
+    "Incompétence, Irrecevable": 4,
+    "Incompétence, Sans objet": 2,
+    "Irrecevable": 1325,
+    "Irrecevable, Favorable": 6,
+    "Irrecevable, Sans objet": 1,
+    "Sans objet": 7612,
+    "Sans objet, Défavorable": 2,
+    "Sans objet, Défavorable, Favorable, Favorable": 1,
+    "Sans objet, Favorable": 6,
+    "Sans objet, Favorable, Favorable": 1,
+    "Sans objet, Irrecevable": 1
+  },
+  "decoupage": "local — fragments de 600 à 1 200 caractères, un paragraphe long restant seul",
+  "arrete_le": "2024-04-18",
+  "url_texte": "https://www.cada.fr/{numero}",
+  "url_texte_verifiee": true,
+  "url_texte_note": "Motif vérifié sur trois avis (20132257, 20141326, 20163641) : les copies archivées de cada.fr/<numéro> répondent 200 et portent l'avis, sa date et son administration ; cada.fr répond 403 aux robots, le direct n'a donc pas été relu.",
+  "source": {
+    "jeu": "https://www.data.gouv.fr/fr/datasets/avis-et-conseils-de-la-cada/",
+    "jeu_id": "53698f37a3a729239d2036a0",
+    "ressource_id": "3a6d6fe3-8548-43ed-ad09-72052771447c",
+    "ressource_titre": "Ensemble consolidé des avis et conseils de la CADA",
+    "url": "https://static.data.gouv.fr/resources/avis-et-conseils-de-la-cada/20260814-172417/cada-2026-08-14.csv",
+    "fichier": "cada-2026-08-14.csv",
+    "sha256": "6862177e33c43967d3f9e1460509aa7eeb1828ee8919bbead16710cf6a2f4da3",
+    "sha1": "68f5c7923e2a4af8fbaae54a71710443babb1e11",
+    "taille": 198398592,
+    "modifiee_le": "2026-08-14",
+    "licence": "fr-lo"
+  },
+  "couverture": {
+    "source": "data.gouv.fr — Avis et conseils de la CADA (Licence Ouverte 2.0)",
+    "date": "2026-08-14",
+    "bornes": {
+      "debut": "2016-10-20",
+      "fin": "2024-04-18"
+    },
+    "lignes_lues": 60941,
+    "exclusions": [
+      {
+        "motif": "antérieur au 2016-10-08",
+        "lignes": 21937
+      },
+      {
+        "motif": "texte vide",
+        "lignes": 1
+      }
+    ],
+    "anomalies": [
+      {
+        "constat": "3 ligne(s) de type « Sanction » : la CADA est consultative, ce type est un écart de la source",
+        "lignes": 3,
+        "traitement": "valeur source conservée, aucune ligne renommée ; le document est retenu ou écarté par la même règle que les autres"
+      }
+    ],
+    "volume": {
+      "fragments_total": 241420,
+      "fragments_retenus": 175319,
+      "plafond": 35300,
+      "part_index": 1.4895412064570943,
+      "decision": "sous_ensemble_non_indexe",
+      "indexable": false,
+      "motif": "241420 fragments > 35300 ; le sous-ensemble du 2016-10-08 et après en compte encore 175319 > 35300 : il est conservé, l'index n'est pas construit"
+    },
+    "comptes": {
+      "documents": 39003,
+      "unites": 175319
+    }
+  }
+}

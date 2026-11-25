@@ -88,6 +88,16 @@ export type Unite = {
   origine?: Origine;
   /** Renseigné pour la CNIL (sanction, avis, recommandation) et le Conseil constitutionnel (DC, QPC). */
   nature?: string;
+  /** Renseigné pour la CADA seulement : administration qui a reçu la demande. */
+  administration?: string;
+  /** Renseigné pour la CADA seulement : sens de l'avis (favorable, défavorable, irrecevable…). */
+  sens?: string;
+  /** Renseigné pour la CADA seulement : motivation lue après la barre du champ source. */
+  motivation?: string;
+  /** Renseigné pour la CADA seulement : thème et sous-thème de la demande. */
+  theme?: string;
+  /** Renseigné pour la CADA seulement : mots-clés de la source. */
+  mots_cles?: string[];
   /** Renseigné pour la CNIL seulement : type de sanction du dispositif. */
   type_sanction?: string;
   /** Total des amendes en euros ; `null` si aucune ou si le montant est masqué. */
