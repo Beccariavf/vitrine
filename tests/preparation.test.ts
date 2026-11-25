@@ -19,12 +19,17 @@ import {
   numeroAffaire,
   pendantPresume,
   regrouperParDossier,
+  requeteAffaires,
   requeteEvenements,
   requetePropositions,
 } from "../mcp/corpus/preparation/liste.ts";
-import type { AffaireListee, DescripteurPreparation } from "../mcp/corpus/preparation/liste.ts";
+import type {
+  AffaireListee,
+  DescripteurPreparation,
+  PropositionListee,
+} from "../mcp/corpus/preparation/liste.ts";
 import { extraireCommunication, nomFichierCache } from "../mcp/corpus/preparation/parse.ts";
-import { syncPreparation } from "../mcp/corpus/preparation/sync.ts";
+import { syncPreparation, uniteProposition } from "../mcp/corpus/preparation/sync.ts";
 import type { ManifestePreparation } from "../mcp/corpus/preparation/sync.ts";
 import { getDecision } from "../mcp/tools.ts";
 
@@ -119,13 +124,113 @@ describe("la liste des textes en préparation", () => {
     assert.equal(motif("52025PC0836"), "adoptee");
   });
 
-  it("borne la requête aux actes du corpus et à la matière PDON", () => {
+  it("borne la requête aux actes suivis et à la matière PDON", () => {
     const requete = requetePropositions(DESCRIPTEUR);
     assert.match(requete, /subject-matter\/PDON/);
-    for (const acte of DESCRIPTEUR.actes_du_corpus) {
+    for (const acte of DESCRIPTEUR.actes_suivis) {
       assert.ok(requete.includes(`"${acte.celex}"`), acte.celex);
     }
-    assert.equal(DESCRIPTEUR.actes_du_corpus.length, 7);
+    assert.equal(DESCRIPTEUR.actes_suivis.length, 21);
+    for (const celex of ["32023R2854", "32025R0327", "32024R2847", "32022R2065"]) {
+      assert.ok(
+        DESCRIPTEUR.actes_suivis.some((acte) => acte.celex === celex),
+        `acte suivi ${celex}`,
+      );
+    }
+    // Le Cloud and AI Development Act entre par son numéro COM, sans modifier
+    // un acte suivi et hors de la matière PDON.
+    assert.match(requete, /STR\(\?celex\) IN \("52026PC0502"\)/);
+  });
+
+  it("étend les affaires aux questions préjudicielles sur les actes suivis", () => {
+    const requete = requeteAffaires(DESCRIPTEUR);
+    assert.match(requete, /communication_case_new_submits_preliminary_question_resource_legal/);
+    for (const celex of ["32024R1689", "32023R2854", "32022R2065"]) {
+      assert.ok(requete.includes(`"${celex}"`), celex);
+    }
+    assert.match(requete, /eurovoc\.europa\.eu\/5181/);
+    assert.match(requete, /FILTER\(\?matiere = true \|\| \?suivi = true\)/);
+  });
+
+  it("garde le texte des propositions existantes : seuls les actes du corpus y sont nommés", () => {
+    const proposition: PropositionListee = {
+      dossier: "http://exemple/dossier",
+      ref: "2025/0360/COD",
+      celex: "52025PC0837",
+      statut: "PROP_PENDING",
+      retire: false,
+      date: "2025-11-19",
+      titre: "Digital Omnibus",
+      langueTitre: "en",
+      pdon: true,
+      actesVises: ["32016R0679", "32023R2854"],
+    };
+    const unite = uniteProposition(proposition, null, DESCRIPTEUR);
+    assert.match(String(unite.texte), /Actes du corpus visés : RGPD \(32016R0679\)\./);
+    assert.doesNotMatch(String(unite.texte), /Data Act/);
+    assert.equal(unite.statut, "PROPOSE");
+  });
+
+  it("garde à l'octet le texte d'une proposition du socle", () => {
+    const dossier = regrouperParDossier(lirePropositions(PROPOSITIONS)).get(
+      "http://publications.europa.eu/resource/dossier/2025/0360",
+    );
+    assert.ok(dossier !== undefined);
+    const unite = uniteProposition(
+      choisirProposition(dossier),
+      derniereEtape(lireEvenements(EVENEMENTS), DATE_PASSE),
+      DESCRIPTEUR,
+    );
+    assert.equal(
+      unite.texte,
+      "Proposition de règlement du Parlement européen et du Conseil modifiant le règlement (UE) " +
+        "2016/679 en ce qui concerne la coopération entre autorités de contrôle\n\n" +
+        "Matière CELLAR : protection des données personnelles. Actes du corpus visés : " +
+        "RGPD (32016R0679), ePrivacy (32002L0058).\n\n" +
+        "Dernière étape : COUNCIL_ORIENTATION_DEBATE le 05/11/2025",
+    );
+    assert.equal(unite.derniere_etape, "COUNCIL_ORIENTATION_DEBATE — 2025-11-05");
+  });
+
+  it("donne son libellé à une proposition ajoutée par son numéro COM", () => {
+    const proposition: PropositionListee = {
+      dossier: "http://exemple/dossier",
+      ref: "2026/0138/COD",
+      celex: "52026PC0502",
+      statut: "PROP_PENDING",
+      retire: false,
+      date: "2026-06-03",
+      titre: "Cloud and AI Development Act",
+      langueTitre: "en",
+      pdon: false,
+      actesVises: [],
+    };
+    const unite = uniteProposition(proposition, null, DESCRIPTEUR);
+    assert.match(String(unite.texte), /Objet : Cloud and AI Development Act \(COM\(2026\) 502\)\./);
+    assert.doesNotMatch(String(unite.texte), /Matière CELLAR/);
+    assert.equal(unite.statut, "PROPOSE");
+  });
+
+  it("nomme l'acte suivi d'une proposition hors PDON, sans la dire matière PDON", () => {
+    const proposition: PropositionListee = {
+      dossier: "http://exemple/dossier",
+      ref: "2025/0134/COD",
+      celex: "52025PC0504",
+      statut: "PROP_PENDING",
+      retire: false,
+      date: "2025-06-20",
+      titre: "Digitalisation des machines",
+      langueTitre: "en",
+      pdon: false,
+      actesVises: ["32023R1230"],
+    };
+    const unite = uniteProposition(proposition, null, DESCRIPTEUR);
+    assert.match(
+      String(unite.texte),
+      /Hors matière protection des données personnelles, retenue parce qu'elle modifie un acte suivi\./,
+    );
+    assert.match(String(unite.texte), /Actes suivis visés : règlement machines \(32023R1230\)\./);
+    assert.doesNotMatch(String(unite.texte), /Matière CELLAR/);
   });
 
   it("retient la dernière étape passée et ignore l'étape planifiée", () => {
@@ -373,6 +478,11 @@ describe("la passe de préparation", () => {
     assert.equal(manifeste.couverture.comptes.affaires, 2);
     assert.equal(manifeste.couverture.comptes.affaires_presumees, 1);
     assert.equal(manifeste.couverture.presomption_annees, 3);
+    assert.equal(manifeste.couverture.actes_suivis.length, 21);
+    assert.ok(manifeste.couverture.actes_suivis.includes("32023R2854"));
+    assert.deepEqual(manifeste.couverture.propositions_ajoutees, ["52026PC0502"]);
+    assert.match(manifeste.couverture.selection, /proposition modifiant un acte suivi/);
+    assert.match(manifeste.couverture.selection, /question préjudicielle/);
     assert.equal(manifeste.couverture.consulte_le, DATE_PASSE);
     assert.deepEqual(manifeste.couverture.periode.propositions, {
       min: "2025-09-16",

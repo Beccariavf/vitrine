@@ -120,6 +120,12 @@ export type CouverturePreparation = {
   consulte_le: string;
   comptes: ComptesPreparation;
   presomption_annees: number;
+  /** Critère de sélection en clair, pour l'audit du manifeste. */
+  selection: string;
+  /** CELEX des actes dont la modification suffit à faire entrer une unité. */
+  actes_suivis: string[];
+  /** CELEX des propositions retenues par leur numéro COM. */
+  propositions_ajoutees: string[];
   /** Règle d'appariement affaire → décision, pour l'audit du manifeste. */
   appariement: string;
   exclusions: EcartesPreparation;
@@ -259,12 +265,31 @@ function dateFrancaise(date: string): string {
  * Objet d'une proposition : sa matière et les actes du corpus qu'elle vise, avec
  * leur libellé court. Seuls les actes réellement modifiés par cette proposition
  * sont nommés. Une proposition ne peut pas être indexée par son texte intégral :
- * le corpus en donne l'objet et la dernière étape.
+ * le corpus en donne l'objet et la dernière étape. Une proposition ajoutée par
+ * son numéro COM prend son libellé propre en tête de l'objet.
  */
 function objetProposition(
   proposition: PropositionListee,
   descripteur: DescripteurPreparation,
 ): string {
+  const ajoutee = (descripteur.propositions_ajoutees ?? []).find(
+    (candidate) => candidate.celex === proposition.celex,
+  );
+  if (ajoutee !== undefined) return `Objet : ${ajoutee.libelle}.`;
+  // Une proposition hors PDON, retenue parce qu'elle modifie un acte suivi qui
+  // n'appartient pas au socle, ne peut pas se dire « matière protection des
+  // données personnelles » : elle nomme l'acte qui la fait entrer.
+  const socle = new Set(descripteur.actes_du_corpus.map((acte) => acte.celex));
+  const nouveaux = descripteur.actes_suivis.filter(
+    (acte) => !socle.has(acte.celex) && proposition.actesVises.includes(acte.celex),
+  );
+  if (!proposition.pdon && nouveaux.length > 0) {
+    return (
+      "Hors matière protection des données personnelles, retenue parce qu'elle " +
+      "modifie un acte suivi. Actes suivis visés : " +
+      `${nouveaux.map((acte) => `${acte.libelle} (${acte.celex})`).join(", ")}.`
+    );
+  }
   const matiere = `Matière CELLAR : ${minusculeInitiale(descripteur.matiere_libelle)}.`;
   const vises = descripteur.actes_du_corpus.filter((acte) =>
     proposition.actesVises.includes(acte.celex),
@@ -568,6 +593,14 @@ export async function syncPreparation(
           .length,
       },
       presomption_annees: descripteur.presomption_annees,
+      selection:
+        "matière CELLAR PDON, proposition modifiant un acte suivi ou proposition " +
+        "ajoutée par son numéro COM ; affaire Eurovoc 5181/5595 ou question " +
+        "préjudicielle portant sur un acte suivi",
+      actes_suivis: descripteur.actes_suivis.map((acte) => acte.celex),
+      propositions_ajoutees: (descripteur.propositions_ajoutees ?? []).map(
+        (proposition) => proposition.celex,
+      ),
       appariement:
         "juridiction (C/T) + année + numéro CELEX ; affaires jointes résolues par case-law_joins_case_court",
       exclusions: etat.exclusions,

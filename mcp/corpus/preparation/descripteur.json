@@ -35,6 +35,98 @@
       "libelle": "clauses contractuelles types"
     }
   ],
+  "actes_suivis": [
+    {
+      "celex": "32016R0679",
+      "libelle": "RGPD"
+    },
+    {
+      "celex": "32024R1689",
+      "libelle": "AI Act"
+    },
+    {
+      "celex": "32002L0058",
+      "libelle": "ePrivacy"
+    },
+    {
+      "celex": "32016L0680",
+      "libelle": "directive police-justice"
+    },
+    {
+      "celex": "32018R1725",
+      "libelle": "règlement 2018/1725"
+    },
+    {
+      "celex": "32025R2518",
+      "libelle": "règlement procédural RGPD"
+    },
+    {
+      "celex": "32021D0914",
+      "libelle": "clauses contractuelles types"
+    },
+    {
+      "celex": "32023R2854",
+      "libelle": "Data Act"
+    },
+    {
+      "celex": "32022R0868",
+      "libelle": "DGA"
+    },
+    {
+      "celex": "32019L1024",
+      "libelle": "directive Open Data"
+    },
+    {
+      "celex": "32023R0138",
+      "libelle": "ensembles de forte valeur"
+    },
+    {
+      "celex": "32018R1807",
+      "libelle": "libre circulation des données"
+    },
+    {
+      "celex": "32025R0327",
+      "libelle": "EHDS"
+    },
+    {
+      "celex": "32019R1020",
+      "libelle": "règlement 2019/1020"
+    },
+    {
+      "celex": "32024L2853",
+      "libelle": "directive 2024/2853"
+    },
+    {
+      "celex": "32024R2847",
+      "libelle": "CRA"
+    },
+    {
+      "celex": "32023R1230",
+      "libelle": "règlement machines"
+    },
+    {
+      "celex": "31996L0009",
+      "libelle": "directive 96/9"
+    },
+    {
+      "celex": "32016L0943",
+      "libelle": "secret des affaires"
+    },
+    {
+      "celex": "32019L0790",
+      "libelle": "directive 2019/790"
+    },
+    {
+      "celex": "32022R2065",
+      "libelle": "DSA"
+    }
+  ],
+  "propositions_ajoutees": [
+    {
+      "celex": "52026PC0502",
+      "libelle": "Cloud and AI Development Act (COM(2026) 502)"
+    }
+  ],
   "eurovoc": [
     "http://eurovoc.europa.eu/5181",
     "http://eurovoc.europa.eu/5595"
