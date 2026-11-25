@@ -1,38 +1,170 @@
 {
-  "document": "32024R1689",
-  "titre": "Règlement (UE) 2024/1689 du Parlement européen et du Conseil du 13 juin 2024 établissant des règles harmonisées concernant l'intelligence artificielle et modifiant les règlements (CE) n° 300/2008, (UE) n° 167/2013, (UE) n° 168/2013, (UE) 2018/858, (UE) 2018/1139 et (UE) 2019/2144 et les directives 2014/90/UE, (UE) 2016/797 et (UE) 2020/1828 (règlement sur l'intelligence artificielle)",
-  "langue": "fra",
-  "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32024R1689",
-  "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
-  "date_acte": "2024-06-13",
-  "date_publication": "2024-07-12",
-  "date_debut": "2024-08-01",
-  "date_fin": null,
-  "statut": "en_vigueur",
-  "version": "02024R1689-20260727",
-  "date_consolidation": "2026-07-27",
-  "snapshot": "248c47ff5dd6583d98711347541047e7a2b83d5122174312558a8a17d90b81f8.xhtml",
-  "considerants_source": "32024R1689",
-  "snapshot_considerants": "f64452fd45b3fa0a51be546bb2199bea853a30dc6a40c803b8cd48f020ea3f81.xhtml",
-  "unites": 299,
-  "couverture": {
-    "source": "CELLAR — publications.europa.eu/resource/celex/02024R1689-20260727",
-    "date_publication": "2024-07-12",
-    "bornes": {
-      "debut": "2024-08-01",
-      "fin": null
+  "corpus": "aiact",
+  "nom": "AI Act et actes d'application",
+  "documents": [
+    {
+      "document": "32024R1689",
+      "titre": "Règlement (UE) 2024/1689 du Parlement européen et du Conseil du 13 juin 2024 établissant des règles harmonisées concernant l'intelligence artificielle et modifiant les règlements (CE) n° 300/2008, (UE) n° 167/2013, (UE) n° 168/2013, (UE) 2018/858, (UE) 2018/1139 et (UE) 2019/2144 et les directives 2014/90/UE, (UE) 2016/797 et (UE) 2020/1828 (règlement sur l'intelligence artificielle)",
+      "langue": "fra",
+      "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32024R1689",
+      "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+      "date_acte": "2024-06-13",
+      "date_publication": "2024-07-12",
+      "date_debut": "2024-08-01",
+      "date_fin": null,
+      "statut": "en_vigueur",
+      "version": "02024R1689-20260727",
+      "date_consolidation": "2026-07-27",
+      "snapshot": "248c47ff5dd6583d98711347541047e7a2b83d5122174312558a8a17d90b81f8.xhtml",
+      "considerants_source": "32024R1689",
+      "snapshot_considerants": "f64452fd45b3fa0a51be546bb2199bea853a30dc6a40c803b8cd48f020ea3f81.xhtml",
+      "unites": 299,
+      "couverture": {
+        "source": "CELLAR — publications.europa.eu/resource/celex/02024R1689-20260727",
+        "date_publication": "2024-07-12",
+        "bornes": {
+          "debut": "2024-08-01",
+          "fin": null
+        },
+        "statut": "en_vigueur",
+        "types_retenus": [
+          "article",
+          "considérant"
+        ],
+        "exclusions": [],
+        "comptes": {
+          "articles": 119,
+          "considerants": 180
+        },
+        "version": "02024R1689-20260727",
+        "date_consolidation": "2026-07-27"
+      }
     },
-    "statut": "en_vigueur",
+    {
+      "document": "32025R0454",
+      "titre": "Règlement d'exécution (UE) 2025/454 de la Commission du 7 mars 2025 portant modalités d'application du règlement (UE) 2024/1689 du Parlement européen et du Conseil en ce qui concerne la constitution d'un groupe scientifique d'experts indépendants dans le domaine de l'intelligence artificielle",
+      "langue": "fra",
+      "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32025R0454",
+      "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+      "date_acte": "2025-03-07",
+      "date_publication": "2025-03-10",
+      "date_debut": "2025-03-30",
+      "date_fin": null,
+      "statut": "en_vigueur",
+      "version": "32025R0454",
+      "date_consolidation": null,
+      "snapshot": "b9146a93de844da82b178a73bb75900dca80c807af23958a33c49d9f63ac0124.xhtml",
+      "unites": 33,
+      "couverture": {
+        "source": "CELLAR — publications.europa.eu/resource/celex/32025R0454",
+        "date_publication": "2025-03-10",
+        "bornes": {
+          "debut": "2025-03-30",
+          "fin": null
+        },
+        "statut": "en_vigueur",
+        "types_retenus": [
+          "article",
+          "considérant"
+        ],
+        "exclusions": [],
+        "comptes": {
+          "articles": 20,
+          "considerants": 13
+        },
+        "version": "32025R0454",
+        "date_consolidation": null
+      }
+    },
+    {
+      "document": "32026D2274",
+      "titre": "Décision d'exécution (UE) 2026/2274 de la Commission du 12 octobre 2026 concernant les normes harmonisées relatives aux systèmes d'IA à haut risque élaborées à l'appui du règlement (UE) 2024/1689 du Parlement européen et du Conseil",
+      "langue": "fra",
+      "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32026D2274",
+      "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+      "date_acte": "2026-10-12",
+      "date_publication": "2026-10-14",
+      "date_debut": "2026-10-14",
+      "date_fin": null,
+      "statut": "en_vigueur",
+      "version": "32026D2274",
+      "date_consolidation": null,
+      "snapshot": "af0f0bab43452ff27a4bb34a5ba64bcb6c908e9d75f79746a2c065e18a1bd173.xhtml",
+      "unites": 9,
+      "couverture": {
+        "source": "CELLAR — publications.europa.eu/resource/celex/32026D2274",
+        "date_publication": "2026-10-14",
+        "bornes": {
+          "debut": "2026-10-14",
+          "fin": null
+        },
+        "statut": "en_vigueur",
+        "types_retenus": [
+          "article",
+          "considérant",
+          "annexe"
+        ],
+        "exclusions": [],
+        "comptes": {
+          "articles": 2,
+          "considerants": 6,
+          "annexes": 1
+        },
+        "version": "32026D2274",
+        "date_consolidation": null
+      }
+    },
+    {
+      "document": "32026R2487",
+      "titre": "Règlement d'exécution (UE) 2026/2487 de la Commission du 10 novembre 2026 portant modalités d'application du règlement (UE) 2024/1689 du Parlement européen et du Conseil en ce qui concerne la mise en place, le développement, la mise en œuvre, l'exploitation et la surveillance des bacs à sable réglementaires de l'IA",
+      "langue": "fra",
+      "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32026R2487",
+      "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+      "date_acte": "2026-11-10",
+      "date_publication": "2026-11-11",
+      "date_debut": "2026-12-01",
+      "date_fin": null,
+      "statut": "en_vigueur",
+      "version": "32026R2487",
+      "date_consolidation": null,
+      "snapshot": "801305d16c2f514635c041afb40192444a708e4c5b3b5cb9f56f16e92dbbf080.xhtml",
+      "unites": 36,
+      "couverture": {
+        "source": "CELLAR — publications.europa.eu/resource/celex/32026R2487",
+        "date_publication": "2026-11-11",
+        "bornes": {
+          "debut": "2026-12-01",
+          "fin": null
+        },
+        "statut": "en_vigueur",
+        "types_retenus": [
+          "article",
+          "considérant"
+        ],
+        "exclusions": [],
+        "comptes": {
+          "articles": 10,
+          "considerants": 26
+        },
+        "version": "32026R2487",
+        "date_consolidation": null
+      }
+    }
+  ],
+  "unites": 377,
+  "couverture": {
+    "source": "CELLAR — publications.europa.eu/resource/celex/02024R1689-20260727, 32025R0454, 32026D2274, 32026R2487",
     "types_retenus": [
       "article",
-      "considérant"
+      "considérant",
+      "annexe"
     ],
     "exclusions": [],
     "comptes": {
-      "articles": 119,
-      "considerants": 180
-    },
-    "version": "02024R1689-20260727",
-    "date_consolidation": "2026-07-27"
+      "documents": 4,
+      "articles": 151,
+      "considerants": 225,
+      "annexes": 1
+    }
   }
 }

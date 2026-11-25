@@ -218,11 +218,13 @@ describe("les descripteurs", () => {
   it("lit le RGPD et l'AI Act avec leurs comptes attendus", () => {
     const descripteurs = lireDescripteurs();
     const rgpd = descripteurs.find((descripteur) => descripteur.corpus === "rgpd");
-    const aiact = descripteurs.find((descripteur) => descripteur.corpus === "aiact");
+    const aiact = descripteurs.find(
+      (descripteur) => descripteur.corpus === "aiact" && descripteur.document === "32024R1689",
+    );
 
     assert.deepEqual(
       descripteurs.map((descripteur) => descripteur.corpus),
-      ["aiact", "ccs", "ccs", "donnees", "donnees", "donnees", "donnees", "donnees", "donnees", "donnees", "eprivacy", "eudpr", "police", "rgpd", "rgpdproc"],
+      ["aiact", "aiact", "aiact", "aiact", "ccs", "ccs", "donnees", "donnees", "donnees", "donnees", "donnees", "donnees", "donnees", "eprivacy", "eudpr", "police", "rgpd", "rgpdproc"],
     );
     assert.deepEqual(
       { articles: rgpd?.articles_attendus, considerants: rgpd?.considerants_attendus },

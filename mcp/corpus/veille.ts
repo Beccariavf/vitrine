@@ -66,6 +66,9 @@ export const CORPUS_ACTES: readonly CorpusVeille[] = [
 export const CORPUS_ACTES_UE: Readonly<Record<string, CorpusVeille>> = {
   "32016R0679": "rgpd",
   "32024R1689": "aiact",
+  "32025R0454": "aiact",
+  "32026D2274": "aiact",
+  "32026R2487": "aiact",
   "32002L0058": "eprivacy",
   "32016L0680": "police",
   "32018R1725": "eudpr",
