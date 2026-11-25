@@ -202,6 +202,26 @@
       "raison": "plan stratégique général, l’IA n’en est qu’un axe"
     },
     {
+      "url": "https://www.cnil.fr/fr/gpa-ia-education",
+      "titre": "IA et éducation : une résolution mondiale pour la protection des données",
+      "raison": "résolution mondiale GPA sur l’IA et l’éducation, hors du périmètre des positions CNIL sur les traitements"
+    },
+    {
+      "url": "https://www.cnil.fr/fr/intelligence-artificielle-la-cnil-devoile-ses-premieres-reponses-pour-une-ia-innovante-et",
+      "titre": "Intelligence artificielle : la CNIL dévoile ses premières réponses pour une IA innovante et respectueuse de la vie privée",
+      "raison": "annonce des premières fiches IA (2023), remplacées par les fiches pratiques déjà au corpus"
+    },
+    {
+      "url": "https://www.cnil.fr/fr/intelligence-artificielle-la-cnil-poursuit-ses-travaux",
+      "titre": "Intelligence artificielle : la CNIL poursuit ses travaux pour une IA innovante et respectueuse de la vie privée",
+      "raison": "point d’étape sur les travaux IA (2024), sans recommandation propre"
+    },
+    {
+      "url": "https://www.cnil.fr/fr/intelligence-artificielle-la-cnil-ouvre-une-nouvelle-consultation-publique",
+      "titre": "[Clôturée] Intelligence artificielle : nouvelle consultation publique sur le développement des systèmes d’IA",
+      "raison": "consultation publique clôturée (2024), remplacée par les fiches pratiques déjà au corpus"
+    },
+    {
       "url": "https://www.cnil.fr/fr/intelligence-artificielle/guide",
       "titre": "Guide d’auto-évaluation pour les systèmes d’intelligence artificielle (IA)",
       "raison": "sommaire de moins de 1500 caractères ; ses chapitres sont retenus"

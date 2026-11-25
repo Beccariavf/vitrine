@@ -291,12 +291,14 @@ describe("fiches IA de la CNIL", () => {
       '<p class="rtecenter"><button id="print" onclick="window.print();" title="Imprimer">Imprimer cette check-list</button></p>',
       '<p class="rtecenter"><em>Aucune information n\'est collectée par la CNIL.</em></p>',
       "</div>",
+      '<div class="ctn-gen-mise-avant clearfix"><h2><span>Dossier du LINC</span></h2><div><p>Le Laboratoire d’innovation numérique a publié un dossier en quatre volets.</p></div></div>',
       '<div class="ctn-gen-mise-avant clearfix"><h2><span>Vous souhaitez contribuer ?</span></h2><div><p>Écrivez à ia[@]cnil.fr</p></div></div>',
       "</div>",
       "</main>",
     ].join("");
     const texte = texteFiche(html);
     assert.match(texte, /Attribuer les responsabilités/);
+    assert.match(texte, /Dossier du LINC/, "un encart de doctrine survit au nettoyage");
     assert.doesNotMatch(
       texte,
       /Imprimer cette check-list|Aucune information|Vous souhaitez contribuer|Écrivez à ia/,

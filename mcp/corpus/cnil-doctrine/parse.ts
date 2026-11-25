@@ -138,6 +138,29 @@ function sansBloc(html: string, ouverture: RegExp): string {
 }
 
 /**
+ * Retire les encarts « Vous souhaitez contribuer ? Écrivez à ia@cnil.fr ».
+ * Le même bloc `ctn-gen-mise-avant` porte ailleurs un contenu de doctrine
+ * (dossier du LINC, actions de la CNIL) : seul l'encart de contribution part.
+ */
+function sansEncartsContribution(html: string): string {
+  const ouverture =
+    /<div\b[^>]*class=["'](?:[^"']*\s)?ctn-gen-mise-avant(?:\s[^"']*)?["'][^>]*>/i;
+  let resultat = "";
+  let reste = html;
+  for (;;) {
+    const bloc = blocDiv(reste, ouverture);
+    if (bloc === null) return resultat + reste;
+    const position = reste.indexOf(bloc);
+    resultat += reste.slice(0, position);
+    const contribution = /vous\s+souhaitez\s+contribuer|écrivez\s+à\s+ia\s*\[@\]\s*cnil\.fr/i.test(
+      bloc,
+    );
+    resultat += contribution ? " " : bloc;
+    reste = reste.slice(position + bloc.length);
+  }
+}
+
+/**
  * Texte de la zone principale d'une fiche IA : le corps de l'article, ses
  * intertitres et ses paragraphes, sans navigation, sans outils de page et sans
  * pied de page. La conversion est technique (balises, entités, blancs) ; le
@@ -165,10 +188,8 @@ export function texteFiche(html: string): string {
     // (« Texte reference », « Document reference »).
     /<div\b[^>]*class=["'](?:[^"']*\s)?ctn-gen-documents(?:\s[^"']*)?["'][^>]*>/i,
     /<div\b[^>]*class=["'](?:[^"']*\s)?text-hide(?:\s[^"']*)?["'][^>]*>/i,
-    // Encart « Vous souhaitez contribuer ? Écrivez à ia@cnil.fr », hors doctrine.
-    /<div\b[^>]*class=["'](?:[^"']*\s)?ctn-gen-mise-avant(?:\s[^"']*)?["'][^>]*>/i,
   ].reduce(sansBloc, corps);
-  const sansOutils = sansChrome
+  const sansOutils = sansEncartsContribution(sansChrome)
     .replace(/<script\b[\s\S]*?<\/script>/gi, " ")
     .replace(/<style\b[\s\S]*?<\/style>/gi, " ")
     .replace(/<nav\b[\s\S]*?<\/nav>/gi, " ")
