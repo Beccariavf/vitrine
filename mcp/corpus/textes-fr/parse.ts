@@ -21,7 +21,7 @@ import type { ArticleLil, LegiPart } from "../lil/parse.ts";
  * datées quand la route par numéro ne sert pas l'article en vigueur.
  */
 export type RouteTexte =
-  | { type: "legiPart" }
+  | { type: "legiPart"; plage?: { premier: string; dernier: string } }
   | { type: "code"; sctCid: string; premier: string; dernier: string }
   | { type: "article"; num: string }
   | { type: "articles"; nums: string[] }
@@ -67,6 +67,12 @@ export type TexteFr = {
   /** Ce que le corpus couvre du texte, en clair : `texte entier`, `article L34-5`. */
   perimetre: string;
   route: RouteTexte;
+  /**
+   * Numéros déjà couverts par un autre bloc du même texte, retirés de la
+   * lecture : le CRPA L311-3-1 a son bloc d'article et ne doit pas entrer deux
+   * fois dans le corpus quand le livre III est lu par sa section.
+   */
+  exclure?: readonly string[];
   /**
    * Route de détection de nouvelle version, quand elle diffère de `route` : la
    * recherche `LODA_DATE` ne rend que l'identifiant de la version consolidée,
@@ -332,6 +338,23 @@ export function lireTexte(
   } else {
     part = lireLegiPart(reponse);
   }
+  // Une loi se lit en entier, puis se borne à sa plage : `/consult/code` ne
+  // rend pas le texte d'une section de loi, et `getArticleWithIdAndNum` ne sert
+  // pas les articles modificatifs (SREN 34 et 39).
+  if (route.type === "legiPart" && route.plage !== undefined) {
+    const { premier, dernier } = route.plage;
+    part = {
+      ...part,
+      articles: part.articles.filter((article) => dansPlage(article.num, premier, dernier)),
+    };
+  }
+  if ((texteFr.exclure ?? []).length > 0) {
+    const exclus = new Set((texteFr.exclure ?? []).map(normaliserNumero));
+    part = {
+      ...part,
+      articles: part.articles.filter((article) => !exclus.has(normaliserNumero(article.num))),
+    };
+  }
   const { unites, abroges } = unitesLil(part, {
     textId: texteFr.textId,
     corpus,
@@ -377,6 +400,15 @@ export function validerLectures(lectures: readonly LectureTexte[]): void {
       for (const unite of unites) {
         if (!dansPlage(unite.numero, route.premier, route.dernier)) {
           erreurs.push(`${texteFr.nom} : article ${unite.numero} hors de ${route.premier} à ${route.dernier}`);
+        }
+      }
+    }
+    if (route.type === "legiPart" && route.plage !== undefined) {
+      for (const unite of unites) {
+        if (!dansPlage(unite.numero, route.plage.premier, route.plage.dernier)) {
+          erreurs.push(
+            `${texteFr.nom} : article ${unite.numero} hors de ${route.plage.premier} à ${route.plage.dernier}`,
+          );
         }
       }
     }

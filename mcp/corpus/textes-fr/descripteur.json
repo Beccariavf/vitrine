@@ -721,6 +721,165 @@
       "attendus": {
         "articles": 1
       }
+    },
+    {
+      "cle": "crpa-livre-3",
+      "nom": "CRPA",
+      "titre": "Code des relations entre le public et l'administration, livre III (accès aux documents administratifs et réutilisation des informations publiques)",
+      "textId": "LEGITEXT000031366350",
+      "url": "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000031366350/LEGISCTA000031367685/",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "perimetre": "livre III (L300-1 à L351-1) et partie réglementaire correspondante, dont D323-2-1 ; L311-3-1 relève de son bloc d'article",
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000031367685",
+        "premier": "L300-1",
+        "dernier": "L351-1"
+      },
+      "exclure": [
+        "L311-3-1"
+      ],
+      "attendus": {
+        "articles": 132
+      }
+    },
+    {
+      "cle": "loi-sren-titre-3",
+      "nom": "Loi SREN",
+      "titre": "Loi n° 2024-449 du 21 mai 2024 visant à sécuriser et à réguler l'espace numérique (SREN), titre III",
+      "textId": "LEGITEXT000049565770",
+      "url": "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000049565770",
+      "url_article": "https://www.legifrance.gouv.fr/loda/id/{id}",
+      "perimetre": "titre III, articles 26 à 39",
+      "date_texte": "2024-05-21",
+      "route": {
+        "type": "legiPart",
+        "plage": {
+          "premier": "26",
+          "dernier": "39"
+        }
+      },
+      "attendus": {
+        "articles": 14
+      }
+    },
+    {
+      "cle": "code-patrimoine-livre-2",
+      "nom": "Code du patrimoine",
+      "titre": "Code du patrimoine, livre II (archives), partie législative",
+      "textId": "LEGITEXT000006074236",
+      "url": "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074236/LEGISCTA000006129161/",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "perimetre": "livre II (archives), partie législative",
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000006129161",
+        "premier": "L211-1",
+        "dernier": "L222-3"
+      },
+      "attendus": {
+        "articles": 66
+      }
+    },
+    {
+      "cle": "code-patrimoine-reglementaire-titre-1",
+      "nom": "Code du patrimoine",
+      "titre": "Code du patrimoine, titre Ier du livre II (régime général des archives), partie réglementaire",
+      "textId": "LEGITEXT000006074236",
+      "url": "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074236/LEGISCTA000024240314/",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "perimetre": "titre Ier du livre II (régime général des archives), partie réglementaire ; 109 articles en vigueur, sous le plafond de 150",
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000024240314",
+        "premier": "R212-1",
+        "dernier": "R213-13"
+      },
+      "attendus": {
+        "articles": 109
+      }
+    },
+    {
+      "cle": "loi-51-711",
+      "nom": "Loi 51-711",
+      "titre": "Loi n° 51-711 du 7 juin 1951 sur l'obligation, la coordination et le secret en matière de statistiques",
+      "textId": "LEGITEXT000006068104",
+      "url": "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000006068104",
+      "url_article": "https://www.legifrance.gouv.fr/loda/id/{id}",
+      "perimetre": "texte entier",
+      "route": {
+        "type": "legiPart"
+      },
+      "attendus": {
+        "articles": 13
+      }
+    },
+    {
+      "cle": "loi-68-678",
+      "nom": "Loi 68-678",
+      "titre": "Loi n° 68-678 du 26 juillet 1968 relative à la communication de documents et renseignements d'ordre économique, commercial, industriel, financier ou technique à des personnes physiques ou morales étrangères",
+      "textId": "LEGITEXT000006068321",
+      "url": "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000006068321",
+      "url_article": "https://www.legifrance.gouv.fr/loda/id/{id}",
+      "perimetre": "texte entier",
+      "route": {
+        "type": "legiPart"
+      },
+      "attendus": {
+        "articles": 4
+      }
+    },
+    {
+      "cle": "code-commerce-secret-affaires",
+      "nom": "Code de commerce",
+      "titre": "Code de commerce, titre V du livre Ier (protection du secret des affaires)",
+      "textId": "LEGITEXT000005634379",
+      "url": "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000005634379/LEGISCTA000037266547/",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "perimetre": "articles L151-1 à L154-1 (secret des affaires)",
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000037266547",
+        "premier": "L151-1",
+        "dernier": "L154-1"
+      },
+      "attendus": {
+        "articles": 20
+      }
+    },
+    {
+      "cle": "cpi-bases-donnees",
+      "nom": "CPI",
+      "titre": "Code de la propriété intellectuelle, titre IV du livre III de la première partie (droits des producteurs de bases de données)",
+      "textId": "LEGITEXT000006069414",
+      "url": "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006069414/LEGISCTA000006146357/",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "perimetre": "articles L341-1 à L343-7 (producteurs de bases de données)",
+      "route": {
+        "type": "code",
+        "sctCid": "LEGISCTA000006146357",
+        "premier": "L341-1",
+        "dernier": "L343-7"
+      },
+      "attendus": {
+        "articles": 18
+      }
+    },
+    {
+      "cle": "cpi-l122-5-3",
+      "nom": "CPI",
+      "titre": "Code de la propriété intellectuelle, article L122-5-3 (exception de fouille de textes et de données)",
+      "textId": "LEGITEXT000006069414",
+      "url": "https://www.legifrance.gouv.fr/codes/texte_lc/LEGITEXT000006069414",
+      "url_article": "https://www.legifrance.gouv.fr/codes/article_lc/{id}",
+      "perimetre": "article L122-5-3",
+      "route": {
+        "type": "article",
+        "num": "L122-5-3"
+      },
+      "attendus": {
+        "articles": 1
+      }
     }
   ]
 }

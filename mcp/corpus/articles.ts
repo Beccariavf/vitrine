@@ -21,7 +21,10 @@ export function normaliserNumero(numero: string | number): string | null {
   const brut = String(numero)
     .trim()
     .replace(/^(?:articles?|art\.?)\s*/i, "")
-    .replace(/^(?:n[°o]|§)\s*/i, "");
+    .replace(/^(?:n[°o]|§)\s*/i, "")
+    // L'étoile des articles réglementaires (`R*311-12`) est une marque de
+    // procédure, pas un numéro distinct : `R. 311-12` désigne le même article.
+    .replace(/\*/g, "");
   // L'article unique d'un règlement d'exécution n'a pas de numéro : il se cite
   // « article unique » et le corpus le porte tel quel.
   if (/^unique$/i.test(brut)) return "unique";
@@ -51,7 +54,9 @@ export function normaliserNumero(numero: string | number): string | null {
 export function formeArticle(valeur: string | number): Article | null {
   const brut = String(valeur)
     .trim()
-    .replace(/^(?:articles?|art\.?)\s*/i, "");
+    .replace(/^(?:articles?|art\.?)\s*/i, "")
+    // Même règle que `normaliserNumero` : `R*311-12` est `R. 311-12`.
+    .replace(/\*/g, "");
   // Seule une subdivision suit le numéro : alinéa `(2)`, point `.2` ; `9 bis` n'est pas `9`.
   const trouve = /^(?:([LRD])\.?\s*)?(\d+)(?:er)?((?:-\d+)*)((?:\([0-9a-z]{1,4}\)|\.\d+)*)\s*$/i.exec(brut);
   if (trouve === null) return null;

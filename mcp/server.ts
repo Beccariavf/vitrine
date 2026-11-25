@@ -51,7 +51,8 @@ const CONSIGNE_PROVENANCE =
   "`32021D0914` (transferts) et `32021D0915` (sous-traitance, art. 28), décisions d'adéquation `adequation`, " +
   "textes UE de l'économie des données `donnees` (Data Act `32023R2854`, DGA `32022R0868`, " +
   "directive Open Data `32019L1024`, ensembles de forte valeur `32023R0138`…), LIL " +
-  "`LEGITEXT000006068624`, textes français d'application `textes_fr`, textes en préparation et " +
+  "`LEGITEXT000006068624`, textes français d'application `textes_fr` (accès aux documents " +
+  "administratifs, réutilisation, archives, secret statistique et des affaires, bases de données), textes en préparation et " +
   "affaires pendantes `preparation`, délibérations CNIL `cnil`, " +
   "doctrine CNIL `cnil_doctrine`, décisions du Conseil d'État `ce`, décisions DC et QPC du Conseil constitutionnel `constit`, documents " +
   "du CEPD `cepd` (lignes directrices, avis art. 64, décisions art. 65, recommandations, G29 repris), décisions de la Cour de cassation `cc`, décisions de la CJUE " +
@@ -505,7 +506,8 @@ export function createServer(deps: ServerDeps): McpServer {
         "contractuelles types de transfert et de sous-traitance, les décisions d'adéquation, " +
         "les textes UE de l'économie des données (Data Act, DGA, directive Open Data, ensembles " +
         "de forte valeur, libre circulation, recommandation clauses types, logos DGA), la LIL, " +
-        "les textes français d'application, " +
+        "les textes français d'application (accès aux documents administratifs, réutilisation, " +
+        "archives, secret statistique et des affaires, bases de données), " +
         "les textes en préparation et les affaires pendantes, les délibérations de la CNIL " +
         "(sanctions, avis, recommandations et lignes directrices), les guides, référentiels, fiches " +
         "pratiques IA et listes AIPD de la CNIL (corpus `cnil_doctrine`), les décisions du Conseil d'État, " +
