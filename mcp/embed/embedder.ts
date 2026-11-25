@@ -40,11 +40,13 @@ export const INSTRUCTION_CONSTIT =
   "Instruction : retrouve les passages d'une décision du Conseil constitutionnel qui répondent à la question\nRequête : ";
 
 /**
- * Instruction de requête propre à l'espace européen des données de santé. Le
- * vocabulaire de santé (« utilisation secondaire », « DME », « ORAD ») est
- * étranger au RGPD : sans elle, « finalités interdites de l'utilisation
- * secondaire » reste sous le seuil de refus du produit. Aucune mesure sur un jeu
- * `dev` : le corpus suit le repli, sans promesse chiffrée.
+ * Instruction de requête propre à l'espace européen des données de santé, lue
+ * quand `corpus` ou `document` borne la requête. Le vocabulaire de santé
+ * (« utilisation secondaire », « DME », « ORAD ») est étranger au RGPD : sans
+ * elle, « finalités interdites de l'utilisation secondaire » avec `corpus:
+ * "sante_ue"` reste sous le seuil de refus du produit (similarité 0,684 au lieu
+ * de 0,765). Aucune mesure sur un jeu `dev` : le corpus suit le repli, sans
+ * promesse chiffrée.
  */
 export const INSTRUCTION_SANTE_UE =
   "Instruction : retrouve les passages du règlement sur l'espace européen des données de santé qui répondent à la question\nRequête : ";

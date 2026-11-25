@@ -584,8 +584,9 @@ export type ResultatPasseEurlex = {
 };
 
 /**
- * Une passe : trois requêtes groupées, puis comparaison aux descripteurs. Une
- * seule requête en panne fait échouer la passe entière : aucune entrée partielle
+ * Une passe : quatre requêtes groupées (les actes d'exécution de l'EHDS
+ * compris), puis comparaison aux descripteurs. Une seule requête en panne fait
+ * échouer la passe entière : aucune entrée partielle
  * n'est écrite, et `a_jour_au` ne peut pas avancer sur une lecture incomplète.
  */
 export async function passeEurlex(options: PasseEurlexOptions = {}): Promise<ResultatPasseEurlex> {

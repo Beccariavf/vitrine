@@ -35,7 +35,7 @@ import type { Descripteur } from "../mcp/corpus/parse.ts";
 import type { DescripteurAdequation } from "../mcp/corpus/adequation/parse.ts";
 import { compterArticlesDecision, paysDeTitre, titreDeCapture } from "../mcp/corpus/adequation/parse.ts";
 import { synchroniserActeUe, synchroniserAdequation } from "../mcp/corpus/actes-ue.ts";
-import { syncCorpus } from "../mcp/corpus/sync.ts";
+import { agentsParDefaut, syncCorpus } from "../mcp/corpus/sync.ts";
 import type { AgentSync } from "../mcp/corpus/sync.ts";
 import { corpusDeLEntree, documentsDeLEntree } from "../mcp/corpus/veille.ts";
 import type { Embedder } from "../mcp/embed/embedder.ts";
@@ -927,6 +927,22 @@ describe("corpus:sync et les actes de l'Union", () => {
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
+  });
+
+  it("dit qu'un acte d'exécution détecté demande un descripteur manuel", async () => {
+    const agents = agentsParDefaut("/tmp/depot");
+    const resultat = await agents.sante_ue({
+      entree: entreeEurlex({
+        document: "32027R0001",
+        categorie: "acte_execution",
+        title: "Acte d'exécution de l'EHDS (15/01/2027)",
+      }),
+    });
+    assert.equal(resultat.ecrit, false);
+    assert.equal(
+      resultat.message,
+      "32027R0001 détecté, descripteur à ajouter à la main",
+    );
   });
 
   it("ne relance rien quand la version consolidée est déjà au corpus", async () => {

@@ -8,7 +8,7 @@ import { documentsPresents, extraireCitations, marquerPresence } from "../mcp/co
 import type { Unite } from "../mcp/corpus/parse.ts";
 import { INSTRUCTION_SANTE_UE, INSTRUCTIONS_REQUETE } from "../mcp/embed/embedder.ts";
 import { statutApplication } from "../mcp/corpus/statut.ts";
-import { documentsNommes, getArticle } from "../mcp/tools.ts";
+import { documentsNommes, getArticle, search } from "../mcp/tools.ts";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 
@@ -184,6 +184,25 @@ describe("corpus sante_ue", () => {
     assert.equal(INSTRUCTIONS_REQUETE.sante_ue, INSTRUCTION_SANTE_UE);
     for (const celex of CELEX) assert.equal(INSTRUCTIONS_REQUETE[celex], INSTRUCTION_SANTE_UE);
     assert.match(INSTRUCTION_SANTE_UE, /données de santé/);
+  });
+
+  it("nomme l'EHDS dans le refus d'un article absent", async () => {
+    const resultat = await search(
+      ROOT,
+      { question: "l'article 999 de l'EHDS" },
+      {
+        embedder: {
+          model: "test",
+          dim: 1,
+          embedPassages: async () => [],
+          embedQuery: async () => {
+            throw new Error("l'embedder ne doit pas être appelé");
+          },
+        },
+      },
+    );
+    assert.equal(resultat.niveau_confiance, "aucun_resultat_fiable");
+    assert.match(resultat.message ?? "", /EHDS \(32025R0327\)/);
   });
 
   it("rend le statut d'application des actes de santé", () => {
