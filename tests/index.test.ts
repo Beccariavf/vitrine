@@ -12,7 +12,6 @@ import {
   empreinteUnite,
   formaterJournal,
   lireFournisseur,
-  lireUnites,
   migrerVecteurs,
 } from "../mcp/index/build.ts";
 import { search } from "../mcp/tools.ts";

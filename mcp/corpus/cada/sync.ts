@@ -193,9 +193,14 @@ function ecrireSiChange(chemin: string, contenu: string): boolean {
   return true;
 }
 
-/** Empreinte du descripteur : toute règle changée force la relecture du fichier. */
+/** Version du schéma d'unités produit ; la changer force une relecture complète. */
+const VERSION_UNITES = 2;
+
+/** Empreinte du descripteur et du schéma : tout changement force la relecture du fichier. */
 function empreinteDescripteur(descripteur: DescripteurCada): string {
-  return createHash("sha256").update(JSON.stringify(descripteur)).digest("hex");
+  return createHash("sha256")
+    .update(JSON.stringify({ version: VERSION_UNITES, descripteur }))
+    .digest("hex");
 }
 
 /** Lit `unites.jsonl` s'il existe ; un corpus absent vaut une liste vide. */

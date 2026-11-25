@@ -261,9 +261,6 @@ export function unitesCada(document: DocumentCada, descripteur: DescripteurCada)
     nature: document.nature,
     ...(document.administration === "" ? {} : { administration: document.administration }),
     ...(document.sens === "" ? {} : { sens: document.sens }),
-    ...(document.motivation === "" ? {} : { motivation: document.motivation }),
-    ...(document.theme === "" ? {} : { theme: document.theme }),
-    ...(document.motsCles.length === 0 ? {} : { mots_cles: document.motsCles }),
   }));
 }
 

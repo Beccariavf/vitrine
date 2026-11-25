@@ -31,6 +31,7 @@ import type { FetchLike } from "../veille/fetch.ts";
 
 const FIXTURE = fileURLToPath(new URL("./fixtures/cada/avis.csv", import.meta.url));
 const DESCRIPTEUR_FIXTURE = fileURLToPath(new URL("./fixtures/cada/descripteur.json", import.meta.url));
+const DESCRIPTEUR_REEL = fileURLToPath(new URL("../mcp/corpus/cada/descripteur.json", import.meta.url));
 
 const racines: string[] = [];
 
@@ -244,9 +245,6 @@ describe("découpage et unités", () => {
     assert.equal(unite?.statut, "Avis");
     assert.equal(unite?.administration, "Préfecture de la Somme");
     assert.equal(unite?.sens, "Favorable");
-    assert.equal(unite?.motivation, "Communication");
-    assert.equal(unite?.theme, "Données publiques");
-    assert.deepEqual(unite?.mots_cles, ["Document administratif"]);
     assert.equal(unite?.url, "https://www.cada.fr/202400001");
     assert.match(unite?.chemin ?? "", /CADA > Avis > 202400001 > Préfecture de la Somme > Favorable/);
   });
@@ -322,6 +320,52 @@ describe("mesure et règle de volume", () => {
     assert.deepEqual(
       exclusions.map((exclusion) => [exclusion.motif, exclusion.lignes]),
       [["hors sélection thématique", 4]],
+    );
+  });
+
+  it("applique le motif réel du descripteur, toutes dates", () => {
+    const colonnes = colonnesDe([
+      "Numéro de dossier",
+      "Administration",
+      "Type",
+      "Année",
+      "Séance",
+      "Objet",
+      "Thème et sous thème",
+      "Mots clés",
+      "Sens et motivation",
+      "Partie",
+      "Avis",
+    ]);
+    const ligne = (numero: string, texte: string): string[] => [
+      numero,
+      "Administration",
+      "Avis",
+      "2024",
+      "18/04/2024",
+      "",
+      "",
+      "",
+      "Favorable",
+      "III",
+      texte,
+    ];
+    const descripteur = lireDescripteur(DESCRIPTEUR_REEL);
+    const mesure = mesurer(
+      [
+        ligne("202400101", "Le code source du logiciel est communicable."),
+        ligne("202400102", "L. 321-1 du CRPA s'applique à cette demande."),
+        ligne("202400103", "Le format électronique des données publiques est ouvert."),
+        ligne("202400104", "La commission a examiné une demande d'accès aux archives."),
+      ],
+      colonnes,
+      descripteur,
+    );
+    assert.equal(mesure.documents, 4);
+    assert.equal(mesure.documents_selection, 3);
+    assert.deepEqual(
+      [...mesure.selection].sort(),
+      ["202400101", "202400102", "202400103"],
     );
   });
 
