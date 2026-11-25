@@ -168,7 +168,7 @@ unité `LEGIARTI…`, avec sa section, sa date de début, son état et l'URL Lé
 Ouverte 2.0 (Etalab).
 
 Le corpus `textes_fr` porte 626 articles en vigueur au 2026-11-25 et 37 abrogés écartés, sur douze
-textes et trente-six blocs : décret n° 2019-536 en entier (166, 1 abrogé) ; Code pénal 226-16 à
+textes et quarante blocs : décret n° 2019-536 en entier (166, 1 abrogé) ; Code pénal 226-16 à
 226-24 (16, `226-16-1-A` abrogé), 226-1, 226-8-1 et 226-13 (3) et chapitre 323 (12) ; CPCE L32-3,
 L34-1 et L34-5 ; Code du travail L1121-1, L1222-4, L1226-2, L2312-38 et L4624-8 ; Code de la santé
 publique L1110, L1111, L1121 à L1126, L1130 à L1133, L1141, L1460, L1461, L1470, L6316, articles
@@ -183,10 +183,10 @@ nouvelle version entrant en vigueur au 2029-01-01, et la route par numéro ne le
 entier, `/consult/code` pour une section ou pour des numéros prélevés dans des sections datées,
 `/consult/getArticleWithIdAndNum` pour un article ou pour une liste de numéros agrégée en une
 seule lecture (sa version est la suite des identifiants, jointe par `+`) ;
-48 appels et le jeton pour les trente-six blocs. `npm run veille:textes-fr` suit les 37 entrées (la
-loi 78-17 et les trente-six blocs) et compare par bloc : une version nouvelle dans un bloc ne publie
+52 appels et le jeton pour les quarante blocs. `npm run veille:textes-fr` suit les 41 entrées (la
+loi 78-17 et les quarante blocs) et compare par bloc : une version nouvelle dans un bloc ne publie
 aucun « retrait » dans les autres blocs du même code. Son budget est dynamique — un jeton, un appel
-par entrée et par numéro, plus 5 de marge — et vaut 54 aujourd'hui.
+par entrée et par numéro, plus 5 de marge — et vaut 58 aujourd'hui.
 
 L'évaluation CNIL est séparée : 20 questions dans `mcp/eval/questions-cnil.csv` (12 visant un
 document, 6 conceptuelles, 2 pièges), mesurées avec `corpus: cnil` et rapportées dans

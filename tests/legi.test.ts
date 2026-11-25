@@ -429,11 +429,11 @@ describe("la détection des versions des textes français", () => {
         fetchImpl: fetchDesReponses(appels),
       });
       // Un jeton, la loi 78-17, puis un appel par entrée et par numéro de liste.
-      assert.equal(appels.length, 49);
-      assert.equal(resultat.appels, 49);
-      // 1 jeton + 47 appels + 5 de marge.
-      assert.equal(maxCallsPasse(), 54);
-      assert.equal(textesSuivis().length, 37);
+      assert.equal(appels.length, 53);
+      assert.equal(resultat.appels, 53);
+      // 1 jeton + 52 appels + 5 de marge.
+      assert.equal(maxCallsPasse(), 58);
+      assert.equal(textesSuivis().length, 41);
       assert.deepEqual(resultat.echecs, []);
     } finally {
       resetUsage();
@@ -459,9 +459,9 @@ describe("la détection des versions des textes français", () => {
       const resultat = await passeTextesFr({ rootDir: root, date: DATE, config: CONFIG, fetchImpl });
       assert.equal(resultat.entrees.length, 0);
       // Chaque entrée qui lit une section de code échoue, sans empêcher les autres.
-      assert.equal(resultat.echecs.length, 22);
+      assert.equal(resultat.echecs.length, 26);
       assert.match(resultat.echecs[0] ?? "", /Code pénal : Légifrance code: HTTP 500/);
-      assert.equal(resultat.appels, 49);
+      assert.equal(resultat.appels, 53);
     } finally {
       resetUsage();
       rmSync(root, { recursive: true, force: true });
@@ -501,7 +501,7 @@ describe("la détection des versions des textes français", () => {
     try {
       const resultat = await passeTextesFr({ rootDir: root, date: DATE, reponses: REPONSES_INCHANGEES, config: null });
       assert.equal(resultat.entrees.length, 0);
-      assert.equal(resultat.echecs.length, 37);
+      assert.equal(resultat.echecs.length, 41);
       assert.match(resultat.echecs[0] ?? "", /corpus LEGITEXT000006068624 absent/);
     } finally {
       rmSync(root, { recursive: true, force: true });
@@ -512,7 +512,7 @@ describe("la détection des versions des textes français", () => {
     assert.equal(dateDeVersionIdentifiant("LEGITEXT000038567662_07-09-2025"), "2025-09-07");
     assert.equal(dateDeVersionIdentifiant("LEGIARTI000042155961"), null);
     assert.equal(dateDeVersionIdentifiant("LEGITEXT000038567662_31-02-2025"), null);
-    assert.equal(textesSuivis().length, 37);
+    assert.equal(textesSuivis().length, 41);
   });
 
   it("retient la version la plus récente sans dépasser la passe, quel que soit l'ordre", () => {

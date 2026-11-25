@@ -11,6 +11,7 @@ import {
   documentsPresents,
   extraireCitations,
 } from "../mcp/corpus/citations.ts";
+import { normaliserNumero } from "../mcp/corpus/articles.ts";
 import { classerCitations } from "../mcp/corpus/hors-corpus.ts";
 import { statutApplication } from "../mcp/corpus/statut.ts";
 import {
@@ -58,6 +59,7 @@ const CSI = "LEGITEXT000025503132";
 const CMF = "LEGITEXT000006072026";
 const CRPA = "LEGITEXT000031366350";
 const CIVIL = "LEGITEXT000006070721";
+const SECURITE_SOCIALE = "LEGITEXT000006073189";
 
 /** Nombre d'articles d'une réponse réduite : 2 pour une section, toute la liste sinon. */
 function compteReduit(texte: TexteFr): number {
@@ -164,6 +166,36 @@ describe("la lecture des textes français d'application", () => {
     assert.equal(article?.dateFin, null);
     assert.equal(article?.pathTitle[0], "Partie législative");
     assert.throws(() => lireArticleParNumero({}), /sans article/);
+  });
+
+  it("retient la branche qui porte du texte quand un cid est dupliqué", () => {
+    const article = (id: string, contenu: string) => ({
+      id,
+      num: "L1-1",
+      etat: "VIGUEUR",
+      content: contenu,
+      pathTitle: [],
+    });
+    const racine = {
+      id: "LEGITEXT000006072665_01-01-2025",
+      sections: [
+        {
+          cid: "SECTION-DUPLIQUEE",
+          title: "Ancienne version",
+          articles: [article("LEGIARTI000000000001", "")],
+          sections: [],
+        },
+        {
+          cid: "SECTION-DUPLIQUEE",
+          title: "Version en vigueur",
+          articles: [article("LEGIARTI000000000002", "<p>Texte en vigueur.</p>")],
+          sections: [],
+        },
+      ],
+    };
+    const part = lireSectionDeCode(racine, "SECTION-DUPLIQUEE");
+    assert.deepEqual(part.articles.map((element) => element.id), ["LEGIARTI000000000002"]);
+    assert.equal(part.articles[0]?.content, "<p>Texte en vigueur.</p>");
   });
 });
 
@@ -697,6 +729,7 @@ describe("les outils sur les textes français d'application", () => {
       [CRPA],
     );
     assert.deepEqual(documentsNommes("l'article 9 du code civil"), [CIVIL]);
+    assert.deepEqual(documentsNommes("l'article L. 161-28-1 CSS"), [SECURITE_SOCIALE]);
     assert.equal(statutApplication("textes_fr", "VIGUEUR"), "en_vigueur");
     assert.equal(statutApplication("textes_fr", "ABROGE"), "abroge");
   });
@@ -758,14 +791,14 @@ describe("la présence d'un texte couvert en partie", () => {
 describe("les articles de santé ajoutés et les articles existants", () => {
   const RACINE = new URL("..", import.meta.url).pathname;
 
-  it("garde ref, texte et url des articles déjà au corpus avant #133", () => {
+  it("garde ref, texte, url et chemin des articles déjà au corpus avant #133", () => {
     const attendus = JSON.parse(
       readFileSync(new URL("./fixtures/textes-fr/articles-existants.json", import.meta.url), "utf8"),
-    ) as { document: string; numero: string; ref: string; url: string; texte_sha256: string }[];
+    ) as { document: string; numero: string; ref: string; url: string; chemin: string; texte_sha256: string }[];
     const unites = readFileSync(join(RACINE, "data/corpus/textes_fr/unites.jsonl"), "utf8")
       .trim()
       .split("\n")
-      .map((ligne) => JSON.parse(ligne) as { document: string; numero: string; ref: string; url: string; texte: string });
+      .map((ligne) => JSON.parse(ligne) as { document: string; numero: string; ref: string; url: string; chemin: string; texte: string });
     for (const attendu of attendus) {
       const unite = unites.find(
         (candidat) => candidat.document === attendu.document && candidat.numero === attendu.numero,
@@ -773,12 +806,27 @@ describe("les articles de santé ajoutés et les articles existants", () => {
       assert.ok(unite !== undefined, `${attendu.document} ${attendu.numero} absent`);
       assert.equal(unite.ref, attendu.ref, `${attendu.numero} : ref`);
       assert.equal(unite.url, attendu.url, `${attendu.numero} : url`);
+      assert.equal(unite.chemin, attendu.chemin, `${attendu.numero} : chemin`);
       assert.equal(
         createHash("sha256").update(unite.texte, "utf8").digest("hex"),
         attendu.texte_sha256,
         `${attendu.numero} : texte`,
       );
     }
+  });
+
+  it("distingue un suffixe de lettre détaché de son homonyme", () => {
+    assert.equal(normaliserNumero("L1121-16-1 A"), "L1121-16-1-A");
+    assert.equal(normaliserNumero("L1121-16-1-A"), "L1121-16-1-A");
+    assert.equal(normaliserNumero("L1121-16-1"), "L1121-16-1");
+    assert.equal(normaliserNumero("L. 34-5 du CPCE"), "L34-5");
+
+    const simple = getArticle(RACINE, { document: CSP, numero: "L1121-16-1" });
+    const suffixe = getArticle(RACINE, { document: CSP, numero: "L1121-16-1 A" });
+    assert.equal(simple.trouve && simple.numero, "L1121-16-1");
+    assert.equal(suffixe.trouve && suffixe.numero, "L1121-16-1 A");
+    assert.notEqual(simple.trouve && simple.ref, suffixe.trouve && suffixe.ref);
+    assert.equal(referenceExacte("L'article L. 1121-16-1 A du CSP"), "L. 1121-16-1 A");
   });
 
   it("attribue les articles ajoutés et les dit au corpus", () => {

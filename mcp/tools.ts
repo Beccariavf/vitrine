@@ -397,7 +397,7 @@ export function avecMarquageDoctrine(rootDir: string, passages: Passage[]): Pass
  */
 export function referenceExacte(question: string): string | null {
   const reference = new RegExp(
-    `\\b(?:article|art\\.?)\\s*((?:[LRD]\\.?\\s*)?\\d+(?:-\\d+)*(?:\\s*(?:${SUFFIXE_ARTICLE})\\b)?)`,
+    `\\b(?:article|art\\.?)\\s*((?:[LRD]\\.?\\s*)?\\d+(?:-\\d+)*(?:\\s*(?:${SUFFIXE_ARTICLE})\\b)?(?:\\s+[A-Z](?![A-Za-zÀ-ÿ]))?)`,
     "i",
   ).exec(question);
   return reference === null ? null : (reference[1] ?? "");
@@ -547,7 +547,7 @@ const ALIAS_CODES_FRANCAIS: ReadonlyArray<{ document: string; texte: readonly Re
   { document: "LEGITEXT000006070721", texte: [/\bcode civil\b/] },
   {
     document: "LEGITEXT000006073189",
-    texte: [/\bcode de la securite sociale\b/],
+    texte: [/\bcode de la securite sociale\b/, /\bcss\b/],
   },
   { document: "LEGITEXT000006073984", texte: [/\bcode des assurances\b/] },
   {
