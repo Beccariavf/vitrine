@@ -8,8 +8,9 @@
  * un descripteur `mcp/corpus/*.json` plus une entrée de ce tableau.
  *
  * Ce module ne lit ni le disque ni le réseau : le site l'importe au build comme
- * le serveur. Le champ de gouvernance est déclaré ici mais n'est pas encore
- * exposé par `etat_corpus` (#136).
+ * le serveur. Le champ de gouvernance est la seule table corpus → champs :
+ * `etat_corpus`, la description du serveur et la page connecteur en dérivent
+ * leur correspondance.
  */
 
 export type TypeCorpus = "texte" | "decision" | "doctrine" | "preparation" | "metadonnees";
@@ -263,6 +264,8 @@ const DEFINITIONS = [
     nom: "donnees",
     libelle: "Textes UE de l'économie des données",
     type: "texte",
+    // Le Data Act et la DGA portent sur les données non personnelles et règlent
+    // leur articulation avec les données personnelles.
     gouvernance: ["non_personnelles", "personnelles"],
     famille: "textes",
     regleStatut: "texte",
@@ -298,6 +301,7 @@ const DEFINITIONS = [
     nom: "sante_ue",
     libelle: "Espace européen des données de santé",
     type: "texte",
+    // L'EHDS organise le partage des données de santé, personnelles par nature.
     gouvernance: ["sante", "personnelles"],
     famille: "textes",
     regleStatut: "texte",
@@ -323,6 +327,8 @@ const DEFINITIONS = [
     libelle: "Textes UE de frontière (produits, responsabilité, propriété intellectuelle, plateformes)",
     nomManifeste: "Textes UE de frontière",
     type: "texte",
+    // Les textes de produits et de plateformes portent sur des données non
+    // personnelles et sur les systèmes d'IA (machines, CRA, DSA).
     gouvernance: ["ia", "non_personnelles"],
     famille: "textes",
     regleStatut: "texte",
@@ -383,7 +389,9 @@ const DEFINITIONS = [
     nom: "textes_fr",
     libelle: "Textes français d'application",
     type: "texte",
-    gouvernance: ["personnelles"],
+    // Les codes couvrent l'accès aux documents et la réutilisation (non
+    // personnelles), la protection des personnes (personnelles) et la santé.
+    gouvernance: ["personnelles", "non_personnelles", "sante"],
     famille: "textes",
     regleStatut: "texte",
     commandeSync: "npm run textes-fr:sync",
@@ -435,7 +443,9 @@ const DEFINITIONS = [
     nom: "preparation",
     libelle: "Textes en préparation et affaires pendantes",
     type: "preparation",
-    gouvernance: ["personnelles"],
+    // Les propositions et affaires suivies touchent les quatre champs : Omnibus
+    // données, lignes directrices IA, mise en œuvre de l'EHDS, modifications du RGPD.
+    gouvernance: ["personnelles", "non_personnelles", "ia", "sante"],
     famille: "ue",
     regleStatut: "preparation",
     commandeSync: "npm run preparation:sync",
@@ -455,7 +465,8 @@ const DEFINITIONS = [
     nom: "cnil",
     libelle: "CNIL",
     type: "decision",
-    gouvernance: ["personnelles"],
+    // Les délibérations comprennent les sanctions et avis sur l'IA et sur la santé.
+    gouvernance: ["personnelles", "ia", "sante"],
     famille: "autorites",
     regleStatut: "cnil",
     commandeSync: "npm run cnil:sync",
@@ -476,7 +487,9 @@ const DEFINITIONS = [
     nom: "cada",
     libelle: "CADA",
     type: "doctrine",
-    gouvernance: ["personnelles"],
+    // La sélection porte sur la réutilisation et l'ouverture des données publiques
+    // (non personnelles) et sur la communicabilité des documents (personnelles).
+    gouvernance: ["non_personnelles", "personnelles"],
     famille: "autorites",
     regleStatut: "cada",
     commandeSync: "npm run cada:sync",
@@ -497,7 +510,8 @@ const DEFINITIONS = [
     nom: "cnil_doctrine",
     libelle: "Doctrine CNIL",
     type: "doctrine",
-    gouvernance: ["personnelles"],
+    // La doctrine CNIL comprend les fiches IA et les référentiels santé.
+    gouvernance: ["personnelles", "ia", "sante"],
     famille: "autorites",
     regleStatut: "cnil_doctrine",
     commandeSync: "npm run cnil-doctrine:sync",
@@ -517,7 +531,8 @@ const DEFINITIONS = [
     nom: "ce",
     libelle: "Conseil d'État",
     type: "decision",
-    gouvernance: ["personnelles"],
+    // Le fonds contient les décisions sur les algorithmes (Parcoursup, VSA) et la santé.
+    gouvernance: ["personnelles", "ia", "sante"],
     famille: "juridictions",
     regleStatut: "juridiction",
     commandeSync: "npm run ce:sync",
@@ -537,7 +552,8 @@ const DEFINITIONS = [
     nom: "constit",
     libelle: "Conseil constitutionnel",
     type: "decision",
-    gouvernance: ["personnelles"],
+    // Les décisions couvrent la vidéosurveillance algorithmique et le passe sanitaire.
+    gouvernance: ["personnelles", "ia", "sante"],
     famille: "juridictions",
     regleStatut: "juridiction",
     commandeSync: "npm run constit:sync",
@@ -556,7 +572,8 @@ const DEFINITIONS = [
     nom: "cepd",
     libelle: "CEPD",
     type: "doctrine",
-    gouvernance: ["personnelles"],
+    // Les lignes directrices et avis du CEPD portent aussi sur l'IA et la santé.
+    gouvernance: ["personnelles", "ia", "sante"],
     famille: "ue",
     regleStatut: "cepd",
     commandeSync: "npm run cepd:sync",
@@ -578,7 +595,8 @@ const DEFINITIONS = [
     nom: "cc",
     libelle: "Cour de cassation",
     type: "decision",
-    gouvernance: ["personnelles"],
+    // Le fonds contient les décisions sur le secret médical et les données de santé.
+    gouvernance: ["personnelles", "sante"],
     famille: "juridictions",
     regleStatut: "juridiction",
     commandeSync: "npm run cc:sync",
@@ -598,7 +616,8 @@ const DEFINITIONS = [
     nom: "cjue",
     libelle: "CJUE",
     type: "decision",
-    gouvernance: ["personnelles"],
+    // Les arrêts couvrent le scoring (C-634/21), la santé et les données personnelles.
+    gouvernance: ["personnelles", "ia", "sante"],
     famille: "ue",
     regleStatut: "juridiction",
     commandeSync: "npm run cjue:sync",
@@ -664,6 +683,51 @@ export const NOMS_SITE: readonly NomCorpus[] = [...CORPUS]
 export function corpusDeclare(nom: string): CorpusDeclare | undefined {
   const cherche = nom.trim().toLowerCase();
   return CORPUS.find((corpus) => corpus.nom === cherche);
+}
+
+/** Les quatre champs de gouvernance, dans l'ordre de la présentation. */
+export const CHAMPS_GOUVERNANCE: readonly ChampGouvernance[] = [
+  "personnelles",
+  "non_personnelles",
+  "ia",
+  "sante",
+];
+
+/** Libellés des champs : seule source des mots affichés par le serveur et le site. */
+export const LIBELLES_GOUVERNANCE: Readonly<Record<ChampGouvernance, string>> = {
+  personnelles: "données personnelles",
+  non_personnelles: "données non personnelles",
+  ia: "IA",
+  sante: "santé",
+};
+
+/** Corpus qui relèvent d'un champ, dans l'ordre du registre. */
+export function corpusDuChamp(champ: ChampGouvernance): NomCorpus[] {
+  return CORPUS.filter((corpus) => corpus.gouvernance.includes(champ)).map((corpus) => corpus.nom);
+}
+
+/** Table corpus → champs, telle que la rend `etat_corpus`. */
+export function champsGouvernance(): Record<ChampGouvernance, NomCorpus[]> {
+  return {
+    personnelles: corpusDuChamp("personnelles"),
+    non_personnelles: corpusDuChamp("non_personnelles"),
+    ia: corpusDuChamp("ia"),
+    sante: corpusDuChamp("sante"),
+  };
+}
+
+/** Champs d'un corpus déclaré ; vide pour un corpus inconnu du registre. */
+export function gouvernanceDuCorpus(nom: string): ChampGouvernance[] {
+  return [...(corpusDeclare(nom)?.gouvernance ?? [])];
+}
+
+/** Résumé par champ pour la description du serveur : « données personnelles — … ; … ». */
+export function resumeGouvernance(): string {
+  const libelle = new Map(CORPUS.map((corpus) => [corpus.nom, corpus.libelle]));
+  return CHAMPS_GOUVERNANCE.map((champ) => {
+    const corpus = corpusDuChamp(champ).map((nom) => libelle.get(nom) ?? nom);
+    return `${LIBELLES_GOUVERNANCE[champ]} — ${corpus.join(", ")}`;
+  }).join(" ; ");
 }
 
 /**

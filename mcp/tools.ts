@@ -40,6 +40,8 @@ import type {
 import type { ClassementHorsCorpus } from "./corpus/hors-corpus.ts";
 import { lireLectures } from "./corpus/lectures.ts";
 import { CORPUS_SANS_VEILLE, SOURCES_PAR_CORPUS } from "./corpus/veille.ts";
+import { champsGouvernance, gouvernanceDuCorpus } from "./corpus/registre.ts";
+import type { ChampGouvernance, NomCorpus } from "./corpus/registre.ts";
 import { normaliserIdentifiant } from "./corpus/citations.ts";
 import type { ArticlesCouverts } from "./corpus/citations.ts";
 import {
@@ -200,13 +202,20 @@ export type EtatCorpus = {
   depuis: string | null;
   /**
    * Chaque corpus porte le bloc `couverture` de son manifeste — ses exclusions
-   * déclarées — et `veille`, les sources qui l'alimentent avec leur dernière
-   * lecture réussie, ou la raison de leur absence.
+   * déclarées —, `veille`, les sources qui l'alimentent avec leur dernière
+   * lecture réussie, ou la raison de leur absence, et `gouvernance`, ses champs
+   * dérivés du registre.
    */
   corpus: (CorpusRapport & {
     couverture: Record<string, unknown> | null;
     veille: VeilleCorpus;
+    gouvernance: ChampGouvernance[];
   })[];
+  /**
+   * Résumé par champ de gouvernance (données personnelles, non personnelles,
+   * IA, santé) : les corpus qui en relèvent, dérivés du registre.
+   */
+  champs_gouvernance: Record<ChampGouvernance, NomCorpus[]>;
   manquants: DocumentRapport[];
   /**
    * Classement des documents cités absents du corpus, daté et recalculé par
@@ -242,8 +251,10 @@ export function etatCorpus(rootDir: string): EtatCorpus {
             ? (couverture as Record<string, unknown>)
             : null,
         veille: veilleDuCorpus(entree.corpus, lectures),
+        gouvernance: gouvernanceDuCorpus(entree.corpus),
       };
     }),
+    champs_gouvernance: champsGouvernance(),
     manquants: documents.filter(
       (document) =>
         typeof document === "object" &&

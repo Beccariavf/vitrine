@@ -5,11 +5,13 @@ import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
 import { CONSIGNE_SERVEUR } from "../mcp/server.ts";
 import {
+  CHAMPS_GOUVERNANCE,
   CORPUS,
   NOMBRE_CORPUS,
   NOMS_CORPUS,
   PERIMETRE,
   nombreEnLettres,
+  resumeGouvernance,
 } from "../mcp/corpus/registre.ts";
 
 const RACINE = fileURLToPath(new URL("..", import.meta.url));
@@ -38,7 +40,7 @@ describe("registre des corpus", () => {
     assert.equal(NOMBRE_CORPUS, 23);
   });
 
-  it("garde la description du serveur identique à celle d'avant le registre", () => {
+  it("garde la description du serveur identique à sa fixture", () => {
     assert.equal(CONSIGNE_SERVEUR, DESCRIPTION_ATTENDUE);
   });
 
@@ -63,7 +65,9 @@ describe("registre des corpus", () => {
     assert.equal(nombreEnLettres(71), "soixante et onze");
     assert.equal(nombreEnLettres(80), "quatre-vingts");
     assert.equal(nombreEnLettres(99), "quatre-vingt-dix-neuf");
-    assert.ok(CONSIGNE_SERVEUR.includes(`sur ${nombreEnLettres(NOMBRE_CORPUS)} corpus juridiques`));
+    assert.ok(CONSIGNE_SERVEUR.includes("Serveur de gouvernance de la donnée"));
+    assert.ok(CONSIGNE_SERVEUR.includes(resumeGouvernance()));
+    assert.equal(CONSIGNE_SERVEUR.includes("Serveur de lecture et de recherche"), false);
     assert.throws(() => nombreEnLettres(100), /hors bornes/);
     assert.throws(() => nombreEnLettres(-1), /hors bornes/);
   });
@@ -168,5 +172,49 @@ describe("aucune liste de corpus hors du registre", () => {
   it("garde les exemptions courtes et justifiées", () => {
     assert.ok(EXEMPTS.size <= 2, "une exemption silencieuse n'est pas une exemption");
     for (const justification of EXEMPTS.values()) assert.ok(justification.length > 20);
+  });
+});
+
+const CHAMPS = new Set<string>(CHAMPS_GOUVERNANCE);
+
+/** Vrai quand un fragment associe un champ de gouvernance à un nom de corpus. */
+function estCorrespondanceGouvernance(texte: string): boolean {
+  const trouves = litteraux(texte);
+  const champNomme =
+    trouves.some((valeur) => CHAMPS.has(valeur)) ||
+    CHAMPS_GOUVERNANCE.some((champ) => new RegExp(`\\b${champ}\\b`, "u").test(texte));
+  return champNomme && trouves.some((valeur) => NOMS.has(valeur));
+}
+
+/**
+ * La table corpus → champs est celle du registre. `veille/` n'est pas scanné :
+ * ses thèmes (`ia`, `donnees-personnelles`) sont un autre vocabulaire, étranger
+ * à la gouvernance exposée par le serveur et le site.
+ */
+describe("la correspondance corpus → champs vit dans le registre", () => {
+  it("ne recopie ni tableau ni ligne qui associe un champ à des corpus", () => {
+    const fautes: string[] = [];
+    for (const racine of ["mcp", "src"]) {
+      for (const chemin of fichiersSource(join(RACINE, racine))) {
+        const relatif = relative(RACINE, chemin).split("\\").join("/");
+        if (relatif === "mcp/corpus/registre.ts" || EXEMPTS.has(relatif)) continue;
+        const texte = readFileSync(chemin, "utf8");
+        for (const corps of tableaux(texte)) {
+          if (estCorrespondanceGouvernance(corps)) {
+            fautes.push(`${relatif} : [${corps.trim().slice(0, 80)}…]`);
+          }
+        }
+        texte.split("\n").forEach((ligne, index) => {
+          if (estCorrespondanceGouvernance(ligne)) {
+            fautes.push(`${relatif}:${index + 1} : ${ligne.trim().slice(0, 120)}`);
+          }
+        });
+      }
+    }
+    assert.deepEqual(
+      fautes,
+      [],
+      `correspondances corpus → champs à déplacer dans le registre :\n${fautes.join("\n")}`,
+    );
   });
 });

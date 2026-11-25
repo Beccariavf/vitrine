@@ -5,9 +5,22 @@ import Facade from "../components/Facade.astro";
 import Base from "../layouts/Base.astro";
 import { sourcesCorpus } from "../lib/corpus.ts";
 import { lireDemo } from "../lib/demo.ts";
+import {
+  CHAMPS_GOUVERNANCE,
+  LIBELLES_GOUVERNANCE,
+  corpusDeclare,
+  corpusDuChamp,
+} from "../../mcp/corpus/registre.ts";
 
 const sources = sourcesCorpus();
 const demo = lireDemo();
+
+/** Table corpus → champs, dérivée du registre : aucune liste recopiée ici. */
+const champsGouvernance = CHAMPS_GOUVERNANCE.map((champ) => ({
+  champ,
+  libelle: LIBELLES_GOUVERNANCE[champ],
+  corpus: corpusDuChamp(champ).map((nom) => corpusDeclare(nom)?.libelle ?? nom),
+}));
 
 /** Dates en français, à l'heure UTC : les mêmes au build comme en test. */
 const dateFormat = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeZone: "UTC" });
@@ -114,9 +127,36 @@ const titreSection = "text-[clamp(1.75rem,3.2vw,2.5rem)] leading-[1.1] font-medi
         </tbody>
       </table>
     </div>
+    <h3 class="mt-10 text-2xl">Champs de gouvernance</h3>
+    <div class="mt-4 overflow-x-auto rounded-bloc border border-filet bg-surface">
+      <table class="w-full border-collapse text-left">
+        <caption class="sr-only">
+          Champs de gouvernance couverts et collections qui en relèvent
+        </caption>
+        <thead>
+          <tr class="border-b border-filet text-[0.75rem] font-medium tracking-[0.04em] uppercase text-encre-douce">
+            <th scope="col" class="px-3 py-3 font-medium sm:px-6">Champ</th>
+            <th scope="col" class="px-3 py-3 font-medium sm:px-6">Collections</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            champsGouvernance.map(({ champ, libelle, corpus }) => (
+              <tr data-gouvernance={champ} class="border-b border-filet last:border-b-0">
+                <th scope="row" class="px-3 py-3 text-sm font-medium first-letter:uppercase sm:px-6">
+                  {libelle}
+                </th>
+                <td class="px-3 py-3 text-sm leading-relaxed text-encre-douce sm:px-6">
+                  {corpus.join(" · ")}
+                </td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
     <p class="mt-4 max-w-2xl text-[0.9375rem] leading-relaxed text-encre-douce">
-      La base couvre le droit des données personnelles et l'AI Act : ni les autres matières du
-      numérique, ni la doctrine privée.
+      Une collection peut relever de plusieurs champs : cette correspondance est celle du serveur.
     </p>
   </section>
 
