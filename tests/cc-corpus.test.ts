@@ -110,6 +110,42 @@ describe("le filtre de pertinence de la Cour de cassation", () => {
     assert.equal(verdict.decision.visaPertinent, true);
   });
 
+  it("unit le filtre historique et le filtre élargi sans rien retirer", () => {
+    const historique = classerDecisionCc(PERTINENT, DESCRIPTEUR);
+    assert.equal(historique.retenue, true);
+    if (historique.retenue) assert.equal(historique.historique, true);
+
+    const elargie = {
+      id: "abcdef0123456789",
+      decision_date: "2026-11-10",
+      chamber: "comm",
+      number: "24-17.001",
+      solution: "rejet",
+      publication: ["n"],
+      text:
+        "Vu l'article L. 151-1 du code de commerce ; le secret des affaires protège " +
+        "les informations utiles à l'activité économique.",
+    };
+    const verdictElargi = classerDecisionCc(elargie, DESCRIPTEUR);
+    assert.equal(verdictElargi.retenue, true);
+    if (verdictElargi.retenue) {
+      assert.equal(verdictElargi.historique, false);
+      assert.deepEqual(
+        verdictElargi.criteres.map((critere) => critere.cle),
+        ["commerce-secret-affaires", "secret-des-affaires"],
+      );
+    }
+
+    const generique = {
+      ...elargie,
+      text: "Le document produit est écarté et les données du dossier sont insuffisantes.",
+    };
+    assert.deepEqual(classerDecisionCc(generique, DESCRIPTEUR), {
+      retenue: false,
+      motif: "hors_sujet",
+    });
+  });
+
   it("rend le visa puis les fragments du texte, tous citables", () => {
     const verdict = classerDecisionCc(PERTINENT, DESCRIPTEUR);
     assert.equal(verdict.retenue, true);
@@ -318,7 +354,7 @@ describe("la synchronisation du corpus Cour de cassation", () => {
             date: "2026-11-11",
             config: CONFIG,
             fetchImpl,
-            maxAppels: 23,
+            maxAppels: 34,
           }),
         /Budget PISTE épuisé avec 1 décision/,
       );
@@ -351,7 +387,7 @@ describe("la synchronisation du corpus Cour de cassation", () => {
         date: "2026-11-11",
         config: CONFIG,
         fetchImpl,
-        maxAppels: 23,
+        maxAppels: 34,
       });
       assert.equal(interrompue.enAttente, 1, "le budget s'épuise après la première décision");
       assert.equal(interrompue.appels.decision, 1);
@@ -362,7 +398,7 @@ describe("la synchronisation du corpus Cour de cassation", () => {
         date: "2026-11-11",
         config: CONFIG,
         fetchImpl,
-        maxAppels: 30,
+        maxAppels: 36,
       });
       assert.equal(reprise.enAttente, 0);
       assert.equal(reprise.documents, 1);

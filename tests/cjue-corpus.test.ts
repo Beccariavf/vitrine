@@ -82,12 +82,15 @@ describe("la liste CELLAR de la CJUE", () => {
     assert.deepEqual(DESCRIPTEUR.langues, ["fra", "eng"]);
   });
 
-  it("réunit la matière PDON et les deux notions fines, sans borne de date", () => {
+  it("réunit la matière PDON, les deux notions fines et les actes cités, sans borne de date", () => {
     const liste = requeteListe(DESCRIPTEUR);
     assert.match(liste, /subject-matter\/PDON/);
     assert.match(liste, /fd_578\/4\.11\.01/);
     assert.match(liste, /fd_578\/2\.04/);
-    assert.equal(liste.match(/UNION/g)?.length, 2, "une union par notion");
+    assert.match(liste, /work_cites_work/);
+    assert.match(liste, /resource_legal_based_on_resource_legal/);
+    assert.match(liste, /"32023R2854"/, "le Data Act est un acte cité");
+    assert.equal(liste.match(/UNION/g)?.length, 4, "une union par notion et par mode de citation");
     assert.doesNotMatch(liste, /2014|FILTER\(\?date/, "aucune borne de date n'est demandée");
   });
 
@@ -99,6 +102,27 @@ describe("la liste CELLAR de la CJUE", () => {
       [...entrees.map((entree) => entree.celex)].sort(),
     );
     assert.equal(entrees.find((entree) => entree.celex === CELEX_ARRET)?.date, "2014-05-13");
+  });
+
+  it("agrège les origines d'un CELEX listé par plusieurs critères", () => {
+    const reponse = {
+      results: {
+        bindings: [
+          { celex: { value: CELEX_ARRET }, date: { value: "2014-05-13" }, origine: { value: "matiere" } },
+          { celex: { value: CELEX_ARRET }, date: { value: "2014-05-13" }, origine: { value: "acte_cite" } },
+          { celex: { value: CELEX_204 }, date: { value: "2025-09-04" }, origine: { value: "acte_cite" } },
+        ],
+      },
+    };
+    const entrees = lireListe(reponse);
+    assert.deepEqual(
+      entrees.find((entree) => entree.celex === CELEX_ARRET)?.origines,
+      ["acte_cite", "matiere"],
+    );
+    assert.deepEqual(
+      entrees.find((entree) => entree.celex === CELEX_204)?.origines,
+      ["acte_cite"],
+    );
   });
 
   it("retient un arrêt de 2003 et écarte conclusions d'avocat général et types inconnus", () => {
@@ -573,6 +597,35 @@ describe("la synchronisation du corpus CJUE", () => {
         ],
       );
       assert.ok(lireUnites(racine).every((unite) => unite.document === CELEX_204));
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
+  });
+
+  it("compte les décisions ajoutées par citation d'acte, sans retirer les anciennes", async () => {
+    const racine = racineTemporaire();
+    try {
+      const resultat = await syncCjue({
+        rootDir: racine,
+        date: "2026-11-11",
+        reponseListe: {
+          results: {
+            bindings: [
+              { celex: { value: CELEX_ARRET }, date: { value: "2014-05-13" }, origine: { value: "matiere" } },
+              { celex: { value: CELEX_204 }, date: { value: "2025-09-04" }, origine: { value: "acte_cite" } },
+            ],
+          },
+        },
+        complementaires: [],
+        reponsesXhtml: { [CELEX_ARRET]: ARRET, [CELEX_204]: ARRET_EN },
+      });
+      assert.equal(resultat.documents, 2, "l'ancienne décision reste, la nouvelle entre");
+      const manifeste = lireManifeste(racine);
+      assert.deepEqual(manifeste.couverture.filtre.ajouts_par_critere, { acte_cite: 1 });
+      assert.deepEqual(manifeste.couverture.filtre.deja_presents_par_critere, { acte_cite: 0 });
+      assert.deepEqual(manifeste.couverture.filtre.elargi.actes_cites, DESCRIPTEUR.actes_cites);
+      assert.equal(manifeste.couverture.filtre.decisions_par_origine.matiere, 1);
+      assert.equal(manifeste.couverture.filtre.decisions_par_origine.acte_cite, 1);
     } finally {
       rmSync(racine, { recursive: true, force: true });
     }

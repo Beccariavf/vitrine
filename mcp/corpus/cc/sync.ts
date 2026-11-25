@@ -26,6 +26,8 @@ import { validerUnitesCorpus } from "../parse.ts";
 import type { Unite } from "../parse.ts";
 import { ECARTES_CC_VIDES, classerDecisionCc, unitesCc } from "./parse.ts";
 import type { DecisionJudilibre, DescripteurCc, EcartesCc } from "./parse.ts";
+import type { CritereElargi } from "../pertinence.ts";
+import { compterCriteres, comptesTries } from "../pertinence.ts";
 
 const ICI = dirname(fileURLToPath(import.meta.url));
 
@@ -55,9 +57,15 @@ export type CouvertureCc = {
   champs: string;
   requetes: string[];
   filtre: {
-    mots_cles: string[];
-    occurrences_min: number;
-    visa_pertinent: boolean;
+    historique: {
+      mots_cles: string[];
+      occurrences_min: number;
+      visa_pertinent: boolean;
+    };
+    elargi: { criteres: CritereElargi[] };
+    union: string;
+    ajouts_par_critere: Record<string, number>;
+    deja_presents_par_critere: Record<string, number>;
   };
   veille: { entrees: number; ajoutees: number; retenues: number };
   exclusions: EcartesCc;
@@ -109,6 +117,14 @@ export type ResultatCc = {
   ecrit: boolean;
   manifestPath: string;
   unitesPath: string;
+  /** Décisions ajoutées par le filtre élargi. */
+  ajouteesElargi: number;
+  /** Fragments apportés par ces décisions. */
+  fragmentsAjoutes: number;
+  /** Décisions ajoutées par critère élargi. */
+  ajoutsParCritere: Record<string, number>;
+  /** Décisions déjà retenues qui portent aussi le critère. */
+  dejaPresentsParCritere: Record<string, number>;
 };
 
 /** Lit l'état de reprise ; un état absent vaut `null`. */
@@ -171,7 +187,7 @@ function ecrireSiChange(chemin: string, contenu: string): boolean {
   return true;
 }
 
-/** Empreinte du filtre : requêtes, mots-clés et seuil. */
+/** Empreinte du filtre : requêtes, mots-clés, seuil et critères élargis. */
 export function empreinteFiltre(descripteur: DescripteurCc): string {
   return createHash("sha256")
     .update(
@@ -180,6 +196,7 @@ export function empreinteFiltre(descripteur: DescripteurCc): string {
         requetes: descripteur.requetes,
         mots_cles: descripteur.mots_cles,
         occurrences_min: descripteur.occurrences_min,
+        criteres_elargis: descripteur.criteres_elargis ?? [],
       }),
     )
     .digest("hex");
@@ -330,6 +347,10 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
       ecrit: false,
       manifestPath: join(rootDir, DOSSIER_CORPUS, "manifest.json"),
       unitesPath: join(rootDir, DOSSIER_CORPUS, "unites.jsonl"),
+      ajouteesElargi: 0,
+      fragmentsAjoutes: 0,
+      ajoutsParCritere: {},
+      dejaPresentsParCritere: {},
     };
   }
 
@@ -478,6 +499,10 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
 
   const ecartes: EcartesCc = { ...ECARTES_CC_VIDES };
   const unites: Unite[] = [];
+  const ajoutsParCritere = new Map<string, number>();
+  const dejaPresentsParCritere = new Map<string, number>();
+  let ajouteesElargi = 0;
+  let fragmentsAjoutes = 0;
   let dateMax: string | null = null;
   let dateMinObserve: string | null = null;
   let documentsLus = 0;
@@ -492,6 +517,11 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
       continue;
     }
     const nouvelles = unitesCc(verdict.decision, descripteur);
+    compterCriteres(verdict.historique ? dejaPresentsParCritere : ajoutsParCritere, verdict.criteres);
+    if (!verdict.historique && verdict.criteres.length > 0) {
+      ajouteesElargi += 1;
+      fragmentsAjoutes += nouvelles.length;
+    }
     for (const unite of nouvelles) {
       unites.push(unite);
       if (dateMax === null || unite.date_acte > dateMax) dateMax = unite.date_acte;
@@ -538,9 +568,15 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
       champs: descripteur.champs,
       requetes: descripteur.requetes,
       filtre: {
-        mots_cles: descripteur.mots_cles,
-        occurrences_min: descripteur.occurrences_min,
-        visa_pertinent: true,
+        historique: {
+          mots_cles: descripteur.mots_cles,
+          occurrences_min: descripteur.occurrences_min,
+          visa_pertinent: true,
+        },
+        elargi: { criteres: descripteur.criteres_elargis ?? [] },
+        union: "décision retenue par le filtre historique ou par un critère élargi",
+        ajouts_par_critere: comptesTries(ajoutsParCritere),
+        deja_presents_par_critere: comptesTries(dejaPresentsParCritere),
       },
       veille: {
         entrees: veille.length,
@@ -587,6 +623,10 @@ export async function syncCc(options: SyncCcOptions = {}): Promise<ResultatCc> {
     ecrit: ecritUnites || ecritManifeste || ecritEtat || ecritIntrouvables,
     manifestPath: cheminManifeste,
     unitesPath,
+    ajouteesElargi,
+    fragmentsAjoutes,
+    ajoutsParCritere: comptesTries(ajoutsParCritere),
+    dejaPresentsParCritere: comptesTries(dejaPresentsParCritere),
   };
 }
 
@@ -621,6 +661,7 @@ async function main(argv: string[]): Promise<void> {
       : `${resultat.documentsLus} décision(s) lue(s), ${resultat.documents} retenue(s), ` +
         `${resultat.fragments} fragments, ${resultat.enAttente} en attente, ` +
         `${resultat.appels.recherche} recherche(s) et ${resultat.appels.decision} décision(s) lues ; ` +
+        `filtre élargi ${resultat.ajouteesElargi} décision(s) / ${resultat.fragmentsAjoutes} fragment(s) ; ` +
         `écartées ${Object.entries(resultat.ecartes)
           .map(([motif, compte]) => `${motif}=${compte}`)
           .join(", ") || "aucune"}` +

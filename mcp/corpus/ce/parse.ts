@@ -13,6 +13,8 @@ import { texteVisible } from "../parse.ts";
 import type { Unite } from "../parse.ts";
 import { decouperParagraphes } from "../cnil/parse.ts";
 import { contientExpression, contientMotCle, normaliserComparaison } from "../texte.ts";
+import { criteresTrouves } from "../pertinence.ts";
+import type { CritereElargi, CritereTrouve } from "../pertinence.ts";
 import type { Fonds } from "./archive.ts";
 
 
@@ -27,6 +29,8 @@ export type DescripteurCe = {
   juridiction: string;
   juridictions_exclues: string[];
   mots_cles: string[];
+  /** Critères du filtre élargi, en union avec `mots_cles` (#143). */
+  criteres_elargis?: CritereElargi[];
   licence: string;
   max_entree_octets: number;
 };
@@ -61,7 +65,7 @@ export const ECARTES_VIDES: Ecartes = {
 };
 
 export type Verdict =
-  | { retenue: true; decision: DecisionJade }
+  | { retenue: true; decision: DecisionJade; historique: boolean; criteres: CritereTrouve[] }
   | { retenue: false; motif: MotifEcart };
 
 const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
@@ -155,8 +159,13 @@ export function parseDecisionJade(xml: string, nomFichier = "TEXTE_JURI_ADMIN"):
 
 /**
  * Classe une décision. L'ordre des motifs est stable : juridiction, date,
- * texte, mots-clés ; une décision n'est comptée que dans la première catégorie
- * qui la concerne. Aucune date n'est écartée pour son ancienneté.
+ * texte, puis pertinence ; une décision n'est comptée que dans la première
+ * catégorie qui la concerne. Aucune date n'est écartée pour son ancienneté.
+ *
+ * Le filtre historique (mots-clés du descripteur) reste premier ; le filtre
+ * élargi s'y ajoute en union, sans jamais retirer une décision déjà retenue.
+ * `historique` dit lequel des deux a suffi, `criteres` liste les critères
+ * élargis rencontrés même quand le filtre historique a déjà retenu.
  */
 export function classerDecision(
   decision: DecisionJade,
@@ -169,10 +178,13 @@ export function classerDecision(
     return { retenue: false, motif: "date_invalide" };
   }
   if (decision.paragraphes.length === 0) return { retenue: false, motif: "texte_vide" };
-  if (!contientMotCle(decision.paragraphes.join(" "), descripteur.mots_cles)) {
+  const texte = decision.paragraphes.join(" ");
+  const historique = contientMotCle(texte, descripteur.mots_cles);
+  const criteres = criteresTrouves(texte, descripteur.criteres_elargis ?? []);
+  if (!historique && criteres.length === 0) {
     return { retenue: false, motif: "sans_mot_cle" };
   }
-  return { retenue: true, decision };
+  return { retenue: true, decision, historique, criteres };
 }
 
 /**

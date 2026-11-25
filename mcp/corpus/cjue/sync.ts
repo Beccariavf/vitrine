@@ -57,6 +57,18 @@ export type CouvertureCjue = {
   source: string;
   matiere: { uri: string; libelle: string };
   notions: Array<{ uri: string; libelle: string }>;
+  /** Filtre historique et filtre élargi, avec leurs comptes (#143). */
+  filtre: {
+    historique: { matiere: string; notions: string[] };
+    elargi: { actes_cites: string[] };
+    union: string;
+    /** Décisions retenues par le seul critère élargi. */
+    ajouts_par_critere: Record<string, number>;
+    /** Décisions déjà retenues par le filtre historique qui portent aussi le critère. */
+    deja_presents_par_critere: Record<string, number>;
+    /** Décisions retenues par origine, une décision comptée par origine. */
+    decisions_par_origine: Record<string, number>;
+  };
   /** CELEX ajoutés hors classement CELLAR, et combien ont été retenus. */
   celex_complementaires: string[];
   complementaires_ajoutes: number;
@@ -116,6 +128,10 @@ export type ResultatCjue = {
   ecrit: boolean;
   manifestPath: string;
   unitesPath: string;
+  /** Décisions retenues par le seul critère élargi (citation d'un acte). */
+  ajoutsParCritere: Record<string, number>;
+  /** Décisions déjà retenues qui portent aussi le critère. */
+  dejaPresentsParCritere: Record<string, number>;
 };
 
 /** Identifiants CELEX des décisions CJUE publiées par la veille. */
@@ -360,8 +376,7 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
   }
   const veille = entreesVeilleCjue(rootDir);
   const dejaListes = new Set(retenues.map((entree) => entree.celex));
-  let veilleAjoutees = 0;
-  for (const entree of veille) {
+  let veilleAjoutees = 0;  for (const entree of veille) {
     if (dejaListes.has(entree.celex)) continue;
     const type = typeCelex(entree.celex);
     const verdict = classerEntree({ celex: entree.celex, date: entree.date, type }, descripteur);
@@ -396,6 +411,22 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
   }
   const lues = limite === null ? retenues : retenues.slice(0, limite);
 
+  const decisionsParOrigine: Record<string, number> = { matiere: 0, notion: 0, acte_cite: 0, liste: 0 };
+  let ajoutsActeCite = 0;
+  let dejaActeCite = 0;
+  for (const entree of retenues) {
+    const origines = entree.origines ?? [];
+    for (const origine of origines) {
+      decisionsParOrigine[origine] = (decisionsParOrigine[origine] ?? 0) + 1;
+    }
+    if (origines.includes("acte_cite")) {
+      if (origines.includes("matiere") || origines.includes("notion")) dejaActeCite += 1;
+      else ajoutsActeCite += 1;
+    }
+  }
+  const ajoutsParCritere = { acte_cite: ajoutsActeCite };
+  const dejaPresentsParCritere = { acte_cite: dejaActeCite };
+
   if (options.dryRun === true) {
     return {
       documents: 0,
@@ -407,6 +438,8 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
       ecrit: false,
       manifestPath: join(rootDir, DOSSIER_CORPUS, "manifest.json"),
       unitesPath: join(rootDir, DOSSIER_CORPUS, "unites.jsonl"),
+      ajoutsParCritere,
+      dejaPresentsParCritere,
     };
   }
 
@@ -555,6 +588,17 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
       source: SOURCE,
       matiere: { uri: descripteur.matiere, libelle: descripteur.matiere_libelle },
       notions: descripteur.notions.map((notion) => ({ ...notion })),
+      filtre: {
+        historique: {
+          matiere: descripteur.matiere,
+          notions: descripteur.notions.map((notion) => notion.uri),
+        },
+        elargi: { actes_cites: [...(descripteur.actes_cites ?? [])] },
+        union: "décision listée par la matière, une notion fine, ou parce qu'elle cite un acte visé",
+        ajouts_par_critere: ajoutsParCritere,
+        deja_presents_par_critere: dejaPresentsParCritere,
+        decisions_par_origine: decisionsParOrigine,
+      },
       celex_complementaires: [...complementaires],
       complementaires_ajoutes: complementairesAjoutes,
       langue: descripteur.langues[0] ?? "",
@@ -597,6 +641,8 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
     ecrit: ecritUnites || ecritManifeste || ecritEtat,
     manifestPath,
     unitesPath,
+    ajoutsParCritere,
+    dejaPresentsParCritere,
   };
 }
 
@@ -638,9 +684,11 @@ async function main(argv: string[]): Promise<void> {
 
   process.stderr.write(
     dryRun
-      ? `dry-run : ${resultat.documentsLus} décision(s) à lire, rien n'est écrit\n`
+      ? `dry-run : ${resultat.documentsLus} décision(s) à lire, ` +
+        `${resultat.ajoutsParCritere.acte_cite ?? 0} ajout(s) par citation d'acte, rien n'est écrit\n`
       : `${resultat.documentsLus} décision(s) lue(s), ${resultat.documents} retenue(s), ` +
         `${resultat.fragments} fragments, ${resultat.appels.documents} téléchargement(s) ; ` +
+        `filtre élargi ${resultat.ajoutsParCritere.acte_cite ?? 0} décision(s) par citation d'acte ; ` +
         `écartées ${Object.entries(resultat.ecartes)
           .filter(([, compte]) => compte > 0)
           .map(([motif, compte]) => `${motif}=${compte}`)
