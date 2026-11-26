@@ -540,12 +540,15 @@ const DEFINITIONS = [
     nom: "ce",
     libelle: "Conseil d'État",
     type: "decision",
-    // Le fonds contient les décisions sur les algorithmes (Parcoursup, VSA) et la santé.
-    gouvernance: ["personnelles", "ia", "sante"],
+    // Le fonds contient les décisions sur les algorithmes (Parcoursup, VSA) et la santé ;
+    // depuis #143, aussi l'accès aux documents administratifs, le secret des affaires et les archives.
+    gouvernance: ["personnelles", "non_personnelles", "ia", "sante"],
     famille: "juridictions",
     regleStatut: "juridiction",
     commandeSync: "npm run ce:sync",
-    descriptionServeur: "les décisions du Conseil d'État (corpus `ce`)",
+    descriptionServeur:
+      "les décisions du Conseil d'État (corpus `ce` : données personnelles, accès et réutilisation des " +
+      "documents administratifs, secret des affaires, archives, secret médical)",
     descriptionProvenance: "décisions du Conseil d'État `ce`",
     descriptionRecherche: "les décisions du Conseil d'État",
     rangSite: 20,
@@ -604,14 +607,18 @@ const DEFINITIONS = [
     nom: "cc",
     libelle: "Cour de cassation",
     type: "decision",
-    // Le fonds contient les décisions sur le secret médical et les données de santé.
-    gouvernance: ["personnelles", "sante"],
+    // Le fonds contient les décisions sur le secret médical et les données de santé ;
+    // depuis #143, aussi le secret des affaires, les bases de données et les documents administratifs.
+    gouvernance: ["personnelles", "non_personnelles", "sante"],
     famille: "juridictions",
     regleStatut: "juridiction",
     commandeSync: "npm run cc:sync",
-    descriptionServeur: "les décisions de la Cour de cassation sur les données personnelles (corpus `cc`)",
+    descriptionServeur:
+      "les décisions de la Cour de cassation sur les données personnelles, le secret des affaires, " +
+      "les bases de données et les documents administratifs (corpus `cc`)",
     descriptionProvenance: "décisions de la Cour de cassation `cc`",
-    descriptionRecherche: "les décisions de la Cour de cassation sur les données personnelles",
+    descriptionRecherche:
+      "les décisions de la Cour de cassation sur les données personnelles, le secret des affaires et les bases de données",
     rangSite: 22,
     rangPerimetre: 21,
     libellePerimetre: "Cour de cassation",
@@ -625,12 +632,15 @@ const DEFINITIONS = [
     nom: "cjue",
     libelle: "CJUE",
     type: "decision",
-    // Les arrêts couvrent le scoring (C-634/21), la santé et les données personnelles.
-    gouvernance: ["personnelles", "ia", "sante"],
+    // Les arrêts couvrent le scoring (C-634/21), la santé et les données personnelles ;
+    // depuis #143, aussi les bases de données, le droit d'auteur, les données ouvertes et le DSA.
+    gouvernance: ["personnelles", "non_personnelles", "ia", "sante"],
     famille: "ue",
     regleStatut: "juridiction",
     commandeSync: "npm run cjue:sync",
-    descriptionServeur: "celles de la CJUE (corpus `cjue`)",
+    descriptionServeur:
+      "celles de la CJUE (corpus `cjue` : données personnelles, bases de données, droit d'auteur, " +
+      "données ouvertes, services numériques, IA)",
     descriptionProvenance: "décisions de la CJUE `cjue`",
     descriptionRecherche: "celles de la CJUE",
     rangSite: 19,
