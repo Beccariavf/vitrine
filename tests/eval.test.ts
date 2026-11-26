@@ -1817,5 +1817,23 @@ describe("questions-sources-publiees.csv", () => {
       assert.ok(entree.corpus_attendu.trim() !== "");
       assert.ok(!jeu.questions.some((question) => question.question === entree.question));
     }
+
+    const textesFr = readFileSync(
+      new URL("../data/corpus/textes_fr/unites.jsonl", import.meta.url),
+      "utf8",
+    )
+      .trimEnd()
+      .split("\n")
+      .map((ligne) => JSON.parse(ligne) as { document: string; numero: string; texte: string });
+    assert.ok(
+      !textesFr.some(
+        (unite) => unite.document === "LEGITEXT000006070721" && unite.numero === "16-10",
+      ),
+      "le Code civil 16-10 ne doit pas être au corpus",
+    );
+    assert.ok(
+      !textesFr.some((unite) => /arrêté du 17 novembre 2025/i.test(unite.texte)),
+      "l'arrêté du 17 novembre 2025 ne doit pas être au corpus",
+    );
   });
 });

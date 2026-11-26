@@ -20,16 +20,20 @@ aucune écriture sous `data/`.
   `mcp/eval/sources-publiees-hors-corpus.json` et ne sont pas notées (Code civil art. 16-10 ; arrêté du
   17 novembre 2025 sur les frais de transfert cloud).
 - Toutes les références du jeu ont été vérifiées présentes au corpus (article, décision entière, délibération ou
-  document de doctrine), et toutes les URL ont été ouvertes le 2026-11-26. Deux URL de `avocats.xxi.legal` ont
-  répondu 403 : les deux questions correspondantes ont été écartées, pas contournées. Pour les deux questions
-  HAL, la notice publique répond 200 ; le texte cité par l'auteur est dans le PDF lié, pas dans la notice.
-- Sources lues : 66 questions candidates, dont 60 retenues, portées par 58 URL distinctes sur 35 domaines
-  (Village de la Justice, blogs de cabinets, HAL, CNIL, CADA, Conseil d'État, Conseil constitutionnel, ARCEP,
-  ARCOM, Commission européenne). Les 6 écartées : 2 pour un 403 anti-robot, 4 pour recoupement ou cadrage hors
-  sujet. 13 domaines abandonnés : paywall (Dalloz, Revue Banque), anti-robot, 403 ou mur JavaScript
-  (Actu-Juridique, XXI Avocats, Cour de cassation), contenu non chargé ou non fiable (Shift Avocats, un blog),
-  page sans référence d'article (RSF, INSEE, data.gouv), PDF illisible (Unipub), hors champ (mdc-avocat), source
-  exclue par la consigne (`donneespersonnelles.fr`).
+  document de doctrine), et toutes les URL ont été ouvertes le 2026-11-26 ; l'article E-SCARAMOZZINO qui porte les
+  deux questions du chapitre V du Data Act cite bien les articles 15 et 17. Deux URL de `avocats.xxi.legal` ont
+  répondu 403 : les deux questions correspondantes ont été écartées, pas contournées.
+- Sources lues : 66 questions candidates (60 retenues, 6 écartées : 2 pour un 403 anti-robot, 4 pour recoupement ou
+  cadrage hors sujet), plus 5 propositions rangées hors corpus. Trois de ces propositions (SAN-2026-003, article 27
+  de la loi SREN, article 111 § 4 de l'AI Act) ont été reclassées : leur référence existe au corpus, mais la
+  question n'a pas été retenue. Les deux autres restent hors corpus. Les 60 questions notées portent 58 URL
+  distinctes sur 35 domaines (Village de la Justice, blogs de cabinets, CNIL, CADA, Conseil d'État, Conseil
+  constitutionnel, ARCEP, ARCOM, Commission européenne, E-SCARAMOZZINO legal).
+- 15 sources abandonnées : paywall (Dalloz, Revue Banque), anti-robot, 403 ou mur JavaScript (Actu-Juridique, deux
+  pages XXI Avocats, Cour de cassation, HAL), contenu non chargé ou non fiable (Shift Avocats, un blog), page sans
+  référence d'article (RSF, INSEE, data.gouv), PDF illisible (Unipub), hors champ (une page mdc-avocat), source
+  exclue par la consigne (`donneespersonnelles.fr`). Les deux questions qui reposaient sur HAL ont été reportées
+  sur l'article E-SCARAMOZZINO, ouvert.
 - Limites : 1 à 13 questions par corpus, donc les taux par corpus sont des ordres de grandeur. Les seuils de
   confiance sont les constantes de repli 0,69 / 0,74 / 0,01 (le jeu n'a pas de split, `--regle produit` n'est pas
   appliqué), identiques dans les deux passes.

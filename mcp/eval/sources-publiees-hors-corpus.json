@@ -18,7 +18,7 @@
     "date_publication": "2026-08-17",
     "date_lecture": "2026-11-26",
     "champ": "données non personnelles",
-    "corpus_attendu": "donnees",
-    "raison": "Un arrêté n'entre pas dans les corpus indexés : aucun texte réglementaire français de ce type n'y figure."
+    "corpus_attendu": "textes_fr",
+    "raison": "Cet arrêté n'est pas dans le corpus textes_fr."
   }
 ]
