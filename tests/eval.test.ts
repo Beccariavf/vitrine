@@ -12,6 +12,7 @@ import {
   corpusDuJeu,
   ecrireMesureTest,
   entreeQuestionJson,
+  filtrerCorpus,
   filtrerSplit,
   INSTRUCTION_CNIL_NEUTRE,
   instructionCnil,
@@ -45,6 +46,8 @@ import {
 import { intervalleWilson } from "../mcp/statistiques.ts";
 import type { MarqueurV3, Mesure, Question, Split } from "../mcp/eval/run.ts";
 import { compterCitations } from "../mcp/eval/citations.ts";
+import { agreger, fusionner } from "../mcp/eval/agreger.ts";
+import type { SourceQuestion } from "../mcp/eval/agreger.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";
 import {
   INSTRUCTION_AIAct,
@@ -1589,6 +1592,218 @@ describe("le bilan des citations d'un corpus", () => {
       });
     } finally {
       rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("filtrerCorpus", () => {
+  const jeu: Question[] = [
+    {
+      question: "q1",
+      type: "conceptuelle",
+      attendues: ["32016R0679#art_17"],
+      piege: false,
+      split: "dev",
+      corpus: "rgpd",
+    },
+    {
+      question: "q2",
+      type: "conceptuelle",
+      attendues: ["32024R1689#art_6"],
+      piege: false,
+      split: "dev",
+      corpus: "aiact",
+    },
+  ];
+
+  it("choisit le groupe demandé", () => {
+    assert.deepEqual(
+      filtrerCorpus(jeu, "aiact").map((question) => question.question),
+      ["q2"],
+    );
+  });
+
+  it("refuse un jeu mélangé sans --corpus en nommant ses collections", () => {
+    assert.throws(() => filtrerCorpus(jeu, undefined), /aiact, rgpd.*--corpus/);
+  });
+
+  it("laisse passer un jeu d'une seule collection sans --corpus", () => {
+    assert.equal(filtrerCorpus([jeu[0] as Question], undefined).length, 1);
+  });
+
+  it("nomme un corpus sans question", () => {
+    assert.throws(() => filtrerCorpus(jeu, "cnil"), /Aucune question pour le corpus « cnil »/);
+  });
+});
+
+describe("agréger les sources publiées", () => {
+  const sources: SourceQuestion[] = [
+    {
+      question: "q1",
+      champ: "IA",
+      corpus_attendu: "aiact",
+      url: "https://exemple.test/1",
+      auteur: "Cabinet A",
+      date_publication: "2026-01-01",
+      date_lecture: "2026-11-26",
+    },
+    {
+      question: "q2",
+      champ: "IA",
+      corpus_attendu: "aiact",
+      url: "https://exemple.test/2",
+      auteur: "Cabinet B",
+      date_publication: null,
+      date_lecture: "2026-11-26",
+    },
+    {
+      question: "q3",
+      champ: "santé",
+      corpus_attendu: "sante_ue",
+      url: "https://exemple.test/3",
+      auteur: "Cabinet C",
+      date_publication: "2026-02-02",
+      date_lecture: "2026-11-26",
+    },
+  ];
+
+  function entree(
+    question: string,
+    attendues: string[],
+    refs: string[],
+    niveau: "confiant" | "incertain",
+  ) {
+    return { question, type: "conceptuelle" as const, piege: false, attendues, refs, rangs: [], niveau };
+  }
+
+  const mesure = {
+    date: "2026-11-26",
+    modele: "test",
+    dimensions: 1,
+    split: "dev" as const,
+    corpus: "aiact",
+    recherche: "dense" as const,
+    index: { chemin: "/tmp/index.db", unites: 3 },
+    questions: [
+      entree("q1", ["32024R1689#art_6"], ["32024R1689#art_50", "32024R1689#art_6"], "confiant"),
+      entree("q2", ["32024R1689#art_6"], [], "confiant"),
+      entree("q3", ["32025R0327#art_10"], ["32025R0327#art_10"], "incertain"),
+    ],
+  };
+
+  it("compte rappel@5, rang moyen, MRR et confiance juste ou fausse par champ", () => {
+    const [ia, sante] = agreger(mesure, sources, "champ");
+    assert.deepEqual(ia, {
+      groupe: "IA",
+      questions: 2,
+      top5: 1,
+      rang_moyen: 2,
+      mrr: 0.25,
+      confiant: 2,
+      confiant_top5: 1,
+      confiant_incorrect: 1,
+    });
+    assert.deepEqual(sante, {
+      groupe: "santé",
+      questions: 1,
+      top5: 1,
+      rang_moyen: 1,
+      mrr: 1,
+      confiant: 0,
+      confiant_top5: 0,
+      confiant_incorrect: 0,
+    });
+  });
+
+  it("groupe par corpus attendu quand la mesure couvre plusieurs collections", () => {
+    assert.deepEqual(
+      agreger(mesure, sources, "corpus").map((ligne) => ligne.groupe),
+      ["aiact", "sante_ue"],
+    );
+  });
+
+  it("nomme une question absente de l'annexe des sources", () => {
+    assert.throws(() => agreger(mesure, sources.slice(0, 2), "champ"), /q3/);
+  });
+
+  it("fusionne plusieurs mesures d'un même jeu", () => {
+    const fusion = fusionner([mesure, { ...mesure, corpus: "sante_ue" }]);
+    assert.equal(fusion.questions.length, 6);
+    assert.equal(fusion.corpus, "aiact+sante_ue");
+  });
+});
+
+describe("questions-sources-publiees.csv", () => {
+  const CSV = readFileSync(
+    new URL("../mcp/eval/questions-sources-publiees.csv", import.meta.url),
+    "utf8",
+  );
+  const SOURCES = JSON.parse(
+    readFileSync(new URL("../mcp/eval/sources-publiees.json", import.meta.url), "utf8"),
+  ) as SourceQuestion[];
+  const jeu = lireJeu(CSV);
+
+  it("porte soixante questions réparties entre les quatre champs", () => {
+    assert.equal(jeu.questions.length, 60);
+    assert.ok(jeu.questions.every((question) => question.corpus !== undefined));
+    const champs = new Map<string, number>();
+    for (const source of SOURCES) champs.set(source.champ, (champs.get(source.champ) ?? 0) + 1);
+    assert.deepEqual(Object.fromEntries([...champs].sort()), {
+      IA: 15,
+      "données non personnelles": 15,
+      "données personnelles": 20,
+      santé: 10,
+    });
+  });
+
+  it("donne à chaque question une source datée et une référence citée", () => {
+    assert.equal(SOURCES.length, jeu.questions.length);
+    for (const question of jeu.questions) {
+      const sources = SOURCES.filter((source) => source.question === question.question);
+      assert.equal(sources.length, 1, question.question);
+      const source = sources[0] as SourceQuestion;
+      assert.match(source.url, /^https:\/\//);
+      assert.ok(source.auteur.trim() !== "", question.question);
+      assert.match(source.date_lecture, /^\d{4}-\d{2}-\d{2}$/);
+      assert.ok(source.date_publication === null || /^\d{4}-\d{2}-\d{2}$/.test(source.date_publication));
+    }
+  });
+
+  it("n'attend que des références présentes dans le corpus de leur groupe", () => {
+    const corpus = [...new Set(jeu.questions.map((question) => question.corpus ?? ""))].sort();
+    for (const nom of corpus) {
+      const unites = readFileSync(
+        new URL(`../data/corpus/${nom}/unites.jsonl`, import.meta.url),
+        "utf8",
+      )
+        .trimEnd()
+        .split("\n")
+        .map((ligne) => JSON.parse(ligne) as { ref: string; document: string });
+      validerReferences(
+        jeu.questions.filter((question) => question.corpus === nom),
+        new Set(unites.map((unite) => unite.ref)),
+        new Set(unites.map((unite) => unite.document)),
+      );
+    }
+  });
+
+  it("pose des questions sémantiques, sans numéro d'article qui court-circuiterait la recherche", () => {
+    for (const question of jeu.questions) {
+      assert.equal(referenceExacte(question.question), null, question.question);
+    }
+  });
+
+  it("garde les questions hors corpus à part et hors du jeu noté", () => {
+    const hors = JSON.parse(
+      readFileSync(
+        new URL("../mcp/eval/sources-publiees-hors-corpus.json", import.meta.url),
+        "utf8",
+      ),
+    ) as { question: string; raison: string }[];
+    assert.ok(hors.length > 0);
+    for (const entree of hors) {
+      assert.ok(entree.raison.trim() !== "");
+      assert.ok(!jeu.questions.some((question) => question.question === entree.question));
     }
   });
 });

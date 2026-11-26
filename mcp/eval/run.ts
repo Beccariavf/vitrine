@@ -178,6 +178,34 @@ export function filtrerSplit(questions: Question[], split: FiltreSplit): Questio
   return split === "all" ? questions : questions.filter((question) => question.split === split);
 }
 
+/**
+ * Garde les questions d'une collection. Un jeu à colonne `corpus` peut en couvrir
+ * plusieurs : `--corpus` choisit alors le groupe mesuré. Sans `--corpus`, un jeu
+ * mélangé est refusé en nommant ses collections, et un jeu d'une seule collection
+ * passe tel quel.
+ */
+export function filtrerCorpus(questions: Question[], corpus: string | undefined): Question[] {
+  if (corpus !== undefined) {
+    const retenues = questions.filter((question) => question.corpus === corpus);
+    if (retenues.length === 0) {
+      throw new Error(`Aucune question pour le corpus « ${corpus} »`);
+    }
+    return retenues;
+  }
+  const collections = new Set(
+    questions
+      .map((question) => question.corpus)
+      .filter((valeur): valeur is string => valeur !== undefined),
+  );
+  if (collections.size > 1) {
+    throw new Error(
+      `Jeu de plusieurs corpus (${[...collections].sort().join(", ")}) : ` +
+        "précisez --corpus pour choisir le groupe mesuré.",
+    );
+  }
+  return questions;
+}
+
 /** Corpus d'une référence, déduit du préfixe de son document. */
 export function corpusDeReference(ref: string): string {
   const document = documentDe(ref);
@@ -564,7 +592,7 @@ async function mesurer(
   questions: Question[],
   embedder: Embedder,
   index: Index,
-  corpus: string,
+  corpus: string | undefined,
   recherche: ModeRecherche,
   rerank?: Reranker,
 ): Promise<{ mesures: Mesure[]; durees: number[] }> {
@@ -573,7 +601,7 @@ async function mesurer(
   for (const question of questions) {
     const resultat = await search(
       rootDir,
-      { question: question.question, k: 5, corpus },
+      { question: question.question, k: 5, ...(corpus === undefined ? {} : { corpus }) },
       {
         embedder,
         index,
@@ -1118,6 +1146,8 @@ export type ObjetMesureJson = {
   split: Split;
   /** Collection mesurée, un nom du registre (`mcp/corpus/registre.ts`). */
   corpus: string;
+  /** Vrai quand la recherche a tourné sans borne de collection (`--sans-filtre`). */
+  sans_filtre?: boolean;
   recherche: ModeRecherche;
   /** Variante d'instruction de requête choisie explicitement ; absente, celle du produit. */
   instruction?: VarianteInstruction;
@@ -1153,6 +1183,7 @@ export function objetMesureJson(args: {
   mesures: Mesure[];
   instruction?: VarianteInstruction;
   rerank?: BlocRerankJson;
+  sansFiltre?: boolean;
 }): ObjetMesureJson {
   const lexical = args.recherche === "lexicale";
   return {
@@ -1161,6 +1192,7 @@ export function objetMesureJson(args: {
     dimensions: args.dimensions,
     split: args.split,
     corpus: args.corpus,
+    ...(args.sansFiltre === true ? { sans_filtre: true } : {}),
     recherche: args.recherche,
     ...(args.instruction === undefined ? {} : { instruction: args.instruction }),
     index: args.index,
@@ -1218,13 +1250,18 @@ async function main(argv: string[]): Promise<void> {
   const contenu = readFileSync(cheminQuestions, "utf8");
   const jeu = lireJeu(contenu);
   const questions = jeu.questions;
-  const corpus = corpusDuJeu(questions);
   const unites = lireUnites(rootDir);
   validerReferences(
     questions,
     new Set(unites.map((unite) => unite.ref)),
     new Set(unites.map((unite) => unite.document)),
   );
+  const corpusDemande = valeurDe("--corpus", argv);
+  const corpus = corpusDuJeu(filtrerCorpus(questions, corpusDemande));
+  // Sans filtre, la recherche ignore la collection du groupe : la mesure dit ce
+  // que le produit rend quand aucune borne n'est demandée.
+  const sansFiltre = argv.includes("--sans-filtre");
+  const corpusRecherche = sansFiltre ? undefined : corpus;
 
   const modele = valeurDe("--modele", argv);
   const dim = valeurDe("--dim", argv);
@@ -1254,13 +1291,13 @@ async function main(argv: string[]): Promise<void> {
 
   const index = openIndex(cheminIndex(rootDir));
   try {
-    const demandees = filtrerSplit(questions, split);
+    const demandees = filtrerSplit(filtrerCorpus(questions, corpusDemande), split);
     const { mesures, durees } = await mesurer(
       rootDir,
       demandees,
       embedder,
       index,
-      corpus,
+      corpusRecherche,
       recherche,
       rerank,
     );
@@ -1284,6 +1321,7 @@ async function main(argv: string[]): Promise<void> {
         `date : ${date}`,
         "modèle : aucun (recherche lexicale, sans embedder)",
         `corpus : ${corpus}`,
+        `filtre corpus : ${sansFiltre ? "non" : "oui"}`,
         `recherche : ${recherche}`,
         `split : ${split}`,
         ...rapportLexical(mesures),
@@ -1296,6 +1334,7 @@ async function main(argv: string[]): Promise<void> {
         `date : ${date}`,
         `modèle : ${embedder.model} (${embedder.dim} dimensions)`,
         `corpus : ${corpus}`,
+        `filtre corpus : ${sansFiltre ? "non (passes sans filtre)" : "oui"}`,
         `recherche : ${recherche}`,
         `instruction : ${variante}`,
         `split : ${split}`,
@@ -1371,6 +1410,7 @@ async function main(argv: string[]): Promise<void> {
         seuils,
         seuilsOrigine: origine,
         mesures,
+        ...(sansFiltre ? { sansFiltre: true } : {}),
         ...(optionInstruction === undefined ? {} : { instruction: variante }),
         ...(rerank === undefined
           ? {}
