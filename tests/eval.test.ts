@@ -1824,7 +1824,10 @@ describe("questions-sources-publiees.csv", () => {
     )
       .trimEnd()
       .split("\n")
-      .map((ligne) => JSON.parse(ligne) as { document: string; numero: string; texte: string });
+      .map(
+        (ligne) =>
+          JSON.parse(ligne) as { document: string; numero: string; chemin: string; texte: string },
+      );
     assert.ok(
       !textesFr.some(
         (unite) => unite.document === "LEGITEXT000006070721" && unite.numero === "16-10",
@@ -1832,7 +1835,11 @@ describe("questions-sources-publiees.csv", () => {
       "le Code civil 16-10 ne doit pas être au corpus",
     );
     assert.ok(
-      !textesFr.some((unite) => /arrêté du 17 novembre 2025/i.test(unite.texte)),
+      !textesFr.some((unite) =>
+        /arrêté du 17 novembre 2025/i.test(
+          `${unite.document} ${unite.numero} ${unite.chemin} ${unite.texte}`,
+        ),
+      ),
       "l'arrêté du 17 novembre 2025 ne doit pas être au corpus",
     );
   });

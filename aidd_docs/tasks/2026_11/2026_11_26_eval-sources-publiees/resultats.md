@@ -24,11 +24,11 @@ aucune écriture sous `data/`.
   deux questions du chapitre V du Data Act cite bien les articles 15 et 17. Deux URL de `avocats.xxi.legal` ont
   répondu 403 : les deux questions correspondantes ont été écartées, pas contournées.
 - Sources lues : 66 questions candidates (60 retenues, 6 écartées : 2 pour un 403 anti-robot, 4 pour recoupement ou
-  cadrage hors sujet), plus 5 propositions rangées hors corpus. Trois de ces propositions (SAN-2026-003, article 27
-  de la loi SREN, article 111 § 4 de l'AI Act) ont été reclassées : leur référence existe au corpus, mais la
-  question n'a pas été retenue. Les deux autres restent hors corpus. Les 60 questions notées portent 58 URL
+  cadrage hors sujet), plus 5 propositions rangées hors corpus, soit 71 propositions lues au total. Trois de ces propositions
+  (SAN-2026-003, article 27 de la loi SREN, article 111 § 4 de l'AI Act — le corpus porte l'article entier
+  `#art_111`) ont été reclassées : leur référence existe au corpus, mais la question n'a pas été retenue. Les deux autres restent hors corpus. Les 60 questions notées portent 58 URL
   distinctes sur 35 domaines (Village de la Justice, blogs de cabinets, CNIL, CADA, Conseil d'État, Conseil
-  constitutionnel, ARCEP, ARCOM, Commission européenne, E-SCARAMOZZINO legal).
+  constitutionnel, ARCEP, ARCOM, Commission européenne, E-SCARAMOZZINO legal / Constellation Avocats).
 - 15 sources abandonnées : paywall (Dalloz, Revue Banque), anti-robot, 403 ou mur JavaScript (Actu-Juridique, deux
   pages XXI Avocats, Cour de cassation, HAL), contenu non chargé ou non fiable (Shift Avocats, un blog), page sans
   référence d'article (RSF, INSEE, data.gouv), PDF illisible (Unipub), hors champ (une page mdc-avocat), source
