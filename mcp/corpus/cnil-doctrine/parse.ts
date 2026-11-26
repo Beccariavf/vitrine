@@ -384,13 +384,16 @@ export type DocumentDoctrine = {
   slug: string;
   /** Date du document, ou date d'extraction quand il ne se date pas. */
   date_acte: string;
+  /** Numéro de la délibération que le document met en œuvre, quand il en déclare un. */
+  numero?: string;
 };
 
 /**
  * Fragments d'un document : chaque fragment est une tranche du texte extrait,
  * sans réécriture. Un fragment sans aucune lettre (ponctuation seule, numéro de
  * page) est écarté : il ne porte aucun texte citable. Le chemin nomme le type et
- * le titre ; l'URL est celle du document.
+ * le titre ; l'URL est celle du document. `numero` porte la délibération que le
+ * document met en œuvre quand il la déclare, le slug sinon.
  */
 export function unitesDoctrine(
   document: DocumentDoctrine,
@@ -408,7 +411,7 @@ export function unitesDoctrine(
     document: document.slug,
     corpus: descripteur.corpus,
     niveau: "fragment",
-    numero: document.slug,
+    numero: document.numero ?? document.slug,
     chemin: `${descripteur.nom} > ${LIBELLES[document.type]} > ${document.titre}`,
     texte: fragment,
     date_acte: document.date_acte,
