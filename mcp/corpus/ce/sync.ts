@@ -32,6 +32,8 @@ import {
   validerUnites,
 } from "./parse.ts";
 import type { DescripteurCe, Ecartes } from "./parse.ts";
+import type { CritereElargi } from "../pertinence.ts";
+import { compterCriteres, comptesTries } from "../pertinence.ts";
 
 const ICI = dirname(fileURLToPath(import.meta.url));
 
@@ -87,6 +89,20 @@ export type CompteFonds = {
   ecartes: Ecartes;
 };
 
+/** Comptes du filtre élargi, par critère, dits au manifeste (#143). */
+export type FiltreCe = {
+  /** Filtre historique, conservé tel quel. */
+  historique: { mots_cles: string[] };
+  /** Critères du filtre élargi, déclarés au descripteur. */
+  elargi: { criteres: CritereElargi[] };
+  /** Règle d'union : une décision retenue par l'un ou l'autre entre. */
+  union: string;
+  /** Décisions ajoutées par chaque critère élargi, une décision comptée par critère rencontré. */
+  ajouts_par_critere: Record<string, number>;
+  /** Décisions déjà retenues par le filtre historique qui portent aussi le critère. */
+  deja_presents_par_critere: Record<string, number>;
+};
+
 /** Manifeste du corpus : identité, comptes, écarts et couverture déclarée. */
 export type ManifesteCe = {
   corpus: string;
@@ -115,6 +131,8 @@ export type ManifesteCe = {
     periode: { date_min: string | null; date_max: string | null };
     juridiction: string;
     mots_cles: string[];
+    /** Filtre historique et filtre élargi, avec leurs comptes. */
+    filtre: FiltreCe;
     /** Comptes par fonds : `publie` et `inedit`. */
     fonds: Record<Fonds, CompteFonds>;
     exclusions: Exclusions;
@@ -149,6 +167,14 @@ export type ResultatCe = {
   doublons: number;
   ecartes: Ecartes;
   parFonds: Record<Fonds, CompteFonds>;
+  /** Décisions ajoutées par le filtre élargi. */
+  ajouteesElargi: number;
+  /** Fragments apportés par ces décisions. */
+  fragmentsAjoutes: number;
+  /** Décisions ajoutées par critère élargi. */
+  ajoutsParCritere: Record<string, number>;
+  /** Décisions déjà retenues qui portent aussi le critère. */
+  dejaPresentsParCritere: Record<string, number>;
 };
 
 /** Lit le descripteur CE. */
@@ -166,17 +192,18 @@ export function lireEtat(chemin: string): EtatCe {
   }
 }
 
-/** Empreinte de la configuration : changer un fonds, un titre ou un mot-clé force une relecture. */
+/** Empreinte de la configuration : changer un fonds, un titre, un mot-clé ou un critère élargi force une relecture. */
 export function empreinteFiltre(descripteur: DescripteurCe): string {
   return createHash("sha256")
     .update(
       JSON.stringify({
-        version: 4,
+        version: 5,
         fonds: ["publie", "inedit"],
         titre: descripteur.titre,
         juridiction: descripteur.juridiction,
         juridictions_exclues: descripteur.juridictions_exclues,
         mots_cles: descripteur.mots_cles,
+        criteres_elargis: descripteur.criteres_elargis ?? [],
       }),
       "utf8",
     )
@@ -212,6 +239,8 @@ export function manifesteCe(
     parFonds: Record<Fonds, CompteFonds>;
     dateMin: string | null;
     dateMax: string | null;
+    ajoutsParCritere: Record<string, number>;
+    dejaPresentsParCritere: Record<string, number>;
   },
 ): ManifesteCe {
   return {
@@ -237,6 +266,13 @@ export function manifesteCe(
       periode: { date_min: comptes.dateMin, date_max: comptes.dateMax },
       juridiction: descripteur.juridiction,
       mots_cles: descripteur.mots_cles,
+      filtre: {
+        historique: { mots_cles: descripteur.mots_cles },
+        elargi: { criteres: descripteur.criteres_elargis ?? [] },
+        union: "décision retenue par le filtre historique ou par un critère élargi",
+        ajouts_par_critere: comptes.ajoutsParCritere,
+        deja_presents_par_critere: comptes.dejaPresentsParCritere,
+      },
       fonds: comptes.parFonds,
       exclusions: {
         juridictions: descripteur.juridictions_exclues,
@@ -337,6 +373,10 @@ export async function syncCe(options: SyncCeOptions = {}): Promise<ResultatCe> {
       doublons: manifesteExistant.doublons,
       ecartes: manifesteExistant.ecartes,
       parFonds: manifesteExistant.couverture.fonds,
+      ajouteesElargi: 0,
+      fragmentsAjoutes: 0,
+      ajoutsParCritere: {},
+      dejaPresentsParCritere: {},
     };
   }
 
@@ -347,6 +387,10 @@ export async function syncCe(options: SyncCeOptions = {}): Promise<ResultatCe> {
   };
   const unites: Unite[] = [];
   const identifiantsVus = new Set<string>();
+  const ajoutsParCritere = new Map<string, number>();
+  const dejaPresentsParCritere = new Map<string, number>();
+  let ajouteesElargi = 0;
+  let fragmentsAjoutes = 0;
   let documentsLus = 0;
   let decisionsCe = 0;
   let doublons = 0;
@@ -387,6 +431,11 @@ export async function syncCe(options: SyncCeOptions = {}): Promise<ResultatCe> {
       continue;
     }
     const nouvelles = unitesJade(verdict.decision, descripteur, entree.fonds);
+    compterCriteres(verdict.historique ? dejaPresentsParCritere : ajoutsParCritere, verdict.criteres);
+    if (!verdict.historique) {
+      ajouteesElargi += 1;
+      fragmentsAjoutes += nouvelles.length;
+    }
     compte.documents += 1;
     compte.fragments += nouvelles.length;
     for (const unite of nouvelles) {
@@ -415,6 +464,8 @@ export async function syncCe(options: SyncCeOptions = {}): Promise<ResultatCe> {
       parFonds,
       dateMin,
       dateMax,
+      ajoutsParCritere: comptesTries(ajoutsParCritere),
+      dejaPresentsParCritere: comptesTries(dejaPresentsParCritere),
     },
   );
   const etatEcrit: EtatCe = {
@@ -451,6 +502,10 @@ export async function syncCe(options: SyncCeOptions = {}): Promise<ResultatCe> {
     doublons,
     ecartes,
     parFonds,
+    ajouteesElargi,
+    fragmentsAjoutes,
+    ajoutsParCritere: comptesTries(ajoutsParCritere),
+    dejaPresentsParCritere: comptesTries(dejaPresentsParCritere),
   };
 }
 
@@ -481,6 +536,10 @@ async function main(argv: string[]): Promise<void> {
     : `${resultat.documentsLus} entrées lues, ` +
       `${resultat.decisionsCe} décisions CE toutes dates, ` +
       `${resultat.documents} retenues, ${resultat.fragments} fragments ; ` +
+      `filtre élargi ${resultat.ajouteesElargi} décision(s) / ${resultat.fragmentsAjoutes} fragment(s) ` +
+      `(${Object.entries(resultat.ajoutsParCritere)
+        .map(([cle, compte]) => `${cle}=${compte}`)
+        .join(", ") || "aucun"}) ; ` +
       `fonds ${Object.entries(resultat.parFonds)
         .map(([fonds, compte]) => `${fonds}=${compte.documents}/${compte.fragments}`)
         .join(", ")} ; ` +

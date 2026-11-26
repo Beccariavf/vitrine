@@ -110,6 +110,43 @@ describe("le filtre de pertinence de la Cour de cassation", () => {
     assert.equal(verdict.decision.visaPertinent, true);
   });
 
+  it("unit le filtre historique et le filtre élargi sans rien retirer", () => {
+    const historique = classerDecisionCc(PERTINENT, DESCRIPTEUR);
+    assert.equal(historique.retenue, true);
+    if (historique.retenue) assert.equal(historique.historique, true);
+
+    const elargie = {
+      id: "abcdef0123456789",
+      decision_date: "2026-11-10",
+      chamber: "comm",
+      number: "24-17.001",
+      solution: "rejet",
+      publication: ["n"],
+      text:
+        "Vu l'article L. 151-1 du code de commerce ; le secret des affaires protège " +
+        "les informations utiles à l'activité économique. Ce secret des affaires " +
+        "couvre aussi les comptes.",
+    };
+    const verdictElargi = classerDecisionCc(elargie, DESCRIPTEUR);
+    assert.equal(verdictElargi.retenue, true);
+    if (verdictElargi.retenue) {
+      assert.equal(verdictElargi.historique, false);
+      assert.deepEqual(
+        verdictElargi.criteres.map((critere) => critere.cle),
+        ["commerce-secret-affaires", "secret-des-affaires"],
+      );
+    }
+
+    const generique = {
+      ...elargie,
+      text: "Le document produit est écarté et les données du dossier sont insuffisantes.",
+    };
+    assert.deepEqual(classerDecisionCc(generique, DESCRIPTEUR), {
+      retenue: false,
+      motif: "hors_sujet",
+    });
+  });
+
   it("rend le visa puis les fragments du texte, tous citables", () => {
     const verdict = classerDecisionCc(PERTINENT, DESCRIPTEUR);
     assert.equal(verdict.retenue, true);
@@ -172,6 +209,17 @@ describe("la synchronisation du corpus Cour de cassation", () => {
         manifeste.documents_lus,
       );
       assert.equal(manifeste.couverture.reprise.en_cache, 2);
+      assert.equal(
+        manifeste.couverture.filtre.historique.occurrences_min,
+        DESCRIPTEUR.occurrences_min,
+      );
+      assert.deepEqual(
+        manifeste.couverture.filtre.elargi.criteres.map((critere) => critere.cle),
+        (DESCRIPTEUR.criteres_elargis ?? []).map((critere) => critere.cle),
+        "le manifeste déclare le filtre élargi du descripteur",
+      );
+      assert.match(manifeste.couverture.filtre.union, /ou/);
+      assert.deepEqual(manifeste.couverture.filtre.ajouts_par_critere, {});
       assert.equal(resultat.appels.decision, 2);
       assert.doesNotThrow(() => validerUnitesCorpus(unites, "Cour de cassation"));
 
@@ -242,6 +290,50 @@ describe("la synchronisation du corpus Cour de cassation", () => {
         readFileSync(join(racine, "data", "corpus", "cc", "manifest.json"), "utf8"),
       ) as ManifesteCc;
       assert.deepEqual(manifeste.couverture.veille, { entrees: 1, ajoutees: 1, retenues: 1 });
+    } finally {
+      rmSync(racine, { recursive: true, force: true });
+    }
+  });
+
+  it("ne compte pas comme ajout élargi une décision déjà présente par la veille", async () => {
+    const racine = racineTemporaire();
+    const id = "abcdef1234567890";
+    try {
+      ecrire(
+        racine,
+        "data/entries/2026/11/entree.json",
+        JSON.stringify({ source: "judilibre", id, url: "https://exemple" }),
+      );
+      const resultat = await syncCc({
+        rootDir: racine,
+        date: "2026-11-11",
+        reponsesRecherche: { "données personnelles": commandeRecherche() },
+        reponsesDecision: {
+          [ID_PERTINENT]: PERTINENT,
+          [ID_HORS_SUJET]: HORS_SUJET,
+          [id]: {
+            id,
+            decision_date: "2026-11-10",
+            chamber: "comm",
+            number: "24-1",
+            solution: "rejet",
+            publication: ["n"],
+            text:
+              "Le secret des affaires protège les informations utiles à l'activité ; " +
+              "le secret des affaires a été invoqué.",
+          },
+        },
+      });
+      assert.equal(resultat.documents, 2, "la décision de la veille entre hors filtre");
+      const manifeste = JSON.parse(
+        readFileSync(join(racine, "data", "corpus", "cc", "manifest.json"), "utf8"),
+      ) as ManifesteCc;
+      assert.deepEqual(manifeste.couverture.filtre.ajouts_par_critere, {});
+      assert.equal(
+        manifeste.couverture.filtre.deja_presents_par_critere["secret-des-affaires"],
+        1,
+        "la veille explique la présence, pas le filtre élargi",
+      );
     } finally {
       rmSync(racine, { recursive: true, force: true });
     }
@@ -318,7 +410,7 @@ describe("la synchronisation du corpus Cour de cassation", () => {
             date: "2026-11-11",
             config: CONFIG,
             fetchImpl,
-            maxAppels: 23,
+            maxAppels: 34,
           }),
         /Budget PISTE épuisé avec 1 décision/,
       );
@@ -351,7 +443,7 @@ describe("la synchronisation du corpus Cour de cassation", () => {
         date: "2026-11-11",
         config: CONFIG,
         fetchImpl,
-        maxAppels: 23,
+        maxAppels: 34,
       });
       assert.equal(interrompue.enAttente, 1, "le budget s'épuise après la première décision");
       assert.equal(interrompue.appels.decision, 1);
@@ -362,7 +454,7 @@ describe("la synchronisation du corpus Cour de cassation", () => {
         date: "2026-11-11",
         config: CONFIG,
         fetchImpl,
-        maxAppels: 30,
+        maxAppels: 36,
       });
       assert.equal(reprise.enAttente, 0);
       assert.equal(reprise.documents, 1);
@@ -386,6 +478,11 @@ describe("la synchronisation du corpus Cour de cassation", () => {
     assert.equal(new Set(unites.map((unite) => unite.document)).size, manifeste.documents);
     assert.equal("date_min" in manifeste, false, "aucune borne au manifeste");
     assert.equal("borne" in manifeste.couverture, false, "aucune borne en couverture");
+    assert.equal(
+      manifeste.documents + Object.values(manifeste.exclusions).reduce((a, b) => a + b, 0),
+      manifeste.documents_lus,
+      "les retenues et les écartées couvrent les décisions lues",
+    );
     const etat = JSON.parse(
       readFileSync(join(RACINE, "data", "corpus", "cc", "etat.json"), "utf8"),
     ) as Record<string, unknown>;

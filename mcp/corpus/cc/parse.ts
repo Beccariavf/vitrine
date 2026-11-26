@@ -11,6 +11,8 @@
 import { texteVisible } from "../parse.ts";
 import type { Unite } from "../parse.ts";
 import { decouperParagraphes } from "../cnil/parse.ts";
+import { criteresTrouves } from "../pertinence.ts";
+import type { CritereElargi, CritereTrouve } from "../pertinence.ts";
 
 /** Métadonnées du corpus, lues depuis `mcp/corpus/cc/descripteur.json`. */
 export type DescripteurCc = {
@@ -24,6 +26,8 @@ export type DescripteurCc = {
   /** Expressions dont le nombre d'occurrences décide de la pertinence. */
   mots_cles: string[];
   occurrences_min: number;
+  /** Critères du filtre élargi, en union avec le filtre historique (#143). */
+  criteres_elargis?: CritereElargi[];
   licence: string;
   max_appels: number;
   taille_page: number;
@@ -58,7 +62,7 @@ export const ECARTES_CC_VIDES: EcartesCc = {
 };
 
 export type VerdictCc =
-  | { retenue: true; decision: DecisionCc }
+  | { retenue: true; decision: DecisionCc; historique: boolean; criteres: CritereTrouve[] }
   | { retenue: false; motif: MotifEcartCc };
 
 export type DecisionCc = {
@@ -76,6 +80,8 @@ export type DecisionCc = {
   occurrences: number;
   /** Vrai si le visa cite un instrument de protection des données. */
   visaPertinent: boolean;
+  /** Critères élargis rencontrés, même si le filtre historique a déjà retenu. */
+  criteres: CritereTrouve[];
 };
 
 const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
@@ -216,6 +222,11 @@ export function paragraphesDecision(texte: string): string[] {
 /**
  * Classe une décision : date, texte, puis pertinence. La décision retenue porte
  * son visa, ses paragraphes et le compte qui l'a fait retenir.
+ *
+ * Le filtre historique (visa pertinent ou `occurrences_min` expressions) reste
+ * premier ; le filtre élargi s'y ajoute en union, sans retirer une décision
+ * déjà retenue. `historique` dit lequel a suffi, `criteres` liste les critères
+ * élargis rencontrés.
  */
 export function classerDecisionCc(
   brute: DecisionJudilibre,
@@ -236,12 +247,16 @@ export function classerDecisionCc(
   const visa = visaTitres(brute);
   const visaPertinent = compterMotsCles(visa.join(" ; "), descripteur.mots_cles) > 0;
   const occurrences = compterMotsCles(texte, descripteur.mots_cles);
-  if (!forcer && !visaPertinent && occurrences < descripteur.occurrences_min) {
+  const historique = visaPertinent || occurrences >= descripteur.occurrences_min;
+  const criteres = criteresTrouves(texte, descripteur.criteres_elargis ?? []);
+  if (!forcer && !historique && criteres.length === 0) {
     return { retenue: false, motif: "hors_sujet" };
   }
 
   return {
     retenue: true,
+    historique,
+    criteres,
     decision: {
       id,
       chambre: CHAMBRES[chaine(brute.chamber)] ?? "Chambre inconnue",
@@ -254,6 +269,7 @@ export function classerDecisionCc(
       paragraphes,
       occurrences,
       visaPertinent,
+      criteres,
     },
   };
 }

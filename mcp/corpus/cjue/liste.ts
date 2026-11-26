@@ -25,6 +25,8 @@ export type DescripteurCjue = {
   matiere_libelle: string;
   /** Notions fines de la jurisprudence, compléments de la matière. */
   notions: Array<{ uri: string; libelle: string }>;
+  /** CELEX des actes dont une décision qui les cite entre au corpus (#143). */
+  actes_cites?: string[];
   /** CELEX ajoutés à la main, hors classement CELLAR. */
   celex_complementaires: string[];
   /** Langues de lecture, dans l'ordre essayé : la première disponible fait foi. */
@@ -36,11 +38,16 @@ export type DescripteurCjue = {
 
 export type TypeCjue = "CJ" | "TJ" | "CO" | "TO" | "CC" | "autre";
 
+/** Critère CELLAR qui a listé une décision. */
+export type OrigineCjue = "matiere" | "notion" | "acte_cite" | "liste";
+
 /** Une décision listée par CELLAR, avant lecture du texte. */
 export type EntreeCjue = {
   celex: string;
   date: string;
   type: TypeCjue;
+  /** Critères qui l'ont listée ; `liste` quand la réponse ne les distingue pas. */
+  origines?: OrigineCjue[];
 };
 
 export type MotifEcartCjue =
@@ -49,7 +56,8 @@ export type MotifEcartCjue =
   | "autre_type"
   | "xhtml_absent"
   | "echec_telechargement"
-  | "texte_vide";
+  | "texte_vide"
+  | "acte_sans_rapport";
 
 export type EcartesCjue = Record<MotifEcartCjue, number>;
 
@@ -60,6 +68,7 @@ export const ECARTES_CJUE_VIDES: EcartesCjue = {
   xhtml_absent: 0,
   echec_telechargement: 0,
   texte_vide: 0,
+  acte_sans_rapport: 0,
 };
 
 const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
@@ -79,23 +88,35 @@ export function typeCelex(celex: string): TypeCjue {
   }
 }
 
-type Selection = Pick<DescripteurCjue, "matiere" | "notions">;
+type Selection = Pick<DescripteurCjue, "matiere" | "notions"> & {
+  actes_cites?: readonly string[];
+};
 
-/** Bloc SPARQL qui réunit la matière grossière et chaque notion fine. */
-function selection({ matiere, notions }: Selection): string {
+/** Bloc SPARQL qui réunit la matière grossière, les notions fines et les actes cités. */
+function selection({ matiere, notions, actes_cites = [] }: Selection): string {
   const groupes = [
-    `{ ?work cdm:resource_legal_is_about_subject-matter <${matiere}> }`,
+    `{ ?work cdm:resource_legal_is_about_subject-matter <${matiere}> BIND("matiere" AS ?origine) }`,
     ...notions.map(
-      (notion) => `{ ?work cdm:case-law_is_about_concept_new_case-law <${notion.uri}> }`,
+      (notion, index) =>
+        `{ ?work cdm:case-law_is_about_concept_new_case-law <${notion.uri}> BIND("notion-${index + 1}" AS ?origine) }`,
     ),
   ];
+  if (actes_cites.length > 0) {
+    const celex = actes_cites.map((valeur) => `"${valeur}"`).join(", ");
+    groupes.push(
+      `{ ?work cdm:work_cites_work ?acte . ?acte cdm:resource_legal_id_celex ?celexActe . ` +
+        `FILTER(STR(?celexActe) IN (${celex})) BIND("acte_cite" AS ?origine) }`,
+      `{ ?work cdm:resource_legal_based_on_resource_legal ?acte . ?acte cdm:resource_legal_id_celex ?celexActe . ` +
+        `FILTER(STR(?celexActe) IN (${celex})) BIND("acte_cite" AS ?origine) }`,
+    );
+  }
   return groupes.join("\n  UNION\n  ");
 }
 
 /** Requête SPARQL des décisions de la matière. */
 export function requeteListe(descripteur: Selection): string {
   return `PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
-SELECT DISTINCT ?celex ?date WHERE {
+SELECT DISTINCT ?celex ?date ?origine WHERE {
   ?work cdm:resource_legal_id_celex ?celex .
   ?work cdm:work_date_document ?date .
   ${selection(descripteur)}
@@ -118,15 +139,30 @@ function bindings(reponse: unknown): Array<Record<string, Binding>> {
 
 /** Entrées d'une réponse SPARQL, dédupliquées par CELEX et triées. */
 export function lireListe(reponse: unknown): EntreeCjue[] {
-  const parCelex = new Map<string, EntreeCjue>();
+  const parCelex = new Map<string, { entree: EntreeCjue; origines: Set<OrigineCjue> }>();
   for (const ligne of bindings(reponse)) {
     const celex = ligne.celex?.value;
     const date = ligne.date?.value;
     if (typeof celex !== "string" || typeof date !== "string") continue;
-    if (parCelex.has(celex)) continue;
-    parCelex.set(celex, { celex, date, type: typeCelex(celex) });
+    let entree = parCelex.get(celex);
+    if (entree === undefined) {
+      entree = { entree: { celex, date, type: typeCelex(celex), origines: [] }, origines: new Set() };
+      parCelex.set(celex, entree);
+    }
+    const valeur = ligne.origine?.value;
+    const origine: OrigineCjue =
+      valeur === "matiere"
+        ? "matiere"
+        : valeur === "acte_cite"
+          ? "acte_cite"
+          : typeof valeur === "string" && valeur.startsWith("notion")
+            ? "notion"
+            : "liste";
+    entree.origines.add(origine);
   }
-  return [...parCelex.values()].sort((gauche, droite) => gauche.celex.localeCompare(droite.celex));
+  return [...parCelex.values()]
+    .map(({ entree, origines }) => ({ ...entree, origines: [...origines].sort() }))
+    .sort((gauche, droite) => gauche.celex.localeCompare(droite.celex));
 }
 
 /** Classe une entrée : type retenu, ou motif d'écart. */

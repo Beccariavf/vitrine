@@ -168,6 +168,43 @@ describe("le filtrage des décisions JADE", () => {
     );
   });
 
+  it("unit le filtre historique et le filtre élargi sans rien retirer", async () => {
+    const lues = await entrees();
+    const historique = decisionParId(lues, "CETATEXT000007422412");
+    const verdictHistorique = classerDecision(historique, DESCRIPTEUR);
+    assert.equal(verdictHistorique.retenue, true);
+    if (verdictHistorique.retenue) assert.equal(verdictHistorique.historique, true);
+
+    const base = decisionParId(lues, "CETATEXT000000000002");
+    const elargie = {
+      ...base,
+      paragraphes: [
+        "Aux termes de l'article L. 321-1 du code des relations entre le public et " +
+          "l'administration, la réutilisation des informations publiques est possible.",
+      ],
+    };
+    const verdictElargi = classerDecision(elargie, DESCRIPTEUR);
+    assert.equal(verdictElargi.retenue, true);
+    if (verdictElargi.retenue) {
+      assert.equal(verdictElargi.historique, false);
+      assert.deepEqual(
+        verdictElargi.criteres.map((critere) => critere.cle),
+        ["crpa-livre-iii", "reutilisation-informations-publiques"],
+      );
+    }
+
+    const generique = {
+      ...base,
+      paragraphes: [
+        "Le document a été versé au dossier et les données du litige sont contestées.",
+      ],
+    };
+    assert.deepEqual(classerDecision(generique, DESCRIPTEUR), {
+      retenue: false,
+      motif: "sans_mot_cle",
+    });
+  });
+
   it("reconnaît le Conseil d'État et écarte les autres juridictions", async () => {
     const lues = await entrees();
     const ce = decisionParId(lues, "CETATEXT000007422412");
@@ -274,6 +311,14 @@ describe("la synchronisation du corpus CE", () => {
       assert.equal(manifeste.couverture.fonds.inedit.fragments, 1);
       assert.equal(manifeste.couverture.fonds.inedit.doublons, 0);
       assert.equal(manifeste.licence, "Licence Ouverte 2.0 (Etalab)");
+      assert.deepEqual(manifeste.couverture.filtre.historique.mots_cles, DESCRIPTEUR.mots_cles);
+      assert.deepEqual(
+        manifeste.couverture.filtre.elargi.criteres.map((critere) => critere.cle),
+        (DESCRIPTEUR.criteres_elargis ?? []).map((critere) => critere.cle),
+        "le manifeste déclare le filtre élargi du descripteur",
+      );
+      assert.match(manifeste.couverture.filtre.union, /ou/);
+      assert.deepEqual(manifeste.couverture.filtre.ajouts_par_critere, {});
 
       const etat = JSON.parse(
         readFileSync(join(racine, "data", "corpus", "ce", "etat.json"), "utf8"),

@@ -26,7 +26,18 @@
     "violation de données",
     "conservation des données",
     "responsable du traitement",
-    "CNIL"
+    "CNIL",
+    "code des relations entre le public et l'administration",
+    "communication des documents administratifs",
+    "accès aux documents administratifs",
+    "secret des affaires",
+    "producteur de base de données",
+    "intelligence artificielle",
+    "directive 96/9",
+    "loi n° 68-678",
+    "code du patrimoine",
+    "L. 151-1 du code de commerce",
+    "L. 341-1 du code de la propriété intellectuelle"
   ],
   "mots_cles": [
     "rgpd",
@@ -47,6 +58,188 @@
     "eprivacy",
     "traitement de données",
     "données de connexion"
+  ],
+  "criteres_elargis": [
+    {
+      "cle": "crpa-livre-iii",
+      "libelle": "CRPA, livre III (L. 300-1 à L. 327-1)",
+      "articles": "\\bl 3(?:0\\d|1\\d|2[0-7]) \\d+",
+      "contexte": [
+        "\\bcode des relations\\b",
+        "\\b(?:communication|reutilisation|documents? administratifs?|publication en ligne|informations? publiques?|cada)\\b"
+      ]
+    },
+    {
+      "cle": "loi-51-711",
+      "libelle": "loi n° 51-711 (statistique publique)",
+      "articles": "\\bloi (?:n )?51 711\\b|\\bloi du 7 juin 1951\\b"
+    },
+    {
+      "cle": "loi-68-678",
+      "libelle": "loi n° 68-678 (communication de documents entre administrations)",
+      "articles": "\\bloi (?:n )?68 678\\b|\\bloi du 26 juillet 1968\\b"
+    },
+    {
+      "cle": "patrimoine-livre-ii",
+      "libelle": "Code du patrimoine, livre II (archives)",
+      "articles": "\\bl (?:21[1-7]|22[12]) \\d+|\\br 21[12] \\d+",
+      "contexte": "\\bcode du patrimoine\\b"
+    },
+    {
+      "cle": "commerce-secret-affaires",
+      "libelle": "Code de commerce, L. 151-1 et suivants (secret des affaires)",
+      "articles": "\\bl 15[1-4] \\d+",
+      "contexte": "\\bcode (?:de|du) commerce\\b"
+    },
+    {
+      "cle": "cpi-bases-donnees",
+      "libelle": "CPI, L. 341-1 et suivants (bases de données)",
+      "articles": "\\bl 34[1-3] \\d+",
+      "contexte": "\\bcode de la propriete intellectuelle\\b"
+    },
+    {
+      "cle": "cpi-fouille-textes",
+      "libelle": "CPI, L. 122-5-3 (fouille de textes et de données)",
+      "articles": "\\bl 122 5 3\\b",
+      "contexte": "\\bcode de la propriete intellectuelle\\b"
+    },
+    {
+      "cle": "csp-donnees-sante",
+      "libelle": "CSP, L. 1110-4, L. 1111-8, L. 1460-1, L. 1461-1 (données de santé)",
+      "articles": "\\bl (?:1110 4|1111 8|1460 1|1461 1|1462 1)\\b",
+      "contexte": "\\bcode de la sante publique\\b"
+    },
+    {
+      "cle": "penal-226-13",
+      "libelle": "Code pénal, article 226-13 (secret professionnel)",
+      "articles": "\\b226 13\\b",
+      "contexte": [
+        "\\bcode penal\\b",
+        "\\b(?:medecins?|medical|medicaux|patients?|soins?|etablissements? de sante|donnees de sante|secret medical)\\b"
+      ]
+    },
+    {
+      "cle": "data-act",
+      "libelle": "Data Act (règlement (UE) 2023/2854)",
+      "articles": "\\b2023 2854\\b"
+    },
+    {
+      "cle": "dga",
+      "libelle": "DGA (règlement (UE) 2022/868)",
+      "articles": "\\b2022 868\\b"
+    },
+    {
+      "cle": "open-data",
+      "libelle": "directive Open Data (UE) 2019/1024",
+      "articles": "\\b2019 1024\\b"
+    },
+    {
+      "cle": "libre-circulation",
+      "libelle": "libre circulation des données (UE) 2018/1807",
+      "articles": "\\b2018 1807\\b"
+    },
+    {
+      "cle": "ai-act",
+      "libelle": "AI Act (règlement (UE) 2024/1689)",
+      "articles": "\\b2024 1689\\b"
+    },
+    {
+      "cle": "ehds",
+      "libelle": "EHDS (règlement (UE) 2025/327)",
+      "articles": "\\b2025 327\\b"
+    },
+    {
+      "cle": "directive-bases-donnees",
+      "libelle": "directive 96/9/CE (bases de données)",
+      "articles": "\\bdirective 96 9\\b"
+    },
+    {
+      "cle": "directive-secret-affaires",
+      "libelle": "directive (UE) 2016/943 (secret des affaires)",
+      "articles": "\\b2016 943\\b"
+    },
+    {
+      "cle": "directive-droit-auteur",
+      "libelle": "directive (UE) 2019/790 (droit d'auteur)",
+      "articles": "\\b2019 790\\b"
+    },
+    {
+      "cle": "cra",
+      "libelle": "CRA (règlement (UE) 2024/2847)",
+      "articles": "\\b2024 2847\\b"
+    },
+    {
+      "cle": "dsa",
+      "libelle": "DSA (règlement (UE) 2022/2065)",
+      "articles": "\\b2022 2065\\b"
+    },
+    {
+      "cle": "responsabilite-produits",
+      "libelle": "responsabilité du fait des produits (UE) 2024/2853",
+      "articles": "\\b2024 2853\\b"
+    },
+    {
+      "cle": "reutilisation-informations-publiques",
+      "libelle": "réutilisation des informations publiques",
+      "expressions": ["réutilisation des informations publiques"]
+    },
+    {
+      "cle": "reutilisation-documents-administratifs",
+      "libelle": "réutilisation des documents administratifs",
+      "expressions": ["réutilisation des documents administratifs"]
+    },
+    {
+      "cle": "secret-des-affaires",
+      "libelle": "secret des affaires (deux mentions au moins)",
+      "expressions": ["secret des affaires"],
+      "occurrences_min": 2
+    },
+    {
+      "cle": "fouille-de-textes",
+      "libelle": "fouille de textes et de données",
+      "expressions": ["fouille de textes et de données"]
+    },
+    {
+      "cle": "hebergeur-donnees-sante",
+      "libelle": "hébergeur de données de santé",
+      "expressions": ["hébergeur de données de santé"]
+    },
+    {
+      "cle": "snds",
+      "libelle": "système national des données de santé",
+      "expressions": ["système national des données de santé"]
+    },
+    {
+      "cle": "intelligence-artificielle",
+      "libelle": "intelligence artificielle",
+      "expressions": ["intelligence artificielle"]
+    },
+    {
+      "cle": "ehds-expression",
+      "libelle": "espace européen des données de santé",
+      "expressions": ["espace européen des données de santé"]
+    },
+    {
+      "cle": "droit-sui-generis",
+      "libelle": "droit sui generis",
+      "expressions": ["droit sui generis"]
+    },
+    {
+      "cle": "communication-documents-administratifs",
+      "libelle": "communication des documents administratifs",
+      "expressions": ["communication des documents administratifs"]
+    },
+    {
+      "cle": "acces-documents-administratifs",
+      "libelle": "accès aux documents administratifs",
+      "expressions": ["accès aux documents administratifs"]
+    },
+    {
+      "cle": "base-donnees-producteur",
+      "libelle": "base de données et producteur",
+      "expressions": ["base de données", "producteur"],
+      "toutes": true
+    }
   ],
   "occurrences_min": 2,
   "licence": "Licence Ouverte 2.0 (Etalab), conditions générales d'utilisation Judilibre",
