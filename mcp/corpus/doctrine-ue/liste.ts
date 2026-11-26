@@ -272,7 +272,7 @@ export type LienListe = { url: string; titre: string };
  * answers » et « Questions-réponses » sont les formes longues de FAQ et Q&R.
  */
 export const TITRE_DOCUMENT: RegExp =
-  /guidelines?|lignes directrices|code of practice|template|faq|q\s*&\s*a|q\s*&\s*r|frequently asked questions|questions?\s+(?:and|&)\s+answers?|questions?-r[ée]ponses?|guidance/i;
+  /guidelines?|lignes directrices|code of practice|template|faq|q\s*&\s*a|q\s*&\s*r|frequently asked questions|questions?\s+(?:and|&)\s+answers?|questions?\s*[-\/]\s*r[ée]ponses?|guidance/i;
 
 /**
  * Chemin d'une page qui porte un document, par opposition à une page de
@@ -296,6 +296,20 @@ export function cheminDocument(url: string): boolean {
     chemin.startsWith("/en/policies/") ||
     chemin.startsWith("/en/consultations/")
   );
+}
+
+/**
+ * Chemin d'une page de politique générale. Elle peut porter seule un document
+ * (le corpus y prend `code-practice-ai-generated-content` et
+ * `data-act-legal-helpdesk`), mais c'est aussi le chemin des pages de
+ * présentation qui renvoient un document déjà connu.
+ */
+export function cheminPolitique(url: string): boolean {
+  try {
+    return new URL(url).pathname.startsWith("/en/policies/");
+  } catch {
+    return false;
+  }
 }
 
 /** Zone de contenu d'une page : `<main>`, sinon `<article>`, sinon le corps. */

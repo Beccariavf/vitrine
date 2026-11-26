@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { after, describe, it } from "node:test";
 import type { FetchHtml } from "../mcp/corpus/cnil-doctrine/liste.ts";
 import type { DescripteurDoctrineUe } from "../mcp/corpus/doctrine-ue/liste.ts";
-import { lireDescripteur } from "../mcp/corpus/doctrine-ue/liste.ts";
+import { lireDescripteur, TITRE_DOCUMENT } from "../mcp/corpus/doctrine-ue/liste.ts";
 import { corpusDeLEntree, documentsDeLEntree } from "../mcp/corpus/veille.ts";
 import type { Embedder } from "../mcp/embed/embedder.ts";
 import { normaliser } from "../mcp/embed/embedder.ts";
@@ -179,6 +179,13 @@ describe("veille de la doctrine de la Commission", () => {
     assert.equal(r.entries.length, 1);
     assert.equal(r.entries[0]?.url, URL_QUESTIONS);
     assert.equal(r.entries[0]?.motif, "nouveau");
+    assert.ok(
+      fixture("document-questions.html").includes(
+        "/en/library/commission-publishes-guidelines-prohibited-artificial-intelligence-ai-practices-defined-ai-act",
+      ),
+      "la Q&R renvoie une page de document connue : elle reste un document",
+    );
+    assert.ok(TITRE_DOCUMENT.test("Questions/Réponses — article 50"));
   });
 
   it("déclare en échec une page de référence bloquée, sans contournement", async () => {

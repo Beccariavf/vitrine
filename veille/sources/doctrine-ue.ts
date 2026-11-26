@@ -22,8 +22,9 @@
  * manifeste ; une publication modifiée porte l'intitulé d'un document connu mais
  * une autre URL. Un document dont la page ne publie qu'un fichier déjà connu
  * (`source` du descripteur, redirection newsroom ou rendu CELLAR) est un alias
- * de la même pièce : la veille l'ignore, de même qu'une page de présentation qui
- * renvoie une page de document connue sans publier de nouveau fichier. Aucun
+ * de la même pièce : la veille l'ignore, de même qu'une page de politique de
+ * présentation qui renvoie une page de document connue sans publier de nouveau
+ * fichier. Une Q&R ou une FAQ reste un document même sans fichier. Aucun
  * résumé : l'intitulé seul est repris.
  *
  * Refus sans contournement : une page de référence qui répond 403 ou sert un
@@ -45,6 +46,7 @@ import { chargerTexte } from "../../mcp/corpus/cnil-doctrine/liste.ts";
 import type { FetchHtml, OptionsHttp } from "../../mcp/corpus/cnil-doctrine/liste.ts";
 import type { DescripteurDoctrineUe } from "../../mcp/corpus/doctrine-ue/liste.ts";
 import {
+  cheminPolitique,
   extraireDocumentsListes,
   liensPage,
   liensTelechargement,
@@ -325,10 +327,11 @@ export async function passeDoctrineUe(
       alias += 1;
       continue;
     }
-    // Page de présentation : elle renvoie une page de document connue et ne
-    // publie aucun fichier nouveau. La page de redirection des lignes
-    // directrices art. 50 en est une.
+    // Page de présentation d'une politique : elle renvoie une page de document
+    // connue et ne publie aucun fichier nouveau. Une Q&R ou une FAQ, même sans
+    // fichier, reste un document : la règle est bornée aux pages de politique.
     const presentation =
+      cheminPolitique(document.url) &&
       liens.every((lien) => sourcesConnues.has(urlComparable(lien))) &&
       liensPage(html, document.url).some((lien) => pagesConnues.has(urlComparable(lien)));
     if (presentation) {
