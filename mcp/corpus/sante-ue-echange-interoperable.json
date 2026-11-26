@@ -1,0 +1,21 @@
+{
+  "document": "32026R2099",
+  "corpus": "sante_ue",
+  "nom": "Échange interopérable transfrontalier",
+  "titre": "Règlement d'exécution (UE) 2026/2099 de la Commission du 21 septembre 2026 relatif à un mécanisme interopérable et transfrontière d'identification et d'authentification des personnes physiques, des professionnels de la santé et des prestataires de soins de santé aux fins de l'échange transfrontière de données de santé électroniques à caractère personnel",
+  "langue": "fra",
+  "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32026R2099",
+  "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+  "date_acte": "2026-09-21",
+  "date_publication": "2026-09-22",
+  "date_debut": "2027-03-26",
+  "date_fin": null,
+  "statut": "en_vigueur",
+  "version": "32026R2099",
+  "date_consolidation": null,
+  "articles_attendus": 9,
+  "considerants_attendus": 9,
+  "annexes_attendues": 1,
+  "parseur": "sante_ue",
+  "note_application": "Application générale le 2027-03-26 (article 9) ; l'article 3, paragraphe 3, et l'article 5, paragraphe 2, s'appliquent à compter du 2029-03-26."
+}

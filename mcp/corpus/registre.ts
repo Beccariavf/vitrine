@@ -315,7 +315,7 @@ const DEFINITIONS = [
     commandeSync: "npm run corpus:build -- --document sante_ue",
     descriptionServeur:
       "l'espace européen des données de santé (corpus `sante_ue` : règlement (UE) 2025/327 et règlements " +
-      "d'exécution `32026R0771`, `32026R2083` et `32026R2098`)",
+      "d'exécution `32026R0771`, `32026R2083`, `32026R2098` et `32026R2099`)",
     descriptionProvenance:
       "espace européen des données de santé `sante_ue` (règlement (UE) 2025/327 et ses règlements d'exécution)",
     descriptionRecherche: "l'espace européen des données de santé (règlement (UE) 2025/327, EHDS)",
@@ -326,7 +326,7 @@ const DEFINITIONS = [
     sources: ["eurlex"],
     acteUe: true,
     rangActeVise: 9,
-    actesSuivis: ["32025R0327", "32026R0771", "32026R2083", "32026R2098"],
+    actesSuivis: ["32025R0327", "32026R0771", "32026R2083", "32026R2098", "32026R2099"],
     categoriesEurlex: ["acte_execution"],
   },
   {
