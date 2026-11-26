@@ -9,9 +9,14 @@ type Props = {
   class?: string;
   /** Colonnes de la grille à partir de 50rem de conteneur : 10 sur l'accueil, 8 sur `/connecteur`. */
   colonnesLarge?: 8 | 10;
+  /**
+   * Rangée de famille : toutes les colonnes sur une ligne, sans libellés ni légende.
+   * Les libellés et volumes sont portés à côté, en pilules ; le `aria-label` reste complet.
+   */
+  enRangee?: boolean;
 };
 
-const { sources, class: classe, colonnesLarge = 8 } = Astro.props;
+const { sources, class: classe, colonnesLarge = 8, enRangee = false } = Astro.props;
 const nombre = new Intl.NumberFormat("fr-FR");
 const grilleLarge = colonnesLarge === 10 ? "@[50rem]:grid-cols-10" : "@[50rem]:grid-cols-8";
 
@@ -38,9 +43,12 @@ const resume = `Façade du corpus, une colonne par collection, hauteur selon le 
         role="img"
         aria-label={resume}
         class:list={[
-          "grid grid-cols-4 gap-x-3 gap-y-6 @[24rem]:grid-cols-5 @[24rem]:gap-x-4",
-          grilleLarge,
+          "grid",
+          enRangee
+            ? "gap-x-1.5 sm:gap-x-2"
+            : ["grid-cols-4 gap-x-3 gap-y-6 @[24rem]:grid-cols-5 @[24rem]:gap-x-4", grilleLarge],
         ]}
+        style={enRangee ? `grid-template-columns: repeat(${colonnes.length}, minmax(0, 1fr))` : undefined}
       >
         {colonnes.map((colonne) => (
           <div data-colonne={colonne.corpus} data-famille={colonne.famille.id} class="flex min-w-0 flex-col">
@@ -58,18 +66,24 @@ const resume = `Façade du corpus, une colonne par collection, hauteur selon le 
               </div>
             </div>
             <div aria-hidden="true" class="h-1.5 bg-filet" />
+            {!enRangee && (<>
             <p class="mt-2 hyphens-auto text-[0.625rem] leading-tight break-words text-encre-douce sm:text-[0.6875rem]">
               {colonne.libelle}
             </p>
             <p class="mt-0.5 text-[0.625rem] text-encre-douce tabular-nums sm:text-[0.6875rem]">
               {nombre.format(colonne.unites)} passages
             </p>
+            </>)}
           </div>
         ))}
       </div>
-      <figcaption class="mt-6 border-t border-filet pt-3">
-        <Legende complement="hauteur = passages indexés (échelle log), pas le nombre de décisions" />
-      </figcaption>
+      {
+        !enRangee && (
+          <figcaption class="mt-6 border-t border-filet pt-3">
+            <Legende complement="hauteur = passages indexés (échelle log), pas le nombre de décisions" />
+          </figcaption>
+        )
+      }
     </figure>
   )
 }

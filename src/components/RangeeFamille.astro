@@ -1,0 +1,92 @@
+---
+import Facade from "./Facade.astro";
+import type { FamilleResume, SourceCorpus } from "../lib/corpus.ts";
+import { FAMILLES, type FamilleId } from "../lib/familles.ts";
+
+type Props = {
+  /** Collections, documents et passages d'une famille nommée (`resumeCorpus`). */
+  famille: FamilleResume;
+  /** Rang de la rangée : pairs, visuel à gauche ; impairs, visuel à droite. */
+  rang: number;
+};
+
+const { famille, rang } = Astro.props;
+const info = FAMILLES[famille.famille];
+const nombre = new Intl.NumberFormat("fr-FR");
+const dateFormat = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeZone: "UTC" });
+
+/** Une phrase par famille nommée : le titre est chiffré, le texte reste factuel. */
+const PHRASES: Readonly<Record<FamilleId, { titre: (documents: string) => string; texte: string }>> = {
+  textes: {
+    titre: (documents) => `${documents} textes, article par article.`,
+    texte:
+      "Le RGPD, l'AI Act, la loi Informatique et Libertés et leurs textes d'application, tenus à jour.",
+  },
+  autorites: {
+    titre: (documents) => `${documents} délibérations et avis des autorités françaises.`,
+    texte: "La CNIL, sa doctrine et les avis de la CADA, délibération par délibération.",
+  },
+  ue: {
+    titre: (documents) => `${documents} arrêts, avis et décisions de l'Union.`,
+    texte:
+      "Les textes en préparation et les affaires pendantes, les décisions d'adéquation, le CEPD, la CJUE et la doctrine de la Commission.",
+  },
+  juridictions: {
+    titre: (documents) => `${documents} décisions des juridictions françaises.`,
+    texte: "Le Conseil d'État, le Conseil constitutionnel et la Cour de cassation, décision par décision.",
+  },
+  autre: {
+    titre: (documents) => `${documents} documents hors familles.`,
+    texte: "",
+  },
+};
+
+const phrase = PHRASES[famille.famille];
+const visuelAGauche = rang % 2 === 0;
+
+/** La date de la collection, en clair, dans l'infobulle de sa pilule. */
+function aJour(source: SourceCorpus): string {
+  return source.arrete_le !== null
+    ? `à jour au ${dateFormat.format(new Date(source.arrete_le))}`
+    : "texte consolidé";
+}
+---
+
+<div data-famille={famille.famille} class="grid items-center gap-8 md:grid-cols-2 md:gap-12">
+  <div class:list={["min-w-0", visuelAGauche ? "md:order-1" : "md:order-2"]}>
+    <div class="rounded-carte bg-surface p-6 sm:p-10">
+      <Facade sources={famille.collections} enRangee />
+    </div>
+  </div>
+  <div class:list={["min-w-0", visuelAGauche ? "md:order-2" : "md:order-1"]}>
+    <p class="flex items-center gap-2 text-[0.8125rem] font-medium text-encre-douce">
+      <span
+        aria-hidden="true"
+        class:list={[
+          "inline-block h-1.5 w-1.5 shrink-0 rounded-[999px]",
+          info.classePastille,
+        ]}
+      />
+      {info.libelle}
+    </p>
+    <h3 class="mt-3 text-[clamp(1.75rem,3.2vw,2.5rem)] leading-[1.1] font-medium tracking-[-0.025em]">
+      {phrase.titre(nombre.format(famille.documents))}
+    </h3>
+    <p class="mt-4 max-w-[34rem] text-[1rem] leading-relaxed text-encre-douce">{phrase.texte}</p>
+    <ul class="mt-6 flex flex-wrap gap-2">
+      {
+        famille.collections.map((source) => (
+          <li
+            title={aJour(source)}
+            class="inline-flex max-w-full items-baseline gap-2 rounded-[999px] bg-surface px-3 py-1.5 text-[0.8125rem] leading-snug"
+          >
+            <span class="min-w-0 break-words">{source.libelle}</span>
+            <span class="shrink-0 text-encre-douce tabular-nums">
+              {nombre.format(source.documents)} doc.
+            </span>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</div>

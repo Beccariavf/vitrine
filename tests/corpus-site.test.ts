@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { after, describe, it } from "node:test";
-import { etagesFacade, sourcesCorpus } from "../src/lib/corpus.ts";
+import { etagesFacade, resumeCorpus, sourcesCorpus, type SourceCorpus } from "../src/lib/corpus.ts";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 
@@ -27,7 +27,7 @@ after(() => {
 });
 
 describe("sourcesCorpus", () => {
-  it("rend les vingt-trois collections committées dans l'ordre textes, autorités, juridictions", () => {
+  it("rend les vingt-quatre collections committées dans l'ordre textes, autorités, juridictions", () => {
     const sources = sourcesCorpus(ROOT);
     assert.deepEqual(
       sources.map((source) => source.libelle),
@@ -120,5 +120,69 @@ describe("unités et étages de la façade", () => {
     assert.equal(etagesFacade(10), 1);
     assert.equal(etagesFacade(1), 1);
     assert.equal(etagesFacade(0), 1);
+  });
+});
+
+describe("resumeCorpus", () => {
+  function collection(
+    corpus: string,
+    documents: number,
+    unites: number,
+    arrete_le: string | null = null,
+  ): SourceCorpus {
+    return { corpus, libelle: corpus, documents, unites, arrete_le };
+  }
+
+  it("compte collections, documents et passages, et date la dernière mise à jour", () => {
+    const resume = resumeCorpus([
+      collection("rgpd", 1, 272),
+      collection("aiact", 4, 377),
+      collection("cnil", 3, 1000, "2026-11-17"),
+      collection("cc", 4, 70, "2026-11-26"),
+      collection("cjue", 2, 300, "2026-11-14"),
+      collection("metadonnees", 1595, 1597, "2026-11-15"),
+    ]);
+    assert.equal(resume.collections, 6);
+    assert.equal(resume.documents, 1609);
+    assert.equal(resume.passages, 3616);
+    assert.equal(resume.derniereMiseAJour, "2026-11-26");
+    assert.deepEqual(resume.familles.map((famille) => famille.famille), [
+      "textes",
+      "autorites",
+      "ue",
+      "juridictions",
+    ]);
+    assert.deepEqual(
+      resume.familles.map((famille) => [famille.documents, famille.passages]),
+      [
+        [5, 649],
+        [3, 1000],
+        [2, 300],
+        [4, 70],
+      ],
+    );
+  });
+
+  it("omet une famille sans collection et laisse `autre` hors des familles", () => {
+    const autorites = resumeCorpus([collection("cnil", 3, 1000, "2026-11-17")]);
+    assert.deepEqual(autorites.familles.map((famille) => famille.famille), ["autorites"]);
+    assert.equal(autorites.derniereMiseAJour, "2026-11-17");
+
+    const metadonnees = resumeCorpus([collection("metadonnees", 1595, 1597, "2026-11-15")]);
+    assert.deepEqual(metadonnees.familles, []);
+    assert.equal(metadonnees.collections, 1);
+    assert.equal(metadonnees.documents, 1595);
+    assert.equal(metadonnees.passages, 1597);
+    assert.equal(metadonnees.derniereMiseAJour, "2026-11-15");
+  });
+
+  it("rend des totaux nuls et aucune date sans collection", () => {
+    assert.deepEqual(resumeCorpus([]), {
+      collections: 0,
+      documents: 0,
+      passages: 0,
+      derniereMiseAJour: null,
+      familles: [],
+    });
   });
 });
