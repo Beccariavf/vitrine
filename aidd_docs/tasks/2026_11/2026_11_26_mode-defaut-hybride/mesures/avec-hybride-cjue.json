@@ -1,0 +1,116 @@
+{
+  "date": "2026-11-26",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "cjue",
+  "recherche": "hybride",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "figés (jeu sans split)",
+  "questions": [
+    {
+      "question": "Un réseau social peut-il déduire des données sensibles de la simple consultation de sites tiers par ses utilisateurs ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "62021CJ0252"
+      ],
+      "refs": [
+        "62021CJ0252#point125",
+        "62021CJ0252#point84",
+        "62021CJ0252#point138",
+        "62021CJ0252#point64",
+        "62021CJ0252#point86"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7248351871967316,
+        0.7507574260234833,
+        0.7237600684165955,
+        0.736972838640213,
+        0.7182067930698395
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles vérifications faut-il faire avant d'envoyer des données à un prestataire situé aux États-Unis ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "62018CJ0311"
+      ],
+      "refs": [
+        "62018CJ0311#point167",
+        "62018CJ0311#point155",
+        "62018CJ0311#point46",
+        "62014CJ0362#point25",
+        "62018CJ0311#point198"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.6867090463638306,
+        0.6755358576774597,
+        0.6676645576953888,
+        0.6766509413719177,
+        0.6742039322853088
+      ],
+      "niveau": "aucun_resultat_fiable"
+    },
+    {
+      "question": "Les informations saisies pour commander en ligne un médicament sans ordonnance sont-elles des données de santé même si l'acheteur n'est pas nécessairement le patient ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "62023CJ0021"
+      ],
+      "refs": [
+        "62023CJ0021#point90",
+        "62023CJ0021#point84",
+        "62023CJ0021#point45",
+        "62023CJ0021#point74",
+        "62023CJ0021#point88"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8005535900592804,
+        0.7751313596963882,
+        0.7613641321659088,
+        0.7726841866970062,
+        0.7432030439376831
+      ],
+      "niveau": "confiant"
+    }
+  ],
+  "agregats": {
+    "semantiques": 3,
+    "top5_semantique_succes": 3,
+    "top1_semantique_succes": 3,
+    "mrr_semantique": 1,
+    "referencees": 3,
+    "top5_global_succes": 3,
+    "top5_rendu_succes": 2,
+    "top1_rendu_succes": 2,
+    "mrr_rendu": 0.6666666666666666,
+    "top5_global_rendu_succes": 2,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 1,
+    "incertain": 1,
+    "aucun_resultat_fiable": 1,
+    "pieges_confiants": 0
+  }
+}

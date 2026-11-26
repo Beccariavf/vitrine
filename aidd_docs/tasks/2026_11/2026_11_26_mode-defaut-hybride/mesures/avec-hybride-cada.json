@@ -1,0 +1,64 @@
+{
+  "date": "2026-11-26",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "cada",
+  "recherche": "hybride",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "figés (jeu sans split)",
+  "questions": [
+    {
+      "question": "Le bordereau détaillant les prix unitaires d'une offre de marché public est-il communicable à un tiers qui en fait la demande ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "20226235#f5"
+      ],
+      "refs": [
+        "20213868#f18",
+        "20213852#f4",
+        "20210360#f3",
+        "20214648#f11",
+        "20224210#f6"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7380362749099731,
+        0.7313099503517151,
+        0.7283280491828918,
+        0.7310411930084229,
+        0.7278942167758942
+      ],
+      "niveau": "incertain"
+    }
+  ],
+  "agregats": {
+    "semantiques": 1,
+    "top5_semantique_succes": 0,
+    "top1_semantique_succes": 0,
+    "mrr_semantique": 0,
+    "referencees": 1,
+    "top5_global_succes": 0,
+    "top5_rendu_succes": 0,
+    "top1_rendu_succes": 0,
+    "mrr_rendu": 0,
+    "top5_global_rendu_succes": 0,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 0,
+    "incertain": 1,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  }
+}

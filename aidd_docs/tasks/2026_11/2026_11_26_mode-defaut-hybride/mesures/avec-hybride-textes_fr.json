@@ -1,0 +1,142 @@
+{
+  "date": "2026-11-26",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "textes_fr",
+  "recherche": "hybride",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "figés (jeu sans split)",
+  "questions": [
+    {
+      "question": "Une administration qui fonde une décision individuelle sur un algorithme doit-elle en informer la personne concernée et celle-ci peut-elle obtenir les règles du traitement ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "LEGIARTI000033205535"
+      ],
+      "refs": [
+        "LEGIARTI000034195881",
+        "LEGIARTI000033205535",
+        "LEGIARTI000038567998",
+        "LEGIARTI000038568004",
+        "LEGIARTI000038568000"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.7553878724575043,
+        0.7378461956977844,
+        0.6835193336009979,
+        0.6729912459850311,
+        0.6883346736431122
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "L'administration et l'exploitation du système d'information qui contient des données de santé constituent-elles une activité d'hébergement soumise au régime HDS ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "LEGIARTI000053720790"
+      ],
+      "refs": [
+        "LEGIARTI000053720790",
+        "LEGIARTI000036656709",
+        "LEGIARTI000023676900",
+        "LEGIARTI000053720795",
+        "LEGIARTI000049577902"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7466171383857727,
+        0.7303504347801208,
+        0.7066000699996948,
+        0.723337322473526,
+        0.7128609716892242
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Le patient peut-il accéder directement aux informations de santé le concernant sans passer par un médecin ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "LEGIARTI000042685313"
+      ],
+      "refs": [
+        "LEGIARTI000042685313",
+        "LEGIARTI000043922030",
+        "LEGIARTI000031929020",
+        "LEGIARTI000043921754",
+        "LEGIARTI000044374372"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.6892275512218475,
+        0.68506720662117,
+        0.696599692106247,
+        0.6732223629951477,
+        0.6732790768146515
+      ],
+      "niveau": "aucun_resultat_fiable"
+    },
+    {
+      "question": "Un arrêt de travail prescrit ou renouvelé pour la première fois à l'occasion d'une téléconsultation peut-il dépasser trois jours ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "LEGIARTI000054336504"
+      ],
+      "refs": [
+        "LEGIARTI000054336504",
+        "LEGIARTI000006900861",
+        "LEGIARTI000032255250",
+        "LEGIARTI000038567972",
+        "LEGIARTI000045544790"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.6930949091911316,
+        0.6485896110534668,
+        0.6266111731529236,
+        0.6253100335597992,
+        0.6291652023792267
+      ],
+      "niveau": "incertain"
+    }
+  ],
+  "agregats": {
+    "semantiques": 4,
+    "top5_semantique_succes": 4,
+    "top1_semantique_succes": 3,
+    "mrr_semantique": 0.875,
+    "referencees": 4,
+    "top5_global_succes": 4,
+    "top5_rendu_succes": 3,
+    "top1_rendu_succes": 2,
+    "mrr_rendu": 0.625,
+    "top5_global_rendu_succes": 3,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 2,
+    "incertain": 1,
+    "aucun_resultat_fiable": 1,
+    "pieges_confiants": 0
+  }
+}

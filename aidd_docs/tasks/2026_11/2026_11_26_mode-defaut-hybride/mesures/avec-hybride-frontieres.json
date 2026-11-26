@@ -1,0 +1,142 @@
+{
+  "date": "2026-11-26",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "frontieres",
+  "recherche": "hybride",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "figés (jeu sans split)",
+  "questions": [
+    {
+      "question": "Quelles conditions un chercheur doit-il remplir pour être agréé et obtenir l'accès à des données non publiques détenues par une très grande plateforme ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32022R2065#art_40"
+      ],
+      "refs": [
+        "32022R2065#art_40",
+        "32022R2065#art_79",
+        "32022R2065#rct_97",
+        "32022R2065#art_67",
+        "32022R2065#art_33"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7341996729373932,
+        0.6559265553951263,
+        0.7343391478061676,
+        0.646438479423523,
+        0.6388824880123138
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles informations une plateforme doit-elle communiquer à l'utilisateur dont elle retire le contenu ou dégrade la publication ou suspend le compte ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32022R2065#art_17"
+      ],
+      "refs": [
+        "32022R2065#art_6",
+        "32024L2831#art_9",
+        "32024L2831#art_21",
+        "32022R2065#art_3",
+        "32022R2065#rct_53"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.6824418902397156,
+        0.6763411462306976,
+        0.6695253551006317,
+        0.6879799365997314,
+        0.6716100871562958
+      ],
+      "niveau": "aucun_resultat_fiable"
+    },
+    {
+      "question": "Le secret des affaires peut-il être opposé à une personne qui a divulgué une information pour exercer sa liberté d'expression ou révéler une illégalité ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016L0943#art_5"
+      ],
+      "refs": [
+        "32016L0943#art_5",
+        "32016L0943#rct_19",
+        "32016L0943#art_1",
+        "32016L0943#art_2",
+        "32016L0943#art_4"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7152626812458038,
+        0.7092238068580627,
+        0.7023035883903503,
+        0.6720348596572876,
+        0.681482583284378
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quel type d'investissement faut-il avoir consenti pour revendiquer la protection spécifique du contenu d'une base de données ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "31996L0009#art_7"
+      ],
+      "refs": [
+        "31996L0009#rct_40",
+        "31996L0009#rct_39",
+        "31996L0009#rct_42",
+        "31996L0009#rct_55",
+        "31996L0009#art_7"
+      ],
+      "rangs": [
+        5
+      ],
+      "similarites": [
+        0.7670976221561432,
+        0.7491949498653412,
+        0.7583938390016556,
+        0.7352847456932068,
+        0.7285689413547516
+      ],
+      "niveau": "confiant"
+    }
+  ],
+  "agregats": {
+    "semantiques": 4,
+    "top5_semantique_succes": 3,
+    "top1_semantique_succes": 2,
+    "mrr_semantique": 0.55,
+    "referencees": 4,
+    "top5_global_succes": 3,
+    "top5_rendu_succes": 3,
+    "top1_rendu_succes": 2,
+    "mrr_rendu": 0.55,
+    "top5_global_rendu_succes": 3,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 1,
+    "incertain": 2,
+    "aucun_resultat_fiable": 1,
+    "pieges_confiants": 0
+  }
+}

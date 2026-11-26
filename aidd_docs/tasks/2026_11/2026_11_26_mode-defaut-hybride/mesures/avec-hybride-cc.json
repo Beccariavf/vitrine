@@ -1,0 +1,90 @@
+{
+  "date": "2026-11-26",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "cc",
+  "recherche": "hybride",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "figés (jeu sans split)",
+  "questions": [
+    {
+      "question": "Un salarié peut-il être indemnisé sans prouver un préjudice distinct de la violation du RGPD ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "6a3cc051cdc6046d479d8eb0"
+      ],
+      "refs": [
+        "6a3cc051cdc6046d479d8eb0#f7",
+        "5fca81079902a770bb5f78dc#f10",
+        "5fca83080615a0733b63ad38#f19",
+        "5fca83080615a0733b63ad38#f20",
+        "6079bbd69ba5988459c5706b#f62"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7118956744670868,
+        0.6816349923610687,
+        0.6777892410755157,
+        0.6736322343349457,
+        0.6441042759477742
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Les images d'une caméra qui filme en continu un salarié à son poste permettent-elles de fonder son licenciement ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "60d41fb4f185911b57e04dc3"
+      ],
+      "refs": [
+        "682d68f316fd466a1ce900c4#f6",
+        "60d41fb4f185911b57e04dc3#f12",
+        "5fca262d4504b03b8a33c16e#f16",
+        "6014273832362a5f136d78c4#f11",
+        "6014273832362a5f136d78c4#f33"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.7330540418624878,
+        0.7075594365596771,
+        0.6863663792610168,
+        0.6801285445690155,
+        0.6827828586101532
+      ],
+      "niveau": "incertain"
+    }
+  ],
+  "agregats": {
+    "semantiques": 2,
+    "top5_semantique_succes": 2,
+    "top1_semantique_succes": 1,
+    "mrr_semantique": 0.75,
+    "referencees": 2,
+    "top5_global_succes": 2,
+    "top5_rendu_succes": 2,
+    "top1_rendu_succes": 1,
+    "mrr_rendu": 0.75,
+    "top5_global_rendu_succes": 2,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 0,
+    "incertain": 2,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  }
+}
