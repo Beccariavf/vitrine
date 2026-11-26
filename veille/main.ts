@@ -17,6 +17,7 @@ import { fetchEntries as fetchJudilibreEntries } from "./sources/judilibre.ts";
 import { ENDPOINT_SPARQL, passeEurlex } from "./sources/eurlex.ts";
 import { passeConstit } from "./sources/constit.ts";
 import { passeDoctrine } from "./sources/cnil-doctrine.ts";
+import { passeDoctrineUe } from "./sources/doctrine-ue.ts";
 import { passePreparation } from "./sources/preparation.ts";
 import { passeCada } from "./sources/cada.ts";
 import { SOURCES_CORPUS } from "../mcp/corpus/registre.ts";
@@ -246,6 +247,25 @@ export const SOURCES: AnySource[] = [
     id: "cnil_doctrine",
     fetchEntries: async (context) => {
       const resultat = await passeDoctrine({
+        rootDir: context.rootDir,
+        fetchHtml: (url, init) => context.fetchImpl(url, init as FetchInit),
+        ...(context.now === undefined ? {} : { maintenant: context.now }),
+      });
+      return {
+        raw: resultat.raw,
+        entries: resultat.entries,
+        warnings: resultat.warnings,
+        notes: resultat.notes,
+      };
+    },
+  },
+  {
+    kind: "api",
+    id: "doctrine_ue",
+    fetchEntries: async (context) => {
+      // La source compare les pages de référence au manifeste du corpus : aucun
+      // PDF n'est téléchargé, seule l'URL d'un document dit qu'il existe.
+      const resultat = await passeDoctrineUe({
         rootDir: context.rootDir,
         fetchHtml: (url, init) => context.fetchImpl(url, init as FetchInit),
         ...(context.now === undefined ? {} : { maintenant: context.now }),
