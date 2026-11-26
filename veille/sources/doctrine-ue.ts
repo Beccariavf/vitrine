@@ -11,17 +11,20 @@
  * qu'un document existe.
  *
  * Bornes anti-bruit : un lien n'est un document que si son intitulé porte un
- * motif (`guidelines`, `code of practice`, `template`, `faq`, `guidance`…) et si
- * son chemin est un chemin de document (`/en/library/`, `/en/faqs/`,
- * `/en/consultations/`). Une page de politique, d'actualité ou d'agenda intitulée
- * « Guidelines … » ne produit donc rien, même quand elle cite un document.
+ * motif (`guidelines`, `code of practice`, `template`, `faq`, `questions and
+ * answers`, `guidance`…) et si son chemin est un chemin de document
+ * (`/en/library/`, `/en/faqs/`, `/en/policies/`, `/en/consultations/`). Un
+ * document servi uniquement sous une page de politique — le code de marquage et
+ * l'helpdesk Data Act du corpus — reste donc suivi ; une page d'actualité ou
+ * d'agenda intitulée « Guidelines … » ne produit rien.
  *
  * Une publication nouvelle est un document absent du descripteur et du
  * manifeste ; une publication modifiée porte l'intitulé d'un document connu mais
  * une autre URL. Un document dont la page ne publie qu'un fichier déjà connu
  * (`source` du descripteur, redirection newsroom ou rendu CELLAR) est un alias
- * de la même pièce : la veille l'ignore. Aucun résumé : l'intitulé seul est
- * repris.
+ * de la même pièce : la veille l'ignore, de même qu'une page de présentation qui
+ * renvoie une page de document connue sans publier de nouveau fichier. Aucun
+ * résumé : l'intitulé seul est repris.
  *
  * Refus sans contournement : une page de référence qui répond 403 ou sert un
  * défi fait échouer la source ; `etat_corpus` ne date alors pas la lecture, et la
@@ -43,6 +46,7 @@ import type { FetchHtml, OptionsHttp } from "../../mcp/corpus/cnil-doctrine/list
 import type { DescripteurDoctrineUe } from "../../mcp/corpus/doctrine-ue/liste.ts";
 import {
   extraireDocumentsListes,
+  liensPage,
   liensTelechargement,
   lireDescripteur,
 } from "../../mcp/corpus/doctrine-ue/liste.ts";
@@ -293,6 +297,11 @@ export async function passeDoctrineUe(
   for (const document of descripteur.documents) sourcesConnues.add(urlComparable(document.source));
   for (const document of descripteur.non_recuperes) sourcesConnues.add(urlComparable(document.url));
 
+  // Pages officielles des documents du corpus : une page qui les renvoie sans
+  // publier de nouveau fichier les présente, elle n'apporte pas de document.
+  const pagesConnues = new Set<string>();
+  for (const document of descripteur.documents) pagesConnues.add(urlComparable(document.url));
+
   // Intitulés déjà couverts, dans leur forme traduite comme dans celle de la source.
   const titresConnus = new Set<string>();
   for (const document of descripteur.documents) {
@@ -313,6 +322,16 @@ export async function passeDoctrineUe(
     verifierPage(texteDepuisHtml(html), document.url);
     const liens = liensTelechargement(html, document.url);
     if (liens.some((lien) => sourcesConnues.has(urlComparable(lien)))) {
+      alias += 1;
+      continue;
+    }
+    // Page de présentation : elle renvoie une page de document connue et ne
+    // publie aucun fichier nouveau. La page de redirection des lignes
+    // directrices art. 50 en est une.
+    const presentation =
+      liens.every((lien) => sourcesConnues.has(urlComparable(lien))) &&
+      liensPage(html, document.url).some((lien) => pagesConnues.has(urlComparable(lien)));
+    if (presentation) {
       alias += 1;
       continue;
     }

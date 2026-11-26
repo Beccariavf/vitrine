@@ -300,6 +300,11 @@ export function documentsDeLEntree(
       return entry.document !== undefined && /^[56]\d{4}[A-Z]{2}\d/.test(entry.document)
         ? [entry.document]
         : [];
+    case "doctrine_ue":
+      // Un document nouveau n'a pas encore de clé au descripteur : son entrée
+      // porte le nom de sa page, seul identifiant dont elle dispose avant
+      // l'ajout manuel au descripteur.
+      return entry.document !== undefined && entry.document !== "" ? [entry.document] : [];
     case "cada":
       // Une entrée de ressource ne nomme aucun avis : elle porte la version du
       // fichier consolidé, et le corpus est resynchronisé en bloc.

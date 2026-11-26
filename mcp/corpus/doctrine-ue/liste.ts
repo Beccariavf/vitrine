@@ -268,16 +268,18 @@ export type LienListe = { url: string; titre: string };
  * Motifs d'intitulé d'un document de doctrine : lignes directrices, codes de
  * bonne pratique, modèles, questions-réponses et conseils. Une page de
  * politique peut porter « guidelines » dans son texte ; l'intitulé du lien,
- * lui, désigne le document.
+ * lui, désigne le document. « Frequently Asked Questions », « Questions and
+ * answers » et « Questions-réponses » sont les formes longues de FAQ et Q&R.
  */
 export const TITRE_DOCUMENT: RegExp =
-  /guidelines?|lignes directrices|code of practice|template|faq|q&a|guidance/i;
+  /guidelines?|lignes directrices|code of practice|template|faq|q\s*&\s*a|q\s*&\s*r|frequently asked questions|questions?\s+(?:and|&)\s+answers?|questions?-r[ée]ponses?|guidance/i;
 
 /**
  * Chemin d'une page qui porte un document, par opposition à une page de
- * politique : bibliothèque, questions-réponses et consultations. Les pages de
- * politique, d'actualité et d'agenda ne sont pas des documents — le descripteur
- * les écarte déjà pour ce motif.
+ * politique : bibliothèque, questions-réponses, consultations et, pour un
+ * document servi sous cette forme, page de politique (le corpus y prend déjà
+ * `code-practice-ai-generated-content` et `data-act-legal-helpdesk`). Les pages
+ * d'actualité et d'agenda ne sont pas des documents.
  */
 export function cheminDocument(url: string): boolean {
   if (!domaineAdmis(url)) return false;
@@ -291,6 +293,7 @@ export function cheminDocument(url: string): boolean {
     chemin.startsWith("/en/library/") ||
     chemin.startsWith("/en/faqs/") ||
     chemin.startsWith("/en/faq") ||
+    chemin.startsWith("/en/policies/") ||
     chemin.startsWith("/en/consultations/")
   );
 }
@@ -380,4 +383,12 @@ export function liensTelechargement(html: string, pageUrl: string): string[] {
     liens.add(ancre.url);
   }
   return [...liens].sort();
+}
+
+/**
+ * URLs absolues de toutes les ancres d'une page, triées : une page de
+ * présentation se reconnaît à ce qu'elle renvoie vers un document déjà déclaré.
+ */
+export function liensPage(html: string, pageUrl: string): string[] {
+  return [...new Set(ancres(html, pageUrl).map((ancre) => ancre.url))].sort();
 }

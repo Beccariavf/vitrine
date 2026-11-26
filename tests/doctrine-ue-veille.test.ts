@@ -1,6 +1,6 @@
 import { strict as assert } from "node:assert";
 import { createHash } from "node:crypto";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,6 +8,12 @@ import { after, describe, it } from "node:test";
 import type { FetchHtml } from "../mcp/corpus/cnil-doctrine/liste.ts";
 import type { DescripteurDoctrineUe } from "../mcp/corpus/doctrine-ue/liste.ts";
 import { lireDescripteur } from "../mcp/corpus/doctrine-ue/liste.ts";
+import { corpusDeLEntree, documentsDeLEntree } from "../mcp/corpus/veille.ts";
+import type { Embedder } from "../mcp/embed/embedder.ts";
+import { normaliser } from "../mcp/embed/embedder.ts";
+import type { Unite } from "../mcp/corpus/parse.ts";
+import { syncCorpus } from "../mcp/corpus/sync.ts";
+import { etatCorpus } from "../mcp/tools.ts";
 import { passeDoctrineUe, SOURCE_ID } from "../veille/sources/doctrine-ue.ts";
 
 const ICI = fileURLToPath(new URL(".", import.meta.url));
@@ -15,12 +21,16 @@ const FIXTURES = join(ICI, "fixtures", "doctrine-ue", "veille");
 const DESCRIPTEUR_REEL = join(ICI, "..", "mcp", "corpus", "doctrine-ue", "descripteur.json");
 
 const URL_REFERENCE = "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai";
-const URL_POLITIQUE = "https://digital-strategy.ec.europa.eu/en/policies/data-act";
+const URL_ACTU = "https://digital-strategy.ec.europa.eu/en/news/guidelines-announcement-sample";
 const URL_ETUDE = "https://digital-strategy.ec.europa.eu/en/library/study-on-the-impact-of-ai";
 const URL_CONNU =
   "https://digital-strategy.ec.europa.eu/en/library/commission-publishes-guidelines-prohibited-artificial-intelligence-ai-practices-defined-ai-act";
 const URL_NOUVEAU = "https://digital-strategy.ec.europa.eu/en/library/new-guidelines-sample";
 const PDF_NOUVEAU = "https://digital-strategy.ec.europa.eu/sites/default/files/new-sample.pdf";
+const URL_POLITIQUE = "https://digital-strategy.ec.europa.eu/en/policies/guidelines-new-policy-sample";
+const PDF_POLITIQUE = "https://digital-strategy.ec.europa.eu/sites/default/files/new-policy-sample.pdf";
+const URL_PRESENTATION = "https://digital-strategy.ec.europa.eu/en/policies/guidelines-transparency-sample";
+const URL_QUESTIONS = "https://digital-strategy.ec.europa.eu/en/faqs/questions-sample";
 const URL_ALIAS = "https://digital-strategy.ec.europa.eu/en/library/alias-guidelines-ai-system-definition";
 const SOURCE_CONNUE = "https://ec.europa.eu/newsroom/dae/redirection/document/118623";
 const URL_DEPLACE = "https://digital-strategy.ec.europa.eu/en/library/guidelines-prohibited-relocated";
@@ -129,16 +139,46 @@ describe("veille de la doctrine de la Commission", () => {
     assert.deepEqual(demandes, [URL_REFERENCE], "un document connu ne relit pas sa page");
   });
 
-  it("ignore une page de politique et un intitulé hors motif, sans les demander", async () => {
+  it("ignore une actualité et un intitulé hors motif, sans les demander", async () => {
     const { resultat, demandes } = passe(URL_REFERENCE, {
       [URL_REFERENCE]: { html: fixture("reference-bruit.html") },
     });
 
     const r = await resultat;
     assert.deepEqual(r.entries, []);
-    assert.ok(!demandes.includes(URL_POLITIQUE), "la page de politique n'est pas une page de document");
+    assert.ok(!demandes.includes(URL_ACTU), "une actualité n'est pas un document");
     assert.ok(!demandes.includes(URL_ETUDE), "un intitulé sans motif de document ne produit rien");
     assert.deepEqual(demandes, [URL_REFERENCE]);
+  });
+
+  it("détecte un document publié sous une page de politique", async () => {
+    const { resultat } = passe(URL_REFERENCE, {
+      [URL_REFERENCE]: { html: fixture("reference-politique.html") },
+      [URL_POLITIQUE]: { html: fixture("document-politique.html") },
+    });
+
+    const r = await resultat;
+    assert.equal(r.entries.length, 1);
+    const [entree] = r.entries;
+    assert.ok(entree !== undefined);
+    assert.equal(entree.motif, "nouveau");
+    assert.equal(entree.url, URL_POLITIQUE);
+    assert.equal(
+      entree.version,
+      createHash("sha256").update(PDF_POLITIQUE, "utf8").digest("hex").slice(0, 16),
+    );
+  });
+
+  it("détecte une question-réponse dont l'intitulé est en toutes lettres", async () => {
+    const { resultat } = passe(URL_REFERENCE, {
+      [URL_REFERENCE]: { html: fixture("reference-questions.html") },
+      [URL_QUESTIONS]: { html: fixture("document-questions.html") },
+    });
+
+    const r = await resultat;
+    assert.equal(r.entries.length, 1);
+    assert.equal(r.entries[0]?.url, URL_QUESTIONS);
+    assert.equal(r.entries[0]?.motif, "nouveau");
   });
 
   it("déclare en échec une page de référence bloquée, sans contournement", async () => {
@@ -171,6 +211,23 @@ describe("veille de la doctrine de la Commission", () => {
     );
   });
 
+  it("ignore une page de présentation qui renvoie un document connu sans nouveau fichier", async () => {
+    const { resultat } = passe(URL_REFERENCE, {
+      [URL_REFERENCE]: { html: fixture("reference-presentation.html") },
+      [URL_PRESENTATION]: { html: fixture("document-presentation.html") },
+    });
+
+    const r = await resultat;
+    assert.deepEqual(r.entries, []);
+    assert.match(r.notes.join(" "), /1 alias ignoré\(s\)/);
+    assert.ok(
+      fixture("document-presentation.html").includes(
+        "/en/library/commission-publishes-guidelines-prohibited-artificial-intelligence-ai-practices-defined-ai-act",
+      ),
+      "la page de présentation renvoie la page d'un document du descripteur",
+    );
+  });
+
   it("signale comme modifié un intitulé connu servi sous une autre URL", async () => {
     const { resultat } = passe(URL_REFERENCE, {
       [URL_REFERENCE]: { html: fixture("reference-modifie.html") },
@@ -195,3 +252,118 @@ describe("veille de la doctrine de la Commission", () => {
     await assert.rejects(resultat, /Aucun document de doctrine listé/);
   });
 });
+
+describe("raccord d'une entrée doctrine_ue au corpus", () => {
+  it("nomme le document par sa page et le corpus par sa source", () => {
+    const entree = {
+      id: "0123456789abcdef",
+      source: SOURCE_ID,
+      url: URL_NOUVEAU,
+      document: "new-guidelines-sample",
+    };
+    assert.deepEqual(documentsDeLEntree(entree, new Map()), ["new-guidelines-sample"]);
+    assert.equal(corpusDeLEntree(entree), "doctrine_ue");
+  });
+
+  it("ne mappe pas une entrée sans document", () => {
+    const entree = { id: "0123456789abcdef", source: SOURCE_ID, url: URL_NOUVEAU };
+    assert.deepEqual(documentsDeLEntree(entree, new Map()), []);
+  });
+
+  it("rend le nouveau document comme manquant dans le rapport et etat_corpus", async () => {
+    const racine = racineTemporaire();
+    const dossier = join(racine, "data", "corpus", "doctrine_ue");
+    mkdirSync(dossier, { recursive: true });
+    const unite: Unite = {
+      ref: "lignes-directrices-art-3#f0",
+      document: "lignes-directrices-art-3",
+      corpus: "doctrine_ue",
+      niveau: "fragment",
+      numero: "lignes-directrices-art-3",
+      chemin: "Doctrine de la Commission > Lignes directrices > Guide",
+      texte: "Un extrait copié mot pour mot du document.",
+      date_acte: "2025-07-29",
+      date_debut: "2025-07-29",
+      date_fin: null,
+      statut: "final",
+      url: "https://digital-strategy.ec.europa.eu/en/library/guide",
+    };
+    writeFileSync(join(dossier, "unites.jsonl"), `${JSON.stringify(unite)}\n`, "utf8");
+    writeFileSync(
+      join(dossier, "manifest.json"),
+      `${JSON.stringify(
+        { corpus: "doctrine_ue", documents: 1, fragments: 1, arrete_le: "2026-11-20" },
+        null,
+        2,
+      )}\n`,
+      "utf8",
+    );
+    const date = "2026-11-10T12:00:00.000Z";
+    mkdirSync(join(racine, "data", "entries", "2026", "11"), { recursive: true });
+    writeFileSync(
+      join(racine, "data", "entries", "2026", "11", "0123456789abcdef.json"),
+      `${JSON.stringify(
+        {
+          id: "0123456789abcdef",
+          title: "Guidelines on sample obligations",
+          officialTitle: "Guidelines on sample obligations",
+          url: URL_NOUVEAU,
+          publishedAt: date,
+          summary: null,
+          references: [],
+          themes: ["ia"],
+          source: SOURCE_ID,
+          document: "new-guidelines-sample",
+          version: URL_NOUVEAU,
+          motif: "nouveau",
+        },
+        null,
+        2,
+      )}\n`,
+      "utf8",
+    );
+
+    const rapport = await syncCorpus({
+      rootDir: racine,
+      date: "2026-11-11",
+      depuis: "2026-11-10",
+      agents: {},
+      embedder: embedderFactice(),
+    });
+
+    assert.equal(rapport.comptes.manquants, 1);
+    const document = rapport.documents.find(
+      (element) => element.document === "new-guidelines-sample",
+    );
+    assert.equal(document?.statut, "manquant");
+    assert.equal(document?.corpus, "doctrine_ue");
+    assert.ok(
+      etatCorpus(racine).manquants.some(
+        (element) => element.document === "new-guidelines-sample",
+      ),
+      "le nouveau document est visible dans etat_corpus",
+    );
+  });
+});
+
+/** Embedder déterministe : sac de mots hachés, sans modèle ni réseau. */
+function embedderFactice(dim = 8): Embedder {
+  const vecteur = (texte: string): number[] => {
+    const valeurs = new Array<number>(dim).fill(0);
+    for (const mot of texte.toLowerCase().split(/\s+/)) {
+      if (mot === "") continue;
+      let empreinte = 7;
+      for (const caractere of mot) {
+        empreinte = (empreinte * 31 + (caractere.codePointAt(0) ?? 0)) % 1_000_003;
+      }
+      valeurs[empreinte % dim] = (valeurs[empreinte % dim] ?? 0) + 1;
+    }
+    return normaliser(valeurs);
+  };
+  return {
+    model: "factice",
+    dim,
+    embedPassages: async (textes) => textes.map(vecteur),
+    embedQuery: async (texte) => vecteur(texte),
+  };
+}
