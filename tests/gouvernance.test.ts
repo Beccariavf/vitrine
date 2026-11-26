@@ -26,7 +26,9 @@ const ATTENDU = {
     "sante_ue", "lil", "textes_fr", "preparation", "cnil", "cada", "cnil_doctrine",
     "ce", "constit", "cepd", "cc", "cjue", "metadonnees",
   ],
-  non_personnelles: ["donnees", "frontieres", "textes_fr", "preparation", "cada", "doctrine_ue"],
+  non_personnelles: [
+    "donnees", "frontieres", "textes_fr", "preparation", "cada", "ce", "cc", "cjue", "doctrine_ue",
+  ],
   ia: [
     "aiact", "frontieres", "preparation", "cnil", "cnil_doctrine", "ce", "constit", "cepd", "cjue",
     "doctrine_ue",
