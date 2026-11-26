@@ -12,7 +12,7 @@ import { documentsNommes, getArticle, search } from "../mcp/tools.ts";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 
-const CELEX = ["32025R0327", "32026R0771", "32026R2083", "32026R2098"];
+const CELEX = ["32025R0327", "32026R0771", "32026R2083", "32026R2098", "32026R2099"];
 
 type DocumentManifeste = {
   document: string;
@@ -47,7 +47,7 @@ function capture(snapshot: string): string {
 }
 
 describe("corpus sante_ue", () => {
-  it("déclare les quatre actes retenus, lus sur CELLAR", () => {
+  it("déclare les cinq actes retenus, lus sur CELLAR", () => {
     const descripteurs = lireDescripteurs().filter(
       (descripteur) => descripteur.corpus === "sante_ue",
     );
@@ -67,12 +67,12 @@ describe("corpus sante_ue", () => {
 
   it("écrit les comptes de chaque acte, article par article", () => {
     const relu = manifeste();
-    assert.equal(relu.unites, 306);
+    assert.equal(relu.unites, 325);
     assert.deepEqual(relu.couverture.comptes, {
-      documents: 4,
-      articles: 139,
-      considerants: 162,
-      annexes: 5,
+      documents: 5,
+      articles: 148,
+      considerants: 171,
+      annexes: 6,
     });
     const parActe = new Map(relu.documents.map((document) => [document.document, document]));
     assert.deepEqual(parActe.get("32025R0327")?.couverture.comptes, {
@@ -93,6 +93,11 @@ describe("corpus sante_ue", () => {
       considerants: 7,
       annexes: 1,
     });
+    assert.deepEqual(parActe.get("32026R2099")?.couverture.comptes, {
+      articles: 9,
+      considerants: 9,
+      annexes: 1,
+    });
   });
 
   it("date l'application générale et déclare l'échelonnement au manifeste", () => {
@@ -101,12 +106,14 @@ describe("corpus sante_ue", () => {
     assert.equal(parActe.get("32026R0771")?.date_debut, "2026-04-28");
     assert.equal(parActe.get("32026R2083")?.date_debut, "2027-03-26");
     assert.equal(parActe.get("32026R2098")?.date_debut, "2029-03-26");
+    assert.equal(parActe.get("32026R2099")?.date_debut, "2027-03-26");
     const note = parActe.get("32025R0327")?.note_application ?? "";
     assert.match(note, /2029-03-26/);
     assert.match(note, /2031-03-26/);
     assert.match(note, /2035-03-26/);
+    assert.match(parActe.get("32026R2099")?.note_application ?? "", /2029-03-26/);
     for (const document of manifeste().documents) {
-      if (document.document !== "32025R0327") {
+      if (document.document !== "32025R0327" && document.document !== "32026R2099") {
         assert.equal(document.note_application, undefined);
       }
     }
@@ -146,6 +153,7 @@ describe("corpus sante_ue", () => {
       ["l'article 3 du règlement d'exécution (UE) 2026/771", "32026R0771"],
       ["l'article 5 du règlement d'exécution (UE) 2026/2083", "32026R2083"],
       ["l'article 1er du règlement d'exécution (UE) 2026/2098", "32026R2098"],
+      ["l'article 7 du règlement d'exécution (UE) 2026/2099", "32026R2099"],
     ];
     for (const [texte, document] of cas) {
       const citations = extraireCitations(texte);
@@ -172,6 +180,7 @@ describe("corpus sante_ue", () => {
       ["règlement d'exécution (UE) 2026/771", "32026R0771"],
       ["règlement d'exécution (UE) 2026/2083", "32026R2083"],
       ["règlement d'exécution (UE) 2026/2098", "32026R2098"],
+      ["règlement d'exécution (UE) 2026/2099", "32026R2099"],
     ];
     for (const [nom, celex] of noms) {
       assert.deepEqual(documentsNommes(nom), [celex], nom);

@@ -632,6 +632,11 @@ const ALIAS_ACTES_UE: ReadonlyArray<{ document: string; texte: readonly RegExp[]
     compact: [/32026r2098/],
   },
   {
+    document: "32026R2099",
+    texte: [/\breglement d execution (?:ue )?(?:n )?2026 2099\b/],
+    compact: [/32026r2099/],
+  },
+  {
     document: "32024R2847",
     texte: [
       /\bcra\b/,
@@ -811,6 +816,7 @@ const NOMS_DOCUMENTS: Record<string, string> = {
   "32026R0771": "règlement d'exécution 2026/771 (comité de l'EEDS)",
   "32026R2083": "règlement d'exécution 2026/2083 (MaSanté@UE)",
   "32026R2098": "règlement d'exécution 2026/2098 (métadonnées EHDS)",
+  "32026R2099": "règlement d'exécution 2026/2099 (identification transfrontière)",
   "32024R2847": "CRA",
   "32023R1230": "règlement machines",
   "32019R1020": "règlement surveillance du marché",

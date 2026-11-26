@@ -232,7 +232,7 @@ describe("les descripteurs", () => {
         "frontieres", "frontieres", "frontieres", "frontieres", "frontieres", "frontieres",
         "frontieres", "frontieres", "frontieres", "frontieres",
         "police", "rgpd", "rgpdproc",
-        "sante_ue", "sante_ue", "sante_ue", "sante_ue",
+        "sante_ue", "sante_ue", "sante_ue", "sante_ue", "sante_ue",
       ],
     );
     assert.deepEqual(
