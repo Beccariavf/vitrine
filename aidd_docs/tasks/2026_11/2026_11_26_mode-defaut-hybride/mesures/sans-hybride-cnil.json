@@ -1,0 +1,117 @@
+{
+  "date": "2026-11-26",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "cnil",
+  "sans_filtre": true,
+  "recherche": "hybride",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "figés (jeu sans split)",
+  "questions": [
+    {
+      "question": "Quelles clauses un contrat avec un prestataire informatique doit-il comporter pour encadrer les données qui lui sont confiées ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000045614368"
+      ],
+      "refs": [
+        "ddd-gui-20120501-egalite-chances-0#f247",
+        "referentiel-officines-de-pharmacie#f21",
+        "cnil-guide-securite-personnelle#f104",
+        "CNILTEXT000029224324#f14",
+        "guidelines-072020-on-the-concepts-of-controller-and-processor-in-the-gdpr#f182"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7472626268863678,
+        0.7532779574394226,
+        0.7437140047550201,
+        0.7540182322263718,
+        0.7454148530960083
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles obligations s'appliquent à un site de santé qui collecte des données personnelles au moyen de quiz en ligne ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000047552103"
+      ],
+      "refs": [
+        "CNILTEXT000047552103#f30",
+        "CNILTEXT000047552103#f24",
+        "referentiel-acces-precoce#f54",
+        "32022R2065#rct_65",
+        "CNILTEXT000017653397#f2"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7265860736370087,
+        0.7146673500537872,
+        0.6822310090065002,
+        0.600550097060548,
+        0.7219438850879669
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Une politique d'habilitation qui permet à chaque soignant de consulter tous les dossiers patients de l'établissement est-elle conforme aux exigences de sécurité ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000054790100"
+      ],
+      "refs": [
+        "CNILTEXT000044286815#f43",
+        "CNILTEXT000054790100#f35",
+        "CNILTEXT000017651923#f11",
+        "CNILTEXT000054790100#f41",
+        "CNILTEXT000017651924#f10"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.7121652960777283,
+        0.7098262012004852,
+        0.7061898708343506,
+        0.7105098068714142,
+        0.6978685557842255
+      ],
+      "niveau": "incertain"
+    }
+  ],
+  "agregats": {
+    "semantiques": 3,
+    "top5_semantique_succes": 2,
+    "top1_semantique_succes": 1,
+    "mrr_semantique": 0.5,
+    "referencees": 3,
+    "top5_global_succes": 2,
+    "top5_rendu_succes": 2,
+    "top1_rendu_succes": 1,
+    "mrr_rendu": 0.5,
+    "top5_global_rendu_succes": 2,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 0,
+    "incertain": 3,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  }
+}

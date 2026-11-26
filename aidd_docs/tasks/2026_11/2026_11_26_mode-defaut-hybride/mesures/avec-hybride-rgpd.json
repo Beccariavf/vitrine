@@ -1,0 +1,376 @@
+{
+  "date": "2026-11-26",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "rgpd",
+  "recherche": "hybride",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "figés (jeu sans split)",
+  "questions": [
+    {
+      "question": "Quelles conditions permettent d'obtenir réparation après une fuite massive de données imputable à l'administration fiscale ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_82"
+      ],
+      "refs": [
+        "32016R0679#art_82",
+        "32016R0679#art_16",
+        "32016R0679#art_34",
+        "32016R0679#art_15",
+        "32016R0679#rct_146"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.6422675848007202,
+        0.6459706127643585,
+        0.6324783861637115,
+        0.628794252872467,
+        0.6275733709335327
+      ],
+      "niveau": "aucun_resultat_fiable"
+    },
+    {
+      "question": "Quelles garanties s'appliquent lorsqu'un algorithme décide seul d'accorder ou de refuser un crédit ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_22"
+      ],
+      "refs": [
+        "32016R0679#rct_71",
+        "32016R0679#art_89",
+        "32016R0679#art_46",
+        "32016R0679#art_13",
+        "32016R0679#art_28"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.684474766254425,
+        0.6475725173950195,
+        0.6518456637859344,
+        0.6536342799663544,
+        0.6594610512256622
+      ],
+      "niveau": "aucun_resultat_fiable"
+    },
+    {
+      "question": "Quelles conditions autorisent le traitement de données de santé par un service numérique ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_9"
+      ],
+      "refs": [
+        "32016R0679#art_9",
+        "32016R0679#rct_53",
+        "32016R0679#art_4",
+        "32016R0679#rct_45",
+        "32016R0679#art_87"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.6971587836742401,
+        0.678991824388504,
+        0.6763342320919037,
+        0.6627854108810425,
+        0.6832995116710663
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "L'intérêt commercial suffit-il à justifier un traitement de données sans consentement ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_6"
+      ],
+      "refs": [
+        "32016R0679#art_7",
+        "32016R0679#art_9",
+        "32016R0679#rct_47",
+        "32016R0679#art_6",
+        "32016R0679#rct_43"
+      ],
+      "rangs": [
+        4
+      ],
+      "similarites": [
+        0.6685164570808411,
+        0.6717724502086639,
+        0.6795499324798584,
+        0.6946635246276855,
+        0.6613390743732452
+      ],
+      "niveau": "aucun_resultat_fiable"
+    },
+    {
+      "question": "Une entreprise doit-elle mener une étude d'impact avant de déployer un outil de surveillance de ses salariés ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_35"
+      ],
+      "refs": [
+        "32016R0679#art_35",
+        "32016R0679#rct_90",
+        "32016R0679#rct_95",
+        "32016R0679#rct_84",
+        "32016R0679#art_36"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.6922290623188019,
+        0.6630563735961914,
+        0.7064699232578278,
+        0.6424391567707062,
+        0.6525014340877533
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles organisations sont tenues de nommer un délégué à la protection des données ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_37"
+      ],
+      "refs": [
+        "32016R0679#art_37",
+        "32016R0679#art_38",
+        "32016R0679#art_39",
+        "32016R0679#art_50",
+        "32016R0679#art_30"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7500180304050446,
+        0.717469722032547,
+        0.7124752104282379,
+        0.6492168307304382,
+        0.6460103392601013
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Dans quel délai et avec quel contenu faut-il alerter la CNIL après la découverte d'une violation de données ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_33"
+      ],
+      "refs": [
+        "32016R0679#art_33",
+        "32016R0679#art_34",
+        "32016R0679#rct_85",
+        "32016R0679#rct_86",
+        "32016R0679#rct_87"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7188296616077423,
+        0.6972792148590088,
+        0.6820552349090576,
+        0.682000070810318,
+        0.7121337652206421
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Comment faire supprimer ses coordonnées d'un annuaire public accessible en ligne ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_17"
+      ],
+      "refs": [
+        "32016R0679#rct_64",
+        "32016R0679#art_13",
+        "32016R0679#art_14",
+        "32016R0679#rct_65",
+        "32016R0679#art_30"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.6823232471942902,
+        0.6465287506580353,
+        0.639858216047287,
+        0.6354025602340698,
+        0.626119077205658
+      ],
+      "niveau": "aucun_resultat_fiable"
+    },
+    {
+      "question": "Le droit d'accès aux données personnelles peut-il servir à obtenir des courriels avant un litige avec son employeur ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_15"
+      ],
+      "refs": [
+        "32016R0679#art_15",
+        "32016R0679#art_16",
+        "32016R0679#rct_164",
+        "32016R0679#rct_59",
+        "32016R0679#art_18"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.6638325750827789,
+        0.6350779831409454,
+        0.6406910419464111,
+        0.6481912732124329,
+        0.6285257041454315
+      ],
+      "niveau": "aucun_resultat_fiable"
+    },
+    {
+      "question": "Une société établie hors d'Europe qui vise des utilisateurs français relève-t-elle du règlement européen sur les données ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_3"
+      ],
+      "refs": [
+        "32016R0679#rct_172",
+        "32016R0679#rct_3",
+        "32016R0679#art_2",
+        "32016R0679#rct_21",
+        "32016R0679#art_4"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.6793908774852753,
+        0.6583975255489349,
+        0.6725988984107971,
+        0.6546783745288849,
+        0.6833068430423737
+      ],
+      "niveau": "aucun_resultat_fiable"
+    },
+    {
+      "question": "Quel délai s'applique pour informer une personne dont les données ont été obtenues auprès d'un tiers ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_14"
+      ],
+      "refs": [
+        "32016R0679#art_13",
+        "32016R0679#art_14",
+        "32016R0679#rct_61",
+        "32016R0679#art_15",
+        "32016R0679#art_20"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.7221171259880066,
+        0.7241109311580658,
+        0.6913661360740662,
+        0.7170634865760803,
+        0.6649388372898102
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles explications une personne peut-elle exiger lorsqu'une décision la concernant a été prise au moyen d'un algorithme sans que le secret des affaires y fasse obstacle par principe ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_15"
+      ],
+      "refs": [
+        "32016R0679#art_15",
+        "32016R0679#art_20",
+        "32016R0679#art_14",
+        "32016R0679#art_12",
+        "32016R0679#rct_71"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.6880566775798798,
+        0.667870044708252,
+        0.6766102313995361,
+        0.6950171291828156,
+        0.6855852901935577
+      ],
+      "niveau": "aucun_resultat_fiable"
+    },
+    {
+      "question": "Peut-on entraîner un modèle d'IA avec les données de ses clients sur le fondement de l'intérêt légitime et sous quelles conditions ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_6"
+      ],
+      "refs": [
+        "32016R0679#rct_47",
+        "32016R0679#rct_40",
+        "32016R0679#art_6",
+        "32016R0679#rct_48",
+        "32016R0679#art_49"
+      ],
+      "rangs": [
+        3
+      ],
+      "similarites": [
+        0.7033446431159973,
+        0.70171919465065,
+        0.6777782440185547,
+        0.6694335639476776,
+        0.6473033428192139
+      ],
+      "niveau": "incertain"
+    }
+  ],
+  "agregats": {
+    "semantiques": 13,
+    "top5_semantique_succes": 10,
+    "top1_semantique_succes": 7,
+    "mrr_semantique": 0.6217948717948718,
+    "referencees": 13,
+    "top5_global_succes": 10,
+    "top5_rendu_succes": 6,
+    "top1_rendu_succes": 4,
+    "mrr_rendu": 0.37179487179487175,
+    "top5_global_rendu_succes": 6,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 1,
+    "incertain": 5,
+    "aucun_resultat_fiable": 7,
+    "pieges_confiants": 0
+  }
+}

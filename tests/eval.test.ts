@@ -491,7 +491,16 @@ describe("la règle du produit", () => {
       seuilsOrigine: "figés (jeu sans split)",
       sansFiltre: true,
     });
+    const parDefaut = objetMesureJson({
+      ...commun,
+      seuils: { bas: 0.69, haut: 0.74, marge: 0.01 },
+      seuilsOrigine: "figés (jeu sans split)",
+      sansFiltre: true,
+      detection: true,
+    });
 
+    assert.equal(sansFiltre.detection, undefined);
+    assert.equal(parDefaut.detection, true);
     assert.equal(calibree.seuils_origine, "calibrés sur dev");
     assert.equal(produit.seuils_origine, "table (cnil)");
     assert.equal(calibree.sans_filtre, undefined);

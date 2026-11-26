@@ -1,0 +1,92 @@
+{
+  "date": "2026-11-26",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "sante_ue",
+  "sans_filtre": true,
+  "detection": true,
+  "recherche": "dense",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "figés (jeu sans split)",
+  "questions": [
+    {
+      "question": "Le refus d'accéder à ses données de santé électroniques ouvert par certains États membres peut-il être retiré après avoir été exercé ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32025R0327#art_10"
+      ],
+      "refs": [
+        "32025R0327#art_71",
+        "32025R0327#art_10",
+        "62021CJ0667#point70",
+        "CETATEXT000052952165#f7",
+        "LEGIARTI000038568074"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.7252053916454315,
+        0.716244101524353,
+        0.7325794398784637,
+        0.7311716675758362,
+        0.7103789150714874
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Dans quel délai maximal le détenteur de données de santé doit-il remettre à l'organisme national d'accès les données réclamées ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32025R0327#art_60"
+      ],
+      "refs": [
+        "mr-001-referentiel#f58",
+        "mr-003-referentiel#f55",
+        "CNILTEXT000037202354#f26",
+        "guidelines-012022-on-data-subject-rights-right-of-access#f114",
+        "CNILTEXT000034899556#f6"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7481135129928589,
+        0.7399390339851379,
+        0.7353703677654266,
+        0.7348747551441193,
+        0.7318936884403229
+      ],
+      "niveau": "incertain"
+    }
+  ],
+  "agregats": {
+    "semantiques": 2,
+    "top5_semantique_succes": 1,
+    "top1_semantique_succes": 0,
+    "mrr_semantique": 0.25,
+    "referencees": 2,
+    "top5_global_succes": 1,
+    "top5_rendu_succes": 1,
+    "top1_rendu_succes": 0,
+    "mrr_rendu": 0.25,
+    "top5_global_rendu_succes": 1,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 0,
+    "incertain": 2,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  }
+}

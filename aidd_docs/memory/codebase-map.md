@@ -47,7 +47,7 @@ flowchart TD
 - `mcp/corpus/cepd/sync.ts` : `npm run cepd:sync` (sitemap CEPD, pages `_fr` et PDF), `--limite`, `--depuis`, `--dry-run`.
 - `mcp/corpus/cc/sync.ts` : `npm run cc:sync` (Judilibre, toutes dates, budget `--max-appels`, reprise au cache), `--dry-run`.
 - `mcp/corpus/cjue/sync.ts` : `npm run cjue:sync` (SPARQL CELLAR, XHTML puis HTML patrimonial, français puis anglais), `--limite`, `--dry-run`.
-- `mcp/eval/run.ts` : `npm run mcp:eval -- --questions <csv> [--split dev|test|all] [--mesurer-test] [--recherche dense|hybride] [--json] [--seuils bas,haut,marge] [--root <racine>] [--modele <nom>] [--dim <n>]`, les métriques datées, hors CI.
+- `mcp/eval/run.ts` : `npm run mcp:eval -- --questions <csv> [--split dev|test|all] [--mesurer-test] [--recherche dense|hybride] [--corpus <groupe>] [--sans-filtre [--detection]] [--json] [--seuils bas,haut,marge] [--root <racine>] [--modele <nom>] [--dim <n>]`, les métriques datées, hors CI ; `--sans-filtre` retire la borne de collection et la détection de document, `--detection` remet la détection (mode par défaut du produit).
 - `mcp/eval/compare.ts` : `node mcp/eval/compare.ts <base.json> <candidat.json>`, l'alignement par question, le McNemar exact et le verdict figé.
 - `mcp/eval/citations.ts` : `node mcp/eval/citations.ts <corpus> [--taille <n>]` relit les citations d'un échantillon de décisions, `--classement` imprime le classement réel des documents cités absents du corpus (statut, citations, autorités), sans écrire ni indexer.
 - `tools/parametres.html` : l'outil local de sélection des matières.

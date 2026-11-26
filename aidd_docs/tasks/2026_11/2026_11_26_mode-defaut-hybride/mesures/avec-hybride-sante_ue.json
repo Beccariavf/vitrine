@@ -1,0 +1,90 @@
+{
+  "date": "2026-11-26",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "sante_ue",
+  "recherche": "hybride",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "figés (jeu sans split)",
+  "questions": [
+    {
+      "question": "Le refus d'accéder à ses données de santé électroniques ouvert par certains États membres peut-il être retiré après avoir été exercé ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32025R0327#art_10"
+      ],
+      "refs": [
+        "32025R0327#art_10",
+        "32025R0327#art_71",
+        "32025R0327#rct_18",
+        "32025R0327#rct_11",
+        "32025R0327#art_67"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7365449070930481,
+        0.7450896203517914,
+        0.7456842958927155,
+        0.7510601282119751,
+        0.7459030449390411
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Dans quel délai maximal le détenteur de données de santé doit-il remettre à l'organisme national d'accès les données réclamées ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32025R0327#art_60"
+      ],
+      "refs": [
+        "32025R0327#art_60",
+        "32025R0327#art_68",
+        "32025R0327#art_63",
+        "32025R0327#art_72",
+        "32025R0327#art_69"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7343376576900482,
+        0.7347280085086823,
+        0.7197568118572235,
+        0.7231930196285248,
+        0.7334299981594086
+      ],
+      "niveau": "incertain"
+    }
+  ],
+  "agregats": {
+    "semantiques": 2,
+    "top5_semantique_succes": 2,
+    "top1_semantique_succes": 2,
+    "mrr_semantique": 1,
+    "referencees": 2,
+    "top5_global_succes": 2,
+    "top5_rendu_succes": 2,
+    "top1_rendu_succes": 2,
+    "mrr_rendu": 1,
+    "top5_global_rendu_succes": 2,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 0,
+    "incertain": 2,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  }
+}
