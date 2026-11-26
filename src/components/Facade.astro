@@ -7,33 +7,18 @@ type Props = {
   /** Collections lues par `sourcesCorpus` ; aucune façade quand la liste est vide. */
   sources: SourceCorpus[];
   class?: string;
+  /** Colonnes de la grille à partir de 50rem de conteneur : 10 sur l'accueil, 8 sur `/connecteur`. */
+  colonnesLarge?: 8 | 10;
   /**
-   * Colonnes de la grille une fois le conteneur large : 8 sur `/connecteur`, moins dans
-   * une rangée de famille (3 à 6). Un nombre hors table garde 8.
+   * Rangée de famille : toutes les colonnes sur une ligne, sans libellés ni légende.
+   * Les libellés et volumes sont portés à côté, en pilules ; le `aria-label` reste complet.
    */
-  colonnesLarge?: number;
-  /** Masque la légende des familles et la note d'échelle (rangée de famille). */
-  sansLegende?: boolean;
+  enRangee?: boolean;
 };
 
-const { sources, class: classe, colonnesLarge = 8, sansLegende = false } = Astro.props;
+const { sources, class: classe, colonnesLarge = 8, enRangee = false } = Astro.props;
 const nombre = new Intl.NumberFormat("fr-FR");
-
-/**
- * Grille par nombre de colonnes, classes écrites en entier pour que Tailwind les détecte.
- * Les petits nombres (rangées de famille) valent dès 22rem de conteneur : la carte d'une
- * rangée fait 376 px sur la page de 5xl, juste sous les 24rem. Les grands (8, 10) gardent
- * leur seuil de 50rem.
- */
-const GRILLES_LARGE: Readonly<Record<number, string>> = {
-  3: "@[22rem]:grid-cols-3",
-  4: "@[22rem]:grid-cols-4",
-  5: "@[22rem]:grid-cols-5",
-  6: "@[22rem]:grid-cols-6",
-  8: "@[50rem]:grid-cols-8",
-  10: "@[50rem]:grid-cols-10",
-};
-const grilleLarge = GRILLES_LARGE[colonnesLarge] ?? "@[50rem]:grid-cols-8";
+const grilleLarge = colonnesLarge === 10 ? "@[50rem]:grid-cols-10" : "@[50rem]:grid-cols-8";
 
 /** Une colonne par collection : étages calculés au build, du rez-de-chaussée vers le haut. */
 const colonnes = sources.map((source) => {
@@ -58,10 +43,12 @@ const resume = `Façade du corpus, une colonne par collection, hauteur selon le 
         role="img"
         aria-label={resume}
         class:list={[
-          "grid grid-cols-4 gap-x-3 gap-y-6",
-          colonnesLarge >= 8 && "@[24rem]:grid-cols-5 @[24rem]:gap-x-4",
-          grilleLarge,
+          "grid",
+          enRangee
+            ? "gap-x-1.5 sm:gap-x-2"
+            : ["grid-cols-4 gap-x-3 gap-y-6 @[24rem]:grid-cols-5 @[24rem]:gap-x-4", grilleLarge],
         ]}
+        style={enRangee ? `grid-template-columns: repeat(${colonnes.length}, minmax(0, 1fr))` : undefined}
       >
         {colonnes.map((colonne) => (
           <div data-colonne={colonne.corpus} data-famille={colonne.famille.id} class="flex min-w-0 flex-col">
@@ -79,17 +66,19 @@ const resume = `Façade du corpus, une colonne par collection, hauteur selon le 
               </div>
             </div>
             <div aria-hidden="true" class="h-1.5 bg-filet" />
+            {!enRangee && (<>
             <p class="mt-2 hyphens-auto text-[0.625rem] leading-tight break-words text-encre-douce sm:text-[0.6875rem]">
               {colonne.libelle}
             </p>
             <p class="mt-0.5 text-[0.625rem] text-encre-douce tabular-nums sm:text-[0.6875rem]">
               {nombre.format(colonne.unites)} passages
             </p>
+            </>)}
           </div>
         ))}
       </div>
       {
-        !sansLegende && (
+        !enRangee && (
           <figcaption class="mt-6 border-t border-filet pt-3">
             <Legende complement="hauteur = passages indexés (échelle log), pas le nombre de décisions" />
           </figcaption>

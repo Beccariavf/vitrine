@@ -131,11 +131,10 @@ const titreSection = "text-[clamp(1.75rem,3.2vw,2.5rem)] leading-[1.1] font-medi
           <div data-gouvernance={champ} class="rounded-bloc bg-surface p-6">
             <h3 class="font-serif text-3xl font-normal first-letter:uppercase">{libelle}</h3>
             <p class="mt-5 text-[2.5rem] leading-none font-medium tabular-nums">
-              {nombre.format(corpus.length)}<span class="sr-only"> collections</span>
+              {nombre.format(corpus.length)}
+              <span class="text-[0.9375rem] font-normal tracking-normal text-encre-douce"> collections</span>
             </p>
-            <ul class="mt-5 grid gap-1 text-[0.875rem] leading-relaxed text-encre-douce">
-              {corpus.map((nom) => <li>{nom}</li>)}
-            </ul>
+            <p class="mt-5 text-[0.8125rem] leading-relaxed text-encre-douce">{corpus.join(" · ")}</p>
           </div>
         ))
       }

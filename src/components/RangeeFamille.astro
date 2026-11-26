@@ -55,11 +55,7 @@ function aJour(source: SourceCorpus): string {
 <div data-famille={famille.famille} class="grid items-center gap-8 md:grid-cols-2 md:gap-12">
   <div class:list={["min-w-0", visuelAGauche ? "md:order-1" : "md:order-2"]}>
     <div class="rounded-carte bg-surface p-6 sm:p-10">
-      <Facade
-        sources={famille.collections}
-        sansLegende
-        colonnesLarge={Math.min(famille.collections.length, 4)}
-      />
+      <Facade sources={famille.collections} enRangee />
     </div>
   </div>
   <div class:list={["min-w-0", visuelAGauche ? "md:order-2" : "md:order-1"]}>
