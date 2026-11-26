@@ -44,48 +44,48 @@
       "niveau": "confiant"
     },
     {
-      "question": "Les organes de presse échappent-ils au règlement sur les données pour la conservation de leurs archives en ligne ?",
+      "question": "Quelles dérogations du RGPD s'appliquent aux traitements journalistiques des organes de presse ?",
       "type": "conceptuelle",
       "piege": false,
       "attendues": [
         "LEGIARTI000037813972"
       ],
       "refs": [
-        "32023R2854#art_19",
-        "32023R2854#rct_117",
-        "32023R2854#art_10",
-        "32023R2854#art_47",
-        "32023R2854#art_17"
+        "LEGIARTI000037813972",
+        "32016R0679#art_85",
+        "CETATEXT000034081835#f25",
+        "62017CJ0345#point7",
+        "62024CJ0199#point28"
       ],
       "rangs": [
-        0
+        1
       ],
       "similarites": [
-        0.6299833655357361,
-        0.6441527605056763,
-        0.620082825422287,
-        0.619953840970993,
-        0.6198590993881226
+        0.7409541308879852,
+        0.7326011061668396,
+        0.7370400130748749,
+        0.7292299270629883,
+        0.7274719178676605
       ],
-      "niveau": "aucun_resultat_fiable"
+      "niveau": "incertain"
     }
   ],
   "agregats": {
     "semantiques": 2,
-    "top5_semantique_succes": 0,
-    "top1_semantique_succes": 0,
-    "mrr_semantique": 0,
+    "top5_semantique_succes": 1,
+    "top1_semantique_succes": 1,
+    "mrr_semantique": 0.5,
     "referencees": 2,
-    "top5_global_succes": 0,
-    "top5_rendu_succes": 0,
-    "top1_rendu_succes": 0,
-    "mrr_rendu": 0,
-    "top5_global_rendu_succes": 0,
+    "top5_global_succes": 1,
+    "top5_rendu_succes": 1,
+    "top1_rendu_succes": 1,
+    "mrr_rendu": 0.5,
+    "top5_global_rendu_succes": 1,
     "pieges_mesures": 0,
     "pieges_cites": 0,
     "confiant": 1,
-    "incertain": 0,
-    "aucun_resultat_fiable": 1,
+    "incertain": 1,
+    "aucun_resultat_fiable": 0,
     "pieges_confiants": 0
   }
 }

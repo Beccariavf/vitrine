@@ -1,6 +1,6 @@
 question,type,sources_attendues,piege,corpus
 Quelles conditions permettent d'obtenir réparation après une fuite massive de données imputable à l'administration fiscale ?,conceptuelle,32016R0679#art_82,non,rgpd
-Un salarié peut-il être indemnisé sans prouver un préjudice distinct de la violation du règlement sur les données ?,conceptuelle,6a3cc051cdc6046d479d8eb0,non,cc
+Un salarié peut-il être indemnisé sans prouver un préjudice distinct de la violation du RGPD ?,conceptuelle,6a3cc051cdc6046d479d8eb0,non,cc
 Quelles garanties s'appliquent lorsqu'un algorithme décide seul d'accorder ou de refuser un crédit ?,conceptuelle,32016R0679#art_22,non,rgpd
 Quelles conditions autorisent le traitement de données de santé par un service numérique ?,conceptuelle,32016R0679#art_9,non,rgpd
 Un réseau social peut-il déduire des données sensibles de la simple consultation de sites tiers par ses utilisateurs ?,conceptuelle,62021CJ0252,non,cjue
@@ -8,7 +8,7 @@ L'intérêt commercial suffit-il à justifier un traitement de données sans con
 Quelles clauses un contrat avec un prestataire informatique doit-il comporter pour encadrer les données qui lui sont confiées ?,conceptuelle,CNILTEXT000045614368,non,cnil
 Quel consentement faut-il recueillir avant de déposer un cookie publicitaire sur le terminal d'un internaute ?,conceptuelle,LEGIARTI000037813978,non,lil
 Une mention au fichier des antécédents judiciaires peut-elle être consultée lors de l'enquête préalable à une naturalisation ?,conceptuelle,CETATEXT000047461392,non,ce
-Les organes de presse échappent-ils au règlement sur les données pour la conservation de leurs archives en ligne ?,conceptuelle,LEGIARTI000037813972,non,lil
+Quelles dérogations du RGPD s'appliquent aux traitements journalistiques des organes de presse ?,conceptuelle,LEGIARTI000037813972,non,lil
 Quelles obligations s'appliquent à un site de santé qui collecte des données personnelles au moyen de quiz en ligne ?,conceptuelle,CNILTEXT000047552103,non,cnil
 Une entreprise doit-elle mener une étude d'impact avant de déployer un outil de surveillance de ses salariés ?,conceptuelle,32016R0679#art_35,non,rgpd
 Quelles organisations sont tenues de nommer un délégué à la protection des données ?,conceptuelle,32016R0679#art_37,non,rgpd

@@ -107,7 +107,7 @@ export function formater(agregats: Agregat[], titre: string): string {
   return [
     `### ${titre}`,
     "",
-    "| groupe | questions | rappel@5 | rang moyen | MRR | confiant | confiant juste / faux |",
+    "| groupe | questions | rappel@5 | rang moyen | MRR@5 | confiant | confiant juste / faux |",
     "| --- | ---: | ---: | ---: | ---: | ---: | ---: |",
     ...lignes,
   ].join("\n");

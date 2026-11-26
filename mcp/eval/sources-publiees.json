@@ -10,7 +10,7 @@
     "reference_citee": "32016R0679#art_82"
   },
   {
-    "question": "Un salarié peut-il être indemnisé sans prouver un préjudice distinct de la violation du règlement sur les données ?",
+    "question": "Un salarié peut-il être indemnisé sans prouver un préjudice distinct de la violation du RGPD ?",
     "champ": "données personnelles",
     "corpus_attendu": "cc",
     "url": "https://www.village-justice.com/articles/manquement-rgpd-salarie-est-indemnise-que-prouve-prejudice,58153.html",
@@ -90,7 +90,7 @@
     "reference_citee": "CETATEXT000047461392"
   },
   {
-    "question": "Les organes de presse échappent-ils au règlement sur les données pour la conservation de leurs archives en ligne ?",
+    "question": "Quelles dérogations du RGPD s'appliquent aux traitements journalistiques des organes de presse ?",
     "champ": "données personnelles",
     "corpus_attendu": "lil",
     "url": "https://derriennic.com/oui-les-organes-de-presse-sont-bien-soumis-au-rgpd-expertises-juillet-2024",

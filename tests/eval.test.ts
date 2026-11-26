@@ -485,9 +485,17 @@ describe("la règle du produit", () => {
       seuils: { bas: 0.73, haut: 0.73, marge: 0.01 },
       seuilsOrigine: "table (cnil)",
     });
+    const sansFiltre = objetMesureJson({
+      ...commun,
+      seuils: { bas: 0.69, haut: 0.74, marge: 0.01 },
+      seuilsOrigine: "figés (jeu sans split)",
+      sansFiltre: true,
+    });
 
     assert.equal(calibree.seuils_origine, "calibrés sur dev");
     assert.equal(produit.seuils_origine, "table (cnil)");
+    assert.equal(calibree.sans_filtre, undefined);
+    assert.equal(sansFiltre.sans_filtre, true);
 
     assert.deepEqual(
       produit.questions.map((entree) => entree.refs),
@@ -1761,11 +1769,13 @@ describe("questions-sources-publiees.csv", () => {
     for (const question of jeu.questions) {
       const sources = SOURCES.filter((source) => source.question === question.question);
       assert.equal(sources.length, 1, question.question);
-      const source = sources[0] as SourceQuestion;
+      const source = sources[0] as SourceQuestion & { reference_citee: string };
       assert.match(source.url, /^https:\/\//);
       assert.ok(source.auteur.trim() !== "", question.question);
       assert.match(source.date_lecture, /^\d{4}-\d{2}-\d{2}$/);
       assert.ok(source.date_publication === null || /^\d{4}-\d{2}-\d{2}$/.test(source.date_publication));
+      assert.equal(source.corpus_attendu, question.corpus, question.question);
+      assert.deepEqual(question.attendues, [source.reference_citee], question.question);
     }
   });
 
@@ -1799,10 +1809,12 @@ describe("questions-sources-publiees.csv", () => {
         new URL("../mcp/eval/sources-publiees-hors-corpus.json", import.meta.url),
         "utf8",
       ),
-    ) as { question: string; raison: string }[];
+    ) as { question: string; raison: string; champ: string; corpus_attendu: string }[];
     assert.ok(hors.length > 0);
     for (const entree of hors) {
       assert.ok(entree.raison.trim() !== "");
+      assert.ok(entree.champ.trim() !== "");
+      assert.ok(entree.corpus_attendu.trim() !== "");
       assert.ok(!jeu.questions.some((question) => question.question === entree.question));
     }
   });

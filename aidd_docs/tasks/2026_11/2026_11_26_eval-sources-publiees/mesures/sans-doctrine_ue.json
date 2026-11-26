@@ -25,23 +25,23 @@
         "lignes-directrices-art-3#f1"
       ],
       "refs": [
-        "32024R1689#art_3",
-        "32024R1689#art_104",
-        "32024R1689#art_42",
-        "32024R1689#art_103",
-        "32024R1689#art_109"
+        "entree-en-vigueur-du-reglement-europeen-sur-lia-les-premieres-questions-reponses-de-la-cnil#f19",
+        "entree-en-vigueur-du-reglement-europeen-sur-lia-les-premieres-questions-reponses-de-la-cnil#f27",
+        "32026D2274#rct_1",
+        "entree-en-vigueur-du-reglement-europeen-sur-lia-les-premieres-questions-reponses-de-la-cnil#f16",
+        "entree-en-vigueur-du-reglement-europeen-sur-lia-les-premieres-questions-reponses-de-la-cnil#f18"
       ],
       "rangs": [
         0
       ],
       "similarites": [
-        0.7167589366436005,
-        0.7162365317344666,
-        0.713696151971817,
-        0.7126414477825165,
-        0.7124767303466797
+        0.7857115566730499,
+        0.763433501124382,
+        0.7524865120649338,
+        0.7518896162509918,
+        0.7507308721542358
       ],
-      "niveau": "incertain"
+      "niveau": "confiant"
     },
     {
       "question": "À partir de quel volume cumulé de calcul un modèle d'IA à usage général est-il présumé présenter un risque systémique ?",
@@ -52,20 +52,20 @@
       ],
       "refs": [
         "32024R1689#art_51",
+        "lignes-directrices-gpai#f12",
         "32024R1689#rct_111",
-        "32024R1689#art_52",
-        "32024R1689#art_55",
-        "32024R1689#rct_112"
+        "entree-en-vigueur-du-reglement-europeen-sur-lia-les-premieres-questions-reponses-de-la-cnil#f19",
+        "32024R1689#art_52"
       ],
       "rangs": [
         0
       ],
       "similarites": [
-        0.785255491733551,
-        0.7910485565662384,
-        0.761121541261673,
-        0.749534547328949,
-        0.7607834190130234
+        0.7744906395673752,
+        0.792927548289299,
+        0.7760367542505264,
+        0.766700804233551,
+        0.7461128532886505
       ],
       "niveau": "incertain"
     }
@@ -83,8 +83,8 @@
     "top5_global_rendu_succes": 0,
     "pieges_mesures": 0,
     "pieges_cites": 0,
-    "confiant": 0,
-    "incertain": 2,
+    "confiant": 1,
+    "incertain": 1,
     "aucun_resultat_fiable": 0,
     "pieges_confiants": 0
   }

@@ -601,7 +601,13 @@ async function mesurer(
   for (const question of questions) {
     const resultat = await search(
       rootDir,
-      { question: question.question, k: 5, ...(corpus === undefined ? {} : { corpus }) },
+      {
+        question: question.question,
+        k: 5,
+        // Sans corpus, la passe ne doit être bornée ni par la collection ni par
+        // un document nommé dans la question : c'est le volume entier qui répond.
+        ...(corpus === undefined ? { sans_detection: true } : { corpus }),
+      },
       {
         embedder,
         index,

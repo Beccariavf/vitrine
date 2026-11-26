@@ -7,37 +7,8 @@
     "date_publication": null,
     "date_lecture": "2026-11-26",
     "champ": "santé",
-    "raison": "Absent du corpus textes_fr, qui ne contient du Code civil que l'article 9."
-  },
-  {
-    "question": "Les obligations de l'article 111 du règlement sur l'IA s'appliquent-elles aux systèmes déjà mis sur le marché avant l'entrée en application du règlement modificatif de 2026 ?",
-    "reference_citee": "32024R1689#art_111§4",
-    "url": "https://www.lexing.law/avocats/lanalyse-dimpact-sur-les-droits-fondamentaux-face-aux-actualites/2026/09/30",
-    "auteur": "Anthony Coquer (Lexing Avocats)",
-    "date_publication": "2026-09-30",
-    "date_lecture": "2026-11-26",
-    "champ": "IA",
-    "raison": "Le corpus ne contient que le texte de base de l'article 111 ; le paragraphe 4 a été ajouté par le règlement (UE) 2026/1744 et n'y figure pas."
-  },
-  {
-    "question": "Quelle sanction la CNIL a-t-elle prononcée contre France Travail après la fuite de données de 2026 ?",
-    "reference_citee": "SAN-2026-003",
-    "url": "https://www.village-justice.com/articles/fuite-donnees-dgfip-quelles-conditions-pour-obtenir-reparation,58979.html",
-    "auteur": "Hébert-Marc Gustave et Regina Kissi",
-    "date_publication": "2026-09-12",
-    "date_lecture": "2026-11-26",
-    "champ": "données personnelles",
-    "raison": "Délibération du 22 janvier 2026 absente du corpus cnil."
-  },
-  {
-    "question": "Les frais de transfert de données facturés par un fournisseur cloud sont-ils plafonnés par la loi française ?",
-    "reference_citee": "Loi n° 2024-449 (SREN), article 27",
-    "url": "https://derriennic.com/frais-sortie-cloud-arcep-publie-lignes-directrices/",
-    "auteur": "Géraldine Pacaut",
-    "date_publication": "2026-08-17",
-    "date_lecture": "2026-11-26",
-    "champ": "données non personnelles",
-    "raison": "Article de la loi SREN absent des corpus indexés (seuls les articles 26 à 39 du texte SREN sont couverts, pas l'article 27 hors plage)."
+    "corpus_attendu": "textes_fr",
+    "raison": "Le corpus textes_fr ne contient du Code civil que l'article 9 ; l'article 16-10 est absent."
   },
   {
     "question": "Quel montant maximal l'arrêté de 2025 fixe-t-il pour les frais de transfert de données cloud ?",
@@ -47,6 +18,7 @@
     "date_publication": "2026-08-17",
     "date_lecture": "2026-11-26",
     "champ": "données non personnelles",
-    "raison": "Arrêté non intégré au corpus."
+    "corpus_attendu": "donnees",
+    "raison": "Un arrêté n'entre pas dans les corpus indexés : aucun texte réglementaire français de ce type n'y figure."
   }
 ]

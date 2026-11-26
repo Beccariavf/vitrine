@@ -43,7 +43,7 @@
       "niveau": "aucun_resultat_fiable"
     },
     {
-      "question": "Les organes de presse échappent-ils au règlement sur les données pour la conservation de leurs archives en ligne ?",
+      "question": "Quelles dérogations du RGPD s'appliquent aux traitements journalistiques des organes de presse ?",
       "type": "conceptuelle",
       "piege": false,
       "attendues": [
@@ -51,22 +51,22 @@
       ],
       "refs": [
         "LEGIARTI000037813972",
-        "LEGIARTI000037813969",
-        "LEGIARTI000043887429",
-        "LEGIARTI000037823107",
-        "LEGIARTI000037813966"
+        "LEGIARTI000037823118",
+        "LEGIARTI000037823122",
+        "LEGIARTI000037813975",
+        "LEGIARTI000037823109"
       ],
       "rangs": [
         1
       ],
       "similarites": [
-        0.6673668026924133,
-        0.6584205627441406,
-        0.6466185748577118,
-        0.6466077268123627,
-        0.6459075212478638
+        0.7409541308879852,
+        0.663910448551178,
+        0.6569766700267792,
+        0.6550125181674957,
+        0.652547150850296
       ],
-      "niveau": "aucun_resultat_fiable"
+      "niveau": "confiant"
     }
   ],
   "agregats": {
@@ -76,15 +76,15 @@
     "mrr_semantique": 0.6666666666666666,
     "referencees": 2,
     "top5_global_succes": 2,
-    "top5_rendu_succes": 0,
-    "top1_rendu_succes": 0,
-    "mrr_rendu": 0,
-    "top5_global_rendu_succes": 0,
+    "top5_rendu_succes": 1,
+    "top1_rendu_succes": 1,
+    "mrr_rendu": 0.5,
+    "top5_global_rendu_succes": 1,
     "pieges_mesures": 0,
     "pieges_cites": 0,
-    "confiant": 0,
+    "confiant": 1,
     "incertain": 0,
-    "aucun_resultat_fiable": 2,
+    "aucun_resultat_fiable": 1,
     "pieges_confiants": 0
   }
 }

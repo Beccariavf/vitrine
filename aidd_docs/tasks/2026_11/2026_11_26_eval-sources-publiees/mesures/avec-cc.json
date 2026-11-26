@@ -17,7 +17,7 @@
   "seuils_origine": "figés (jeu sans split)",
   "questions": [
     {
-      "question": "Un salarié peut-il être indemnisé sans prouver un préjudice distinct de la violation du règlement sur les données ?",
+      "question": "Un salarié peut-il être indemnisé sans prouver un préjudice distinct de la violation du RGPD ?",
       "type": "conceptuelle",
       "piege": false,
       "attendues": [
@@ -26,19 +26,19 @@
       "refs": [
         "6a3cc051cdc6046d479d8eb0#f7",
         "6852514ea7fdae5a8046f32f#f11",
-        "6852514ea7fdae5a8046f32f#f13",
-        "6a3cc051cdc6046d479d8eb0#f4",
-        "64f8230eda737fd9691e6526#visa"
+        "648020e7f17e00d0f8b57318#f7",
+        "6a3cc051cdc6046d479d8eb0#f3",
+        "645b35292d7932d0f815a5e3#f9"
       ],
       "rangs": [
         1
       ],
       "similarites": [
-        0.7346779704093933,
-        0.7161324322223663,
-        0.7113592624664307,
-        0.7104993760585785,
-        0.7001340687274933
+        0.7118956744670868,
+        0.7009482085704803,
+        0.6985268890857697,
+        0.6954227089881897,
+        0.6944043636322021
       ],
       "niveau": "incertain"
     },

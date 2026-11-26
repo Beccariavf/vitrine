@@ -25,21 +25,21 @@
         "focus-interet-legitime-collecte-par-moissonnage"
       ],
       "refs": [
-        "32024R1689#art_59",
-        "32024R1689#art_10",
-        "32024R1689#art_5",
-        "32024R1689#rct_178",
-        "32024R1689#art_4bis"
+        "intelligence-artificielle-le-plan-daction-de-la-cnil#f10",
+        "collecter-et-qualifier-les-donnees-dentrainement#f3",
+        "ia-comment-etre-en-conformite-avec-le-rgpd#f14",
+        "collecter-et-qualifier-les-donnees-dentrainement#f2",
+        "collecter-et-qualifier-les-donnees-dentrainement#f8"
       ],
       "rangs": [
         0
       ],
       "similarites": [
-        0.6939758658409119,
-        0.6902941763401031,
-        0.6878933608531952,
-        0.7064537405967712,
-        0.6827762722969055
+        0.7750586867332458,
+        0.7671043127775192,
+        0.760790154337883,
+        0.7603419572114944,
+        0.7583329528570175
       ],
       "niveau": "incertain"
     },
@@ -51,23 +51,23 @@
         "base-legale-interet-legitime-developpement-systeme"
       ],
       "refs": [
-        "32024R1689#rct_137",
-        "32024R1689#rct_178",
-        "32024R1689#art_5",
-        "32024R1689#rct_21",
-        "32024R1689#rct_23"
+        "base-legale-interet-legitime-developpement-systeme#f57",
+        "base-legale-interet-legitime-developpement-systeme#f0",
+        "ia-liste-de-verification#f5",
+        "base-legale-interet-legitime-developpement-systeme#f9",
+        "base-legale-interet-legitime-developpement-systeme#f3"
       ],
       "rangs": [
-        0
+        1
       ],
       "similarites": [
-        0.7486644685268402,
-        0.7424976229667664,
-        0.7186669409275055,
-        0.7337535917758942,
-        0.7332446873188019
+        0.7952628582715988,
+        0.7824304401874542,
+        0.7765767127275467,
+        0.7756730169057846,
+        0.7721889317035675
       ],
-      "niveau": "incertain"
+      "niveau": "confiant"
     },
     {
       "question": "Dans une recherche en santé un même destinataire peut-il accéder simultanément aux données administratives et aux données de recherche ?",
@@ -103,40 +103,40 @@
         "mr-001-referentiel#f52"
       ],
       "refs": [
-        "32016R0679#rct_161",
-        "32016R0679#art_13",
-        "32016R0679#art_12",
-        "32016R0679#art_15",
-        "32016R0679#art_20"
+        "mr-001-referentiel#f52",
+        "mr-003-referentiel#f49",
+        "mr-001-referentiel#f53",
+        "mr-001-referentiel#f54",
+        "mr-003-referentiel#f50"
       ],
       "rangs": [
-        0
+        1
       ],
       "similarites": [
-        0.6987411975860596,
-        0.6713172495365143,
-        0.6682013273239136,
-        0.6661792993545532,
-        0.6654214560985565
+        0.7829498052597046,
+        0.7705843299627304,
+        0.7670740336179733,
+        0.7616000473499298,
+        0.7556054145097733
       ],
-      "niveau": "incertain"
+      "niveau": "confiant"
     }
   ],
   "agregats": {
     "semantiques": 4,
-    "top5_semantique_succes": 1,
-    "top1_semantique_succes": 0,
-    "mrr_semantique": 0.05,
+    "top5_semantique_succes": 3,
+    "top1_semantique_succes": 2,
+    "mrr_semantique": 0.55,
     "referencees": 4,
-    "top5_global_succes": 1,
-    "top5_rendu_succes": 1,
-    "top1_rendu_succes": 0,
-    "mrr_rendu": 0.05,
-    "top5_global_rendu_succes": 1,
+    "top5_global_succes": 3,
+    "top5_rendu_succes": 3,
+    "top1_rendu_succes": 2,
+    "mrr_rendu": 0.55,
+    "top5_global_rendu_succes": 3,
     "pieges_mesures": 0,
     "pieges_cites": 0,
-    "confiant": 1,
-    "incertain": 3,
+    "confiant": 3,
+    "incertain": 1,
     "aucun_resultat_fiable": 0,
     "pieges_confiants": 0
   }

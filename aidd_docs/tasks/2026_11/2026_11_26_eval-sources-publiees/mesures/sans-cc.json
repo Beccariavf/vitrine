@@ -18,30 +18,30 @@
   "seuils_origine": "figés (jeu sans split)",
   "questions": [
     {
-      "question": "Un salarié peut-il être indemnisé sans prouver un préjudice distinct de la violation du règlement sur les données ?",
+      "question": "Un salarié peut-il être indemnisé sans prouver un préjudice distinct de la violation du RGPD ?",
       "type": "conceptuelle",
       "piege": false,
       "attendues": [
         "6a3cc051cdc6046d479d8eb0"
       ],
       "refs": [
-        "32023R2854#art_9",
-        "32023R2854#rct_48",
-        "32023R2854#rct_29",
-        "32023R2854#art_41",
-        "32023R2854#art_20"
+        "62022CJ0182#point46",
+        "62021CJ0667#point81",
+        "62021CJ0687#point61",
+        "62022CJ0182#point24",
+        "62022CJ0590#point21"
       ],
       "rangs": [
         0
       ],
       "similarites": [
-        0.6236366927623749,
-        0.6425294578075409,
-        0.631385862827301,
-        0.6112024188041687,
-        0.6100475788116455
+        0.7178270220756531,
+        0.716617077589035,
+        0.7149852216243744,
+        0.7149643003940582,
+        0.7141228318214417
       ],
-      "niveau": "aucun_resultat_fiable"
+      "niveau": "incertain"
     },
     {
       "question": "Les images d'une caméra qui filme en continu un salarié à son poste permettent-elles de fonder son licenciement ?",
@@ -84,8 +84,8 @@
     "pieges_mesures": 0,
     "pieges_cites": 0,
     "confiant": 0,
-    "incertain": 1,
-    "aucun_resultat_fiable": 1,
+    "incertain": 2,
+    "aucun_resultat_fiable": 0,
     "pieges_confiants": 0
   }
 }
