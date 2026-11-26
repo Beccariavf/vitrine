@@ -12,7 +12,7 @@
 
 import { readFileSync } from "node:fs";
 import { decoderEntites, texteVisible } from "../parse.ts";
-import { chevauchement } from "./parse.ts";
+import { chevauchement, dateValide } from "./parse.ts";
 
 /**
  * Texte d'un intitulé : balises retirées, entités décodées, blancs normalisés.
@@ -510,11 +510,7 @@ export function documentsExplicites(
     if (declare.numero !== undefined && !/^\d{4}-\d{3}$/.test(declare.numero)) {
       throw new Error(`Numéro de délibération attendu AAAA-NNN : « ${declare.numero} »`);
     }
-    if (
-      declare.date_acte !== undefined &&
-      (!/^\d{4}-\d{2}-\d{2}$/.test(declare.date_acte) ||
-        Number.isNaN(Date.parse(declare.date_acte)))
-    ) {
+    if (declare.date_acte !== undefined && !dateValide(declare.date_acte)) {
       throw new Error(`Date d'acte attendue AAAA-MM-JJ : « ${declare.date_acte} »`);
     }
     if (declare.remplace !== undefined) {

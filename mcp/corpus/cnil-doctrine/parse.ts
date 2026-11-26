@@ -18,6 +18,16 @@ import type { DescripteurDoctrine, TypeDoctrine } from "./liste.ts";
 
 const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
 
+/**
+ * Vrai pour une date `AAAA-MM-JJ` réellement existante : `Date.parse` normalise
+ * le 30 février, l'aller-retour ISO refuse une date décalée en silence.
+ */
+export function dateValide(date: string): boolean {
+  if (!DATE_ISO.test(date)) return false;
+  const instant = Date.parse(`${date}T00:00:00Z`);
+  return !Number.isNaN(instant) && new Date(instant).toISOString().slice(0, 10) === date;
+}
+
 /** Libellé du chemin, par type de document. */
 const LIBELLES: Record<TypeDoctrine, string> = {
   guide: "Guides",
@@ -437,7 +447,7 @@ export function validerUnites(unites: readonly Unite[], corpus: string): void {
     if (unite.document.trim() === "") erreurs.push(`document vide : ${unite.ref}`);
     if (unite.corpus !== corpus) erreurs.push(`corpus inattendu : ${unite.ref} (${unite.corpus})`);
     if (unite.numero.trim() === "") erreurs.push(`numéro vide : ${unite.ref}`);
-    if (!DATE_ISO.test(unite.date_acte) || Number.isNaN(Date.parse(unite.date_acte))) {
+    if (!dateValide(unite.date_acte)) {
       erreurs.push(`date non ISO : ${unite.ref} (${unite.date_acte || "vide"})`);
     }
   }

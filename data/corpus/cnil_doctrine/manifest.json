@@ -29,11 +29,27 @@
     },
     {
       "type": "referentiel",
+      "url": "https://www.cnil.fr/fr/methodologie-de-reference-mr-001-recherches-sante-avec-recueil-du-consentement",
+      "origine": "liste",
+      "consulte_le": "2026-11-26",
+      "listes": 1,
+      "documents": 1
+    },
+    {
+      "type": "referentiel",
+      "url": "https://www.cnil.fr/fr/methodologie-de-reference-mr-003-recherches-dans-le-domaine-de-la-sante-sans-recueil-du-consentement",
+      "origine": "liste",
+      "consulte_le": "2026-11-26",
+      "listes": 1,
+      "documents": 1
+    },
+    {
+      "type": "referentiel",
       "url": "https://www.cnil.fr/fr/methodologies-de-reference-pour-les-recherches-en-sante-verifier-sa-conformite-aux-mr-001-et-mr-003",
       "origine": "liste",
       "consulte_le": "2026-11-26",
-      "listes": 4,
-      "documents": 4
+      "listes": 2,
+      "documents": 2
     },
     {
       "type": "liste_aipd",
@@ -990,14 +1006,14 @@
         "date_extraction": "2026-11-26",
         "representation": "pdf",
         "pdf": "https://www.cnil.fr/sites/default/files/2026-05/mr-001_referentiel.pdf",
-        "numero": "2026-050",
-        "remplace": [
-          "2018-153"
-        ],
         "licence": "CC BY-ND 4.0",
         "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
         "source": "Source : CNIL – https://www.cnil.fr",
-        "fragments": 75
+        "fragments": 75,
+        "numero": "2026-050",
+        "remplace": [
+          "2018-153"
+        ]
       },
       {
         "slug": "mr-003-referentiel",
@@ -1010,14 +1026,14 @@
         "date_extraction": "2026-11-26",
         "representation": "pdf",
         "pdf": "https://www.cnil.fr/sites/default/files/2026-05/mr-003_referentiel.pdf",
-        "numero": "2026-051",
-        "remplace": [
-          "2018-154"
-        ],
         "licence": "CC BY-ND 4.0",
         "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
         "source": "Source : CNIL – https://www.cnil.fr",
-        "fragments": 72
+        "fragments": 72,
+        "numero": "2026-051",
+        "remplace": [
+          "2018-154"
+        ]
       },
       {
         "slug": "annexe-securite",
@@ -1030,11 +1046,11 @@
         "date_extraction": "2026-11-26",
         "representation": "pdf",
         "pdf": "https://www.cnil.fr/sites/default/files/2026-05/annexe_securite.pdf",
-        "numero": "2026-049",
         "licence": "CC BY-ND 4.0",
         "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
         "source": "Source : CNIL – https://www.cnil.fr",
-        "fragments": 26
+        "fragments": 26,
+        "numero": "2026-049"
       },
       {
         "slug": "annexe-controle-qualite",
@@ -1047,11 +1063,11 @@
         "date_extraction": "2026-11-26",
         "representation": "pdf",
         "pdf": "https://www.cnil.fr/sites/default/files/2026-05/annexe_controle_qualite.pdf",
-        "numero": "2026-052",
         "licence": "CC BY-ND 4.0",
         "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
         "source": "Source : CNIL – https://www.cnil.fr",
-        "fragments": 50
+        "fragments": 50,
+        "numero": "2026-052"
       }
     ],
     "liste_aipd": [],
@@ -1908,6 +1924,8 @@
       "https://www.cnil.fr/fr/mediatheque?field_scald_collection_tid=29",
       "https://www.cnil.fr/fr/guides-aipd",
       "https://www.cnil.fr/fr/autres-referentiels",
+      "https://www.cnil.fr/fr/methodologie-de-reference-mr-001-recherches-sante-avec-recueil-du-consentement",
+      "https://www.cnil.fr/fr/methodologie-de-reference-mr-003-recherches-dans-le-domaine-de-la-sante-sans-recueil-du-consentement",
       "https://www.cnil.fr/fr/methodologies-de-reference-pour-les-recherches-en-sante-verifier-sa-conformite-aux-mr-001-et-mr-003",
       "https://www.cnil.fr/fr/listes-des-traitements-pour-lesquels-une-aipd-est-requise-ou-non",
       "https://www.cnil.fr/fr/les-fiches-pratiques-ia",

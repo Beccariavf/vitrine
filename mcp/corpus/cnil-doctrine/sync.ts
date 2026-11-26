@@ -863,8 +863,8 @@ export async function syncDoctrine(
       // Le texte est identique : l'entrée existante garde son empreinte de
       // capture, sa date d'acte et sa date d'extraction. Seuls le type,
       // l'intitulé, le lien, le numéro, le remplacement et la licence, qui
-      // viennent du descripteur, suivent.
-      documentsParType[lu.candidat.type].push({
+      // viennent du descripteur, suivent — y compris leur retrait.
+      const entree: DocumentManifeste = {
         ...entreePrecedente,
         type: lu.candidat.type,
         titre: lu.titre,
@@ -872,12 +872,17 @@ export async function syncDoctrine(
         fragments: fragments.length,
         representation: lu.representation,
         pdf: lu.candidat.pdf?.url ?? null,
-        ...(lu.candidat.numero === undefined ? {} : { numero: lu.candidat.numero }),
-        ...(lu.candidat.remplace === undefined ? {} : { remplace: [...lu.candidat.remplace] }),
+        date_acte: lu.date_acte,
+        date_source: lu.date_source,
         licence: descripteur.licence,
         licence_url: descripteur.licence_url,
         source: descripteur.source,
-      });
+      };
+      delete entree.numero;
+      delete entree.remplace;
+      if (lu.candidat.numero !== undefined) entree.numero = lu.candidat.numero;
+      if (lu.candidat.remplace !== undefined) entree.remplace = [...lu.candidat.remplace];
+      documentsParType[lu.candidat.type].push(entree);
       continue;
     }
     documentsParType[lu.candidat.type].push({

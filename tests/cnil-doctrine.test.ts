@@ -1456,4 +1456,76 @@ describe("méthodologies de référence révisées en 2026", () => {
       "2018-154": "2026-051",
     });
   });
+
+  it("refuse une date d'acte qui n'existe pas", () => {
+    const impossible: PageReference = {
+      ...REFERENCE_MR,
+      urls: [{ ...REFERENCE_MR.urls?.[0], url: PDF_MR, titre: "MR-001", date_acte: "2026-02-30" }],
+    };
+    assert.throws(() => documentsExplicites(impossible, "exemple.test"), /Date d'acte/);
+  });
+
+  it("retire du manifeste un numéro et un remplacement que le descripteur ne déclare plus", async () => {
+    const racine = racineTemporaire();
+    const avecDeclaration = {
+      ...DESCRIPTEUR_SIMULE,
+      domaine: "exemple.test",
+      pages_reference: [REFERENCE_MR],
+    };
+    ecrire(racine, "descripteur.json", JSON.stringify(avecDeclaration));
+    const fetchPdf: FetchPdf = async () => {
+      const octets = new TextEncoder().encode("%PDF-1.4\n% fixture\n");
+      return { ok: true, status: 200, arrayBuffer: async () => octets.buffer.slice(0) as ArrayBuffer };
+    };
+    const commun = {
+      rootDir: racine,
+      descripteurPath: join(racine, "descripteur.json"),
+      date: "2026-11-26",
+      fetchPdf,
+      extraireTexte: async () => "Paragraphe unique de la méthodologie de référence.",
+      attendre: async () => {},
+      delaiMs: 0,
+    };
+
+    await syncDoctrine(commun);
+    ecrire(
+      racine,
+      "descripteur.json",
+      JSON.stringify({
+        ...avecDeclaration,
+        pages_reference: [
+          {
+            ...REFERENCE_MR,
+            urls: [{ url: PDF_MR, titre: REFERENCE_MR.urls?.[0]?.titre ?? "MR-001" }],
+          },
+        ],
+      }),
+    );
+    await syncDoctrine(commun);
+
+    const manifeste = JSON.parse(
+      readFileSync(join(racine, "data", "corpus", "cnil_doctrine", "manifest.json"), "utf8"),
+    ) as {
+      remplacements: Record<string, string>;
+      documents_par_type: Record<
+        string,
+        { numero?: string; remplace?: string[]; date_source: string }[]
+      >;
+    };
+    const document = manifeste.documents_par_type.referentiel?.[0];
+    assert.ok(document !== undefined);
+    assert.equal(document.numero, undefined, "le numéro retiré du descripteur ne reste pas");
+    assert.equal(document.remplace, undefined);
+    assert.equal(document.date_source, "extraction");
+    assert.deepEqual(manifeste.remplacements, {});
+
+    const unites = readFileSync(
+      join(racine, "data", "corpus", "cnil_doctrine", "unites.jsonl"),
+      "utf8",
+    )
+      .split("\n")
+      .filter(Boolean)
+      .map((ligne) => JSON.parse(ligne) as { numero: string });
+    assert.equal(unites[0]?.numero, "mr-001-referentiel");
+  });
 });
