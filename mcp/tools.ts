@@ -1732,8 +1732,11 @@ async function chercher(
     if (deja < PLACES_TEXTE) {
       if (vecteur === null) throw new Error("Vecteur de requête absent hors mode lexical");
       // Seconde recherche bornée aux corpus texte dans `vec0` : les articles ne
-      // sont souvent pas dans la fenêtre globale. En hybride, dense seule.
+      // sont souvent pas dans la fenêtre globale. En hybride, dense seule. Les
+      // filtres de l'appel (nature, dates, montants) suivent, pour qu'un passage
+      // réservé ne contredise jamais la demande.
       const candidats = searchIndex(index, vecteur, {
+        ...options,
         k: Math.max(CANDIDATS_VOIE, k * 10),
         corpus_parmi: CORPUS_TEXTE,
         niveaux_exclus: [NIVEAU_CONSIDERANT],

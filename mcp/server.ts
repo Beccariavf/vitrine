@@ -8,7 +8,7 @@ import type { Embedder } from "./embed/embedder.ts";
 import { cheminIndex } from "./index/build.ts";
 import { openIndex } from "./index/search.ts";
 import type { Index } from "./index/search.ts";
-import { getArticle, getDecision, search, etatCorpus } from "./tools.ts";
+import { PLACES_TEXTE, etatCorpus, getArticle, getDecision, search } from "./tools.ts";
 import type { ModeRecherche } from "./tools.ts";
 import { LIMITE_DEFAUT, LIMITE_MAX, decisionsCitant } from "./corpus/citants.ts";
 import { PERIMETRE } from "./corpus/citations.ts";
@@ -512,11 +512,15 @@ export function createServer(deps: ServerDeps): McpServer {
         "En recherche lexicale seule (`VITRINE_RECHERCHE=lexicale`), les passages portent " +
         "`rang_lexical` (1 = meilleur) et aucune `distance` ni `similarite` ; le niveau reste " +
         "`incertain` hors appariement exact, un score BM25 ne prouvant pas la pertinence. " +
-        "Sans `corpus` ni `document` (demandé ou détecté), deux places du top 5 sont réservées aux " +
-        "textes de loi (corpus de type `texte`) : elles prennent les dernières places, jamais le rang 1, " +
+        "Sans `corpus` ni `document` (demandé ou détecté), hors recherche lexicale et à partir de " +
+        "trois passages demandés, " +
+        `${nombreEnLettres(PLACES_TEXTE)} places du top 5 sont réservées aux textes de loi ` +
+        "(corpus de type `texte`) : elles prennent les dernières places, jamais le rang 1, " +
         "et portent `place_reservee: \"texte\"`. La réserve ne s'applique pas à une question qui vise " +
         "une juridiction ou une décision (CJUE, Conseil d'État, Cour de cassation, Conseil " +
-        "constitutionnel, CEDH, CADA, arrêt, délibération, numéro de décision). " +
+        "constitutionnel, CEDH, avis de la CADA, arrêt, délibération, numéro de décision). Le niveau " +
+        "de confiance est calculé sur le classement d'avant la réserve et ne porte pas sur les " +
+        "passages réservés. " +
         `${CONSIGNE_CITATIONS} ` +
         `${CONSIGNE_DECISIONS_CITEES} ` +
         `${CONSIGNE_STATUT_APPLICATION} ` +

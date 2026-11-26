@@ -8,6 +8,7 @@ import type { Embedder } from "../mcp/embed/embedder.ts";
 import { buildIndex } from "../mcp/index/build.ts";
 import { openIndex } from "../mcp/index/search.ts";
 import type { Index, ResultatRecherche } from "../mcp/index/search.ts";
+import type { Reranker } from "../mcp/rerank/reranker.ts";
 import { PLACES_TEXTE, reserverPlacesTexte, search, viseJurisprudence } from "../mcp/tools.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";
 
@@ -132,6 +133,20 @@ describe("la réserve de places pour les textes", () => {
     assert.equal(resultat[3]?.place_reservee, "texte");
   });
 
+  it("laisse un top dominé par les considérants sans place à libérer", () => {
+    const ordre = [
+      regle(17),
+      passage(`${DOCUMENT}#rct_65`, "rgpd", 0.1, "considérant"),
+      passage(`${DOCUMENT}#rct_66`, "rgpd", 0.2, "considérant"),
+      passage(`${DOCUMENT}#rct_67`, "rgpd", 0.3, "considérant"),
+      passage(`${DOCUMENT}#rct_68`, "rgpd", 0.4, "considérant"),
+    ];
+    const resultat = reserverPlacesTexte(ordre, [regle(5)], 5);
+
+    assert.deepEqual(resultat, ordre, "un considérant est un passage texte : il n'est pas retiré");
+    assert.equal(resultat.some((entree) => entree.place_reservee !== undefined), false);
+  });
+
   it("exporte la constante de deux places", () => {
     assert.equal(PLACES_TEXTE, 2);
   });
@@ -190,7 +205,7 @@ function vecteurDe(texte: string): number[] {
   const valeurs = new Array<number>(8).fill(0);
   valeurs[0] = 1;
   const decision = /^decision (\d+)$/.exec(texte);
-  if (decision !== null) valeurs[1] = Number(decision[1]) * 0.01;
+  if (decision !== null) valeurs[1] = Number(decision[1]) * 0.001;
   if (texte === "regle une") valeurs[1] = 0.3;
   if (texte === "regle deux") valeurs[1] = 0.4;
   if (texte === "eclairage") valeurs[1] = 0.6;
@@ -215,6 +230,7 @@ function uniteQuota(
   texte: string,
   niveau: Unite["niveau"],
   numero = "1",
+  date = "2026-01-01",
 ): Unite {
   return {
     ref,
@@ -224,8 +240,8 @@ function uniteQuota(
     numero,
     chemin: "test",
     texte,
-    date_acte: "2026-01-01",
-    date_debut: "2026-01-01",
+    date_acte: date,
+    date_debut: date,
     date_fin: null,
     statut: "VIGUEUR",
     url: `https://exemple.test/${ref}`,
@@ -247,9 +263,9 @@ type Montage = { root: string; index: Index; fermer: () => void };
 async function monter(decisions: number, avecAiact = false): Promise<Montage> {
   const root = mkdtempSync(join(tmpdir(), "vitrine-quota-"));
   ecrireCorpus(root, "rgpd", [
-    uniteQuota(`${DOCUMENT}#art_17`, "rgpd", DOCUMENT, "regle une", "article"),
-    uniteQuota(`${DOCUMENT}#art_5`, "rgpd", DOCUMENT, "regle deux", "article"),
-    uniteQuota(`${DOCUMENT}#rct_65`, "rgpd", DOCUMENT, "eclairage", "considérant"),
+    uniteQuota(`${DOCUMENT}#art_17`, "rgpd", DOCUMENT, "regle une", "article", "17", "2016-04-27"),
+    uniteQuota(`${DOCUMENT}#art_5`, "rgpd", DOCUMENT, "regle deux", "article", "5", "2016-04-27"),
+    uniteQuota(`${DOCUMENT}#rct_65`, "rgpd", DOCUMENT, "eclairage", "considérant", "65", "2016-04-27"),
   ]);
   if (avecAiact) {
     ecrireCorpus(root, "aiact", [
@@ -458,6 +474,75 @@ describe("le quota de textes dans la recherche", () => {
       );
 
       assert.equal(resultat.passages.length, 5);
+      assert.equal(resultat.passages.some((entree) => entree.place_reservee !== undefined), false);
+    });
+  });
+
+  it("applique le quota en recherche hybride", async () => {
+    await surMontage(5, async ({ root, index }) => {
+      const resultat = await search(
+        root,
+        { question: "question" },
+        { embedder, index, recherche: "hybride" },
+      );
+
+      assert.deepEqual(
+        resultat.passages.slice(3).map((entree) => entree.ref),
+        [`${DOCUMENT}#art_17`, `${DOCUMENT}#art_5`],
+      );
+      assert.equal(resultat.passages[3]?.place_reservee, "texte");
+      assert.equal(resultat.passages[4]?.place_reservee, "texte");
+    });
+  });
+
+  it("applique le quota après le rerank, sur l'ordre final", async () => {
+    const promeutDerniere: Reranker = {
+      model: "factice",
+      score: async (_question, passages) =>
+        passages.map((passage) => (passage === "decision 5" ? 1 : 0)),
+    };
+    await surMontage(5, async ({ root, index }) => {
+      const resultat = await search(
+        root,
+        { question: "question" },
+        { embedder, index, rerank: promeutDerniere },
+      );
+
+      assert.equal(resultat.passages[0]?.ref, `${DECISION}#f5`, "le rerank passe avant le quota");
+      assert.deepEqual(
+        resultat.passages.slice(3).map((entree) => entree.ref),
+        [`${DOCUMENT}#art_17`, `${DOCUMENT}#art_5`],
+      );
+      assert.equal(resultat.passages[3]?.place_reservee, "texte");
+      assert.equal(resultat.passages[4]?.place_reservee, "texte");
+    });
+  });
+
+  it("borne réellement la seconde recherche aux textes, hors fenêtre globale", async () => {
+    // 60 décisions passent devant les articles : la fenêtre globale de 50
+    // candidats n'en contient aucun. Un post-filtre global ne trouverait rien.
+    await surMontage(60, async ({ root, index }) => {
+      const resultat = await search(root, { question: "question" }, { embedder, index });
+
+      assert.equal(resultat.passages.slice(0, 3).every((entree) => entree.corpus === "cnil"), true);
+      assert.deepEqual(
+        resultat.passages.slice(3).map((entree) => entree.ref),
+        [`${DOCUMENT}#art_17`, `${DOCUMENT}#art_5`],
+      );
+      assert.equal(resultat.passages[3]?.place_reservee, "texte");
+      assert.equal(resultat.passages[4]?.place_reservee, "texte");
+    });
+  });
+
+  it("respecte un filtre de date dans la seconde recherche", async () => {
+    await surMontage(5, async ({ root, index }) => {
+      const resultat = await search(
+        root,
+        { question: "question", date_min: "2020-01-01" },
+        { embedder, index },
+      );
+
+      assert.equal(resultat.passages.every((entree) => entree.corpus === "cnil"), true);
       assert.equal(resultat.passages.some((entree) => entree.place_reservee !== undefined), false);
     });
   });
