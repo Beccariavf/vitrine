@@ -57,8 +57,18 @@ export type SearchOptions = {
    * absent, tous les corpus répondent.
    */
   corpus?: string;
+  /**
+   * Restreint à plusieurs collections ; s'ajoute à `corpus` et descend dans la
+   * requête `vec0` (`IN`), pour ne pas post-filtrer une fenêtre globale.
+   */
+  corpus_parmi?: readonly string[];
   /** Restreint aux unités de ce document ; absent, tout le corpus répond. */
   document?: string;
+  /**
+   * Niveaux écartés du rendu (`considérant` par exemple) : la règle, pas son
+   * éclairage. Post-filtre, car `niveau` n'est pas une colonne de `vec0`.
+   */
+  niveaux_exclus?: readonly string[];
   /** Restreint à une nature CNIL (Sanction, Avis, Recommandation/Lignes directrices). */
   nature?: string;
   /** Date ISO minimale (`AAAA-MM-JJ`) sur la date de la décision. */
@@ -194,7 +204,11 @@ export function rangerPassages(resultats: ResultatRecherche[], k: number): Resul
 /** Vrai si le résultat passe les filtres optionnels de corpus, document et nature. */
 function retenu(resultat: ResultatRecherche, options: SearchOptions): boolean {
   if (options.corpus !== undefined && resultat.corpus !== options.corpus) return false;
+  if (options.corpus_parmi !== undefined && !options.corpus_parmi.includes(resultat.corpus)) {
+    return false;
+  }
   if (options.document !== undefined && resultat.document !== options.document) return false;
+  if (options.niveaux_exclus?.includes(resultat.niveau) === true) return false;
   if (
     options.nature !== undefined &&
     natureComparable(resultat.nature) !== natureComparable(options.nature)
@@ -273,6 +287,14 @@ function filtresVectoriels(options: SearchOptions): {
   if (options.corpus !== undefined) {
     conditions.push("v.corpus = ?");
     valeurs.push(options.corpus);
+  }
+  if (options.corpus_parmi !== undefined) {
+    if (options.corpus_parmi.length === 0) {
+      conditions.push("0 = 1");
+    } else {
+      conditions.push(`v.corpus IN (${options.corpus_parmi.map(() => "?").join(", ")})`);
+      valeurs.push(...options.corpus_parmi);
+    }
   }
   if (options.document !== undefined) {
     conditions.push("v.document = ?");
@@ -388,9 +410,21 @@ function candidatsLexicaux(
     conditions.push("u.corpus = ?");
     parametres.push(options.corpus);
   }
+  if (options.corpus_parmi !== undefined) {
+    if (options.corpus_parmi.length === 0) {
+      conditions.push("0 = 1");
+    } else {
+      conditions.push(`u.corpus IN (${options.corpus_parmi.map(() => "?").join(", ")})`);
+      parametres.push(...options.corpus_parmi);
+    }
+  }
   if (options.document !== undefined) {
     conditions.push("u.document = ?");
     parametres.push(options.document);
+  }
+  if (options.niveaux_exclus !== undefined && options.niveaux_exclus.length > 0) {
+    conditions.push(`u.niveau NOT IN (${options.niveaux_exclus.map(() => "?").join(", ")})`);
+    parametres.push(...options.niveaux_exclus);
   }
   if (options.nature !== undefined) {
     conditions.push("u.nature = ?");

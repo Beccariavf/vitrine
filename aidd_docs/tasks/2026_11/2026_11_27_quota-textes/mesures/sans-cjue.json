@@ -1,0 +1,117 @@
+{
+  "date": "2026-11-26",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "cjue",
+  "sans_filtre": true,
+  "recherche": "dense",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine-wt-171/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "figés (jeu sans split)",
+  "questions": [
+    {
+      "question": "Un réseau social peut-il déduire des données sensibles de la simple consultation de sites tiers par ses utilisateurs ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "62021CJ0252"
+      ],
+      "refs": [
+        "62021CJ0252#point84",
+        "62021CJ0252#point65",
+        "CNILTEXT000024583206#f12",
+        "32019L0790#art_28",
+        "32023R2854#art_5"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7507574260234833,
+        0.7458369135856628,
+        0.742729663848877,
+        0.6774125397205353,
+        0.6687715947628021
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles vérifications faut-il faire avant d'envoyer des données à un prestataire situé aux États-Unis ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "62018CJ0311"
+      ],
+      "refs": [
+        "32023D1795#art_1",
+        "guide-aitd-pdf#f83",
+        "check-list-de-conformite-referentiel-donnes-sante#f60",
+        "32016D1250#art_1",
+        "32023D1795#art_4"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7044679820537567,
+        0.7241509854793549,
+        0.7210004925727844,
+        0.699356347322464,
+        0.6987168490886688
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Les informations saisies pour commander en ligne un médicament sans ordonnance sont-elles des données de santé même si l'acheteur n'est pas nécessairement le patient ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "62023CJ0021"
+      ],
+      "refs": [
+        "62023CJ0021#point90",
+        "62023CJ0021#point94",
+        "62023CJ0021#point40",
+        "LEGIARTI000047400878",
+        "LEGIARTI000037823065"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8005535900592804,
+        0.7902139723300934,
+        0.7861997187137604,
+        0.6854574382305145,
+        0.6846693456172943
+      ],
+      "niveau": "confiant"
+    }
+  ],
+  "agregats": {
+    "semantiques": 3,
+    "top5_semantique_succes": 2,
+    "top1_semantique_succes": 2,
+    "mrr_semantique": 0.6666666666666666,
+    "referencees": 3,
+    "top5_global_succes": 2,
+    "top5_rendu_succes": 2,
+    "top1_rendu_succes": 2,
+    "mrr_rendu": 0.6666666666666666,
+    "top5_global_rendu_succes": 2,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 1,
+    "incertain": 2,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  }
+}

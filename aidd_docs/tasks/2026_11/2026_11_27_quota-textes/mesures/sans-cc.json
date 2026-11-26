@@ -1,0 +1,91 @@
+{
+  "date": "2026-11-26",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "cc",
+  "sans_filtre": true,
+  "recherche": "dense",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine-wt-171/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "figés (jeu sans split)",
+  "questions": [
+    {
+      "question": "Un salarié peut-il être indemnisé sans prouver un préjudice distinct de la violation du RGPD ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "6a3cc051cdc6046d479d8eb0"
+      ],
+      "refs": [
+        "62022CJ0182#point46",
+        "62021CJ0667#point81",
+        "62021CJ0687#point61",
+        "32016R0679#art_82",
+        "LEGIARTI000038568000"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7178270220756531,
+        0.716617077589035,
+        0.7149852216243744,
+        0.668762594461441,
+        0.6591145992279053
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Les images d'une caméra qui filme en continu un salarié à son poste permettent-elles de fonder son licenciement ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "60d41fb4f185911b57e04dc3"
+      ],
+      "refs": [
+        "682d68f316fd466a1ce900c4#f6",
+        "CNILTEXT000051120331#f21",
+        "62024CJ0422#point9",
+        "32024L2831#art_23",
+        "32019L0790#art_28"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7330540418624878,
+        0.7311451137065887,
+        0.729740709066391,
+        0.6472735106945038,
+        0.6429660618305206
+      ],
+      "niveau": "incertain"
+    }
+  ],
+  "agregats": {
+    "semantiques": 2,
+    "top5_semantique_succes": 0,
+    "top1_semantique_succes": 0,
+    "mrr_semantique": 0,
+    "referencees": 2,
+    "top5_global_succes": 0,
+    "top5_rendu_succes": 0,
+    "top1_rendu_succes": 0,
+    "mrr_rendu": 0,
+    "top5_global_rendu_succes": 0,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 0,
+    "incertain": 2,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  }
+}

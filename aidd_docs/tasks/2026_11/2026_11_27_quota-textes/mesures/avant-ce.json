@@ -1,0 +1,344 @@
+{
+  "date": "2026-11-26",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "ce",
+  "sans_filtre": true,
+  "detection": true,
+  "recherche": "dense",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine-wt-171/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.68,
+    "haut": 0.73,
+    "marge": 0.01
+  },
+  "seuils_origine": "calibrés sur dev",
+  "questions": [
+    {
+      "question": "Quelles conditions la CNIL pose-t-elle pour l'utilisation de traceurs et de cookies nécessitant le consentement ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CETATEXT000039230820"
+      ],
+      "refs": [
+        "CNILTEXT000038785140#f5",
+        "CETATEXT000042040556#f18",
+        "CNILTEXT000047682157#f66",
+        "CNILTEXT000046768989#f36",
+        "CNILTEXT000046768989#f27"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7796080112457275,
+        0.7649299800395966,
+        0.7643576860427856,
+        0.7640789300203323,
+        0.7625682651996613
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Une société établie hors de l'Union européenne peut-elle disposer d'un établissement principal au sens du RGPD ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CETATEXT000042040546"
+      ],
+      "refs": [
+        "32016R0679#rct_36",
+        "32016R0679#art_3",
+        "32016R0679#rct_22",
+        "32016R0679#art_4",
+        "32016R0679#rct_25"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7153554558753967,
+        0.6839345395565033,
+        0.6965636909008026,
+        0.6701860129833221,
+        0.6783102750778198
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Le mécanisme du guichet unique du RGPD s'applique-t-il au contrôle des cookies au titre de la directive ePrivacy ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CETATEXT000045972720"
+      ],
+      "refs": [
+        "CNILTEXT000042635706#f16",
+        "CNILTEXT000042635729#f23",
+        "CNILTEXT000042635729#f11",
+        "CNILTEXT000044840062#f31",
+        "CNILTEXT000044840062#f22"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7698182910680771,
+        0.7479186058044434,
+        0.7449467480182648,
+        0.7438608109951019,
+        0.7408928573131561
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelles informations le responsable du traitement doit-il communiquer à la personne qui exerce son droit d'accès ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CETATEXT000046473895"
+      ],
+      "refs": [
+        "CNILTEXT000046198070#f23",
+        "32016R0679#art_15",
+        "CNILTEXT000050791828#f41",
+        "32016R0679#art_13",
+        "guidelines-012022-on-data-subject-rights-right-of-access#f54"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7584918141365051,
+        0.7366497814655304,
+        0.755850300192833,
+        0.7350369691848755,
+        0.7502603530883789
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Le refus de la CNIL de donner suite à une plainte peut-il être contesté devant le juge et selon quel contrôle ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CETATEXT000049084997"
+      ],
+      "refs": [
+        "CETATEXT000054758945#f6",
+        "CETATEXT000050935918#f5",
+        "62022CJ0026#point70",
+        "32025R2518#rct_20",
+        "CETATEXT000047446686#f8"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7488520443439484,
+        0.7474317252635956,
+        0.7442336678504944,
+        0.7419726848602295,
+        0.7412800192832947
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Dans quels cas la personne concernée peut-elle obtenir l'effacement de ses données personnelles ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CETATEXT000047773954"
+      ],
+      "refs": [
+        "32016R0679#art_17",
+        "LEGIARTI000037823120",
+        "62023CJ0200#point90",
+        "CNILTEXT000054136834#f105",
+        "guide-rgpd-affaires-publiques-acap-afcl-apap-scrp#f214"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7605465799570084,
+        0.751408651471138,
+        0.7674933224916458,
+        0.7646812200546265,
+        0.7633284032344818
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "La CNIL peut-elle prononcer une amende pour manquement au RGPD et à l'article L. 34-5 du code des postes et communications électroniques ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CETATEXT000051698010"
+      ],
+      "refs": [
+        "LEGIARTI000042155961"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        1
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Dans quelles conditions les forces de sécurité peuvent-elles recourir à des caméras aéroportées ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CETATEXT000050932401"
+      ],
+      "refs": [
+        "CETATEXT000048566050#f16",
+        "CONSTEXT000054952981#f176",
+        "CNILTEXT000053018448#f11",
+        "CETATEXT000049294593#f9",
+        "CETATEXT000047618200#f23"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7627157419919968,
+        0.7595895230770111,
+        0.7573957741260529,
+        0.7544635832309723,
+        0.749390035867691
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles finalités permettent d'installer des systèmes de vidéoprotection sur la voie publique ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CETATEXT000053425905"
+      ],
+      "refs": [
+        "LEGIARTI000047569457",
+        "CETATEXT000048659389#f17",
+        "CETATEXT000053425905#f6",
+        "CETATEXT000032790103#f4",
+        "CNILTEXT000032823632#f5"
+      ],
+      "rangs": [
+        3
+      ],
+      "similarites": [
+        0.759667232632637,
+        0.7785196751356125,
+        0.7580752372741699,
+        0.7577208876609802,
+        0.7559861689805984
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "La CNIL doit-elle instruire une plainte relative aux risques pour la vie privée des compteurs Linky ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CETATEXT000037183356"
+      ],
+      "refs": [
+        "CETATEXT000037183356#f2",
+        "CETATEXT000037183356#f0",
+        "CETATEXT000051321882#f1",
+        "CETATEXT000037183356#f7",
+        "CETATEXT000054440606#f2"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.745231419801712,
+        0.7447415590286255,
+        0.7367815375328064,
+        0.7319440245628357,
+        0.7283672392368317
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Le RGPD s'applique-t-il aux traitements intéressant la sûreté de l'État et la défense ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CETATEXT000044807737"
+      ],
+      "refs": [
+        "32016R0679#rct_16",
+        "32016R0679#art_9",
+        "32016R0679#art_87",
+        "32016R0679#art_6",
+        "32016R0679#art_10"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7231985628604889,
+        0.6723013818264008,
+        0.6719858348369598,
+        0.6665696799755096,
+        0.6632459461688995
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Le fichier SI-SIAO peut-il transmettre des données personnelles des demandeurs d'asile à l'OFII ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CETATEXT000039335911"
+      ],
+      "refs": [
+        "CETATEXT000039335911#f19",
+        "CETATEXT000039335911#f18",
+        "CETATEXT000039335911#f22",
+        "CNILTEXT000034529305#f23",
+        "CNILTEXT000017652022#f5"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7383551895618439,
+        0.7246463596820831,
+        0.7132533490657806,
+        0.7118354737758636,
+        0.7002308666706085
+      ],
+      "niveau": "confiant"
+    }
+  ],
+  "agregats": {
+    "semantiques": 11,
+    "top5_semantique_succes": 3,
+    "top1_semantique_succes": 2,
+    "mrr_semantique": 0.2121212121212121,
+    "referencees": 12,
+    "top5_global_succes": 3,
+    "top5_rendu_succes": 3,
+    "top1_rendu_succes": 2,
+    "mrr_rendu": 0.2121212121212121,
+    "top5_global_rendu_succes": 3,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 4,
+    "incertain": 7,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  }
+}

@@ -934,6 +934,48 @@ describe("buildIndex", () => {
     }
   });
 
+  it("borne une seconde recherche à plusieurs corpus dans vec0 et écarte un niveau", async () => {
+    const root = tempRoot();
+    try {
+      ecrireCorpus(root, "rgpd", SIX);
+      ecrireCorpus(root, "dsa", [
+        unite(1, "obligations des plateformes", AUTRE),
+        unite(2, "publicité ciblée", AUTRE),
+        unite(3, "publicité ciblée des plateformes", AUTRE),
+        unite(4, "éclairage de la publicité ciblée", AUTRE, "considérant"),
+      ]);
+
+      const { chemin } = await buildIndex(root, embedderFactice());
+      const index = openIndex(chemin);
+      try {
+        const vecteur = await embedderFactice().embedQuery("publicité ciblée");
+        const bornes = searchIndex(index, vecteur, { k: 9, corpus_parmi: ["dsa"] });
+        const sansConsiderant = searchIndex(index, vecteur, {
+          k: 9,
+          corpus_parmi: ["dsa"],
+          niveaux_exclus: ["considérant"],
+        });
+
+        assert.equal(bornes.length, 4);
+        assert.ok(bornes.every((resultat) => resultat.corpus === "dsa"));
+        assert.equal(sansConsiderant.length, 3);
+        assert.ok(sansConsiderant.every((resultat) => resultat.niveau !== "considérant"));
+        assert.deepEqual(searchIndex(index, vecteur, { k: 9, corpus_parmi: [] }), []);
+        const lexicaux = rechercheLexicale(index, "publicité ciblée", {
+          k: 9,
+          corpus_parmi: ["dsa"],
+          niveaux_exclus: ["considérant"],
+        });
+        assert.ok(lexicaux.length > 0);
+        assert.ok(lexicaux.every((resultat) => resultat.niveau !== "considérant"));
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("refuse un index sans colonne corpus en nommant la commande", async () => {
     const root = tempRoot();
     try {
