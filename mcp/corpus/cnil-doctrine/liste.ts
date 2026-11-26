@@ -12,7 +12,7 @@
 
 import { readFileSync } from "node:fs";
 import { decoderEntites, texteVisible } from "../parse.ts";
-import { chevauchement } from "./parse.ts";
+import { chevauchement, dateValide } from "./parse.ts";
 
 /**
  * Texte d'un intitulé : balises retirées, entités décodées, blancs normalisés.
@@ -34,8 +34,20 @@ export type ModeLiens = "pdf" | "page" | "fiches" | "urls";
 /**
  * Un document déclaré en liste explicite : sa page, ou son PDF, et le PDF
  * officiel qui porte son texte quand la page ne sert qu'à le présenter.
+ *
+ * `numero`, `date_acte` et `remplace` ne se lisent pas dans le fichier : une
+ * méthodologie de référence est publiée sans le numéro de la délibération qui
+ * l'homologue ni sa date d'adoption. Ils sont donc déclarés ici, et vérifiés.
  */
-export type DocumentExplicite = LienDocument & { pdf?: string };
+export type DocumentExplicite = LienDocument & {
+  pdf?: string;
+  /** Numéro de la délibération que le document met en œuvre (`2026-050`). */
+  numero?: string;
+  /** Date d'adoption de la délibération (`AAAA-MM-JJ`). */
+  date_acte?: string;
+  /** Numéros des documents que celui-ci remplace (`2018-153`). */
+  remplace?: string[];
+};
 
 /** Une page de référence déclarée au descripteur. */
 export type PageReference = {
@@ -476,7 +488,8 @@ export async function parcourirReference(
 /**
  * Documents d'une liste explicite : URL rendue absolue, domaine vérifié,
  * première occurrence gardée. Le PDF officiel éventuel est vérifié de même.
- * Une liste vide ou une URL hors domaine lève plutôt que de perdre un document.
+ * Une liste vide, une URL hors domaine, un numéro de délibération ou une date
+ * mal formés lèvent plutôt que de perdre un document.
  */
 export function documentsExplicites(
   reference: PageReference,
@@ -494,6 +507,25 @@ export function documentsExplicites(
     }
     const titre = declare.titre.trim();
     if (titre === "") throw new Error(`Document sans intitulé : « ${declare.url} »`);
+    if (declare.numero !== undefined && !/^\d{4}-\d{3}$/.test(declare.numero)) {
+      throw new Error(`Numéro de délibération attendu AAAA-NNN : « ${declare.numero} »`);
+    }
+    if (declare.date_acte !== undefined && !dateValide(declare.date_acte)) {
+      throw new Error(`Date d'acte attendue AAAA-MM-JJ : « ${declare.date_acte} »`);
+    }
+    if (declare.remplace !== undefined) {
+      if (declare.numero === undefined) {
+        throw new Error(
+          `« ${declare.url} » remplace un document sans porter de numéro de délibération`,
+        );
+      }
+      if (
+        declare.remplace.length === 0 ||
+        declare.remplace.some((numero) => !/^\d{4}-\d{3}$/.test(numero))
+      ) {
+        throw new Error(`Numéro remplacé attendu AAAA-NNN : « ${declare.remplace.join(", ")} »`);
+      }
+    }
     if (documents.has(url)) continue;
     let pdf: string | undefined;
     if (declare.pdf !== undefined) {
@@ -503,7 +535,14 @@ export function documentsExplicites(
       }
       pdf = absolu;
     }
-    documents.set(url, pdf === undefined ? { url, titre } : { url, titre, pdf });
+    documents.set(url, {
+      url,
+      titre,
+      ...(pdf === undefined ? {} : { pdf }),
+      ...(declare.numero === undefined ? {} : { numero: declare.numero }),
+      ...(declare.date_acte === undefined ? {} : { date_acte: declare.date_acte }),
+      ...(declare.remplace === undefined ? {} : { remplace: [...declare.remplace] }),
+    });
   }
   return [...documents.values()];
 }

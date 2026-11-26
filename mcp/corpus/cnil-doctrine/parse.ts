@@ -18,6 +18,16 @@ import type { DescripteurDoctrine, TypeDoctrine } from "./liste.ts";
 
 const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
 
+/**
+ * Vrai pour une date `AAAA-MM-JJ` réellement existante : `Date.parse` normalise
+ * le 30 février, l'aller-retour ISO refuse une date décalée en silence.
+ */
+export function dateValide(date: string): boolean {
+  if (!DATE_ISO.test(date)) return false;
+  const instant = Date.parse(`${date}T00:00:00Z`);
+  return !Number.isNaN(instant) && new Date(instant).toISOString().slice(0, 10) === date;
+}
+
 /** Libellé du chemin, par type de document. */
 const LIBELLES: Record<TypeDoctrine, string> = {
   guide: "Guides",
@@ -384,13 +394,16 @@ export type DocumentDoctrine = {
   slug: string;
   /** Date du document, ou date d'extraction quand il ne se date pas. */
   date_acte: string;
+  /** Numéro de la délibération que le document met en œuvre, quand il en déclare un. */
+  numero?: string;
 };
 
 /**
  * Fragments d'un document : chaque fragment est une tranche du texte extrait,
  * sans réécriture. Un fragment sans aucune lettre (ponctuation seule, numéro de
  * page) est écarté : il ne porte aucun texte citable. Le chemin nomme le type et
- * le titre ; l'URL est celle du document.
+ * le titre ; l'URL est celle du document. `numero` porte la délibération que le
+ * document met en œuvre quand il la déclare, le slug sinon.
  */
 export function unitesDoctrine(
   document: DocumentDoctrine,
@@ -408,7 +421,7 @@ export function unitesDoctrine(
     document: document.slug,
     corpus: descripteur.corpus,
     niveau: "fragment",
-    numero: document.slug,
+    numero: document.numero ?? document.slug,
     chemin: `${descripteur.nom} > ${LIBELLES[document.type]} > ${document.titre}`,
     texte: fragment,
     date_acte: document.date_acte,
@@ -434,7 +447,7 @@ export function validerUnites(unites: readonly Unite[], corpus: string): void {
     if (unite.document.trim() === "") erreurs.push(`document vide : ${unite.ref}`);
     if (unite.corpus !== corpus) erreurs.push(`corpus inattendu : ${unite.ref} (${unite.corpus})`);
     if (unite.numero.trim() === "") erreurs.push(`numéro vide : ${unite.ref}`);
-    if (!DATE_ISO.test(unite.date_acte) || Number.isNaN(Date.parse(unite.date_acte))) {
+    if (!dateValide(unite.date_acte)) {
       erreurs.push(`date non ISO : ${unite.ref} (${unite.date_acte || "vide"})`);
     }
   }

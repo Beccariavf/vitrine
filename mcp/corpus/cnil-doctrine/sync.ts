@@ -75,8 +75,12 @@ export type DocumentManifeste = {
   url: string;
   snapshot: string;
   date_acte: string;
-  date_source: "document" | "extraction";
+  date_source: "document" | "descripteur" | "extraction";
   date_extraction: string;
+  /** Numéro de la délibération que le document met en œuvre, quand il la déclare. */
+  numero?: string;
+  /** Numéros des documents que celui-ci remplace. */
+  remplace?: string[];
   /** Comment le texte a été obtenu : la page HTML de la fiche, ou son PDF officiel. */
   representation: "pdf" | "page";
   /**
@@ -139,6 +143,8 @@ export type ManifesteDoctrine = {
   /** Documents de chaque type laissés au corpus `cnil` : ni dupliqués ni recomptés. */
   couverts_par_type: Record<TypeDoctrine, number>;
   documents_par_type: Record<TypeDoctrine, DocumentManifeste[]>;
+  /** Numéro remplacé → numéro qui le remplace, lu sur les documents déclarés. */
+  remplacements: Record<string, string>;
   couverts_par_cnil: CouvertParCnil[];
   /** Documents déjà listés ailleurs au corpus, non dupliqués. */
   couverts_par_doctrine: CouvertParDoctrine[];
@@ -440,6 +446,12 @@ type Candidat = {
   pageHtml: string | null;
   /** Texte de la page qui porte le document, pour y lire une délibération. */
   pageTexte: string | null;
+  /** Numéro de la délibération que le document met en œuvre, déclaré au descripteur. */
+  numero?: string;
+  /** Date d'acte déclarée au descripteur, quand le fichier ne se date pas. */
+  dateActe?: string;
+  /** Numéros des documents que celui-ci remplace, déclarés au descripteur. */
+  remplace?: string[];
   reference: PageReference;
 };
 
@@ -448,7 +460,7 @@ type DocumentLu = {
   candidat: Candidat;
   titre: string;
   date_acte: string;
-  date_source: "document" | "extraction";
+  date_source: "document" | "descripteur" | "extraction";
   representation: "pdf" | "page";
   snapshot: string;
   texte: string;
@@ -590,6 +602,9 @@ export async function syncDoctrine(
           pdf: { url: document.url, titre },
           pageHtml: null,
           pageTexte: null,
+          ...(document.numero === undefined ? {} : { numero: document.numero }),
+          ...(document.date_acte === undefined ? {} : { dateActe: document.date_acte }),
+          ...(document.remplace === undefined ? {} : { remplace: [...document.remplace] }),
           reference,
         });
         continue;
@@ -617,6 +632,9 @@ export async function syncDoctrine(
         pdf,
         pageHtml: html,
         pageTexte: texteDePage(html),
+        ...(document.numero === undefined ? {} : { numero: document.numero }),
+        ...(document.date_acte === undefined ? {} : { dateActe: document.date_acte }),
+        ...(document.remplace === undefined ? {} : { remplace: [...document.remplace] }),
         reference,
       });
     }
@@ -745,7 +763,17 @@ export async function syncDoctrine(
       continue;
     }
 
-    const dateDocument = datePage ?? dateDuDocument(texte);
+    // Une méthodologie de référence ne porte ni le numéro ni la date de la
+    // délibération qui l'homologue : le descripteur les déclare. Sans cela, la
+    // date d'acte serait celle de l'extraction, fausse pour un texte adopté.
+    const dateLue = datePage ?? dateDuDocument(texte);
+    const dateDocument = candidat.dateActe ?? dateLue;
+    const sourceDate =
+      candidat.dateActe !== undefined
+        ? "descripteur"
+        : dateLue === null
+          ? "extraction"
+          : "document";
     const precedent = precedents.get(url);
     // Un texte inchangé garde la date de sa première extraction : une nouvelle
     // passe ne le redate pas. Un contenu réédité reprend la date du jour.
@@ -760,7 +788,7 @@ export async function syncDoctrine(
       candidat,
       titre: titre === "" ? slugDe(url) : titre,
       date_acte: dateActe,
-      date_source: dateDocument === null ? "extraction" : "document",
+      date_source: sourceDate,
       representation,
       snapshot: empreinte,
       texte,
@@ -818,23 +846,43 @@ export async function syncDoctrine(
         titre: lu.titre,
         slug,
         date_acte: lu.date_acte,
+        ...(lu.candidat.numero === undefined ? {} : { numero: lu.candidat.numero }),
       },
       lu.texte,
       descripteur,
     );
-    unites.push(...fragments);
     const empreinteTexte = sha256(
       fragments.map((fragment) => `${fragment.ref}\n${fragment.texte}\n`).join(""),
     );
     const entreePrecedente = precedents.get(url);
+    const inchange =
+      entreePrecedente !== undefined && textesPrecedents.get(slug) === empreinteTexte;
+    // Un texte identique garde la date de sa première capture quand elle vient
+    // de l'extraction, même si le fichier a changé hors du texte extrait. Une
+    // date déclarée au descripteur suit le descripteur, retrait compris.
+    let dateActe = lu.date_acte;
+    let dateSource = lu.date_source;
     if (
-      entreePrecedente !== undefined &&
-      textesPrecedents.get(slug) === empreinteTexte
+      inchange &&
+      lu.candidat.dateActe === undefined &&
+      entreePrecedente.date_source === "extraction" &&
+      lu.date_source === "extraction"
     ) {
+      dateActe = entreePrecedente.date_acte;
+      dateSource = "extraction";
+    }
+    for (const fragment of fragments) {
+      fragment.date_acte = dateActe;
+      fragment.date_debut = dateActe;
+    }
+    unites.push(...fragments);
+
+    if (inchange && entreePrecedente !== undefined) {
       // Le texte est identique : l'entrée existante garde son empreinte de
-      // capture, sa date d'acte et sa date d'extraction. Seuls le type,
-      // l'intitulé, le lien et la licence, qui viennent du descripteur, suivent.
-      documentsParType[lu.candidat.type].push({
+      // capture et sa date d'extraction. Seuls le type, l'intitulé, le lien,
+      // le numéro, le remplacement, la date et la licence, qui viennent du
+      // descripteur ou du texte, suivent — y compris leur retrait.
+      const entree: DocumentManifeste = {
         ...entreePrecedente,
         type: lu.candidat.type,
         titre: lu.titre,
@@ -842,10 +890,17 @@ export async function syncDoctrine(
         fragments: fragments.length,
         representation: lu.representation,
         pdf: lu.candidat.pdf?.url ?? null,
+        date_acte: dateActe,
+        date_source: dateSource,
         licence: descripteur.licence,
         licence_url: descripteur.licence_url,
         source: descripteur.source,
-      });
+      };
+      delete entree.numero;
+      delete entree.remplace;
+      if (lu.candidat.numero !== undefined) entree.numero = lu.candidat.numero;
+      if (lu.candidat.remplace !== undefined) entree.remplace = [...lu.candidat.remplace];
+      documentsParType[lu.candidat.type].push(entree);
       continue;
     }
     documentsParType[lu.candidat.type].push({
@@ -854,14 +909,16 @@ export async function syncDoctrine(
       titre: lu.titre,
       url,
       snapshot: lu.snapshot,
-      date_acte: lu.date_acte,
-      date_source: lu.date_source,
+      date_acte: dateActe,
+      date_source: dateSource,
       date_extraction:
         precedents.get(url)?.snapshot === lu.snapshot
           ? (precedents.get(url)?.date_extraction ?? date)
           : date,
       representation: lu.representation,
       pdf: lu.candidat.pdf?.url ?? null,
+      ...(lu.candidat.numero === undefined ? {} : { numero: lu.candidat.numero }),
+      ...(lu.candidat.remplace === undefined ? {} : { remplace: [...lu.candidat.remplace] }),
       licence: descripteur.licence,
       licence_url: descripteur.licence_url,
       source: descripteur.source,
@@ -928,6 +985,24 @@ export async function syncDoctrine(
   for (const ecarte of ecartes) ecartesParUrl.set(ecarte.url, ecarte);
   const tousEcartes = [...ecartesParUrl.values()];
 
+  // Le remplacement déclaré au descripteur : une MR de 2026 remplace celle de
+  // 2018, dont le statut au corpus `cnil` dit déjà « Remplacée par 2026-05x ».
+  const remplacements: Record<string, string> = {};
+  for (const listeDocuments of Object.values(documentsParType)) {
+    for (const document of listeDocuments) {
+      if (document.numero === undefined || document.remplace === undefined) continue;
+      for (const numero of document.remplace) {
+        const existant = remplacements[numero];
+        if (existant !== undefined && existant !== document.numero) {
+          throw new Error(
+            `Remplacement ambigu de ${numero} : ${existant} et ${document.numero}`,
+          );
+        }
+        remplacements[numero] = document.numero;
+      }
+    }
+  }
+
   const manifeste: ManifesteDoctrine = {
     corpus: descripteur.corpus,
     nom: descripteur.nom,
@@ -941,6 +1016,7 @@ export async function syncDoctrine(
     types,
     couverts_par_type: couvertsParType,
     documents_par_type: documentsParType,
+    remplacements,
     couverts_par_cnil: couverts,
     couverts_par_doctrine: couvertsParDoctrine,
     documents_ecartes: tousEcartes,

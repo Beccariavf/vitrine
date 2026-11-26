@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { after, describe, it } from "node:test";
 import {
   chargerTexte,
+  documentsExplicites,
   extraireDocuments,
   extraireFiches,
   lireDescripteur,
@@ -1220,12 +1221,14 @@ describe("synchronisation de la doctrine CNIL", () => {
       JSON.stringify({ ...DESCRIPTEUR_SIMULE, domaine: "exemple.test", pages_reference: [reference] }),
     );
     let corps = "A".repeat(1800);
+    let chrome = "outil de page";
     const fetchHtml: FetchHtml = async () => ({
       ok: true,
       status: 200,
       text: async () =>
         [
           "<main>",
+          `<div class="page--tools">${chrome}</div>`,
           '<div class="ctn-gen">',
           "<h1>Position A</h1>",
           `<div class="ctn-gen-after"><p>${corps}</p></div>`,
@@ -1241,7 +1244,7 @@ describe("synchronisation de la doctrine CNIL", () => {
       attendre: async () => {},
       delaiMs: 0,
     };
-    const lireDates = (): { acte: string; extraction: string } => {
+    const lireDates = (): { acte: string; extraction: string; unites: string } => {
       const manifeste = JSON.parse(
         readFileSync(join(racine, "data", "corpus", "cnil_doctrine", "manifest.json"), "utf8"),
       ) as {
@@ -1251,25 +1254,40 @@ describe("synchronisation de la doctrine CNIL", () => {
         >;
       };
       const document = manifeste.documents_par_type.doctrine_ia?.[0];
+      const unites = readFileSync(
+        join(racine, "data", "corpus", "cnil_doctrine", "unites.jsonl"),
+        "utf8",
+      )
+        .split("\n")
+        .filter(Boolean)
+        .map((ligne) => JSON.parse(ligne) as { date_acte: string });
       return {
         acte: document?.date_acte ?? "",
         extraction: document?.date_extraction ?? "",
+        unites: unites[0]?.date_acte ?? "",
       };
     };
 
     await syncDoctrine({ ...commun, date: "2026-11-21" });
-    assert.deepEqual(lireDates(), { acte: "2026-11-21", extraction: "2026-11-21" });
+    assert.deepEqual(lireDates(), {
+      acte: "2026-11-21",
+      extraction: "2026-11-21",
+      unites: "2026-11-21",
+    });
+    // Le chrome de la page change, le texte extrait non : la date de première
+    // capture tient, au manifeste comme dans les fragments.
+    chrome = "autre outil de page";
     await syncDoctrine({ ...commun, date: "2026-11-25" });
     assert.deepEqual(
       lireDates(),
-      { acte: "2026-11-21", extraction: "2026-11-21" },
-      "un texte inchangé n'est pas redaté",
+      { acte: "2026-11-21", extraction: "2026-11-21", unites: "2026-11-21" },
+      "un texte inchangé n'est pas redaté, même si le fichier change hors du texte",
     );
     corps = "B".repeat(1800);
     await syncDoctrine({ ...commun, date: "2026-11-25" });
     assert.deepEqual(
       lireDates(),
-      { acte: "2026-11-25", extraction: "2026-11-25" },
+      { acte: "2026-11-25", extraction: "2026-11-25", unites: "2026-11-25" },
       "un texte réédité reprend la date de la passe",
     );
   });
@@ -1295,5 +1313,236 @@ describe("synchronisation de la doctrine CNIL", () => {
     );
     assert.deepEqual([...lireCorpusCnil(racine)], [["2018-327", "CNILTEXT000037560659"]]);
     assert.equal(lireCorpusCnil(join(racine, "absent")).size, 0);
+  });
+});
+
+describe("méthodologies de référence révisées en 2026", () => {
+  const PDF_MR = "https://exemple.test/sites/default/files/mr-001_referentiel.pdf";
+  const REFERENCE_MR: PageReference = {
+    type: "referentiel",
+    url: "https://exemple.test/fr/methodologies-de-reference",
+    pages_max: 1,
+    liens: "urls",
+    urls: [
+      {
+        url: PDF_MR,
+        titre: "Méthodologie de référence MR-001 (version 2026)",
+        numero: "2026-050",
+        date_acte: "2026-03-19",
+        remplace: ["2018-153"],
+      },
+    ],
+  };
+
+  it("lit le numéro, la date et le remplacement déclarés d'un document explicite", () => {
+    assert.deepEqual(documentsExplicites(REFERENCE_MR, "exemple.test"), [
+      {
+        url: PDF_MR,
+        titre: "Méthodologie de référence MR-001 (version 2026)",
+        numero: "2026-050",
+        date_acte: "2026-03-19",
+        remplace: ["2018-153"],
+      },
+    ]);
+  });
+
+  it("refuse un remplacement sans numéro de délibération", () => {
+    const sansNumero: PageReference = {
+      ...REFERENCE_MR,
+      urls: [{ url: PDF_MR, titre: "MR-001", remplace: ["2018-153"] }],
+    };
+    assert.throws(() => documentsExplicites(sansNumero, "exemple.test"), /sans porter de numéro/);
+  });
+
+  it("date et numérote une méthodologie depuis le descripteur, et déclare son remplacement", async () => {
+    const racine = racineTemporaire();
+    ecrire(
+      racine,
+      "descripteur.json",
+      JSON.stringify({
+        ...DESCRIPTEUR_SIMULE,
+        domaine: "exemple.test",
+        pages_reference: [REFERENCE_MR],
+      }),
+    );
+    const fetchPdf: FetchPdf = async () => {
+      const octets = new TextEncoder().encode("%PDF-1.4\n% fixture\n");
+      return { ok: true, status: 200, arrayBuffer: async () => octets.buffer.slice(0) as ArrayBuffer };
+    };
+
+    await syncDoctrine({
+      rootDir: racine,
+      descripteurPath: join(racine, "descripteur.json"),
+      date: "2026-11-26",
+      fetchPdf,
+      extraireTexte: async () =>
+        "Paragraphe un de la méthodologie de référence.\n\nParagraphe deux de la méthodologie.",
+      attendre: async () => {},
+      delaiMs: 0,
+    });
+
+    const manifeste = JSON.parse(
+      readFileSync(join(racine, "data", "corpus", "cnil_doctrine", "manifest.json"), "utf8"),
+    ) as {
+      remplacements: Record<string, string>;
+      documents_par_type: Record<
+        string,
+        {
+          slug: string;
+          numero?: string;
+          remplace?: string[];
+          date_acte: string;
+          date_source: string;
+          licence: string;
+          url: string;
+          fragments: number;
+        }[]
+      >;
+    };
+    const document = manifeste.documents_par_type.referentiel?.[0];
+    assert.ok(document !== undefined);
+    assert.equal(document.numero, "2026-050");
+    assert.equal(document.date_acte, "2026-03-19", "la date est celle de la délibération, pas de l'extraction");
+    assert.equal(document.date_source, "descripteur");
+    assert.deepEqual(document.remplace, ["2018-153"]);
+    assert.equal(document.licence, "CC BY-ND 4.0");
+    assert.equal(document.url, PDF_MR);
+    assert.ok(document.fragments > 0);
+    assert.deepEqual(manifeste.remplacements, { "2018-153": "2026-050" });
+
+    const unites = readFileSync(
+      join(racine, "data", "corpus", "cnil_doctrine", "unites.jsonl"),
+      "utf8",
+    )
+      .split("\n")
+      .filter(Boolean)
+      .map((ligne) => JSON.parse(ligne) as { document: string; numero: string });
+    assert.equal(unites[0]?.document, "mr-001-referentiel");
+    assert.equal(unites[0]?.numero, "2026-050");
+  });
+
+  it("rattache les MR de 2026 aux délibérations de 2018 qu'elles remplacent", () => {
+    const declaration = DESCRIPTEUR.pages_reference.flatMap((reference) => reference.urls ?? []);
+    const parMR = new Map(
+      declaration
+        .filter((document) => document.numero !== undefined)
+        .map((document) => [document.titre, document]),
+    );
+    const mr001 = [...parMR.values()].find((document) => /MR-001/.test(document.titre));
+    const mr003 = [...parMR.values()].find((document) => /MR-003/.test(document.titre));
+    assert.equal(mr001?.numero, "2026-050");
+    assert.deepEqual(mr001?.remplace, ["2018-153"]);
+    assert.equal(mr003?.numero, "2026-051");
+    assert.deepEqual(mr003?.remplace, ["2018-154"]);
+
+    const statuts = new Map<string, string>();
+    for (const ligne of readFileSync(
+      join(ICI, "..", "data", "corpus", "cnil", "unites.jsonl"),
+      "utf8",
+    )
+      .split("\n")
+      .filter(Boolean)) {
+      const unite = JSON.parse(ligne) as { numero: string; statut: string };
+      if (!statuts.has(unite.numero)) statuts.set(unite.numero, unite.statut);
+    }
+    assert.equal(statuts.get("2018-153"), "Remplacée par 2026-050");
+    assert.equal(statuts.get("2018-154"), "Remplacée par 2026-051");
+  });
+
+  it("porte les quatre délibérations de 2026 au corpus avec lien, date et licence", () => {
+    const manifeste = JSON.parse(
+      readFileSync(join(ICI, "..", "data", "corpus", "cnil_doctrine", "manifest.json"), "utf8"),
+    ) as {
+      documents_par_type: Record<
+        string,
+        { numero?: string; url: string; date_acte: string; licence: string; fragments: number }[]
+      >;
+      remplacements: Record<string, string>;
+    };
+    const documents = Object.values(manifeste.documents_par_type).flat();
+    for (const numero of ["2026-049", "2026-050", "2026-051", "2026-052"]) {
+      const document = documents.find((entree) => entree.numero === numero);
+      assert.ok(document !== undefined, `délibération ${numero} absente du corpus`);
+      assert.match(document.url, /^https:\/\/www\.cnil\.fr\/sites\/default\/files\/2026-05\/.+\.pdf$/);
+      assert.equal(document.date_acte, "2026-03-19");
+      assert.equal(document.licence, "CC BY-ND 4.0");
+      assert.ok(document.fragments > 0);
+    }
+    assert.deepEqual(manifeste.remplacements, {
+      "2018-153": "2026-050",
+      "2018-154": "2026-051",
+    });
+  });
+
+  it("refuse une date d'acte qui n'existe pas", () => {
+    const impossible: PageReference = {
+      ...REFERENCE_MR,
+      urls: [{ ...REFERENCE_MR.urls?.[0], url: PDF_MR, titre: "MR-001", date_acte: "2026-02-30" }],
+    };
+    assert.throws(() => documentsExplicites(impossible, "exemple.test"), /Date d'acte/);
+  });
+
+  it("retire du manifeste un numéro et un remplacement que le descripteur ne déclare plus", async () => {
+    const racine = racineTemporaire();
+    const avecDeclaration = {
+      ...DESCRIPTEUR_SIMULE,
+      domaine: "exemple.test",
+      pages_reference: [REFERENCE_MR],
+    };
+    ecrire(racine, "descripteur.json", JSON.stringify(avecDeclaration));
+    const fetchPdf: FetchPdf = async () => {
+      const octets = new TextEncoder().encode("%PDF-1.4\n% fixture\n");
+      return { ok: true, status: 200, arrayBuffer: async () => octets.buffer.slice(0) as ArrayBuffer };
+    };
+    const commun = {
+      rootDir: racine,
+      descripteurPath: join(racine, "descripteur.json"),
+      date: "2026-11-26",
+      fetchPdf,
+      extraireTexte: async () => "Paragraphe unique de la méthodologie de référence.",
+      attendre: async () => {},
+      delaiMs: 0,
+    };
+
+    await syncDoctrine(commun);
+    ecrire(
+      racine,
+      "descripteur.json",
+      JSON.stringify({
+        ...avecDeclaration,
+        pages_reference: [
+          {
+            ...REFERENCE_MR,
+            urls: [{ url: PDF_MR, titre: REFERENCE_MR.urls?.[0]?.titre ?? "MR-001" }],
+          },
+        ],
+      }),
+    );
+    await syncDoctrine(commun);
+
+    const manifeste = JSON.parse(
+      readFileSync(join(racine, "data", "corpus", "cnil_doctrine", "manifest.json"), "utf8"),
+    ) as {
+      remplacements: Record<string, string>;
+      documents_par_type: Record<
+        string,
+        { numero?: string; remplace?: string[]; date_source: string }[]
+      >;
+    };
+    const document = manifeste.documents_par_type.referentiel?.[0];
+    assert.ok(document !== undefined);
+    assert.equal(document.numero, undefined, "le numéro retiré du descripteur ne reste pas");
+    assert.equal(document.remplace, undefined);
+    assert.equal(document.date_source, "extraction");
+    assert.deepEqual(manifeste.remplacements, {});
+
+    const unites = readFileSync(
+      join(racine, "data", "corpus", "cnil_doctrine", "unites.jsonl"),
+      "utf8",
+    )
+      .split("\n")
+      .filter(Boolean)
+      .map((ligne) => JSON.parse(ligne) as { numero: string });
+    assert.equal(unites[0]?.numero, "mr-001-referentiel");
   });
 });
