@@ -28,8 +28,14 @@ node mcp/eval/agreger.ts --sources mcp/eval/sources-publiees.json \
   $(for f in aidd_docs/tasks/2026_11/2026_11_26_mode-defaut-hybride/mesures/defaut-*.json; do case "$(basename "$f")" in defaut-hybride-*) continue;; esac; printf -- '--sans %s ' "$f"; done) \
   > "$D/agregats-defaut.md"
 
-# latence de la seconde requête
-node aidd_docs/tasks/2026_11/2026_11_27_quota-textes/mesurer-latence.ts > "$D/latence.json"
+# même agrégat pour le mode global (avant = mesures de #164)
+node mcp/eval/agreger.ts --sources mcp/eval/sources-publiees.json \
+  $(for f in "$D"/sans-*.json; do printf -- '--avec %s ' "$f"; done) \
+  $(for f in aidd_docs/tasks/2026_11/2026_11_26_eval-sources-publiees/mesures/sans-*.json; do printf -- '--sans %s ' "$f"; done) \
+  > "$D/agregats-sans.md"
+
+# latence des deux requêtes (globale k = 5, texte k = 50)
+node mcp/eval/latence-quota.ts > "$D/latence.json"
 ```
 
 « Avant » du jeu de #164 : mesures de #170 (`2026_11_26_mode-defaut-hybride/mesures/defaut-*.json`,
@@ -94,12 +100,14 @@ appliquée ici.
 
 ## Latence
 
-`mesures/latence.json`, produit par `mesurer-latence.ts` sur les 60 questions :
+`mesures/latence.json`, produit par `mcp/eval/latence-quota.ts` sur les 60 questions :
 
-- seconde requête bornée aux corpus texte (`vec0`, `IN`, 50 candidats, sans considérant) : médiane
-  **109,7 ms**, p95 255,4 ms, min 104,3, max 314,9 ;
-- première requête globale : médiane 263,6 ms ; la seconde coûte donc ≈ +42 % quand elle tourne ;
-- 27 des 60 questions reçoivent au moins un passage réservé, soit ≈ 49 ms en moyenne par requête sur le jeu.
+- seconde requête bornée aux corpus texte (`vec0`, `IN`, k = 50 soit 500 candidats, sans considérant) :
+  médiane **109,7 ms**, p95 279,9 ms, min 105,2, max 324,4 ;
+- première requête de `search` (k = 5 soit 50 candidats) : médiane 206,3 ms ; la seconde coûte donc
+  ≈ +53 % quand elle tourne ;
+- la seconde requête tourne sur 29 des 60 questions (27 insèrent au moins un passage), soit ≈ 53 ms en
+  moyenne par requête sur le jeu.
 
 Le temps total de `search` avant/après n'est pas exploitable : la variance d'Ollama dépasse l'écart.
 
@@ -113,7 +121,7 @@ Le temps total de `search` avant/après n'est pas exploitable : la variance d'Ol
   La description de `search` le dit.
 - Les filtres de l'appel (`nature`, dates, type et montant de sanction) suivent la seconde recherche : un
   passage réservé ne contredit jamais la demande.
-- Les documents hors corpus, les décisions et la doctrine ne sont pas modifiés.
+- Les données des corpus ne sont pas modifiées : seuls les passages rendus changent.
 
 ## Validation
 
