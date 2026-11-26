@@ -1,0 +1,9 @@
+{
+  "questions": 60,
+  "modele": "leoipulsar/harrier-0.6b",
+  "global_mediane_ms": 263.64302099999986,
+  "texte_mediane_ms": 109.7484585000002,
+  "texte_p95_ms": 255.36404100000073,
+  "texte_min_ms": 104.31558300000324,
+  "texte_max_ms": 314.919332999998
+}
