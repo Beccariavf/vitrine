@@ -1,0 +1,143 @@
+{
+  "date": "2026-11-26",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "frontieres",
+  "sans_filtre": true,
+  "recherche": "hybride",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "figés (jeu sans split)",
+  "questions": [
+    {
+      "question": "Quelles conditions un chercheur doit-il remplir pour être agréé et obtenir l'accès à des données non publiques détenues par une très grande plateforme ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32022R2065#art_40"
+      ],
+      "refs": [
+        "32022R2065#art_40",
+        "32022R2065#rct_97",
+        "32022R2065#art_73",
+        "CNILTEXT000048925274#f14",
+        "32022R2065#art_41"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7435324490070343,
+        0.7370474934577942,
+        0.6285057059862597,
+        0.7248853147029877,
+        0.6154861301090238
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles informations une plateforme doit-elle communiquer à l'utilisateur dont elle retire le contenu ou dégrade la publication ou suspend le compte ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32022R2065#art_17"
+      ],
+      "refs": [
+        "62023CJ0492#point40",
+        "guidelines-012022-on-data-subject-rights-right-of-access#f322",
+        "binding-decision-22023-on-the-dispute-submitted-by-the-irish-sa#f47",
+        "binding-decision-22023-on-the-dispute-submitted-by-the-irish-sa#f78",
+        "binding-decision-22022-on-the-dispute-arisen-on-the-draft-decision#f253"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7348727285861969,
+        0.7366542518138885,
+        0.6500663415498569,
+        0.6641143488962931,
+        0.7330930233001709
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Le secret des affaires peut-il être opposé à une personne qui a divulgué une information pour exercer sa liberté d'expression ou révéler une illégalité ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016L0943#art_5"
+      ],
+      "refs": [
+        "LEGIARTI000045391854",
+        "32016L0943#art_5",
+        "CETATEXT000045537642#f15",
+        "20204024#f11",
+        "LEGIARTI000037266575"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.7673944979906082,
+        0.7097594738006592,
+        0.7038435339927673,
+        0.6887736618862697,
+        0.7438302934169769
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quel type d'investissement faut-il avoir consenti pour revendiquer la protection spécifique du contenu d'une base de données ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "31996L0009#art_7"
+      ],
+      "refs": [
+        "31996L0009#rct_39",
+        "31996L0009#rct_40",
+        "62002CJ0046#point29",
+        "68f0873f8af7f48b3631eae1#f7",
+        "31996L0009#rct_55"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7290750443935394,
+        0.7577484995126724,
+        0.7432849109172821,
+        0.7628219872713089,
+        0.7376284599304199
+      ],
+      "niveau": "incertain"
+    }
+  ],
+  "agregats": {
+    "semantiques": 4,
+    "top5_semantique_succes": 2,
+    "top1_semantique_succes": 1,
+    "mrr_semantique": 0.375,
+    "referencees": 4,
+    "top5_global_succes": 2,
+    "top5_rendu_succes": 2,
+    "top1_rendu_succes": 1,
+    "mrr_rendu": 0.375,
+    "top5_global_rendu_succes": 2,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 1,
+    "incertain": 3,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  }
+}

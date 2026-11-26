@@ -1,0 +1,247 @@
+{
+  "date": "2026-11-26",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "donnees",
+  "sans_filtre": true,
+  "recherche": "hybride",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "figés (jeu sans split)",
+  "questions": [
+    {
+      "question": "Une entreprise peut-elle écarter une clause sur l'accès et l'utilisation des données qu'un partenaire lui impose sans négociation au motif qu'elle est abusive ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32023R2854#art_13"
+      ],
+      "refs": [
+        "32023R2854#art_13",
+        "32023R2854#rct_62",
+        "32023R2854#rct_58",
+        "32026H2394#rct_10",
+        "32026H2394#rct_11"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7730389088392258,
+        0.7273336946964264,
+        0.7324989140033722,
+        0.7430907785892487,
+        0.74282306432724
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Un fournisseur de services cloud peut-il encore facturer à son client des frais de changement de prestataire et dans quelle limite ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32023R2854#art_29"
+      ],
+      "refs": [
+        "LEGIARTI000049565880",
+        "32023R2854#art_29",
+        "32026H2394#anx_VI",
+        "32023R2854#rct_89",
+        "32023R2854#rct_88"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.7495245933532715,
+        0.7482549548149109,
+        0.745890736579895,
+        0.7446058094501495,
+        0.7207853496074677
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Le propriétaire d'un objet connecté peut-il exiger que les données générées par son appareil soient transmises directement à un prestataire de son choix ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32023R2854#art_5"
+      ],
+      "refs": [
+        "32023R2854#rct_34",
+        "32023R2854#art_3",
+        "32023R2854#art_43",
+        "32023R2854#rct_35",
+        "32023R2854#rct_22"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7153745591640472,
+        0.7085550129413605,
+        0.6958703994750977,
+        0.722346693277359,
+        0.6953747570514679
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Dans quelles situations une autorité publique peut-elle obliger une entreprise à lui communiquer des données qu'elle détient ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32023R2854#art_15"
+      ],
+      "refs": [
+        "32016R0679#art_86",
+        "CETATEXT000051550114#f5",
+        "guide-rgpd-affaires-publiques-acap-afcl-apap-scrp#f89",
+        "guidelines-012022-on-data-subject-rights-right-of-access#f234",
+        "guide-rgpd-affaires-publiques-acap-afcl-apap-scrp#f207"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7063659131526947,
+        0.6432184163549794,
+        0.7255558967590332,
+        0.6395390432020046,
+        0.7196215391159058
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles mentions et justifications doivent figurer dans la demande par laquelle une administration réclame des données à une entreprise ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32023R2854#art_17"
+      ],
+      "refs": [
+        "62023CJ0416#point41",
+        "CETATEXT000038738019#f6",
+        "guide-rgpd-affaires-publiques-acap-afcl-apap-scrp#f89",
+        "CNILTEXT000017654284#f2",
+        "62023CJ0416#point22"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7460644543170929,
+        0.5532548671907086,
+        0.7418816685676575,
+        0.5372873213161525,
+        0.741663008928299
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Pendant combien de temps un organisme public peut-il réserver à un seul opérateur le droit de réutiliser des données protégées qu'il détient ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32022R0868#art_4"
+      ],
+      "refs": [
+        "guide-organisations-syndicales#f81",
+        "32022R0868#art_9",
+        "CNILTEXT000054136834#f102",
+        "guide-organisations-syndicales#f1",
+        "32022R0868#art_4"
+      ],
+      "rangs": [
+        5
+      ],
+      "similarites": [
+        0.7156608998775482,
+        0.731726199388504,
+        0.7194624245166779,
+        0.6353165532569939,
+        0.7184746265411377
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Une plateforme qui met en relation vendeurs et acheteurs de données doit-elle attendre une autorisation pour exercer ou une simple notification préalable suffit-elle ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32022R0868#art_11"
+      ],
+      "refs": [
+        "guidelines-22019-on-the-processing-of-personal-data-under-article-61b-gdpr-in#f76",
+        "62023CJ0492#point106",
+        "62023TJ0348#point52",
+        "62023CJ0492#point46",
+        "61372821cd5801467742f96d#f13"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7027174532413483,
+        0.7267738580703735,
+        0.6733798233624448,
+        0.7251825630664825,
+        0.613104047276216
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Un État membre peut-il imposer à une entreprise de stocker ou de traiter sur son territoire les données non personnelles qu'elle détient ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32018R1807#art_4"
+      ],
+      "refs": [
+        "62016CJ0210#point6",
+        "31996L0009#rct_56",
+        "CNILTEXT000044840062#f38",
+        "CNILTEXT000034728338#f17",
+        "CNILTEXT000046562676#f9"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.701130747795105,
+        0.7006896138191223,
+        0.7018420398235321,
+        0.6993789076805115,
+        0.7239424884319305
+      ],
+      "niveau": "incertain"
+    }
+  ],
+  "agregats": {
+    "semantiques": 8,
+    "top5_semantique_succes": 3,
+    "top1_semantique_succes": 1,
+    "mrr_semantique": 0.2125,
+    "referencees": 8,
+    "top5_global_succes": 3,
+    "top5_rendu_succes": 3,
+    "top1_rendu_succes": 1,
+    "mrr_rendu": 0.2125,
+    "top5_global_rendu_succes": 3,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 2,
+    "incertain": 6,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  }
+}

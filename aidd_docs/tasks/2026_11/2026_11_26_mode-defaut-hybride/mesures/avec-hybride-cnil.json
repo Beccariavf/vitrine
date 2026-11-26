@@ -1,0 +1,116 @@
+{
+  "date": "2026-11-26",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "cnil",
+  "recherche": "hybride",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "figés (jeu sans split)",
+  "questions": [
+    {
+      "question": "Quelles clauses un contrat avec un prestataire informatique doit-il comporter pour encadrer les données qui lui sont confiées ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000045614368"
+      ],
+      "refs": [
+        "CNILTEXT000029224324#f14",
+        "CNILTEXT000039419459#f37",
+        "CNILTEXT000017653397#f10",
+        "CNILTEXT000031833147#f19",
+        "CNILTEXT000021335766#f11"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7998452484607697,
+        0.7565342783927917,
+        0.7469255030155182,
+        0.7573957741260529,
+        0.7603833824396133
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelles obligations s'appliquent à un site de santé qui collecte des données personnelles au moyen de quiz en ligne ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000047552103"
+      ],
+      "refs": [
+        "CNILTEXT000047552103#f24",
+        "CNILTEXT000047552103#f30",
+        "CNILTEXT000047552103#f25",
+        "CNILTEXT000017653397#f2",
+        "CNILTEXT000017653397#f6"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.774258092045784,
+        0.7473368048667908,
+        0.743495762348175,
+        0.7543159127235413,
+        0.7291492819786072
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Une politique d'habilitation qui permet à chaque soignant de consulter tous les dossiers patients de l'établissement est-elle conforme aux exigences de sécurité ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000054790100"
+      ],
+      "refs": [
+        "CNILTEXT000017651923#f11",
+        "CNILTEXT000054790100#f35",
+        "CNILTEXT000017651924#f10",
+        "CNILTEXT000017651922#f13",
+        "CNILTEXT000054790100#f41"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.7508995532989502,
+        0.7472127974033356,
+        0.7409867644309998,
+        0.7391209900379181,
+        0.7320381999015808
+      ],
+      "niveau": "incertain"
+    }
+  ],
+  "agregats": {
+    "semantiques": 3,
+    "top5_semantique_succes": 2,
+    "top1_semantique_succes": 1,
+    "mrr_semantique": 0.5,
+    "referencees": 3,
+    "top5_global_succes": 2,
+    "top5_rendu_succes": 2,
+    "top1_rendu_succes": 1,
+    "mrr_rendu": 0.5,
+    "top5_global_rendu_succes": 2,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 2,
+    "incertain": 1,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  }
+}

@@ -595,6 +595,7 @@ async function mesurer(
   corpus: string | undefined,
   recherche: ModeRecherche,
   rerank?: Reranker,
+  detection = false,
 ): Promise<{ mesures: Mesure[]; durees: number[] }> {
   const mesures: Mesure[] = [];
   const durees: number[] = [];
@@ -606,7 +607,8 @@ async function mesurer(
         k: 5,
         // Sans corpus, la passe ne doit être bornée ni par la collection ni par
         // un document nommé dans la question : c'est le volume entier qui répond.
-        ...(corpus === undefined ? { sans_detection: true } : { corpus }),
+        // `--detection` garde la détection du produit : c'est le mode par défaut.
+        ...(corpus === undefined ? (detection ? {} : { sans_detection: true }) : { corpus }),
       },
       {
         embedder,
@@ -1154,6 +1156,8 @@ export type ObjetMesureJson = {
   corpus: string;
   /** Vrai quand la recherche a tourné sans borne de collection (`--sans-filtre`). */
   sans_filtre?: boolean;
+  /** Vrai quand la passe sans filtre garde la détection du produit (`--detection`). */
+  detection?: boolean;
   recherche: ModeRecherche;
   /** Variante d'instruction de requête choisie explicitement ; absente, celle du produit. */
   instruction?: VarianteInstruction;
@@ -1190,6 +1194,7 @@ export function objetMesureJson(args: {
   instruction?: VarianteInstruction;
   rerank?: BlocRerankJson;
   sansFiltre?: boolean;
+  detection?: boolean;
 }): ObjetMesureJson {
   const lexical = args.recherche === "lexicale";
   return {
@@ -1199,6 +1204,7 @@ export function objetMesureJson(args: {
     split: args.split,
     corpus: args.corpus,
     ...(args.sansFiltre === true ? { sans_filtre: true } : {}),
+    ...(args.detection === true ? { detection: true } : {}),
     recherche: args.recherche,
     ...(args.instruction === undefined ? {} : { instruction: args.instruction }),
     index: args.index,
@@ -1268,6 +1274,9 @@ async function main(argv: string[]): Promise<void> {
   // que le produit rend quand aucune borne n'est demandée.
   const sansFiltre = argv.includes("--sans-filtre");
   const corpusRecherche = sansFiltre ? undefined : corpus;
+  // Avec `--sans-filtre`, `--detection` laisse le serveur honorer le document ou
+  // le corpus nommé dans la question, comme le produit sans paramètre `corpus`.
+  const detection = sansFiltre && argv.includes("--detection");
 
   const modele = valeurDe("--modele", argv);
   const dim = valeurDe("--dim", argv);
@@ -1306,6 +1315,7 @@ async function main(argv: string[]): Promise<void> {
       corpusRecherche,
       recherche,
       rerank,
+      detection,
     );
 
     const mesuresDev =
@@ -1417,6 +1427,7 @@ async function main(argv: string[]): Promise<void> {
         seuilsOrigine: origine,
         mesures,
         ...(sansFiltre ? { sansFiltre: true } : {}),
+        ...(detection ? { detection: true } : {}),
         ...(optionInstruction === undefined ? {} : { instruction: variante }),
         ...(rerank === undefined
           ? {}

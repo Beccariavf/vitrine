@@ -1,0 +1,117 @@
+{
+  "date": "2026-11-26",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "cjue",
+  "sans_filtre": true,
+  "recherche": "hybride",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "figés (jeu sans split)",
+  "questions": [
+    {
+      "question": "Un réseau social peut-il déduire des données sensibles de la simple consultation de sites tiers par ses utilisateurs ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "62021CJ0252"
+      ],
+      "refs": [
+        "62021CJ0252#point84",
+        "62021CJ0252#point125",
+        "binding-decision-42022-on-the-dispute-submitted-by-the-irish-sa-on#f304",
+        "62021CJ0252#point138",
+        "62021CJ0252#point64"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7507574260234833,
+        0.7248351871967316,
+        0.7254314124584198,
+        0.7237600684165955,
+        0.736972838640213
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelles vérifications faut-il faire avant d'envoyer des données à un prestataire situé aux États-Unis ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "62018CJ0311"
+      ],
+      "refs": [
+        "32023D1795#art_1",
+        "CNILTEXT000020996614#f18",
+        "32016D1250#art_1",
+        "CNILTEXT000045133748#f16",
+        "cnil-pia-captoo-fr#f51"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7044679820537567,
+        0.7069533467292786,
+        0.699356347322464,
+        0.710017055273056,
+        0.7108104228973389
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Les informations saisies pour commander en ligne un médicament sans ordonnance sont-elles des données de santé même si l'acheteur n'est pas nécessairement le patient ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "62023CJ0021"
+      ],
+      "refs": [
+        "CETATEXT000027273313#f10",
+        "CETATEXT000053483461#f16",
+        "62023CJ0021#point90",
+        "referentiel-acces-precoce#f53",
+        "62023CJ0021#point94"
+      ],
+      "rangs": [
+        3
+      ],
+      "similarites": [
+        0.7187792658805847,
+        0.7034794688224792,
+        0.8005535900592804,
+        0.684985816818339,
+        0.7902139723300934
+      ],
+      "niveau": "incertain"
+    }
+  ],
+  "agregats": {
+    "semantiques": 3,
+    "top5_semantique_succes": 2,
+    "top1_semantique_succes": 1,
+    "mrr_semantique": 0.4444444444444444,
+    "referencees": 3,
+    "top5_global_succes": 2,
+    "top5_rendu_succes": 2,
+    "top1_rendu_succes": 1,
+    "mrr_rendu": 0.4444444444444444,
+    "top5_global_rendu_succes": 2,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 1,
+    "incertain": 2,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  }
+}

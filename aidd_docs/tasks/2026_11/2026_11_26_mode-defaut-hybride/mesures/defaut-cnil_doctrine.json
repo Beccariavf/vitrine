@@ -1,0 +1,144 @@
+{
+  "date": "2026-11-26",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "cnil_doctrine",
+  "sans_filtre": true,
+  "detection": true,
+  "recherche": "dense",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "figés (jeu sans split)",
+  "questions": [
+    {
+      "question": "Peut-on collecter massivement des données personnelles accessibles en ligne pour entraîner une IA et quelles garanties la CNIL exige-t-elle dans ce cas ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "focus-interet-legitime-collecte-par-moissonnage"
+      ],
+      "refs": [
+        "32024R1689#art_59",
+        "32024R1689#art_10",
+        "32024R1689#art_5",
+        "32024R1689#rct_178",
+        "32024R1689#art_4bis"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.6939758658409119,
+        0.6902941763401031,
+        0.6878933608531952,
+        0.7064537405967712,
+        0.6827762722969055
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles conditions cumulatives permettent de fonder le développement d'un système d'IA sur l'intérêt légitime plutôt que sur le consentement des personnes ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "base-legale-interet-legitime-developpement-systeme"
+      ],
+      "refs": [
+        "32024R1689#rct_137",
+        "32024R1689#rct_178",
+        "32024R1689#art_5",
+        "32024R1689#rct_21",
+        "32024R1689#rct_23"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7486644685268402,
+        0.7424976229667664,
+        0.7186669409275055,
+        0.7337535917758942,
+        0.7332446873188019
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Dans une recherche en santé un même destinataire peut-il accéder simultanément aux données administratives et aux données de recherche ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "mr-001-referentiel#f44"
+      ],
+      "refs": [
+        "mr-001-referentiel#f46",
+        "mr-003-referentiel#f43",
+        "mr-001-referentiel#f45",
+        "mr-001-referentiel#f52",
+        "mr-001-referentiel#f44"
+      ],
+      "rangs": [
+        5
+      ],
+      "similarites": [
+        0.7775582075119019,
+        0.7637728452682495,
+        0.7539592832326889,
+        0.7484302818775177,
+        0.7462857961654663
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "L'information RGPD due aux participants d'une recherche en santé peut-elle leur être adressée par voie électronique ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "mr-001-referentiel#f52"
+      ],
+      "refs": [
+        "32016R0679#rct_161",
+        "32016R0679#art_13",
+        "32016R0679#art_12",
+        "32016R0679#art_15",
+        "32016R0679#art_20"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.6987411975860596,
+        0.6713172495365143,
+        0.6682013273239136,
+        0.6661792993545532,
+        0.6654214560985565
+      ],
+      "niveau": "incertain"
+    }
+  ],
+  "agregats": {
+    "semantiques": 4,
+    "top5_semantique_succes": 1,
+    "top1_semantique_succes": 0,
+    "mrr_semantique": 0.05,
+    "referencees": 4,
+    "top5_global_succes": 1,
+    "top5_rendu_succes": 1,
+    "top1_rendu_succes": 0,
+    "mrr_rendu": 0.05,
+    "top5_global_rendu_succes": 1,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 1,
+    "incertain": 3,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  }
+}
