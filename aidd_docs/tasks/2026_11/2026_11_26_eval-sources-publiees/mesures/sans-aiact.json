@@ -1,0 +1,273 @@
+{
+  "date": "2026-11-26",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "aiact",
+  "sans_filtre": true,
+  "recherche": "dense",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine-wt-164/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "figés (jeu sans split)",
+  "questions": [
+    {
+      "question": "Une entreprise peut-elle éviter les obligations les plus lourdes prévues pour un système d'IA figurant parmi les usages sensibles et à quelles conditions ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32024R1689#art_6"
+      ],
+      "refs": [
+        "32024R1689#rct_178",
+        "entree-en-vigueur-du-reglement-europeen-sur-lia-les-premieres-questions-reponses-de-la-cnil#f19",
+        "32024R1689#art_42",
+        "32024R1689#art_26",
+        "q-r-navigating-ai-act#f51"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7588382661342621,
+        0.7495817542076111,
+        0.7295470237731934,
+        0.7255884110927582,
+        0.7405064702033997
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quels usages de l'intelligence artificielle sont prohibés en tant que tels dans l'Union européenne sans qu'un contrôle de conformité puisse les régulariser ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32024R1689#art_5"
+      ],
+      "refs": [
+        "lignes-directrices-art-5#f104",
+        "lignes-directrices-art-5#f679",
+        "lignes-directrices-art-5#f551",
+        "lignes-directrices-art-5#f3",
+        "entree-en-vigueur-du-reglement-europeen-sur-lia-les-premieres-questions-reponses-de-la-cnil#f19"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7669121623039246,
+        0.7585625648498535,
+        0.7556867450475693,
+        0.7492855787277222,
+        0.7492317259311676
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Une société qui met un outil d'IA à disposition de ses salariés doit-elle leur faire passer une certification individuelle ou peut-elle adapter sa démarche aux usages et aux compétences ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32024R1689#art_4"
+      ],
+      "refs": [
+        "ia-comment-etre-en-conformite-avec-le-rgpd#f14",
+        "ia-comment-etre-en-conformite-avec-le-rgpd#f34",
+        "CNILTEXT000047707063#f14",
+        "q-r-navigating-ai-act#f51",
+        "ia-comment-etre-en-conformite-avec-le-rgpd#f16"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7398168444633484,
+        0.7322540283203125,
+        0.7251523733139038,
+        0.72515007853508,
+        0.7245213985443115
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Que doit permettre concrètement un système d'IA à haut risque pour que les personnes chargées de le surveiller puissent reprendre la main y compris l'arrêter ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32024R1689#art_14"
+      ],
+      "refs": [
+        "32024R1689#art_14",
+        "32024R1689#art_26",
+        "32024R1689#rct_178",
+        "32024R1689#art_21",
+        "32024R1689#art_27"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7668552100658417,
+        0.7577234208583832,
+        0.7675828039646149,
+        0.7452449798583984,
+        0.7399953901767731
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles informations et documents un fournisseur de modèle d'IA à usage général doit-il produire puis mettre à jour et rendre publics indépendamment du niveau de performance du modèle ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32024R1689#art_53"
+      ],
+      "refs": [
+        "32024R1689#art_53",
+        "ia-informer-les-personnes-concernees#f31",
+        "ia-informer-les-personnes-concernees#f30",
+        "code-gpai-transparence#f10",
+        "code-gpai-transparence#f8"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7933882623910904,
+        0.7894551455974579,
+        0.7879858016967773,
+        0.7874395698308945,
+        0.7845786958932877
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles vérifications un fournisseur d'IA à haut risque doit-il documenter sur l'origine et la représentativité ainsi que sur les biais de ses jeux de données ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32024R1689#art_10"
+      ],
+      "refs": [
+        "32024R1689#art_10",
+        "ia-liste-de-verification#f17",
+        "32024R1689#art_26",
+        "32024R1689#rct_67",
+        "32024R1689#art_16"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7620818316936493,
+        0.7759869247674942,
+        0.7369646728038788,
+        0.7462108433246613,
+        0.7250120341777802
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Tout utilisateur professionnel d'une IA à haut risque doit-il réaliser une analyse d'impact sur les droits fondamentaux ou cette obligation dépend-elle de son statut et du type d'usage ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32024R1689#art_27"
+      ],
+      "refs": [
+        "32024R1689#art_27",
+        "entree-en-vigueur-du-reglement-europeen-sur-lia-les-premieres-questions-reponses-de-la-cnil#f25",
+        "32016R0679#art_35",
+        "CNILTEXT000046562676#f35",
+        "lignes-directrices-art-5#f598"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.783170759677887,
+        0.7773779034614563,
+        0.7516273111104965,
+        0.7677281051874161,
+        0.7654786854982376
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles obligations d'information et de marquage pèsent respectivement sur l'éditeur et sur l'utilisateur d'un système d'IA génératif ou conversationnel ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32024R1689#art_50"
+      ],
+      "refs": [
+        "lignes-directrices-art-50#f218",
+        "32024R1689#art_50",
+        "les-questions-reponses-de-la-cnil-sur-lutilisation-dun-systeme-dia-generative#f1",
+        "lignes-directrices-art-50#f209",
+        "lignes-directrices-art-5#f137"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.7691131383180618,
+        0.7441307008266449,
+        0.7596740424633026,
+        0.7594876289367676,
+        0.7577512562274933
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Une personne écartée par une décision assistée par une IA à haut risque peut-elle obtenir une explication du rôle exact joué par l'outil même si la décision n'était pas entièrement automatisée ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32024R1689#art_86"
+      ],
+      "refs": [
+        "ia-comment-etre-en-conformite-avec-le-rgpd#f36",
+        "ia-comment-etre-en-conformite-avec-le-rgpd#f35",
+        "ia-comment-etre-en-conformite-avec-le-rgpd#f34",
+        "32024R1689#art_86",
+        "62024CO0806#point4"
+      ],
+      "rangs": [
+        4
+      ],
+      "similarites": [
+        0.7791716158390045,
+        0.7746269553899765,
+        0.7690547406673431,
+        0.7468236088752747,
+        0.7627559751272202
+      ],
+      "niveau": "incertain"
+    }
+  ],
+  "agregats": {
+    "semantiques": 9,
+    "top5_semantique_succes": 6,
+    "top1_semantique_succes": 4,
+    "mrr_semantique": 0.5277777777777778,
+    "referencees": 9,
+    "top5_global_succes": 6,
+    "top5_rendu_succes": 6,
+    "top1_rendu_succes": 4,
+    "mrr_rendu": 0.5277777777777778,
+    "top5_global_rendu_succes": 6,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 1,
+    "incertain": 8,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  }
+}

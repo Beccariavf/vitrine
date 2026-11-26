@@ -1,0 +1,24 @@
+[
+  {
+    "question": "Les examens génétiques à des fins médicales peuvent-ils être réalisés sans le consentement écrit de la personne ?",
+    "reference_citee": "Code civil, article 16-10",
+    "url": "https://www.vigier-avocats.com/examens-genetiques-a-des-fins-medicales-de-nouveaux-modeles-de-consentement-fixes-par-arrete/",
+    "auteur": "Vigier Avocats",
+    "date_publication": null,
+    "date_lecture": "2026-11-26",
+    "champ": "santé",
+    "corpus_attendu": "textes_fr",
+    "raison": "Le corpus textes_fr ne contient du Code civil que l'article 9 ; l'article 16-10 est absent."
+  },
+  {
+    "question": "Quel montant maximal l'arrêté de 2025 fixe-t-il pour les frais de transfert de données cloud ?",
+    "reference_citee": "Arrêté du 17 novembre 2025",
+    "url": "https://derriennic.com/frais-sortie-cloud-arcep-publie-lignes-directrices/",
+    "auteur": "Géraldine Pacaut",
+    "date_publication": "2026-08-17",
+    "date_lecture": "2026-11-26",
+    "champ": "données non personnelles",
+    "corpus_attendu": "textes_fr",
+    "raison": "Cet arrêté n'est pas dans le corpus textes_fr."
+  }
+]

@@ -1,0 +1,61 @@
+question,type,sources_attendues,piege,corpus
+Quelles conditions permettent d'obtenir réparation après une fuite massive de données imputable à l'administration fiscale ?,conceptuelle,32016R0679#art_82,non,rgpd
+Un salarié peut-il être indemnisé sans prouver un préjudice distinct de la violation du RGPD ?,conceptuelle,6a3cc051cdc6046d479d8eb0,non,cc
+Quelles garanties s'appliquent lorsqu'un algorithme décide seul d'accorder ou de refuser un crédit ?,conceptuelle,32016R0679#art_22,non,rgpd
+Quelles conditions autorisent le traitement de données de santé par un service numérique ?,conceptuelle,32016R0679#art_9,non,rgpd
+Un réseau social peut-il déduire des données sensibles de la simple consultation de sites tiers par ses utilisateurs ?,conceptuelle,62021CJ0252,non,cjue
+L'intérêt commercial suffit-il à justifier un traitement de données sans consentement ?,conceptuelle,32016R0679#art_6,non,rgpd
+Quelles clauses un contrat avec un prestataire informatique doit-il comporter pour encadrer les données qui lui sont confiées ?,conceptuelle,CNILTEXT000045614368,non,cnil
+Quel consentement faut-il recueillir avant de déposer un cookie publicitaire sur le terminal d'un internaute ?,conceptuelle,LEGIARTI000037813978,non,lil
+Une mention au fichier des antécédents judiciaires peut-elle être consultée lors de l'enquête préalable à une naturalisation ?,conceptuelle,CETATEXT000047461392,non,ce
+Quelles dérogations du RGPD s'appliquent aux traitements journalistiques des organes de presse ?,conceptuelle,LEGIARTI000037813972,non,lil
+Quelles obligations s'appliquent à un site de santé qui collecte des données personnelles au moyen de quiz en ligne ?,conceptuelle,CNILTEXT000047552103,non,cnil
+Une entreprise doit-elle mener une étude d'impact avant de déployer un outil de surveillance de ses salariés ?,conceptuelle,32016R0679#art_35,non,rgpd
+Quelles organisations sont tenues de nommer un délégué à la protection des données ?,conceptuelle,32016R0679#art_37,non,rgpd
+Quelles vérifications faut-il faire avant d'envoyer des données à un prestataire situé aux États-Unis ?,conceptuelle,62018CJ0311,non,cjue
+Les images d'une caméra qui filme en continu un salarié à son poste permettent-elles de fonder son licenciement ?,conceptuelle,60d41fb4f185911b57e04dc3,non,cc
+Dans quel délai et avec quel contenu faut-il alerter la CNIL après la découverte d'une violation de données ?,conceptuelle,32016R0679#art_33,non,rgpd
+Comment faire supprimer ses coordonnées d'un annuaire public accessible en ligne ?,conceptuelle,32016R0679#art_17,non,rgpd
+Le droit d'accès aux données personnelles peut-il servir à obtenir des courriels avant un litige avec son employeur ?,conceptuelle,32016R0679#art_15,non,rgpd
+Une société établie hors d'Europe qui vise des utilisateurs français relève-t-elle du règlement européen sur les données ?,conceptuelle,32016R0679#art_3,non,rgpd
+Quel délai s'applique pour informer une personne dont les données ont été obtenues auprès d'un tiers ?,conceptuelle,32016R0679#art_14,non,rgpd
+Une entreprise peut-elle écarter une clause sur l'accès et l'utilisation des données qu'un partenaire lui impose sans négociation au motif qu'elle est abusive ?,conceptuelle,32023R2854#art_13,non,donnees
+Un fournisseur de services cloud peut-il encore facturer à son client des frais de changement de prestataire et dans quelle limite ?,conceptuelle,32023R2854#art_29,non,donnees
+Le propriétaire d'un objet connecté peut-il exiger que les données générées par son appareil soient transmises directement à un prestataire de son choix ?,conceptuelle,32023R2854#art_5,non,donnees
+Dans quelles situations une autorité publique peut-elle obliger une entreprise à lui communiquer des données qu'elle détient ?,conceptuelle,32023R2854#art_15,non,donnees
+Quelles mentions et justifications doivent figurer dans la demande par laquelle une administration réclame des données à une entreprise ?,conceptuelle,32023R2854#art_17,non,donnees
+Pendant combien de temps un organisme public peut-il réserver à un seul opérateur le droit de réutiliser des données protégées qu'il détient ?,conceptuelle,32022R0868#art_4,non,donnees
+Une plateforme qui met en relation vendeurs et acheteurs de données doit-elle attendre une autorisation pour exercer ou une simple notification préalable suffit-elle ?,conceptuelle,32022R0868#art_11,non,donnees
+Quelles conditions un chercheur doit-il remplir pour être agréé et obtenir l'accès à des données non publiques détenues par une très grande plateforme ?,conceptuelle,32022R2065#art_40,non,frontieres
+Quelles informations une plateforme doit-elle communiquer à l'utilisateur dont elle retire le contenu ou dégrade la publication ou suspend le compte ?,conceptuelle,32022R2065#art_17,non,frontieres
+Le secret des affaires peut-il être opposé à une personne qui a divulgué une information pour exercer sa liberté d'expression ou révéler une illégalité ?,conceptuelle,32016L0943#art_5,non,frontieres
+Quel type d'investissement faut-il avoir consenti pour revendiquer la protection spécifique du contenu d'une base de données ?,conceptuelle,31996L0009#art_7,non,frontieres
+Une administration qui fonde une décision individuelle sur un algorithme doit-elle en informer la personne concernée et celle-ci peut-elle obtenir les règles du traitement ?,conceptuelle,LEGIARTI000033205535,non,textes_fr
+Un État membre peut-il imposer à une entreprise de stocker ou de traiter sur son territoire les données non personnelles qu'elle détient ?,conceptuelle,32018R1807#art_4,non,donnees
+Le bordereau détaillant les prix unitaires d'une offre de marché public est-il communicable à un tiers qui en fait la demande ?,conceptuelle,20226235#f5,non,cada
+Un décret peut-il réserver la perception d'une redevance de réutilisation aux administrations dont l'activité de diffusion d'informations publiques est couverte à moins de 75 % par des recettes fiscales ?,conceptuelle,CETATEXT000037534137#f11,non,ce
+Une entreprise peut-elle éviter les obligations les plus lourdes prévues pour un système d'IA figurant parmi les usages sensibles et à quelles conditions ?,conceptuelle,32024R1689#art_6,non,aiact
+Quels usages de l'intelligence artificielle sont prohibés en tant que tels dans l'Union européenne sans qu'un contrôle de conformité puisse les régulariser ?,conceptuelle,32024R1689#art_5,non,aiact
+Une société qui met un outil d'IA à disposition de ses salariés doit-elle leur faire passer une certification individuelle ou peut-elle adapter sa démarche aux usages et aux compétences ?,conceptuelle,32024R1689#art_4,non,aiact
+Que doit permettre concrètement un système d'IA à haut risque pour que les personnes chargées de le surveiller puissent reprendre la main y compris l'arrêter ?,conceptuelle,32024R1689#art_14,non,aiact
+Quelles informations et documents un fournisseur de modèle d'IA à usage général doit-il produire puis mettre à jour et rendre publics indépendamment du niveau de performance du modèle ?,conceptuelle,32024R1689#art_53,non,aiact
+Quelles vérifications un fournisseur d'IA à haut risque doit-il documenter sur l'origine et la représentativité ainsi que sur les biais de ses jeux de données ?,conceptuelle,32024R1689#art_10,non,aiact
+Tout utilisateur professionnel d'une IA à haut risque doit-il réaliser une analyse d'impact sur les droits fondamentaux ou cette obligation dépend-elle de son statut et du type d'usage ?,conceptuelle,32024R1689#art_27,non,aiact
+Quelles obligations d'information et de marquage pèsent respectivement sur l'éditeur et sur l'utilisateur d'un système d'IA génératif ou conversationnel ?,conceptuelle,32024R1689#art_50,non,aiact
+Quelles explications une personne peut-elle exiger lorsqu'une décision la concernant a été prise au moyen d'un algorithme sans que le secret des affaires y fasse obstacle par principe ?,conceptuelle,32016R0679#art_15,non,rgpd
+Peut-on entraîner un modèle d'IA avec les données de ses clients sur le fondement de l'intérêt légitime et sous quelles conditions ?,conceptuelle,32016R0679#art_6,non,rgpd
+Tout logiciel automatisé entre-t-il dans le champ du règlement européen sur l'IA ou doit-il présenter certaines caractéristiques pour être qualifié de système d'IA ?,conceptuelle,lignes-directrices-art-3#f1,non,doctrine_ue
+À partir de quel volume cumulé de calcul un modèle d'IA à usage général est-il présumé présenter un risque systémique ?,conceptuelle,lignes-directrices-gpai#f51,non,doctrine_ue
+Peut-on collecter massivement des données personnelles accessibles en ligne pour entraîner une IA et quelles garanties la CNIL exige-t-elle dans ce cas ?,conceptuelle,focus-interet-legitime-collecte-par-moissonnage,non,cnil_doctrine
+Quelles conditions cumulatives permettent de fonder le développement d'un système d'IA sur l'intérêt légitime plutôt que sur le consentement des personnes ?,conceptuelle,base-legale-interet-legitime-developpement-systeme,non,cnil_doctrine
+Une personne écartée par une décision assistée par une IA à haut risque peut-elle obtenir une explication du rôle exact joué par l'outil même si la décision n'était pas entièrement automatisée ?,conceptuelle,32024R1689#art_86,non,aiact
+Le refus d'accéder à ses données de santé électroniques ouvert par certains États membres peut-il être retiré après avoir été exercé ?,conceptuelle,32025R0327#art_10,non,sante_ue
+Dans quel délai maximal le détenteur de données de santé doit-il remettre à l'organisme national d'accès les données réclamées ?,conceptuelle,32025R0327#art_60,non,sante_ue
+L'administration et l'exploitation du système d'information qui contient des données de santé constituent-elles une activité d'hébergement soumise au régime HDS ?,conceptuelle,LEGIARTI000053720790,non,textes_fr
+Le patient peut-il accéder directement aux informations de santé le concernant sans passer par un médecin ?,conceptuelle,LEGIARTI000042685313,non,textes_fr
+Un arrêt de travail prescrit ou renouvelé pour la première fois à l'occasion d'une téléconsultation peut-il dépasser trois jours ?,conceptuelle,LEGIARTI000054336504,non,textes_fr
+Une politique d'habilitation qui permet à chaque soignant de consulter tous les dossiers patients de l'établissement est-elle conforme aux exigences de sécurité ?,conceptuelle,CNILTEXT000054790100,non,cnil
+Dans une recherche en santé un même destinataire peut-il accéder simultanément aux données administratives et aux données de recherche ?,conceptuelle,mr-001-referentiel#f44,non,cnil_doctrine
+L'information RGPD due aux participants d'une recherche en santé peut-elle leur être adressée par voie électronique ?,conceptuelle,mr-001-referentiel#f52,non,cnil_doctrine
+Le Conseil d'État a-t-il annulé le décret de 2021 qui confie à la plateforme des données de santé une copie de la base principale du SNDS ?,conceptuelle,CETATEXT000046598400,non,ce
+Les informations saisies pour commander en ligne un médicament sans ordonnance sont-elles des données de santé même si l'acheteur n'est pas nécessairement le patient ?,conceptuelle,62023CJ0021,non,cjue

@@ -1,0 +1,602 @@
+[
+  {
+    "question": "Quelles conditions permettent d'obtenir réparation après une fuite massive de données imputable à l'administration fiscale ?",
+    "champ": "données personnelles",
+    "corpus_attendu": "rgpd",
+    "url": "https://www.village-justice.com/articles/fuite-donnees-dgfip-quelles-conditions-pour-obtenir-reparation,58979.html",
+    "auteur": "Hébert-Marc Gustave et Regina Kissi",
+    "date_publication": "2026-09-12",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32016R0679#art_82"
+  },
+  {
+    "question": "Un salarié peut-il être indemnisé sans prouver un préjudice distinct de la violation du RGPD ?",
+    "champ": "données personnelles",
+    "corpus_attendu": "cc",
+    "url": "https://www.village-justice.com/articles/manquement-rgpd-salarie-est-indemnise-que-prouve-prejudice,58153.html",
+    "auteur": "Sofiane Coly",
+    "date_publication": "2026-07-13",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "6a3cc051cdc6046d479d8eb0"
+  },
+  {
+    "question": "Quelles garanties s'appliquent lorsqu'un algorithme décide seul d'accorder ou de refuser un crédit ?",
+    "champ": "données personnelles",
+    "corpus_attendu": "rgpd",
+    "url": "https://www.village-justice.com/articles/profilage-decision-automatisee-quelle-place-pour-credit-scoring-sous-prisme,46102.html",
+    "auteur": "Charlotte Gerrish et Nathalie Pouderoux",
+    "date_publication": "2023-05-11",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32016R0679#art_22"
+  },
+  {
+    "question": "Quelles conditions autorisent le traitement de données de santé par un service numérique ?",
+    "champ": "données personnelles",
+    "corpus_attendu": "rgpd",
+    "url": "https://www.village-justice.com/articles/sante-contours-regime-responsabilite-des-donnees-personnelles-sensibles,40216.html",
+    "auteur": "M. Kebir et Timothée Delobel",
+    "date_publication": "2021-09-21",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32016R0679#art_9"
+  },
+  {
+    "question": "Un réseau social peut-il déduire des données sensibles de la simple consultation de sites tiers par ses utilisateurs ?",
+    "champ": "données personnelles",
+    "corpus_attendu": "cjue",
+    "url": "https://www.avocat-gasimov.fr/cjue-grande-chambre-meta-platforms-bundeskartellamt-abus-position-dominante-rgpd-cooperation-loyale-c-252-21",
+    "auteur": "Cabinet Gasimov",
+    "date_publication": "2026-11-08",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "62021CJ0252"
+  },
+  {
+    "question": "L'intérêt commercial suffit-il à justifier un traitement de données sans consentement ?",
+    "champ": "données personnelles",
+    "corpus_attendu": "rgpd",
+    "url": "https://www.village-justice.com/articles/justification-interet-legitime-nouveau-document-rgpd-legitimate-interest,55670.html",
+    "auteur": "Charlotte Galichet",
+    "date_publication": "2026-01-08",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32016R0679#art_6"
+  },
+  {
+    "question": "Quelles clauses un contrat avec un prestataire informatique doit-il comporter pour encadrer les données qui lui sont confiées ?",
+    "champ": "données personnelles",
+    "corpus_attendu": "cnil",
+    "url": "https://www.mirabile-avocat.com/blog/sous-traitance-rgpd-avec-son-prestataire-informatique",
+    "auteur": "Romain Mirabile",
+    "date_publication": "2026-11-03",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "CNILTEXT000045614368"
+  },
+  {
+    "question": "Quel consentement faut-il recueillir avant de déposer un cookie publicitaire sur le terminal d'un internaute ?",
+    "champ": "données personnelles",
+    "corpus_attendu": "lil",
+    "url": "https://www.village-justice.com/articles/cookies-traceurs-que-cnil-prepare-pour-vos-sites-internet,35474.html",
+    "auteur": "Julie Prost",
+    "date_publication": "2020-05-26",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "LEGIARTI000037813978"
+  },
+  {
+    "question": "Une mention au fichier des antécédents judiciaires peut-elle être consultée lors de l'enquête préalable à une naturalisation ?",
+    "champ": "données personnelles",
+    "corpus_attendu": "ce",
+    "url": "https://www.village-justice.com/articles/effacement-fichier-taj-procedure-delais-jurisprudence-recente,60249.html",
+    "auteur": "Elias Bourran",
+    "date_publication": "2026-11-24",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "CETATEXT000047461392"
+  },
+  {
+    "question": "Quelles dérogations du RGPD s'appliquent aux traitements journalistiques des organes de presse ?",
+    "champ": "données personnelles",
+    "corpus_attendu": "lil",
+    "url": "https://derriennic.com/oui-les-organes-de-presse-sont-bien-soumis-au-rgpd-expertises-juillet-2024",
+    "auteur": "Alexandre Fievée",
+    "date_publication": "2024-07-09",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "LEGIARTI000037813972"
+  },
+  {
+    "question": "Quelles obligations s'appliquent à un site de santé qui collecte des données personnelles au moyen de quiz en ligne ?",
+    "champ": "données personnelles",
+    "corpus_attendu": "cnil",
+    "url": "https://mdc-avocat.fr/doctissimo-sanctionne-par-cnil-a-hauteur-de-380-000-euros",
+    "auteur": "Marine de la Clergerie",
+    "date_publication": "2023-05-24",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "CNILTEXT000047552103"
+  },
+  {
+    "question": "Une entreprise doit-elle mener une étude d'impact avant de déployer un outil de surveillance de ses salariés ?",
+    "champ": "données personnelles",
+    "corpus_attendu": "rgpd",
+    "url": "https://kohenavocats.fr/2026/11/21/aipd-obligatoire-analyse-impact-rgpd-liste-cnil-consultation-prealable-sanctions-2026",
+    "auteur": "Reda Kohen",
+    "date_publication": "2026-11-21",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32016R0679#art_35"
+  },
+  {
+    "question": "Quelles organisations sont tenues de nommer un délégué à la protection des données ?",
+    "champ": "données personnelles",
+    "corpus_attendu": "rgpd",
+    "url": "https://consultation.avocat.fr/blog/jessy-pollux/article-2967498-l-obligation-de-designer-un-delegue-a-la-protection-des-donnees.html",
+    "auteur": "Jessy Pollux",
+    "date_publication": "2024-06-03",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32016R0679#art_37"
+  },
+  {
+    "question": "Quelles vérifications faut-il faire avant d'envoyer des données à un prestataire situé aux États-Unis ?",
+    "champ": "données personnelles",
+    "corpus_attendu": "cjue",
+    "url": "https://www.initial.legal/blog/transfert-de-donnees-hors-ue-clauses-contractuelles-types-post-schrems",
+    "auteur": "Jimmy Hababou",
+    "date_publication": "2026-03-09",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "62018CJ0311"
+  },
+  {
+    "question": "Les images d'une caméra qui filme en continu un salarié à son poste permettent-elles de fonder son licenciement ?",
+    "champ": "données personnelles",
+    "corpus_attendu": "cc",
+    "url": "https://www.village-justice.com/articles/surveillance-des-salaries-quelle-methode,58607.html",
+    "auteur": "Doris Assogba",
+    "date_publication": "2026-08-13",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "60d41fb4f185911b57e04dc3"
+  },
+  {
+    "question": "Dans quel délai et avec quel contenu faut-il alerter la CNIL après la découverte d'une violation de données ?",
+    "champ": "données personnelles",
+    "corpus_attendu": "rgpd",
+    "url": "https://www.gomez-avocat.com/publications/violation-donnees-72-heures-notification-cnil",
+    "auteur": "Maëva Gomez",
+    "date_publication": "2026-11-05",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32016R0679#art_33"
+  },
+  {
+    "question": "Comment faire supprimer ses coordonnées d'un annuaire public accessible en ligne ?",
+    "champ": "données personnelles",
+    "corpus_attendu": "rgpd",
+    "url": "https://www.village-justice.com/articles/annuaires-publics-rgpd-les-erreurs-eviter,46064.html",
+    "auteur": "Gerard Haas",
+    "date_publication": "2023-05-09",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32016R0679#art_17"
+  },
+  {
+    "question": "Le droit d'accès aux données personnelles peut-il servir à obtenir des courriels avant un litige avec son employeur ?",
+    "champ": "données personnelles",
+    "corpus_attendu": "rgpd",
+    "url": "https://www.simonnetavocat.fr/droit-dacces-rgpd-et-proces-obtenir-les-preuves-de-ladversaire-ou-sen-defendre",
+    "auteur": "Valentin Simonnet",
+    "date_publication": "2026-09-29",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32016R0679#art_15"
+  },
+  {
+    "question": "Une société établie hors d'Europe qui vise des utilisateurs français relève-t-elle du règlement européen sur les données ?",
+    "champ": "données personnelles",
+    "corpus_attendu": "rgpd",
+    "url": "https://delsolavocats.com/fr/actualite/precisions-sur-le-champ-dapplication-territorial-du-rgpd-application-concrete-de-la-nouvelle-redaction-de-larticle-3-de-la-loi-informatique-et-libertes",
+    "auteur": "DELSOL Avocats",
+    "date_publication": "2024-10-02",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32016R0679#art_3"
+  },
+  {
+    "question": "Quel délai s'applique pour informer une personne dont les données ont été obtenues auprès d'un tiers ?",
+    "champ": "données personnelles",
+    "corpus_attendu": "rgpd",
+    "url": "https://www.village-justice.com/articles/obligation-information-rgpd-regle-no1-jeu-des-donnees-personnelles,53902.html",
+    "auteur": "Jean Mindaa",
+    "date_publication": "2025-07-10",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32016R0679#art_14"
+  },
+  {
+    "question": "Une entreprise peut-elle écarter une clause sur l'accès et l'utilisation des données qu'un partenaire lui impose sans négociation au motif qu'elle est abusive ?",
+    "champ": "données non personnelles",
+    "corpus_attendu": "donnees",
+    "url": "https://adaltys.com/le-data-act-un-cadre-contractuel-pour-un-changement-de-paradigme/",
+    "auteur": "Adaltys Avocats (Françoise Brunagel et Olivier Gauclère)",
+    "date_publication": "2025-12-22",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32023R2854#art_13"
+  },
+  {
+    "question": "Un fournisseur de services cloud peut-il encore facturer à son client des frais de changement de prestataire et dans quelle limite ?",
+    "champ": "données non personnelles",
+    "corpus_attendu": "donnees",
+    "url": "https://derriennic.com/frais-sortie-cloud-arcep-publie-lignes-directrices/",
+    "auteur": "Géraldine Pacaut",
+    "date_publication": "2026-08-17",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32023R2854#art_29"
+  },
+  {
+    "question": "Le propriétaire d'un objet connecté peut-il exiger que les données générées par son appareil soient transmises directement à un prestataire de son choix ?",
+    "champ": "données non personnelles",
+    "corpus_attendu": "donnees",
+    "url": "https://aumans-avocats.com/data-act-quels-enjeux-de-mise-en-oeuvre-de-ce-reglement-pour-les-professionnels/",
+    "auteur": "Aumans Avocats",
+    "date_publication": "2025-03-06",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32023R2854#art_5"
+  },
+  {
+    "question": "Dans quelles situations une autorité publique peut-elle obliger une entreprise à lui communiquer des données qu'elle détient ?",
+    "champ": "données non personnelles",
+    "corpus_attendu": "donnees",
+    "url": "https://escaramozzino.legal/2025/10/08/data-act-decryptage-du-reglement-sur-les-donnees-de-sante-episode-5/",
+    "auteur": "Éléonore Scaramozzino (Constellation Avocats / E-SCARAMOZZINO legal)",
+    "date_publication": "2025-10-08",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32023R2854#art_15"
+  },
+  {
+    "question": "Quelles mentions et justifications doivent figurer dans la demande par laquelle une administration réclame des données à une entreprise ?",
+    "champ": "données non personnelles",
+    "corpus_attendu": "donnees",
+    "url": "https://escaramozzino.legal/2025/10/08/data-act-decryptage-du-reglement-sur-les-donnees-de-sante-episode-5/",
+    "auteur": "Éléonore Scaramozzino (Constellation Avocats / E-SCARAMOZZINO legal)",
+    "date_publication": "2025-10-08",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32023R2854#art_17"
+  },
+  {
+    "question": "Pendant combien de temps un organisme public peut-il réserver à un seul opérateur le droit de réutiliser des données protégées qu'il détient ?",
+    "champ": "données non personnelles",
+    "corpus_attendu": "donnees",
+    "url": "https://beaubourg-avocats.fr/rgpd/dga/",
+    "auteur": "Beaubourg Avocats",
+    "date_publication": null,
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32022R0868#art_4"
+  },
+  {
+    "question": "Une plateforme qui met en relation vendeurs et acheteurs de données doit-elle attendre une autorisation pour exercer ou une simple notification préalable suffit-elle ?",
+    "champ": "données non personnelles",
+    "corpus_attendu": "donnees",
+    "url": "https://www.arcep.fr/mes-demarches-et-services/acteurs-regules/prestataires-services-intermediation-donnees/fiches-pratiques/notification-prestataire-services-intermediation-donnees.html",
+    "auteur": "Arcep",
+    "date_publication": "2024-05-21",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32022R0868#art_11"
+  },
+  {
+    "question": "Quelles conditions un chercheur doit-il remplir pour être agréé et obtenir l'accès à des données non publiques détenues par une très grande plateforme ?",
+    "champ": "données non personnelles",
+    "corpus_attendu": "frontieres",
+    "url": "https://www.arcom.fr/procedure-dagrement-des-chercheurs-pour-lacces-aux-donnees-des-plateformes",
+    "auteur": "Arcom",
+    "date_publication": null,
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32022R2065#art_40"
+  },
+  {
+    "question": "Quelles informations une plateforme doit-elle communiquer à l'utilisateur dont elle retire le contenu ou dégrade la publication ou suspend le compte ?",
+    "champ": "données non personnelles",
+    "corpus_attendu": "frontieres",
+    "url": "https://www.influxio-avocat.com/publications/supprimer-contenu-illicite-dsa-lcen",
+    "auteur": "INFLUXIO Avocats (Alexandre Bigot-Joly)",
+    "date_publication": "2024-12-06",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32022R2065#art_17"
+  },
+  {
+    "question": "Le secret des affaires peut-il être opposé à une personne qui a divulgué une information pour exercer sa liberté d'expression ou révéler une illégalité ?",
+    "champ": "données non personnelles",
+    "corpus_attendu": "frontieres",
+    "url": "https://www.conseil-constitutionnel.fr/decision/2018/2018768DC.htm",
+    "auteur": "Conseil constitutionnel",
+    "date_publication": "2018-07-26",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32016L0943#art_5"
+  },
+  {
+    "question": "Quel type d'investissement faut-il avoir consenti pour revendiquer la protection spécifique du contenu d'une base de données ?",
+    "champ": "données non personnelles",
+    "corpus_attendu": "frontieres",
+    "url": "https://www.app.asso.fr/centre-information/base-de-connaissances/code-bases-de-donnees/la-protection-du-contenu-par-le-droit-sui-generis/conditions-de-la-protection",
+    "auteur": "APP",
+    "date_publication": null,
+    "date_lecture": "2026-11-26",
+    "reference_citee": "31996L0009#art_7"
+  },
+  {
+    "question": "Une administration qui fonde une décision individuelle sur un algorithme doit-elle en informer la personne concernée et celle-ci peut-elle obtenir les règles du traitement ?",
+    "champ": "données non personnelles",
+    "corpus_attendu": "textes_fr",
+    "url": "https://www.houdart.org/les-obligations-de-transparence-des-algorithmes-dans-le-secteur-public/",
+    "auteur": "HOUDART & Associés (Me Adriane Louyer)",
+    "date_publication": "2022-10-03",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "LEGIARTI000033205535"
+  },
+  {
+    "question": "Un État membre peut-il imposer à une entreprise de stocker ou de traiter sur son territoire les données non personnelles qu'elle détient ?",
+    "champ": "données non personnelles",
+    "corpus_attendu": "donnees",
+    "url": "https://roquet-avocat.com/fr/blog/donnees-non-personnelles-libre-circulation-reglement",
+    "auteur": "Pierre-Louis Roquet",
+    "date_publication": "2026-03-22",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32018R1807#art_4"
+  },
+  {
+    "question": "Le bordereau détaillant les prix unitaires d'une offre de marché public est-il communicable à un tiers qui en fait la demande ?",
+    "champ": "données non personnelles",
+    "corpus_attendu": "cada",
+    "url": "https://www.data.gouv.fr/explore/cada/20226235",
+    "auteur": "CADA (Commission d'accès aux documents administratifs)",
+    "date_publication": "2022-11-24",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "20226235#f5"
+  },
+  {
+    "question": "Un décret peut-il réserver la perception d'une redevance de réutilisation aux administrations dont l'activité de diffusion d'informations publiques est couverte à moins de 75 % par des recettes fiscales ?",
+    "champ": "données non personnelles",
+    "corpus_attendu": "ce",
+    "url": "https://www.conseil-etat.fr/fr/arianeweb/CE/decision/2018-10-26/403916",
+    "auteur": "Conseil d'État",
+    "date_publication": "2018-10-26",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "CETATEXT000037534137#f11"
+  },
+  {
+    "question": "Une entreprise peut-elle éviter les obligations les plus lourdes prévues pour un système d'IA figurant parmi les usages sensibles et à quelles conditions ?",
+    "champ": "IA",
+    "corpus_attendu": "aiact",
+    "url": "https://www.haas-avocats.com/ntic/intelligence-artificielle/systeme-dia-a-haut-risque-lauto-classification-ne-se-coche-pas-elle-se-documente/",
+    "auteur": "Haas Avocats",
+    "date_publication": "2026-07-06",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32024R1689#art_6"
+  },
+  {
+    "question": "Quels usages de l'intelligence artificielle sont prohibés en tant que tels dans l'Union européenne sans qu'un contrôle de conformité puisse les régulariser ?",
+    "champ": "IA",
+    "corpus_attendu": "aiact",
+    "url": "https://saint-jean.co/blog/pratiques-ia-interdites-ai-act",
+    "auteur": "Alexandre Saint-Jean",
+    "date_publication": "2026-11-19",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32024R1689#art_5"
+  },
+  {
+    "question": "Une société qui met un outil d'IA à disposition de ses salariés doit-elle leur faire passer une certification individuelle ou peut-elle adapter sa démarche aux usages et aux compétences ?",
+    "champ": "IA",
+    "corpus_attendu": "aiact",
+    "url": "https://kohenavocats.fr/2026/08/27/ai-act-article-4-formation-salaries-preuves-entreprise-2026",
+    "auteur": "Maître Reda Kohen (Kohen Avocats)",
+    "date_publication": "2026-08-27",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32024R1689#art_4"
+  },
+  {
+    "question": "Que doit permettre concrètement un système d'IA à haut risque pour que les personnes chargées de le surveiller puissent reprendre la main y compris l'arrêter ?",
+    "champ": "IA",
+    "corpus_attendu": "aiact",
+    "url": "https://reglementia.fr/ressources/controle-humain-article-14",
+    "auteur": "Dimitri Jorand (Reglementia / DEMETER)",
+    "date_publication": "2026-07-24",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32024R1689#art_14"
+  },
+  {
+    "question": "Quelles informations et documents un fournisseur de modèle d'IA à usage général doit-il produire puis mettre à jour et rendre publics indépendamment du niveau de performance du modèle ?",
+    "champ": "IA",
+    "corpus_attendu": "aiact",
+    "url": "https://gdroit.fr/droit-et-ia/reglement-ia/obligations-modeles-usage-general",
+    "auteur": "Gdroit",
+    "date_publication": "2026-08-09",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32024R1689#art_53"
+  },
+  {
+    "question": "Quelles vérifications un fournisseur d'IA à haut risque doit-il documenter sur l'origine et la représentativité ainsi que sur les biais de ses jeux de données ?",
+    "champ": "IA",
+    "corpus_attendu": "aiact",
+    "url": "https://reglementia.fr/ressources/gouvernance-donnees-biais-article-10",
+    "auteur": "Dimitri Jorand (Reglementia / DEMETER)",
+    "date_publication": "2026-07-24",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32024R1689#art_10"
+  },
+  {
+    "question": "Tout utilisateur professionnel d'une IA à haut risque doit-il réaliser une analyse d'impact sur les droits fondamentaux ou cette obligation dépend-elle de son statut et du type d'usage ?",
+    "champ": "IA",
+    "corpus_attendu": "aiact",
+    "url": "https://www.lexing.law/avocats/lanalyse-dimpact-sur-les-droits-fondamentaux-face-aux-actualites/2026/09/30",
+    "auteur": "Anthony Coquer (Lexing Avocats)",
+    "date_publication": "2026-09-30",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32024R1689#art_27"
+  },
+  {
+    "question": "Quelles obligations d'information et de marquage pèsent respectivement sur l'éditeur et sur l'utilisateur d'un système d'IA génératif ou conversationnel ?",
+    "champ": "IA",
+    "corpus_attendu": "aiact",
+    "url": "https://www.village-justice.com/articles/article-act-echeance-arrive-avant-autorite-qui-doit-controler,60250.html",
+    "auteur": "Rheda Fassi",
+    "date_publication": "2026-11-24",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32024R1689#art_50"
+  },
+  {
+    "question": "Quelles explications une personne peut-elle exiger lorsqu'une décision la concernant a été prise au moyen d'un algorithme sans que le secret des affaires y fasse obstacle par principe ?",
+    "champ": "IA",
+    "corpus_attendu": "rgpd",
+    "url": "https://derriennic.com/decisions-automatisees-droit-acces-cjue-consacre-droit-explication",
+    "auteur": "Alice Robert et Alexandre Fievée (Derriennic Associés)",
+    "date_publication": "2025-03-10",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32016R0679#art_15"
+  },
+  {
+    "question": "Peut-on entraîner un modèle d'IA avec les données de ses clients sur le fondement de l'intérêt légitime et sous quelles conditions ?",
+    "champ": "IA",
+    "corpus_attendu": "rgpd",
+    "url": "https://www.orwl.fr/expertise/ip-it-data/avocat-rgpd-protection-donnees/ia-donnees-personnelles",
+    "auteur": "William O'Rorke (ORWL Avocats)",
+    "date_publication": "2026-11-13",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32016R0679#art_6"
+  },
+  {
+    "question": "Tout logiciel automatisé entre-t-il dans le champ du règlement européen sur l'IA ou doit-il présenter certaines caractéristiques pour être qualifié de système d'IA ?",
+    "champ": "IA",
+    "corpus_attendu": "doctrine_ue",
+    "url": "https://digital-strategy.ec.europa.eu/en/library/commission-publishes-guidelines-ai-system-definition-facilitate-first-ai-acts-rules-application",
+    "auteur": "Commission européenne",
+    "date_publication": "2025-02-06",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "lignes-directrices-art-3#f1"
+  },
+  {
+    "question": "À partir de quel volume cumulé de calcul un modèle d'IA à usage général est-il présumé présenter un risque systémique ?",
+    "champ": "IA",
+    "corpus_attendu": "doctrine_ue",
+    "url": "https://digital-strategy.ec.europa.eu/en/library/guidelines-scope-obligations-providers-general-purpose-ai-models-under-ai-act",
+    "auteur": "Commission européenne",
+    "date_publication": "2025-07-18",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "lignes-directrices-gpai#f51"
+  },
+  {
+    "question": "Peut-on collecter massivement des données personnelles accessibles en ligne pour entraîner une IA et quelles garanties la CNIL exige-t-elle dans ce cas ?",
+    "champ": "IA",
+    "corpus_attendu": "cnil_doctrine",
+    "url": "https://www.village-justice.com/articles/moissonnage-web-scraping-des-fins-developpement-systemes-intelligence,53903.html",
+    "auteur": "Debora Cohen",
+    "date_publication": "2025-07-24",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "focus-interet-legitime-collecte-par-moissonnage"
+  },
+  {
+    "question": "Quelles conditions cumulatives permettent de fonder le développement d'un système d'IA sur l'intérêt légitime plutôt que sur le consentement des personnes ?",
+    "champ": "IA",
+    "corpus_attendu": "cnil_doctrine",
+    "url": "https://www.village-justice.com/articles/rgpd-interet-legitime-face-developpement-des-systemes-moissonnage-donnees,54395.html",
+    "auteur": "Noémie Le Bouard",
+    "date_publication": "2025-09-04",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "base-legale-interet-legitime-developpement-systeme"
+  },
+  {
+    "question": "Une personne écartée par une décision assistée par une IA à haut risque peut-elle obtenir une explication du rôle exact joué par l'outil même si la décision n'était pas entièrement automatisée ?",
+    "champ": "IA",
+    "corpus_attendu": "aiact",
+    "url": "https://reglementia.fr/ressources/droit-explication-recours",
+    "auteur": "Dimitri Jorand (Reglementia / DEMETER)",
+    "date_publication": "2026-07-24",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32024R1689#art_86"
+  },
+  {
+    "question": "Le refus d'accéder à ses données de santé électroniques ouvert par certains États membres peut-il être retiré après avoir été exercé ?",
+    "champ": "santé",
+    "corpus_attendu": "sante_ue",
+    "url": "https://aumans-avocats.com/lespace-europeen-des-donnees-de-sante-ehds-quel-impact-pour-les-professionnels-de-sante/",
+    "auteur": "Aumans Avocats",
+    "date_publication": "2025-03-31",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32025R0327#art_10"
+  },
+  {
+    "question": "Dans quel délai maximal le détenteur de données de santé doit-il remettre à l'organisme national d'accès les données réclamées ?",
+    "champ": "santé",
+    "corpus_attendu": "sante_ue",
+    "url": "https://www.mirabile-avocat.com/blog/ehds-usage-secondaire-donnees-de-sante",
+    "auteur": "Romain Mirabile",
+    "date_publication": null,
+    "date_lecture": "2026-11-26",
+    "reference_citee": "32025R0327#art_60"
+  },
+  {
+    "question": "L'administration et l'exploitation du système d'information qui contient des données de santé constituent-elles une activité d'hébergement soumise au régime HDS ?",
+    "champ": "santé",
+    "corpus_attendu": "textes_fr",
+    "url": "https://www.porlon-avocats.com/blog/articles/etre-ou-recourir-a-un-hebergeur-de-donnees-de-sante-telle-est-la-question",
+    "auteur": "Sadry Porlon et Vicky Boucher",
+    "date_publication": "2024-03-26",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "LEGIARTI000053720790"
+  },
+  {
+    "question": "Le patient peut-il accéder directement aux informations de santé le concernant sans passer par un médecin ?",
+    "champ": "santé",
+    "corpus_attendu": "textes_fr",
+    "url": "https://www.coppet-avocats.fr/actualites/medical/refus-acces-dossier-medical/",
+    "auteur": "Grégory Guyard",
+    "date_publication": "2026-09-21",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "LEGIARTI000042685313"
+  },
+  {
+    "question": "Un arrêt de travail prescrit ou renouvelé pour la première fois à l'occasion d'une téléconsultation peut-il dépasser trois jours ?",
+    "champ": "santé",
+    "corpus_attendu": "textes_fr",
+    "url": "https://www.chemin-avocats.com/dispositions/article-l6316-1-code-de-la-sante-publique",
+    "auteur": "Louis-Victor Chemin",
+    "date_publication": "2026-10-08",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "LEGIARTI000054336504"
+  },
+  {
+    "question": "Une politique d'habilitation qui permet à chaque soignant de consulter tous les dossiers patients de l'établissement est-elle conforme aux exigences de sécurité ?",
+    "champ": "santé",
+    "corpus_attendu": "cnil",
+    "url": "https://delsolavocats.com/fr/actualite/lhopital-prive-de-la-loire-sanctionne-lourdement-par-la-cnil-pour-une-negligence-de-securite-ayant-permis-une-violation-de-donnees-a-grande-echelle/",
+    "auteur": "Delsol Avocats",
+    "date_publication": "2026-09-09",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "CNILTEXT000054790100"
+  },
+  {
+    "question": "Dans une recherche en santé un même destinataire peut-il accéder simultanément aux données administratives et aux données de recherche ?",
+    "champ": "santé",
+    "corpus_attendu": "cnil_doctrine",
+    "url": "https://aumans-avocats.com/nouvelles-methodologies-reference-mr-001-mr-003-cnil-recherche-sante/",
+    "auteur": "Aumans Avocats",
+    "date_publication": "2026-07-01",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "mr-001-referentiel#f44"
+  },
+  {
+    "question": "L'information RGPD due aux participants d'une recherche en santé peut-elle leur être adressée par voie électronique ?",
+    "champ": "santé",
+    "corpus_attendu": "cnil_doctrine",
+    "url": "https://aumans-avocats.com/nouvelles-methodologies-reference-mr-001-mr-003-cnil-recherche-sante/",
+    "auteur": "Aumans Avocats",
+    "date_publication": "2026-07-01",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "mr-001-referentiel#f52"
+  },
+  {
+    "question": "Le Conseil d'État a-t-il annulé le décret de 2021 qui confie à la plateforme des données de santé une copie de la base principale du SNDS ?",
+    "champ": "santé",
+    "corpus_attendu": "ce",
+    "url": "https://www.haas-avocats.com/e-sante/donnees-de-sante/le-conseil-detat-se-prononce-en-faveur-du-systeme-national-de-donnees-de-sante/",
+    "auteur": "Haas Avocats",
+    "date_publication": "2023-01-06",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "CETATEXT000046598400"
+  },
+  {
+    "question": "Les informations saisies pour commander en ligne un médicament sans ordonnance sont-elles des données de santé même si l'acheteur n'est pas nécessairement le patient ?",
+    "champ": "santé",
+    "corpus_attendu": "cjue",
+    "url": "https://www.laffineur.com/rgpd-et-sante-possibilite-accordee-aux-concurrents-de-lauteur-presume-dune-atteinte-a-la-protection-des-donnees-a-caractere-personnel-de-la-contester-en-justice-en-tant-que-pratiqu/",
+    "auteur": "Cabinet Laffineur",
+    "date_publication": "2024-12-03",
+    "date_lecture": "2026-11-26",
+    "reference_citee": "62023CJ0021"
+  }
+]

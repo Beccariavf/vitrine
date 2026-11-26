@@ -1,0 +1,90 @@
+{
+  "date": "2026-11-26",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "lil",
+  "recherche": "dense",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine-wt-164/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "figés (jeu sans split)",
+  "questions": [
+    {
+      "question": "Quel consentement faut-il recueillir avant de déposer un cookie publicitaire sur le terminal d'un internaute ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "LEGIARTI000037813978"
+      ],
+      "refs": [
+        "LEGIARTI000037823081",
+        "LEGIARTI000037822950",
+        "LEGIARTI000037813978",
+        "LEGIARTI000037813975",
+        "LEGIARTI000037813953"
+      ],
+      "rangs": [
+        3
+      ],
+      "similarites": [
+        0.6274676024913788,
+        0.6271576583385468,
+        0.6252884864807129,
+        0.6218196451663971,
+        0.6160076260566711
+      ],
+      "niveau": "aucun_resultat_fiable"
+    },
+    {
+      "question": "Quelles dérogations du RGPD s'appliquent aux traitements journalistiques des organes de presse ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "LEGIARTI000037813972"
+      ],
+      "refs": [
+        "LEGIARTI000037813972",
+        "LEGIARTI000037823118",
+        "LEGIARTI000037823122",
+        "LEGIARTI000037813975",
+        "LEGIARTI000037823109"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7409541308879852,
+        0.663910448551178,
+        0.6569766700267792,
+        0.6550125181674957,
+        0.652547150850296
+      ],
+      "niveau": "confiant"
+    }
+  ],
+  "agregats": {
+    "semantiques": 2,
+    "top5_semantique_succes": 2,
+    "top1_semantique_succes": 1,
+    "mrr_semantique": 0.6666666666666666,
+    "referencees": 2,
+    "top5_global_succes": 2,
+    "top5_rendu_succes": 1,
+    "top1_rendu_succes": 1,
+    "mrr_rendu": 0.5,
+    "top5_global_rendu_succes": 1,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 1,
+    "incertain": 0,
+    "aucun_resultat_fiable": 1,
+    "pieges_confiants": 0
+  }
+}

@@ -1105,6 +1105,11 @@ export type SearchDemande = {
   corpus?: string;
   /** Restreint la recherche à un document précis. */
   document?: string;
+  /**
+   * Mesure seulement : désactive la détection implicite de document et de corpus
+   * dans la question. Un `corpus` ou un `document` fourni reste une borne.
+   */
+  sans_detection?: boolean;
   /** Restreint à une nature : Sanction, Avis ou Recommandation/Lignes directrices (CNIL), DC ou QPC (constit). */
   nature?: string;
   /** Date ISO minimale de la décision. */
@@ -1371,7 +1376,9 @@ export async function search(
   // Une formule générique (« les clauses contractuelles types ») borne au corpus
   // entier quand elle ne nomme aucun document : elle ne choisit pas 2021/914
   // plutôt que 2021/915.
+  const detection = demande.sans_detection !== true;
   const corpusImplicite =
+    detection &&
     demande.corpus === undefined &&
     demande.document === undefined &&
     documentsNommes(demande.question).length === 0
@@ -1383,7 +1390,9 @@ export async function search(
     (effective.document === undefined
       ? undefined
       : (documentNomme(effective.document) ?? effective.document)) ??
-    (effective.corpus === undefined ? documentNomme(effective.question) : null) ??
+    (detection && effective.corpus === undefined
+      ? documentNomme(effective.question)
+      : null) ??
     undefined;
   const resultat = await chercher(
     rootDir,

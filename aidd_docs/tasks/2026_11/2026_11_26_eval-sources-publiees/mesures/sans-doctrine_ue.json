@@ -1,0 +1,91 @@
+{
+  "date": "2026-11-26",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "doctrine_ue",
+  "sans_filtre": true,
+  "recherche": "dense",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine-wt-164/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "figés (jeu sans split)",
+  "questions": [
+    {
+      "question": "Tout logiciel automatisé entre-t-il dans le champ du règlement européen sur l'IA ou doit-il présenter certaines caractéristiques pour être qualifié de système d'IA ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "lignes-directrices-art-3#f1"
+      ],
+      "refs": [
+        "entree-en-vigueur-du-reglement-europeen-sur-lia-les-premieres-questions-reponses-de-la-cnil#f19",
+        "entree-en-vigueur-du-reglement-europeen-sur-lia-les-premieres-questions-reponses-de-la-cnil#f27",
+        "32026D2274#rct_1",
+        "entree-en-vigueur-du-reglement-europeen-sur-lia-les-premieres-questions-reponses-de-la-cnil#f16",
+        "entree-en-vigueur-du-reglement-europeen-sur-lia-les-premieres-questions-reponses-de-la-cnil#f18"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7857115566730499,
+        0.763433501124382,
+        0.7524865120649338,
+        0.7518896162509918,
+        0.7507308721542358
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "À partir de quel volume cumulé de calcul un modèle d'IA à usage général est-il présumé présenter un risque systémique ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "lignes-directrices-gpai#f51"
+      ],
+      "refs": [
+        "32024R1689#art_51",
+        "lignes-directrices-gpai#f12",
+        "32024R1689#rct_111",
+        "entree-en-vigueur-du-reglement-europeen-sur-lia-les-premieres-questions-reponses-de-la-cnil#f19",
+        "32024R1689#art_52"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7744906395673752,
+        0.792927548289299,
+        0.7760367542505264,
+        0.766700804233551,
+        0.7461128532886505
+      ],
+      "niveau": "incertain"
+    }
+  ],
+  "agregats": {
+    "semantiques": 2,
+    "top5_semantique_succes": 0,
+    "top1_semantique_succes": 0,
+    "mrr_semantique": 0,
+    "referencees": 2,
+    "top5_global_succes": 0,
+    "top5_rendu_succes": 0,
+    "top1_rendu_succes": 0,
+    "mrr_rendu": 0,
+    "top5_global_rendu_succes": 0,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 1,
+    "incertain": 1,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  }
+}

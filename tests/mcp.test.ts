@@ -323,6 +323,37 @@ describe("les outils, sans transport", () => {
     }
   });
 
+  it("sans_detection ignore le document nommé et mesure tout le corpus", async () => {
+    const root = mkdtempSync(join(tmpdir(), "vitrine-tools-"));
+    try {
+      ecrireCorpus(
+        root,
+        [unite(17, "droit à l'effacement des données personnelles dans les systèmes d'IA", DOCUMENT_AIAct)],
+        "aiact",
+      );
+      const { chemin } = await buildIndex(root, embedderFactice());
+      const index = openIndex(chemin);
+      try {
+        const question = "Que prévoit le RGPD sur l'effacement des données ?";
+        const borne = await search(root, { question }, { embedder: embedderFactice(), index });
+        assert.deepEqual(borne.passages, []);
+        assert.match(borne.message ?? "", /RGPD/);
+
+        const libre = await search(
+          root,
+          { question, sans_detection: true },
+          { embedder: embedderFactice(), index },
+        );
+        assert.ok(libre.passages.length > 0);
+        assert.equal(libre.passages[0]?.document, DOCUMENT_AIAct);
+      } finally {
+        index.db.close();
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("borne au corpus ccs une question qui nomme les clauses contractuelles types", async () => {
     const root = mkdtempSync(join(tmpdir(), "vitrine-tools-"));
     try {
