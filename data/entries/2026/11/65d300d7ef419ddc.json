@@ -1,0 +1,17 @@
+{
+  "id": "65d300d7ef419ddc",
+  "title": "Guidelines for providers and deployers of AI high-risk systems",
+  "officialTitle": "Guidelines for providers and deployers of AI high-risk systems",
+  "url": "https://digital-strategy.ec.europa.eu/en/policies/guidelines-ai-high-risk-systems",
+  "publishedAt": "2026-11-26T12:00:00.000Z",
+  "summary": null,
+  "references": [],
+  "themes": [
+    "ia",
+    "donnees-non-personnelles"
+  ],
+  "source": "doctrine_ue",
+  "document": "guidelines-ai-high-risk-systems",
+  "version": "https://digital-strategy.ec.europa.eu/en/policies/guidelines-ai-high-risk-systems",
+  "motif": "nouveau"
+}

@@ -68,6 +68,7 @@ describe("les entrées committées", () => {
       eurlex: "eur-lex.europa.eu",
       legi: "www.legifrance.gouv.fr",
       preparation: "eur-lex.europa.eu",
+      doctrine_ue: "digital-strategy.ec.europa.eu",
     };
     for (const item of entries) {
       assert.equal(typeof item.id, "string");

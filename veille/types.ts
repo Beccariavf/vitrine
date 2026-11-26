@@ -21,13 +21,15 @@ export type Entry = {
   themes: string[];
   /** Identifiant de la source : `cnil`, `cjeu`, etc. */
   source: string;
-  /** Document du corpus visé, quand la source en désigne un (`legi` : `LEGITEXT…`, `constit` : `CONSTEXT…`, `cepd` : slug). */
+  /** Document du corpus visé, quand la source en désigne un (`legi` : `LEGITEXT…`, `constit` : `CONSTEXT…`, `cepd` : slug, `doctrine_ue` : nom de page). */
   document?: string;
   /**
    * Version publiée (`LEGIARTI…`, `LEGITEXT…_JJ-MM-AAAA`, consolidation CELEX) ou
    * signature CEPD (`2.0`, sinon `finale`/`projet`) ; `legi`, `eurlex` et `cepd`.
    * Pour `preparation`, le statut atteint (`PROP_ADOPTED`, `CJ`…), comparé au
    * statut de l'unité du corpus pour savoir si la synchronisation doit suivre.
+   * Pour `doctrine_ue`, l'empreinte des liens de téléchargement de la page, ou
+   * l'URL quand elle n'en publie aucun.
    */
   version?: string;
   /** Nature de la nouveauté détectée ; `eurlex` seulement. */
@@ -49,7 +51,7 @@ export type Entry = {
   consultation?: boolean;
   /** CELEX de la décision abrogée par celle que porte l'entrée ; `eurlex` seulement. */
   abroge?: string;
-  /** Nature de la nouveauté détectée (`nouveau`, `modifie`) ; `cnil_doctrine` seulement. */
+  /** Nature de la nouveauté détectée (`nouveau`, `modifie`) ; `cnil_doctrine` et `doctrine_ue`. */
   motif?: "nouveau" | "modifie";
   /** Libellé CELLAR du dossier avant le changement (`PROP_PENDING`) ; `preparation` seulement. */
   statut_avant?: string;
