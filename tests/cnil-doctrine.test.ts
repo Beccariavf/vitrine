@@ -1221,12 +1221,14 @@ describe("synchronisation de la doctrine CNIL", () => {
       JSON.stringify({ ...DESCRIPTEUR_SIMULE, domaine: "exemple.test", pages_reference: [reference] }),
     );
     let corps = "A".repeat(1800);
+    let chrome = "outil de page";
     const fetchHtml: FetchHtml = async () => ({
       ok: true,
       status: 200,
       text: async () =>
         [
           "<main>",
+          `<div class="page--tools">${chrome}</div>`,
           '<div class="ctn-gen">',
           "<h1>Position A</h1>",
           `<div class="ctn-gen-after"><p>${corps}</p></div>`,
@@ -1242,7 +1244,7 @@ describe("synchronisation de la doctrine CNIL", () => {
       attendre: async () => {},
       delaiMs: 0,
     };
-    const lireDates = (): { acte: string; extraction: string } => {
+    const lireDates = (): { acte: string; extraction: string; unites: string } => {
       const manifeste = JSON.parse(
         readFileSync(join(racine, "data", "corpus", "cnil_doctrine", "manifest.json"), "utf8"),
       ) as {
@@ -1252,25 +1254,40 @@ describe("synchronisation de la doctrine CNIL", () => {
         >;
       };
       const document = manifeste.documents_par_type.doctrine_ia?.[0];
+      const unites = readFileSync(
+        join(racine, "data", "corpus", "cnil_doctrine", "unites.jsonl"),
+        "utf8",
+      )
+        .split("\n")
+        .filter(Boolean)
+        .map((ligne) => JSON.parse(ligne) as { date_acte: string });
       return {
         acte: document?.date_acte ?? "",
         extraction: document?.date_extraction ?? "",
+        unites: unites[0]?.date_acte ?? "",
       };
     };
 
     await syncDoctrine({ ...commun, date: "2026-11-21" });
-    assert.deepEqual(lireDates(), { acte: "2026-11-21", extraction: "2026-11-21" });
+    assert.deepEqual(lireDates(), {
+      acte: "2026-11-21",
+      extraction: "2026-11-21",
+      unites: "2026-11-21",
+    });
+    // Le chrome de la page change, le texte extrait non : la date de première
+    // capture tient, au manifeste comme dans les fragments.
+    chrome = "autre outil de page";
     await syncDoctrine({ ...commun, date: "2026-11-25" });
     assert.deepEqual(
       lireDates(),
-      { acte: "2026-11-21", extraction: "2026-11-21" },
-      "un texte inchangé n'est pas redaté",
+      { acte: "2026-11-21", extraction: "2026-11-21", unites: "2026-11-21" },
+      "un texte inchangé n'est pas redaté, même si le fichier change hors du texte",
     );
     corps = "B".repeat(1800);
     await syncDoctrine({ ...commun, date: "2026-11-25" });
     assert.deepEqual(
       lireDates(),
-      { acte: "2026-11-25", extraction: "2026-11-25" },
+      { acte: "2026-11-25", extraction: "2026-11-25", unites: "2026-11-25" },
       "un texte réédité reprend la date de la passe",
     );
   });

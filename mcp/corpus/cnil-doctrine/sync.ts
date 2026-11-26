@@ -851,19 +851,37 @@ export async function syncDoctrine(
       lu.texte,
       descripteur,
     );
-    unites.push(...fragments);
     const empreinteTexte = sha256(
       fragments.map((fragment) => `${fragment.ref}\n${fragment.texte}\n`).join(""),
     );
     const entreePrecedente = precedents.get(url);
+    const inchange =
+      entreePrecedente !== undefined && textesPrecedents.get(slug) === empreinteTexte;
+    // Un texte identique garde la date de sa première capture quand elle vient
+    // de l'extraction, même si le fichier a changé hors du texte extrait. Une
+    // date déclarée au descripteur suit le descripteur, retrait compris.
+    let dateActe = lu.date_acte;
+    let dateSource = lu.date_source;
     if (
-      entreePrecedente !== undefined &&
-      textesPrecedents.get(slug) === empreinteTexte
+      inchange &&
+      lu.candidat.dateActe === undefined &&
+      entreePrecedente.date_source === "extraction" &&
+      lu.date_source === "extraction"
     ) {
+      dateActe = entreePrecedente.date_acte;
+      dateSource = "extraction";
+    }
+    for (const fragment of fragments) {
+      fragment.date_acte = dateActe;
+      fragment.date_debut = dateActe;
+    }
+    unites.push(...fragments);
+
+    if (inchange && entreePrecedente !== undefined) {
       // Le texte est identique : l'entrée existante garde son empreinte de
-      // capture, sa date d'acte et sa date d'extraction. Seuls le type,
-      // l'intitulé, le lien, le numéro, le remplacement et la licence, qui
-      // viennent du descripteur, suivent — y compris leur retrait.
+      // capture et sa date d'extraction. Seuls le type, l'intitulé, le lien,
+      // le numéro, le remplacement, la date et la licence, qui viennent du
+      // descripteur ou du texte, suivent — y compris leur retrait.
       const entree: DocumentManifeste = {
         ...entreePrecedente,
         type: lu.candidat.type,
@@ -872,8 +890,8 @@ export async function syncDoctrine(
         fragments: fragments.length,
         representation: lu.representation,
         pdf: lu.candidat.pdf?.url ?? null,
-        date_acte: lu.date_acte,
-        date_source: lu.date_source,
+        date_acte: dateActe,
+        date_source: dateSource,
         licence: descripteur.licence,
         licence_url: descripteur.licence_url,
         source: descripteur.source,
@@ -891,8 +909,8 @@ export async function syncDoctrine(
       titre: lu.titre,
       url,
       snapshot: lu.snapshot,
-      date_acte: lu.date_acte,
-      date_source: lu.date_source,
+      date_acte: dateActe,
+      date_source: dateSource,
       date_extraction:
         precedents.get(url)?.snapshot === lu.snapshot
           ? (precedents.get(url)?.date_extraction ?? date)
