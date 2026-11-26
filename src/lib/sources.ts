@@ -16,6 +16,7 @@ const SOURCE_LABELS: Record<string, string> = {
   legi: "Légifrance",
   eurlex: "EUR-Lex",
   preparation: "Textes en préparation",
+  doctrine_ue: "Commission européenne — doctrine",
 };
 
 export function sourceLabel(source: string): string {

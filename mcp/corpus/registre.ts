@@ -693,8 +693,7 @@ const DEFINITIONS = [
     rangSite: 23,
     rangPerimetre: 22,
     libellePerimetre: "doctrine de la Commission",
-    sources: [],
-    sansVeille: "liste explicite de documents, resynchronisation manuelle `corpus:sync:doctrine-ue`",
+    sources: ["doctrine_ue"],
   },
 ] as const satisfies readonly DefinitionCorpus[];
 
