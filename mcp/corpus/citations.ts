@@ -330,6 +330,16 @@ const INSTRUMENTS: readonly Instrument[] = [
     ],
   },
   {
+    libelle: "2026/2099",
+    identifiant: "32026R2099",
+    nature: "règlement",
+    url: "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32026R2099",
+    alias: [
+      `règlement d'exécution ${PARENTHESE} (?:n[o°] ?)?2026/2099`,
+      `règlement d'exécution (?:n[o°] ?)?2026/2099`,
+    ],
+  },
+  {
     libelle: "CRA",
     identifiant: "32024R2847",
     nature: "règlement",

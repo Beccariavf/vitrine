@@ -150,11 +150,50 @@
         "version": "32026R2098",
         "date_consolidation": null
       }
+    },
+    {
+      "document": "32026R2099",
+      "titre": "Règlement d'exécution (UE) 2026/2099 de la Commission du 21 septembre 2026 relatif à un mécanisme interopérable et transfrontière d'identification et d'authentification des personnes physiques, des professionnels de la santé et des prestataires de soins de santé aux fins de l'échange transfrontière de données de santé électroniques à caractère personnel",
+      "langue": "fra",
+      "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32026R2099",
+      "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
+      "date_acte": "2026-09-21",
+      "date_publication": "2026-09-22",
+      "date_debut": "2027-03-26",
+      "date_fin": null,
+      "statut": "en_vigueur",
+      "note_application": "Application générale le 2027-03-26 (article 9) ; l'article 3, paragraphe 3, et l'article 5, paragraphe 2, s'appliquent à compter du 2029-03-26.",
+      "version": "32026R2099",
+      "date_consolidation": null,
+      "snapshot": "4f75549f9266ee8325b59d625ac259064d7509894b7eedb1a9371171e4bdb4ee.xhtml",
+      "unites": 19,
+      "couverture": {
+        "source": "CELLAR — publications.europa.eu/resource/celex/32026R2099",
+        "date_publication": "2026-09-22",
+        "bornes": {
+          "debut": "2027-03-26",
+          "fin": null
+        },
+        "statut": "en_vigueur",
+        "types_retenus": [
+          "article",
+          "considérant",
+          "annexe"
+        ],
+        "exclusions": [],
+        "comptes": {
+          "articles": 9,
+          "considerants": 9,
+          "annexes": 1
+        },
+        "version": "32026R2099",
+        "date_consolidation": null
+      }
     }
   ],
-  "unites": 306,
+  "unites": 325,
   "couverture": {
-    "source": "CELLAR — publications.europa.eu/resource/celex/32025R0327, 32026R0771, 32026R2083, 32026R2098",
+    "source": "CELLAR — publications.europa.eu/resource/celex/32025R0327, 32026R0771, 32026R2083, 32026R2098, 32026R2099",
     "types_retenus": [
       "article",
       "considérant",
@@ -162,10 +201,10 @@
     ],
     "exclusions": [],
     "comptes": {
-      "documents": 4,
-      "articles": 139,
-      "considerants": 162,
-      "annexes": 5
+      "documents": 5,
+      "articles": 148,
+      "considerants": 171,
+      "annexes": 6
     }
   }
 }
