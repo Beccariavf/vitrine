@@ -56,7 +56,8 @@ export type MotifEcartCjue =
   | "autre_type"
   | "xhtml_absent"
   | "echec_telechargement"
-  | "texte_vide";
+  | "texte_vide"
+  | "acte_sans_rapport";
 
 export type EcartesCjue = Record<MotifEcartCjue, number>;
 
@@ -67,6 +68,7 @@ export const ECARTES_CJUE_VIDES: EcartesCjue = {
   xhtml_absent: 0,
   echec_telechargement: 0,
   texte_vide: 0,
+  acte_sans_rapport: 0,
 };
 
 const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;

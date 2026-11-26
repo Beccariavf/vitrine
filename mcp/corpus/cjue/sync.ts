@@ -27,6 +27,7 @@ import {
 } from "./liste.ts";
 import type { DescripteurCjue, EcartesCjue, EntreeCjue, MotifEcartCjue } from "./liste.ts";
 import { dateDecisionCjue, formatCapture, langueCapture, unitesCjue } from "./parse.ts";
+import { acteCiteRetenu } from "./pertinence.ts";
 
 const ICI = dirname(fileURLToPath(import.meta.url));
 
@@ -60,7 +61,7 @@ export type CouvertureCjue = {
   /** Filtre historique et filtre élargi, avec leurs comptes (#143). */
   filtre: {
     historique: { matiere: string; notions: string[] };
-    elargi: { actes_cites: string[] };
+    elargi: { actes_cites: string[]; regle: string };
     union: string;
     /** Décisions retenues par le seul critère élargi. */
     ajouts_par_critere: Record<string, number>;
@@ -416,25 +417,34 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
   const complementairesConnus = new Set(complementaires);
   let ajoutsActeCite = 0;
   let dejaActeCite = 0;
-  for (const entree of retenues) {
+  /** Vrai quand la décision n'est listée que par la citation d'un acte, hors veille et compléments. */
+  const acteCiteSeul = (entree: EntreeCjue): boolean => {
     const origines = entree.origines ?? [];
-    for (const origine of origines) {
-      decisionsParOrigine[origine] = (decisionsParOrigine[origine] ?? 0) + 1;
-    }
-    if (origines.includes("acte_cite")) {
-      const deja =
-        origines.includes("matiere") ||
-        origines.includes("notion") ||
-        dansLaVeille.has(entree.celex) ||
-        complementairesConnus.has(entree.celex);
-      if (deja) dejaActeCite += 1;
-      else ajoutsActeCite += 1;
-    }
-  }
-  const ajoutsParCritere = { acte_cite: ajoutsActeCite };
-  const dejaPresentsParCritere = { acte_cite: dejaActeCite };
-
+    return (
+      origines.includes("acte_cite") &&
+      origines.every((origine) => origine === "acte_cite") &&
+      !dansLaVeille.has(entree.celex) &&
+      !complementairesConnus.has(entree.celex)
+    );
+  };
   if (options.dryRun === true) {
+    for (const entree of retenues) {
+      const origines = entree.origines ?? [];
+      for (const origine of origines) {
+        decisionsParOrigine[origine] = (decisionsParOrigine[origine] ?? 0) + 1;
+      }
+      if (origines.includes("acte_cite")) {
+        const deja =
+          origines.includes("matiere") ||
+          origines.includes("notion") ||
+          dansLaVeille.has(entree.celex) ||
+          complementairesConnus.has(entree.celex);
+        if (deja) dejaActeCite += 1;
+        else ajoutsActeCite += 1;
+      }
+    }
+    const ajoutsParCritere = { acte_cite: ajoutsActeCite };
+    const dejaPresentsParCritere = { acte_cite: dejaActeCite };
     return {
       documents: 0,
       fragments: 0,
@@ -522,11 +532,17 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
   let dateMinObserve: string | null = null;
   const langues: Record<string, number> = { fra: 0, eng: 0 };
   const documentsLangues: Record<string, string> = {};
+  const documentsRetenus: EntreeCjue[] = [];
 
   for (const entree of lues) {
     const capture = lireCapture(rootDir, entree.celex);
     if (capture === null) {
       // Le téléchargement a échoué plus haut et a déjà été compté.
+      continue;
+    }
+    if (acteCiteSeul(entree) && !acteCiteRetenu(capture, descripteur)) {
+      ecartes.acte_sans_rapport += 1;
+      documentsEcartes.push({ celex: entree.celex, motif: "acte_sans_rapport" });
       continue;
     }
     try {
@@ -548,6 +564,7 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
         documentsEcartes.push({ celex: entree.celex, motif: "texte_vide" });
         continue;
       }
+      documentsRetenus.push(entree);
       const langue = langueCapture(capture);
       langues[langue] = (langues[langue] ?? 0) + 1;
       if (langue !== "fra") documentsLangues[entree.celex] = langue;
@@ -572,6 +589,19 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
     );
   }
   const documents = new Set(unites.map((unite) => unite.document)).size;
+
+  for (const entree of documentsRetenus) {
+    const origines = entree.origines ?? [];
+    for (const origine of origines) {
+      decisionsParOrigine[origine] = (decisionsParOrigine[origine] ?? 0) + 1;
+    }
+    if (origines.includes("acte_cite")) {
+      if (acteCiteSeul(entree)) ajoutsActeCite += 1;
+      else dejaActeCite += 1;
+    }
+  }
+  const ajoutsParCritere = { acte_cite: ajoutsActeCite };
+  const dejaPresentsParCritere = { acte_cite: dejaActeCite };
 
   const manifeste: ManifesteCjue = {
     corpus: descripteur.corpus,
@@ -600,8 +630,15 @@ export async function syncCjue(options: SyncCjueOptions = {}): Promise<ResultatC
           matiere: descripteur.matiere,
           notions: descripteur.notions.map((notion) => notion.uri),
         },
-        elargi: { actes_cites: [...(descripteur.actes_cites ?? [])] },
-        union: "décision listée par la matière, une notion fine, ou parce qu'elle cite un acte visé",
+        elargi: {
+          actes_cites: [...(descripteur.actes_cites ?? [])],
+          regle:
+            "acte visé dans le titre ou les mots-clés, ou cité au moins deux fois " +
+            "dans les motifs hors du rappel du cadre juridique",
+        },
+        union:
+          "décision listée par la matière ou une notion fine, ou parce qu'elle cite un acte " +
+          "visé qui figure dans son titre, ses mots-clés ou ses motifs",
         ajouts_par_critere: ajoutsParCritere,
         deja_presents_par_critere: dejaPresentsParCritere,
         decisions_par_origine: decisionsParOrigine,

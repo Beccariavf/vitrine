@@ -26,7 +26,10 @@
       "cle": "crpa-livre-iii",
       "libelle": "CRPA, livre III (L. 300-1 à L. 327-1)",
       "articles": "\\bl 3(?:0\\d|1\\d|2[0-7]) \\d+",
-      "contexte": "\\bcode des relations\\b"
+      "contexte": [
+        "\\bcode des relations\\b",
+        "\\b(?:communication|reutilisation|documents? administratifs?|publication en ligne|informations? publiques?|cada)\\b"
+      ]
     },
     {
       "cle": "loi-51-711",
@@ -41,7 +44,7 @@
     {
       "cle": "patrimoine-livre-ii",
       "libelle": "Code du patrimoine, livre II (archives)",
-      "articles": "\\bl 21[1-7] \\d+",
+      "articles": "\\bl (?:21[1-7]|22[12]) \\d+|\\br 21[12] \\d+",
       "contexte": "\\bcode du patrimoine\\b"
     },
     {
@@ -72,7 +75,10 @@
       "cle": "penal-226-13",
       "libelle": "Code pénal, article 226-13 (secret professionnel)",
       "articles": "\\b226 13\\b",
-      "contexte": "\\bcode penal\\b"
+      "contexte": [
+        "\\bcode penal\\b",
+        "\\b(?:medecins?|medical|medicaux|patients?|soins?|etablissements? de sante|donnees de sante|secret medical)\\b"
+      ]
     },
     {
       "cle": "data-act",
@@ -146,8 +152,9 @@
     },
     {
       "cle": "secret-des-affaires",
-      "libelle": "secret des affaires",
-      "expressions": ["secret des affaires"]
+      "libelle": "secret des affaires (deux mentions au moins)",
+      "expressions": ["secret des affaires"],
+      "occurrences_min": 2
     },
     {
       "cle": "fouille-de-textes",

@@ -1,7 +1,21 @@
 import { strict as assert } from "node:assert";
+import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { criteresTrouves } from "../mcp/corpus/pertinence.ts";
 import type { CritereElargi } from "../mcp/corpus/pertinence.ts";
+
+function critere(corpus: string, cle: string): CritereElargi {
+  const descripteur = JSON.parse(
+    readFileSync(new URL(`../mcp/corpus/${corpus}/descripteur.json`, import.meta.url), "utf8"),
+  ) as { criteres_elargis?: CritereElargi[] };
+  const trouve = descripteur.criteres_elargis?.find((element) => element.cle === cle);
+  if (trouve === undefined) throw new Error(`Critère ${cle} absent de ${corpus}`);
+  return trouve;
+}
+
+function cles(texte: string, critereElargi: CritereElargi): string[] {
+  return criteresTrouves(texte, [critereElargi]).map((trouve) => trouve.cle);
+}
 
 const CRPA: CritereElargi = {
   cle: "crpa-livre-iii",
@@ -91,6 +105,98 @@ describe("les critères d'un filtre élargi", () => {
           { cle: "contexte", libelle: "contexte", articles: "l 321 1", contexte: " " },
         ]),
       /motif de contexte vide/,
+    );
+    assert.throws(
+      () =>
+        criteresTrouves("Un texte.", [
+          { cle: "seuil", libelle: "seuil", expressions: ["secret"], occurrences_min: 0 },
+        ]),
+      /occurrences_min/,
+    );
+  });
+});
+
+describe("les resserrements du filtre élargi (#143)", () => {
+  const penal = critere("ce", "penal-226-13");
+  const patrimoine = critere("ce", "patrimoine-livre-ii");
+  const crpa = critere("ce", "crpa-livre-iii");
+  const secret = critere("ce", "secret-des-affaires");
+  const commerce = critere("ce", "commerce-secret-affaires");
+
+  it("ne retient 226-13 qu'avec un contexte de santé à portée", () => {
+    assert.deepEqual(
+      cles(
+        "Le médecin a révélé, en violation de l'article 226-13 du code pénal, " +
+          "l'état de santé de son patient.",
+        penal,
+      ),
+      ["penal-226-13"],
+    );
+    assert.deepEqual(
+      cles(
+        "L'article 226-13 du code pénal protège le secret professionnel de l'avocat, " +
+          "qui ne peut divulguer les confidences reçues.",
+        penal,
+      ),
+      [],
+      "un secret professionnel hors santé ne suffit pas",
+    );
+  });
+
+  it("borne le code du patrimoine au livre II (archives)", () => {
+    assert.deepEqual(
+      cles(
+        "L'article L. 211-1 du code du patrimoine range ces pièces parmi les archives " +
+          "publiques ; l'article R. 212-1 en règle la communication.",
+        patrimoine,
+      ),
+      ["patrimoine-livre-ii"],
+    );
+    assert.deepEqual(
+      cles(
+        "L'article L. 111-1 du code du patrimoine protège les biens culturels et les " +
+          "trésors nationaux.",
+        patrimoine,
+      ),
+      [],
+      "une citation du livre I (biens culturels) ne suffit pas",
+    );
+  });
+
+  it("n'ouvre le CRPA livre III qu'à un contexte d'accès ou de réutilisation", () => {
+    assert.deepEqual(
+      cles(
+        "La communication des documents administratifs est régie par l'article L. 321-1 " +
+          "du code des relations entre le public et l'administration.",
+        crpa,
+      ),
+      ["crpa-livre-iii"],
+    );
+    assert.deepEqual(
+      cles(
+        "L'article L. 312-2 du code des relations entre le public et l'administration " +
+          "prévoit la publication des circulaires ; le litige porte sur un titre de séjour " +
+          "et sur la régularité de la procédure devant le juge administratif.",
+        crpa,
+      ),
+      [],
+      "une publication de circulaire sans litige d'accès ne suffit pas",
+    );
+  });
+
+  it("exige deux mentions du secret des affaires, ou une citation du texte", () => {
+    assert.deepEqual(cles("Le secret des affaires est invoqué.", secret), []);
+    assert.deepEqual(
+      cles(
+        "Le secret des affaires couvre les comptes ; la cour a écarté le secret des " +
+          "affaires pour les pièces comptables.",
+        secret,
+      ),
+      ["secret-des-affaires"],
+    );
+    assert.deepEqual(
+      cles("L'article L. 151-1 du code de commerce protège le secret des affaires.", commerce),
+      ["commerce-secret-affaires"],
     );
   });
 });

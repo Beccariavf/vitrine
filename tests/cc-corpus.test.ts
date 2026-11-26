@@ -124,7 +124,8 @@ describe("le filtre de pertinence de la Cour de cassation", () => {
       publication: ["n"],
       text:
         "Vu l'article L. 151-1 du code de commerce ; le secret des affaires protège " +
-        "les informations utiles à l'activité économique.",
+        "les informations utiles à l'activité économique. Ce secret des affaires " +
+        "couvre aussi les comptes.",
     };
     const verdictElargi = classerDecisionCc(elargie, DESCRIPTEUR);
     assert.equal(verdictElargi.retenue, true);
@@ -317,7 +318,9 @@ describe("la synchronisation du corpus Cour de cassation", () => {
             number: "24-1",
             solution: "rejet",
             publication: ["n"],
-            text: "Le secret des affaires protège les informations utiles à l'activité.",
+            text:
+              "Le secret des affaires protège les informations utiles à l'activité ; " +
+              "le secret des affaires a été invoqué.",
           },
         },
       });
