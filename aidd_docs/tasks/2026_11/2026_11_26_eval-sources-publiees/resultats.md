@@ -53,8 +53,10 @@ node mcp/eval/agreger.ts --sources mcp/eval/sources-publiees.json \
 
 `--corpus` choisit le groupe du jeu. `--sans-filtre` retire la borne de collection **et** désactive la détection
 implicite de document et de corpus dans la question (`search(..., { sans_detection: true })`) : la requête porte
-réellement sur les 24 corpus, sans qu'un mot comme « RGPD » ou « AI Act » ne la borne à un document. Les sorties
-brutes sont dans [`mesures/`](mesures/) et les tableaux reproductibles dans [`agregats.md`](agregats.md).
+réellement sur les 24 corpus, sans qu'un mot comme « RGPD » ou « AI Act » ne la borne à un document. C'est une borne
+plus stricte que le produit par défaut, qui orienterait encore une question nommant un instrument vers son corpus ;
+elle isole l'effet du volume. Les sorties brutes sont dans [`mesures/`](mesures/) et les tableaux reproductibles dans
+[`agregats.md`](agregats.md).
 
 ## Résultats par champ
 
