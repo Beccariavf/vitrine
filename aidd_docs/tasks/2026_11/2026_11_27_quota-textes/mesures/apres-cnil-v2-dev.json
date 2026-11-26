@@ -1,0 +1,690 @@
+{
+  "date": "2026-11-26",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "cnil",
+  "sans_filtre": true,
+  "detection": true,
+  "recherche": "dense",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine-wt-171/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.66,
+    "haut": 0.71,
+    "marge": 0.01
+  },
+  "seuils_origine": "calibrés sur dev",
+  "questions": [
+    {
+      "question": "Quelle sanction la CNIL a-t-elle prononcée contre les sociétés FNAC Direct et FNAC Darty Participations et Services pour les traceurs de leur application mobile ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000055022778"
+      ],
+      "refs": [
+        "CNILTEXT000055022778#f5",
+        "CNILTEXT000055022778#f10",
+        "CNILTEXT000055022778#f20",
+        "CNILTEXT000055022778#f11",
+        "CNILTEXT000055022778#f34"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8076847642660141,
+        0.7913575023412704,
+        0.7887260764837265,
+        0.7792982310056686,
+        0.7682422250509262
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelle sanction a visé une société de conseil informatique qui ne répondait pas aux demandes d’effacement de ses candidats ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000054810440"
+      ],
+      "refs": [
+        "CNILTEXT000054810440#f23",
+        "CNILTEXT000054810440#f24",
+        "CNILTEXT000054810440#f22",
+        "LEGIARTI000037823120",
+        "32016R0679#art_17"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7698932886123657,
+        0.768160879611969,
+        0.7645078599452972,
+        0.6930521130561829,
+        0.6822710931301117
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle sanction a été prononcée contre France Travail après une violation de données liée à la faiblesse des mots de passe ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000053408671"
+      ],
+      "refs": [
+        "CNILTEXT000049128617#f27",
+        "CNILTEXT000027661220#f9",
+        "CNILTEXT000046562676#f34",
+        "32019L0790#art_28",
+        "LEGIARTI000038568050"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7486898601055145,
+        0.7424883842468262,
+        0.7377862930297852,
+        0.6459222137928009,
+        0.6429190039634705
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle amende de 15 millions d’euros a été prononcée contre la société Free pour des manquements à la sécurité et à la notification d’une violation de données ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000053352643"
+      ],
+      "refs": [
+        "CNILTEXT000053352643#f79",
+        "CNILTEXT000054136834#f165",
+        "CNILTEXT000044609709#f42",
+        "32016R0679#art_83",
+        "LEGIARTI000038568050"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.756520465016365,
+        0.742702454328537,
+        0.7381947934627533,
+        0.6569648683071136,
+        0.6522015631198883
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelle amende a visé un prestataire informatique de maisons départementales des personnes handicapées après une violation de données ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000053151799"
+      ],
+      "refs": [
+        "CNILTEXT000045975295#f31",
+        "CNILTEXT000038552658#f29",
+        "CETATEXT000054993122#f19",
+        "32016R0679#art_83",
+        "LEGIARTI000038567920"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7308947741985321,
+        0.7254854142665863,
+        0.7243574559688568,
+        0.6914475858211517,
+        0.6724294126033783
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle amende la CNIL a-t-elle prononcée contre American Express Carte France pour l’enregistrement des appels des personnes mises en attente ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000052981827"
+      ],
+      "refs": [
+        "CNILTEXT000052981827#f7",
+        "CNILTEXT000052981827#f5",
+        "CNILTEXT000052981827#f2",
+        "32002L0058#art_11",
+        "LEGIARTI000033219185"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7786660939455032,
+        0.7622665613889694,
+        0.7605141550302505,
+        0.7015363574028015,
+        0.6767710447311401
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelle amende a été prononcée après la découverte de caméras cachées dans des détecteurs de fumée dans les réserves d’un grand magasin ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000052266505"
+      ],
+      "refs": [
+        "CNILTEXT000052266505#f36",
+        "CNILTEXT000052266505#f34",
+        "CNILTEXT000052266505#f11",
+        "32016R0679#art_83",
+        "LEGIARTI000006513727"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7433310151100159,
+        0.7178567945957184,
+        0.7080886662006378,
+        0.6611851155757904,
+        0.6497966945171356
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelle amende a été prononcée contre l’exploitant du site shein.com pour ses cookies ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000052182271"
+      ],
+      "refs": [
+        "CNILTEXT000052182271#f85",
+        "CNILTEXT000052182271#f73",
+        "CNILTEXT000052182271#f76",
+        "32016R0679#art_83",
+        "LEGIARTI000006513727"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7617568075656891,
+        0.7545842379331589,
+        0.7478518486022949,
+        0.6438920795917511,
+        0.6289432346820831
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle amende a été prononcée contre un courtier en données qui revendait des prospects issus de jeux-concours ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000051660380"
+      ],
+      "refs": [
+        "CNILTEXT000049382214#f14",
+        "CNILTEXT000049051422#f3",
+        "CNILTEXT000046650733#f18",
+        "LEGIARTI000051742358",
+        "LEGIARTI000006417969"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7357849478721619,
+        0.728798121213913,
+        0.7287772595882416,
+        0.662216991186142,
+        0.6512350142002106
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle amende a été prononcée contre une extension de navigateur qui collectait les coordonnées de profils LinkedIn ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000050791828"
+      ],
+      "refs": [
+        "CNILTEXT000050791828#f5",
+        "CNILTEXT000050791828#f53",
+        "CNILTEXT000050791828#f23",
+        "32019L0790#art_28",
+        "32016R0679#art_83"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7316425442695618,
+        0.715395599603653,
+        0.7140763103961945,
+        0.6359593868255615,
+        0.6299269497394562
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelle amende a visé un éditeur de logiciels destinés aux médecins de ville pour des manquements dans le traitement des données de santé ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000050202759"
+      ],
+      "refs": [
+        "CNILTEXT000054136834#f161",
+        "CNILTEXT000054136834#f168",
+        "CNILTEXT000054136834#f160",
+        "32025R0327#art_64",
+        "LEGIARTI000053615038"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7496107220649719,
+        0.7487615346908569,
+        0.7370525598526001,
+        0.6929734647274017,
+        0.6925072371959686
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle amende a visé un site d’annonces immobilières pour sa politique de conservation des données et l’information des utilisateurs ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000049128617"
+      ],
+      "refs": [
+        "CNILTEXT000020972755#f17",
+        "CNILTEXT000024823218#f3",
+        "CNILTEXT000053151799#f44",
+        "32016R0679#art_83",
+        "LEGIARTI000051742358"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7317933738231659,
+        0.726759672164917,
+        0.7112517654895782,
+        0.6578903496265411,
+        0.6424634456634521
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle amende de dix millions d’euros a été prononcée contre un groupe américain pour les cookies de son service de messagerie ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000048967251"
+      ],
+      "refs": [
+        "CNILTEXT000052981827#f37",
+        "CNILTEXT000052851847#f33",
+        "CNILTEXT000046768989#f58",
+        "32016R0679#art_83",
+        "32023D1795#art_4"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7507609277963638,
+        0.7275513708591461,
+        0.727365642786026,
+        0.652063250541687,
+        0.6470965445041656
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelle amende a été prononcée contre un groupe de distribution pour le suivi en temps réel de l’activité des salariés de ses entrepôts ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000048989272"
+      ],
+      "refs": [
+        "CNILTEXT000054136834#f122",
+        "CNILTEXT000051120331#f70",
+        "CNILTEXT000053151799#f44",
+        "32016R0679#art_83",
+        "LEGIARTI000033219185"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7372178137302399,
+        0.7302832007408142,
+        0.7230453193187714,
+        0.6751392781734467,
+        0.6710743010044098
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle amende a visé une société visitée par 31 plaintes portant sur la prospection téléphonique et la transmission de données bancaires ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000048222771"
+      ],
+      "refs": [
+        "CNILTEXT000045975295#f33",
+        "CNILTEXT000048222771#f3",
+        "CNILTEXT000045975295#f3",
+        "32016R0679#art_83",
+        "32018R1725#art_66"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.7375699579715729,
+        0.7372543215751648,
+        0.7371938824653625,
+        0.6702432632446289,
+        0.6593173444271088
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle amende a visé un site de voyance par téléphone après une violation de données révélée par la presse ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000047682157"
+      ],
+      "refs": [
+        "CNILTEXT000047682157#f7",
+        "CNILTEXT000052851847#f34",
+        "CETATEXT000054993120#f5",
+        "LEGIARTI000038567920",
+        "LEGIARTI000038568050"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7321116328239441,
+        0.7056271135807037,
+        0.7002095878124237,
+        0.6549197137355804,
+        0.6510145962238312
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelle sanction a été prononcée contre une société dont les cookies servaient à lutter contre la fraude publicitaire sans consentement ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000046768989"
+      ],
+      "refs": [
+        "CNILTEXT000052182271#f42",
+        "CNILTEXT000047586418#f2",
+        "CNILTEXT000046768989#f33",
+        "LEGIARTI000006513727",
+        "32016R0679#art_84"
+      ],
+      "rangs": [
+        3
+      ],
+      "similarites": [
+        0.749291330575943,
+        0.7460048496723175,
+        0.7407394647598267,
+        0.6406337916851044,
+        0.6392981112003326
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle sanction a été prononcée contre un fournisseur d’électricité pour prospection électronique et droits des personnes ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000046650733"
+      ],
+      "refs": [
+        "CNILTEXT000046693390#f10",
+        "CNILTEXT000045975295#f33",
+        "CNILTEXT000045975295#f19",
+        "LEGIARTI000042155961",
+        "LEGIARTI000038567936"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.74996018409729,
+        0.7456945478916168,
+        0.7381773889064789,
+        0.6715453267097473,
+        0.6682109534740448
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle sanction a été prononcée contre un logiciel de reconnaissance faciale qui aspirait des photos publiques sur Internet ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000046444859"
+      ],
+      "refs": [
+        "CNILTEXT000047527412#f2",
+        "CNILTEXT000046444859#f7",
+        "CETATEXT000048659389#f4",
+        "32024R1689#art_5",
+        "LEGIARTI000006417968"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.7455451190471649,
+        0.7218365371227264,
+        0.7182342112064362,
+        0.651936799287796,
+        0.6443487405776978
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelle amende a visé un réseau social pour avoir rendu le refus des traceurs plus difficile que leur acceptation ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000044840532"
+      ],
+      "refs": [
+        "CETATEXT000052375376#f20",
+        "CNILTEXT000046768989#f42",
+        "CNILTEXT000046768989#f41",
+        "32002L0058#art_11",
+        "32016R0679#art_83"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7291464507579803,
+        0.723163366317749,
+        0.7213149070739746,
+        0.659531831741333,
+        0.6512888371944427
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle amende a visé une mutuelle d’assurance pour la conservation des données et l’information des assurés ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000043829617"
+      ],
+      "refs": [
+        "CNILTEXT000053151799#f44",
+        "CNILTEXT000055097962#f62",
+        "CNILTEXT000054136834#f161",
+        "32016R0679#art_83",
+        "32019L0790#art_28"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.726941853761673,
+        0.7262918055057526,
+        0.7221257984638214,
+        0.6794572174549103,
+        0.6632843017578125
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle sanction a été prononcée contre un site de vente en ligne pour avoir déposé des cookies sans consentement ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000042635729"
+      ],
+      "refs": [
+        "CNILTEXT000046768989#f33",
+        "CNILTEXT000032909770#f15",
+        "CNILTEXT000046768989#f36",
+        "LEGIARTI000051742358",
+        "32022R2065#art_73"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7703273594379425,
+        0.7547173947095871,
+        0.74437215924263,
+        0.6348961591720581,
+        0.6305136382579803
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelle sanction a été prononcée contre un promoteur immobilier dont un simple changement de numéro dans l’URL donnait accès aux pièces justificatives d’autres candidats ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000038552658"
+      ],
+      "refs": [
+        "CNILTEXT000038552658#f3",
+        "CNILTEXT000038810992#f15",
+        "CNILTEXT000036403140#f4",
+        "32025R2518#art_36",
+        "LEGIARTI000038568000"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7418111860752106,
+        0.7399893701076508,
+        0.7334974408149719,
+        0.6664531528949738,
+        0.6653886139392853
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelle amende a visé un opérateur télécom après qu’un défaut de sécurité a permis d’accéder aux factures de ses clients ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000037856073"
+      ],
+      "refs": [
+        "CNILTEXT000044609709#f21",
+        "CNILTEXT000045975295#f31",
+        "CNILTEXT000053352664#f80",
+        "32002L0058#art_7",
+        "32016R0679#art_83"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7308901846408844,
+        0.7206452190876007,
+        0.7196392714977264,
+        0.6951223611831665,
+        0.6821542680263519
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelle sanction symbolique a été prononcée contre une association d’urbanistes qui diffusait des données personnelles sur son site ?",
+      "type": "reference",
+      "piege": false,
+      "attendues": [
+        "CNILTEXT000028711033"
+      ],
+      "refs": [
+        "CNILTEXT000028711033#f2",
+        "CNILTEXT000048580096#f14",
+        "CNILTEXT000024654305#f9",
+        "32024R1689#art_100",
+        "32018R1725#art_66"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7197123467922211,
+        0.7040622532367706,
+        0.694538801908493,
+        0.6217732429504395,
+        0.621039867401123
+      ],
+      "niveau": "confiant"
+    }
+  ],
+  "agregats": {
+    "semantiques": 25,
+    "top5_semantique_succes": 13,
+    "top1_semantique_succes": 10,
+    "mrr_semantique": 0.45333333333333337,
+    "referencees": 25,
+    "top5_global_succes": 13,
+    "top5_rendu_succes": 13,
+    "top1_rendu_succes": 10,
+    "mrr_rendu": 0.45333333333333337,
+    "top5_global_rendu_succes": 13,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 11,
+    "incertain": 14,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  }
+}

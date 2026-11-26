@@ -1,0 +1,300 @@
+{
+  "date": "2026-11-26",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "cjue",
+  "sans_filtre": true,
+  "detection": true,
+  "recherche": "dense",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine-wt-171/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.67,
+    "haut": 0.72,
+    "marge": 0.02
+  },
+  "seuils_origine": "calibrés sur dev",
+  "questions": [
+    {
+      "question": "Un moteur de recherche doit-il déréférencer des informations personnelles à la demande de la personne concernée ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "62012CJ0131"
+      ],
+      "refs": [
+        "guidelines-52019-on-the-criteria-of-the-right-to-be-forgotten-in-the-search#f55",
+        "guidelines-52019-on-the-criteria-of-the-right-to-be-forgotten-in-the-search#f26",
+        "guidelines-52019-on-the-criteria-of-the-right-to-be-forgotten-in-the-search#f40",
+        "LEGIARTI000038568000",
+        "32016R0679#art_13"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7584486305713654,
+        0.7495602071285248,
+        0.7495595514774323,
+        0.6743264496326447,
+        0.6704131066799164
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "La Commission peut-elle constater qu'un pays tiers assure une protection adéquate quand ses autorités peuvent accéder aux données transférées ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "62014CJ0362"
+      ],
+      "refs": [
+        "32016R0679#rct_103",
+        "32016R0679#rct_107",
+        "32016R0679#art_45",
+        "32018R1725#rct_64",
+        "32016L0680#art_36"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7730402499437332,
+        0.7672215104103088,
+        0.7459507286548615,
+        0.7607255280017853,
+        0.7399305999279022
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles garanties entourent les transferts de données vers les États-Unis après l'invalidation du Privacy Shield ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "62018CJ0311"
+      ],
+      "refs": [
+        "32016D1250#art_1",
+        "32023D1795#art_1",
+        "cnil-pia-captoo-fr#f51",
+        "32016D1250#art_6",
+        "32023D1795#art_4"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7531776577234268,
+        0.7408019304275513,
+        0.7471480965614319,
+        0.7270901799201965,
+        0.7227061688899994
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Une conservation généralisée et indifférenciée des données de trafic et de localisation est-elle compatible avec la Charte ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "62012CJ0293"
+      ],
+      "refs": [
+        "CETATEXT000037253930#f29",
+        "62021CJ0350#point53",
+        "62cd0e6ee91c8e9fcf071217#f6",
+        "32018R1807#art_4",
+        "32018R1807#art_1"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7405238151550293,
+        0.7372723519802094,
+        0.7361206114292145,
+        0.6957789361476898,
+        0.6908800005912781
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Une réglementation nationale peut-elle imposer la conservation de toutes les données de communications électroniques pour lutter contre la criminalité ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "62015CJ0203"
+      ],
+      "refs": [
+        "6655735e8b201d000817d587#f7",
+        "62cd0e6ce91c8e9fcf07120d#f9",
+        "62cd0e6ee91c8e9fcf071217#f9",
+        "LEGIARTI000038567934",
+        "32002L0058#art_15"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7438147664070129,
+        0.7435095906257629,
+        0.7420112192630768,
+        0.6889105141162872,
+        0.6735487282276154
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Une adresse IP dynamique constitue-t-elle une donnée à caractère personnel pour l'éditeur d'un site ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "62014CJ0582"
+      ],
+      "refs": [
+        "62014CJ0582#point20",
+        "62014CJ0582#point39",
+        "62014CJ0582#point49",
+        "32019L0790#art_28",
+        "32016R0679#art_4"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7498224973678589,
+        0.7475789189338684,
+        0.74667027592659,
+        0.678650975227356,
+        0.6539769768714905
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Les données consignées dans une copie d'examen professionnel sont-elles des données à caractère personnel ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "62016CJ0434"
+      ],
+      "refs": [
+        "62016CJ0434#point26",
+        "CNILTEXT000045975295#f19",
+        "62023CO0312#point37",
+        "32019L0790#art_28",
+        "LEGIARTI000037813953"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7548287957906723,
+        0.7297452986240387,
+        0.7190553843975067,
+        0.6899768114089966,
+        0.6859593987464905
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Une autorité de concurrence peut-elle constater une violation du RGPD pour établir un abus de position dominante ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "62021CJ0252"
+      ],
+      "refs": [
+        "32016R0679#art_58",
+        "32016R0679#rct_134",
+        "32016R0679#rct_130",
+        "32016R0679#art_65",
+        "32016R0679#rct_172"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.6749835908412933,
+        0.6825247406959534,
+        0.6780640780925751,
+        0.6516427397727966,
+        0.6691220700740814
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Le scoring automatisé d'un demandeur de crédit constitue-t-il une décision individuelle automatisée au sens du RGPD ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "62021CJ0634"
+      ],
+      "refs": [
+        "32016R0679#art_22",
+        "32016R0679#rct_71",
+        "32016R0679#art_4",
+        "32016R0679#rct_44",
+        "32016R0679#rct_134"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7202040255069733,
+        0.702913224697113,
+        0.6479322910308838,
+        0.6673008501529694,
+        0.664397269487381
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Le droit d'accès permet-il d'obtenir une copie des documents contenant les données personnelles ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "62021CJ0487"
+      ],
+      "refs": [
+        "CNILTEXT000046198070#f23",
+        "LEGIARTI000038567800",
+        "CETATEXT000045242965#f4",
+        "guidelines-012022-on-data-subject-rights-right-of-access#f285",
+        "32016R0679#art_15"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7442194521427155,
+        0.7128904759883881,
+        0.729177862405777,
+        0.7271272242069244,
+        0.703063428401947
+      ],
+      "niveau": "confiant"
+    }
+  ],
+  "agregats": {
+    "semantiques": 10,
+    "top5_semantique_succes": 2,
+    "top1_semantique_succes": 2,
+    "mrr_semantique": 0.2,
+    "referencees": 10,
+    "top5_global_succes": 2,
+    "top5_rendu_succes": 2,
+    "top1_rendu_succes": 2,
+    "mrr_rendu": 0.2,
+    "top5_global_rendu_succes": 2,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 2,
+    "incertain": 8,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  }
+}

@@ -1,0 +1,300 @@
+{
+  "date": "2026-11-26",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "cc",
+  "sans_filtre": true,
+  "detection": true,
+  "recherche": "dense",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine-wt-171/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.67,
+    "haut": 0.72,
+    "marge": 0.01
+  },
+  "seuils_origine": "calibrés sur dev",
+  "questions": [
+    {
+      "question": "Le juge peut-il ordonner la communication des données personnelles d'autres salariés pour établir la preuve d'une discrimination ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "6af2c6c76c2e1778126fe354"
+      ],
+      "refs": [
+        "66fe33ec91b69e88a370f983#f23",
+        "66fe33ec91b69e88a370f983#f39",
+        "68ca59ae892376614a8344fd#f6",
+        "69a7e3c6cdc6046d4773f9ab#f8",
+        "6af2c6c76c2e1778126fe354#f8"
+      ],
+      "rangs": [
+        5
+      ],
+      "similarites": [
+        0.7593021988868713,
+        0.7464926540851593,
+        0.7437186241149902,
+        0.7384501993656158,
+        0.7380620241165161
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelles conditions le droit à l'effacement pose-t-il pour le déréférencement d'informations diffusées sur internet ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "6a1fbf96cdc6046d47ea0349"
+      ],
+      "refs": [
+        "CNILTEXT000032291946#f4",
+        "guidelines-52019-on-the-criteria-of-the-right-to-be-forgotten-in-the-search#f24",
+        "CNILTEXT000032291946#f19",
+        "32016R0679#art_17",
+        "guidelines-52019-on-the-criteria-of-the-right-to-be-forgotten-in-the-search#f38"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7664545625448227,
+        0.7626244872808456,
+        0.7617586553096771,
+        0.7333696186542511,
+        0.7520405203104019
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Les données d'une garde à vue annulée peuvent-elles rester inscrites dans le fichier des antécédents judiciaires ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "69786db4cdc6046d47d707b1"
+      ],
+      "refs": [
+        "69786db4cdc6046d47d707b1#f6",
+        "62023CJ0383#point15",
+        "CNILTEXT000036670511#f8",
+        "CNILTEXT000041618963#f11",
+        "62022CJ0740#point38"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7213948667049408,
+        0.7102868556976318,
+        0.7082122266292572,
+        0.7058734595775604,
+        0.7043419182300568
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Le détournement de finalité d'un traitement de données suppose-t-il que les données aient été collectées illicitement ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "6965e5becdc6046d471b4ab6"
+      ],
+      "refs": [
+        "CNILTEXT000049059221#f11",
+        "CNILTEXT000045975295#f19",
+        "681af5d40dfb1f09369ce221#f8",
+        "CNILTEXT000050791828#f13",
+        "62024CJ0312#point77"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7243544161319733,
+        0.7239324450492859,
+        0.7175078690052032,
+        0.7104490399360657,
+        0.7091091871261597
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "L'enregistrement des séances du comité social et économique peut-il porter atteinte aux données personnelles des salariés ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "6ac6079ec27382d099f5a06e"
+      ],
+      "refs": [
+        "6ac6079ec27382d099f5a06e#f10",
+        "6ac6079ec27382d099f5a06e#f6",
+        "6ac6079ec27382d099f5a06e#f15",
+        "6ac6079ec27382d099f5a06e#f3",
+        "6ac6079ec27382d099f5a06e#f5"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7479583919048309,
+        0.733997642993927,
+        0.7183679640293121,
+        0.714169979095459,
+        0.7109721004962921
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Les données de trafic et de localisation d'une personne mise en examen peuvent-elles être consultées pendant le contrôle judiciaire ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "6717402d6a24f8a713323ad6"
+      ],
+      "refs": [
+        "62cd0e6de91c8e9fcf07120f#f7",
+        "6717402d6a24f8a713323ad8#f3",
+        "CNILTEXT000045975295#f19",
+        "65a629db448a370008a71fac#f6",
+        "63cf83f8a6687f7c904cb968#f3"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7236305177211761,
+        0.7230774462223053,
+        0.7213165760040283,
+        0.7199294567108154,
+        0.7193285524845123
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "La technique de reconnaissance faciale utilisée au cours d'une enquête pénale respecte-t-elle le droit au respect de la vie privée ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "673d7cc0d666990c113dbe3a"
+      ],
+      "refs": [
+        "673d7cc0d666990c113dbe3a#f8",
+        "CNILTEXT000054413078#f7",
+        "guidelines-052022-on-the-use-of-facial-recognition-technology-in-the-area-of#f260",
+        "guidelines-052022-on-the-use-of-facial-recognition-technology-in-the-area-of#f72",
+        "guidelines-052022-on-the-use-of-facial-recognition-technology-in-the-area-of#f183"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7427313029766083,
+        0.7369383573532104,
+        0.7367980480194092,
+        0.7324401140213013,
+        0.7323313355445862
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Les images d'un système de vidéosurveillance peuvent-elles fonder une sanction disciplinaire contre un salarié ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "682d68f316fd466a1ce900c4"
+      ],
+      "refs": [
+        "CNILTEXT000029302625#f7",
+        "CNILTEXT000029302625#f6",
+        "CNILTEXT000051120331#f10",
+        "CNILTEXT000051120331#f45",
+        "CNILTEXT000026971936#f8"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7437726557254791,
+        0.7420380413532257,
+        0.7381890714168549,
+        0.7379594147205353,
+        0.7377444505691528
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Un juge peut-il ordonner la communication de documents de tiers contenant des données personnelles ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "66fe33ec91b69e88a370f983"
+      ],
+      "refs": [
+        "681af5d40dfb1f09369ce221#f24",
+        "62023CO0312#point23",
+        "62023CO0312#point16",
+        "62023CO0312#point17",
+        "66fe33ec91b69e88a370f983#f24"
+      ],
+      "rangs": [
+        5
+      ],
+      "similarites": [
+        0.7472705543041229,
+        0.7464894652366638,
+        0.7441970407962799,
+        0.7363674342632294,
+        0.7338509559631348
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "La géolocalisation d'un véhicule relève-t-elle de la directive sur la vie privée dans les communications électroniques ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "65dd88c8af7bf00008e554e6"
+      ],
+      "refs": [
+        "65dd88c8af7bf00008e554e6#f20",
+        "65dd88c8af7bf00008e554e6#f21",
+        "CNILTEXT000028585497#f5",
+        "CNILTEXT000017651867#f3",
+        "CNILTEXT000046070924#f27"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.779482364654541,
+        0.7506411075592041,
+        0.743058979511261,
+        0.7384938597679138,
+        0.7266901135444641
+      ],
+      "niveau": "confiant"
+    }
+  ],
+  "agregats": {
+    "semantiques": 10,
+    "top5_semantique_succes": 6,
+    "top1_semantique_succes": 4,
+    "mrr_semantique": 0.44000000000000006,
+    "referencees": 10,
+    "top5_global_succes": 6,
+    "top5_rendu_succes": 6,
+    "top1_rendu_succes": 4,
+    "mrr_rendu": 0.44000000000000006,
+    "top5_global_rendu_succes": 6,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 4,
+    "incertain": 6,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  }
+}
