@@ -30,6 +30,56 @@
       "liens": "pdf"
     },
     {
+      "type": "referentiel",
+      "url": "https://www.cnil.fr/fr/methodologie-de-reference-mr-001-recherches-sante-avec-recueil-du-consentement",
+      "pages_max": 1,
+      "liens": "urls",
+      "urls": [
+        {
+          "url": "https://www.cnil.fr/sites/default/files/2026-05/mr-001_referentiel.pdf",
+          "titre": "Méthodologie de référence MR-001 — recherches dans le domaine de la santé avec recueil du consentement (version 2026)",
+          "numero": "2026-050",
+          "date_acte": "2026-03-19",
+          "remplace": ["2018-153"]
+        }
+      ]
+    },
+    {
+      "type": "referentiel",
+      "url": "https://www.cnil.fr/fr/methodologie-de-reference-mr-003-recherches-dans-le-domaine-de-la-sante-sans-recueil-du-consentement",
+      "pages_max": 1,
+      "liens": "urls",
+      "urls": [
+        {
+          "url": "https://www.cnil.fr/sites/default/files/2026-05/mr-003_referentiel.pdf",
+          "titre": "Méthodologie de référence MR-003 — recherches dans le domaine de la santé sans recueil du consentement (version 2026)",
+          "numero": "2026-051",
+          "date_acte": "2026-03-19",
+          "remplace": ["2018-154"]
+        }
+      ]
+    },
+    {
+      "type": "referentiel",
+      "url": "https://www.cnil.fr/fr/methodologies-de-reference-pour-les-recherches-en-sante-verifier-sa-conformite-aux-mr-001-et-mr-003",
+      "pages_max": 1,
+      "liens": "urls",
+      "urls": [
+        {
+          "url": "https://www.cnil.fr/sites/default/files/2026-05/annexe_securite.pdf",
+          "titre": "Annexe sécurité des méthodologies de référence (version 2026)",
+          "numero": "2026-049",
+          "date_acte": "2026-03-19"
+        },
+        {
+          "url": "https://www.cnil.fr/sites/default/files/2026-05/annexe_controle_qualite.pdf",
+          "titre": "Annexe contrôle qualité des méthodologies de référence (version 2026)",
+          "numero": "2026-052",
+          "date_acte": "2026-03-19"
+        }
+      ]
+    },
+    {
       "type": "liste_aipd",
       "url": "https://www.cnil.fr/fr/listes-des-traitements-pour-lesquels-une-aipd-est-requise-ou-non",
       "pages_max": 1,

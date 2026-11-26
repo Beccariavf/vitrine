@@ -7,7 +7,7 @@
       "type": "guide",
       "url": "https://www.cnil.fr/fr/mediatheque?field_scald_collection_tid=29",
       "origine": "page",
-      "consulte_le": "2026-11-25",
+      "consulte_le": "2026-11-26",
       "listes": 26,
       "documents": 26
     },
@@ -15,7 +15,7 @@
       "type": "guide",
       "url": "https://www.cnil.fr/fr/guides-aipd",
       "origine": "page",
-      "consulte_le": "2026-11-25",
+      "consulte_le": "2026-11-26",
       "listes": 4,
       "documents": 4
     },
@@ -23,15 +23,39 @@
       "type": "referentiel",
       "url": "https://www.cnil.fr/fr/autres-referentiels",
       "origine": "page",
-      "consulte_le": "2026-11-25",
+      "consulte_le": "2026-11-26",
       "listes": 26,
       "documents": 26
+    },
+    {
+      "type": "referentiel",
+      "url": "https://www.cnil.fr/fr/methodologie-de-reference-mr-001-recherches-sante-avec-recueil-du-consentement",
+      "origine": "liste",
+      "consulte_le": "2026-11-26",
+      "listes": 1,
+      "documents": 1
+    },
+    {
+      "type": "referentiel",
+      "url": "https://www.cnil.fr/fr/methodologie-de-reference-mr-003-recherches-dans-le-domaine-de-la-sante-sans-recueil-du-consentement",
+      "origine": "liste",
+      "consulte_le": "2026-11-26",
+      "listes": 1,
+      "documents": 1
+    },
+    {
+      "type": "referentiel",
+      "url": "https://www.cnil.fr/fr/methodologies-de-reference-pour-les-recherches-en-sante-verifier-sa-conformite-aux-mr-001-et-mr-003",
+      "origine": "liste",
+      "consulte_le": "2026-11-26",
+      "listes": 2,
+      "documents": 2
     },
     {
       "type": "liste_aipd",
       "url": "https://www.cnil.fr/fr/listes-des-traitements-pour-lesquels-une-aipd-est-requise-ou-non",
       "origine": "page",
-      "consulte_le": "2026-11-25",
+      "consulte_le": "2026-11-26",
       "listes": 2,
       "documents": 2
     },
@@ -39,7 +63,7 @@
       "type": "fiche_ia",
       "url": "https://www.cnil.fr/fr/les-fiches-pratiques-ia",
       "origine": "page",
-      "consulte_le": "2026-11-25",
+      "consulte_le": "2026-11-26",
       "listes": 18,
       "documents": 18
     },
@@ -47,19 +71,19 @@
       "type": "doctrine_ia",
       "url": "https://www.cnil.fr/fr/intelligence-artificielle",
       "origine": "liste",
-      "consulte_le": "2026-11-25",
+      "consulte_le": "2026-11-26",
       "listes": 27,
       "documents": 25
     }
   ],
-  "consulte_le": "2026-11-25",
-  "date_extraction": "2026-11-25",
-  "documents_listes": 103,
-  "documents": 99,
-  "fragments": 5623,
+  "consulte_le": "2026-11-26",
+  "date_extraction": "2026-11-26",
+  "documents_listes": 107,
+  "documents": 103,
+  "fragments": 5846,
   "types": {
     "guide": 30,
-    "referentiel": 26,
+    "referentiel": 30,
     "liste_aipd": 0,
     "fiche_ia": 18,
     "doctrine_ia": 25
@@ -970,6 +994,80 @@
         "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
         "source": "Source : CNIL – https://www.cnil.fr",
         "fragments": 28
+      },
+      {
+        "slug": "mr-001-referentiel",
+        "type": "referentiel",
+        "titre": "Méthodologie de référence MR-001 — recherches dans le domaine de la santé avec recueil du consentement (version 2026)",
+        "url": "https://www.cnil.fr/sites/default/files/2026-05/mr-001_referentiel.pdf",
+        "snapshot": "2bcd569d085c5839f2bc08f7c42ab1662331c4359187ee9df60c892e79be6fc6",
+        "date_acte": "2026-03-19",
+        "date_source": "descripteur",
+        "date_extraction": "2026-11-26",
+        "representation": "pdf",
+        "pdf": "https://www.cnil.fr/sites/default/files/2026-05/mr-001_referentiel.pdf",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
+        "fragments": 75,
+        "numero": "2026-050",
+        "remplace": [
+          "2018-153"
+        ]
+      },
+      {
+        "slug": "mr-003-referentiel",
+        "type": "referentiel",
+        "titre": "Méthodologie de référence MR-003 — recherches dans le domaine de la santé sans recueil du consentement (version 2026)",
+        "url": "https://www.cnil.fr/sites/default/files/2026-05/mr-003_referentiel.pdf",
+        "snapshot": "1e2732d9281a7b810a417b0027e640cae4fdc0b18c623e60aa4e3b37667c960c",
+        "date_acte": "2026-03-19",
+        "date_source": "descripteur",
+        "date_extraction": "2026-11-26",
+        "representation": "pdf",
+        "pdf": "https://www.cnil.fr/sites/default/files/2026-05/mr-003_referentiel.pdf",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
+        "fragments": 72,
+        "numero": "2026-051",
+        "remplace": [
+          "2018-154"
+        ]
+      },
+      {
+        "slug": "annexe-securite",
+        "type": "referentiel",
+        "titre": "Annexe sécurité des méthodologies de référence (version 2026)",
+        "url": "https://www.cnil.fr/sites/default/files/2026-05/annexe_securite.pdf",
+        "snapshot": "d5e296f2ff3c6804a27f20937ab18388ac96152ab438484950d946d45067e98d",
+        "date_acte": "2026-03-19",
+        "date_source": "descripteur",
+        "date_extraction": "2026-11-26",
+        "representation": "pdf",
+        "pdf": "https://www.cnil.fr/sites/default/files/2026-05/annexe_securite.pdf",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
+        "fragments": 26,
+        "numero": "2026-049"
+      },
+      {
+        "slug": "annexe-controle-qualite",
+        "type": "referentiel",
+        "titre": "Annexe contrôle qualité des méthodologies de référence (version 2026)",
+        "url": "https://www.cnil.fr/sites/default/files/2026-05/annexe_controle_qualite.pdf",
+        "snapshot": "8b3a72f91f24c5521332af0a074c6dd50bcbb10cf94e82fad972cc50787b5d27",
+        "date_acte": "2026-03-19",
+        "date_source": "descripteur",
+        "date_extraction": "2026-11-26",
+        "representation": "pdf",
+        "pdf": "https://www.cnil.fr/sites/default/files/2026-05/annexe_controle_qualite.pdf",
+        "licence": "CC BY-ND 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by-nd/4.0/deed.fr",
+        "source": "Source : CNIL – https://www.cnil.fr",
+        "fragments": 50,
+        "numero": "2026-052"
       }
     ],
     "liste_aipd": [],
@@ -1666,6 +1764,10 @@
       }
     ]
   },
+  "remplacements": {
+    "2018-153": "2026-050",
+    "2018-154": "2026-051"
+  },
   "couverts_par_cnil": [
     {
       "type": "liste_aipd",
@@ -1816,20 +1918,23 @@
   "source": "Source : CNIL – https://www.cnil.fr",
   "couverture": {
     "source": "CNIL — guides, référentiels, fiches IA, doctrine IA et listes AIPD (cnil.fr)",
-    "date_liste": "2026-11-25",
-    "date_extraction": "2026-11-25",
+    "date_liste": "2026-11-26",
+    "date_extraction": "2026-11-26",
     "pages_reference": [
       "https://www.cnil.fr/fr/mediatheque?field_scald_collection_tid=29",
       "https://www.cnil.fr/fr/guides-aipd",
       "https://www.cnil.fr/fr/autres-referentiels",
+      "https://www.cnil.fr/fr/methodologie-de-reference-mr-001-recherches-sante-avec-recueil-du-consentement",
+      "https://www.cnil.fr/fr/methodologie-de-reference-mr-003-recherches-dans-le-domaine-de-la-sante-sans-recueil-du-consentement",
+      "https://www.cnil.fr/fr/methodologies-de-reference-pour-les-recherches-en-sante-verifier-sa-conformite-aux-mr-001-et-mr-003",
       "https://www.cnil.fr/fr/listes-des-traitements-pour-lesquels-une-aipd-est-requise-ou-non",
       "https://www.cnil.fr/fr/les-fiches-pratiques-ia",
       "https://www.cnil.fr/fr/intelligence-artificielle"
     ],
-    "documents_listes": 103,
+    "documents_listes": 107,
     "types": {
       "guide": 30,
-      "referentiel": 26,
+      "referentiel": 30,
       "liste_aipd": 0,
       "fiche_ia": 18,
       "doctrine_ia": 25
