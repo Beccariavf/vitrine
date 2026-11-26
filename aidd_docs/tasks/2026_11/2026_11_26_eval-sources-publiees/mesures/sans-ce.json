@@ -48,7 +48,7 @@
       "type": "conceptuelle",
       "piege": false,
       "attendues": [
-        "CETATEXT000037534137#f0"
+        "CETATEXT000037534137#f11"
       ],
       "refs": [
         "LEGIARTI000032951699",
@@ -58,7 +58,7 @@
         "LEGIARTI000032951707"
       ],
       "rangs": [
-        0
+        3
       ],
       "similarites": [
         0.7803996503353119,
@@ -98,15 +98,15 @@
   ],
   "agregats": {
     "semantiques": 3,
-    "top5_semantique_succes": 2,
+    "top5_semantique_succes": 3,
     "top1_semantique_succes": 1,
-    "mrr_semantique": 0.5,
+    "mrr_semantique": 0.611111111111111,
     "referencees": 3,
-    "top5_global_succes": 2,
-    "top5_rendu_succes": 2,
+    "top5_global_succes": 3,
+    "top5_rendu_succes": 3,
     "top1_rendu_succes": 1,
-    "mrr_rendu": 0.5,
-    "top5_global_rendu_succes": 2,
+    "mrr_rendu": 0.611111111111111,
+    "top5_global_rendu_succes": 3,
     "pieges_mesures": 0,
     "pieges_cites": 0,
     "confiant": 0,

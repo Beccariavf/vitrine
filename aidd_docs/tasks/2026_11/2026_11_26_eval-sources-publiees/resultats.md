@@ -25,9 +25,10 @@ aucune écriture sous `data/`.
 - Sources lues : 66 questions candidates, dont 60 retenues, portées par 58 URL distinctes sur 35 domaines
   (Village de la Justice, blogs de cabinets, HAL, CNIL, CADA, Conseil d'État, Conseil constitutionnel, ARCEP,
   ARCOM, Commission européenne). Les 6 écartées : 2 pour un 403 anti-robot, 4 pour recoupement ou cadrage hors
-  sujet. 13 domaines abandonnés : paywall (Dalloz, Revue Banque), anti-robot ou 403 (Actu-Juridique, XXI Avocats),
-  contenu non chargé ou non fiable (Shift Avocats, un blog), page sans référence d'article (RSF, INSEE, data.gouv),
-  PDF illisible (Unipub), source exclue par la consigne (`donneespersonnelles.fr`).
+  sujet. 13 domaines abandonnés : paywall (Dalloz, Revue Banque), anti-robot, 403 ou mur JavaScript (Actu-Juridique,
+  XXI Avocats, Cour de cassation), contenu non chargé ou non fiable (Shift Avocats, un blog), page sans référence
+  d'article (RSF, INSEE, data.gouv), PDF illisible (Unipub), hors champ (mdc-avocat), source exclue par la consigne
+  (`donneespersonnelles.fr`).
 - Limites : 1 à 13 questions par corpus, donc les taux par corpus sont des ordres de grandeur. Les seuils de
   confiance sont les constantes figées du produit (0,69 / 0,74 / 0,01), identiques dans les deux passes.
 
@@ -63,7 +64,7 @@ Avec le corpus attendu :
 | champ | questions | rappel@5 | rang moyen | MRR | confiant juste / faux |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | données personnelles | 20 | 19/20 (95,0 %) | 1,47 | 0,792 | 3 / 1 |
-| données non personnelles | 15 | 9/15 (60,0 %) | 1,67 | 0,450 | 2 / 0 |
+| données non personnelles | 15 | 10/15 (66,7 %) | 1,70 | 0,483 | 2 / 0 |
 | IA | 15 | 11/15 (73,3 %) | 1,82 | 0,586 | 5 / 2 |
 | santé | 10 | 10/10 (100,0 %) | 2,20 | 0,670 | 4 / 0 |
 
@@ -72,7 +73,7 @@ Sans filtre `corpus` :
 | champ | questions | rappel@5 | rang moyen | MRR | confiant juste / faux |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | données personnelles | 20 | 6/20 (30,0 %) | 1,33 | 0,250 | 1 / 3 |
-| données non personnelles | 15 | 6/15 (40,0 %) | 2,00 | 0,250 | 3 / 0 |
+| données non personnelles | 15 | 7/15 (46,7 %) | 2,14 | 0,272 | 3 / 0 |
 | IA | 15 | 7/15 (46,7 %) | 1,00 | 0,467 | 4 / 1 |
 | santé | 10 | 7/10 (70,0 %) | 2,00 | 0,470 | 2 / 0 |
 
@@ -87,7 +88,7 @@ Voir [`agregats.md`](agregats.md) pour les quatre tableaux. Points saillants :
 - `aiact` : 8/9 avec filtre, 7/9 sans filtre ; `sante_ue` 2/2 → 1/2 ; `donnees` 5/8 → 3/8.
 - `cnil_doctrine` : 3/4 avec filtre, 1/4 sans filtre ; `doctrine_ue` : 0/2 dans les deux passes (les fragments
   attendus ne sont pas dans le top 5, même bornés au corpus).
-- `cada` : 0/1 avec filtre. `cc`, `cjue`, `ce`, `cnil`, `frontieres` : entre 66,7 % et 100 % avec filtre.
+- `cada` : 0/1 avec filtre. `cc`, `ce`, `cjue`, `cnil`, `frontieres` : entre 66,7 % et 100 % avec filtre.
 
 ## Effet du volume et parade
 
@@ -97,7 +98,7 @@ En regroupant les questions :
 | --- | ---: | ---: | ---: | ---: |
 | textes législatifs (`rgpd`, `aiact`, `donnees`, `sante_ue`, `textes_fr`, `lil`, `frontieres`) | 42 | 37/42 (88,1 %) | 19/42 (45,2 %) | −42,9 pts |
 | doctrine (`doctrine_ue`, `cnil_doctrine`) | 6 | 3/6 (50,0 %) | 1/6 (16,7 %) | −33,3 pts |
-| décisions (`cnil`, `ce`, `cc`, `cjue`, `cada`) | 12 | 9/12 (75,0 %) | 6/12 (50,0 %) | −25,0 pts |
+| décisions (`cnil`, `ce`, `cc`, `cjue`, `cada`) | 12 | 10/12 (83,3 %) | 7/12 (58,3 %) | −25,0 pts |
 
 L'écart des textes dépasse 15 points : la parade est requise. Deux pistes, **non implémentées** :
 
