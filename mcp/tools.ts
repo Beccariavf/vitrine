@@ -1,6 +1,6 @@
 import { lireUnites } from "./index/build.ts";
 import { cheminIndex } from "./index/build.ts";
-import { openIndex, rechercheHybride, rechercheLexicale, searchIndex } from "./index/search.ts";
+import { CANDIDATS_VOIE, openIndex, rechercheHybride, rechercheLexicale, searchIndex } from "./index/search.ts";
 import type { Index, ResultatRecherche } from "./index/search.ts";
 import type { Unite } from "./corpus/parse.ts";
 import type { Embedder } from "./embed/embedder.ts";
@@ -42,6 +42,7 @@ import { lireLectures } from "./corpus/lectures.ts";
 import { CORPUS_SANS_VEILLE, SOURCES_PAR_CORPUS } from "./corpus/veille.ts";
 import { champsGouvernance, gouvernanceDuCorpus } from "./corpus/registre.ts";
 import type { ChampGouvernance, NomCorpus } from "./corpus/registre.ts";
+import { CORPUS } from "./corpus/registre.ts";
 import { normaliserIdentifiant } from "./corpus/citations.ts";
 import type { ArticlesCouverts } from "./corpus/citations.ts";
 import {
@@ -315,6 +316,11 @@ export type Passage = ResultatRecherche & {
   metadonnees_seulement?: true;
   /** Phrase à afficher telle quelle, avec le lien officiel du passage. */
   avertissement_contenu?: string;
+  /**
+   * Présent seulement sur un passage inséré par le quota de textes : sa place
+   * est réservée aux corpus de type `texte`, en fin de top et jamais au rang 1.
+   */
+  place_reservee?: "texte";
 };
 
 export type ResultatRechercheOutil = {
@@ -439,6 +445,117 @@ function normaliserTexte(question: string): string {
 /** Forme sans espaces : rattrape les sigles pointés et les identifiants CELEX. */
 function compacter(texteNormalise: string): string {
   return texteNormalise.replace(/\s+/g, "");
+}
+
+/** Nombre de places du top réservées aux textes, quand la recherche n'est bornée ni par corpus ni par document. */
+export const PLACES_TEXTE = 2;
+
+/** Corpus de type `texte` du registre : la règle de droit, par opposition à son commentaire. */
+const CORPUS_TEXTE: readonly string[] = CORPUS.filter((corpus) => corpus.type === "texte").map(
+  (corpus) => corpus.nom,
+);
+
+/** Le considérant éclaire la règle sans la porter : il n'occupe pas une place réservée. */
+const NIVEAU_CONSIDERANT = "considérant";
+
+/** Vrai pour un passage d'un corpus de type `texte` qui porte la règle (hors considérant). */
+function porteLaRegle(resultat: ResultatRecherche): boolean {
+  return CORPUS_TEXTE.includes(resultat.corpus) && resultat.niveau !== NIVEAU_CONSIDERANT;
+}
+
+/**
+ * Motifs d'une question qui vise une juridiction, une décision ou l'autorité qui
+ * statue : le quota de textes ne s'y applique pas, la question cherche la
+ * décision, pas la règle. Liste explicite, sur la question normalisée.
+ */
+const MOTIFS_JURISPRUDENCE: readonly RegExp[] = [
+  /\bcjue\b/,
+  /\bcour de justice\b/,
+  /\btribunal de l union\b/,
+  /\bconseil d etat\b/,
+  /\bcour de cassation\b/,
+  /\bconseil constitutionnel\b/,
+  /\bcedh\b/,
+  /\bcour europeenne des droits de l homme\b/,
+  /\bjurisprudence\b/,
+  /** « arrêt » d'une juridiction ; un arrêt de travail n'en est pas un. */
+  /\barret\b(?! de travail\b)/,
+  /\ba juge\b/,
+  /** « décision n° 2024-123 » ; « décision n'était » est l'élision de « ne ». */
+  /\bdecision n \d/,
+  /\bdeliberation\b/,
+  /\bpourvoi\b/,
+  /\becli\b/,
+  /** Numéro de délibération CNIL, `SAN-2026-015`. */
+  /\bsan \d{4} \d+\b/,
+  /** Numéro d'affaire de l'Union, `C-311/18`. */
+  /\bc \d+ \d+\b/,
+];
+
+/**
+ * Vrai quand la question vise expressément une juridiction ou une décision : le
+ * quota de textes ne s'applique pas. `sanction` ne vise la CNIL que si la
+ * question la nomme aussi — une question sur les sanctions d'un texte cherche la
+ * règle ; la CADA ne rend pas de décisions, c'est son avis qui est visé.
+ */
+export function viseJurisprudence(question: string): boolean {
+  const texte = normaliserTexte(question);
+  if (MOTIFS_JURISPRUDENCE.some((motif) => motif.test(texte))) return true;
+  if (/\bcnil\b/.test(texte) && /\bsanction/.test(texte)) return true;
+  return /\bcada\b/.test(texte) && /\b(?:avis|conseil|doctrine|recommande|a rendu)\b/.test(texte);
+}
+
+/** Un passage rendu, éventuellement inséré par le quota de textes. */
+export type ResultatAvecPlace = ResultatRecherche & { place_reservee?: "texte" };
+
+/**
+ * Réserve les dernières places du top aux textes de loi, purement : les
+ * passages réservés prennent les dernières places, jamais le rang 1 ; un texte
+ * déjà classé compte dans le quota ; un doublon de `ref` est impossible. Seuls
+ * les passages insérés portent `place_reservee`.
+ */
+export function reserverPlacesTexte(
+  ordre: readonly ResultatRecherche[],
+  candidats: readonly ResultatRecherche[],
+  k: number,
+  places = PLACES_TEXTE,
+): ResultatAvecPlace[] {
+  if (k < places + 1) return [...ordre];
+  const deja = ordre.filter(porteLaRegle).length;
+  if (deja >= places) return [...ordre];
+
+  const refs = new Set(ordre.map((resultat) => resultat.ref));
+  const retenus: ResultatRecherche[] = [];
+  const manquants = places - deja;
+  const parSimilarite = [...candidats].sort(
+    (gauche, droite) =>
+      (gauche.distance ?? Number.POSITIVE_INFINITY) - (droite.distance ?? Number.POSITIVE_INFINITY),
+  );
+  for (const candidat of parSimilarite) {
+    if (retenus.length >= manquants) break;
+    if (!porteLaRegle(candidat) || refs.has(candidat.ref)) continue;
+    refs.add(candidat.ref);
+    retenus.push(candidat);
+  }
+  if (retenus.length === 0) return [...ordre];
+
+  const garde = [...ordre];
+  // Les places libérées sont les dernières occupées par un non-texte ; le rang 1
+  // n'est jamais retiré.
+  let aRetirer = Math.max(0, garde.length + retenus.length - k);
+  for (let position = garde.length - 1; position > 0 && aRetirer > 0; position -= 1) {
+    if (!CORPUS_TEXTE.includes(garde[position]!.corpus)) {
+      garde.splice(position, 1);
+      aRetirer -= 1;
+    }
+  }
+  return [
+    ...garde,
+    ...retenus.slice(0, retenus.length - aRetirer).map((resultat) => ({
+      ...resultat,
+      place_reservee: "texte" as const,
+    })),
+  ];
 }
 
 /**
@@ -1087,6 +1204,11 @@ export type SearchDeps = {
    * Absent, la voie dense reste strictement celle d'avant.
    */
   rerank?: Reranker;
+  /**
+   * Mesure seulement : `false` désactive le quota de textes pour comparer la
+   * recherche avec et sans lui. Absent, le quota s'applique.
+   */
+  quota_texte?: boolean;
 };
 
 /**
@@ -1591,12 +1713,40 @@ async function chercher(
             ...(corpusDuNiveau === undefined ? {} : { corpus: corpusDuNiveau }),
           },
         );
+
+  // La confiance est lue sur le classement d'avant le quota : elle ne le change
+  // jamais. Le quota ne s'applique qu'à une recherche non bornée (ni corpus ni
+  // document, ni numéro de délibération), hors mode lexical et hors question qui
+  // vise une juridiction ou une décision.
+  const quotaTexte =
+    (deps.quota_texte ?? true) &&
+    corpus === undefined &&
+    document === undefined &&
+    demande.numero === undefined &&
+    k >= PLACES_TEXTE + 1 &&
+    mode !== "lexicale" &&
+    !viseJurisprudence(demande.question);
+  let ordreFinal: ResultatAvecPlace[] = ordre;
+  if (quotaTexte && niveau !== "aucun_resultat_fiable") {
+    const deja = ordre.filter(porteLaRegle).length;
+    if (deja < PLACES_TEXTE) {
+      if (vecteur === null) throw new Error("Vecteur de requête absent hors mode lexical");
+      // Seconde recherche bornée aux corpus texte dans `vec0` : les articles ne
+      // sont souvent pas dans la fenêtre globale. En hybride, dense seule.
+      const candidats = searchIndex(index, vecteur, {
+        k: Math.max(CANDIDATS_VOIE, k * 10),
+        corpus_parmi: CORPUS_TEXTE,
+        niveaux_exclus: [NIVEAU_CONSIDERANT],
+      });
+      ordreFinal = reserverPlacesTexte(ordre, candidats, k);
+    }
+  }
   return rendre({
     niveau_confiance: niveau,
     passages:
       niveau === "aucun_resultat_fiable"
         ? []
-        : ordre.map((resultat) => {
+        : ordreFinal.map((resultat) => {
             if (resultat.distance === undefined) return avecStatutApplication(resultat);
             return avecStatutApplication({ ...resultat, similarite: 1 - resultat.distance });
           }),

@@ -512,6 +512,11 @@ export function createServer(deps: ServerDeps): McpServer {
         "En recherche lexicale seule (`VITRINE_RECHERCHE=lexicale`), les passages portent " +
         "`rang_lexical` (1 = meilleur) et aucune `distance` ni `similarite` ; le niveau reste " +
         "`incertain` hors appariement exact, un score BM25 ne prouvant pas la pertinence. " +
+        "Sans `corpus` ni `document` (demandé ou détecté), deux places du top 5 sont réservées aux " +
+        "textes de loi (corpus de type `texte`) : elles prennent les dernières places, jamais le rang 1, " +
+        "et portent `place_reservee: \"texte\"`. La réserve ne s'applique pas à une question qui vise " +
+        "une juridiction ou une décision (CJUE, Conseil d'État, Cour de cassation, Conseil " +
+        "constitutionnel, CEDH, CADA, arrêt, délibération, numéro de décision). " +
         `${CONSIGNE_CITATIONS} ` +
         `${CONSIGNE_DECISIONS_CITEES} ` +
         `${CONSIGNE_STATUT_APPLICATION} ` +

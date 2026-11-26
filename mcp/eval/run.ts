@@ -596,6 +596,7 @@ async function mesurer(
   recherche: ModeRecherche,
   rerank?: Reranker,
   detection = false,
+  quotaTexte = true,
 ): Promise<{ mesures: Mesure[]; durees: number[] }> {
   const mesures: Mesure[] = [];
   const durees: number[] = [];
@@ -616,6 +617,7 @@ async function mesurer(
         seuils: { bas: -1, haut: 2, marge: 0 },
         recherche,
         ...(rerank === undefined ? {} : { rerank }),
+        ...(quotaTexte ? {} : { quota_texte: false }),
       },
     );
     if (resultat.rerank !== undefined) durees.push(resultat.rerank.duree_ms);
@@ -1277,6 +1279,9 @@ async function main(argv: string[]): Promise<void> {
   // Avec `--sans-filtre`, `--detection` laisse le serveur honorer le document ou
   // le corpus nommé dans la question, comme le produit sans paramètre `corpus`.
   const detection = sansFiltre && argv.includes("--detection");
+  // Mesure seulement : `--sans-quota` rend la recherche d'avant le quota de
+  // textes, pour une comparaison avant/après sur le même index.
+  const quotaTexte = !argv.includes("--sans-quota");
 
   const modele = valeurDe("--modele", argv);
   const dim = valeurDe("--dim", argv);
@@ -1316,6 +1321,7 @@ async function main(argv: string[]): Promise<void> {
       recherche,
       rerank,
       detection,
+      quotaTexte,
     );
 
     const mesuresDev =

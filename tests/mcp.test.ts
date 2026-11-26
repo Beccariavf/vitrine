@@ -1092,6 +1092,16 @@ describe("le serveur en mémoire", () => {
     assert.match(description("etat_corpus"), /absente\.raison/);
   });
 
+  it("dit dans la description de search que deux places sont réservées aux textes", async () => {
+    const { tools } = await client.listTools();
+    const texte = tools.find((outil) => outil.name === "search")?.description ?? "";
+
+    assert.match(texte, /deux places/);
+    assert.match(texte, /place_reservee/);
+    assert.match(texte, /textes de loi/);
+    assert.match(texte, /juridiction/);
+  });
+
   it("publie les familles exposées et leur mesure dans les descriptions des citations entre décisions", async () => {
     const { tools } = await client.listTools();
     const description = (nom: string): string =>
