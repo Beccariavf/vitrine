@@ -55,6 +55,7 @@ describe("sourcesCorpus", () => {
         "Conseil constitutionnel",
         "Cour de cassation",
         "Guichet unique (métadonnées)",
+        "Doctrine de la Commission",
       ],
     );
     assert.ok(sources.every((source) => source.documents > 0));

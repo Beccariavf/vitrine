@@ -37,7 +37,7 @@ describe("registre des corpus", () => {
       assert.ok(corpus.descriptionProvenance !== "", `${corpus.nom} : description provenance`);
       assert.ok(corpus.descriptionRecherche !== "", `${corpus.nom} : description recherche`);
     }
-    assert.equal(NOMBRE_CORPUS, 23);
+    assert.equal(NOMBRE_CORPUS, 24);
   });
 
   it("garde la description du serveur identique à sa fixture", () => {
@@ -58,7 +58,7 @@ describe("registre des corpus", () => {
   });
 
   it("compte les corpus en toutes lettres, sans nombre en dur", () => {
-    assert.equal(nombreEnLettres(NOMBRE_CORPUS), "vingt-trois");
+    assert.equal(nombreEnLettres(NOMBRE_CORPUS), "vingt-quatre");
     assert.equal(nombreEnLettres(0), "zéro");
     assert.equal(nombreEnLettres(1), "un");
     assert.equal(nombreEnLettres(21), "vingt et un");
@@ -80,7 +80,7 @@ describe("registre des corpus", () => {
         "clauses contractuelles types, décisions d'adéquation, textes UE de l'économie des données, " +
         "espace européen des données de santé (EHDS), textes UE de frontière, LIL, " +
         "textes français d'application, textes en préparation et affaires pendantes, CNIL, CADA, " +
-        "doctrine CNIL, CEPD, Conseil d'État, Conseil constitutionnel, Cour de cassation, CJUE",
+        "doctrine CNIL, CEPD, Conseil d'État, Conseil constitutionnel, Cour de cassation, CJUE, doctrine de la Commission",
     );
   });
 });

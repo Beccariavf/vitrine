@@ -32,6 +32,7 @@
     "cjue:controle": "node mcp/corpus/cjue/controle.ts",
     "cnil:sync": "node mcp/corpus/cnil/sync.ts",
     "cnil-doctrine:sync": "node mcp/corpus/cnil-doctrine/sync.ts",
+    "corpus:sync:doctrine-ue": "node mcp/corpus/doctrine-ue/sync.ts",
     "lil:historique": "node mcp/corpus/lil/historique.ts",
     "lil:sync": "node mcp/corpus/lil/sync.ts",
     "textes-fr:sync": "node mcp/corpus/textes-fr/sync.ts",
