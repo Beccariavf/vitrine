@@ -56,9 +56,9 @@ const etapes = [
 
 /** Trois points de méthode, chacun court : ils complètent le lien du dépôt. */
 const pointsOuverts = [
-  "Sources officielles uniquement : EUR-Lex, Légifrance, CNIL, CJUE, juridictions.",
+  "Sources officielles uniquement : chaque collection vient de son site officiel.",
   "Chaque passage garde son lien vers le texte d'origine.",
-  "Mise à jour datée, collection par collection.",
+  "Chaque collection porte sa date de mise à jour, ou la mention « texte consolidé ».",
 ];
 
 /** Titre de section de la page : sans 500 serré, la hiérarchie vient de la taille. */
@@ -131,7 +131,7 @@ const titreSection = "text-[clamp(1.75rem,3.2vw,2.5rem)] leading-[1.1] font-medi
           <div data-gouvernance={champ} class="rounded-bloc bg-surface p-6">
             <h3 class="font-serif text-3xl font-normal first-letter:uppercase">{libelle}</h3>
             <p class="mt-5 text-[2.5rem] leading-none font-medium tabular-nums">
-              {nombre.format(corpus.length)}
+              {nombre.format(corpus.length)}<span class="sr-only"> collections</span>
             </p>
             <ul class="mt-5 grid gap-1 text-[0.875rem] leading-relaxed text-encre-douce">
               {corpus.map((nom) => <li>{nom}</li>)}
