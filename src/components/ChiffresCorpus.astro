@@ -1,0 +1,45 @@
+---
+import type { ResumeCorpus } from "../lib/corpus.ts";
+
+type Props = {
+  /** Chiffres calculés au build par `resumeCorpus`. */
+  resume: ResumeCorpus;
+};
+
+const { resume } = Astro.props;
+const nombre = new Intl.NumberFormat("fr-FR");
+const dateFormat = new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeZone: "UTC" });
+
+/** Le grand serif porte le chiffre, une fois par colonne ; Inter porte l'explication. */
+const chiffre = "mt-5 font-serif text-[clamp(3rem,7vw,5.5rem)] leading-[1] tracking-[-0.02em] tabular-nums";
+const explication = "mt-4 max-w-[22ch] text-[0.9375rem] leading-relaxed text-encre-douce";
+---
+
+<section aria-labelledby="chiffres-corpus" class="espace-section">
+  <h2 id="chiffres-corpus" class="sr-only">Le corpus en chiffres</h2>
+  <div class="grid gap-10 sm:grid-cols-3 sm:gap-8">
+    <div>
+      <div aria-hidden="true" class="h-0.5 w-12 bg-accent"></div>
+      <p class={chiffre}>{nombre.format(resume.passages)}</p>
+      <p class={explication}>passages indexés, article par article et point par point</p>
+    </div>
+    <div>
+      <div aria-hidden="true" class="h-0.5 w-12 bg-accent"></div>
+      <p class={chiffre}>{nombre.format(resume.collections)}</p>
+      <p class={explication}>collections officielles, de l'Union aux juridictions françaises</p>
+    </div>
+    {
+      resume.derniereMiseAJour !== null && (
+        <div>
+          <div aria-hidden="true" class="h-0.5 w-12 bg-accent" />
+          <p class={chiffre}>
+            <time datetime={resume.derniereMiseAJour}>
+              {dateFormat.format(new Date(resume.derniereMiseAJour))}
+            </time>
+          </p>
+          <p class={explication}>dernière mise à jour du corpus</p>
+        </div>
+      )
+    }
+  </div>
+</section>
