@@ -1,8 +1,6 @@
 # Résultats — #164, questions tirées de sources publiées
 
-**Chiffres provisoires.** Ils ne sont pas retenus avant le contrôle, par l'utilisateur, des 10 questions de
-[`echantillon-a-controler.md`](echantillon-a-controler.md) (critère d'acceptation 2). Un « non » retire la question et
-les chiffres sont recalculés.
+**Chiffres retenus.** Les 10 questions de [`echantillon-a-controler.md`](echantillon-a-controler.md) ont été contrôlées le 2026-11-26 (critère d'acceptation 2) : 10/10 valides, aucune retirée ; les chiffres ci-dessous sont définitifs.
 
 Mesure du 2026-11-26 sur l'index réel `data/corpus/index/index.db` (178 359 unités, 24 corpus, 1 024 dimensions,
 modèle `leoipulsar/harrier-0.6b` servi par Ollama). Les deux passes sont en lecture seule : aucun `corpus:index`,
