@@ -3,21 +3,21 @@
   "nom": "Cour de cassation",
   "titre": "Décisions de la Cour de cassation relatives aux données personnelles",
   "source": "PISTE — Judilibre /search et /decision",
-  "date_extraction": "2026-11-25",
+  "date_extraction": "2026-11-26",
   "licence": "Licence Ouverte 2.0 (Etalab), conditions générales d'utilisation Judilibre",
-  "documents": 735,
-  "fragments": 15670,
+  "documents": 645,
+  "fragments": 14051,
   "documents_lus": 1827,
   "doublons_recherche": 747,
   "exclusions": {
     "date_invalide": 0,
-    "hors_sujet": 1092,
+    "hors_sujet": 1182,
     "texte_vide": 0
   },
   "couverture": {
     "source": "PISTE — Judilibre /search et /decision",
     "periode": {
-      "date_min": "1980-06-09",
+      "date_min": "1986-07-21",
       "date_max": "2026-11-24"
     },
     "champs": "text",
@@ -87,7 +87,10 @@
             "cle": "crpa-livre-iii",
             "libelle": "CRPA, livre III (L. 300-1 à L. 327-1)",
             "articles": "\\bl 3(?:0\\d|1\\d|2[0-7]) \\d+",
-            "contexte": "\\bcode des relations\\b"
+            "contexte": [
+              "\\bcode des relations\\b",
+              "\\b(?:communication|reutilisation|documents? administratifs?|publication en ligne|informations? publiques?|cada)\\b"
+            ]
           },
           {
             "cle": "loi-51-711",
@@ -102,7 +105,7 @@
           {
             "cle": "patrimoine-livre-ii",
             "libelle": "Code du patrimoine, livre II (archives)",
-            "articles": "\\bl 21[1-7] \\d+",
+            "articles": "\\bl (?:21[1-7]|22[12]) \\d+|\\br 21[12] \\d+",
             "contexte": "\\bcode du patrimoine\\b"
           },
           {
@@ -133,7 +136,10 @@
             "cle": "penal-226-13",
             "libelle": "Code pénal, article 226-13 (secret professionnel)",
             "articles": "\\b226 13\\b",
-            "contexte": "\\bcode penal\\b"
+            "contexte": [
+              "\\bcode penal\\b",
+              "\\b(?:medecins?|medical|medicaux|patients?|soins?|etablissements? de sante|donnees de sante|secret medical)\\b"
+            ]
           },
           {
             "cle": "data-act",
@@ -211,10 +217,11 @@
           },
           {
             "cle": "secret-des-affaires",
-            "libelle": "secret des affaires",
+            "libelle": "secret des affaires (deux mentions au moins)",
             "expressions": [
               "secret des affaires"
-            ]
+            ],
+            "occurrences_min": 2
           },
           {
             "cle": "fouille-de-textes",
@@ -290,24 +297,24 @@
         "commerce-secret-affaires": 16,
         "communication-documents-administratifs": 4,
         "cpi-bases-donnees": 12,
-        "crpa-livre-iii": 11,
+        "crpa-livre-iii": 7,
         "csp-donnees-sante": 12,
         "directive-bases-donnees": 5,
         "directive-secret-affaires": 1,
         "droit-sui-generis": 8,
         "intelligence-artificielle": 6,
         "loi-68-678": 3,
-        "patrimoine-livre-ii": 8,
-        "penal-226-13": 10,
-        "secret-des-affaires": 265
+        "patrimoine-livre-ii": 15,
+        "penal-226-13": 1,
+        "secret-des-affaires": 168
       },
       "deja_presents_par_critere": {
         "base-donnees-producteur": 1,
         "cpi-bases-donnees": 1,
         "droit-sui-generis": 1,
         "intelligence-artificielle": 1,
-        "penal-226-13": 5,
-        "secret-des-affaires": 5
+        "penal-226-13": 1,
+        "secret-des-affaires": 4
       }
     },
     "veille": {
@@ -317,7 +324,7 @@
     },
     "exclusions": {
       "date_invalide": 0,
-      "hors_sujet": 1092,
+      "hors_sujet": 1182,
       "texte_vide": 0
     },
     "introuvables": [],

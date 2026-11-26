@@ -3,19 +3,20 @@
   "nom": "CJUE",
   "titre": "Décisions de la Cour de justice de l'Union européenne sur les données personnelles",
   "source": "CELLAR / EUR-Lex — SPARQL, rendu XHTML puis HTML patrimonial, français puis anglais",
-  "date_extraction": "2026-11-25",
+  "date_extraction": "2026-11-26",
   "licence": "Réutilisation autorisée par la décision 2011/833/UE (CC BY 4.0)",
   "langue": "fra",
-  "documents": 312,
-  "fragments": 29318,
-  "documents_lus": 539,
+  "documents": 304,
+  "fragments": 28401,
+  "documents_lus": 540,
   "exclusions": {
     "date_invalide": 0,
     "avis_avocat_general": 145,
     "autre_type": 66,
     "xhtml_absent": 16,
     "echec_telechargement": 0,
-    "texte_vide": 0
+    "texte_vide": 0,
+    "acte_sans_rapport": 9
   },
   "couverture": {
     "source": "CELLAR / EUR-Lex — SPARQL, rendu XHTML puis HTML patrimonial, français puis anglais",
@@ -55,19 +56,20 @@
           "32024R2847",
           "32022R2065",
           "32024L2853"
-        ]
+        ],
+        "regle": "acte visé dans le titre ou les mots-clés, ou cité au moins deux fois dans les motifs hors du rappel du cadre juridique"
       },
-      "union": "décision listée par la matière, une notion fine, ou parce qu'elle cite un acte visé",
+      "union": "décision listée par la matière ou une notion fine, ou parce qu'elle cite un acte visé qui figure dans son titre, ses mots-clés ou ses motifs",
       "ajouts_par_critere": {
-        "acte_cite": 57
+        "acte_cite": 47
       },
       "deja_presents_par_critere": {
         "acte_cite": 5
       },
       "decisions_par_origine": {
-        "matiere": 194,
-        "notion": 195,
-        "acte_cite": 62,
+        "matiere": 183,
+        "notion": 190,
+        "acte_cite": 52,
         "liste": 0
       }
     },
@@ -81,7 +83,7 @@
     "complementaires_ajoutes": 5,
     "langue": "fra",
     "langues": {
-      "fra": 311,
+      "fra": 303,
       "eng": 1
     },
     "documents_langues": {
@@ -103,7 +105,8 @@
       "autre_type": 66,
       "xhtml_absent": 16,
       "echec_telechargement": 0,
-      "texte_vide": 0
+      "texte_vide": 0,
+      "acte_sans_rapport": 9
     },
     "veille": {
       "entrees": 0,
@@ -1017,6 +1020,42 @@
       {
         "celex": "62023TO0562(01)",
         "motif": "xhtml_absent"
+      },
+      {
+        "celex": "62013TJ0643",
+        "motif": "acte_sans_rapport"
+      },
+      {
+        "celex": "62016TJ0163",
+        "motif": "acte_sans_rapport"
+      },
+      {
+        "celex": "62018CJ0682",
+        "motif": "acte_sans_rapport"
+      },
+      {
+        "celex": "62019CJ0132",
+        "motif": "acte_sans_rapport"
+      },
+      {
+        "celex": "62021TJ0524",
+        "motif": "acte_sans_rapport"
+      },
+      {
+        "celex": "62023CJ0198",
+        "motif": "acte_sans_rapport"
+      },
+      {
+        "celex": "62023CJ0212",
+        "motif": "acte_sans_rapport"
+      },
+      {
+        "celex": "62023CO0693",
+        "motif": "acte_sans_rapport"
+      },
+      {
+        "celex": "62024TJ0094",
+        "motif": "acte_sans_rapport"
       }
     ],
     "limite": null

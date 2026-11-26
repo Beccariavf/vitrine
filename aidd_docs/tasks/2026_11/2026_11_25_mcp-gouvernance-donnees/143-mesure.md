@@ -159,3 +159,170 @@ puis l'index mis à jour en incrémental par `npm run corpus:index`.
   `CETATEXT000049631269`, `CETATEXT000054534126`, `CETATEXT000047357723`), derrière l'article du
   CRPA livre III.
 - `npm run typecheck`, `npm test` (1 414 réussis, 0 échec, 1 ignoré) et `npm run build` verts.
+
+## Itération 2 — resserrement demandé
+
+Date : 2026-11-26. Les cinq resserrements portent sur les critères élargis seulement ; le filtre
+historique est inchangé, et aucune décision présente sur `main` avant #143 n'est retirée.
+
+1. **C. pén. 226-13** : le nom du code et un contexte de santé (médecin, médical, patient, soins,
+   établissement ou données de santé, secret médical) doivent tous deux tenir dans la fenêtre de
+   160 caractères autour de l'article.
+2. **Code du patrimoine** : seuls les articles du livre II (L. 211-1 à L. 222-3, R. 211 et R. 212)
+   comptent ; le motif `l (?:21[1-7]|22[12])` remplace `l 21[1-7]`, et `r 21[12]` est ajouté.
+3. **CRPA livre III** : l'article L. 300-1 à L. 327-1 doit être accompagné, dans la fenêtre, du nom
+   du code et d'un contexte de communication, réutilisation, document administratif, CADA,
+   publication en ligne ou informations publiques. `pertinence.ts` accepte désormais plusieurs
+   motifs de contexte, tous exigés.
+4. **Secret des affaires** (`ce`, `cc`) : l'expression doit apparaître au moins deux fois
+   (`occurrences_min: 2`) ; une citation de C. com. L. 151-1 à L. 154-1 ou de la directive
+   2016/943 continue de suffire par son propre critère.
+5. **CJUE par citation d'acte** : `mcp/corpus/cjue/pertinence.ts` ne retient une décision listée
+   par le seul critère `acte_cite` que si l'acte figure dans le titre ou les mots-clés, ou s'il est
+   cité au moins deux fois dans les motifs qui suivent l'« Appréciation de la Cour » (le rappel du
+   cadre juridique et les arguments des parties ne comptent pas). Les mentions qu'un motif déclare
+   sans lien avec le litige (« aucun lien avec le présent recours », « non pas la directive X, mais
+   la directive Y ») sont écartées. Le filtre ne touche ni la matière, ni les notions, ni la veille,
+   ni les CELEX complémentaires.
+
+### Volume après resserrement
+
+| Corpus | Décisions avant | Décisions après | Fragments avant | Fragments après | Part de l'index après |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `ce` | 1 033 | 898 | 10 616 | 8 557 | 4,9 % |
+| `cc` | 330 | 240 | 7 445 | 5 826 | 3,3 % |
+| `cjue` | 55 | 47 | 5 026 | 4 109 | 2,3 % |
+| **Total** | **1 418** | **1 185** | **23 087** | **18 492** | **10,6 %** |
+
+Index après passe incrémentale : **175 198 unités** (contre 179 793) ; seuil d'arrêt 47 000
+fragments (30 %) toujours non atteint.
+
+### Comptes par critère (décisions ajoutées)
+
+| Corpus | Critère | Avant | Après |
+| --- | --- | ---: | ---: |
+| `ce` | accès aux documents administratifs | 634 | 634 |
+| `ce` | CRPA livre III | 214 | 166 |
+| `ce` | secret des affaires | 120 | 47 |
+| `ce` | code pénal 226-13 | 69 | 9 |
+| `ce` | code du patrimoine | 18 | 22 |
+| `ce` | autres critères | ≤ 75 | ≤ 75 |
+| `cc` | secret des affaires | 265 | 168 |
+| `cc` | code du patrimoine | 8 | 15 |
+| `cc` | CRPA livre III | 11 | 7 |
+| `cc` | code pénal 226-13 | 10 | 1 |
+| `cc` | autres critères | ≤ 17 | ≤ 17 |
+| `cjue` | citation d'acte (ajouts / déjà présents) | 57 / 5 | 47 / 5 |
+
+Le patrimoine gagne 4 décisions pour `ce` et 7 pour `cc` : les articles L. 221, L. 222 et R. 211,
+R. 212 du livre II entrent dans le motif. Les 139 décisions `ce` et 97 décisions `cc` retirées le
+sont par les critères 226-13 (60 + 9), secret des affaires (73 + 97), CRPA (48 + 4) ; 9 décisions
+`cjue` sont écartées par le texte (`acte_sans_rapport`), dont 62023CJ0198 et 62023CJ0212.
+
+### Échantillon (60 décisions, graine 1431)
+
+Sélection : 20 décisions ajoutées par corpus, triées par `sha256("echantillon-1431:<id>")`.
+
+#### Conseil d'État (20)
+
+| # | Décision | Date | Critère | Verdict | Raison |
+| ---: | --- | --- | --- | --- | --- |
+| 1 | CETATEXT000020868529 | 2009-04-10 | accès | pertinente | refus de communiquer des documents judiciaires, avis CADA |
+| 2 | CETATEXT000007689309 | 1983-10-07 | accès | pertinente | accès au dossier personnel, loi du 17 juillet 1978 |
+| 3 | CETATEXT000051646885 | 2025-05-20 | CRPA, accès | pertinente | communication de la décision de permis, L. 311-1 |
+| 4 | CETATEXT000031495037 | 2015-11-18 | accès | pertinente | communication de documents pénitentiaires au juge des référés |
+| 5 | CETATEXT000048573325 | 2023-12-15 | CRPA | pertinente | communication des comptes rendus de contrôle, L. 311-6 |
+| 6 | CETATEXT000036233190 | 2017-12-15 | CRPA, accès | pertinente | avis CADA, noms des agents du CACIR |
+| 7 | CETATEXT000028411919 | 2013-12-26 | communication, accès | pertinente | données sources des études sur le Mediator |
+| 8 | CETATEXT000007836567 | 1994-06-20 | accès | pertinente | communication de procès-verbaux d'enquête, CADA |
+| 9 | CETATEXT000053163173 | 2025-12-23 | CRPA, accès | pertinente | communication des rendus de numérisation 3D du musée Rodin |
+| 10 | CETATEXT000029177093 | 2014-06-25 | base + producteur | **hors-sujet** | copie privée : « producteur » de phonogrammes, pas une base de données |
+| 11 | CETATEXT000007834119 | 1992-11-18 | loi 51-711 | pertinente | recensement, chiffre de la population légale |
+| 12 | CETATEXT000007918030 | 1996-09-30 | 226-13 | pertinente | contrôle médical et secret professionnel, contexte de santé |
+| 13 | CETATEXT000019247011 | 2008-07-25 | accès | pertinente | communication des comptes annuels du CEA |
+| 14 | CETATEXT000050935923 | 2024-12-31 | patrimoine | **hors-sujet** | police de l'eau : L. 214-17 du code de l'environnement cité près du « code du patrimoine » (monuments) |
+| 15 | CETATEXT000041753781 | 2020-03-20 | secret, L. 151-1 | pertinente | publication de la décision de l'Autorité de la concurrence, secret des affaires |
+| 16 | CETATEXT000007834535 | 1994-01-19 | accès | pertinente | délivrance de copies, frais |
+| 17 | CETATEXT000007784141 | 1991-10-23 | accès | pertinente | communication des actes de vente, CADA |
+| 18 | CETATEXT000033308550 | 2016-10-21 | CRPA, communication | pertinente | communication du rapport de l'inspection du travail |
+| 19 | CETATEXT000007727575 | 1988-03-25 | accès | pertinente | délai de l'avis CADA, accès aux actes notariés |
+| 20 | CETATEXT000038351111 | 2019-04-05 | CRPA, accès | pertinente | communication de documents d'une association foncière urbaine |
+
+Hors-sujet : **2 / 20**.
+
+#### Cour de cassation (20)
+
+| # | Décision | Date | Critère | Verdict | Raison |
+| ---: | --- | --- | --- | --- | --- |
+| 1 | 5fca5830e68210229ff28857 | 2020-03-25 | secret des affaires | pertinente | expertise in futurum et proportionnalité au secret |
+| 2 | 5fd91ab5eb0eedb6c7f7b75e | 2016-11-03 | secret des affaires | pertinente | secret des affaires et secret professionnel face à l'article 145 |
+| 3 | 639192726d1e4f05d4f680c4 | 2022-12-08 | secret des affaires | pertinente | séquestre provisoire des pièces |
+| 4 | 683fe302669ab9459096099c | 2025-06-04 | secret des affaires | pertinente | comptes réglementaires couverts par le secret |
+| 5 | 61372840cd580146774302c0 | 2012-09-11 | base de données | pertinente | extraction illicite d'une base de données |
+| 6 | 5fd8f5775def058982fd5e67 | 2017-10-19 | secret des affaires | pertinente | compte d'exploitation, secret des affaires |
+| 7 | 5fca5cca2eee9739cc966f36 | 2020-01-29 | secret des affaires | pertinente | protection de pièces devant l'Autorité de la concurrence |
+| 8 | 61372923cd58014677434aaa | 2015-02-10 | secret des affaires | pertinente | secret des affaires et article 145 |
+| 9 | 6979b374cdc6046d47f27461 | 2026-01-28 | secret des affaires | pertinente | séquestre provisoire et délai d'appel |
+| 10 | 60794ccb9ba5988459c470a8 | 1998-06-24 | secret des affaires | pertinente | expertise et secret des affaires |
+| 11 | 6af55f1b6c2e1778128884a8 | 2026-11-12 | intelligence artificielle | **hors-sujet** | « Intelligence artificielle applications » est le nom d'une société |
+| 12 | 6079e1509ba5988459c5c12a | 2015-02-10 | secret des affaires | pertinente | rétractation d'une ordonnance sur requête |
+| 13 | 66d805188c253fd3db1c2d3f | 2024-09-04 | secret, L. 151-1 | pertinente | déclassement de pièces, L. 151-1 du code de commerce |
+| 14 | 666a8c01c0b8d3000801907c | 2024-06-13 | CSP | pertinente | audiogramme et données de santé, L. 1110-4 |
+| 15 | 613727e2cd5801467742e4d7 | 2011-09-06 | secret des affaires | **hors-sujet** | correspondance privée écartée des débats, pas un secret d'affaires |
+| 16 | 60797df49ba5988459c4a23d | 2014-06-26 | secret des affaires | pertinente | atteinte au secret non établie, mesure d'instruction |
+| 17 | 5fca6df2daa7d15907eedb82 | 2019-06-05 | secret des affaires | pertinente | comptes réglementaires, confidentialité |
+| 18 | 63bfb6f05e2fbe7c90043b5d | 2023-01-12 | secret, L. 153-1 | pertinente | saisie et tri des pièces |
+| 19 | 5fca8d5d7a23107fe4b166a7 | 2018-06-12 | patrimoine | pertinente | L. 211-4, caractère public des archives |
+| 20 | 6137294acd580146774355f7 | 2015-07-01 | secret des affaires | **hors-sujet** | prix de logiciels : secret opposé par le vendeur dans un litige de consommation |
+
+Hors-sujet : **3 / 20**.
+
+#### CJUE (20)
+
+| # | Décision | Date | Acte cité | Verdict | Raison |
+| ---: | --- | --- | --- | --- | --- |
+| 1 | 62010CJ0604 | 2012-03-01 | 96/9 | pertinente | droit d'auteur sur les calendriers, base de données |
+| 2 | 62011CJ0138 | 2012-07-12 | 96/9 | pertinente | données du registre du commerce, droit sui generis |
+| 3 | 62023TJ0367 | 2025-11-19 | DSA | pertinente | désignation de très grande plateforme |
+| 4 | 62023TJ0348 | 2025-09-03 | DSA | pertinente | désignation de Zalando |
+| 5 | 62023CJ0336 | 2024-11-21 | Open Data | pertinente | réutilisation de documents du secteur public |
+| 6 | 62023CJ0201 | 2025-09-04 | 2019/790 | pertinente | manquement de transposition |
+| 7 | 62019CJ0927 | 2021-09-07 | 2016/943 | pertinente | confidentialité des offres |
+| 8 | 62012CJ0355 | 2014-01-23 | 96/9 | **hors-sujet** | mesures techniques de la directive 2001/29, 96/9 citée dans une définition |
+| 9 | 62002CJ0046 | 2004-11-09 | 96/9 | pertinente | droit sui generis, notion d'investissement |
+| 10 | 62002CJ0203 | 2004-11-09 | 96/9 | pertinente | partie substantielle de la base de données |
+| 11 | 62007CJ0545 | 2009-03-05 | 96/9 | pertinente | extraction de données juridiques officielles |
+| 12 | 62023CO0647 | 2024-01-11 | DSA | pertinente | intervention dans un litige DSA |
+| 13 | 62023CJ0215 | 2025-05-22 | Open Data | pertinente | transposition incomplète |
+| 14 | 62025CO0502 | 2025-12-18 | AI Act | pertinente | renvoi préjudiciel sur l'AI Act, irrecevable |
+| 15 | 62024CO0806 | 2026-06-03 | AI Act | pertinente | non-lieu à statuer, litige AI Act |
+| 16 | 62023CJ0238 | 2025-05-22 | Open Data | pertinente | transposition incomplète |
+| 17 | 62002CJ0444 | 2004-11-09 | 96/9 | pertinente | notion de base de données |
+| 18 | 62024CO0620 | 2025-02-25 | DSA | pertinente | désignation de très grande plateforme |
+| 19 | 62024CO0511 | 2024-09-06 | DSA | pertinente | désignation de très grande plateforme |
+| 20 | 62012CJ0202 | 2013-12-19 | 96/9 | pertinente | droit sui generis, métamoteur de recherche |
+
+Hors-sujet : **1 / 20**.
+
+### Taux de hors-sujet
+
+**6 / 60 = 10,0 %** (CE 2, CC 3, CJUE 1). Les cas limites sont comptés hors-sujet : copie privée
+où « producteur » désigne le phonogramme, article du code de l'environnement cité près du « code du
+patrimoine », correspondance privée et prix de logiciels où le secret n'est qu'un argument, 96/9
+rappelée dans une définition. Les trois premiers relèvent de l'ambiguïté connue des critères
+(expression ou numéro d'article partagé) et non des cinq resserrements demandés ; ils sont signalés
+sans nouveau changement de règle, le taux restant à la limite acceptée.
+
+### Vérification après resserrement
+
+- Aucune décision présente sur `main` avant #143 n'est sortie : `ce` 0, `cc` 0, `cjue` 0
+  (`git show origin/main:data/corpus/<c>/unites.jsonl`).
+- Synchronisations sur le cache : `ce` 2 492 décisions / 29 331 fragments, `cc` 645 / 14 051,
+  `cjue` 304 / 28 401. Aucun téléchargement de décision pour `cjue` ; `cc` 0 décision lue ;
+  `ce` a relu l'archive locale, sans retéléchargement.
+- Index incrémental : **252 ajoutées, 0 modifiée, 4 847 supprimées, 174 946 inchangées**
+  (4 décisions `ce`, 7 `cc`, 1 `cjue` nouvelles entrées par les motifs de patrimoine élargis et le
+  retour de `62025CO0502`) ; 175 198 unités au total, aucune unité conservée recalculée.
+- `npm run typecheck`, `npm test` (1 422 tests, 1 421 réussis, 0 échec, 1 ignoré) et
+  `npm run build` verts. Tests ajoutés : un reçu et un écarté par resserrement, dont
+  `62025CJ0999` (acte dans le titre) et `62025CJ0998` / `62025CJ0997` (citation passagère).

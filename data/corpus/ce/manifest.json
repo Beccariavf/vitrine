@@ -5,7 +5,7 @@
   "archive": "Freemium_jade_global_20261108-140000.tar.gz",
   "archive_sha256": "87ab671358a374b4380e203d51418450e46935ea11f16439445b52b2f9c25297",
   "archive_url": "https://echanges.dila.gouv.fr/OPENDATA/JADE/Freemium_jade_global_20261108-140000.tar.gz",
-  "date_extraction": "2026-11-25",
+  "date_extraction": "2026-11-26",
   "mots_cles": [
     "données personnelles",
     "données à caractère personnel",
@@ -20,13 +20,13 @@
   "licence": "Licence Ouverte 2.0 (Etalab)",
   "documents_lus": 573525,
   "decisions_ce": 174265,
-  "documents": 2627,
-  "fragments": 31390,
+  "documents": 2492,
+  "fragments": 29331,
   "doublons": 62,
   "ecartes": {
     "autre_juridiction": 399198,
     "date_invalide": 0,
-    "sans_mot_cle": 166011,
+    "sans_mot_cle": 166146,
     "texte_vide": 5627
   },
   "couverture": {
@@ -66,7 +66,10 @@
             "cle": "crpa-livre-iii",
             "libelle": "CRPA, livre III (L. 300-1 à L. 327-1)",
             "articles": "\\bl 3(?:0\\d|1\\d|2[0-7]) \\d+",
-            "contexte": "\\bcode des relations\\b"
+            "contexte": [
+              "\\bcode des relations\\b",
+              "\\b(?:communication|reutilisation|documents? administratifs?|publication en ligne|informations? publiques?|cada)\\b"
+            ]
           },
           {
             "cle": "loi-51-711",
@@ -81,7 +84,7 @@
           {
             "cle": "patrimoine-livre-ii",
             "libelle": "Code du patrimoine, livre II (archives)",
-            "articles": "\\bl 21[1-7] \\d+",
+            "articles": "\\bl (?:21[1-7]|22[12]) \\d+|\\br 21[12] \\d+",
             "contexte": "\\bcode du patrimoine\\b"
           },
           {
@@ -112,7 +115,10 @@
             "cle": "penal-226-13",
             "libelle": "Code pénal, article 226-13 (secret professionnel)",
             "articles": "\\b226 13\\b",
-            "contexte": "\\bcode penal\\b"
+            "contexte": [
+              "\\bcode penal\\b",
+              "\\b(?:medecins?|medical|medicaux|patients?|soins?|etablissements? de sante|donnees de sante|secret medical)\\b"
+            ]
           },
           {
             "cle": "data-act",
@@ -190,10 +196,11 @@
           },
           {
             "cle": "secret-des-affaires",
-            "libelle": "secret des affaires",
+            "libelle": "secret des affaires (deux mentions au moins)",
             "expressions": [
               "secret des affaires"
-            ]
+            ],
+            "occurrences_min": 2
           },
           {
             "cle": "fouille-de-textes",
@@ -269,7 +276,7 @@
         "commerce-secret-affaires": 9,
         "communication-documents-administratifs": 75,
         "cpi-bases-donnees": 3,
-        "crpa-livre-iii": 214,
+        "crpa-livre-iii": 166,
         "csp-donnees-sante": 42,
         "directive-bases-donnees": 3,
         "directive-droit-auteur": 6,
@@ -279,10 +286,10 @@
         "intelligence-artificielle": 3,
         "loi-51-711": 34,
         "loi-68-678": 1,
-        "patrimoine-livre-ii": 18,
-        "penal-226-13": 69,
+        "patrimoine-livre-ii": 22,
+        "penal-226-13": 9,
         "reutilisation-informations-publiques": 14,
-        "secret-des-affaires": 120
+        "secret-des-affaires": 47
       },
       "deja_presents_par_critere": {
         "acces-documents-administratifs": 34,
@@ -290,7 +297,7 @@
         "base-donnees-producteur": 1,
         "commerce-secret-affaires": 2,
         "communication-documents-administratifs": 3,
-        "crpa-livre-iii": 34,
+        "crpa-livre-iii": 22,
         "csp-donnees-sante": 32,
         "dsa": 2,
         "hebergeur-donnees-sante": 6,
@@ -298,9 +305,9 @@
         "loi-51-711": 11,
         "loi-68-678": 3,
         "patrimoine-livre-ii": 6,
-        "penal-226-13": 18,
+        "penal-226-13": 6,
         "reutilisation-informations-publiques": 1,
-        "secret-des-affaires": 5,
+        "secret-des-affaires": 3,
         "snds": 13
       }
     },
@@ -308,26 +315,26 @@
       "publie": {
         "documents_lus": 61200,
         "decisions_ce": 51732,
-        "documents": 619,
-        "fragments": 8545,
+        "documents": 560,
+        "fragments": 7540,
         "doublons": 0,
         "ecartes": {
           "autre_juridiction": 9468,
           "date_invalide": 0,
-          "sans_mot_cle": 45489,
+          "sans_mot_cle": 45548,
           "texte_vide": 5624
         }
       },
       "inedit": {
         "documents_lus": 512325,
         "decisions_ce": 122533,
-        "documents": 2008,
-        "fragments": 22845,
+        "documents": 1932,
+        "fragments": 21791,
         "doublons": 62,
         "ecartes": {
           "autre_juridiction": 389730,
           "date_invalide": 0,
-          "sans_mot_cle": 120522,
+          "sans_mot_cle": 120598,
           "texte_vide": 3
         }
       }
@@ -341,7 +348,7 @@
       "motifs": {
         "autre_juridiction": 399198,
         "date_invalide": 0,
-        "sans_mot_cle": 166011,
+        "sans_mot_cle": 166146,
         "texte_vide": 5627
       }
     }
