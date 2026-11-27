@@ -24,12 +24,12 @@ aucun passage). « Textes seuls » : référence attendue dans un corpus de type
 
 Le témoin dense reproduit exactement les 27/60 du 2026-11-26. Au brut, 20 candidats gagnent trois
 questions, 30 et 50 en gagnent quatre ; au rendu, 30 en gagne trois et 20 comme 50 en gagnent deux.
-Le gain vient des textes (+1) et des autres (+1 à +2). 30 candidats est le meilleur compromis rendu ;
-20 égale 50 au rendu pour un tiers de sa latence, et 50 fait passer six questions sous
-`aucun_resultat_fiable` contre quatre à 20 et 30. La machine était partagée (charge système entre 3
-et 40 selon les passes) : les latences situent les ordres de grandeur, pas la performance isolée.
-La mesure du 2026-11-10 donnait 3 595 ms par question à 50 candidats ; celle de sélection du 27/11
-≈1,9 s.
+Au rendu, 20 et 30 gagnent un texte, 50 aucun (19/42) et ne gagne que sur les autres (+2). 30
+candidats est le meilleur compromis rendu ; 20 égale 50 au rendu pour un tiers de sa latence, et 50
+fait passer six questions sous `aucun_resultat_fiable` contre quatre à 20 et 30. La machine était
+partagée (charge système entre 3 et 40 selon les passes) : les latences situent les ordres de
+grandeur, pas la performance isolée. La mesure du 2026-11-10 donnait 3 595 ms par question à 50
+candidats ; celle de sélection du 27/11 ≈1,9 s.
 
 La mesure de sélection du 2026-11-27 (35/60, ≈1,9 s/question) ne se reproduit pas à l'identique :
 cette passe rend 31/60 au brut (29/60 au rendu) à 50 candidats. L'écart de quatre questions n'est
@@ -68,10 +68,12 @@ message.
 
 ## Validation
 
-Voir le compte rendu de la PR : `npm run typecheck`, `npm test`, `npm run build`. Le test hors ligne
-couvre les variables absentes ou invalides, la troncature à 2 000 caractères, les lots de 25
-(60 passages → 3 appels), les pannes réseau, HTTP 500, délai dépassé et réponse incomplète, le repli
-dense avec `indisponible: true`, et le mode lexical qui n'appelle jamais le reranker.
+`npm run typecheck` vert, `npm test` 1490 tests dont 1489 réussis, 1 ignoré (le vrai modèle Ollama),
+0 échec, `npm run build` vert. Le test hors ligne couvre les variables absentes ou invalides (y
+compris sans `VITRINE_RERANK_URL`), la troncature à 2 000 caractères, les lots de 25 (60 passages →
+3 appels), les pannes réseau, HTTP 500, délai dépassé et réponse incomplète, le repli dense avec
+`indisponible: true` (y compris à travers `search`), `k` supérieur au nombre de candidats, et le
+mode lexical qui n'appelle jamais le reranker.
 
 ## Commandes
 
