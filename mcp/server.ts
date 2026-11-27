@@ -233,6 +233,9 @@ export function lireConfigRerank(
   recherche: ModeRecherche,
   ecrire: (texte: string) => void = (texte) => process.stderr.write(texte),
 ): ConfigRerank | undefined {
+  // Une valeur invalide arrête le démarrage même si le second étage est inactif :
+  // une variable posée ne doit pas rester silencieusement ignorée.
+  const candidats = lireCandidatsRerank(env[VARIABLE_RERANK_CANDIDATS]);
   const url = env[VARIABLE_RERANK_URL];
   if (url === undefined) return undefined;
   if (recherche === "lexicale") {
@@ -253,7 +256,7 @@ export function lireConfigRerank(
       url,
       model: env[VARIABLE_RERANK_MODELE] ?? MODELE_RERANK_PAR_DEFAUT,
     }),
-    candidats: lireCandidatsRerank(env[VARIABLE_RERANK_CANDIDATS]),
+    candidats,
   };
 }
 

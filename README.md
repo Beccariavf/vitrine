@@ -92,8 +92,9 @@ llama-server --reranking -m ~/.cache/vitrine-rerank/bge-reranker-v2-m3-q8_0.gguf
 VITRINE_RERANK_URL=http://127.0.0.1:8080 npm run mcp
 ```
 
-Le GGUF (`bge-reranker-v2-m3`, quantification Q8_0, 636 Mo) vit hors du dépôt, sous
-`~/.cache/vitrine-rerank/`. Sans `VITRINE_RERANK_URL`, le comportement est strictement inchangé.
+Le GGUF (`bge-reranker-v2-m3`, quantification Q8_0, 636 Mo, dépôt `gpustack/bge-reranker-v2-m3-GGUF`)
+vit hors du dépôt, sous `~/.cache/vitrine-rerank/`. Sans `VITRINE_RERANK_URL`, le comportement est
+strictement inchangé.
 `VITRINE_RERANK_MODELE` choisit le modèle demandé (`bge-reranker-v2-m3` par défaut) et
 `VITRINE_RERANK_CANDIDATS` la fenêtre offerte au second étage (50 par défaut, entier de 5 à 100,
 sinon le démarrage s'arrête). Chaque passage part tronqué à 2 000 caractères, par lots de 25, avec

@@ -134,6 +134,13 @@ describe("la configuration du reranker lue dans l'environnement", () => {
     assert.equal(lireCandidatsRerank(String(CANDIDATS_RERANK_MAX)), CANDIDATS_RERANK_MAX);
   });
 
+  it("refuse un nombre de candidats invalide même sans URL de rerank", () => {
+    assert.throws(
+      () => lireConfigRerank({ VITRINE_RERANK_CANDIDATS: "3" }, "dense"),
+      /VITRINE_RERANK_CANDIDATS attendu un entier de 5 à 100/,
+    );
+  });
+
   it("arrête le démarrage sur une URL vide", () => {
     assert.throws(
       () => lireConfigRerank({ [VARIABLE_RERANK_URL]: "   " }, "dense"),
@@ -159,6 +166,7 @@ describe("la configuration du reranker lue dans l'environnement", () => {
       cwd: RACINE,
       env: {
         ...process.env,
+        VITRINE_RECHERCHE: "dense",
         [VARIABLE_RERANK_URL]: "http://127.0.0.1:8080",
         VITRINE_RERANK_CANDIDATS: "3",
       },

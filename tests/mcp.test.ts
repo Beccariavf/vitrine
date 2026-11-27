@@ -20,7 +20,7 @@ import { buildIndex } from "../mcp/index/build.ts";
 import { BANDE_ARTICLE, openIndex, rangerPassages } from "../mcp/index/search.ts";
 import type { Index, ResultatRecherche } from "../mcp/index/search.ts";
 import { createServer, lireModeRecherche } from "../mcp/server.ts";
-import { CANDIDATS_RERANK } from "../mcp/rerank/reranker.ts";
+import { CANDIDATS_RERANK, createLlamaReranker } from "../mcp/rerank/reranker.ts";
 import type { Reranker } from "../mcp/rerank/reranker.ts";
 import { corpusDeNiveau, corpusNomme, documentNomme, documentsNommes, getArticle, getDecision, search } from "../mcp/tools.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";
@@ -1844,6 +1844,48 @@ describe("le second étage de rerank", () => {
     assert.equal(appels, 0, "aucun appel au modèle de rerank");
     assert.equal("rerank" in resultat, false);
     assert.equal(resultat.recherche, "lexicale");
+  });
+
+  it("sert le classement dense quand le serveur de rerank répond 500", async () => {
+    const reranker = createLlamaReranker({
+      url: "http://127.0.0.1:8080",
+      model: "factice-rerank",
+      fetchImpl: async () => ({
+        ok: false,
+        status: 500,
+        text: async () => JSON.stringify({ error: "boom" }),
+      }),
+    });
+
+    const resultat = await search(
+      root,
+      { question: QUESTION, k: 5 },
+      { embedder: embedderFactice(), index, seuils: SEUILS, rerank: reranker },
+    );
+
+    assert.match(
+      resultat.rerank !== undefined && "raison" in resultat.rerank ? resultat.rerank.raison : "",
+      /HTTP 500/,
+    );
+    assert.equal(resultat.passages.length, 5);
+  });
+
+  it("garde k passages quand k dépasse le nombre de candidats", async () => {
+    const vus: string[][] = [];
+    const resultat = await search(
+      root,
+      { question: QUESTION, k: 6 },
+      {
+        embedder: embedderFactice(),
+        index,
+        seuils: SEUILS,
+        rerank: rerankerInverse(vus),
+        candidatsRerank: 5,
+      },
+    );
+
+    assert.equal(vus[0]?.length, 6, "la fenêtre suit k quand k est plus grand");
+    assert.equal(resultat.passages.length, 6);
   });
 
   it("règle la fenêtre offerte au reranker par `candidatsRerank`", async () => {

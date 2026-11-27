@@ -8,23 +8,33 @@ Mesure du 2026-11-27, index réel `data/corpus/index/index.db` (178 359 unités,
 ## Qualité et latence selon le nombre de candidats
 
 Jeu `mcp/eval/questions-sources-publiees.csv`, mode par défaut (`--sans-filtre --detection`),
-une passe par groupe `--corpus` comme dans `2026_11_26_mode-defaut-hybride/resultats.md`. Rappel@5 :
-la référence attendue est dans les 5 passages rendus. « Textes seuls » : référence attendue dans un
-corpus de type `texte` (42 questions) ; « autres » : doctrine, décisions et métadonnées (18). La
-latence est la médiane des durées du bloc `rerank` sur les 60 questions.
+une passe par groupe `--corpus` comme dans `2026_11_26_mode-defaut-hybride/resultats.md`. « Top 5
+brut » : la référence attendue est dans les 5 meilleurs passages, avant le filtre de confiance.
+« Top 5 rendu » : ce que le client reçoit sous les seuils calibrés (`aucun_resultat_fiable` ne rend
+aucun passage). « Textes seuls » : référence attendue dans un corpus de type `texte` (42 questions) ;
+« autres » : doctrine, décisions et métadonnées (18). La latence est la médiane des durées du bloc
+`rerank` sur les 60 questions.
 
-| candidats | total | textes seuls | autres | latence médiane | latence moyenne |
-| ---: | ---: | ---: | ---: | ---: | ---: |
-| sans reranker | 27/60 | 19/42 | 8/18 | — | — |
-| 20 | 30/60 | 21/42 | 9/18 | 1 240 ms | 1 656 ms |
-| 30 | 31/60 | 21/42 | 10/18 | 1 788 ms | 1 890 ms |
-| 50 | 31/60 | 21/42 | 10/18 | 3 242 ms | 3 357 ms |
+| candidats | top 5 brut | top 5 rendu | brut : textes / autres | rendu : textes / autres | latence médiane | latence moyenne |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| sans reranker | 27/60 | 27/60 | 19/42 / 8/18 | 19/42 / 8/18 | — | — |
+| 20 | 30/60 | 29/60 | 21/42 / 9/18 | 20/42 / 9/18 | 1 240 ms | 1 656 ms |
+| 30 | 31/60 | 30/60 | 21/42 / 10/18 | 20/42 / 10/18 | 1 788 ms | 1 890 ms |
+| 50 | 31/60 | 29/60 | 21/42 / 10/18 | 19/42 / 10/18 | 3 242 ms | 3 357 ms |
 
-Le témoin dense reproduit exactement les 27/60 du 2026-11-26. Le gain vient des textes (+2) et des
-autres (+1 à +2) ; 30 et 50 candidats rendent le même rappel, 20 coûte une question de moins pour
-un tiers de la latence de 50. La machine était partagée (charge système entre 3 et 40 selon les
-passes) : les latences situent les ordres de grandeur, pas la performance isolée. La mesure du
-2026-11-10 donnait ≈1,9 s par question à 50 candidats sur une machine moins chargée.
+Le témoin dense reproduit exactement les 27/60 du 2026-11-26. Au brut, 20 candidats gagnent trois
+questions, 30 et 50 en gagnent quatre ; au rendu, 30 en gagne trois et 20 comme 50 en gagnent deux.
+Le gain vient des textes (+1) et des autres (+1 à +2). 30 candidats est le meilleur compromis rendu ;
+20 égale 50 au rendu pour un tiers de sa latence, et 50 fait passer six questions sous
+`aucun_resultat_fiable` contre quatre à 20 et 30. La machine était partagée (charge système entre 3
+et 40 selon les passes) : les latences situent les ordres de grandeur, pas la performance isolée.
+La mesure du 2026-11-10 donnait 3 595 ms par question à 50 candidats ; celle de sélection du 27/11
+≈1,9 s.
+
+La mesure de sélection du 2026-11-27 (35/60, ≈1,9 s/question) ne se reproduit pas à l'identique :
+cette passe rend 31/60 au brut (29/60 au rendu) à 50 candidats. L'écart de quatre questions n'est
+pas attribué ; il peut venir de la troncature à 2 000 caractères, des lots de 25, ou de la charge.
+Le témoin dense, lui, reproduit exactement 27/60.
 
 ## CNIL `dev`
 
