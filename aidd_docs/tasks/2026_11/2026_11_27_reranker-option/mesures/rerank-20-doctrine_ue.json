@@ -1,0 +1,101 @@
+{
+  "date": "2026-11-27",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "doctrine_ue",
+  "sans_filtre": true,
+  "detection": true,
+  "recherche": "dense",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine-wt-114/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "figés (jeu sans split)",
+  "questions": [
+    {
+      "question": "Tout logiciel automatisé entre-t-il dans le champ du règlement européen sur l'IA ou doit-il présenter certaines caractéristiques pour être qualifié de système d'IA ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "lignes-directrices-art-3#f1"
+      ],
+      "refs": [
+        "32024R1689#rct_12",
+        "32024R1689#art_3",
+        "32024R1689#art_2",
+        "32024R1689#art_42",
+        "32024R1689#art_1"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7156421840190887,
+        0.7167589366436005,
+        0.7058160901069641,
+        0.713696151971817,
+        0.7007209062576294
+      ],
+      "niveau": "incertain",
+      "duree_rerank_ms": 876.7840419999998
+    },
+    {
+      "question": "À partir de quel volume cumulé de calcul un modèle d'IA à usage général est-il présumé présenter un risque systémique ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "lignes-directrices-gpai#f51"
+      ],
+      "refs": [
+        "32024R1689#art_51",
+        "32024R1689#rct_111",
+        "32024R1689#rct_112",
+        "32024R1689#art_52",
+        "32024R1689#art_55"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.785255491733551,
+        0.7910485565662384,
+        0.7607834190130234,
+        0.761121541261673,
+        0.749534547328949
+      ],
+      "niveau": "incertain",
+      "duree_rerank_ms": 1338.0576250000004
+    }
+  ],
+  "agregats": {
+    "semantiques": 2,
+    "top5_semantique_succes": 0,
+    "top1_semantique_succes": 0,
+    "mrr_semantique": 0,
+    "referencees": 2,
+    "top5_global_succes": 0,
+    "top5_rendu_succes": 0,
+    "top1_rendu_succes": 0,
+    "mrr_rendu": 0,
+    "top5_global_rendu_succes": 0,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 0,
+    "incertain": 2,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  },
+  "rerank": {
+    "modele": "bge-reranker-v2-m3",
+    "url": "http://127.0.0.1:8080",
+    "candidats": 20,
+    "latence_ms_moyenne": 1107.4208335,
+    "latence_ms_mediane": 1107.4208335
+  }
+}

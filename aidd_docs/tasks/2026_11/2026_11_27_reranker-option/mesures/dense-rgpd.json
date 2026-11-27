@@ -1,0 +1,378 @@
+{
+  "date": "2026-11-27",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "rgpd",
+  "sans_filtre": true,
+  "detection": true,
+  "recherche": "dense",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine-wt-114/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "figés (jeu sans split)",
+  "questions": [
+    {
+      "question": "Quelles conditions permettent d'obtenir réparation après une fuite massive de données imputable à l'administration fiscale ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_82"
+      ],
+      "refs": [
+        "681af5d40dfb1f09369ce221#f22",
+        "681af5d40dfb1f09369ce221#f28",
+        "68525118a7fdae5a8046f2e3#f8",
+        "681af5d40dfb1f09369ce221#f26",
+        "681af5010dfb1f09369ce101#f7"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7051295042037964,
+        0.6991535723209381,
+        0.6977986395359039,
+        0.6973649263381958,
+        0.6963413655757904
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles garanties s'appliquent lorsqu'un algorithme décide seul d'accorder ou de refuser un crédit ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_22"
+      ],
+      "refs": [
+        "securiser-le-traitement#f6",
+        "CNILTEXT000054047151#f1",
+        "CNILTEXT000054047151#f2",
+        "guidelines-062020-on-the-interplay-of-the-second-payment-services-directive-and#f120",
+        "guide-rgpd-affaires-publiques-acap-afcl-apap-scrp#f191"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7485330104827881,
+        0.7242698073387146,
+        0.7236232757568359,
+        0.7223741114139557,
+        0.715088814496994
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Quelles conditions autorisent le traitement de données de santé par un service numérique ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_9"
+      ],
+      "refs": [
+        "LEGIARTI000038568026",
+        "LEGIARTI000053615042",
+        "LEGIARTI000054137158",
+        "LEGIARTI000037823065",
+        "CETATEXT000052952165#f7"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7225516140460968,
+        0.7212462723255157,
+        0.718933492898941,
+        0.7186320722103119,
+        0.7380048930644989
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "L'intérêt commercial suffit-il à justifier un traitement de données sans consentement ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_6"
+      ],
+      "refs": [
+        "32016R0679#rct_44",
+        "CNILTEXT000050791828#f13",
+        "CNILTEXT000038032552#f48",
+        "developpement-des-systemes-dia-les-recommandations-de-la-cnil-pour-respecter-le-rgpd#f19",
+        "CNILTEXT000051120331#f11"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7441775798797607,
+        0.7370657324790955,
+        0.736801415681839,
+        0.7359395325183868,
+        0.7350150346755981
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Une entreprise doit-elle mener une étude d'impact avant de déployer un outil de surveillance de ses salariés ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_35"
+      ],
+      "refs": [
+        "CNILTEXT000051120331#f51",
+        "32016R0679#art_35",
+        "32016R0679#rct_95",
+        "CNILTEXT000051120331#f10",
+        "CNILTEXT000051709275#f2"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.7254646420478821,
+        0.6922290623188019,
+        0.7064699232578278,
+        0.7048661112785339,
+        0.7036068141460419
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles organisations sont tenues de nommer un délégué à la protection des données ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_37"
+      ],
+      "refs": [
+        "LEGIARTI000038568024",
+        "32016R0679#art_37",
+        "guide-pratique-rgpd-delegues-a-la-protection-des-donnees#f144",
+        "guide-pratique-rgpd-delegues-a-la-protection-des-donnees#f146",
+        "32018R1725#art_43"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.7609844952821732,
+        0.7500180304050446,
+        0.7680104523897171,
+        0.7655286490917206,
+        0.7432787716388702
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Dans quel délai et avec quel contenu faut-il alerter la CNIL après la découverte d'une violation de données ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_33"
+      ],
+      "refs": [
+        "rgpd-guide-sous-traitant-cnil#f51",
+        "bpi-cnil-rgpd-guide-tpe-pme#f38",
+        "CNILTEXT000047682157#f52",
+        "CNILTEXT000053352664#f58",
+        "cnil-guide-securite-personnelle#f131"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7554143965244293,
+        0.7516819685697556,
+        0.7495464980602264,
+        0.7490361630916595,
+        0.7490229606628418
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Comment faire supprimer ses coordonnées d'un annuaire public accessible en ligne ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_17"
+      ],
+      "refs": [
+        "guide-rgpd-affaires-publiques-acap-afcl-apap-scrp#f214",
+        "guide-rgpd-affaires-publiques-acap-afcl-apap-scrp#f205",
+        "62021CJ0129#point71",
+        "CNILTEXT000024583206#f23",
+        "32019L0790#art_28"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7314344942569733,
+        0.7284676134586334,
+        0.7184738218784332,
+        0.7139471173286438,
+        0.6920211315155029
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Le droit d'accès aux données personnelles peut-il servir à obtenir des courriels avant un litige avec son employeur ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_15"
+      ],
+      "refs": [
+        "6852514ea7fdae5a8046f32f#f15",
+        "accompagnement-des-professionnels-le-programme-de-travail-de-la-cnil-pour-2026#f9",
+        "6852514ea7fdae5a8046f32f#f12",
+        "guidelines-012022-on-data-subject-rights-right-of-access#f44",
+        "6852514ea7fdae5a8046f32f#f13"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7769988179206848,
+        0.7511710673570633,
+        0.7288804352283478,
+        0.7195024192333221,
+        0.7162005305290222
+      ],
+      "niveau": "confiant"
+    },
+    {
+      "question": "Une société établie hors d'Europe qui vise des utilisateurs français relève-t-elle du règlement européen sur les données ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_3"
+      ],
+      "refs": [
+        "32018R1807#rct_15",
+        "guidelines-32018-on-the-territorial-scope-of-the-gdpr-article-3-version-adopted#f71",
+        "CNILTEXT000046562676#f6",
+        "CNILTEXT000053048614#f16",
+        "rgpd-guide-sous-traitant-cnil#f12"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7370270192623138,
+        0.7362129092216492,
+        0.7341209352016449,
+        0.732505738735199,
+        0.7296101152896881
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quel délai s'applique pour informer une personne dont les données ont été obtenues auprès d'un tiers ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_14"
+      ],
+      "refs": [
+        "32016R0679#art_14",
+        "32016R0679#art_13",
+        "CNILTEXT000046693390#f11",
+        "CNILTEXT000046198070#f23",
+        "32016R0679#art_15"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7241109311580658,
+        0.7221171259880066,
+        0.7413990795612335,
+        0.7383080422878265,
+        0.7170634865760803
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Quelles explications une personne peut-elle exiger lorsqu'une décision la concernant a été prise au moyen d'un algorithme sans que le secret des affaires y fasse obstacle par principe ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_15"
+      ],
+      "refs": [
+        "LEGIARTI000034195881",
+        "62022CJ0203#point60",
+        "permettre-le-bon-exercice-de-leurs-droits-par-les-personnes#f8",
+        "62022CJ0203#point66",
+        "ia-comment-etre-en-conformite-avec-le-rgpd#f34"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7486201524734497,
+        0.7510295957326889,
+        0.7441606819629669,
+        0.743449330329895,
+        0.7427788972854614
+      ],
+      "niveau": "incertain"
+    },
+    {
+      "question": "Peut-on entraîner un modèle d'IA avec les données de ses clients sur le fondement de l'intérêt légitime et sous quelles conditions ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32016R0679#art_6"
+      ],
+      "refs": [
+        "32024R1689#rct_178",
+        "32024R1689#rct_140",
+        "32024R1689#rct_11",
+        "32024R1689#art_5",
+        "32024R1689#art_53"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7362932562828064,
+        0.7296061515808105,
+        0.7280597984790802,
+        0.7072754204273224,
+        0.7071685194969177
+      ],
+      "niveau": "incertain"
+    }
+  ],
+  "agregats": {
+    "semantiques": 13,
+    "top5_semantique_succes": 3,
+    "top1_semantique_succes": 1,
+    "mrr_semantique": 0.15384615384615385,
+    "referencees": 13,
+    "top5_global_succes": 3,
+    "top5_rendu_succes": 3,
+    "top1_rendu_succes": 1,
+    "mrr_rendu": 0.15384615384615385,
+    "top5_global_rendu_succes": 3,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 3,
+    "incertain": 10,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  }
+}

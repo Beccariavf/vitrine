@@ -16,7 +16,7 @@ import type { Embedder } from "../embed/embedder.ts";
 import { cheminIndex, creerEmbedder, lireFournisseur, lireUnites } from "../index/build.ts";
 import { openIndex } from "../index/search.ts";
 import type { Index } from "../index/search.ts";
-import { createLlamaReranker } from "../rerank/reranker.ts";
+import { CANDIDATS_RERANK, CANDIDATS_RERANK_MAX, CANDIDATS_RERANK_MIN, createLlamaReranker } from "../rerank/reranker.ts";
 import type { Reranker } from "../rerank/reranker.ts";
 import { referenceExacte, search, type ModeRecherche } from "../tools.ts";
 import { intervalleWilson } from "../statistiques.ts";
@@ -462,6 +462,10 @@ export type Mesure = {
   question: Question;
   refs: string[];
   distances: number[];
+  /** Durée du bloc `rerank` pour cette question ; absente sans second étage. */
+  dureeRerank?: number;
+  /** Raison du repli dense quand le second étage a échoué pour cette question. */
+  erreurRerank?: string;
 };
 
 function grille(debut: number, fin: number, pas: number): number[] {
@@ -596,6 +600,7 @@ async function mesurer(
   recherche: ModeRecherche,
   rerank?: Reranker,
   detection = false,
+  candidats = CANDIDATS_RERANK,
 ): Promise<{ mesures: Mesure[]; durees: number[] }> {
   const mesures: Mesure[] = [];
   const durees: number[] = [];
@@ -616,15 +621,24 @@ async function mesurer(
         seuils: { bas: -1, haut: 2, marge: 0 },
         recherche,
         ...(rerank === undefined ? {} : { rerank }),
+        ...(rerank === undefined ? {} : { candidatsRerank: candidats }),
       },
     );
-    if (resultat.rerank !== undefined) durees.push(resultat.rerank.duree_ms);
+    if (resultat.rerank !== undefined && "duree_ms" in resultat.rerank) {
+      durees.push(resultat.rerank.duree_ms);
+    }
     mesures.push({
       question,
       refs: resultat.passages.map((passage) => passage.ref),
       distances: resultat.passages.flatMap((passage) =>
         passage.distance === undefined ? [] : [passage.distance],
       ),
+      ...(resultat.rerank !== undefined && "duree_ms" in resultat.rerank
+        ? { dureeRerank: resultat.rerank.duree_ms }
+        : {}),
+      ...(resultat.rerank !== undefined && "raison" in resultat.rerank
+        ? { erreurRerank: resultat.rerank.raison }
+        : {}),
     });
   }
   return { mesures, durees };
@@ -909,6 +923,19 @@ export function lireRecherche(argv: string[]): ModeRecherche {
   return valeur;
 }
 
+/** `--candidats` : la fenêtre offerte au reranker, entière et bornée. */
+export function lireCandidatsOption(valeur: string | undefined): number {
+  if (valeur === undefined) return CANDIDATS_RERANK;
+  const nombre = Number(valeur);
+  if (!/^\d+$/.test(valeur) || nombre < CANDIDATS_RERANK_MIN || nombre > CANDIDATS_RERANK_MAX) {
+    throw new Error(
+      `--candidats attendu un entier de ${CANDIDATS_RERANK_MIN} à ${CANDIDATS_RERANK_MAX} ; ` +
+        `reçu « ${valeur === "" ? "(vide)" : valeur} »`,
+    );
+  }
+  return nombre;
+}
+
 /** `--instruction` : `actuelle` par défaut ; toute autre valeur est nommée et refusée. */
 export function lireInstruction(valeur: string | undefined): VarianteInstruction {
   if (valeur === undefined) return "actuelle";
@@ -1120,6 +1147,10 @@ export type EntreeQuestionJson = {
   similarites?: number[];
   /** Absent en recherche lexicale : la calibration de confiance ne s'y applique pas. */
   niveau?: ReturnType<typeof niveauConfiance>;
+  /** Durée du bloc `rerank` pour cette question ; absente sans second étage. */
+  duree_rerank_ms?: number;
+  /** Raison du repli dense quand le second étage a échoué pour cette question. */
+  rerank_erreur?: string;
 };
 
 export function entreeQuestionJson(
@@ -1137,14 +1168,19 @@ export function entreeQuestionJson(
     rangs: mesure.question.attendues.map((ref) => rangDe(mesure, ref)),
     ...(lexical ? {} : { similarites: mesure.distances.map((distance) => 1 - distance) }),
     ...(lexical || seuils === null ? {} : { niveau: niveau(mesure, seuils, corpus) }),
+    ...(mesure.dureeRerank === undefined ? {} : { duree_rerank_ms: mesure.dureeRerank }),
+    ...(mesure.erreurRerank === undefined ? {} : { rerank_erreur: mesure.erreurRerank }),
   };
 }
 
-/** Le bloc de rerank : ce qui a été appelé, où, et ce qu'il a coûté en moyenne. */
+/** Le bloc de rerank : ce qui a été appelé, où, et ce qu'il a coûté. */
 export type BlocRerankJson = {
   modele: string;
   url: string;
+  /** Fenêtre offerte au second étage (`--candidats`). */
+  candidats?: number;
   latence_ms_moyenne: number;
+  latence_ms_mediane?: number;
 };
 
 export type ObjetMesureJson = {
@@ -1178,6 +1214,16 @@ export type ObjetMesureJson = {
 export function moyenne(valeurs: number[]): number {
   if (valeurs.length === 0) return 0;
   return valeurs.reduce((total, valeur) => total + valeur, 0) / valeurs.length;
+}
+
+/** Médiane d'une série de durées ; zéro sans mesure. */
+export function mediane(valeurs: number[]): number {
+  if (valeurs.length === 0) return 0;
+  const triees = [...valeurs].sort((gauche, droite) => gauche - droite);
+  const milieu = Math.floor(triees.length / 2);
+  return triees.length % 2 === 0
+    ? ((triees[milieu - 1] ?? 0) + (triees[milieu] ?? 0)) / 2
+    : (triees[milieu] ?? 0);
 }
 
 export function objetMesureJson(args: {
@@ -1293,6 +1339,7 @@ async function main(argv: string[]): Promise<void> {
 
   const modeleRerank = valeurDe("--rerank", argv);
   const urlRerank = valeurDe("--rerank-url", argv) ?? URL_RERANK_DEFAUT;
+  const candidatsRerank = lireCandidatsOption(valeurDe("--candidats", argv));
   const rerank =
     modeleRerank === undefined
       ? undefined
@@ -1316,6 +1363,7 @@ async function main(argv: string[]): Promise<void> {
       recherche,
       rerank,
       detection,
+      candidatsRerank,
     );
 
     const mesuresDev =
@@ -1354,6 +1402,12 @@ async function main(argv: string[]): Promise<void> {
         `recherche : ${recherche}`,
         `instruction : ${variante}`,
         `split : ${split}`,
+        ...(rerank === undefined
+          ? []
+          : [
+              `rerank : ${rerank.model}, ${candidatsRerank} candidats, latence médiane ` +
+                `${mediane(durees).toFixed(0)} ms`,
+            ]),
         ...(split === "all"
           ? [
               "",
@@ -1429,13 +1483,15 @@ async function main(argv: string[]): Promise<void> {
         ...(sansFiltre ? { sansFiltre: true } : {}),
         ...(detection ? { detection: true } : {}),
         ...(optionInstruction === undefined ? {} : { instruction: variante }),
-        ...(rerank === undefined
+        ...(rerank === undefined || lexical
           ? {}
           : {
               rerank: {
                 modele: rerank.model,
                 url: urlRerank,
+                candidats: candidatsRerank,
                 latence_ms_moyenne: moyenne(durees),
+                latence_ms_mediane: mediane(durees),
               },
             }),
       });

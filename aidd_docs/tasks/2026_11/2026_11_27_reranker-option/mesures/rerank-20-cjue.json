@@ -1,0 +1,128 @@
+{
+  "date": "2026-11-27",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "cjue",
+  "sans_filtre": true,
+  "detection": true,
+  "recherche": "dense",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine-wt-114/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "figés (jeu sans split)",
+  "questions": [
+    {
+      "question": "Un réseau social peut-il déduire des données sensibles de la simple consultation de sites tiers par ses utilisateurs ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "62021CJ0252"
+      ],
+      "refs": [
+        "62021CJ0252#point79",
+        "62021CJ0252#point138",
+        "binding-decision-42022-on-the-dispute-submitted-by-the-irish-sa-on#f304",
+        "62021CJ0252#point125",
+        "62021CJ0252#point64"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7228777408599854,
+        0.7237600684165955,
+        0.7254314124584198,
+        0.7248351871967316,
+        0.736972838640213
+      ],
+      "niveau": "incertain",
+      "duree_rerank_ms": 10851.430709000007
+    },
+    {
+      "question": "Quelles vérifications faut-il faire avant d'envoyer des données à un prestataire situé aux États-Unis ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "62018CJ0311"
+      ],
+      "refs": [
+        "CNILTEXT000020996614#f18",
+        "CNILTEXT000045133748#f16",
+        "32000D0520#art_1",
+        "32016D1250#art_1",
+        "cnil-pia-captoo-fr#f51"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7069533467292786,
+        0.710017055273056,
+        0.6885077953338623,
+        0.699356347322464,
+        0.7108104228973389
+      ],
+      "niveau": "incertain",
+      "duree_rerank_ms": 9007.263916999975
+    },
+    {
+      "question": "Les informations saisies pour commander en ligne un médicament sans ordonnance sont-elles des données de santé même si l'acheteur n'est pas nécessairement le patient ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "62023CJ0021"
+      ],
+      "refs": [
+        "62023CJ0021#point90",
+        "62023CJ0021#point74",
+        "62023CJ0021#point45",
+        "62023CJ0021#point91",
+        "62023CJ0021#point94"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8005535900592804,
+        0.7726841866970062,
+        0.7613641321659088,
+        0.718062549829483,
+        0.7902139723300934
+      ],
+      "niveau": "confiant",
+      "duree_rerank_ms": 7288.640791999991
+    }
+  ],
+  "agregats": {
+    "semantiques": 3,
+    "top5_semantique_succes": 2,
+    "top1_semantique_succes": 2,
+    "mrr_semantique": 0.6666666666666666,
+    "referencees": 3,
+    "top5_global_succes": 2,
+    "top5_rendu_succes": 2,
+    "top1_rendu_succes": 2,
+    "mrr_rendu": 0.6666666666666666,
+    "top5_global_rendu_succes": 2,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 1,
+    "incertain": 2,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  },
+  "rerank": {
+    "modele": "bge-reranker-v2-m3",
+    "url": "http://127.0.0.1:8080",
+    "candidats": 20,
+    "latence_ms_moyenne": 9049.111805999992,
+    "latence_ms_mediane": 9007.263916999975
+  }
+}

@@ -1,0 +1,263 @@
+{
+  "date": "2026-11-27",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "donnees",
+  "sans_filtre": true,
+  "detection": true,
+  "recherche": "dense",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine-wt-114/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "figés (jeu sans split)",
+  "questions": [
+    {
+      "question": "Une entreprise peut-elle écarter une clause sur l'accès et l'utilisation des données qu'un partenaire lui impose sans négociation au motif qu'elle est abusive ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32023R2854#art_13"
+      ],
+      "refs": [
+        "32023R2854#art_13",
+        "32023R2854#rct_58",
+        "32023R2854#rct_62",
+        "32023R2854#rct_61",
+        "32026H2394#rct_11"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7730389088392258,
+        0.7324989140033722,
+        0.7273336946964264,
+        0.708065927028656,
+        0.74282306432724
+      ],
+      "niveau": "confiant",
+      "duree_rerank_ms": 1772.345417
+    },
+    {
+      "question": "Un fournisseur de services cloud peut-il encore facturer à son client des frais de changement de prestataire et dans quelle limite ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32023R2854#art_29"
+      ],
+      "refs": [
+        "LEGIARTI000049565880",
+        "32023R2854#rct_88",
+        "32023R2854#art_29",
+        "32023R2854#rct_89",
+        "32026H2394#anx_VI"
+      ],
+      "rangs": [
+        3
+      ],
+      "similarites": [
+        0.7495245933532715,
+        0.7207853496074677,
+        0.7482549548149109,
+        0.7446058094501495,
+        0.745890736579895
+      ],
+      "niveau": "confiant",
+      "duree_rerank_ms": 1713.4170829999998
+    },
+    {
+      "question": "Le propriétaire d'un objet connecté peut-il exiger que les données générées par son appareil soient transmises directement à un prestataire de son choix ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32023R2854#art_5"
+      ],
+      "refs": [
+        "32026H2394#anx_III",
+        "32023R2854#rct_34",
+        "32023R2854#rct_35",
+        "32023R2854#art_3",
+        "32023R2854#art_4"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7025052309036255,
+        0.7153745591640472,
+        0.722346693277359,
+        0.7085550129413605,
+        0.6944731771945953
+      ],
+      "niveau": "incertain",
+      "duree_rerank_ms": 1909.2851659999997
+    },
+    {
+      "question": "Dans quelles situations une autorité publique peut-elle obliger une entreprise à lui communiquer des données qu'elle détient ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32023R2854#art_15"
+      ],
+      "refs": [
+        "guide-rgpd-affaires-publiques-acap-afcl-apap-scrp#f211",
+        "62022CJ0740#point48",
+        "32016R0679#art_86",
+        "guide-rgpd-affaires-publiques-acap-afcl-apap-scrp#f207",
+        "32018R1807#art_3"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7119317352771759,
+        0.70793816447258,
+        0.7063659131526947,
+        0.7196215391159058,
+        0.6834809482097626
+      ],
+      "niveau": "incertain",
+      "duree_rerank_ms": 1488.849165999999
+    },
+    {
+      "question": "Quelles mentions et justifications doivent figurer dans la demande par laquelle une administration réclame des données à une entreprise ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32023R2854#art_17"
+      ],
+      "refs": [
+        "LEGIARTI000038568008",
+        "guidelines-012022-on-data-subject-rights-right-of-access#f115",
+        "guide-rgpd-affaires-publiques-acap-afcl-apap-scrp#f219",
+        "CNILTEXT000043708485#f15",
+        "guide-rgpd-affaires-publiques-acap-afcl-apap-scrp#f89"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7008087038993835,
+        0.7195092141628265,
+        0.7265297472476959,
+        0.7240442633628845,
+        0.7418816685676575
+      ],
+      "niveau": "incertain",
+      "duree_rerank_ms": 1132.430457999999
+    },
+    {
+      "question": "Pendant combien de temps un organisme public peut-il réserver à un seul opérateur le droit de réutiliser des données protégées qu'il détient ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32022R0868#art_4"
+      ],
+      "refs": [
+        "32022R0868#art_9",
+        "32022R0868#art_4",
+        "32022R0868#art_5",
+        "32019L1024#art_4",
+        "32022R0868#art_3"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.731726199388504,
+        0.7184746265411377,
+        0.7069573700428009,
+        0.7049126923084259,
+        0.697584718465805
+      ],
+      "niveau": "incertain",
+      "duree_rerank_ms": 2124.5314999999973
+    },
+    {
+      "question": "Une plateforme qui met en relation vendeurs et acheteurs de données doit-elle attendre une autorisation pour exercer ou une simple notification préalable suffit-elle ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32022R0868#art_11"
+      ],
+      "refs": [
+        "62021CJ0252#point35",
+        "opinion-082024-on-valid-consent-in-the-context-of-consent-or#f57",
+        "opinion-082024-on-valid-consent-in-the-context-of-consent-or#f244",
+        "binding-decision-42022-on-the-dispute-submitted-by-the-irish-sa-on#f242",
+        "62023CJ0492#point98"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7081243991851807,
+        0.7085534036159515,
+        0.7171439528465271,
+        0.7070246040821075,
+        0.715457409620285
+      ],
+      "niveau": "incertain",
+      "duree_rerank_ms": 1073.633332999998
+    },
+    {
+      "question": "Un État membre peut-il imposer à une entreprise de stocker ou de traiter sur son territoire les données non personnelles qu'elle détient ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32018R1807#art_4"
+      ],
+      "refs": [
+        "CNILTEXT000034728338#f9",
+        "32018R1807#art_3",
+        "CNILTEXT000034728338#f11",
+        "62015CJ0191#point81",
+        "62021CJ0741#point10"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7165605425834656,
+        0.6992424130439758,
+        0.703373908996582,
+        0.702957272529602,
+        0.7050005197525024
+      ],
+      "niveau": "incertain",
+      "duree_rerank_ms": 1461.776750000001
+    }
+  ],
+  "agregats": {
+    "semantiques": 8,
+    "top5_semantique_succes": 3,
+    "top1_semantique_succes": 1,
+    "mrr_semantique": 0.22916666666666666,
+    "referencees": 8,
+    "top5_global_succes": 3,
+    "top5_rendu_succes": 3,
+    "top1_rendu_succes": 1,
+    "mrr_rendu": 0.22916666666666666,
+    "top5_global_rendu_succes": 3,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 2,
+    "incertain": 6,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  },
+  "rerank": {
+    "modele": "bge-reranker-v2-m3",
+    "url": "http://127.0.0.1:8080",
+    "candidats": 30,
+    "latence_ms_moyenne": 1584.5336091249992,
+    "latence_ms_mediane": 1601.1331244999994
+  }
+}

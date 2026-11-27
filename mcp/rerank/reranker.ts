@@ -13,6 +13,25 @@ export type Reranker = {
 /** Fenêtre dense offerte au reranker : 50 candidats coûtent ≈ 3,6 s sur `llama-server`. */
 export const CANDIDATS_RERANK = 50;
 
+/** Bornes du nombre de candidats, côté serveur comme côté harnais. */
+export const CANDIDATS_RERANK_MIN = 5;
+export const CANDIDATS_RERANK_MAX = 100;
+
+/**
+ * Chaque passage est coupé à 2 000 caractères avant l'envoi : une fenêtre de 50
+ * unités CNIL dépassait la taille de contexte de `llama-server`.
+ */
+export const TRONCATURE_RERANK = 2000;
+
+/**
+ * Les passages partent par lots de 25 : une requête de 50 à 70 longs passages
+ * finissait en `fetch failed` côté client.
+ */
+export const LOT_RERANK = 25;
+
+/** Délai maximal d'un lot, celui de `llama-server` sur 25 passages tronqués. */
+export const DELAI_RERANK_MS = 30_000;
+
 export type LlamaRerankerOptions = {
   url: string;
   model: string;
@@ -70,55 +89,68 @@ function replacerScores(
 /**
  * Adaptateur HTTP de `llama-server --reranking` sur `POST /reranking`, de forme
  * Jina : `{results: [{index, relevance_score}]}`. Sans le drapeau, le serveur
- * répond 501 et l'erreur le dit : aucun score n'est supposé.
+ * répond 501 et l'erreur le dit : aucun score n'est supposé. Les passages sont
+ * tronqués puis envoyés par lots successifs, recollés dans l'ordre d'entrée.
  */
 export function createLlamaReranker(options: LlamaRerankerOptions): Reranker {
   const url = options.url.replace(/\/+$/, "");
   const model = options.model;
   const fetchImpl = options.fetchImpl ?? fetch;
 
+  async function scorerLot(question: string, passages: string[]): Promise<number[]> {
+    if (passages.length === 0) return [];
+
+    let reponse;
+    try {
+      reponse = await fetchImpl(`${url}/reranking`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model, query: question, documents: passages }),
+        signal: AbortSignal.timeout(DELAI_RERANK_MS),
+      });
+    } catch (error) {
+      throw new Error(`Reranker injoignable sur ${url} : ${messageErreur(error)}.`);
+    }
+
+    if (!reponse.ok) {
+      const cause =
+        reponse.status === 501
+          ? "serveur lancé sans --reranking (HTTP 501)"
+          : `HTTP ${reponse.status}`;
+      throw new Error(
+        `Reranker a refusé la requête sur ${url}/reranking : ${cause}, ` +
+          `${passages.length} scores attendus.`,
+      );
+    }
+
+    let corps: unknown;
+    try {
+      corps = JSON.parse(await reponse.text());
+    } catch {
+      throw new Error(`Reranker a rendu une réponse illisible sur ${url}.`);
+    }
+
+    const results = (corps as { results?: unknown }).results;
+    if (!Array.isArray(results)) {
+      throw new Error(
+        `Reranker ${url} : réponse sans « results », ` +
+          `${passages.length} scores attendus (HTTP ${reponse.status}).`,
+      );
+    }
+    return replacerScores(results, passages.length, url, reponse.status);
+  }
+
   return {
     model,
     async score(question: string, passages: string[]): Promise<number[]> {
-      if (passages.length === 0) return [];
-
-      let reponse;
-      try {
-        reponse = await fetchImpl(`${url}/reranking`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ model, query: question, documents: passages }),
-        });
-      } catch (error) {
-        throw new Error(`Reranker injoignable sur ${url} : ${messageErreur(error)}.`);
+      const scores: number[] = [];
+      for (let debut = 0; debut < passages.length; debut += LOT_RERANK) {
+        const lot = passages
+          .slice(debut, debut + LOT_RERANK)
+          .map((passage) => passage.slice(0, TRONCATURE_RERANK));
+        scores.push(...(await scorerLot(question, lot)));
       }
-
-      if (!reponse.ok) {
-        const cause =
-          reponse.status === 501
-            ? "serveur lancé sans --reranking (HTTP 501)"
-            : `HTTP ${reponse.status}`;
-        throw new Error(
-          `Reranker a refusé la requête sur ${url}/reranking : ${cause}, ` +
-            `${passages.length} scores attendus.`,
-        );
-      }
-
-      let corps: unknown;
-      try {
-        corps = JSON.parse(await reponse.text());
-      } catch {
-        throw new Error(`Reranker a rendu une réponse illisible sur ${url}.`);
-      }
-
-      const results = (corps as { results?: unknown }).results;
-      if (!Array.isArray(results)) {
-        throw new Error(
-          `Reranker ${url} : réponse sans « results », ` +
-            `${passages.length} scores attendus (HTTP ${reponse.status}).`,
-        );
-      }
-      return replacerScores(results, passages.length, url, reponse.status);
+      return scores;
     },
   };
 }

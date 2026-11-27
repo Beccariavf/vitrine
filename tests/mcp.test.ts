@@ -20,7 +20,7 @@ import { buildIndex } from "../mcp/index/build.ts";
 import { BANDE_ARTICLE, openIndex, rangerPassages } from "../mcp/index/search.ts";
 import type { Index, ResultatRecherche } from "../mcp/index/search.ts";
 import { createServer, lireModeRecherche } from "../mcp/server.ts";
-import { CANDIDATS_RERANK } from "../mcp/rerank/reranker.ts";
+import { CANDIDATS_RERANK, createLlamaReranker } from "../mcp/rerank/reranker.ts";
 import type { Reranker } from "../mcp/rerank/reranker.ts";
 import { corpusDeNiveau, corpusNomme, documentNomme, documentsNommes, getArticle, getDecision, search } from "../mcp/tools.ts";
 import type { Unite } from "../mcp/corpus/parse.ts";
@@ -1756,11 +1756,15 @@ describe("le second étage de rerank", () => {
       "chaque passage garde sa distance dense",
     );
     assert.equal(reranke.rerank?.modele, "factice-rerank");
-    assert.equal(typeof reranke.rerank?.duree_ms, "number");
-    assert.ok((reranke.rerank?.duree_ms ?? -1) >= 0);
+    const bloc = reranke.rerank;
+    assert.ok(bloc !== undefined && "duree_ms" in bloc, "le bloc porte la durée du second étage");
+    if (bloc !== undefined && "duree_ms" in bloc) {
+      assert.equal(typeof bloc.duree_ms, "number");
+      assert.ok(bloc.duree_ms >= 0);
+    }
   });
 
-  it("propage une erreur de rerank au lieu de servir le dense", async () => {
+  it("sert le classement dense quand le reranker est en panne, en le signalant", async () => {
     const enPanne: Reranker = {
       model: "factice-rerank",
       score: async () => {
@@ -1768,32 +1772,137 @@ describe("le second étage de rerank", () => {
       },
     };
 
-    await assert.rejects(
-      () =>
-        search(
-          root,
-          { question: QUESTION, k: 5 },
-          { embedder: embedderFactice(), index, seuils: SEUILS, rerank: enPanne },
-        ),
+    const dense = await search(
+      root,
+      { question: QUESTION, k: 5 },
+      { embedder: embedderFactice(), index, seuils: SEUILS },
+    );
+    const replie = await search(
+      root,
+      { question: QUESTION, k: 5 },
+      { embedder: embedderFactice(), index, seuils: SEUILS, rerank: enPanne },
+    );
+
+    assert.deepEqual(
+      replie.passages.map((passage) => passage.ref),
+      dense.passages.map((passage) => passage.ref),
+      "les passages restent ceux du classement dense",
+    );
+    assert.equal(replie.rerank?.modele, "factice-rerank");
+    assert.equal(
+      replie.rerank !== undefined && "indisponible" in replie.rerank
+        ? replie.rerank.indisponible
+        : undefined,
+      true,
+    );
+    assert.match(
+      replie.rerank !== undefined && "raison" in replie.rerank ? replie.rerank.raison : "",
       /serveur de rerank en panne/,
     );
   });
 
-  it("refuse un reranker qui rend trop peu de scores", async () => {
+  it("replie sur le dense quand le reranker rend trop peu de scores", async () => {
     const incomplet: Reranker = {
       model: "factice-rerank",
       score: async (_question, passages) => passages.slice(1).map(() => 0.5),
     };
 
-    await assert.rejects(
-      () =>
-        search(
-          root,
-          { question: QUESTION, k: 5 },
-          { embedder: embedderFactice(), index, seuils: SEUILS, rerank: incomplet },
-        ),
+    const resultat = await search(
+      root,
+      { question: QUESTION, k: 5 },
+      { embedder: embedderFactice(), index, seuils: SEUILS, rerank: incomplet },
+    );
+
+    assert.match(
+      resultat.rerank !== undefined && "raison" in resultat.rerank ? resultat.rerank.raison : "",
       /a rendu \d+ scores pour \d+ passages/,
     );
+  });
+
+  it("n'appelle jamais le reranker en recherche lexicale", async () => {
+    let appels = 0;
+    const reranker: Reranker = {
+      model: "factice-rerank",
+      score: async (_question, passages) => {
+        appels += 1;
+        return passages.map(() => 0);
+      },
+    };
+
+    const resultat = await search(
+      root,
+      { question: QUESTION, k: 5 },
+      {
+        embedder: embedderFactice(),
+        index,
+        seuils: SEUILS,
+        rerank: reranker,
+        recherche: "lexicale",
+      },
+    );
+
+    assert.equal(appels, 0, "aucun appel au modèle de rerank");
+    assert.equal("rerank" in resultat, false);
+    assert.equal(resultat.recherche, "lexicale");
+  });
+
+  it("sert le classement dense quand le serveur de rerank répond 500", async () => {
+    const reranker = createLlamaReranker({
+      url: "http://127.0.0.1:8080",
+      model: "factice-rerank",
+      fetchImpl: async () => ({
+        ok: false,
+        status: 500,
+        text: async () => JSON.stringify({ error: "boom" }),
+      }),
+    });
+
+    const resultat = await search(
+      root,
+      { question: QUESTION, k: 5 },
+      { embedder: embedderFactice(), index, seuils: SEUILS, rerank: reranker },
+    );
+
+    assert.match(
+      resultat.rerank !== undefined && "raison" in resultat.rerank ? resultat.rerank.raison : "",
+      /HTTP 500/,
+    );
+    assert.equal(resultat.passages.length, 5);
+  });
+
+  it("garde k passages quand k dépasse le nombre de candidats", async () => {
+    const vus: string[][] = [];
+    const resultat = await search(
+      root,
+      { question: QUESTION, k: 6 },
+      {
+        embedder: embedderFactice(),
+        index,
+        seuils: SEUILS,
+        rerank: rerankerInverse(vus),
+        candidatsRerank: 5,
+      },
+    );
+
+    assert.equal(vus[0]?.length, 6, "la fenêtre suit k quand k est plus grand");
+    assert.equal(resultat.passages.length, 6);
+  });
+
+  it("règle la fenêtre offerte au reranker par `candidatsRerank`", async () => {
+    const vus: string[][] = [];
+    await search(
+      root,
+      { question: QUESTION, k: 3 },
+      {
+        embedder: embedderFactice(),
+        index,
+        seuils: SEUILS,
+        rerank: rerankerInverse(vus),
+        candidatsRerank: 5,
+      },
+    );
+
+    assert.equal(vus[0]?.length, 5, "la fenêtre est celle demandée, pas CANDIDATS_RERANK");
   });
 });
 

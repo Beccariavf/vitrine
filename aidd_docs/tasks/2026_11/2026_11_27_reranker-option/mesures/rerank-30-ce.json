@@ -1,0 +1,128 @@
+{
+  "date": "2026-11-27",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "ce",
+  "sans_filtre": true,
+  "detection": true,
+  "recherche": "dense",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine-wt-114/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "figés (jeu sans split)",
+  "questions": [
+    {
+      "question": "Une mention au fichier des antécédents judiciaires peut-elle être consultée lors de l'enquête préalable à une naturalisation ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CETATEXT000047461392"
+      ],
+      "refs": [
+        "CETATEXT000047461392#f8",
+        "CETATEXT000047461392#f5",
+        "CETATEXT000052574373#f8",
+        "CETATEXT000047461392#f9",
+        "CETATEXT000052255235#f11"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7243102490901947,
+        0.7348351776599884,
+        0.7106465697288513,
+        0.7166954576969147,
+        0.7000787854194641
+      ],
+      "niveau": "incertain",
+      "duree_rerank_ms": 2164.148292
+    },
+    {
+      "question": "Un décret peut-il réserver la perception d'une redevance de réutilisation aux administrations dont l'activité de diffusion d'informations publiques est couverte à moins de 75 % par des recettes fiscales ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CETATEXT000037534137#f11"
+      ],
+      "refs": [
+        "CETATEXT000037534137#f11",
+        "LEGIARTI000032951699",
+        "20181295#f4",
+        "202400187#f11",
+        "CETATEXT000037534137#f10"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7719739079475403,
+        0.7803996503353119,
+        0.7180097997188568,
+        0.7430258095264435,
+        0.7749779522418976
+      ],
+      "niveau": "incertain",
+      "duree_rerank_ms": 1376.4393330000003
+    },
+    {
+      "question": "Le Conseil d'État a-t-il annulé le décret de 2021 qui confie à la plateforme des données de santé une copie de la base principale du SNDS ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "CETATEXT000046598400"
+      ],
+      "refs": [
+        "CETATEXT000046598400#f0",
+        "CETATEXT000046598400#f15",
+        "CETATEXT000047773951#f0",
+        "CETATEXT000045147459#f0",
+        "CETATEXT000046046043#f0"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7531701624393463,
+        0.7431715726852417,
+        0.7330485284328461,
+        0.7323226034641266,
+        0.7320895493030548
+      ],
+      "niveau": "incertain",
+      "duree_rerank_ms": 1689.0983749999996
+    }
+  ],
+  "agregats": {
+    "semantiques": 3,
+    "top5_semantique_succes": 3,
+    "top1_semantique_succes": 3,
+    "mrr_semantique": 1,
+    "referencees": 3,
+    "top5_global_succes": 3,
+    "top5_rendu_succes": 3,
+    "top1_rendu_succes": 3,
+    "mrr_rendu": 1,
+    "top5_global_rendu_succes": 3,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 0,
+    "incertain": 3,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  },
+  "rerank": {
+    "modele": "bge-reranker-v2-m3",
+    "url": "http://127.0.0.1:8080",
+    "candidats": 30,
+    "latence_ms_moyenne": 1743.2286666666666,
+    "latence_ms_mediane": 1689.0983749999996
+  }
+}
