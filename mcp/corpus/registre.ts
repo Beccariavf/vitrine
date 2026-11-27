@@ -772,6 +772,33 @@ export function resumeGouvernance(): string {
 }
 
 /**
+ * Méthode de recherche des instructions du serveur : la règle (corpus de type
+ * `texte`, par champ) avant son interprétation. Sans `corpus`, la doctrine et
+ * les décisions, plus nombreuses, passent souvent devant l'article (#164, #170).
+ */
+export function methodeRecherche(): string {
+  const textesParChamp = CHAMPS_GOUVERNANCE.map(
+    (champ) =>
+      `${LIBELLES_GOUVERNANCE[champ]} — ` +
+      corpusDuChamp(champ)
+        .filter((nom) => corpusDeclare(nom)?.type === "texte")
+        .map((nom) => `\`${nom}\``)
+        .join(", "),
+  ).join(" ; ");
+  return (
+    "Méthode de recherche (hiérarchie des normes) : pour une question de fond, chercher d'abord la " +
+    "règle, puis son interprétation. 1. Appeler `search` avec `corpus` sur le texte qui porte la " +
+    `règle ; textes par champ : ${textesParChamp}. Quand plusieurs textes peuvent s'appliquer ` +
+    "(règlement de l'Union et loi ou code français, texte général et texte sectoriel), appeler " +
+    "`search` sur chacun. 2. Appeler ensuite `search` sur la doctrine ou les décisions, ou sans " +
+    "`corpus`, pour l'interprétation. Sans `corpus`, la doctrine et les décisions, plus nombreuses, " +
+    "remplissent souvent les premiers résultats avant l'article : ne jamais présenter une fiche, un " +
+    "avis ou une décision comme la règle sans avoir cherché l'article. Une question qui porte sur " +
+    "une décision ou une juridiction nommée commence par les décisions."
+  );
+}
+
+/**
  * Nombre écrit en toutes lettres, de 0 à 99 : « vingt-deux » pour le compte des
  * corpus. Un nombre hors bornes lève plutôt que d'inventer un mot.
  */

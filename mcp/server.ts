@@ -24,6 +24,7 @@ import {
   descriptionRecherche,
   descriptionServeur,
   nombreEnLettres,
+  methodeRecherche,
   resumeGouvernance,
 } from "./corpus/registre.ts";
 import {
@@ -150,7 +151,7 @@ const CONSIGNE_DECISIONS_CITEES =
 export const CONSIGNE_SERVEUR =
   "Serveur de lecture et de recherche juridiques, organisé par champ de gouvernance de la donnée — " +
   `${CHAMPS_GOUVERNANCE.map((champ) => LIBELLES_GOUVERNANCE[champ]).join(", ")}. ` +
-  `Par champ, les corpus concernés : ${resumeGouvernance()}. Corpus : ` +
+  `Par champ, les corpus concernés : ${resumeGouvernance()}. ${methodeRecherche()} Corpus : ` +
   `${descriptionServeur()}. Les outils de ` +
   "recherche acceptent les paramètres `corpus` et `nature` ; sans eux, la recherche couvre les " +
   `${nombreEnLettres(NOMBRE_CORPUS)} collections indexées et toutes les natures. Un document nommé dans la question (sigle ou nom ordinaire, ` +

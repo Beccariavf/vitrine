@@ -1,0 +1,60 @@
+{"n": 1, "appels": [{"corpus": "rgpd"}, {}]}
+{"n": 2, "appels": [{"corpus": "rgpd"}, {"corpus": "cjue"}]}
+{"n": 3, "appels": [{"corpus": "rgpd"}]}
+{"n": 4, "appels": [{"corpus": "rgpd"}, {"corpus": "textes_fr"}]}
+{"n": 5, "appels": [{"corpus": "rgpd"}]}
+{"n": 6, "appels": [{"corpus": "rgpd"}]}
+{"n": 7, "appels": [{"corpus": "rgpd"}, {"corpus": "ccs"}]}
+{"n": 8, "appels": [{"corpus": "eprivacy"}, {"corpus": "lil"}]}
+{"n": 9, "appels": [{}, {"corpus": "ce"}]}
+{"n": 10, "appels": [{"corpus": "rgpd"}, {"corpus": "lil"}]}
+{"n": 11, "appels": [{"corpus": "rgpd"}, {"corpus": "cnil"}]}
+{"n": 12, "appels": [{"corpus": "rgpd"}, {"corpus": "cnil"}]}
+{"n": 13, "appels": [{"corpus": "rgpd"}]}
+{"n": 14, "appels": [{"corpus": "rgpd"}, {"corpus": "ccs"}]}
+{"n": 15, "appels": [{"corpus": "cnil"}, {"corpus": "textes_fr"}]}
+{"n": 16, "appels": [{"corpus": "rgpd"}, {"corpus": "cnil"}]}
+{"n": 17, "appels": [{"corpus": "rgpd"}, {"corpus": "cnil"}]}
+{"n": 18, "appels": [{"corpus": "rgpd"}, {}]}
+{"n": 19, "appels": [{"corpus": "donnees"}]}
+{"n": 20, "appels": [{"corpus": "rgpd"}]}
+{"n": 21, "appels": [{"corpus": "donnees"}]}
+{"n": 22, "appels": [{"corpus": "donnees"}]}
+{"n": 23, "appels": [{"corpus": "donnees"}]}
+{"n": 24, "appels": [{"corpus": "donnees"}]}
+{"n": 25, "appels": [{"corpus": "donnees"}]}
+{"n": 26, "appels": [{"corpus": "donnees"}]}
+{"n": 27, "appels": [{"corpus": "donnees"}]}
+{"n": 28, "appels": [{"corpus": "frontieres"}]}
+{"n": 29, "appels": [{"corpus": "frontieres"}]}
+{"n": 30, "appels": [{"corpus": "frontieres"}]}
+{"n": 31, "appels": [{"corpus": "frontieres"}]}
+{"n": 32, "appels": [{"corpus": "textes_fr"}, {"corpus": "cada"}]}
+{"n": 33, "appels": [{"corpus": "donnees"}]}
+{"n": 34, "appels": [{"corpus": "cada"}, {"corpus": "textes_fr"}]}
+{"n": 35, "appels": [{"corpus": "donnees"}, {"corpus": "textes_fr"}]}
+{"n": 36, "appels": [{"corpus": "aiact"}]}
+{"n": 37, "appels": [{"corpus": "aiact"}]}
+{"n": 38, "appels": [{"corpus": "aiact"}]}
+{"n": 39, "appels": [{"corpus": "aiact"}]}
+{"n": 40, "appels": [{"corpus": "aiact"}]}
+{"n": 41, "appels": [{"corpus": "aiact"}]}
+{"n": 42, "appels": [{"corpus": "aiact"}]}
+{"n": 43, "appels": [{"corpus": "aiact"}]}
+{"n": 44, "appels": [{"corpus": "aiact"}, {"corpus": "rgpd"}]}
+{"n": 45, "appels": [{"corpus": "rgpd"}, {"corpus": "cnil_doctrine"}]}
+{"n": 46, "appels": [{"corpus": "aiact"}]}
+{"n": 47, "appels": [{"corpus": "aiact"}]}
+{"n": 48, "appels": [{"corpus": "cnil_doctrine"}, {"corpus": "rgpd"}]}
+{"n": 49, "appels": [{"corpus": "rgpd"}, {"corpus": "cnil_doctrine"}]}
+{"n": 50, "appels": [{"corpus": "aiact"}]}
+{"n": 51, "appels": [{"corpus": "sante_ue"}]}
+{"n": 52, "appels": [{"corpus": "sante_ue"}]}
+{"n": 53, "appels": [{"corpus": "textes_fr"}]}
+{"n": 54, "appels": [{"corpus": "textes_fr"}]}
+{"n": 55, "appels": [{"corpus": "textes_fr"}]}
+{"n": 56, "appels": [{"corpus": "cnil"}, {"corpus": "rgpd"}]}
+{"n": 57, "appels": [{"corpus": "cnil"}, {"corpus": "textes_fr"}]}
+{"n": 58, "appels": [{"corpus": "cnil"}, {"corpus": "rgpd"}]}
+{"n": 59, "appels": [{"corpus": "ce"}]}
+{"n": 60, "appels": [{"corpus": "rgpd"}, {"corpus": "cnil_doctrine"}]}
