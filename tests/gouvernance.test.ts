@@ -10,7 +10,9 @@ import {
   LIBELLES_GOUVERNANCE,
   NOMS_CORPUS,
   champsGouvernance,
+  corpusDeclare,
   gouvernanceDuCorpus,
+  methodeRecherche,
   resumeGouvernance,
 } from "../mcp/corpus/registre.ts";
 import { etatCorpus } from "../mcp/tools.ts";
@@ -97,6 +99,22 @@ describe("gouvernance de la donnée", () => {
       assert.deepEqual(etat.champs_gouvernance, ATTENDU);
     } finally {
       rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("la méthode de recherche nomme, par champ, les seuls corpus de texte du registre", () => {
+    const methode = methodeRecherche();
+    assert.ok(CONSIGNE_SERVEUR.includes(methode), "méthode dans les instructions du serveur");
+    for (const champ of CHAMPS_GOUVERNANCE) {
+      const textes = ATTENDU[champ].filter((nom) => corpusDeclare(nom)?.type === "texte");
+      assert.ok(textes.length > 0, `au moins un texte pour ${champ}`);
+      assert.ok(
+        methode.includes(`${LIBELLES_GOUVERNANCE[champ]} — ${textes.map((nom) => `\`${nom}\``).join(", ")}`),
+        `textes de ${champ}`,
+      );
+    }
+    for (const decision of ["cnil", "ce", "cc", "cjue", "cnil_doctrine"]) {
+      assert.ok(!methode.includes(`\`${decision}\``), `${decision} absent de la liste des textes`);
     }
   });
 });
