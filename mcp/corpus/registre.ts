@@ -790,8 +790,9 @@ export function methodeRecherche(): string {
     "règle, puis son interprétation. 1. Appeler `search` avec `corpus` sur le texte qui porte la " +
     `règle ; textes par champ : ${textesParChamp}. Quand plusieurs textes peuvent s'appliquer ` +
     "(règlement de l'Union et loi ou code français, texte général et texte sectoriel), appeler " +
-    "`search` sur chacun. 2. Appeler ensuite `search` sur la doctrine ou les décisions, ou sans " +
-    "`corpus`, pour l'interprétation. Sans `corpus`, la doctrine et les décisions, plus nombreuses, " +
+    "`search` sur chacun. 2. Appeler ensuite `search` sans `corpus` pour l'interprétation : la " +
+    "doctrine et les décisions de toutes les autorités et juridictions répondent ensemble ; ne " +
+    "borner à un corpus de décisions que si la question nomme l'autorité ou la juridiction. Sans `corpus`, la doctrine et les décisions, plus nombreuses, " +
     "remplissent souvent les premiers résultats avant l'article : ne jamais présenter une fiche, un " +
     "avis ou une décision comme la règle sans avoir cherché l'article. Une question qui porte sur " +
     "une décision ou une juridiction nommée commence par les décisions."
