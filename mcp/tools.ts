@@ -324,8 +324,10 @@ export type ResultatRechercheOutil = {
   recherche?: "lexicale";
   /** Présent quand une référence exacte est introuvable ou existe dans plusieurs documents. */
   message?: string;
-  /** Présent quand le second étage a tourné : la seule latence imputable au rerank. */
-  rerank?: { modele: string; duree_ms: number };
+  /** Présent quand le second étage a tourné, ou quand il a échoué sans bloquer la réponse. */
+  rerank?:
+    | { modele: string; duree_ms: number }
+    | { modele: string; indisponible: true; raison: string };
   perimetre: Perimetre;
 };
 
@@ -1087,6 +1089,8 @@ export type SearchDeps = {
    * Absent, la voie dense reste strictement celle d'avant.
    */
   rerank?: Reranker;
+  /** Nombre de candidats offerts au second étage ; `CANDIDATS_RERANK` par défaut. */
+  candidatsRerank?: number;
 };
 
 /**
@@ -1510,9 +1514,15 @@ async function chercher(
     typeof deps.index === "function" ? deps.index() : deps.index ?? openIndex(cheminIndex(rootDir));
   const k = Math.max(1, Math.trunc(demande.k ?? 5));
   const mode = deps.recherche ?? "dense";
+  // Le mode lexical promet une recherche sans modèle : le second étage n'y est
+  // jamais appelé, même si un appelant en fournit un.
+  const rerank = mode === "lexicale" ? undefined : deps.rerank;
   // Le reranker réordonne une fenêtre plus large que `k` : il ne peut pas
   // promouvoir un passage que la recherche n'a pas ramené.
-  const fenetre = deps.rerank === undefined ? k : Math.max(k, CANDIDATS_RERANK);
+  const fenetre =
+    rerank === undefined
+      ? k
+      : Math.max(k, Math.max(1, Math.trunc(deps.candidatsRerank ?? CANDIDATS_RERANK)));
   // L'instruction de requête suit le document, puis le corpus : un corpus CNIL
   // ne doit pas recevoir l'instruction mesurée pour le RGPD.
   const vecteur =
@@ -1543,31 +1553,45 @@ async function chercher(
   }
 
   let ordre = resultats;
-  let blocRerank: { modele: string; duree_ms: number } | undefined;
-  if (deps.rerank !== undefined) {
+  let blocRerank:
+    | { modele: string; duree_ms: number }
+    | { modele: string; indisponible: true; raison: string }
+    | undefined;
+  if (rerank !== undefined) {
     const debut = performance.now();
-    const scores = await deps.rerank.score(
-      demande.question,
-      resultats.map((resultat) => resultat.texte),
-    );
-    const duree_ms = performance.now() - debut;
-    // La distance dense de chaque passage est conservée : le rerank ne change
-    // que l'ordre, jamais l'échelle de confiance.
-    ordre = resultats
-      .map((resultat, position) => {
-        const score = scores[position];
-        if (score === undefined) {
-          throw new Error(
-            `Le reranker ${deps.rerank?.model ?? ""} a rendu ${scores.length} scores ` +
-              `pour ${resultats.length} passages.`,
-          );
-        }
-        return { resultat, score, position };
-      })
-      .sort((gauche, droite) => droite.score - gauche.score || gauche.position - droite.position)
-      .slice(0, k)
-      .map((entree) => entree.resultat);
-    blocRerank = { modele: deps.rerank.model, duree_ms };
+    try {
+      const scores = await rerank.score(
+        demande.question,
+        resultats.map((resultat) => resultat.texte),
+      );
+      const duree_ms = performance.now() - debut;
+      // La distance dense de chaque passage est conservée : le rerank ne change
+      // que l'ordre, jamais l'échelle de confiance.
+      ordre = resultats
+        .map((resultat, position) => {
+          const score = scores[position];
+          if (score === undefined) {
+            throw new Error(
+              `Le reranker ${rerank.model} a rendu ${scores.length} scores ` +
+                `pour ${resultats.length} passages.`,
+            );
+          }
+          return { resultat, score, position };
+        })
+        .sort((gauche, droite) => droite.score - gauche.score || gauche.position - droite.position)
+        .slice(0, k)
+        .map((entree) => entree.resultat);
+      blocRerank = { modele: rerank.model, duree_ms };
+    } catch (error) {
+      // Une panne du second étage ne prive pas le lecteur du classement dense :
+      // la réponse dit seulement que le rerank n'a pas servi.
+      ordre = resultats.slice(0, k);
+      blocRerank = {
+        modele: rerank.model,
+        indisponible: true,
+        raison: error instanceof Error ? error.message : String(error),
+      };
+    }
   }
 
   const corpusDuNiveau = corpusDeNiveau(demande);

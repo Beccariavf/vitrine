@@ -43,6 +43,7 @@ npm run veille:delais  # délai publication → veille → corpus, data/corpus/d
 npm run mcp:smoke      # vérifie Ollama et leoipulsar/harrier-0.6b
 npm run mcp            # serveur MCP sur stdio
 VITRINE_RECHERCHE=lexicale npm run mcp   # recherche par mots seuls, sans Ollama à la requête
+VITRINE_RERANK_URL=http://127.0.0.1:8080 npm run mcp   # second étage bge-reranker-v2-m3 (llama-server à part)
 npm run mcp:http       # API HTTP locale seule, sans le site (déjà lancée par npm run dev)
 npm run mcp:demo       # cinq appels réels au serveur stdio (Ollama requis en mode dense)
 npm run mcp:eval -- --questions questions-v2.csv --split dev    # 30 questions de développement (hors CI)
@@ -82,6 +83,25 @@ référence. C'est un mode d'essai : il garde les termes exacts et perd les para
 Les pièges ne sont pas refusés (6 sur 6 cités sur `questions-cnil-etendu`) et l'index dense complet
 reste requis : « sans modèle » vaut à la requête, pas au stockage. Détail et verdict dans
 `aidd_docs/tasks/2026_11/2026_11_20_mode-lexical/mesures.md`.
+Le second étage de rerank est disponible **sur option**, avec `bge-reranker-v2-m3` : lancer le
+serveur de rerank à part, puis le serveur MCP avec son URL.
+
+```sh
+llama-server --reranking -m ~/.cache/vitrine-rerank/bge-reranker-v2-m3-q8_0.gguf \
+  --port 8080 -c 16384 -np 1 -ub 4096 -b 4096
+VITRINE_RERANK_URL=http://127.0.0.1:8080 npm run mcp
+```
+
+Le GGUF (`bge-reranker-v2-m3`, quantification Q8_0, 636 Mo) vit hors du dépôt, sous
+`~/.cache/vitrine-rerank/`. Sans `VITRINE_RERANK_URL`, le comportement est strictement inchangé.
+`VITRINE_RERANK_MODELE` choisit le modèle demandé (`bge-reranker-v2-m3` par défaut) et
+`VITRINE_RERANK_CANDIDATS` la fenêtre offerte au second étage (50 par défaut, entier de 5 à 100,
+sinon le démarrage s'arrête). Chaque passage part tronqué à 2 000 caractères, par lots de 25, avec
+un délai maximal de 30 s par lot. Si le reranker est injoignable, `search` répond avec le classement
+dense et `rerank: { modele, indisponible: true, raison }`, sans échouer ; le serveur n'écrit qu'un
+message sur `stderr` pour la première panne. En recherche lexicale, le reranker est ignoré.
+L'étage se mesure sans toucher au produit :
+`npm run mcp:eval -- --questions questions-cnil-etendu.csv --split dev --rerank bge-reranker-v2-m3 --candidats 50`.
 L'index est incrémental : un second passage sur un corpus inchangé
 embarque zéro unité et laisse les vecteurs identiques. La construction suit les descripteurs
 `mcp/corpus/*.json` ; `--document <corpus>` ne construit que ce corpus, avec tous ses documents.

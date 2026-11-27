@@ -1,0 +1,101 @@
+{
+  "date": "2026-11-27",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "lil",
+  "sans_filtre": true,
+  "detection": true,
+  "recherche": "dense",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine-wt-114/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "figés (jeu sans split)",
+  "questions": [
+    {
+      "question": "Quel consentement faut-il recueillir avant de déposer un cookie publicitaire sur le terminal d'un internaute ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "LEGIARTI000037813978"
+      ],
+      "refs": [
+        "CNILTEXT000042635729#f47",
+        "CNILTEXT000047682157#f67",
+        "CNILTEXT000043867129#f47",
+        "CNILTEXT000052182271#f42",
+        "CNILTEXT000046768989#f36"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7321576178073883,
+        0.7456143200397491,
+        0.7427169680595398,
+        0.7282365560531616,
+        0.7640671581029892
+      ],
+      "niveau": "incertain",
+      "duree_rerank_ms": 1821.239459
+    },
+    {
+      "question": "Quelles dérogations du RGPD s'appliquent aux traitements journalistiques des organes de presse ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "LEGIARTI000037813972"
+      ],
+      "refs": [
+        "32016R0679#rct_153",
+        "32016R0679#art_85",
+        "32016R0679#art_89",
+        "32016R0679#art_2",
+        "32016R0679#rct_16"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7024590373039246,
+        0.7326011061668396,
+        0.6635769903659821,
+        0.6537069380283356,
+        0.65756556391716
+      ],
+      "niveau": "incertain",
+      "duree_rerank_ms": 1373.174
+    }
+  ],
+  "agregats": {
+    "semantiques": 2,
+    "top5_semantique_succes": 0,
+    "top1_semantique_succes": 0,
+    "mrr_semantique": 0,
+    "referencees": 2,
+    "top5_global_succes": 0,
+    "top5_rendu_succes": 0,
+    "top1_rendu_succes": 0,
+    "mrr_rendu": 0,
+    "top5_global_rendu_succes": 0,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 0,
+    "incertain": 2,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  },
+  "rerank": {
+    "modele": "bge-reranker-v2-m3",
+    "url": "http://127.0.0.1:8080",
+    "candidats": 30,
+    "latence_ms_moyenne": 1597.2067295,
+    "latence_ms_mediane": 1597.2067295
+  }
+}

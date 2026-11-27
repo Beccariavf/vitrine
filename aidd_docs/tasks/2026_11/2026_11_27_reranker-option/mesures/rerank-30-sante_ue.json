@@ -1,0 +1,101 @@
+{
+  "date": "2026-11-27",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "sante_ue",
+  "sans_filtre": true,
+  "detection": true,
+  "recherche": "dense",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine-wt-114/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "figés (jeu sans split)",
+  "questions": [
+    {
+      "question": "Le refus d'accéder à ses données de santé électroniques ouvert par certains États membres peut-il être retiré après avoir été exercé ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32025R0327#art_10"
+      ],
+      "refs": [
+        "32025R0327#rct_18",
+        "32025R0327#art_10",
+        "32025R0327#art_71",
+        "32025R0327#rct_11",
+        "32025R0327#art_67"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.7214222550392151,
+        0.716244101524353,
+        0.7252053916454315,
+        0.7152647376060486,
+        0.706782191991806
+      ],
+      "niveau": "incertain",
+      "duree_rerank_ms": 2085.3617499999996
+    },
+    {
+      "question": "Dans quel délai maximal le détenteur de données de santé doit-il remettre à l'organisme national d'accès les données réclamées ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32025R0327#art_60"
+      ],
+      "refs": [
+        "32025R0327#art_60",
+        "32025R0327#art_69",
+        "CNILTEXT000037202341#f25",
+        "32025R0327#art_67",
+        "CONSTEXT000043596388#f16"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7092509567737579,
+        0.7084585428237915,
+        0.73075932264328,
+        0.6978009939193726,
+        0.7220059931278229
+      ],
+      "niveau": "incertain",
+      "duree_rerank_ms": 2153.997625
+    }
+  ],
+  "agregats": {
+    "semantiques": 2,
+    "top5_semantique_succes": 2,
+    "top1_semantique_succes": 1,
+    "mrr_semantique": 0.75,
+    "referencees": 2,
+    "top5_global_succes": 2,
+    "top5_rendu_succes": 2,
+    "top1_rendu_succes": 1,
+    "mrr_rendu": 0.75,
+    "top5_global_rendu_succes": 2,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 0,
+    "incertain": 2,
+    "aucun_resultat_fiable": 0,
+    "pieges_confiants": 0
+  },
+  "rerank": {
+    "modele": "bge-reranker-v2-m3",
+    "url": "http://127.0.0.1:8080",
+    "candidats": 30,
+    "latence_ms_moyenne": 2119.6796875,
+    "latence_ms_mediane": 2119.6796875
+  }
+}

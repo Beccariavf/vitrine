@@ -10,6 +10,8 @@ import { openIndex } from "./index/search.ts";
 import type { Index } from "./index/search.ts";
 import { getArticle, getDecision, search, etatCorpus } from "./tools.ts";
 import type { ModeRecherche } from "./tools.ts";
+import { CANDIDATS_RERANK, CANDIDATS_RERANK_MAX, CANDIDATS_RERANK_MIN, createLlamaReranker } from "./rerank/reranker.ts";
+import type { Reranker } from "./rerank/reranker.ts";
 import { LIMITE_DEFAUT, LIMITE_MAX, decisionsCitant } from "./corpus/citants.ts";
 import { PERIMETRE } from "./corpus/citations.ts";
 import {
@@ -180,6 +182,10 @@ export type ServerDeps = {
   index?: Index;
   /** Voie de recherche ; `dense` par défaut, `lexicale` sans modèle à la requête. */
   recherche?: ModeRecherche;
+  /** Second étage optionnel ; absent, le comportement reste strictement celui d'avant. */
+  rerank?: Reranker;
+  /** Nombre de candidats offerts au second étage ; `CANDIDATS_RERANK` par défaut. */
+  candidatsRerank?: number;
 };
 
 /** Variable d'environnement qui choisit la voie de recherche du serveur. */
@@ -188,6 +194,96 @@ export const VARIABLE_RECHERCHE = "VITRINE_RECHERCHE";
 export const RECHERCHE_PAR_DEFAUT: ModeRecherche = "dense";
 /** Valeurs admises par `VITRINE_RECHERCHE`, dans l'ordre de l'erreur de démarrage. */
 export const MODES_RECHERCHE: readonly ModeRecherche[] = ["dense", "hybride", "lexicale"];
+
+/** URL du serveur `llama-server --reranking` ; sa présence active le second étage. */
+export const VARIABLE_RERANK_URL = "VITRINE_RERANK_URL";
+/** Modèle de rerank demandé au serveur. */
+export const VARIABLE_RERANK_MODELE = "VITRINE_RERANK_MODELE";
+/** Nombre de candidats offerts au second étage. */
+export const VARIABLE_RERANK_CANDIDATS = "VITRINE_RERANK_CANDIDATS";
+/** Modèle retenu le 2026-11-27 (GGUF mesuré sur `llama-server --reranking`). */
+export const MODELE_RERANK_PAR_DEFAUT = "bge-reranker-v2-m3";
+
+/** Second étage lu dans l'environnement, avec sa fenêtre de candidats. */
+export type ConfigRerank = { reranker: Reranker; candidats: number };
+
+/**
+ * Lit `VITRINE_RERANK_CANDIDATS` : absent, `CANDIDATS_RERANK` ; un entier de
+ * `CANDIDATS_RERANK_MIN` à `CANDIDATS_RERANK_MAX`, sinon le démarrage s'arrête.
+ */
+export function lireCandidatsRerank(valeur: string | undefined): number {
+  if (valeur === undefined) return CANDIDATS_RERANK;
+  const nombre = Number(valeur);
+  if (!/^\d+$/.test(valeur) || nombre < CANDIDATS_RERANK_MIN || nombre > CANDIDATS_RERANK_MAX) {
+    throw new Error(
+      `${VARIABLE_RERANK_CANDIDATS} attendu un entier de ${CANDIDATS_RERANK_MIN} à ` +
+        `${CANDIDATS_RERANK_MAX} ; reçu « ${valeur === "" ? "(vide)" : valeur} »`,
+    );
+  }
+  return nombre;
+}
+
+/**
+ * Lit les variables du second étage. `VITRINE_RERANK_URL` absente laisse le
+ * serveur strictement inchangé ; en recherche lexicale, le reranker est ignoré
+ * et le démarrage le dit sur `stderr`, une fois.
+ */
+export function lireConfigRerank(
+  env: Record<string, string | undefined>,
+  recherche: ModeRecherche,
+  ecrire: (texte: string) => void = (texte) => process.stderr.write(texte),
+): ConfigRerank | undefined {
+  const url = env[VARIABLE_RERANK_URL];
+  if (url === undefined) return undefined;
+  if (recherche === "lexicale") {
+    ecrire(
+      `${VARIABLE_RERANK_URL} est posée mais la recherche est lexicale ` +
+        `(${VARIABLE_RECHERCHE}=lexicale) : reranker ignoré, aucun modèle à la requête.\n`,
+    );
+    return undefined;
+  }
+  if (url.trim() === "") {
+    throw new Error(
+      `${VARIABLE_RERANK_URL} est vide ; donnez l'URL de llama-server --reranking, ` +
+        "ou retirez la variable pour désactiver le second étage",
+    );
+  }
+  return {
+    reranker: createLlamaReranker({
+      url,
+      model: env[VARIABLE_RERANK_MODELE] ?? MODELE_RERANK_PAR_DEFAUT,
+    }),
+    candidats: lireCandidatsRerank(env[VARIABLE_RERANK_CANDIDATS]),
+  };
+}
+
+/**
+ * Signale la première panne du second étage sur `stderr`, jamais les suivantes :
+ * une requête cassée ne doit pas inonder le journal du client stdio.
+ */
+export function avecSignalementPanne(
+  reranker: Reranker,
+  ecrire: (texte: string) => void,
+): Reranker {
+  let signale = false;
+  return {
+    model: reranker.model,
+    async score(question, passages) {
+      try {
+        return await reranker.score(question, passages);
+      } catch (error) {
+        if (!signale) {
+          signale = true;
+          const raison = error instanceof Error ? error.message : String(error);
+          ecrire(
+            `Reranker ${reranker.model} indisponible, recherche sans second étage : ${raison}\n`,
+          );
+        }
+        throw error;
+      }
+    },
+  };
+}
 
 /**
  * Lit `VITRINE_RECHERCHE` : absent, `dense` ; une valeur inconnue arrête le
@@ -512,6 +608,9 @@ export function createServer(deps: ServerDeps): McpServer {
         "En recherche lexicale seule (`VITRINE_RECHERCHE=lexicale`), les passages portent " +
         "`rang_lexical` (1 = meilleur) et aucune `distance` ni `similarite` ; le niveau reste " +
         "`incertain` hors appariement exact, un score BM25 ne prouvant pas la pertinence. " +
+        "Quand le second étage de rerank est actif (`VITRINE_RERANK_URL`), `rerank` porte " +
+        "`modele` et `duree_ms` ; s'il est injoignable, la réponse garde le classement dense et " +
+        "`rerank` porte `indisponible: true` et `raison`. " +
         `${CONSIGNE_CITATIONS} ` +
         `${CONSIGNE_DECISIONS_CITEES} ` +
         `${CONSIGNE_STATUT_APPLICATION} ` +
@@ -604,6 +703,8 @@ export function createServer(deps: ServerDeps): McpServer {
         embedder,
         index,
         ...(deps.recherche === undefined ? {} : { recherche: deps.recherche }),
+        ...(deps.rerank === undefined ? {} : { rerank: deps.rerank }),
+        ...(deps.candidatsRerank === undefined ? {} : { candidatsRerank: deps.candidatsRerank }),
       });
       return { content: [{ type: "text", text: JSON.stringify(resultat, null, 2) }] };
     },
@@ -614,7 +715,19 @@ export function createServer(deps: ServerDeps): McpServer {
 
 async function main(): Promise<void> {
   const recherche = lireModeRecherche(process.env[VARIABLE_RECHERCHE]);
-  const serveur = createServer({ rootDir: RACINE, embedder: createOllamaEmbedder(), recherche });
+  const configRerank = lireConfigRerank(process.env, recherche);
+  const rerank =
+    configRerank === undefined
+      ? undefined
+      : avecSignalementPanne(configRerank.reranker, (texte) => process.stderr.write(texte));
+  const serveur = createServer({
+    rootDir: RACINE,
+    embedder: createOllamaEmbedder(),
+    recherche,
+    ...(rerank === undefined || configRerank === undefined
+      ? {}
+      : { rerank, candidatsRerank: configRerank.candidats }),
+  });
   const transport = new StdioServerTransport();
 
   process.once("SIGINT", () => {
@@ -627,6 +740,7 @@ async function main(): Promise<void> {
       "(six outils : get_article, get_decision, search, decisions_citant, decisions_citant_decision, etat_corpus) " +
       `— recherche ${recherche}` +
       (recherche === "lexicale" ? " (sans modèle à la requête)" : "") +
+      (rerank === undefined ? "" : `, rerank ${rerank.model} sur ${configRerank?.candidats} candidats`) +
       ".\n",
   );
 }

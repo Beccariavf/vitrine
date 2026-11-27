@@ -1,0 +1,155 @@
+{
+  "date": "2026-11-27",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "textes_fr",
+  "sans_filtre": true,
+  "detection": true,
+  "recherche": "dense",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine-wt-114/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "figés (jeu sans split)",
+  "questions": [
+    {
+      "question": "Une administration qui fonde une décision individuelle sur un algorithme doit-elle en informer la personne concernée et celle-ci peut-elle obtenir les règles du traitement ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "LEGIARTI000033205535"
+      ],
+      "refs": [
+        "LEGIARTI000034195881",
+        "LEGIARTI000033205535",
+        "20233295#f7",
+        "CONSTEXT000037148523#f46",
+        "CETATEXT000038601897#f8"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.7553878724575043,
+        0.7378461956977844,
+        0.7543801665306091,
+        0.7479055225849152,
+        0.7406158149242401
+      ],
+      "niveau": "confiant",
+      "duree_rerank_ms": 1520.215542
+    },
+    {
+      "question": "L'administration et l'exploitation du système d'information qui contient des données de santé constituent-elles une activité d'hébergement soumise au régime HDS ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "LEGIARTI000053720790"
+      ],
+      "refs": [
+        "LEGIARTI000053720790",
+        "CNILTEXT000036670545#f4",
+        "CNILTEXT000051390526#f3",
+        "referentiel-officines-de-pharmacie#f48",
+        "LEGIARTI000036656709"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7466171383857727,
+        0.7412442564964294,
+        0.7557031065225601,
+        0.7395115792751312,
+        0.7303504347801208
+      ],
+      "niveau": "incertain",
+      "duree_rerank_ms": 1865.1900840000017
+    },
+    {
+      "question": "Le patient peut-il accéder directement aux informations de santé le concernant sans passer par un médecin ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "LEGIARTI000042685313"
+      ],
+      "refs": [
+        "LEGIARTI000042685313",
+        "CNILTEXT000017653450#f4",
+        "LEGIARTI000037823065",
+        "LEGIARTI000043588055",
+        "CNILTEXT000050202759#f72"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.6892275512218475,
+        0.730370819568634,
+        0.7307911515235901,
+        0.6844613254070282,
+        0.7099873721599579
+      ],
+      "niveau": "aucun_resultat_fiable",
+      "duree_rerank_ms": 1068.7412499999991
+    },
+    {
+      "question": "Un arrêt de travail prescrit ou renouvelé pour la première fois à l'occasion d'une téléconsultation peut-il dépasser trois jours ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "LEGIARTI000054336504"
+      ],
+      "refs": [
+        "LEGIARTI000054336504",
+        "CONSTEXT000054398790#f50",
+        "CONSTEXT000054398790#f48",
+        "CETATEXT000049948516#f5",
+        "CETATEXT000047862134#f5"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.6930949091911316,
+        0.723661869764328,
+        0.6917741298675537,
+        0.695855438709259,
+        0.6892719268798828
+      ],
+      "niveau": "incertain",
+      "duree_rerank_ms": 1208.6651249999995
+    }
+  ],
+  "agregats": {
+    "semantiques": 4,
+    "top5_semantique_succes": 4,
+    "top1_semantique_succes": 3,
+    "mrr_semantique": 0.875,
+    "referencees": 4,
+    "top5_global_succes": 4,
+    "top5_rendu_succes": 3,
+    "top1_rendu_succes": 2,
+    "mrr_rendu": 0.625,
+    "top5_global_rendu_succes": 3,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 1,
+    "incertain": 2,
+    "aucun_resultat_fiable": 1,
+    "pieges_confiants": 0
+  },
+  "rerank": {
+    "modele": "bge-reranker-v2-m3",
+    "url": "http://127.0.0.1:8080",
+    "candidats": 20,
+    "latence_ms_moyenne": 1415.70300025,
+    "latence_ms_mediane": 1364.4403334999997
+  }
+}

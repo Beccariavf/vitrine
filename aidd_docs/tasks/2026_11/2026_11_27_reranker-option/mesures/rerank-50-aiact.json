@@ -1,0 +1,290 @@
+{
+  "date": "2026-11-27",
+  "modele": "leoipulsar/harrier-0.6b",
+  "dimensions": 1024,
+  "split": "dev",
+  "corpus": "aiact",
+  "sans_filtre": true,
+  "detection": true,
+  "recherche": "dense",
+  "index": {
+    "chemin": "/Users/val/Developer/Vitrine-wt-114/data/corpus/index/index.db",
+    "unites": 178359
+  },
+  "seuils": {
+    "bas": 0.69,
+    "haut": 0.74,
+    "marge": 0.01
+  },
+  "seuils_origine": "figés (jeu sans split)",
+  "questions": [
+    {
+      "question": "Une entreprise peut-elle éviter les obligations les plus lourdes prévues pour un système d'IA figurant parmi les usages sensibles et à quelles conditions ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32024R1689#art_6"
+      ],
+      "refs": [
+        "32024R1689#rct_53",
+        "32024R1689#art_111",
+        "32024R1689#art_50",
+        "32024R1689#rct_26",
+        "32024R1689#art_26"
+      ],
+      "rangs": [
+        0
+      ],
+      "similarites": [
+        0.7299092411994934,
+        0.7201671302318573,
+        0.7089873850345612,
+        0.7178344428539276,
+        0.7263680100440979
+      ],
+      "niveau": "incertain",
+      "duree_rerank_ms": 4590.265791
+    },
+    {
+      "question": "Quels usages de l'intelligence artificielle sont prohibés en tant que tels dans l'Union européenne sans qu'un contrôle de conformité puisse les régulariser ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32024R1689#art_5"
+      ],
+      "refs": [
+        "32024R1689#art_5",
+        "lignes-directrices-art-5#f0",
+        "lignes-directrices-art-5#f29",
+        "lignes-directrices-art-5#f37",
+        "32026R2487#rct_7"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7308854162693024,
+        0.7471979260444641,
+        0.7312107086181641,
+        0.7328861355781555,
+        0.7322412729263306
+      ],
+      "niveau": "incertain",
+      "duree_rerank_ms": 3792.4381670000002
+    },
+    {
+      "question": "Une société qui met un outil d'IA à disposition de ses salariés doit-elle leur faire passer une certification individuelle ou peut-elle adapter sa démarche aux usages et aux compétences ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32024R1689#art_4"
+      ],
+      "refs": [
+        "32024R1689#art_3",
+        "32024R1689#art_4",
+        "32024R1689#rct_92",
+        "32024R1689#art_2",
+        "32024R1689#art_53"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.6671409010887146,
+        0.7207361459732056,
+        0.6817019879817963,
+        0.6681717336177826,
+        0.6709021031856537
+      ],
+      "niveau": "aucun_resultat_fiable",
+      "duree_rerank_ms": 4212.919541000001
+    },
+    {
+      "question": "Que doit permettre concrètement un système d'IA à haut risque pour que les personnes chargées de le surveiller puissent reprendre la main y compris l'arrêter ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32024R1689#art_14"
+      ],
+      "refs": [
+        "32024R1689#rct_73",
+        "32024R1689#art_14",
+        "32024R1689#rct_59",
+        "32024R1689#art_15",
+        "32024R1689#art_12"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.7439256906509399,
+        0.7704736888408661,
+        0.7260033786296844,
+        0.7084394693374634,
+        0.7143102288246155
+      ],
+      "niveau": "incertain",
+      "duree_rerank_ms": 5109.27375
+    },
+    {
+      "question": "Quelles informations et documents un fournisseur de modèle d'IA à usage général doit-il produire puis mettre à jour et rendre publics indépendamment du niveau de performance du modèle ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32024R1689#art_53"
+      ],
+      "refs": [
+        "32024R1689#art_53",
+        "32024R1689#rct_101",
+        "32024R1689#rct_104",
+        "32024R1689#art_91",
+        "32024R1689#art_55"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.8137951046228409,
+        0.7973104268312454,
+        0.7802847176790237,
+        0.7578065395355225,
+        0.7586414664983749
+      ],
+      "niveau": "confiant",
+      "duree_rerank_ms": 4843.765499999998
+    },
+    {
+      "question": "Quelles vérifications un fournisseur d'IA à haut risque doit-il documenter sur l'origine et la représentativité ainsi que sur les biais de ses jeux de données ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32024R1689#art_10"
+      ],
+      "refs": [
+        "32024R1689#art_17",
+        "32024R1689#rct_66",
+        "32024R1689#rct_67",
+        "32024R1689#art_25",
+        "32024R1689#art_10"
+      ],
+      "rangs": [
+        5
+      ],
+      "similarites": [
+        0.7411335706710815,
+        0.7598696053028107,
+        0.7638822495937347,
+        0.7311422228813171,
+        0.7711175978183746
+      ],
+      "niveau": "incertain",
+      "duree_rerank_ms": 5374.369333999995
+    },
+    {
+      "question": "Tout utilisateur professionnel d'une IA à haut risque doit-il réaliser une analyse d'impact sur les droits fondamentaux ou cette obligation dépend-elle de son statut et du type d'usage ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32024R1689#art_27"
+      ],
+      "refs": [
+        "32024R1689#rct_96",
+        "32024R1689#art_27",
+        "32024R1689#rct_59",
+        "32024R1689#rct_91",
+        "32024R1689#art_86"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.7890033572912216,
+        0.8007753789424896,
+        0.7297407686710358,
+        0.7343113422393799,
+        0.7369727790355682
+      ],
+      "niveau": "incertain",
+      "duree_rerank_ms": 4589.202832999996
+    },
+    {
+      "question": "Quelles obligations d'information et de marquage pèsent respectivement sur l'éditeur et sur l'utilisateur d'un système d'IA génératif ou conversationnel ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32024R1689#art_50"
+      ],
+      "refs": [
+        "32024R1689#rct_134",
+        "32024R1689#art_50",
+        "32024R1689#rct_136",
+        "32024R1689#rct_120",
+        "32024R1689#rct_133"
+      ],
+      "rangs": [
+        2
+      ],
+      "similarites": [
+        0.7323637902736664,
+        0.7638851255178452,
+        0.729854553937912,
+        0.7215797305107117,
+        0.7234784364700317
+      ],
+      "niveau": "incertain",
+      "duree_rerank_ms": 4927.919708000001
+    },
+    {
+      "question": "Une personne écartée par une décision assistée par une IA à haut risque peut-elle obtenir une explication du rôle exact joué par l'outil même si la décision n'était pas entièrement automatisée ?",
+      "type": "conceptuelle",
+      "piege": false,
+      "attendues": [
+        "32024R1689#art_86"
+      ],
+      "refs": [
+        "32024R1689#art_86",
+        "32024R1689#rct_171",
+        "32024R1689#rct_93",
+        "32024R1689#rct_53",
+        "32024R1689#art_14"
+      ],
+      "rangs": [
+        1
+      ],
+      "similarites": [
+        0.7508385628461838,
+        0.7513736039400101,
+        0.6875523030757904,
+        0.7270497381687164,
+        0.7070028185844421
+      ],
+      "niveau": "incertain",
+      "duree_rerank_ms": 4862.920833000004
+    }
+  ],
+  "agregats": {
+    "semantiques": 9,
+    "top5_semantique_succes": 8,
+    "top1_semantique_succes": 3,
+    "mrr_semantique": 0.5777777777777778,
+    "referencees": 9,
+    "top5_global_succes": 8,
+    "top5_rendu_succes": 7,
+    "top1_rendu_succes": 3,
+    "mrr_rendu": 0.5222222222222223,
+    "top5_global_rendu_succes": 7,
+    "pieges_mesures": 0,
+    "pieges_cites": 0,
+    "confiant": 1,
+    "incertain": 7,
+    "aucun_resultat_fiable": 1,
+    "pieges_confiants": 0
+  },
+  "rerank": {
+    "modele": "bge-reranker-v2-m3",
+    "url": "http://127.0.0.1:8080",
+    "candidats": 50,
+    "latence_ms_moyenne": 4700.341717444444,
+    "latence_ms_mediane": 4843.765499999998
+  }
+}

@@ -5,6 +5,8 @@ export type FetchInit = {
   body?: string;
   /** `follow` demande de suivre les redirections ; c'est déjà le défaut de `fetch`. */
   redirect?: "follow";
+  /** Annulation ou délai maximal d'une requête ; `fetch` l'accepte tel quel. */
+  signal?: AbortSignal;
 };
 
 export type FetchResponse = {
